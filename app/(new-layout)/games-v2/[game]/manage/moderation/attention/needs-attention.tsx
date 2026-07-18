@@ -21,6 +21,7 @@ import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { FlagSeverity } from '../../../../../../../types/moderation.types';
+import { formatSubcategoryKey } from '../../../labels';
 import type { ModVerb, RunActionTarget } from '../shared/action-model';
 import { RunActionDialog } from '../shared/run-action-dialog';
 import {
@@ -88,6 +89,12 @@ const SOURCE_META: Record<
     report: { label: 'reported', Icon: Flag },
     appeal: { label: 'appeal', Icon: Hammer },
     self_claim: { label: 'self-claim', Icon: HandIndex },
+};
+
+const VERIFICATION_LABEL: Record<string, string> = {
+    pending: 'Pending',
+    verified: 'Verified',
+    rejected: 'Rejected',
 };
 
 /** An active run-action invocation against one or more items. */
@@ -603,7 +610,9 @@ function ItemMeta({ item }: { item: AttentionItem }) {
             </span>
             <span className={styles.category}>{item.categoryName}</span>
             {item.subcategoryKey && (
-                <span className={styles.sub}>{item.subcategoryKey}</span>
+                <span className={styles.sub}>
+                    {formatSubcategoryKey(item.subcategoryKey)}
+                </span>
             )}
             <span className={styles.timeGroup}>
                 <span className={styles.timeLabel}>RT</span>
@@ -637,7 +646,10 @@ function ItemMeta({ item }: { item: AttentionItem }) {
                 </span>
             )}
             {item.verificationStatus && (
-                <span className={styles.status}>{item.verificationStatus}</span>
+                <span className={styles.status}>
+                    {VERIFICATION_LABEL[item.verificationStatus] ??
+                        item.verificationStatus}
+                </span>
             )}
         </div>
     );

@@ -4,6 +4,7 @@ import type {
     HistoryEvent,
     RunProvenance,
 } from '../../../../../types/moderation.types';
+import { formatVariableList } from '../labels';
 
 function formatAt(at: string | null): string {
     if (at === null) return 'date unknown';
@@ -64,11 +65,11 @@ export function ModProvenancePanel({
                         {mod.verifyQueueHidden ? 'Yes' : 'No'}
                     </dd>
 
-                    {rawVariables && (
+                    {rawVariables && Object.keys(rawVariables).length > 0 && (
                         <>
                             <dt className="col-sm-3">Raw variables</dt>
                             <dd className="col-sm-9">
-                                <code>{JSON.stringify(rawVariables)}</code>
+                                {formatVariableList(rawVariables)}
                             </dd>
                         </>
                     )}

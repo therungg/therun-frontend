@@ -4,6 +4,7 @@ import type {
     ModReportRow,
     QueueItem,
 } from '../../../../../../../types/moderation.types';
+import { humanizeWord } from '../../../labels';
 
 export type AttentionSource = 'flag' | 'report' | 'appeal' | 'self_claim';
 
@@ -220,15 +221,25 @@ export function mergeAttention(
     return all;
 }
 
-function shortDetail(details: Record<string, unknown>): string | null {
+/** Humanizes a single flag-detail value: booleans read as Yes/No, plain
+ * lowercase/snake_case strings get title-cased, everything else prints as-is
+ * (numbers) or as JSON (objects) — never a raw `true`/`false` or bare code. */
+function formatDetailValue(v: unknown): string {
+    if (typeof v === 'boolean') return v ? 'Yes' : 'No';
+    if (typeof v === 'string') return humanizeWord(v) || v;
+    if (v && typeof v === 'object') return JSON.stringify(v);
+    return String(v);
+}
+
+/** Turns a flag's raw `details` map into a short human sentence fragment,
+ * e.g. `{ likely_bot: true }` -> "Likely bot: Yes" instead of a bare
+ * `likely_bot: true` code dump. */
+export function shortDetail(details: Record<string, unknown>): string | null {
     const entries = Object.entries(details ?? {});
     if (entries.length === 0) return null;
     return entries
         .slice(0, 2)
-        .map(
-            ([k, v]) =>
-                `${k}: ${typeof v === 'object' ? JSON.stringify(v) : String(v)}`,
-        )
+        .map(([k, v]) => `${humanizeWord(k)}: ${formatDetailValue(v)}`)
         .join(' · ');
 }
 

@@ -4,6 +4,7 @@ import {
     formatSourceList,
     parseKindFilter,
     resolveSource,
+    shortDetail,
 } from './attention-model';
 
 describe('resolveSource', () => {
@@ -62,6 +63,38 @@ describe('formatSourceList', () => {
 
     it('returns an empty string for an empty list', () => {
         expect(formatSourceList([])).toBe('');
+    });
+});
+
+describe('shortDetail', () => {
+    it('returns null for an empty details map', () => {
+        expect(shortDetail({})).toBeNull();
+    });
+
+    it('humanizes a snake_case key and renders a boolean as Yes/No', () => {
+        expect(shortDetail({ likely_bot: true })).toBe('Likely Bot: Yes');
+        expect(shortDetail({ likely_bot: false })).toBe('Likely Bot: No');
+    });
+
+    it('humanizes a snake_case string value too', () => {
+        expect(shortDetail({ deviation_source: 'video_gap' })).toBe(
+            'Deviation Source: Video Gap',
+        );
+    });
+
+    it('leaves numbers as plain numbers', () => {
+        expect(shortDetail({ deviation_pct: 42 })).toBe('Deviation Pct: 42');
+    });
+
+    it('never leaves a raw key=value snake_case dump in the output', () => {
+        const result = shortDetail({ likely_bot: true, deviation_pct: 5 });
+        expect(result).not.toContain('likely_bot');
+        expect(result).not.toContain('deviation_pct');
+    });
+
+    it('limits to the first two entries, joined by the middle dot', () => {
+        const result = shortDetail({ a: 1, b: 2, c: 3 });
+        expect(result).toBe('A: 1 · B: 2');
     });
 });
 
