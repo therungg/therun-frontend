@@ -62,6 +62,24 @@
     }
 }
 
+.yourRunRow {
+    padding-block: dt.$spacing-xs 0;
+
+    & + & {
+        margin-top: dt.$spacing-sm;
+        padding-top: dt.$spacing-sm;
+        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+    }
+}
+
+.yourRunHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-sm;
+    margin-bottom: 2px;
+}
+
 .sidebarFoot {
     text-align: center;
     margin-top: dt.$spacing-sm;

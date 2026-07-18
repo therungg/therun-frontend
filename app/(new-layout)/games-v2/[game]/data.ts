@@ -4,7 +4,11 @@ import {
     resolveCategory,
     resolveGame,
 } from '~src/lib/games-v1';
-import { getLeaderboard, getVariables } from '~src/lib/leaderboards-v1';
+import {
+    getLeaderboard,
+    getUserRankingsByName,
+    getVariables,
+} from '~src/lib/leaderboards-v1';
 import type { GamePageData, GamePageSearchParams } from './types';
 
 const DEFAULT_PAGE_SIZE = 25;
@@ -54,6 +58,7 @@ export async function loadGamePageData(
             boardIsEmpty: false,
             quickStats: await getQuickStats(game.id),
             recentPbs: [],
+            yourRuns: [],
             sessionUsername,
             activeFilters: emptyFilters(),
         };
@@ -112,16 +117,24 @@ export async function loadGamePageData(
         varFilters,
     };
 
-    const [boardResult, quickStats, recentPbs] = await Promise.all([
-        getLeaderboard({ ...baseQuery, timing: selected.primaryTiming }),
-        getQuickStats(game.id).catch(() => ({
-            totalRunTime: 0,
-            totalAttemptCount: 0,
-            totalFinishedAttemptCount: 0,
-            uniqueRunners: 0,
-        })),
-        getRecentPbs(game.id).catch(() => []),
-    ]);
+    const [boardResult, quickStats, recentPbs, rawYourRuns] = await Promise.all(
+        [
+            getLeaderboard({ ...baseQuery, timing: selected.primaryTiming }),
+            getQuickStats(game.id).catch(() => ({
+                totalRunTime: 0,
+                totalAttemptCount: 0,
+                totalFinishedAttemptCount: 0,
+                uniqueRunners: 0,
+            })),
+            getRecentPbs(game.id).catch(() => []),
+            sessionUsername
+                ? getUserRankingsByName(sessionUsername).catch(() => [])
+                : Promise.resolve([]),
+        ],
+    );
+    // Best-per-board only — see `getUserRankingsByName` and the
+    // `yourRuns` field doc on GamePageData for the honest-scope note.
+    const yourRuns = rawYourRuns.filter((r) => r.gameSlug === game.name);
 
     const leaderboard = boardResult.ok ? boardResult.result : emptyBoard();
     const invalidCombination = boardResult.ok
@@ -165,6 +178,7 @@ export async function loadGamePageData(
         boardIsEmpty,
         quickStats,
         recentPbs,
+        yourRuns,
         sessionUsername,
         activeFilters: {
             subcategoryValues,

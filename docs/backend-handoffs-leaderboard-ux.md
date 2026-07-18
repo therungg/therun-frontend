@@ -119,3 +119,20 @@ unlike `LeaderboardEntry` which has both.
 - Frontend: `drawers/wr-history-drawer.tsx` renders a plain runner name with no flag and no
   link for every row; `drawers/wr-history-model.ts`'s `WrHistoryRow` has no field to carry
   either through — degrades honestly rather than guessing at a link.
+
+### 9. `GET /v1/me/submissions` for a full-fidelity "your runs" surface (W3)
+
+The game page's new "Your runs" sidebar panel (signed-in only) is sourced from
+`getUserRankingsByName`, which returns one entry per board — the runner's best/current PB
+per category-subcategory combination. That's inherently a narrower view than "everything
+I've submitted": pending non-PB attempts (a second, slower verified run on a board where
+an earlier attempt already holds the PB slot), hidden/removed runs, and open board claims
+are all invisible to it. The panel is titled "Your runs", not "All your runs" or "Your
+submissions", specifically because it can't back that stronger claim.
+
+- Wanted: a `GET /v1/me/submissions` endpoint (or equivalent) returning the full list of a
+  runner's submissions — including non-PB attempts and their verification/removal state —
+  so a future surface can show genuine submission history rather than best-per-board only.
+- Frontend: `games-v2/[game]/sidebar/your-runs-panel.tsx` + `games-v2/[game]/data.ts`
+  (`yourRuns` on `GamePageData`) would be the natural place to switch sourcing once this
+  endpoint exists; the panel's copy/scope could then honestly expand.
