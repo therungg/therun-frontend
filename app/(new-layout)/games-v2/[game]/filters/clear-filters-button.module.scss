@@ -1,0 +1,10 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+// Secondary tier (system.md Action hierarchy) — a bordered control-pill,
+// matching the wizard nav's Back/View-your-board buttons.
+.clearBtn {
+    @include board.control-pill;
+    margin-top: dt.$spacing-sm;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+}

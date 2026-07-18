@@ -1,0 +1,25 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/board' as board;
+
+// ============================================================
+// UndoToast — content rendered inside the shared react-toastify container
+// (see (new-layout)/content.tsx) for a reversible mod/config action's
+// success toast. Shared by run-action-dialog.tsx (approve/remove/restore/
+// ban) and categories-table.tsx (Featured/Archived visibility toggles).
+// ============================================================
+
+.toastBody {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    width: 100%;
+}
+
+// Quiet-action styling (Task 18): a bordered control-pill rather than
+// Bootstrap's `btn-outline-secondary`.
+.toastUndo {
+    @include board.control-pill;
+    flex-shrink: 0;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+}

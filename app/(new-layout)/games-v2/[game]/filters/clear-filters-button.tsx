@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTransition } from 'react';
+import styles from './clear-filters-button.module.scss';
 
 interface Props {
     variableKeys: string[];
@@ -30,7 +31,7 @@ export function ClearFiltersButton({ variableKeys }: Props) {
             type="button"
             onClick={onClick}
             disabled={isPending}
-            className="btn btn-sm btn-outline-secondary mt-2"
+            className={styles.clearBtn}
         >
             Clear filters
         </button>

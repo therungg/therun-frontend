@@ -1,0 +1,66 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/board' as board;
+
+// ============================================================
+// RunCard — the mod action card on a single run's manage page.
+// Drops raw Bootstrap (`border rounded p-3`, stock badges) for the
+// console's own vocabulary. See .interface-design/system.md.
+// ============================================================
+
+.card {
+    @include board.board-surface(dt.$spacing-xl);
+}
+
+.metaRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: dt.$spacing-xl;
+    margin-bottom: dt.$spacing-md;
+}
+
+.metaLabel {
+    @include board.board-eyebrow;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.metaValue {
+    @include board.mono-time;
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+}
+
+.metaText {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
+}
+
+.badgeSlot {
+    margin-left: auto;
+}
+
+.divider {
+    border: 0;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    margin: dt.$spacing-lg 0;
+}
+
+.actionsRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
+}
+
+.rejectedNote {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.actions {
+    display: flex;
+    gap: dt.$spacing-sm;
+    justify-content: flex-end;
+    margin-left: auto;
+}
