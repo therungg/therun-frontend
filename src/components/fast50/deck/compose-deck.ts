@@ -15,7 +15,7 @@ export interface ComposedSlide {
     custom?: CustomSlideContent;
 }
 
-const PRE_ANCHORS: SlideId[] = ['intro', 'roadmap'];
+const PRE_ANCHORS: SlideId[] = ['the-game', 'intro', 'roadmap'];
 const PRE_POOL: SlideId[] = [
     'grind',
     'one-shot',

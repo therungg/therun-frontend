@@ -610,5 +610,15 @@ export const fixturePrep: PrepSessionData = {
             caption: 'Watch the camera flick — blink and you miss it',
         },
     ],
+    // Optional local asset, same pattern as the demo clip above.
+    headshotUrl: '/fast50-demo-headshot.jpg',
+    story: {
+        gameBlurb: 'Beat the entire game — every temple, no glitches.',
+        casualTimeMs: 40 * 3_600_000,
+        hook: "Nobody outside this community knows his name. Inside it, he's the guy who invented the skip you're about to see.",
+        avgViewers: 40,
+        // Reuses the optional demo clip asset.
+        brollUrl: '/fast50-demo-clip.mp4',
+    },
     roadmapNotes: [{ splitIndex: 2, text: 'He invented this skip' }],
 };

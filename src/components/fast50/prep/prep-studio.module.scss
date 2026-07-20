@@ -114,6 +114,13 @@
     font-weight: 600;
 }
 
+.headshotPreview {
+    width: 120px;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
 .itemMeta {
     font-size: 12px;
     color: #8a93a3;
