@@ -69,20 +69,30 @@ In `manage/game-tab/categories-table.tsx`, mirror the groups-section
 pattern (drag handle `⠿` + up/down arrow buttons, optimistic reorder,
 revert-on-error toast):
 
-- Reordering is enabled per row and moves the row **within its group
-  scope** (rows sharing `groupId`, or all ungrouped rows). Drops/moves
-  across groups are ignored — group membership is changed by the existing
-  group control, not by drag.
+- Reordering is enabled on **Featured rows only** and moves the row
+  **within its Featured group scope** (Featured rows sharing `groupId`,
+  or all Featured ungrouped rows). Rationale: the categories table is a
+  flat list sorted Featured-first, and public order only exists for
+  Featured categories; renumbering only Featured rows keeps the persisted
+  order aligned with what's visible, and a later-featured category simply
+  appends via the sortOrder-0 sentinel. Non-Featured rows show no reorder
+  controls (title: "Feature a category to order it"). Drops/moves across
+  groups are ignored — group membership is changed by the existing group
+  control, not by drag.
 - On any move: recompute the scope's rows in new order, assign `1..N`,
   diff against previous `sortOrder`s, call `reorderCategoriesAction` with
   only the changed rows.
 - Rows show their current effective position implicitly by table order;
   the table's default sort switches to the same
-  `sortCategoriesForDisplay` semantics (within group scope) so the console
-  order matches the public order. Reorder controls are enabled ONLY when
-  the table's status filter is "All" — a move over a filtered list would
-  silently renumber hidden rows. The disabled state carries a title
-  explaining why ("Switch the filter to All to reorder").
+  the public ordering (Featured block first, then group rank with
+  ungrouped trailing, then `sortOrder` sentinel, then playtime) so the
+  console's Featured block reads top-to-bottom like the public page.
+  Reorder controls are enabled ONLY when the search query is empty and the
+  status filter is not "Archived" — a move over a filtered list would
+  silently renumber hidden rows. (Featured rows are all visible under
+  "All" and "Current"; archived rows are outside the public scope.) The
+  disabled state carries a title explaining why ("Clear the search to
+  reorder").
 
 ## 4. Non-goals
 
