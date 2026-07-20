@@ -662,7 +662,12 @@ export function CategoriesTable({
                                                 ) : (
                                                     <span
                                                         className="text-muted"
-                                                        title="Feature a category to order it"
+                                                        title={
+                                                            row.isMain &&
+                                                            !row.active
+                                                                ? 'Restore this category to order it'
+                                                                : 'Feature a category to order it'
+                                                        }
                                                     >
                                                         —
                                                     </span>
