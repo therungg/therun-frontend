@@ -3,10 +3,11 @@ import { FIXTURES, fixturePost } from '~src/lib/fast50/fixtures';
 import { composeDeck } from '../deck/compose-deck';
 
 describe('composeDeck pre', () => {
-    test('anchors always lead: intro then roadmap', () => {
+    test('anchors always lead: the-game, intro, roadmap', () => {
         const deck = composeDeck(FIXTURES.grinder);
-        expect(deck[0].id).toBe('intro');
-        expect(deck[1].id).toBe('roadmap');
+        expect(deck[0].id).toBe('the-game');
+        expect(deck[1].id).toBe('intro');
+        expect(deck[2].id).toBe('roadmap');
     });
     test('grinder leads with grind or one-shot, includes danger-zone', () => {
         const deck = composeDeck(FIXTURES.grinder);
@@ -25,7 +26,7 @@ describe('composeDeck pre', () => {
     });
     test('sparse degrades to anchors + few slides, never crashes', () => {
         const deck = composeDeck(FIXTURES.sparse);
-        expect(deck[0].id).toBe('intro');
+        expect(deck[0].id).toBe('the-game');
         expect(
             deck.filter((s) => !s.anchor && !s.overflow).length,
         ).toBeLessThanOrEqual(2);
