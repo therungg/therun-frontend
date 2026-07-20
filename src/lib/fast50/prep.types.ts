@@ -31,6 +31,15 @@ export interface PrepRoadmapNote {
     text: string;
 }
 
+// Narrator-voice material for the cold-open slides (game + runner intro).
+export interface PrepStory {
+    gameBlurb?: string; // what the run is, in civilian language
+    casualTimeMs?: number; // typical casual playthrough length
+    hook?: string; // narrator one-liner about the runner
+    avgViewers?: number; // the runner's usual stream audience
+    brollUrl?: string; // muted looping gameplay mp4
+}
+
 export type PrepSlideRef =
     | { kind: 'stat'; id: string }
     | { kind: 'custom'; id: string };
@@ -42,6 +51,8 @@ export interface PrepSessionData {
         facts: PrepFact[];
     };
     clips: PrepClip[];
+    headshotUrl?: string;
+    story?: PrepStory;
     roadmapNotes: PrepRoadmapNote[];
     deckOrder?: {
         pre?: PrepSlideRef[];
@@ -160,6 +171,22 @@ const parseNote = (raw: unknown): PrepRoadmapNote | undefined => {
     return { splitIndex: n.splitIndex, text };
 };
 
+const parseStory = (raw: unknown): PrepStory | undefined => {
+    const s = obj(raw);
+    const story: PrepStory = {};
+    const gameBlurb = str(s.gameBlurb);
+    if (gameBlurb) story.gameBlurb = gameBlurb;
+    const casualTimeMs = num(s.casualTimeMs);
+    if (casualTimeMs) story.casualTimeMs = casualTimeMs;
+    const hook = str(s.hook);
+    if (hook) story.hook = hook;
+    const avgViewers = num(s.avgViewers);
+    if (avgViewers) story.avgViewers = Math.round(avgViewers);
+    const brollUrl = str(s.brollUrl);
+    if (brollUrl) story.brollUrl = brollUrl;
+    return Object.keys(story).length > 0 ? story : undefined;
+};
+
 const parseRef = (raw: unknown): PrepSlideRef | undefined => {
     const r = obj(raw);
     const id = str(r.id);
@@ -198,6 +225,10 @@ export const parsePrepData = (raw: unknown): PrepSessionData => {
     };
     const goal = parseGoal(interview.goal);
     if (goal) data.interview.goal = goal;
+    const headshotUrl = str(root.headshotUrl);
+    if (headshotUrl) data.headshotUrl = headshotUrl;
+    const story = parseStory(root.story);
+    if (story) data.story = story;
     const order = obj(root.deckOrder);
     const pre = parseRefs(order.pre);
     const post = parseRefs(order.post);

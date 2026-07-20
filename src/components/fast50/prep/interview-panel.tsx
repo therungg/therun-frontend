@@ -1,18 +1,25 @@
 'use client';
 
 import React, { useState } from 'react';
-import { clipUploadUrlAction } from '~app/(fast50)/fast50/prep/actions';
+import { uploadUrlAction } from '~app/(fast50)/fast50/prep/actions';
 import { formatTimeMs } from '~src/components/live/commentary-drawer/format';
-import type { PrepFact, PrepSessionData } from '~src/lib/fast50/prep.types';
+import type {
+    PrepFact,
+    PrepSessionData,
+    PrepStory,
+} from '~src/lib/fast50/prep.types';
 import { parseTimeInput } from '~src/lib/fast50/time-input';
 import styles from './prep-studio.module.scss';
 
-const uploadClip = (
+const HEADSHOT_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_HEADSHOT_BYTES = 10 * 1024 * 1024;
+
+const uploadFile = (
     file: File,
     onProgress: (pct: number) => void,
 ): Promise<string> =>
-    clipUploadUrlAction(file.type, file.size).then(
-        ({ uploadUrl, videoUrl }) =>
+    uploadUrlAction(file.type, file.size).then(
+        ({ uploadUrl, url, videoUrl }) =>
             new Promise<string>((resolve, reject) => {
                 const xhr = new XMLHttpRequest();
                 xhr.open('PUT', uploadUrl);
@@ -24,7 +31,7 @@ const uploadClip = (
                 };
                 xhr.onload = () =>
                     xhr.status >= 200 && xhr.status < 300
-                        ? resolve(videoUrl)
+                        ? resolve(url ?? videoUrl)
                         : reject(new Error(`Upload failed (${xhr.status})`));
                 xhr.onerror = () => reject(new Error('Upload failed'));
                 xhr.send(file);
@@ -47,6 +54,10 @@ export const InterviewPanel = ({
     );
     const [uploadPct, setUploadPct] = useState<number | null>(null);
     const [uploadError, setUploadError] = useState<string | null>(null);
+    const [headshotPct, setHeadshotPct] = useState<number | null>(null);
+    const [headshotError, setHeadshotError] = useState<string | null>(null);
+    const [brollPct, setBrollPct] = useState<number | null>(null);
+    const [brollError, setBrollError] = useState<string | null>(null);
     const [noteSplit, setNoteSplit] = useState(0);
     const [noteText, setNoteText] = useState('');
 
@@ -64,7 +75,7 @@ export const InterviewPanel = ({
         setUploadError(null);
         setUploadPct(0);
         try {
-            const videoUrl = await uploadClip(file, setUploadPct);
+            const videoUrl = await uploadFile(file, setUploadPct);
             onChange({
                 ...data,
                 clips: [
@@ -80,6 +91,61 @@ export const InterviewPanel = ({
             setUploadError(e instanceof Error ? e.message : 'Upload failed');
         } finally {
             setUploadPct(null);
+        }
+    };
+
+    const setStory = (patch: Partial<PrepStory>) => {
+        const merged: PrepStory = { ...data.story, ...patch };
+        const story = Object.fromEntries(
+            Object.entries(merged).filter(
+                ([, v]) => v !== undefined && v !== '',
+            ),
+        ) as PrepStory;
+        if (Object.keys(story).length > 0) {
+            onChange({ ...data, story });
+        } else {
+            const { story: _removed, ...rest } = data;
+            onChange(rest);
+        }
+    };
+
+    const onBrollFile = async (file: File | undefined) => {
+        if (!file) return;
+        if (file.type !== 'video/mp4') {
+            setBrollError('mp4 only');
+            return;
+        }
+        setBrollError(null);
+        setBrollPct(0);
+        try {
+            const url = await uploadFile(file, setBrollPct);
+            setStory({ brollUrl: url });
+        } catch (e) {
+            setBrollError(e instanceof Error ? e.message : 'Upload failed');
+        } finally {
+            setBrollPct(null);
+        }
+    };
+
+    const onHeadshotFile = async (file: File | undefined) => {
+        if (!file) return;
+        if (!HEADSHOT_TYPES.includes(file.type)) {
+            setHeadshotError('jpg, png or webp only');
+            return;
+        }
+        if (file.size > MAX_HEADSHOT_BYTES) {
+            setHeadshotError('max 10MB');
+            return;
+        }
+        setHeadshotError(null);
+        setHeadshotPct(0);
+        try {
+            const url = await uploadFile(file, setHeadshotPct);
+            onChange({ ...data, headshotUrl: url });
+        } catch (e) {
+            setHeadshotError(e instanceof Error ? e.message : 'Upload failed');
+        } finally {
+            setHeadshotPct(null);
         }
     };
 
@@ -133,6 +199,145 @@ export const InterviewPanel = ({
                     </span>
                 ) : null}
             </label>
+
+            <div className={styles.paneTitle}>Runner headshot</div>
+            {data.headshotUrl ? (
+                <div className={styles.itemCard}>
+                    {/* Plain img: headshots live on the media CDN, which is
+                        not in next/image remotePatterns. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                        src={data.headshotUrl}
+                        alt="Runner headshot"
+                        className={styles.headshotPreview}
+                    />
+                    <button
+                        type="button"
+                        className={styles.iconButton}
+                        onClick={() => {
+                            const { headshotUrl: _removed, ...rest } = data;
+                            onChange(rest);
+                        }}
+                    >
+                        remove
+                    </button>
+                </div>
+            ) : (
+                <label className={styles.field}>
+                    Upload photo (jpg / png / webp, shown on the intro slide)
+                    <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        onChange={(e) => onHeadshotFile(e.target.files?.[0])}
+                    />
+                    {headshotPct !== null ? (
+                        <span className={styles.itemMeta}>
+                            uploading… {headshotPct}%
+                        </span>
+                    ) : null}
+                    {headshotError ? (
+                        <span className={styles.error}>{headshotError}</span>
+                    ) : null}
+                </label>
+            )}
+
+            <div className={styles.paneTitle}>Story (cold open)</div>
+            <label className={styles.field}>
+                What is the run, in civilian language?
+                <input
+                    type="text"
+                    placeholder="e.g. Beat the entire game. No glitches. One sitting."
+                    value={data.story?.gameBlurb ?? ''}
+                    onChange={(e) =>
+                        setStory({ gameBlurb: e.target.value || undefined })
+                    }
+                />
+            </label>
+            <label className={styles.field}>
+                Casual playthrough time (hours)
+                <input
+                    type="number"
+                    min={0}
+                    step={0.5}
+                    placeholder="40"
+                    value={
+                        data.story?.casualTimeMs
+                            ? data.story.casualTimeMs / 3_600_000
+                            : ''
+                    }
+                    onChange={(e) => {
+                        const hours = Number.parseFloat(e.target.value);
+                        setStory({
+                            casualTimeMs:
+                                Number.isFinite(hours) && hours > 0
+                                    ? Math.round(hours * 3_600_000)
+                                    : undefined,
+                        });
+                    }}
+                />
+            </label>
+            <label className={styles.field}>
+                Hook line (your words, not the runner's)
+                <textarea
+                    rows={2}
+                    placeholder="e.g. Nobody outside this community knows his name. Inside it, he invented the skip you're about to see."
+                    value={data.story?.hook ?? ''}
+                    onChange={(e) =>
+                        setStory({ hook: e.target.value || undefined })
+                    }
+                />
+            </label>
+            <label className={styles.field}>
+                Average viewers
+                <input
+                    type="number"
+                    min={0}
+                    placeholder="40"
+                    value={data.story?.avgViewers ?? ''}
+                    onChange={(e) => {
+                        const n = Number.parseInt(e.target.value, 10);
+                        setStory({
+                            avgViewers:
+                                Number.isFinite(n) && n > 0 ? n : undefined,
+                        });
+                    }}
+                />
+            </label>
+            {data.story?.brollUrl ? (
+                <div className={styles.itemCard}>
+                    <span className={styles.itemLabel}>Gameplay b-roll</span>
+                    <video
+                        src={data.story.brollUrl}
+                        controls
+                        muted
+                        height={120}
+                    />
+                    <button
+                        type="button"
+                        className={styles.iconButton}
+                        onClick={() => setStory({ brollUrl: undefined })}
+                    >
+                        remove
+                    </button>
+                </div>
+            ) : (
+                <label className={styles.field}>
+                    Gameplay b-roll (mp4, loops muted behind the game slide)
+                    <input
+                        type="file"
+                        accept="video/mp4"
+                        onChange={(e) => onBrollFile(e.target.files?.[0])}
+                    />
+                    {brollPct !== null ? (
+                        <span className={styles.itemMeta}>
+                            uploading… {brollPct}%
+                        </span>
+                    ) : null}
+                    {brollError ? (
+                        <span className={styles.error}>{brollError}</span>
+                    ) : null}
+                </label>
+            )}
 
             <div className={styles.paneTitle}>Quotes (Runner's Words)</div>
             {data.interview.quotes.map((q, i) => (
