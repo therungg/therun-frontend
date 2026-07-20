@@ -44,6 +44,18 @@ describe('derivePlatforms', () => {
         }));
         expect(derivePlatforms([], many)).toBe('A, B, C, D +2');
     });
+    it('exactly 4 IGDB platforms join with no +N marker', () => {
+        const four = ['A', 'B', 'C', 'D'].map((n) => ({
+            name: n,
+            abbreviation: n,
+        }));
+        expect(derivePlatforms([], four)).toBe('A, B, C, D');
+    });
+    it('falls back to name when abbreviation is an empty string', () => {
+        expect(
+            derivePlatforms([], [{ name: 'Super Nintendo', abbreviation: '' }]),
+        ).toBe('Super Nintendo');
+    });
     it('returns null when both sources are empty', () => {
         expect(derivePlatforms([], [])).toBeNull();
     });
@@ -90,6 +102,9 @@ describe('deriveGenres', () => {
     });
     it('caps at three without overflow marker', () => {
         expect(deriveGenres(['A', 'B', 'C', 'D'])).toBe('A, B, C');
+    });
+    it('exactly three genres joins all with no truncation', () => {
+        expect(deriveGenres(['A', 'B', 'C'])).toBe('A, B, C');
     });
     it('returns null when empty', () => {
         expect(deriveGenres([])).toBeNull();

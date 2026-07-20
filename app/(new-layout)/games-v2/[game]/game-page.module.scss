@@ -1,17 +1,6 @@
 @use '../../styles/design-tokens' as dt;
 @use '../../styles/board' as board;
 
-// ---- Header -------------------------------------------------
-.metaLine {
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-
-    span {
-        @include board.mono-time;
-        color: var(--bs-secondary-color);
-    }
-}
-
 // ---- Control band ------------------------------------------
 .band {
     @include board.board-glass;
@@ -292,10 +281,6 @@
     margin-left: auto;
     font-size: dt.$font-size-sm;
     color: var(--bs-tertiary-color);
-}
-
-.eyebrow {
-    @include board.board-eyebrow;
 }
 
 .quietLink {

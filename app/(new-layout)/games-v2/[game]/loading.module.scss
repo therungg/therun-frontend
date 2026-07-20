@@ -2,39 +2,36 @@
 @use '../../styles/board' as board;
 
 // ============================================================
-// Route-level loading skeleton for the board page. Geometry
-// mirrors game-page.module.scss's hero/band/grid — see there for
-// the real dimensions this predicts (96×128 hero cover, the
-// main+340px rail grid, board-table rows).
+// Route-level loading skeleton for the board page. Hero geometry
+// mirrors the flat identity band in game-page.module.scss (.hero/
+// .heroTop/.factsGrid/.heroStrip) — see there for the real
+// dimensions this predicts (96×128 cover, 300px facts column,
+// bottom stats strip); band/grid mirror this file's own board.
 // ============================================================
 
-// ---- Hero -----------------------------------------------------
+// ---- Hero (flat identity band) --------------------------------
 .hero {
-    @include board.board-page-columns;
-    position: relative;
-    border-radius: dt.$radius-xl;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    border-bottom: 1px solid var(--bs-border-color);
     margin-bottom: dt.$spacing-lg;
-    padding: dt.$spacing-3xl;
-
-    @media (max-width: 991.98px) {
-        padding: dt.$spacing-xl;
-        row-gap: dt.$spacing-xl;
-    }
 }
 
-.heroMain {
+.heroTop {
     display: flex;
     gap: dt.$spacing-xl;
-    align-items: flex-start;
-    min-width: 0;
+    align-items: stretch;
+    padding: dt.$spacing-2xl 0 dt.$spacing-xl;
+
+    @media (max-width: 991.98px) {
+        flex-wrap: wrap;
+        padding: dt.$spacing-xl 0 dt.$spacing-lg;
+    }
 }
 
 .cover {
     @include board.board-skeleton;
     width: 96px;
     height: 128px;
-    border-radius: dt.$radius-lg;
+    border-radius: dt.$radius-md;
     flex-shrink: 0;
 
     @media (max-width: 991.98px) {
@@ -53,15 +50,22 @@
 
 .titleBar {
     @include board.board-skeleton;
-    height: dt.$font-size-hero-title;
+    height: 2rem;
+    width: 40%;
+    border-radius: dt.$radius-sm;
+}
+
+.summaryLine {
+    @include board.board-skeleton;
+    height: 0.9rem;
     width: 60%;
     border-radius: dt.$radius-sm;
 }
 
-.metaBar {
+.summaryLineShort {
     @include board.board-skeleton;
-    height: dt.$font-size-sm;
-    width: 40%;
+    height: 0.9rem;
+    width: 50%;
     border-radius: dt.$radius-sm;
 }
 
@@ -78,27 +82,57 @@
     border-radius: dt.$badge-radius;
 }
 
-.crown {
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-sm;
+// IGDB facts column skeleton — see .factsGrid/.fact in
+// game-page.module.scss.
+.factsGrid {
+    width: 300px;
+    flex-shrink: 0;
+    border-left: 1px solid var(--bs-border-color);
+    padding-left: dt.$spacing-2xl;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: dt.$spacing-lg dt.$spacing-xl;
+    align-content: center;
 
     @media (max-width: 991.98px) {
         display: none;
     }
 }
 
-.eyebrowBar {
+.fact {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    min-width: 0;
+}
+
+.factLabel {
     @include board.board-skeleton;
     height: dt.$font-size-2xs;
-    width: 70%;
+    width: 60%;
     border-radius: dt.$radius-sm;
 }
 
-.crownTimeBar {
+.factValue {
     @include board.board-skeleton;
-    height: dt.$font-size-hero-time;
-    width: 55%;
+    height: dt.$font-size-sm;
+    width: 80%;
+    border-radius: dt.$radius-sm;
+}
+
+// Bottom strip: site stats bars over a top hairline.
+.heroStrip {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-3xl;
+    border-top: 1px solid var(--bs-border-color);
+    padding: dt.$spacing-md 0;
+}
+
+.statBar {
+    @include board.board-skeleton;
+    width: 5rem;
+    height: 1.1rem;
     border-radius: dt.$radius-sm;
 }
 

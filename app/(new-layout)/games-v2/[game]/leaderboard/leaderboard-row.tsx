@@ -249,11 +249,11 @@ export function LeaderboardRow({
                     <CountryFlag country={entry.country} />
                     {entry.rank === 1 &&
                         entry.verificationStatus === 'verified' && (
-                            <span
-                                className={styles.wrChip}
-                                aria-label="World record"
-                            >
-                                WR
+                            <span className={styles.wrChip}>
+                                <span className="visually-hidden">
+                                    World record
+                                </span>
+                                <span aria-hidden="true">WR</span>
                             </span>
                         )}
                 </span>
