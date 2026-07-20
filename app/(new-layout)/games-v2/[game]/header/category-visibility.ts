@@ -2,6 +2,7 @@ import type {
     ResolvedCategory,
     ResolvedGroup,
 } from '../../../../../types/leaderboards.types';
+import { sortCategoriesForDisplay } from '../category-sort';
 
 export interface CategorySection {
     id: number | null;
@@ -13,21 +14,19 @@ export interface CategoryVisibility {
     sections: CategorySection[];
 }
 
-function byPlaytimeDesc(a: ResolvedCategory, b: ResolvedCategory): number {
-    return (b.totalRunTime ?? 0) - (a.totalRunTime ?? 0);
-}
-
 /**
  * Splits the pill band into labeled group sections. Callers pass
  * Featured-only categories — the band never lists anything else (site
  * policy: non-Featured categories are not publicly viewable, so there is
- * no fallback set and no overflow/"More…" affordance anymore).
+ * no fallback set and no overflow/"More…" affordance anymore). Pills within
+ * a section order by explicit sortOrder first (unset last), playtime
+ * tiebreak.
  */
 export function computeCategoryVisibility(
     categories: ResolvedCategory[],
     groups: ResolvedGroup[],
 ): CategoryVisibility {
-    const visible = [...categories].sort(byPlaytimeDesc);
+    const visible = sortCategoriesForDisplay(categories);
 
     const usedGroupIds = new Set(
         visible.map((c) => c.groupId ?? null).filter((id) => id != null),
@@ -51,13 +50,13 @@ export function computeCategoryVisibility(
     const sections: CategorySection[] = groups.map((g) => ({
         id: g.id,
         name: g.name,
-        pills: (byGroup.get(g.id) ?? []).sort(byPlaytimeDesc),
+        pills: sortCategoriesForDisplay(byGroup.get(g.id) ?? []),
     }));
     if (ungrouped.length > 0) {
         sections.push({
             id: null,
             name: null,
-            pills: ungrouped.sort(byPlaytimeDesc),
+            pills: sortCategoriesForDisplay(ungrouped),
         });
     }
     return { sections };
