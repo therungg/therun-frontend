@@ -26,11 +26,13 @@ export async function assignCategoryGroupAction(
     }
 
     try {
+        // A row moved to another group appends rather than keeping its old
+        // position: sortOrder: 0 re-enters it via the unset sentinel.
         const result = await updateCategory(
             user.id,
             input.gameId,
             input.categoryId,
-            { groupId: input.groupId },
+            { groupId: input.groupId, sortOrder: 0 },
         );
         revalidateTag(`game-cats:${input.gameId}`, 'minutes');
         return { result };

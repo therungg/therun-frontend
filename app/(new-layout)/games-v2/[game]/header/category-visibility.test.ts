@@ -106,6 +106,21 @@ describe('computeCategoryVisibility', () => {
         expect(sections[0].pills.map((c) => c.id)).toEqual([2, 1]);
     });
 
+    it('applies sortOrder within each group section, over playtime', () => {
+        const groups: ResolvedGroup[] = [
+            { id: 10, name: 'Main Game', sortOrder: 0 },
+            { id: 20, name: 'DLC', sortOrder: 1 },
+        ];
+        const categories = [
+            cat({ id: 1, groupId: 10, sortOrder: 2, totalRunTime: 999 }),
+            cat({ id: 2, groupId: 10, sortOrder: 1, totalRunTime: 5 }),
+            cat({ id: 3, groupId: 20, sortOrder: 1 }),
+        ];
+        const result = computeCategoryVisibility(categories, groups);
+        expect(result.sections[0].pills.map((c) => c.id)).toEqual([2, 1]);
+        expect(result.sections[1].pills.map((c) => c.id)).toEqual([3]);
+    });
+
     it('treats a single group with all categories in it as trivial', () => {
         const groups: ResolvedGroup[] = [
             { id: 10, name: 'Main Game', sortOrder: 0 },

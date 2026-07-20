@@ -33,6 +33,13 @@ export async function reorderCategoriesAction(
     if (input.changes.length === 0) {
         return { result: { reordered: false } };
     }
+    if (
+        input.changes.some(
+            (c) => !Number.isInteger(c.sortOrder) || c.sortOrder < 1,
+        )
+    ) {
+        return { error: 'Invalid sort order.', applied: [] };
+    }
 
     const applied: ReorderChange[] = [];
     try {

@@ -79,8 +79,12 @@ export function CategoriesTable({
     }, [filter, query]);
 
     const groupRank = useMemo(() => {
+        // Rank by array position, not g.sortOrder: `groups` is already in
+        // display order (including after optimistic reorders), while
+        // sortOrder can be stale post-reorder or all-0 for never-reordered
+        // groups, which would tie and interleave categories across groups.
         const m = new Map<number, number>();
-        groups.forEach((g) => m.set(g.id, g.sortOrder));
+        groups.forEach((g, i) => m.set(g.id, i));
         return m;
     }, [groups]);
 

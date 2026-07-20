@@ -48,6 +48,20 @@ describe('computeReorderChanges', () => {
         expect(res.orderedIds).toEqual([10, 20]);
         expect(res.changes).toEqual([]);
     });
+    it('heals messy stale sortOrder numbers on a move, diffing unchanged rows away', () => {
+        const res = computeReorderChanges(
+            [row(10, 3), row(20, 0), row(30, 9)],
+            0,
+            2,
+        );
+        expect(res.orderedIds).toEqual([20, 30, 10]);
+        // Every row is renumbered 1..N, but row 10 lands back on its stale
+        // value (3) by coincidence, so it's diffed out of `changes`.
+        expect(res.changes).toEqual([
+            { categoryId: 20, sortOrder: 1 },
+            { categoryId: 30, sortOrder: 2 },
+        ]);
+    });
     it('out-of-range indices return the scope unchanged', () => {
         const res = computeReorderChanges([row(10, 1)], 0, 5);
         expect(res.orderedIds).toEqual([10]);
