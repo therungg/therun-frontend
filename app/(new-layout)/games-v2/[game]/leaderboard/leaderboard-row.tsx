@@ -247,6 +247,15 @@ export function LeaderboardRow({
                     />
                     <UserLink username={entry.runnerName} url={undefined} />
                     <CountryFlag country={entry.country} />
+                    {entry.rank === 1 &&
+                        entry.verificationStatus === 'verified' && (
+                            <span
+                                className={styles.wrChip}
+                                aria-label="World record"
+                            >
+                                WR
+                            </span>
+                        )}
                 </span>
             </td>
             {primaryVisible && time(timingValue(primary.key), false, true)}
