@@ -126,65 +126,29 @@
     margin-block: dt.$spacing-lg;
 }
 
-// ---- Hero ("the crown") -------------------------------------
+// ---- Hero (game identity band — flat, category-free) ----------
 .hero {
-    position: relative;
-    overflow: hidden;
-    border-radius: dt.$radius-xl;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    border-bottom: 1px solid var(--bs-border-color);
     margin-bottom: dt.$spacing-lg;
-    animation: heroEnter dt.$transition-slow both;
 }
 
-.heroBackdrop {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: blur(80px) saturate(140%);
-    transform: scale(1.5);
-    opacity: 0.5;
-}
-
-.heroScrim {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-        to bottom,
-        color-mix(in srgb, var(--bs-body-bg) 25%, transparent),
-        color-mix(in srgb, var(--bs-body-bg) 88%, transparent)
-    );
-}
-
-.heroContent {
-    @include board.board-page-columns;
-    position: relative;
-    padding: dt.$spacing-3xl;
+.heroTop {
+    display: flex;
+    gap: dt.$spacing-xl;
+    align-items: stretch;
+    padding: dt.$spacing-2xl 0 dt.$spacing-xl;
 
     @media (max-width: 991.98px) {
-        padding: dt.$spacing-xl;
-        row-gap: dt.$spacing-xl;
+        flex-wrap: wrap;
+        padding: dt.$spacing-xl 0 dt.$spacing-lg;
     }
 }
 
-.heroMain {
-    display: flex;
-    gap: dt.$spacing-xl;
-    align-items: flex-start;
-    min-width: 0;
-}
-
-// Exception to the popover-shadow-md unification: this is a large
-// (96×128px) piece of game art sitting directly over the ambient hero
-// backdrop, not a popover — it needs the heavier lift to read as a
-// distinct object over the blurred art behind it. See system.md.
 .heroCover {
     width: 96px;
     height: 128px;
-    border-radius: dt.$radius-lg;
+    border-radius: dt.$radius-md;
     object-fit: cover;
-    box-shadow: dt.$shadow-lg;
     flex-shrink: 0;
 
     @media (max-width: 991.98px) {
@@ -194,7 +158,11 @@
 }
 
 .heroText {
+    flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
 }
 
 .heroTitle {
@@ -202,11 +170,22 @@
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1.1;
-    margin: 0 0 dt.$spacing-xs;
+    margin: 0;
 
     @media (max-width: 991.98px) {
         font-size: dt.$font-size-2xl;
     }
+}
+
+.heroSummary {
+    margin: 0;
+    max-width: 66ch;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .heroActions {
@@ -214,7 +193,8 @@
     align-items: center;
     gap: dt.$spacing-sm;
     flex-wrap: wrap;
-    margin-top: dt.$spacing-lg;
+    margin-top: auto;
+    padding-top: dt.$spacing-sm;
 }
 
 // primary action — the hero's "Submit a run" / the empty-state's
@@ -223,91 +203,95 @@
     @include board.board-btn-primary;
 }
 
-// quiet action over the ambience — glass instead of outline
-.glassChip {
-    @include board.board-glass;
-    color: var(--bs-emphasis-color);
+// quiet action chip (Discord / Manage) — outline, no glass
+.quietChip {
+    display: inline-block;
+    padding: dt.$badge-padding;
+    border: 1px solid var(--bs-border-color);
     border-radius: dt.$badge-radius;
+    font-size: dt.$font-size-sm;
+    font-weight: dt.$label-font-weight;
+    color: var(--bs-secondary-color);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color dt.$transition-fast,
+        border-color dt.$transition-fast;
 
     &:hover {
         color: var(--bs-emphasis-color);
-        background: color-mix(in srgb, var(--bs-body-bg) 84%, transparent);
+        border-color: var(--bs-secondary-color);
     }
 }
 
-.crown {
-    animation: fadeIn dt.$transition-fast both;
-}
-
-.crownHead {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: dt.$spacing-xs;
-    gap: dt.$spacing-sm;
-
-    // The History trigger keeps its width; the eyebrow gives way and
-    // truncates (see .crownEyebrow below).
-    .quietLink {
-        flex-shrink: 0;
-    }
-}
-
-// Crown-specific eyebrow modifier: truncates a long "World record —
-// Category · Subcategory" scope line with an ellipsis instead of wrapping
-// or overflowing past the History button. Full text still lives in the
-// element's `title`. Scoped here (not on the shared .eyebrow class, which
-// many other short labels across this module reuse).
-.crownEyebrow {
-    display: block;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.crownTimeRow {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: dt.$spacing-sm;
-}
-
-.crownTime {
-    @include board.mono-time;
-    font-size: dt.$font-size-hero-time;
-    font-weight: 700;
-    line-height: 1.1;
-    color: dt.$accent-gold;
-
-    a {
-        color: inherit;
-
-        &:hover {
-            text-decoration: underline;
-        }
-    }
+// IGDB facts grid — the "spec sheet": label-over-value pairs behind a
+// hairline. Missing facts simply aren't rendered; the whole grid is
+// omitted when empty (see game-hero.tsx).
+.factsGrid {
+    width: 300px;
+    flex-shrink: 0;
+    margin: 0;
+    border-left: 1px solid var(--bs-border-color);
+    padding-left: dt.$spacing-2xl;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: dt.$spacing-lg dt.$spacing-xl;
+    align-content: center;
 
     @media (max-width: 991.98px) {
-        font-size: dt.$font-size-display;
+        width: 100%;
+        border-left: 0;
+        padding-left: 0;
+        border-top: 1px solid var(--bs-border-color);
+        padding-top: dt.$spacing-lg;
     }
 }
 
-// Honest caveat when the crowned run hasn't cleared moderation yet —
-// never claim WR-verified status the entry doesn't have.
-.crownPending {
-    @include board.board-pill(dt.$accent-amber);
+.fact {
+    min-width: 0;
+
+    dt {
+        @include board.board-eyebrow;
+    }
+
+    dd {
+        margin: 2px 0 0;
+        font-size: dt.$font-size-sm;
+        font-weight: 600;
+        color: var(--bs-emphasis-color);
+        overflow-wrap: break-word;
+    }
 }
 
-.crownMeta {
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
+// Bottom strip: site stats + series note over a top hairline.
+.heroStrip {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-3xl;
+    flex-wrap: wrap;
+    border-top: 1px solid var(--bs-border-color);
+    padding: dt.$spacing-md 0;
 }
 
-.crownEmpty {
+.heroStat {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+
+    b {
+        font-size: dt.$font-size-md;
+        font-weight: 650;
+        font-variant-numeric: tabular-nums;
+    }
+
+    span {
+        @include board.board-eyebrow;
+    }
+}
+
+.seriesNote {
+    margin-left: auto;
     font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-    max-width: 22rem;
+    color: var(--bs-tertiary-color);
 }
 
 .eyebrow {
@@ -316,33 +300,6 @@
 
 .quietLink {
     @include board.board-quiet-link;
-}
-
-@keyframes heroEnter {
-    from {
-        opacity: 0;
-        transform: translateY(12px);
-    }
-    to {
-        opacity: 1;
-        transform: none;
-    }
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .hero,
-    .crown {
-        animation: none;
-    }
 }
 
 // ---- Page grid ----------------------------------------------

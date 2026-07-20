@@ -43,9 +43,8 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                 <GameHero
                     game={data.game}
                     stats={data.quickStats}
-                    category={null}
-                    wrEntry={null}
-                    boardIsEmpty={false}
+                    gameMeta={data.gameMeta}
+                    categorySlug={null}
                     subcategoryKey=""
                     canManage={canManage}
                     canModerate={canManageRuns}
@@ -72,10 +71,6 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
               .sort()
               .map((k) => `${k}=${data.activeFilters.subcategoryValues[k]}`)
               .join('|');
-    const subcategoryLabel = formatSubcategoryKey(
-        subcategoryKey,
-        data.variables,
-    );
     const showMilliseconds = data.selectedCategory.showMilliseconds ?? true;
     // Restricts an entry's own `variables` map down to subcategory-role
     // keys, so row-level "Correct this time" links carry that row's own
@@ -102,15 +97,12 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                 <GameHero
                     game={data.game}
                     stats={data.quickStats}
-                    category={data.selectedCategory}
-                    wrEntry={data.wrEntry}
-                    boardIsEmpty={data.boardIsEmpty}
+                    gameMeta={data.gameMeta}
+                    categorySlug={data.selectedCategory.name}
                     subcategoryKey={subcategoryKey}
-                    subcategoryLabel={subcategoryLabel}
                     canManage={canManage}
                     canModerate={canManageRuns}
                     claim={claim}
-                    showMilliseconds={showMilliseconds}
                 />
                 <div className={styles.band}>
                     <div className={styles.bandRow}>
