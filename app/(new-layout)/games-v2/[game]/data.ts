@@ -57,6 +57,7 @@ export async function loadGamePageData(
                 display: '',
                 primaryTiming: 'rt',
                 archived: false,
+                sortOrder: 0,
             },
             categories,
             groups: resolved.groups,

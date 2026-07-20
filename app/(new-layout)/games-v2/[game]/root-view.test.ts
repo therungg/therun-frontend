@@ -9,6 +9,7 @@ function cat(over: Partial<ResolvedCategory>): ResolvedCategory {
         display: 'Any%',
         primaryTiming: 'rt',
         archived: false,
+        sortOrder: 0,
         isMain: true,
         ...over,
     };

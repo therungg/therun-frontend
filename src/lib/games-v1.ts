@@ -119,6 +119,7 @@ interface PageDataCategoryFlags {
     isMain?: boolean;
     active?: boolean | null;
     archived?: boolean | null;
+    sortOrder?: number | null;
 }
 
 interface PageDataGroup {
@@ -156,12 +157,16 @@ export async function resolveCategory(
         ),
     ]);
 
-    const flagsById = new Map<number, { isMain: boolean; archived: boolean }>();
+    const flagsById = new Map<
+        number,
+        { isMain: boolean; archived: boolean; sortOrder: number }
+    >();
     const groupByCatId = new Map<number, { id: number; name: string }>();
     for (const c of pageDataResp.result?.ungroupedCategories ?? []) {
         flagsById.set(c.id, {
             isMain: c.isMain ?? false,
             archived: normalizeArchived(c),
+            sortOrder: c.sortOrder ?? 0,
         });
     }
     for (const g of pageDataResp.result?.groups ?? []) {
@@ -169,6 +174,7 @@ export async function resolveCategory(
             flagsById.set(c.id, {
                 isMain: c.isMain ?? false,
                 archived: normalizeArchived(c),
+                sortOrder: c.sortOrder ?? 0,
             });
             groupByCatId.set(c.id, { id: g.id, name: g.name });
         }
@@ -199,6 +205,7 @@ export async function resolveCategory(
             sortAscending: r.sort_ascending ?? true,
             isMain: flags?.isMain ?? false,
             archived: flags?.archived ?? false,
+            sortOrder: flags?.sortOrder ?? 0,
             groupId: grp?.id ?? null,
             groupName: grp?.name ?? null,
             totalRunTime: r.total_run_time,
