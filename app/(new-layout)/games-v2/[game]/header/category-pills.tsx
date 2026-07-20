@@ -8,7 +8,6 @@ import type {
 } from '../../../../../types/leaderboards.types';
 import { useBoardNav } from '../filters/use-board-nav';
 import styles from '../game-page.module.scss';
-import { CategoryOverflow } from './category-overflow';
 import { computeCategoryVisibility } from './category-visibility';
 
 const PENDING_PREFIX = 'category:';
@@ -62,25 +61,19 @@ export function CategoryPills({
         );
     };
 
-    const { sections, overflow } = useMemo(
-        () =>
-            computeCategoryVisibility(categories, groups, selectedCategoryName),
-        [categories, groups, selectedCategoryName],
+    const { sections } = useMemo(
+        () => computeCategoryVisibility(categories, groups),
+        [categories, groups],
     );
 
     if (sections.length === 0) return null;
-    if (
-        sections.length === 1 &&
-        sections[0].pills.length <= 1 &&
-        overflow.length === 0
-    ) {
+    if (sections.length === 1 && sections[0].pills.length <= 1) {
         return null;
     }
 
     return (
         <nav aria-label="Category" aria-busy={isPending || undefined}>
             {sections.map((section, idx) => {
-                const isLast = idx === sections.length - 1;
                 return (
                     <div
                         key={section.id ?? `ungrouped-${idx}`}
@@ -97,12 +90,6 @@ export function CategoryPills({
                             </small>
                         ) : (
                             section.pills.map(renderPill)
-                        )}
-                        {isLast && (
-                            <CategoryOverflow
-                                categories={overflow}
-                                onSelect={onSelect}
-                            />
                         )}
                     </div>
                 );

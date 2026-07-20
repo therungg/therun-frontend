@@ -35,9 +35,13 @@ export async function loadGamePageData(
     if (!game) return null;
 
     const resolved = await resolveCategory(game.id, sp.category);
-    const categories = resolved.categories.filter((c) => !c.archived);
+    const categories = resolved.categories.filter(
+        (c) => !c.archived && c.isMain,
+    );
     const selected =
-        resolved.selected && !resolved.selected.archived
+        resolved.selected &&
+        !resolved.selected.archived &&
+        resolved.selected.isMain
             ? resolved.selected
             : (categories[0] ?? null);
     if (!selected) {
