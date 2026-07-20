@@ -76,7 +76,7 @@
     color: var(--bs-secondary-color);
     // Runner link must stay clickable above the card's stretched link.
     position: relative;
-    z-index: 1;
+    z-index: 2;
 }
 
 .cardWhen {
@@ -91,7 +91,7 @@
 
 .cardEmptyLink {
     position: relative;
-    z-index: 1;
+    z-index: 2;
 }
 
 .emptyState {
