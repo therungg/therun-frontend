@@ -1,3 +1,4 @@
+import { EMPTY_GAME_METADATA, getGameMetadata } from '~src/lib/game-mgmt';
 import {
     getQuickStats,
     getRecentPbs,
@@ -39,6 +40,10 @@ export async function loadGamePageData(
             ? resolved.selected
             : (categories[0] ?? null);
     if (!selected) {
+        const [quickStats, gameMeta] = await Promise.all([
+            getQuickStats(game.id),
+            getGameMetadata(game.id).catch(() => EMPTY_GAME_METADATA),
+        ]);
         return {
             game,
             selectedCategory: {
@@ -56,7 +61,8 @@ export async function loadGamePageData(
             invalidCombination: null,
             wrEntry: null,
             boardIsEmpty: false,
-            quickStats: await getQuickStats(game.id),
+            quickStats,
+            gameMeta,
             recentPbs: [],
             yourRuns: [],
             sessionUsername,
@@ -117,8 +123,8 @@ export async function loadGamePageData(
         varFilters,
     };
 
-    const [boardResult, quickStats, recentPbs, rawYourRuns] = await Promise.all(
-        [
+    const [boardResult, quickStats, recentPbs, rawYourRuns, gameMeta] =
+        await Promise.all([
             getLeaderboard({ ...baseQuery, timing: selected.primaryTiming }),
             getQuickStats(game.id).catch(() => ({
                 totalRunTime: 0,
@@ -130,8 +136,8 @@ export async function loadGamePageData(
             sessionUsername
                 ? getUserRankingsByName(sessionUsername).catch(() => [])
                 : Promise.resolve([]),
-        ],
-    );
+            getGameMetadata(game.id).catch(() => EMPTY_GAME_METADATA),
+        ]);
     // Best-per-board only — see `getUserRankingsByName` and the
     // `yourRuns` field doc on GamePageData for the honest-scope note.
     const yourRuns = rawYourRuns.filter((r) => r.gameSlug === game.name);
@@ -177,6 +183,7 @@ export async function loadGamePageData(
         wrEntry,
         boardIsEmpty,
         quickStats,
+        gameMeta,
         recentPbs,
         yourRuns,
         sessionUsername,
