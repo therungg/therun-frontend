@@ -24,6 +24,8 @@ export interface ResolvedCategory {
     isMain?: boolean;
     /** Normalized from API archived/active (see src/lib/archived-flag.ts). Archived = invisible everywhere. */
     archived: boolean;
+    /** Moderator-set display order within its group scope; 0 = unset (sorts last, playtime tiebreak). */
+    sortOrder: number;
     groupId?: number | null;
     groupName?: string | null;
     totalRunTime?: number;

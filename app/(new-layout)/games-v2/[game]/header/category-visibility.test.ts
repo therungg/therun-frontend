@@ -13,6 +13,7 @@ function cat(
         display: `Cat ${overrides.id}`,
         primaryTiming: 'rt',
         archived: false,
+        sortOrder: 0,
         isMain: true,
         ...overrides,
     };

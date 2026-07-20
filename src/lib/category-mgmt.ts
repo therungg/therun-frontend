@@ -153,6 +153,7 @@ export interface UpdateCategoryBody {
     showMilliseconds?: boolean;
     requireVideo?: boolean;
     requireVideoTopN?: number | null;
+    sortOrder?: number;
 }
 
 export async function updateCategory(
