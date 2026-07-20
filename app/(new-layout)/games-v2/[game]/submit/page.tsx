@@ -116,9 +116,11 @@ export default async function SubmitRunPage({
     }
 
     const { categories, groups } = await resolveCategory(game.id);
-    const activeCategories = categories.filter((c) => !c.archived);
+    const featuredCategories = categories.filter(
+        (c) => !c.archived && c.isMain,
+    );
 
-    if (activeCategories.length === 0) {
+    if (featuredCategories.length === 0) {
         return (
             <div className={styles.page}>
                 {header}
@@ -143,7 +145,7 @@ export default async function SubmitRunPage({
                         name: game.name,
                         display: game.display,
                     }}
-                    categories={activeCategories}
+                    categories={featuredCategories}
                     groups={groups}
                     initialMode={initialMode}
                     initialCategorySlug={sp.category}
