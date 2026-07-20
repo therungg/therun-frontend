@@ -72,7 +72,9 @@ Rebuild `GameHero` as a flat band (`.b-band` in the mockup):
   today's header minus the crown.
 
 Props removed: `wrEntry`, `boardIsEmpty`, `subcategoryLabel`,
-`showMilliseconds` (crown-only concerns). The full `category` object narrows
+`showMilliseconds` (crown-only concerns — the header no longer renders any
+time; `showMilliseconds` itself lives on in the table rows and moves to the
+board controls for the WR-history drawer, see section 3). The full `category` object narrows
 to `categorySlug: string | null`, kept together with `subcategoryKey` solely
 to build the submit href (link context, not displayed category info).
 
