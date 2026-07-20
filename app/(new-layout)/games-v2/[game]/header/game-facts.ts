@@ -22,7 +22,7 @@ export function derivePlatforms(
 ): string | null {
     if (modPlatforms.length > 0) return modPlatforms.join(', ');
     if (igdbPlatforms.length === 0) return null;
-    const names = igdbPlatforms.map((p) => p.abbreviation ?? p.name);
+    const names = igdbPlatforms.map((p) => p.abbreviation || p.name);
     const shown = names.slice(0, PLATFORM_CAP).join(', ');
     const overflow = names.length - PLATFORM_CAP;
     return overflow > 0 ? `${shown} +${overflow}` : shown;
