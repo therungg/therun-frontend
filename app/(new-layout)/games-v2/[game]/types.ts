@@ -1,3 +1,4 @@
+import type { GameMetadata } from '~src/lib/game-mgmt';
 import type {
     LeaderboardEntry,
     LeaderboardResponse,
@@ -40,6 +41,8 @@ export interface GamePageData {
     /** True only for a genuinely empty (zero-entry) valid board. */
     boardIsEmpty: boolean;
     quickStats: QuickStats;
+    /** IGDB + moderator game metadata from pageData; EMPTY_GAME_METADATA when the fetch fails. */
+    gameMeta: GameMetadata;
     recentPbs: RecentPb[];
     /**
      * The signed-in runner's own standing on this game — best entry per
