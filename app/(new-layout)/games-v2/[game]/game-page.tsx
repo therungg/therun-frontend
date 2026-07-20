@@ -218,7 +218,12 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                         )}
                     </div>
                     <aside className={styles.rail}>
-                        <Sidebar data={data} claim={claim} />
+                        <Sidebar
+                            game={data.game}
+                            yourRuns={data.yourRuns}
+                            recentPbs={data.recentPbs}
+                            claim={claim}
+                        />
                     </aside>
                 </div>
             </div>

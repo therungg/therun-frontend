@@ -1,0 +1,118 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+.section {
+    margin-bottom: dt.$spacing-2xl;
+}
+
+.sectionTitle {
+    @include board.board-eyebrow;
+    margin: 0 0 dt.$spacing-md;
+}
+
+.cardGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: dt.$spacing-md;
+}
+
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-lg;
+    border: 1px solid var(--bs-border-color);
+    border-radius: dt.$radius-lg;
+    transition: border-color dt.$transition-fast;
+
+    &:hover {
+        border-color: var(--bs-secondary-color);
+    }
+}
+
+.cardHead {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+}
+
+.cardTitle {
+    font-size: dt.$font-size-md;
+    font-weight: 700;
+    margin: 0;
+
+    a {
+        color: var(--bs-emphasis-color);
+        text-decoration: none;
+    }
+}
+
+.cardStats {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+}
+
+.cardWr {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: auto;
+}
+
+.cardEyebrow {
+    @include board.board-eyebrow;
+}
+
+.cardTime {
+    @include board.mono-time;
+    font-size: dt.$font-size-xl;
+    font-weight: 700;
+    color: dt.$accent-gold;
+}
+
+.cardHolder {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    // Runner link must stay clickable above the card's stretched link.
+    position: relative;
+    z-index: 1;
+}
+
+.cardWhen {
+    color: var(--bs-tertiary-color);
+}
+
+.cardEmpty {
+    margin-top: auto;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.cardEmptyLink {
+    position: relative;
+    z-index: 1;
+}
+
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-3xl dt.$spacing-lg;
+    text-align: center;
+    border: 1px solid var(--bs-border-color);
+    border-radius: dt.$radius-lg;
+}
+
+.emptyTitle {
+    font-weight: 600;
+    margin: 0;
+}
+
+.emptyBody {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+    margin: 0;
+    max-width: 34rem;
+}
