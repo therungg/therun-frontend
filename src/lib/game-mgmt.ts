@@ -117,6 +117,7 @@ export async function getGameMetadata(gameId: number): Promise<GameMetadata> {
         releaseYear: data?.game?.releaseYear ?? null,
         discordUrl: data?.game?.discordUrl ?? null,
         configured: data?.game?.configured ?? false,
+        // || not ??: unsynced prod rows carry "" and empty must read as absent.
         summary: data?.game?.summary || null,
         firstReleaseDate: data?.game?.firstReleaseDate ?? null,
         seriesDisplay: data?.game?.seriesDisplay ?? null,
