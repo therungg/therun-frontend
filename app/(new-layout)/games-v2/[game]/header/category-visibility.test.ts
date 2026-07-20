@@ -12,6 +12,7 @@ function cat(
         name: `cat-${overrides.id}`,
         display: `Cat ${overrides.id}`,
         primaryTiming: 'rt',
+        archived: false,
         ...overrides,
     };
 }
@@ -43,7 +44,7 @@ describe('computeCategoryVisibility', () => {
     it('excludes inactive categories from overflow', () => {
         const categories = [
             cat({ id: 1, isMain: true }),
-            cat({ id: 2, isMain: false, active: false }),
+            cat({ id: 2, isMain: false, archived: true }),
             cat({ id: 3, isMain: false }),
         ];
         const result = computeCategoryVisibility(categories, [], 'cat-1');

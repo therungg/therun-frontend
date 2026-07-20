@@ -9,6 +9,8 @@ import type {
     ResolvedGroup,
 } from '../../types/leaderboards.types';
 import { isLowActivityCategory } from '../utils/format-stats';
+import { normalizeArchived } from './archived-flag';
+import { normalizeSlug } from './normalize-slug';
 import { V1FetchError, v1Fetch } from './v1-fetch';
 
 interface GamesEndpointRow {
@@ -41,10 +43,6 @@ interface CategoriesEndpointRow {
     show_milliseconds?: boolean;
     require_video?: boolean;
     require_video_top_n?: number | null;
-}
-
-function normalizeSlug(slug: string): string {
-    return slug.toLowerCase().replace(/[\s-]+/g, '');
 }
 
 export async function resolveGame(slug: string): Promise<ResolvedGame | null> {
@@ -119,7 +117,8 @@ export async function getQuickStats(gameId: number): Promise<QuickStats> {
 interface PageDataCategoryFlags {
     id: number;
     isMain?: boolean;
-    active?: boolean;
+    active?: boolean | null;
+    archived?: boolean | null;
 }
 
 interface PageDataGroup {
@@ -157,19 +156,19 @@ export async function resolveCategory(
         ),
     ]);
 
-    const flagsById = new Map<number, { isMain: boolean; active: boolean }>();
+    const flagsById = new Map<number, { isMain: boolean; archived: boolean }>();
     const groupByCatId = new Map<number, { id: number; name: string }>();
     for (const c of pageDataResp.result?.ungroupedCategories ?? []) {
         flagsById.set(c.id, {
             isMain: c.isMain ?? false,
-            active: c.active ?? true,
+            archived: normalizeArchived(c),
         });
     }
     for (const g of pageDataResp.result?.groups ?? []) {
         for (const c of g.categories ?? []) {
             flagsById.set(c.id, {
                 isMain: c.isMain ?? false,
-                active: c.active ?? true,
+                archived: normalizeArchived(c),
             });
             groupByCatId.set(c.id, { id: g.id, name: g.name });
         }
@@ -199,7 +198,7 @@ export async function resolveCategory(
                     : ('rt' as const),
             sortAscending: r.sort_ascending ?? true,
             isMain: flags?.isMain ?? false,
-            active: flags?.active ?? true,
+            archived: flags?.archived ?? false,
             groupId: grp?.id ?? null,
             groupName: grp?.name ?? null,
             totalRunTime: r.total_run_time,

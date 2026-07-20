@@ -35,9 +35,9 @@ export async function loadGamePageData(
     if (!game) return null;
 
     const resolved = await resolveCategory(game.id, sp.category);
-    const categories = resolved.categories.filter((c) => c.active !== false);
+    const categories = resolved.categories.filter((c) => !c.archived);
     const selected =
-        resolved.selected && resolved.selected.active !== false
+        resolved.selected && !resolved.selected.archived
             ? resolved.selected
             : (categories[0] ?? null);
     if (!selected) {
@@ -52,6 +52,7 @@ export async function loadGamePageData(
                 name: '',
                 display: '',
                 primaryTiming: 'rt',
+                archived: false,
             },
             categories,
             groups: resolved.groups,

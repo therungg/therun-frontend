@@ -79,11 +79,11 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
     // Mains sorted first so legacy active-non-main rows can't displace them
     // out of the top-N fetch cap.
     const activeCats = catData.categories
-        .filter((c) => c.active ?? true)
+        .filter((c) => !c.archived)
         .sort(
             (a, b) =>
-                Number((b.active ?? true) && (b.isMain ?? false)) -
-                    Number((a.active ?? true) && (a.isMain ?? false)) ||
+                Number(!b.archived && (b.isMain ?? false)) -
+                    Number(!a.archived && (a.isMain ?? false)) ||
                 (b.totalFinishedAttemptCount ?? 0) -
                     (a.totalFinishedAttemptCount ?? 0),
         )
@@ -113,7 +113,7 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         variableCount: variables.length,
         policyCount: policies.length,
         requireVideoAnywhere: catData.categories.some(
-            (c) => c.active && c.requireVideo,
+            (c) => !c.archived && c.requireVideo,
         ),
         slug: identifiers.slug,
         abbreviation: identifiers.abbreviation,

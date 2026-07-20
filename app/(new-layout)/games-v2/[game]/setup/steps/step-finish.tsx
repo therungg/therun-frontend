@@ -43,9 +43,7 @@ export function StepFinish({ data }: StepProps) {
     const firstUnconfiguredMain = data.categories
         .filter(
             (c) =>
-                (c.active ?? true) &&
-                (c.isMain ?? false) &&
-                !(c.rules ?? '').trim(),
+                !c.archived && (c.isMain ?? false) && !(c.rules ?? '').trim(),
         )
         .sort(
             (a, b) =>
