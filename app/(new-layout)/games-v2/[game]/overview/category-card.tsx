@@ -46,10 +46,7 @@ export function CategoryCard({ gameSlug, card }: Props) {
                         />
                     </span>
                     <span className={styles.cardHolder}>
-                        <UserLink
-                            username={wrEntry.runnerName}
-                            url={undefined}
-                        />{' '}
+                        <UserLink username={wrEntry.runnerName} />{' '}
                         <CountryFlag country={wrEntry.country} />
                         {wrEntry.runDate && (
                             <span
