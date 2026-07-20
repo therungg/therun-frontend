@@ -59,8 +59,6 @@ export async function loadGamePageData(
             validCombinations: { mode: 'open' },
             leaderboard: emptyBoard(),
             invalidCombination: null,
-            wrEntry: null,
-            boardIsEmpty: false,
             quickStats,
             gameMeta,
             recentPbs: [],
@@ -147,29 +145,6 @@ export async function loadGamePageData(
         ? null
         : { validCombinations: boardResult.validCombinations };
 
-    // The crown always needs the real rank-1 entry, even on a deep-linked
-    // later page. Page 1 already has it (entries[0]); anything past that
-    // needs a separate page-1 fetch — through the same cached `getLeaderboard`
-    // path a normal page-1 load would take, so it's never a fresh/uncached
-    // hit and never a client waterfall.
-    let wrEntry = null as GamePageData['wrEntry'];
-    let boardIsEmpty = false;
-    if (boardResult.ok) {
-        boardIsEmpty = leaderboard.totalItems === 0;
-        if (page === 1) {
-            wrEntry = leaderboard.entries[0] ?? null;
-        } else if (leaderboard.totalItems > 0) {
-            const heroResult = await getLeaderboard({
-                ...baseQuery,
-                page: 1,
-                timing: selected.primaryTiming,
-            });
-            wrEntry = heroResult.ok
-                ? (heroResult.result.entries[0] ?? null)
-                : null;
-        }
-    }
-
     return {
         game,
         selectedCategory: selected,
@@ -180,8 +155,6 @@ export async function loadGamePageData(
         validCombinations: varsResp.validCombinations,
         leaderboard,
         invalidCombination,
-        wrEntry,
-        boardIsEmpty,
         quickStats,
         gameMeta,
         recentPbs,
