@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useEffect, useMemo, useState } from 'react';
 import Link from '~src/components/link';
 import { buildBoardHref } from '~src/lib/board-url';
@@ -17,6 +18,11 @@ import { RulesBody, RulesPanel } from './rules/rules-panel';
 import { Sidebar } from './sidebar/sidebar';
 import type { GamePageData } from './types';
 
+const WrHistoryDrawer = dynamic(
+    () => import('./drawers/wr-history-drawer').then((m) => m.WrHistoryDrawer),
+    { ssr: false },
+);
+
 interface Props {
     data: GamePageData;
     canManage: boolean;
@@ -30,7 +36,9 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
         [data.variables],
     );
     const [rulesOpen, setRulesOpen] = useState(false);
+    const [historyOpen, setHistoryOpen] = useState(false);
     useEffect(() => setRulesOpen(false), [data.selectedCategory.id]);
+    useEffect(() => setHistoryOpen(false), [data.selectedCategory.id]);
     // Single owner of every board-URL-push transition (category/subcategory
     // pills, verified toggle, Filters popover) — see use-board-nav.ts.
     // Hooks run unconditionally, so this is created even on the
@@ -127,6 +135,13 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                                 open={rulesOpen}
                                 onToggle={() => setRulesOpen((o) => !o)}
                             />
+                            <button
+                                type="button"
+                                className={styles.quietLink}
+                                onClick={() => setHistoryOpen(true)}
+                            >
+                                WR history
+                            </button>
                         </div>
                     </div>
                     <FilterBar
@@ -139,6 +154,17 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                 </div>
                 {rulesOpen && data.selectedCategory.rules && (
                     <RulesBody rules={data.selectedCategory.rules} />
+                )}
+                {historyOpen && (
+                    <WrHistoryDrawer
+                        show={historyOpen}
+                        onHide={() => setHistoryOpen(false)}
+                        gameSlug={data.game.name}
+                        categorySlug={data.selectedCategory.name}
+                        categoryDisplay={data.selectedCategory.display}
+                        subcategoryKey={subcategoryKey}
+                        showMilliseconds={showMilliseconds}
+                    />
                 )}
                 <div className={styles.grid}>
                     <div
