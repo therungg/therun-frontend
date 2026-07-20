@@ -22,7 +22,8 @@ export interface ResolvedCategory {
     primaryTiming: 'rt' | 'gt';
     sortAscending?: boolean;
     isMain?: boolean;
-    active?: boolean;
+    /** Normalized from API archived/active (see src/lib/archived-flag.ts). Archived = invisible everywhere. */
+    archived: boolean;
     groupId?: number | null;
     groupName?: string | null;
     totalRunTime?: number;

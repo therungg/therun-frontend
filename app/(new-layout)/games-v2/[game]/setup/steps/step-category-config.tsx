@@ -56,7 +56,7 @@ export function StepCategoryConfig({ data, onAdvance }: StepProps) {
     const searchParams = useSearchParams();
 
     const mains = data.categories
-        .filter((c) => (c.active ?? true) && (c.isMain ?? false))
+        .filter((c) => !c.archived && (c.isMain ?? false))
         .sort(
             (a, b) =>
                 (b.totalFinishedAttemptCount ?? 0) -

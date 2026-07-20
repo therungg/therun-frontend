@@ -90,7 +90,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
         categoryById.get(id) ?? `Category ${id}`;
 
     const initialCategory =
-        categories.find((c) => c.active !== false) ?? categories[0] ?? null;
+        categories.find((c) => !c.archived) ?? categories[0] ?? null;
 
     const [identifiers, rawRows, groups, queueRes, reportsRes, manualTimesRes] =
         await Promise.all([
@@ -171,7 +171,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 variableCount: variables.length,
                 policyCount: policies.length,
                 requireVideoAnywhere: categories.some(
-                    (c) => c.active && c.requireVideo,
+                    (c) => !c.archived && c.requireVideo,
                 ),
                 slug: identifiers.slug,
                 abbreviation: identifiers.abbreviation,

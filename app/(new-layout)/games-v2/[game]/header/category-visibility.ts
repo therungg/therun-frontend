@@ -48,7 +48,7 @@ export function computeCategoryVisibility(
     const visibleIds = new Set(visible.map((c) => c.id));
 
     const overflow = categories.filter(
-        (c) => !visibleIds.has(c.id) && (c.active ?? true),
+        (c) => !visibleIds.has(c.id) && !c.archived,
     );
 
     // Trivial case: no group structure to show.

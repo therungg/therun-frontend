@@ -116,7 +116,7 @@ export default async function SubmitRunPage({
     }
 
     const { categories, groups } = await resolveCategory(game.id);
-    const activeCategories = categories.filter((c) => c.active !== false);
+    const activeCategories = categories.filter((c) => !c.archived);
 
     if (activeCategories.length === 0) {
         return (

@@ -23,15 +23,13 @@ export function StepCategories({ data, onAdvance }: StepProps) {
     // everything we see is worth showing; keep current flags as the baseline
     // and default the top category to main when none is set.
     const anyMain = data.categories.some(
-        (c) => (c.active ?? true) && (c.isMain ?? false),
+        (c) => !c.archived && (c.isMain ?? false),
     );
     const [rows, setRows] = useState<RowState[]>(
         data.categories.map((c, i) => ({
             id: c.id,
             display: c.display,
-            main:
-                ((c.active ?? true) && (c.isMain ?? false)) ||
-                (!anyMain && i === 0),
+            main: (!c.archived && (c.isMain ?? false)) || (!anyMain && i === 0),
             groupId: c.groupId ?? null,
             uniqueRunners: c.uniqueRunners ?? 0,
             totalFinishedAttemptCount: c.totalFinishedAttemptCount ?? 0,
@@ -72,9 +70,7 @@ export function StepCategories({ data, onAdvance }: StepProps) {
 
     const legacyHiddenCount = rows.filter((r) => {
         const orig = data.categories.find((c) => c.id === r.id);
-        return (
-            orig && (orig.active ?? true) && !(orig.isMain ?? false) && !r.main
-        );
+        return orig && !orig.archived && !(orig.isMain ?? false) && !r.main;
     }).length;
 
     const checkedCount = rows.filter((r) => r.main).length;
@@ -115,7 +111,7 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                 const orig = data.categories.find((c) => c.id === r.id);
                 return (
                     orig &&
-                    ((orig.active ?? true) !== r.main ||
+                    (!orig.archived !== r.main ||
                         (orig.isMain ?? false) !== r.main ||
                         (orig.groupId ?? null) !== r.groupId)
                 );

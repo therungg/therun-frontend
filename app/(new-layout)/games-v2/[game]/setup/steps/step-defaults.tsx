@@ -40,7 +40,7 @@ export function StepDefaults({ data, onAdvance }: StepProps) {
 
 function BulkApplySection({ data }: { data: WizardData }) {
     const mains = data.categories.filter(
-        (c) => (c.active ?? true) && (c.isMain ?? false),
+        (c) => !c.archived && (c.isMain ?? false),
     );
 
     const [enablePrimary, setEnablePrimary] = useState(false);
