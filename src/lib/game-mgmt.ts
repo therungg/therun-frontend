@@ -37,13 +37,45 @@ export interface UpdateGameBody {
     configured?: boolean;
 }
 
+export interface GameCompanyMeta {
+    name: string;
+    isDeveloper: boolean;
+    isPublisher: boolean;
+}
+
+export interface GameIgdbPlatformMeta {
+    name: string;
+    abbreviation: string | null;
+}
+
 export interface GameMetadata {
     coverUrl: string | null;
     platforms: string[];
     releaseYear: number | null;
     discordUrl: string | null;
     configured: boolean;
+    summary: string | null;
+    firstReleaseDate: string | null;
+    seriesDisplay: string | null;
+    genres: string[];
+    igdbPlatforms: GameIgdbPlatformMeta[];
+    companies: GameCompanyMeta[];
 }
+
+/** Render-degrades-gracefully fallback when /v1/games/:id fails or pageData is null. */
+export const EMPTY_GAME_METADATA: GameMetadata = {
+    coverUrl: null,
+    platforms: [],
+    releaseYear: null,
+    discordUrl: null,
+    configured: false,
+    summary: null,
+    firstReleaseDate: null,
+    seriesDisplay: null,
+    genres: [],
+    igdbPlatforms: [],
+    companies: [],
+};
 
 interface GameMetadataPageData {
     game?: {
@@ -52,6 +84,22 @@ interface GameMetadataPageData {
         releaseYear?: number | null;
         discordUrl?: string | null;
         configured?: boolean | null;
+        summary?: string | null;
+        firstReleaseDate?: string | null;
+        seriesDisplay?: string | null;
+    };
+    metadata?: {
+        genres?: string[] | null;
+        platforms?:
+            | { name?: string | null; abbreviation?: string | null }[]
+            | null;
+        companies?:
+            | {
+                  name?: string | null;
+                  isDeveloper?: boolean | null;
+                  isPublisher?: boolean | null;
+              }[]
+            | null;
     };
 }
 
@@ -69,6 +117,28 @@ export async function getGameMetadata(gameId: number): Promise<GameMetadata> {
         releaseYear: data?.game?.releaseYear ?? null,
         discordUrl: data?.game?.discordUrl ?? null,
         configured: data?.game?.configured ?? false,
+        summary: data?.game?.summary || null,
+        firstReleaseDate: data?.game?.firstReleaseDate ?? null,
+        seriesDisplay: data?.game?.seriesDisplay ?? null,
+        genres: (data?.metadata?.genres ?? []).filter(
+            (g): g is string => typeof g === 'string' && g.length > 0,
+        ),
+        igdbPlatforms: (data?.metadata?.platforms ?? []).flatMap((p) =>
+            p?.name
+                ? [{ name: p.name, abbreviation: p.abbreviation ?? null }]
+                : [],
+        ),
+        companies: (data?.metadata?.companies ?? []).flatMap((c) =>
+            c?.name
+                ? [
+                      {
+                          name: c.name,
+                          isDeveloper: c.isDeveloper ?? false,
+                          isPublisher: c.isPublisher ?? false,
+                      },
+                  ]
+                : [],
+        ),
     };
 }
 
