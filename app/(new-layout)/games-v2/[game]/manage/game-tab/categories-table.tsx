@@ -7,10 +7,13 @@ import { createGroupAction } from '~src/actions/category-group/create-group.acti
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import { formatCount, formatHours } from '~src/utils/format-stats';
 import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
+import { effectiveSortKey } from '../../category-sort';
 import { PromptDialog } from '../../shared/prompt-dialog';
 import { fireUndoToast } from '../moderation/shared/undo-toast';
 import { updateVisibilityAction } from '../visibility/actions/update-visibility.action';
+import { reorderCategoriesAction } from './actions/reorder-categories.action';
 import styles from './categories-table.module.scss';
+import { computeReorderChanges, type ReorderChange } from './reorder-changes';
 
 type Filter = 'all' | 'active' | 'archived';
 
@@ -39,6 +42,7 @@ interface Props {
         groupId: number | null,
         groupName: string | null,
     ) => void;
+    onRowsReorder: (changes: ReorderChange[]) => void;
     onGroupCreated: (group: ManageGroup) => void;
     onEdit: (categoryId: number) => void;
 }
@@ -49,6 +53,7 @@ export function CategoriesTable({
     groups,
     onRowChange,
     onRowGroupChange,
+    onRowsReorder,
     onGroupCreated,
     onEdit,
 }: Props) {
@@ -65,11 +70,19 @@ export function CategoriesTable({
     const [groupPromptError, setGroupPromptError] = useState<string | null>(
         null,
     );
+    const [dragId, setDragId] = useState<number | null>(null);
+    const [reorderPending, setReorderPending] = useState(false);
 
     // Clear selection whenever the visible row set changes via filter/search.
     useEffect(() => {
         setSelectedIds(new Set());
     }, [filter, query]);
+
+    const groupRank = useMemo(() => {
+        const m = new Map<number, number>();
+        groups.forEach((g) => m.set(g.id, g.sortOrder));
+        return m;
+    }, [groups]);
 
     const normalized = query.trim().toLowerCase();
     const visibleRows = useMemo(() => {
@@ -84,9 +97,19 @@ export function CategoriesTable({
         });
         return filtered.sort((a, b) => {
             if (a.isMain !== b.isMain) return a.isMain ? -1 : 1;
-            return b.totalRunTime - a.totalRunTime;
+            // Mirror the public page: group rank (ungrouped trailing),
+            // then explicit order (unset last), then playtime.
+            const ga =
+                a.groupId != null ? (groupRank.get(a.groupId) ?? 0) : Infinity;
+            const gb =
+                b.groupId != null ? (groupRank.get(b.groupId) ?? 0) : Infinity;
+            if (ga !== gb) return ga - gb;
+            return (
+                effectiveSortKey(a.sortOrder) - effectiveSortKey(b.sortOrder) ||
+                b.totalRunTime - a.totalRunTime
+            );
         });
-    }, [rows, filter, normalized]);
+    }, [rows, filter, normalized, groupRank]);
 
     const setPending = (id: number, pending: boolean) => {
         setPendingIds((prev) => {
@@ -314,6 +337,80 @@ export function CategoriesTable({
         setGroupPrompt(null);
     };
 
+    // Reorder is honest only when the full Featured scope is visible:
+    // a search or the Archived filter hides rows a renumber would touch.
+    const reorderEnabled = normalized === '' && filter !== 'archived';
+
+    // The moved row's Featured scope, in current display order. Matches
+    // the PUBLIC scope exactly (isMain && active): an archived-but-Featured
+    // row is not publicly ordered, and including it only under the "All"
+    // filter would make renumbering filter-dependent.
+    const featuredScopeOf = (row: ManageCategoryRow) =>
+        visibleRows.filter(
+            (r) =>
+                r.isMain &&
+                r.active &&
+                (r.groupId ?? null) === (row.groupId ?? null),
+        );
+
+    const commitReorder = (row: ManageCategoryRow, toIndex: number) => {
+        const scope = featuredScopeOf(row);
+        const fromIndex = scope.findIndex((r) => r.id === row.id);
+        const { changes } = computeReorderChanges(scope, fromIndex, toIndex);
+        if (changes.length === 0) return;
+        const prev = scope.map((r) => ({
+            categoryId: r.id,
+            sortOrder: r.sortOrder,
+        }));
+        onRowsReorder(changes);
+        setReorderPending(true);
+        startTransition(async () => {
+            const res = await reorderCategoriesAction({
+                gameSlug: game.name,
+                gameId: game.id,
+                changes,
+            });
+            setReorderPending(false);
+            if ('error' in res) {
+                toast.error(res.error);
+                // Writes that landed before the failure are real — only
+                // revert rows the backend never actually touched; blind-
+                // reverting everything would lie about applied changes.
+                const appliedIds = new Set(
+                    res.applied.map((c) => c.categoryId),
+                );
+                onRowsReorder(
+                    prev.filter((c) => !appliedIds.has(c.categoryId)),
+                );
+            }
+        });
+    };
+
+    const moveBy = (row: ManageCategoryRow, delta: -1 | 1) => {
+        const scope = featuredScopeOf(row);
+        const idx = scope.findIndex((r) => r.id === row.id);
+        const target = idx + delta;
+        if (idx < 0 || target < 0 || target >= scope.length) return;
+        commitReorder(row, target);
+    };
+
+    const onDropRow = (overRow: ManageCategoryRow) => {
+        if (dragId === null || dragId === overRow.id) {
+            setDragId(null);
+            return;
+        }
+        const dragged = rows.find((r) => r.id === dragId);
+        setDragId(null);
+        if (!dragged || !dragged.isMain || !dragged.active) return;
+        if (!overRow.isMain || !overRow.active) return;
+        // Cross-group drops are ignored — group membership has its own control.
+        if ((dragged.groupId ?? null) !== (overRow.groupId ?? null)) return;
+        const scope = featuredScopeOf(dragged);
+        const toIndex = scope.findIndex((r) => r.id === overRow.id);
+        if (toIndex < 0) return;
+        commitReorder(dragged, toIndex);
+    };
+
     return (
         <section className="mb-4">
             <h2 className="h5 mb-2">Categories</h2>
@@ -417,6 +514,7 @@ export function CategoriesTable({
                         <table className="table table-sm align-middle">
                             <thead>
                                 <tr>
+                                    <th style={{ width: 70 }}>Order</th>
                                     <th style={{ width: 32 }}>
                                         <input
                                             type="checkbox"
@@ -460,13 +558,116 @@ export function CategoriesTable({
                             <tbody>
                                 {visibleRows.map((row) => {
                                     const isPending = pendingIds.has(row.id);
+                                    const isOrderable =
+                                        row.isMain && row.active;
+                                    const orderTitle = !reorderEnabled
+                                        ? normalized !== ''
+                                            ? 'Clear the search to reorder'
+                                            : 'Switch off the Archived filter to reorder'
+                                        : undefined;
                                     return (
                                         <tr
                                             key={row.id}
                                             className={
                                                 row.active ? '' : 'text-muted'
                                             }
+                                            onDragOver={(e) => {
+                                                if (isOrderable)
+                                                    e.preventDefault();
+                                            }}
+                                            onDrop={() => {
+                                                if (isOrderable) onDropRow(row);
+                                            }}
                                         >
+                                            <td>
+                                                {isOrderable ? (
+                                                    <div className="d-flex align-items-center gap-1">
+                                                        <span
+                                                            aria-hidden="true"
+                                                            title={
+                                                                orderTitle ??
+                                                                'Drag to reorder'
+                                                            }
+                                                            draggable={
+                                                                reorderEnabled &&
+                                                                !reorderPending
+                                                            }
+                                                            onDragStart={() =>
+                                                                setDragId(
+                                                                    row.id,
+                                                                )
+                                                            }
+                                                            onDragEnd={() =>
+                                                                setDragId(null)
+                                                            }
+                                                            style={{
+                                                                cursor: 'grab',
+                                                            }}
+                                                            className={
+                                                                dragId ===
+                                                                row.id
+                                                                    ? 'opacity-50'
+                                                                    : ''
+                                                            }
+                                                        >
+                                                            ⠿
+                                                        </span>
+                                                        <div
+                                                            className="btn-group btn-group-sm"
+                                                            role="group"
+                                                            aria-label="Reorder"
+                                                        >
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-outline-secondary"
+                                                                title={
+                                                                    orderTitle
+                                                                }
+                                                                onClick={() =>
+                                                                    moveBy(
+                                                                        row,
+                                                                        -1,
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    !reorderEnabled ||
+                                                                    reorderPending
+                                                                }
+                                                                aria-label="Move up"
+                                                            >
+                                                                ▲
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-outline-secondary"
+                                                                title={
+                                                                    orderTitle
+                                                                }
+                                                                onClick={() =>
+                                                                    moveBy(
+                                                                        row,
+                                                                        1,
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    !reorderEnabled ||
+                                                                    reorderPending
+                                                                }
+                                                                aria-label="Move down"
+                                                            >
+                                                                ▼
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <span
+                                                        className="text-muted"
+                                                        title="Feature a category to order it"
+                                                    >
+                                                        —
+                                                    </span>
+                                                )}
+                                            </td>
                                             <td>
                                                 <input
                                                     type="checkbox"
