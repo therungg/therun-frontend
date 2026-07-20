@@ -14,12 +14,27 @@ import {
     RaceParticipant,
     WebsocketRaceMessage,
 } from '~app/(new-layout)/races/races.types';
+import { buildLiveWebsocketUrl } from './websocket-url';
 
 type WebsocketType = 'username' | 'race' | 'story';
 
 export const useLiveRunsWebsocket = <Message = WebsocketLiveRunMessage>(
     username?: string | null,
 ) => useReconnectWebsocket<Message>('username', username);
+
+// Without a game this is the sitewide firehose; with one, the connection only
+// receives that game's (optionally that category's) run updates.
+export const useGameLiveRunsWebsocket = (
+    game?: string | null,
+    category?: string | null,
+) =>
+    useWebsocketConnection<WebsocketLiveRunMessage>(
+        buildLiveWebsocketUrl(
+            process.env.NEXT_PUBLIC_WEBSOCKET_URL as string,
+            game,
+            category,
+        ),
+    );
 
 export const useAllRacesWebsocket = () =>
     useReconnectWebsocket<WebsocketRaceMessage<Race | RaceParticipant>>(
@@ -42,6 +57,16 @@ export const useReconnectWebsocket = <T>(
     type?: WebsocketType,
     value?: string | null,
 ): T => {
+    let websocketUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL as string;
+
+    if (value) {
+        websocketUrl += `?${type}=${value}`;
+    }
+
+    return useWebsocketConnection<T>(value !== null ? websocketUrl : null);
+};
+
+const useWebsocketConnection = <T>(url: string | null): T => {
     const options: Options = {
         shouldReconnect: () => true,
         retryOnError: true,
@@ -49,14 +74,9 @@ export const useReconnectWebsocket = <T>(
             Math.min(Math.pow(2, attemptNumber) * 1000, 10000),
     };
     const pingIntervalMinutes = 9;
-    let websocketUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL as string;
-
-    if (value) {
-        websocketUrl += `?${type}=${value}`;
-    }
 
     const { lastJsonMessage, sendMessage, readyState } = useWebSocket<T>(
-        value !== null ? websocketUrl : null,
+        url,
         options,
     );
 

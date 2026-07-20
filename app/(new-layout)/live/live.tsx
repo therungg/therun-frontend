@@ -33,7 +33,7 @@ import {
 import { LiveIcon, LiveUserRun } from '~src/components/live/live-user-run';
 import { RecommendedStream } from '~src/components/live/recommended-stream';
 import { SkeletonLiveRun } from '~src/components/skeleton/live/skeleton-live-run';
-import { useLiveRunsWebsocket } from '~src/components/websocket/use-reconnect-websocket';
+import { useGameLiveRunsWebsocket } from '~src/components/websocket/use-reconnect-websocket';
 import { getLiveRunForUser } from '~src/lib/live-runs';
 
 type StaleReason = 'reset' | 'finished' | 'offline';
@@ -68,7 +68,7 @@ export const Live = ({
     const [manualSelectionTick, setManualSelectionTick] = useState(0);
 
     const [loadingUserData, setLoadingUserData] = useState(true);
-    const lastMessage = useLiveRunsWebsocket();
+    const lastMessage = useGameLiveRunsWebsocket(forceGame, forceCategory);
 
     // Stale detection state
     const [staleReason, setStaleReason] = useState<StaleReason | null>(null);
