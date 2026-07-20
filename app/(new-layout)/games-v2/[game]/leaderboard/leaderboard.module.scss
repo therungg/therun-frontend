@@ -92,6 +92,13 @@ tr:focus-within .reveal {
     margin-right: 1px;
 }
 
+// "WR" chip on the verified rank-1 row (crown honesty rule: pending
+// rank-1 rows keep the pending pill instead — see leaderboard-row.tsx).
+.wrChip {
+    @include board.board-pill(dt.$accent-gold);
+    flex-shrink: 0;
+}
+
 .rank1 {
     color: dt.$accent-gold;
 }
@@ -141,6 +148,12 @@ tr:focus-within .reveal {
 
 // .secondaryHeader itself is declared inside `.table` above (see note there)
 // so it wins specificity over board-table's `thead th` color rule.
+
+// WR row: faint gold wash under the gold spine — the crown's new home.
+// Declared before .youRow so your-own-row identity wins if you hold the WR.
+.rank1Row td {
+    background: rgba(dt.$accent-gold, 0.05);
+}
 
 .meta {
     font-size: dt.$font-size-xs;
