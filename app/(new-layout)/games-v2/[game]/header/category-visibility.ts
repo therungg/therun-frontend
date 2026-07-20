@@ -3,8 +3,6 @@ import type {
     ResolvedGroup,
 } from '../../../../../types/leaderboards.types';
 
-const FALLBACK_VISIBLE_COUNT = 5;
-
 export interface CategorySection {
     id: number | null;
     name: string | null;
@@ -13,8 +11,6 @@ export interface CategorySection {
 
 export interface CategoryVisibility {
     sections: CategorySection[];
-    /** Active, non-visible categories — reachable only via "More…". */
-    overflow: ResolvedCategory[];
 }
 
 function byPlaytimeDesc(a: ResolvedCategory, b: ResolvedCategory): number {
@@ -22,52 +18,26 @@ function byPlaytimeDesc(a: ResolvedCategory, b: ResolvedCategory): number {
 }
 
 /**
- * Splits categories into the pill band's visible sections plus an overflow
- * list. The band shows featured (`isMain`) categories, falling back to the
- * top N by playtime when nothing is marked featured; the currently-selected
- * category is always appended if it isn't already in that set. Everything
- * else active but not visible is "overflow" — unreachable by browsing the
- * band directly, surfaced instead through the "More…" pill.
+ * Splits the pill band into labeled group sections. Callers pass
+ * Featured-only categories — the band never lists anything else (site
+ * policy: non-Featured categories are not publicly viewable, so there is
+ * no fallback set and no overflow/"More…" affordance anymore).
  */
 export function computeCategoryVisibility(
     categories: ResolvedCategory[],
     groups: ResolvedGroup[],
-    selectedCategoryName: string,
 ): CategoryVisibility {
-    const mains = categories.filter((c) => c.isMain);
-    const usingFallback = mains.length === 0;
-    const base = usingFallback
-        ? [...categories].sort(byPlaytimeDesc).slice(0, FALLBACK_VISIBLE_COUNT)
-        : [...mains].sort(byPlaytimeDesc);
+    const visible = [...categories].sort(byPlaytimeDesc);
 
-    // Append selected-but-not-in-base, so the active pill is always visible.
-    const baseIds = new Set(base.map((c) => c.id));
-    const selected = categories.find((c) => c.name === selectedCategoryName);
-    const visible =
-        selected && !baseIds.has(selected.id) ? [...base, selected] : base;
-    const visibleIds = new Set(visible.map((c) => c.id));
-
-    const overflow = categories.filter(
-        (c) => !visibleIds.has(c.id) && !c.archived,
-    );
-
-    // Trivial case: no group structure to show.
     const usedGroupIds = new Set(
         visible.map((c) => c.groupId ?? null).filter((id) => id != null),
     );
     const trivial =
-        usingFallback ||
-        groups.length === 0 ||
-        (groups.length <= 1 && usedGroupIds.size <= 1);
-
+        groups.length === 0 || (groups.length <= 1 && usedGroupIds.size <= 1);
     if (trivial) {
-        return {
-            sections: [{ id: null, name: null, pills: visible }],
-            overflow,
-        };
+        return { sections: [{ id: null, name: null, pills: visible }] };
     }
 
-    // Build labeled sections for each group in sortOrder, then trailing ungrouped.
     const byGroup = new Map<number, ResolvedCategory[]>();
     const ungrouped: ResolvedCategory[] = [];
     for (const c of visible) {
@@ -90,5 +60,5 @@ export function computeCategoryVisibility(
             pills: ungrouped.sort(byPlaytimeDesc),
         });
     }
-    return { sections, overflow };
+    return { sections };
 }
