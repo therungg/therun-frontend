@@ -88,6 +88,24 @@ describe('computeCategoryVisibility', () => {
         expect(result.sections[0].pills.map((c) => c.id)).toEqual([2, 3, 1]);
     });
 
+    it('explicit sortOrder beats playtime within a section', () => {
+        const cats = [
+            cat({ id: 1, name: 'a', totalRunTime: 999, sortOrder: 2 }),
+            cat({ id: 2, name: 'b', totalRunTime: 5, sortOrder: 1 }),
+        ];
+        const { sections } = computeCategoryVisibility(cats, []);
+        expect(sections[0].pills.map((c) => c.id)).toEqual([2, 1]);
+    });
+
+    it('unset sortOrder rows trail ordered rows', () => {
+        const cats = [
+            cat({ id: 1, name: 'a', totalRunTime: 999, sortOrder: 0 }),
+            cat({ id: 2, name: 'b', totalRunTime: 5, sortOrder: 1 }),
+        ];
+        const { sections } = computeCategoryVisibility(cats, []);
+        expect(sections[0].pills.map((c) => c.id)).toEqual([2, 1]);
+    });
+
     it('treats a single group with all categories in it as trivial', () => {
         const groups: ResolvedGroup[] = [
             { id: 10, name: 'Main Game', sortOrder: 0 },

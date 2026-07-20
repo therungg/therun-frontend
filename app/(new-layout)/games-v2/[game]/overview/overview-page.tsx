@@ -1,5 +1,6 @@
 import Link from '~src/components/link';
 import type { ResolvedGroup } from '../../../../../types/leaderboards.types';
+import { sortCategoriesForDisplay } from '../category-sort';
 import type { ClaimCtaState } from '../claim/claim-cta';
 import gamePageStyles from '../game-page.module.scss';
 import { GameHero } from '../header/game-hero';
@@ -19,6 +20,20 @@ interface CardSection {
     key: string;
     name: string | null;
     cards: GameOverviewData['cards'];
+}
+
+// Cards' own order isn't guaranteed to reflect category sortOrder — sort
+// explicitly (unset last, playtime tiebreak) rather than trusting API order.
+function byCategoryOrder(
+    arr: GameOverviewData['cards'],
+): GameOverviewData['cards'] {
+    return sortCategoriesForDisplay(
+        arr.map((card) => ({
+            card,
+            sortOrder: card.category.sortOrder,
+            totalRunTime: card.category.totalRunTime,
+        })),
+    ).map((x) => x.card);
 }
 
 // Group sections in group sortOrder, ungrouped trailing — the same
@@ -42,11 +57,19 @@ function sectionize(
     for (const g of groups) {
         const arr = byGroup.get(g.id);
         if (arr?.length) {
-            sections.push({ key: `g${g.id}`, name: g.name, cards: arr });
+            sections.push({
+                key: `g${g.id}`,
+                name: g.name,
+                cards: byCategoryOrder(arr),
+            });
         }
     }
     if (ungrouped.length > 0) {
-        sections.push({ key: 'ungrouped', name: null, cards: ungrouped });
+        sections.push({
+            key: 'ungrouped',
+            name: null,
+            cards: byCategoryOrder(ungrouped),
+        });
     }
     // Single unlabeled section: skip headers entirely.
     if (sections.length === 1) sections[0].name = null;
