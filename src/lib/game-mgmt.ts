@@ -62,21 +62,6 @@ export interface GameMetadata {
     companies: GameCompanyMeta[];
 }
 
-/** Render-degrades-gracefully fallback when /v1/games/:id fails or pageData is null. */
-export const EMPTY_GAME_METADATA: GameMetadata = {
-    coverUrl: null,
-    platforms: [],
-    releaseYear: null,
-    discordUrl: null,
-    configured: false,
-    summary: null,
-    firstReleaseDate: null,
-    seriesDisplay: null,
-    genres: [],
-    igdbPlatforms: [],
-    companies: [],
-};
-
 interface GameMetadataPageData {
     game?: {
         coverUrl?: string | null;

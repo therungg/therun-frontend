@@ -1,4 +1,5 @@
-import { EMPTY_GAME_METADATA, getGameMetadata } from '~src/lib/game-mgmt';
+import { EMPTY_GAME_METADATA } from '~src/lib/game-metadata';
+import { getGameMetadata } from '~src/lib/game-mgmt';
 import {
     getQuickStats,
     getRecentPbs,
