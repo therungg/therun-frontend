@@ -15,6 +15,7 @@ import type {
     ResolvedCategory,
     ResolvedGame,
 } from '../../../../../../types/leaderboards.types';
+import type { ReorderChange } from '../game-tab/reorder-changes';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import { HistoryDrawer } from '../moderation/configure/history-drawer';
 import { BoardHealthCard } from './board-health-card';
@@ -297,6 +298,18 @@ export function ConsoleShell({
         [],
     );
 
+    const applyRowsReorder = useCallback((changes: ReorderChange[]) => {
+        if (changes.length === 0) return;
+        const byId = new Map(changes.map((c) => [c.categoryId, c.sortOrder]));
+        setRows((rs) =>
+            rs.map((r) =>
+                byId.has(r.id)
+                    ? { ...r, sortOrder: byId.get(r.id) as number }
+                    : r,
+            ),
+        );
+    }, []);
+
     // History is a quick-reference overlay, not a destination pane. Roster
     // always leaves the console for its dedicated route. Reports is a
     // pre-filtered view of the attention pane, not a pane of its own.
@@ -465,6 +478,7 @@ export function ConsoleShell({
                     groups={manageGroups}
                     onGroupsChange={setManageGroups}
                     onRowChange={applyRowPatch}
+                    onRowsReorder={applyRowsReorder}
                     onRowGroupChange={(categoryId, groupId, groupName) =>
                         setRows((rs) =>
                             rs.map((r) =>

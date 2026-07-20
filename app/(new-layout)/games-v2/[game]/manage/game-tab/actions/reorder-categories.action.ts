@@ -15,19 +15,26 @@ interface Input {
 
 export async function reorderCategoriesAction(
     input: Input,
-): Promise<{ result: { reordered: boolean } } | { error: string }> {
+): Promise<
+    | { result: { reordered: boolean } }
+    | { error: string; applied: ReorderChange[] }
+> {
     const user = await getSession();
     try {
         confirmPermission(user, 'edit', 'category-settings', {
             game: input.gameSlug,
         });
     } catch {
-        return { error: 'Not authorized to edit category settings.' };
+        return {
+            error: 'Not authorized to edit category settings.',
+            applied: [],
+        };
     }
     if (input.changes.length === 0) {
         return { result: { reordered: false } };
     }
 
+    const applied: ReorderChange[] = [];
     try {
         // Sequential on purpose: each PUT triggers a pageData rebuild
         // backend-side; parallel writes could interleave rebuilds.
@@ -35,11 +42,18 @@ export async function reorderCategoriesAction(
             await updateCategory(user.id, input.gameId, change.categoryId, {
                 sortOrder: change.sortOrder,
             });
+            applied.push(change);
         }
         revalidateTag(`game-cats:${input.gameId}`, 'minutes');
         return { result: { reordered: true } };
     } catch (e) {
-        if (e instanceof ApiError) return { error: e.message };
-        return { error: 'Failed to reorder categories.' };
+        // Writes that landed before the failure are real — report them so
+        // the caller can reconcile local state instead of blind-reverting.
+        if (applied.length > 0) {
+            revalidateTag(`game-cats:${input.gameId}`, 'minutes');
+        }
+        const message =
+            e instanceof ApiError ? e.message : 'Failed to reorder categories.';
+        return { error: message, applied };
     }
 }

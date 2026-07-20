@@ -13,6 +13,7 @@ import type {
 import { CategorySettingsSection } from '../category-tab/category-settings-section';
 import { RulesSection } from '../category-tab/rules-section';
 import { GameTab } from '../game-tab/game-tab';
+import type { ReorderChange } from '../game-tab/reorder-changes';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import { ModApplicationsCard } from '../moderation/attention/mod-applications-card';
 import { NeedsAttention } from '../moderation/attention/needs-attention';
@@ -55,6 +56,7 @@ export interface ContentRouterProps {
         groupId: number | null,
         groupName: string | null,
     ) => void;
+    onRowsReorder: (changes: ReorderChange[]) => void;
     onEditCategory: (categoryId: number) => void;
 }
 
@@ -189,6 +191,7 @@ export function ContentRouter(props: ContentRouterProps) {
                     onGroupsChange={props.onGroupsChange}
                     onRowChange={props.onRowChange}
                     onRowGroupChange={props.onRowGroupChange}
+                    onRowsReorder={props.onRowsReorder}
                     onEditCategory={props.onEditCategory}
                 />
             );

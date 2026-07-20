@@ -7,6 +7,7 @@ import { InvalidateCacheButton } from '../../header/invalidate-cache-button';
 import { IdentifiersSection } from '../identifiers/identifiers-section';
 import { CategoriesTable } from './categories-table';
 import { GroupsSection } from './groups-section';
+import type { ReorderChange } from './reorder-changes';
 
 /** The three sidebar items that all land inside this one component. */
 export type GameTabSection = 'groups' | 'categories-visibility' | 'identifiers';
@@ -39,6 +40,7 @@ interface Props {
         groupId: number | null,
         groupName: string | null,
     ) => void;
+    onRowsReorder: (changes: ReorderChange[]) => void;
     onEditCategory: (categoryId: number) => void;
 }
 
@@ -52,6 +54,7 @@ export function GameTab({
     onGroupsChange,
     onRowChange,
     onRowGroupChange,
+    onRowsReorder,
     onEditCategory,
 }: Props) {
     // Scroll to the section matching the sidebar item that routed here, on
@@ -101,6 +104,7 @@ export function GameTab({
                     groups={groups}
                     onRowChange={onRowChange}
                     onRowGroupChange={onRowGroupChange}
+                    onRowsReorder={onRowsReorder}
                     onGroupCreated={(g) => onGroupsChange([...groups, g])}
                     onEdit={onEditCategory}
                 />
