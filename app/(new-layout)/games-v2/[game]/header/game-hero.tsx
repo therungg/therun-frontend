@@ -64,88 +64,71 @@ export function GameHero({
         { label: 'Genres', value: deriveGenres(gameMeta.genres) },
     ].filter((f): f is { label: string; value: string } => f.value !== null);
 
+    const factsLine = [
+        ...facts.map((f) => f.value),
+        gameMeta.seriesDisplay
+            ? `Part of the ${gameMeta.seriesDisplay} series`
+            : null,
+    ]
+        .filter(Boolean)
+        .join(' · ');
+
     return (
         <header className={styles.hero}>
-            <div className={styles.heroTop}>
+            <div className={styles.heroRow}>
                 {cover && (
                     <img
                         src={cover}
                         alt={game.display}
-                        width={96}
-                        height={128}
+                        width={64}
+                        height={85}
                         className={styles.heroCover}
                         loading="eager"
                     />
                 )}
                 <div className={styles.heroText}>
                     <h1 className={styles.heroTitle}>{game.display}</h1>
-                    {gameMeta.summary && (
-                        <p className={styles.heroSummary}>{gameMeta.summary}</p>
+                    {factsLine && (
+                        <p className={styles.heroFactsLine}>{factsLine}</p>
                     )}
-                    <div className={styles.heroActions}>
-                        {claim && !claim.hasModerators && (
-                            <ClaimCta
-                                claim={claim}
-                                gameDisplay={game.display}
+                    <p className={styles.heroStatsLine}>
+                        <b>{stats.uniqueRunners.toLocaleString()}</b> runners ·{' '}
+                        <b>{stats.totalAttemptCount.toLocaleString()}</b>{' '}
+                        attempts ·{' '}
+                        <b>
+                            <DurationToFormatted
+                                duration={stats.totalRunTime}
                             />
-                        )}
-                        <Link
-                            href={submitHref}
-                            className={styles.primaryAction}
+                        </b>{' '}
+                        played
+                    </p>
+                </div>
+                <div className={styles.heroActions}>
+                    {claim && !claim.hasModerators && (
+                        <ClaimCta claim={claim} gameDisplay={game.display} />
+                    )}
+                    <Link href={submitHref} className={styles.primaryAction}>
+                        Submit a run
+                    </Link>
+                    {gameMeta.discordUrl && (
+                        <a
+                            href={gameMeta.discordUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={styles.quietChip}
                         >
-                            Submit a run
+                            Discord
+                        </a>
+                    )}
+                    {(canManage || canModerate) && (
+                        <Link
+                            href={`/games-v2/${game.name}/manage`}
+                            className={styles.quietChip}
+                        >
+                            {canModerate ? 'Moderate' : 'Manage'}
                         </Link>
-                        {gameMeta.discordUrl && (
-                            <a
-                                href={gameMeta.discordUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className={styles.quietChip}
-                            >
-                                Discord
-                            </a>
-                        )}
-                        {(canManage || canModerate) && (
-                            <Link
-                                href={`/games-v2/${game.name}/manage`}
-                                className={styles.quietChip}
-                            >
-                                {canModerate ? 'Moderate' : 'Manage'}
-                            </Link>
-                        )}
-                    </div>
+                    )}
                 </div>
-                {facts.length > 0 && (
-                    <dl className={styles.factsGrid}>
-                        {facts.map((f) => (
-                            <div key={f.label} className={styles.fact}>
-                                <dt>{f.label}</dt>
-                                <dd>{f.value}</dd>
-                            </div>
-                        ))}
-                    </dl>
-                )}
-            </div>
-            <div className={styles.heroStrip}>
-                <div className={styles.heroStat}>
-                    <b>{stats.uniqueRunners.toLocaleString()}</b>
-                    <span>Runners</span>
-                </div>
-                <div className={styles.heroStat}>
-                    <b>{stats.totalAttemptCount.toLocaleString()}</b>
-                    <span>Attempts</span>
-                </div>
-                <div className={styles.heroStat}>
-                    <b>
-                        <DurationToFormatted duration={stats.totalRunTime} />
-                    </b>
-                    <span>Playtime</span>
-                </div>
-                {gameMeta.seriesDisplay && (
-                    <span className={styles.seriesNote}>
-                        Part of the {gameMeta.seriesDisplay} series
-                    </span>
-                )}
             </div>
         </header>
     );

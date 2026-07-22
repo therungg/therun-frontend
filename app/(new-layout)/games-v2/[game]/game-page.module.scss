@@ -115,34 +115,33 @@
     margin-block: dt.$spacing-lg;
 }
 
-// ---- Hero (game identity band — flat, category-free) ----------
+// ---- Hero (game identity — one row, one hairline) -------------
 .hero {
     border-bottom: 1px solid var(--bs-border-color);
     margin-bottom: dt.$spacing-lg;
+    padding: dt.$spacing-lg 0 dt.$spacing-md;
 }
 
-.heroTop {
+.heroRow {
     display: flex;
-    gap: dt.$spacing-xl;
-    align-items: stretch;
-    padding: dt.$spacing-2xl 0 dt.$spacing-xl;
+    gap: dt.$spacing-lg;
+    align-items: center;
 
     @media (max-width: 991.98px) {
         flex-wrap: wrap;
-        padding: dt.$spacing-xl 0 dt.$spacing-lg;
     }
 }
 
 .heroCover {
-    width: 96px;
-    height: 128px;
+    width: 64px;
+    height: 85px;
     border-radius: dt.$radius-md;
     object-fit: cover;
     flex-shrink: 0;
 
     @media (max-width: 991.98px) {
-        width: 60px;
-        height: 80px;
+        width: 48px;
+        height: 64px;
     }
 }
 
@@ -151,7 +150,7 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: dt.$spacing-sm;
+    gap: dt.$spacing-xs;
 }
 
 .heroTitle {
@@ -166,15 +165,22 @@
     }
 }
 
-.heroSummary {
+.heroFactsLine {
     margin: 0;
-    max-width: 66ch;
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+}
+
+.heroStatsLine {
+    margin: 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+
+    b {
+        font-weight: 650;
+        color: var(--bs-emphasis-color);
+        font-variant-numeric: tabular-nums;
+    }
 }
 
 .heroActions {
@@ -182,8 +188,11 @@
     align-items: center;
     gap: dt.$spacing-sm;
     flex-wrap: wrap;
-    margin-top: auto;
-    padding-top: dt.$spacing-sm;
+    flex-shrink: 0;
+
+    @media (max-width: 991.98px) {
+        width: 100%;
+    }
 }
 
 // primary action — the hero's "Submit a run" / the empty-state's
@@ -210,77 +219,6 @@
         color: var(--bs-emphasis-color);
         border-color: var(--bs-secondary-color);
     }
-}
-
-// IGDB facts grid — the "spec sheet": label-over-value pairs behind a
-// hairline. Missing facts simply aren't rendered; the whole grid is
-// omitted when empty (see game-hero.tsx).
-.factsGrid {
-    width: 300px;
-    flex-shrink: 0;
-    margin: 0;
-    border-left: 1px solid var(--bs-border-color);
-    padding-left: dt.$spacing-2xl;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: dt.$spacing-lg dt.$spacing-xl;
-    align-content: center;
-
-    @media (max-width: 991.98px) {
-        width: 100%;
-        border-left: 0;
-        padding-left: 0;
-        border-top: 1px solid var(--bs-border-color);
-        padding-top: dt.$spacing-lg;
-    }
-}
-
-.fact {
-    min-width: 0;
-
-    dt {
-        @include board.board-eyebrow;
-    }
-
-    dd {
-        margin: 2px 0 0;
-        font-size: dt.$font-size-sm;
-        font-weight: 600;
-        color: var(--bs-emphasis-color);
-        overflow-wrap: break-word;
-    }
-}
-
-// Bottom strip: site stats + series note over a top hairline.
-.heroStrip {
-    display: flex;
-    align-items: baseline;
-    gap: dt.$spacing-3xl;
-    flex-wrap: wrap;
-    border-top: 1px solid var(--bs-border-color);
-    padding: dt.$spacing-md 0;
-}
-
-.heroStat {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-
-    b {
-        font-size: dt.$font-size-md;
-        font-weight: 650;
-        font-variant-numeric: tabular-nums;
-    }
-
-    span {
-        @include board.board-eyebrow;
-    }
-}
-
-.seriesNote {
-    margin-left: auto;
-    font-size: dt.$font-size-sm;
-    color: var(--bs-tertiary-color);
 }
 
 .quietLink {
