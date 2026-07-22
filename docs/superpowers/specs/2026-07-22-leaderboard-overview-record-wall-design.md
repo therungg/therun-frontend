@@ -66,14 +66,13 @@ Replaces `CategoryCard`. A raised surface — subtle elevated background (distin
 
 - New optional field `imageUrl` on categories, surfaced through `ResolvedCategory`.
 - **Fallback (day-one common case):** no image → render nothing (title block starts flush left). Amended 2026-07-22: the original monogram tile collided on similar names ("1 Star"/"120 Star"/"16 Star" all read "1") — Joey ruled no tile at all. A rotted URL (onError) also renders nothing.
-- **Console:** category edit form gains an image URL field following the existing game-cover pattern — the game cover is itself a plain URL text input, not an S3 presigned-upload flow. The shipped field is a `type="url"` text input with https-only server-side validation. Helper text: "Square, iconic art — renders at 36px. A boss face or item beats a screenshot."
+- **Console:** category edit form gains a real file-upload control (superseding the earlier plain-URL-input plan). Picking a PNG/JPEG/WebP (client-checked, max 2 MB) calls a server action for a presigned mediaBucket PUT (via the `/mod` proxy base path, timestamped keys for cache-busting), the browser PUTs the file straight to S3, then the returned CloudFront URL is written into `imageUrl`. 36×36 preview + "Remove" button when set. Helper text: "PNG/JPEG/WebP, max 2 MB. Square, iconic art — renders at 36px. A boss face or item beats a screenshot." Existing https-only server-side validation on save is unchanged (the CloudFront URL passes it); `imageUrl` stays a plain string on `State` and the save payload/dirty-tracking are untouched.
 - Frontend treats `imageUrl` as optional everywhere → ships before the backend lands, zero deploy coordination.
 
 ### Backend handoff (Joey)
-1. Migration: `categories.image_url` (nullable text).
-2. Category update API accepts `imageUrl`; resolved-game payload serves it.
-3. Rides the /mod proxy base path if any new endpoint is needed (API Gateway resource cap) — expected: none new, just field additions.
-4. PUT must mirror the frontend's https-only validation (and cap length, e.g. 2048) server-side — the frontend check only guards this console form, not other API callers.
+1. Migration: `categories.image_url` (nullable text) — still outstanding.
+2. Category update API accepts `imageUrl`; resolved-game payload serves it — still outstanding.
+3. New `POST /mod/v1/games/{gameId}/categories/{categoryId}/upload-image` endpoint (presigned S3 PUT, 300s expiry, `{ contentType, contentLength }` → `{ uploadUrl, imageUrl }`) — contract now built against on the frontend; backend implementation + deploy still on Joey.
 
 ## 4. Data changes
 
