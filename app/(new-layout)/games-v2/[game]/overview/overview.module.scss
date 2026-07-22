@@ -42,16 +42,16 @@
 }
 
 .emblem {
-    width: 36px;
-    height: 36px;
+    width: dt.$art-width-sm;
+    height: dt.$art-width-sm;
     border-radius: dt.$radius-md;
     object-fit: cover;
     flex-shrink: 0;
 }
 
 .emblemFallback {
-    width: 36px;
-    height: 36px;
+    width: dt.$art-width-sm;
+    height: dt.$art-width-sm;
     border-radius: dt.$radius-md;
     flex-shrink: 0;
     display: inline-flex;
@@ -156,7 +156,7 @@
 .podium {
     display: flex;
     flex-wrap: wrap;
-    gap: dt.$spacing-xs dt.$spacing-lg;
+    gap: dt.$spacing-xs dt.$spacing-md;
     margin-top: auto;
     padding-top: dt.$spacing-sm;
     border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
