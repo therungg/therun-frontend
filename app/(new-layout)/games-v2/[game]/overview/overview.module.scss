@@ -49,22 +49,6 @@
     flex-shrink: 0;
 }
 
-.emblemFallback {
-    width: dt.$art-width-sm;
-    height: dt.$art-width-sm;
-    border-radius: dt.$radius-md;
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bs-secondary-bg);
-    color: var(--bs-tertiary-color);
-    font-size: dt.$font-size-sm;
-    font-weight: 700;
-    text-transform: uppercase;
-    user-select: none;
-}
-
 .plaqueTitleBlock {
     min-width: 0;
     flex: 1;

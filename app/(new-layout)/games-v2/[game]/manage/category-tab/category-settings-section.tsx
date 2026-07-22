@@ -239,8 +239,8 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
                     />
                     <div className="form-text small">
                         Square, iconic art — renders at 36px on the game page. A
-                        boss face or item beats a screenshot. Leave empty for
-                        the default letter tile.
+                        boss face or item beats a screenshot. Leave empty to
+                        show no image.
                     </div>
                 </div>
 
