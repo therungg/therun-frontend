@@ -3,6 +3,11 @@
 import { cacheLife, cacheTag } from 'next/cache';
 import { apiFetch } from './api-client';
 
+export interface GameLink {
+    label: string;
+    url: string;
+}
+
 export interface GameIdentifiers {
     slug: string | null;
     abbreviation: string | null;
@@ -35,6 +40,7 @@ export interface UpdateGameBody {
     releaseYear?: number | null;
     discordUrl?: string | null;
     configured?: boolean;
+    links?: GameLink[];
 }
 
 export interface GameCompanyMeta {
@@ -60,6 +66,7 @@ export interface GameMetadata {
     genres: string[];
     igdbPlatforms: GameIgdbPlatformMeta[];
     companies: GameCompanyMeta[];
+    links: GameLink[];
 }
 
 interface GameMetadataPageData {
@@ -72,6 +79,7 @@ interface GameMetadataPageData {
         summary?: string | null;
         firstReleaseDate?: string | null;
         seriesDisplay?: string | null;
+        links?: GameLink[] | null;
     };
     metadata?: {
         genres?: string[] | null;
@@ -125,6 +133,7 @@ export async function getGameMetadata(gameId: number): Promise<GameMetadata> {
                   ]
                 : [],
         ),
+        links: data?.game?.links ?? [],
     };
 }
 

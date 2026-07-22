@@ -16,4 +16,5 @@ export const EMPTY_GAME_METADATA: GameMetadata = {
     genres: [],
     igdbPlatforms: [],
     companies: [],
+    links: [],
 };
