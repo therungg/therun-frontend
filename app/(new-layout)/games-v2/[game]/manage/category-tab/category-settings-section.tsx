@@ -133,7 +133,7 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
         state.videoPolicy !== original.videoPolicy ||
         (state.videoPolicy === 'top-n' && state.topN !== original.topN) ||
         state.imageUrl.trim() !== original.imageUrl.trim();
-    const busy = isSaving;
+    const busy = isSaving || isUploading;
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
