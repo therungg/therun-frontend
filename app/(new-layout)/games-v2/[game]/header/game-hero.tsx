@@ -120,6 +120,17 @@ export function GameHero({
                             Discord
                         </a>
                     )}
+                    {gameMeta.links.map((link) => (
+                        <a
+                            key={`${link.label}-${link.url}`}
+                            href={link.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={styles.quietChip}
+                        >
+                            {link.label}
+                        </a>
+                    ))}
                     {(canManage || canModerate) && (
                         <Link
                             href={`/games-v2/${game.name}/manage`}
