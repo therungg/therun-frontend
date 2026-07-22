@@ -18,8 +18,8 @@ import type {
 
 export interface OverviewCardData {
     category: ResolvedCategory;
-    /** Rank-1 entry of the category's default board; null = fetch failed or empty board. */
-    wrEntry: LeaderboardEntry | null;
+    /** Top-3 of the category's default board (page 1); [] = fetch failed or empty. */
+    entries: LeaderboardEntry[];
 }
 
 export interface GameOverviewData {
@@ -33,14 +33,14 @@ export interface GameOverviewData {
     sessionUsername: string | null;
 }
 
-// The card's WR is the rank-1 of the category's DEFAULT board — the exact
+// The card's record is the top of the category's DEFAULT board — the exact
 // board clicking the card lands on (no subcategory values, not combined,
-// unverified included), so the number on the card always matches the top
-// of the table behind it.
-async function fetchCardWr(
+// unverified included), so the numbers on the card always match the top
+// of the table behind it. One request per category, top 3 for the podium.
+async function fetchCardEntries(
     gameSlug: string,
     category: ResolvedCategory,
-): Promise<LeaderboardEntry | null> {
+): Promise<LeaderboardEntry[]> {
     try {
         const res = await getLeaderboard({
             gameSlug,
@@ -49,15 +49,14 @@ async function fetchCardWr(
             combined: false,
             verified: false,
             page: 1,
-            pageSize: 1,
+            pageSize: 3,
             varFilters: {},
             timing: category.primaryTiming,
         });
-        if (!res.ok) return null;
-        const entry = res.result.entries[0] ?? null;
-        return entry && entry.rank === 1 && entry.time !== null ? entry : null;
+        if (!res.ok) return [];
+        return res.result.entries;
     } catch {
-        return null;
+        return [];
     }
 }
 
@@ -67,7 +66,7 @@ export async function loadGameOverviewData(
     groups: ResolvedGroup[],
     sessionUsername: string | null,
 ): Promise<GameOverviewData> {
-    const [quickStats, gameMeta, recentPbs, rawYourRuns, wrEntries] =
+    const [quickStats, gameMeta, recentPbs, rawYourRuns, cardEntries] =
         await Promise.all([
             getQuickStats(game.id).catch(() => ({
                 totalRunTime: 0,
@@ -80,7 +79,7 @@ export async function loadGameOverviewData(
             sessionUsername
                 ? getUserRankingsByName(sessionUsername).catch(() => [])
                 : Promise.resolve([]),
-            Promise.all(featured.map((c) => fetchCardWr(game.name, c))),
+            Promise.all(featured.map((c) => fetchCardEntries(game.name, c))),
         ]);
 
     return {
@@ -90,7 +89,7 @@ export async function loadGameOverviewData(
         groups,
         cards: featured.map((category, i) => ({
             category,
-            wrEntry: wrEntries[i],
+            entries: cardEntries[i],
         })),
         recentPbs,
         yourRuns: rawYourRuns.filter((r) => r.gameSlug === game.name),
