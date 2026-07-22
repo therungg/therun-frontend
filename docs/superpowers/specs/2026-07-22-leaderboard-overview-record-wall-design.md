@@ -66,13 +66,14 @@ Replaces `CategoryCard`. A raised surface — subtle elevated background (distin
 
 - New optional field `imageUrl` on categories, surfaced through `ResolvedCategory`.
 - **Fallback (day-one common case):** neutral dark tile, first letter of category display, `font-size-sm` 700 muted. Must look intentional, not missing.
-- **Console:** category edit form gains an image upload using the existing S3 presigned-upload flow (same as game cover). Helper text: "Square, iconic art — renders at 36px. A boss face or item beats a screenshot."
+- **Console:** category edit form gains an image URL field following the existing game-cover pattern — the game cover is itself a plain URL text input, not an S3 presigned-upload flow. The shipped field is a `type="url"` text input with https-only server-side validation. Helper text: "Square, iconic art — renders at 36px. A boss face or item beats a screenshot."
 - Frontend treats `imageUrl` as optional everywhere → ships before the backend lands, zero deploy coordination.
 
 ### Backend handoff (Joey)
 1. Migration: `categories.image_url` (nullable text).
 2. Category update API accepts `imageUrl`; resolved-game payload serves it.
 3. Rides the /mod proxy base path if any new endpoint is needed (API Gateway resource cap) — expected: none new, just field additions.
+4. PUT must mirror the frontend's https-only validation (and cap length, e.g. 2048) server-side — the frontend check only guards this console form, not other API callers.
 
 ## 4. Data changes
 
