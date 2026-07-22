@@ -198,6 +198,7 @@
     gap: dt.$spacing-sm;
     padding: dt.$spacing-3xl dt.$spacing-lg;
     text-align: center;
+    background: var(--bs-tertiary-bg);
     border: 1px solid var(--bs-border-color);
     border-radius: dt.$radius-lg;
 }
