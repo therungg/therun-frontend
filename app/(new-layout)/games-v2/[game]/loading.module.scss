@@ -3,40 +3,39 @@
 
 // ============================================================
 // Route-level loading skeleton for the board page. Hero geometry
-// mirrors the flat identity band in game-page.module.scss (.hero/
-// .heroTop/.factsGrid/.heroStrip) — see there for the real
-// dimensions this predicts (96×128 cover, 300px facts column,
-// bottom stats strip); band/grid mirror this file's own board.
+// mirrors the one-row identity band in game-page.module.scss (.hero/
+// .heroRow) — see there for the real dimensions this predicts
+// (64×85 cover, single text column, inline actions); band/grid
+// mirror this file's own board.
 // ============================================================
 
-// ---- Hero (flat identity band) --------------------------------
+// ---- Hero (one-row identity band) ------------------------------
 .hero {
     border-bottom: 1px solid var(--bs-border-color);
     margin-bottom: dt.$spacing-lg;
+    padding: dt.$spacing-lg 0 dt.$spacing-md;
 }
 
-.heroTop {
+.heroRow {
     display: flex;
-    gap: dt.$spacing-xl;
-    align-items: stretch;
-    padding: dt.$spacing-2xl 0 dt.$spacing-xl;
+    gap: dt.$spacing-lg;
+    align-items: center;
 
     @media (max-width: 991.98px) {
         flex-wrap: wrap;
-        padding: dt.$spacing-xl 0 dt.$spacing-lg;
     }
 }
 
 .cover {
     @include board.board-skeleton;
-    width: 96px;
-    height: 128px;
+    width: 64px;
+    height: 85px;
     border-radius: dt.$radius-md;
     flex-shrink: 0;
 
     @media (max-width: 991.98px) {
-        width: 60px;
-        height: 80px;
+        width: 48px;
+        height: 64px;
     }
 }
 
@@ -45,7 +44,7 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: dt.$spacing-sm;
+    gap: dt.$spacing-xs;
 }
 
 .titleBar {
@@ -55,24 +54,30 @@
     border-radius: dt.$radius-sm;
 }
 
-.summaryLine {
+.factsLine {
     @include board.board-skeleton;
-    height: 0.9rem;
+    height: 0.8rem;
     width: 60%;
     border-radius: dt.$radius-sm;
 }
 
-.summaryLineShort {
+.statsLine {
     @include board.board-skeleton;
-    height: 0.9rem;
-    width: 50%;
+    height: 0.8rem;
+    width: 45%;
     border-radius: dt.$radius-sm;
 }
 
 .actionsRow {
     display: flex;
+    align-items: center;
     gap: dt.$spacing-sm;
-    margin-top: dt.$spacing-md;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+
+    @media (max-width: 991.98px) {
+        width: 100%;
+    }
 }
 
 .actionChip {
@@ -80,60 +85,6 @@
     width: 7rem;
     height: 2rem;
     border-radius: dt.$badge-radius;
-}
-
-// IGDB facts column skeleton — see .factsGrid/.fact in
-// game-page.module.scss.
-.factsGrid {
-    width: 300px;
-    flex-shrink: 0;
-    border-left: 1px solid var(--bs-border-color);
-    padding-left: dt.$spacing-2xl;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: dt.$spacing-lg dt.$spacing-xl;
-    align-content: center;
-
-    @media (max-width: 991.98px) {
-        display: none;
-    }
-}
-
-.fact {
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-xs;
-    min-width: 0;
-}
-
-.factLabel {
-    @include board.board-skeleton;
-    height: dt.$font-size-2xs;
-    width: 60%;
-    border-radius: dt.$radius-sm;
-}
-
-.factValue {
-    @include board.board-skeleton;
-    height: dt.$font-size-sm;
-    width: 80%;
-    border-radius: dt.$radius-sm;
-}
-
-// Bottom strip: site stats bars over a top hairline.
-.heroStrip {
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-3xl;
-    border-top: 1px solid var(--bs-border-color);
-    padding: dt.$spacing-md 0;
-}
-
-.statBar {
-    @include board.board-skeleton;
-    width: 5rem;
-    height: 1.1rem;
-    border-radius: dt.$radius-sm;
 }
 
 // ---- Control band -----------------------------------------

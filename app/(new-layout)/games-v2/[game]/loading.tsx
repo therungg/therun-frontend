@@ -2,44 +2,26 @@ import styles from './loading.module.scss';
 
 const BOARD_ROWS = Array.from({ length: 10 });
 
-const FACTS = Array.from({ length: 4 });
-
 // Route-level loading UI for the board page (`[game]/page.tsx` and any
 // nested segment without its own `loading.tsx`). Pure static markup — no
-// data, no client hooks. Hero geometry mirrors the flat identity band in
+// data, no client hooks. Hero geometry mirrors the one-row identity band in
 // game-page.module.scss so the real content lands in place instead of
 // shifting the page.
 export default function GameLoading() {
     return (
         <div>
             <div className={styles.hero}>
-                <div className={styles.heroTop}>
+                <div className={styles.heroRow}>
                     <div className={styles.cover} />
                     <div className={styles.heroText}>
                         <div className={styles.titleBar} />
-                        <div className={styles.summaryLine} />
-                        <div className={styles.summaryLineShort} />
-                        <div className={styles.actionsRow}>
-                            <div className={styles.actionChip} />
-                            <div className={styles.actionChip} />
-                        </div>
+                        <div className={styles.factsLine} />
+                        <div className={styles.statsLine} />
                     </div>
-                    <div className={styles.factsGrid}>
-                        {FACTS.map((_, i) => (
-                            <div
-                                className={styles.fact}
-                                key={`skeleton-fact-${i}`}
-                            >
-                                <div className={styles.factLabel} />
-                                <div className={styles.factValue} />
-                            </div>
-                        ))}
+                    <div className={styles.actionsRow}>
+                        <div className={styles.actionChip} />
+                        <div className={styles.actionChip} />
                     </div>
-                </div>
-                <div className={styles.heroStrip}>
-                    <div className={styles.statBar} />
-                    <div className={styles.statBar} />
-                    <div className={styles.statBar} />
                 </div>
             </div>
 
