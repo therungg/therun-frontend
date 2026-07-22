@@ -80,8 +80,8 @@ export function GameHero({
                     <img
                         src={cover}
                         alt={game.display}
-                        width={64}
-                        height={85}
+                        width={132}
+                        height={176}
                         className={styles.heroCover}
                         loading="eager"
                     />

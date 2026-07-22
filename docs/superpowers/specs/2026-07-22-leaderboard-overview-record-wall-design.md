@@ -22,6 +22,17 @@ The game overview page (root `games-v2/[game]` URL with 2+ Featured categories) 
 - One bottom hairline, then the wall. Vertical padding: `spacing-lg` top, `spacing-md` below — the hero must feel like a masthead, not a section.
 - Mobile (<992px): cover+title+facts/stats wrap as a block, actions wrap below. Cover 48×64.
 
+### Amendment — "Commanding" scale (2026-07-22, post-build)
+
+Joey's read on the shipped one-row hero: not imposing enough. Escalated to a "Commanding" scale pass — impact from scale, weight, and spacing only:
+
+- **Cover** 132×176 (poster-scale, still 3:4) with `$shadow-lg` cast, radius-lg. Mobile 72×96.
+- **Title** hero-title token raised 2.25rem → 2.75rem, weight 700 → 800, tracking -0.02em → -0.025em.
+- **Stats line** numbers (`b`) bumped one size above their labels (`font-size-sm` vs. the line's `font-size-xs`) so they read as the focal point.
+- **Actions** re-stacked as a right-aligned column on desktop (was a single inline row) to fill the taller hero; reverts to a row on mobile (<992px).
+- **Hero padding** deepened: `spacing-lg`/`spacing-md` → `spacing-xl`/`spacing-lg`; row gap `spacing-lg` → `spacing-xl`.
+- No gradient washes/tints anywhere in the hero (Joey, 2026-07-22: rejected as AI-looking); impact comes from scale/weight/spacing only.
+
 ## 2. Plaque card
 
 Replaces `CategoryCard`. A raised surface — subtle elevated background (distinct from page bg) + 1px low-alpha border + radius-lg — not the current outline-only box. Three zones:
