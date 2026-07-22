@@ -27,10 +27,7 @@ export function CategoryCard({ gameSlug, card }: Props) {
     return (
         <article className={styles.plaque}>
             <div className={styles.plaqueHead}>
-                <CategoryEmblem
-                    imageUrl={category.imageUrl}
-                    display={category.display}
-                />
+                <CategoryEmblem imageUrl={category.imageUrl} />
                 <div className={styles.plaqueTitleBlock}>
                     <h3 className={styles.plaqueTitle}>
                         <Link href={boardHref} className="stretched-link">
