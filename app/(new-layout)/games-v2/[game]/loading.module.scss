@@ -49,7 +49,7 @@
 
 .titleBar {
     @include board.board-skeleton;
-    height: 2rem;
+    height: 2.75rem;
     width: 40%;
     border-radius: dt.$radius-sm;
 }

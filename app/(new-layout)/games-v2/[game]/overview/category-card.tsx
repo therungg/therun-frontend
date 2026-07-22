@@ -7,6 +7,7 @@ import { CountryFlag } from '../leaderboard/country-flag';
 import { relativeDate } from '../leaderboard/relative-date';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
 import { splitCardEntries } from './card-entries';
+import { CategoryEmblem } from './category-emblem';
 import type { OverviewCardData } from './data';
 import styles from './overview.module.scss';
 
@@ -26,22 +27,10 @@ export function CategoryCard({ gameSlug, card }: Props) {
     return (
         <article className={styles.plaque}>
             <div className={styles.plaqueHead}>
-                {category.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                        src={category.imageUrl}
-                        alt=""
-                        aria-hidden
-                        width={36}
-                        height={36}
-                        className={styles.emblem}
-                        loading="lazy"
-                    />
-                ) : (
-                    <span aria-hidden className={styles.emblemFallback}>
-                        {category.display.slice(0, 1)}
-                    </span>
-                )}
+                <CategoryEmblem
+                    imageUrl={category.imageUrl}
+                    display={category.display}
+                />
                 <div className={styles.plaqueTitleBlock}>
                     <h3 className={styles.plaqueTitle}>
                         <Link href={boardHref} className="stretched-link">
@@ -114,7 +103,7 @@ export function CategoryCard({ gameSlug, card }: Props) {
                         <div className={styles.podium}>
                             {podium.map((p) => (
                                 <span
-                                    key={p.rank}
+                                    key={`${p.rank}-${p.runnerName}`}
                                     className={styles.podiumSpot}
                                 >
                                     <span className={styles.podiumRank}>
