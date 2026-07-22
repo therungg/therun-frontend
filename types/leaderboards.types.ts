@@ -28,6 +28,8 @@ export interface ResolvedCategory {
     sortOrder: number;
     groupId?: number | null;
     groupName?: string | null;
+    /** Moderator-set emblem art (36px square render). Null/absent -> monogram tile. */
+    imageUrl?: string | null;
     totalRunTime?: number;
     totalAttemptCount?: number;
     totalFinishedAttemptCount?: number;

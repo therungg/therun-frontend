@@ -120,6 +120,7 @@ interface PageDataCategoryFlags {
     active?: boolean | null;
     archived?: boolean | null;
     sortOrder?: number | null;
+    imageUrl?: string | null;
 }
 
 interface PageDataGroup {
@@ -159,7 +160,12 @@ export async function resolveCategory(
 
     const flagsById = new Map<
         number,
-        { isMain: boolean; archived: boolean; sortOrder: number }
+        {
+            isMain: boolean;
+            archived: boolean;
+            sortOrder: number;
+            imageUrl: string | null;
+        }
     >();
     const groupByCatId = new Map<number, { id: number; name: string }>();
     for (const c of pageDataResp.result?.ungroupedCategories ?? []) {
@@ -167,6 +173,7 @@ export async function resolveCategory(
             isMain: c.isMain ?? false,
             archived: normalizeArchived(c),
             sortOrder: c.sortOrder ?? 0,
+            imageUrl: c.imageUrl ?? null,
         });
     }
     for (const g of pageDataResp.result?.groups ?? []) {
@@ -175,6 +182,7 @@ export async function resolveCategory(
                 isMain: c.isMain ?? false,
                 archived: normalizeArchived(c),
                 sortOrder: c.sortOrder ?? 0,
+                imageUrl: c.imageUrl ?? null,
             });
             groupByCatId.set(c.id, { id: g.id, name: g.name });
         }
@@ -208,6 +216,7 @@ export async function resolveCategory(
             sortOrder: flags?.sortOrder ?? 0,
             groupId: grp?.id ?? null,
             groupName: grp?.name ?? null,
+            imageUrl: flags?.imageUrl ?? null,
             totalRunTime: r.total_run_time,
             totalAttemptCount: r.total_attempt_count,
             totalFinishedAttemptCount: r.total_finished_attempt_count,
