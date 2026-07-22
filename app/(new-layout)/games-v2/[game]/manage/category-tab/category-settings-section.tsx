@@ -18,6 +18,7 @@ interface State {
     showMilliseconds: boolean;
     videoPolicy: VideoPolicy;
     topN: string;
+    imageUrl: string;
 }
 
 function readState(category: ResolvedCategory | null): State {
@@ -27,6 +28,7 @@ function readState(category: ResolvedCategory | null): State {
             showMilliseconds: true,
             videoPolicy: 'none',
             topN: '',
+            imageUrl: '',
         };
     }
     const requireVideo = category.requireVideo ?? false;
@@ -40,6 +42,7 @@ function readState(category: ResolvedCategory | null): State {
         showMilliseconds: category.showMilliseconds ?? true,
         videoPolicy,
         topN: topNValue != null ? String(topNValue) : '',
+        imageUrl: category?.imageUrl ?? '',
     };
 }
 
@@ -60,6 +63,7 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
         category?.showMilliseconds,
         category?.requireVideo,
         category?.requireVideoTopN,
+        category?.imageUrl,
     ]);
 
     if (!category) return null;
@@ -68,7 +72,8 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
         state.sortAscending !== original.sortAscending ||
         state.showMilliseconds !== original.showMilliseconds ||
         state.videoPolicy !== original.videoPolicy ||
-        (state.videoPolicy === 'top-n' && state.topN !== original.topN);
+        (state.videoPolicy === 'top-n' && state.topN !== original.topN) ||
+        state.imageUrl.trim() !== original.imageUrl.trim();
     const busy = isSaving;
 
     const handleSubmit = (e: FormEvent) => {
@@ -116,6 +121,10 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
                     state.videoPolicy !== original.videoPolicy ||
                     state.topN !== original.topN
                         ? requireVideoTopN
+                        : undefined,
+                imageUrl:
+                    state.imageUrl.trim() !== original.imageUrl.trim()
+                        ? state.imageUrl.trim() || null
                         : undefined,
             });
             if ('error' in res) {
@@ -207,6 +216,31 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
                                 Show milliseconds
                             </label>
                         </div>
+                    </div>
+                </div>
+
+                <div className="mb-3">
+                    <label className="form-label small" htmlFor="catImageUrl">
+                        Emblem image URL
+                    </label>
+                    <input
+                        type="url"
+                        id="catImageUrl"
+                        className="form-control form-control-sm"
+                        placeholder="https://…"
+                        value={state.imageUrl}
+                        onChange={(e) =>
+                            setState((s) => ({
+                                ...s,
+                                imageUrl: e.target.value,
+                            }))
+                        }
+                        disabled={busy}
+                    />
+                    <div className="form-text small">
+                        Square, iconic art — renders at 36px on the game page. A
+                        boss face or item beats a screenshot. Leave empty for
+                        the default letter tile.
                     </div>
                 </div>
 

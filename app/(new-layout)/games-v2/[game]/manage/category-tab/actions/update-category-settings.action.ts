@@ -18,6 +18,7 @@ interface Input {
     showMilliseconds?: boolean;
     requireVideo?: boolean;
     requireVideoTopN?: number | null;
+    imageUrl?: string | null;
 }
 
 export async function updateCategorySettingsAction(
@@ -44,6 +45,14 @@ export async function updateCategorySettingsAction(
         };
     }
 
+    if (
+        input.imageUrl != null &&
+        input.imageUrl !== '' &&
+        !input.imageUrl.startsWith('https://')
+    ) {
+        return { error: 'Image URL must start with https://.' };
+    }
+
     const body: UpdateCategoryBody = {};
     if (input.rules !== undefined) body.rules = input.rules;
     if (input.sortAscending !== undefined)
@@ -54,6 +63,7 @@ export async function updateCategorySettingsAction(
         body.requireVideo = input.requireVideo;
     if (input.requireVideoTopN !== undefined)
         body.requireVideoTopN = input.requireVideoTopN;
+    if (input.imageUrl !== undefined) body.imageUrl = input.imageUrl;
 
     if (Object.keys(body).length === 0) {
         return { result: { updated: false } };

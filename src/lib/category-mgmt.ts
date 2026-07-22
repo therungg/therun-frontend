@@ -154,6 +154,7 @@ export interface UpdateCategoryBody {
     requireVideo?: boolean;
     requireVideoTopN?: number | null;
     sortOrder?: number;
+    imageUrl?: string | null;
 }
 
 export async function updateCategory(
