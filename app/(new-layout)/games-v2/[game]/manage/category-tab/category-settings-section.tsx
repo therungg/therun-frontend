@@ -1,9 +1,19 @@
 'use client';
 
-import { type FormEvent, useEffect, useState, useTransition } from 'react';
+import {
+    type ChangeEvent,
+    type FormEvent,
+    useEffect,
+    useState,
+    useTransition,
+} from 'react';
 import { toast } from 'react-toastify';
 import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
+import { getEmblemUploadUrlAction } from './actions/get-emblem-upload-url.action';
 import { updateCategorySettingsAction } from './actions/update-category-settings.action';
+
+const ALLOWED_EMBLEM_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
+const MAX_EMBLEM_SIZE = 2 * 1024 * 1024;
 
 interface Props {
     gameSlug: string;
@@ -51,6 +61,7 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
     const [original, setOriginal] = useState<State>(() => readState(category));
     const [formError, setFormError] = useState<string | null>(null);
     const [isSaving, startSave] = useTransition();
+    const [isUploading, setIsUploading] = useState(false);
 
     useEffect(() => {
         const next = readState(category);
@@ -67,6 +78,54 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
     ]);
 
     if (!category) return null;
+
+    const handleEmblemChange = async (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.currentTarget.files?.[0];
+        e.currentTarget.value = '';
+        if (!file) return;
+
+        setFormError(null);
+
+        if (!ALLOWED_EMBLEM_TYPES.includes(file.type)) {
+            setFormError('Image must be PNG, JPEG, or WEBP.');
+            return;
+        }
+        if (file.size > MAX_EMBLEM_SIZE) {
+            setFormError('Image must be 2 MB or smaller.');
+            return;
+        }
+
+        setIsUploading(true);
+        try {
+            const res = await getEmblemUploadUrlAction({
+                gameSlug,
+                gameId,
+                categoryId: category.id,
+                contentType: file.type,
+                contentLength: file.size,
+            });
+            if ('error' in res) {
+                setFormError(res.error);
+                return;
+            }
+
+            const putRes = await fetch(res.result.uploadUrl, {
+                method: 'PUT',
+                body: file,
+                headers: { 'Content-Type': file.type },
+            });
+            if (!putRes.ok) {
+                setFormError(`Upload failed (${putRes.status}).`);
+                return;
+            }
+
+            setState((s) => ({ ...s, imageUrl: res.result.imageUrl }));
+        } catch {
+            setFormError('Upload failed.');
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const dirty =
         state.sortAscending !== original.sortAscending ||
@@ -220,27 +279,49 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
                 </div>
 
                 <div className="mb-3">
-                    <label className="form-label small" htmlFor="catImageUrl">
-                        Emblem image URL
+                    <label
+                        className="form-label small"
+                        htmlFor="catImageUpload"
+                    >
+                        Emblem image
                     </label>
+                    {state.imageUrl && (
+                        <div className="d-flex align-items-center gap-2 mb-2">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={state.imageUrl}
+                                alt=""
+                                width={36}
+                                height={36}
+                                className="rounded"
+                                style={{ objectFit: 'cover' }}
+                            />
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-outline-secondary"
+                                onClick={() =>
+                                    setState((s) => ({ ...s, imageUrl: '' }))
+                                }
+                                disabled={busy || isUploading}
+                            >
+                                Remove
+                            </button>
+                        </div>
+                    )}
                     <input
-                        type="url"
-                        id="catImageUrl"
+                        type="file"
+                        id="catImageUpload"
+                        accept="image/png,image/jpeg,image/webp"
                         className="form-control form-control-sm"
-                        placeholder="https://…"
-                        value={state.imageUrl}
-                        onChange={(e) =>
-                            setState((s) => ({
-                                ...s,
-                                imageUrl: e.target.value,
-                            }))
-                        }
-                        disabled={busy}
+                        onChange={handleEmblemChange}
+                        disabled={busy || isUploading}
                     />
+                    {isUploading && (
+                        <div className="form-text small">Uploading…</div>
+                    )}
                     <div className="form-text small">
-                        Square, iconic art — renders at 36px on the game page. A
-                        boss face or item beats a screenshot. Leave empty to
-                        show no image.
+                        PNG/JPEG/WebP, max 2 MB. Square, iconic art — renders at
+                        36px. A boss face or item beats a screenshot.
                     </div>
                 </div>
 
