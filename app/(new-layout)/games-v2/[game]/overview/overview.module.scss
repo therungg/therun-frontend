@@ -16,31 +16,65 @@
     gap: dt.$spacing-md;
 }
 
-.card {
+// ---- Plaque (record-wall card) --------------------------------
+.plaque {
     position: relative;
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-md;
-    padding: dt.$spacing-lg;
+    padding: dt.$spacing-md dt.$spacing-lg;
+    background: var(--bs-tertiary-bg);
     border: 1px solid var(--bs-border-color);
     border-radius: dt.$radius-lg;
-    transition: border-color dt.$transition-fast;
+    transition: border-color dt.$transition-fast,
+        background-color dt.$transition-fast;
 
     &:hover {
         border-color: var(--bs-secondary-color);
+        background: var(--bs-secondary-bg);
     }
 }
 
-.cardHead {
+.plaqueHead {
     display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-xs;
+    align-items: center;
+    gap: dt.$spacing-sm;
 }
 
-.cardTitle {
+.emblem {
+    width: 36px;
+    height: 36px;
+    border-radius: dt.$radius-md;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.emblemFallback {
+    width: 36px;
+    height: 36px;
+    border-radius: dt.$radius-md;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bs-secondary-bg);
+    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-sm;
+    font-weight: 700;
+    text-transform: uppercase;
+    user-select: none;
+}
+
+.plaqueTitleBlock {
+    min-width: 0;
+    flex: 1;
+}
+
+.plaqueTitle {
     font-size: dt.$font-size-md;
     font-weight: 700;
     margin: 0;
+    line-height: 1.2;
 
     a {
         color: var(--bs-emphasis-color);
@@ -48,30 +82,65 @@
     }
 }
 
-.cardStats {
-    font-size: dt.$font-size-xs;
+.plaqueStats {
+    font-size: dt.$font-size-2xs;
     color: var(--bs-tertiary-color);
 }
 
-.cardWr {
+.eyebrowGold {
+    @include board.board-eyebrow;
+    color: dt.$accent-gold;
+    flex-shrink: 0;
+}
+
+.eyebrowDim {
+    @include board.board-eyebrow;
+    flex-shrink: 0;
+}
+
+// ---- Record row ----------------------------------------------
+.recordRow {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+}
+
+// Ring around the holder's avatar; gold only when the record is verified.
+.avatarRing,
+.avatarRingGold {
+    display: inline-flex;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 2px var(--bs-border-color);
+}
+
+.avatarRingGold {
+    box-shadow:
+        0 0 0 2px dt.$accent-gold,
+        0 0 0 5px rgba(dt.$accent-gold, 0.15);
+}
+
+.recordText {
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    margin-top: auto;
+    gap: 1px;
 }
 
-.cardEyebrow {
-    @include board.board-eyebrow;
-}
-
-.cardTime {
+.recordTime,
+.recordTimeGold {
     @include board.mono-time;
     font-size: dt.$font-size-xl;
     font-weight: 700;
+    line-height: 1.15;
+    color: var(--bs-emphasis-color);
+}
+
+.recordTimeGold {
     color: dt.$accent-gold;
 }
 
-.cardHolder {
+.recordHolder {
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
     // Runner link must stay clickable above the card's stretched link.
@@ -79,17 +148,45 @@
     z-index: 2;
 }
 
-.cardWhen {
+.recordWhen {
     color: var(--bs-tertiary-color);
 }
 
-.cardEmpty {
+// ---- Podium footer -------------------------------------------
+.podium {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs dt.$spacing-lg;
+    margin-top: auto;
+    padding-top: dt.$spacing-sm;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    // Runner-up links clickable above the stretched link.
+    position: relative;
+    z-index: 2;
+}
+
+.podiumSpot {
+    white-space: nowrap;
+}
+
+.podiumRank {
+    @include board.mono-time;
+    color: var(--bs-secondary-color);
+}
+
+.podiumTime {
+    @include board.mono-time;
+}
+
+.plaqueEmpty {
     margin-top: auto;
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
 }
 
-.cardEmptyLink {
+.plaqueEmptyLink {
     position: relative;
     z-index: 2;
 }
