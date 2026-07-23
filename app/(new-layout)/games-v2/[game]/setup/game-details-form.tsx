@@ -24,9 +24,6 @@ export function GameDetailsForm({
     saveLabel?: string;
 }) {
     const [slug, setSlug] = useState(identifiers.slug ?? '');
-    const [abbreviation, setAbbreviation] = useState(
-        identifiers.abbreviation ?? '',
-    );
     const [coverUrl, setCoverUrl] = useState(metadata.coverUrl ?? '');
     const [platformsText, setPlatformsText] = useState(
         metadata.platforms.join(', '),
@@ -60,7 +57,6 @@ export function GameDetailsForm({
                 gameSlug: game.name,
                 gameId: game.id,
                 slug: slug.trim() || null,
-                abbreviation: abbreviation.trim() || null,
             });
             if ('error' in identRes) {
                 setError(identRes.error);
@@ -148,16 +144,6 @@ export function GameDetailsForm({
                         className="form-control"
                         value={slug}
                         onChange={(e) => setSlug(e.target.value)}
-                    />
-                    <label className="form-label mt-3" htmlFor="abbreviation">
-                        Abbreviation
-                    </label>
-                    <input
-                        id="abbreviation"
-                        className="form-control"
-                        value={abbreviation}
-                        onChange={(e) => setAbbreviation(e.target.value)}
-                        placeholder="sm64"
                     />
                     <label className="form-label mt-3" htmlFor="discord">
                         Discord invite

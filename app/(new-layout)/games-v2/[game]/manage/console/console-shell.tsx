@@ -46,7 +46,6 @@ export interface ConsoleShellProps {
     modApplications?: BoardClaimRequest[];
     initialCategoryId: number | null;
     initialSlug: string | null;
-    initialAbbreviation: string | null;
     initialRows: ManageCategoryRow[];
     initialGroups: ManageGroup[];
     setupCompleteness?: BoardCompleteness | null;
@@ -65,7 +64,6 @@ export function ConsoleShell({
     modApplications,
     initialCategoryId,
     initialSlug,
-    initialAbbreviation,
     initialRows,
     initialGroups,
     setupCompleteness,
@@ -473,7 +471,6 @@ export function ConsoleShell({
                     moderators={moderators}
                     onAttentionCountChange={setLiveAttentionCount}
                     initialSlug={initialSlug}
-                    initialAbbreviation={initialAbbreviation}
                     rows={rows}
                     groups={manageGroups}
                     onGroupsChange={setManageGroups}

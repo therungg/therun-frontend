@@ -30,7 +30,6 @@ export interface CompletenessInput {
     policyCount: number;
     requireVideoAnywhere: boolean;
     slug: string | null;
-    abbreviation: string | null;
     moderatorCount: number;
     configured: boolean;
 }
@@ -77,16 +76,16 @@ export function computeCompleteness(
     steps.push({ step: 'welcome', status: 'done', summary: 'Board snapshot' });
 
     steps.push(
-        input.slug && input.abbreviation
+        input.slug
             ? {
                   step: 'details',
                   status: 'done',
-                  summary: `Slug ${input.slug} · abbreviation ${input.abbreviation}`,
+                  summary: `Slug ${input.slug}`,
               }
             : {
                   step: 'details',
                   status: 'todo',
-                  summary: 'Slug or abbreviation missing',
+                  summary: 'Slug missing',
               },
     );
 

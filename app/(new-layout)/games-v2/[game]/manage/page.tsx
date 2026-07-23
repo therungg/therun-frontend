@@ -96,7 +96,6 @@ export default async function GameAdminConsolePage({ params }: Props) {
         await Promise.all([
             getGameIdentifiers(game.id).catch(() => ({
                 slug: null,
-                abbreviation: null,
             })),
             listManageCategories(game.id).catch(() => []),
             listManageGroups(game.id).catch(() => []),
@@ -174,7 +173,6 @@ export default async function GameAdminConsolePage({ params }: Props) {
                     (c) => !c.archived && c.requireVideo,
                 ),
                 slug: identifiers.slug,
-                abbreviation: identifiers.abbreviation,
                 moderatorCount: moderators.length,
                 configured: metadata.configured,
             });
@@ -219,7 +217,6 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 modApplications={modApplications}
                 initialCategoryId={initialCategory?.id ?? null}
                 initialSlug={identifiers.slug}
-                initialAbbreviation={identifiers.abbreviation}
                 initialRows={rows}
                 initialGroups={groups}
                 setupCompleteness={setupCompleteness}

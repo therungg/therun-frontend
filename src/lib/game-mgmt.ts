@@ -10,13 +10,11 @@ export interface GameLink {
 
 export interface GameIdentifiers {
     slug: string | null;
-    abbreviation: string | null;
 }
 
 interface GamePageData {
     game?: {
         slug?: string | null;
-        abbreviation?: string | null;
     };
 }
 
@@ -28,13 +26,11 @@ export async function getGameIdentifiers(
     );
     return {
         slug: data?.game?.slug ?? null,
-        abbreviation: data?.game?.abbreviation ?? null,
     };
 }
 
 export interface UpdateGameBody {
     slug?: string | null;
-    abbreviation?: string | null;
     coverUrl?: string | null;
     platforms?: string[];
     releaseYear?: number | null;

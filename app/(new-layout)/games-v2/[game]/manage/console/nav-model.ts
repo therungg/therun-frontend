@@ -84,7 +84,7 @@ const ALL_GROUPS: NavGroup[] = [
             },
             {
                 id: 'identifiers',
-                label: 'URL & abbreviation',
+                label: 'URL slug',
                 categoryScoped: false,
             },
             {

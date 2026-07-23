@@ -116,7 +116,6 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
             (c) => !c.archived && c.requireVideo,
         ),
         slug: identifiers.slug,
-        abbreviation: identifiers.abbreviation,
         moderatorCount: moderators.length,
         configured: metadata.configured,
     });

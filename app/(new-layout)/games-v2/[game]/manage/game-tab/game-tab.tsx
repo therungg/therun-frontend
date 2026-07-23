@@ -27,7 +27,6 @@ interface Props {
      * between these three, so this drives which section to scroll to. */
     activeSection: GameTabSection;
     initialSlug: string | null;
-    initialAbbreviation: string | null;
     rows: ManageCategoryRow[];
     groups: ManageGroup[];
     onGroupsChange: (groups: ManageGroup[]) => void;
@@ -48,7 +47,6 @@ export function GameTab({
     game,
     activeSection,
     initialSlug,
-    initialAbbreviation,
     rows,
     groups,
     onGroupsChange,
@@ -74,7 +72,6 @@ export function GameTab({
                     gameSlug={game.name}
                     gameId={game.id}
                     initialSlug={initialSlug}
-                    initialAbbreviation={initialAbbreviation}
                 />
             </div>
 

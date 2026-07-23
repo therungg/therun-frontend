@@ -23,7 +23,6 @@ function input(over: Partial<CompletenessInput>): CompletenessInput {
         policyCount: 1,
         requireVideoAnywhere: false,
         slug: 'mygame',
-        abbreviation: 'mg',
         moderatorCount: 1,
         configured: true,
         ...over,
