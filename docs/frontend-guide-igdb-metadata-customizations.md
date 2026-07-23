@@ -31,7 +31,6 @@ interface PageData {
     aggregatedRating: number | null; // critic rating 0-100
     igdbUrl: string | null;          // link to IGDB page
     slug: string | null;             // admin-editable URL slug; preferred lookup key for /by-slug
-    abbreviation: string | null;     // admin-editable short form (e.g. "sm64"); fallback lookup key
   };
   ungroupedCategories: Category[];
   groups: CategoryGroup[];

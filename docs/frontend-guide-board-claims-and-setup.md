@@ -65,7 +65,7 @@ The backend must whitelist assignable roles per surface (game-admin/game-mod onl
 
 ## 3. Game metadata
 
-Extend `PUT /v1/games/{gameId}` (existing, already takes `slug`/`abbreviation`) with:
+Extend `PUT /v1/games/{gameId}` (existing, already takes `slug`) with:
 `coverUrl?: string|null`, `platforms?: string[]`, `releaseYear?: number|null`, `discordUrl?: string|null`.
 Extend `GET /v1/games/{gameId}` response's `game` object with the same fields.
 Nice-to-have (not blocking): a presigned-URL upload endpoint for game cover images —
