@@ -10,7 +10,6 @@ interface Input {
     gameSlug: string;
     gameId: number;
     slug?: string | null;
-    abbreviation?: string | null;
 }
 
 export async function updateIdentifiersAction(
@@ -27,9 +26,6 @@ export async function updateIdentifiersAction(
 
     const body: UpdateGameBody = {};
     if (input.slug !== undefined) body.slug = input.slug;
-    if (input.abbreviation !== undefined) {
-        body.abbreviation = input.abbreviation;
-    }
 
     if (Object.keys(body).length === 0) {
         return { result: { updated: false } };

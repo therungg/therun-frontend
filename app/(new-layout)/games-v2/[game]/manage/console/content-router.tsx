@@ -42,7 +42,6 @@ export interface ContentRouterProps {
     /** Live item-count reporter from NeedsAttention, forwarded to the sidebar badge. */
     onAttentionCountChange?: (count: number) => void;
     initialSlug: string | null;
-    initialAbbreviation: string | null;
     gameDetails?: GameDetailsData | null;
     rows: ManageCategoryRow[];
     groups: ManageGroup[];
@@ -185,7 +184,6 @@ export function ContentRouter(props: ContentRouterProps) {
                     game={game}
                     activeSection={activeItem}
                     initialSlug={props.initialSlug}
-                    initialAbbreviation={props.initialAbbreviation}
                     rows={props.rows}
                     groups={props.groups}
                     onGroupsChange={props.onGroupsChange}

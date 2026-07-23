@@ -107,12 +107,12 @@ describe('computeBoardHealth', () => {
     it('maps a details warning to the game-details pane', () => {
         const h = computeBoardHealth({
             completeness: completeness({
-                warnings: ['Slug or abbreviation missing'],
+                warnings: ['Slug missing'],
                 steps: [
                     {
                         step: 'details',
                         status: 'warning',
-                        summary: 'Slug or abbreviation missing',
+                        summary: 'Slug missing',
                     },
                 ],
             }),
@@ -121,7 +121,7 @@ describe('computeBoardHealth', () => {
         });
         expect(h.items).toContainEqual({
             severity: 'warning',
-            label: 'Slug or abbreviation missing',
+            label: 'Slug missing',
             pane: 'game-details',
         });
     });
