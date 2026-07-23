@@ -57,7 +57,6 @@ interface PageData {
     hideGameTime: boolean;
     autoCreated: boolean;
     slug: string | null;          // admin-editable URL slug; preferred lookup key for /by-slug
-    abbreviation: string | null;  // admin-editable short form (e.g. "sm64"); fallback lookup key
   };
   ungroupedCategories: Category[];
   groups: {
@@ -216,8 +215,7 @@ Resolve a URL slug to a game id. All other `/v1/games/:id/*` endpoints are id-ba
 The path param is normalized (lowercase, non-alphanumerics → `-`, dashes collapsed, leading/trailing dashes stripped) before lookup. Resolution priority:
 
 1. `games.slug` — admin-set, editable, URL-friendly
-2. `games.abbreviation` — admin-set short form (e.g. `sm64`, `oot`)
-3. `games.name` — auto-derived from the display name (`convertToSearchable`: lowercased, spaces removed). Preserves all legacy `/by-slug/<name>` URLs.
+2. `games.name` — auto-derived from the display name (`convertToSearchable`: lowercased, spaces removed). Preserves all legacy `/by-slug/<name>` URLs.
 
 Cached in Redis (1 h hit / 5 min negative). Slug edits propagate within the TTL.
 
@@ -301,7 +299,6 @@ Edit game metadata.
   seriesId?: number | null;
   sortOrderInSeries?: number;
   slug?: string | null;           // admin-set URL slug. Pass null or "" to clear.
-  abbreviation?: string | null;   // admin-set short form. Pass null or "" to clear.
   active?: boolean;               // unarchive (true) / archive (false). Requires `archive-game` permission.
 }
 
@@ -309,14 +306,14 @@ Edit game metadata.
 { result: { updated: true } }
 ```
 
-**Slug & abbreviation rules:**
+**Slug rules:**
 
-- Both are normalized server-side (lowercase + non-alphanumerics → `-` + collapsed + trimmed). Whatever the admin types, the canonical stored value is the normalized form.
-- Slug max **64 chars** after normalization. Abbreviation max **16 chars**.
-- Both UNIQUE across all games. A duplicate returns `400` with `{ error: "Slug already in use" }` or `{ error: "Abbreviation already in use" }`.
-- A field that normalizes to an empty string (e.g. `"!!!"`) returns `400` with `{ error: "Slug must contain at least one alphanumeric character" }`.
+- Normalized server-side (lowercase + non-alphanumerics → `-` + collapsed + trimmed). Whatever the admin types, the canonical stored value is the normalized form.
+- Max **64 chars** after normalization.
+- UNIQUE across all games. A duplicate returns `400` with `{ error: "Slug already in use" }`.
+- A value that normalizes to an empty string (e.g. `"!!!"`) returns `400` with `{ error: "Slug must contain at least one alphanumeric character" }`.
 - To clear an existing value, send `null` or `""`.
-- The normalized values appear in `pageData.game.slug` / `pageData.game.abbreviation` after the next pageData rebuild (≤ 1 s).
+- The normalized value appears in `pageData.game.slug` after the next pageData rebuild (≤ 1 s).
 
 **Active toggle:** `active: false` archives, `active: true` unarchives (the existing `POST /v1/games/:id/archive` still works for archiving). Archived games are hidden from browse/search but still accept run uploads.
 
@@ -1013,6 +1010,8 @@ All endpoints return consistent error shapes:
 
 Leaderboard data lives under `/v1/leaderboards/`. Game and category names are matched via `convertToSearchable()` (lowercased, spaces removed) — e.g., `/v1/leaderboards/supermario64/120star`.
 
+**Alias resolution:** Game and category names are resolved through aliases. If `/v1/leaderboards/sm64/any%25` doesn't match a game named "sm64", the system checks `game_aliases` for a mapping to the canonical game. Same for categories. This means frontend URLs can use common abbreviations and they'll work as long as aliases exist.
+
 ### GET /v1/leaderboards/{game}/{category}
 
 Fetch the ranked leaderboard for a game+category. Unfiltered queries hit Redis (fast). Variable-filtered queries go to PostgreSQL.
@@ -1020,83 +1019,180 @@ Fetch the ranked leaderboard for a game+category. Unfiltered queries hit Redis (
 ```typescript
 // Path params: game and category as searchable strings
 
-// Query params
-?subcategory=       // subcategory hash (empty = default)
-&timing=rt          // "rt" | "gt". If omitted, server picks the default based on game/category settings — see "Timing defaults" below.
-&verified=false     // true = only verified runs
+// Query params (see "Variable Query Params" below for variable filters)
+?timing=rt             // "rt" | "gt". If omitted, server picks based on category.primaryTiming and game.forceRealTime — see "Timing defaults" below.
+&verified=true         // true/1 = only verified runs
+&combined=1            // drops subcategoryKey filter — returns best per runner across every subcategory in the category
+&year=2024             // EXTRACT(YEAR FROM ended_at) = 2024
 &page=1
-&pageSize=25        // max 100
-&var_platform=N64   // filter by variable value, comma-separated for multiple
+&pageSize=25           // max 100
+&platform=n64          // bare variable key (no `var_` prefix). See "Variable Query Params".
 
-// Response
+// Response (flat — NOT wrapped in `result`)
 {
-  result: {
-    items: {
-      rank: number;
-      runId: number | null;      // null only for a stale-cache fallback row; populated for all normal entries
-      runnerName: string;
-      userId: number | null;
-      time: number;              // milliseconds — equals the queried timing's value (kept for back-compat)
-      realTime: number | null;   // the runner's true best realtime in this triple (independent of the queried timing)
-      gameTime: number | null;   // the runner's true best gametime in this triple (independent of the queried timing)
-      verificationStatus: string;
-      vodUrl: string | null;
-      runDate: string;
-      isGuest: boolean;
-    }[];
-    totalItems: number;
-    page: number;
-    pageSize: number;
-    totalPages: number;
-    timing: "rt" | "gt";          // timing actually used for this response
-    defaultTiming: "rt" | "gt";   // category's preferred timing
-    forceRealTime: boolean;       // true = game forces realtime
-    hideRealTime: boolean;        // effective (category > game). Realtime view hidden.
-    hideGameTime: boolean;        // effective (category > game). Gametime view hidden.
-  }
+  items: {
+    rank: number;
+    runId: number;
+    runnerName: string;
+    userId: number | null;
+    time: number;              // milliseconds — equals the queried timing's value (kept for back-compat)
+    realTime: number | null;   // the runner's true best realtime in this triple (independent of the queried timing)
+    gameTime: number | null;   // the runner's true best gametime in this triple (independent of the queried timing)
+    verificationStatus: string;
+    vodUrl: string | null;
+    runDate: string;
+    isGuest: boolean;
+  }[];
+  totalItems: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  timing: "rt" | "gt";          // timing actually used for this response
+  defaultTiming: "rt" | "gt";   // category's preferred timing
+  forceRealTime: boolean;       // true = game forces realtime; toggle should be hidden
+  hideRealTime: boolean;        // effective (category > game). Realtime view is hidden.
+  hideGameTime: boolean;        // effective (category > game). Gametime view is hidden.
 }
 ```
+
+**404 payload** — when a request resolves to a subcategoryKey that isn't in `valid_subcategory_combinations` for a managed scope:
+
+```typescript
+{ error: "leaderboard does not exist", validCombinations: string[] }
+```
+
+The `validCombinations` array contains every legal subcategoryKey under the scope so the UI can offer alternatives. Plain text keys, e.g. `platform=nintendo64|region=us`.
 
 **Auth:** None (public).
 
 #### Both timings per entry — no second request
 
-Each entry carries both `realTime` and `gameTime`. The server looks up each runner's GT-flagged row and RT-flagged row separately in the same `(game, category, subcategory)` triple, so the two times reflect the runner's actual best in each timing — even when those records come from different runs.
+Each entry carries both `realTime` and `gameTime`. The server resolves them per runner: it looks up the runner's GT-flagged row separately from their RT-flagged row in the same `(game, category, subcategory)` triple, so the two times reflect each runner's actual best in each timing — even when the records come from different runs.
 
-Migration note for the celeste/leaderboard-table flow (`app/(new-layout)/games-v2/[game]/leaderboard/leaderboard-table.tsx`) that previously made two paginated calls (`?timing=rt` + `?timing=gt`) and merged by `runnerName`:
+That means a frontend that previously made two paginated calls (one `?timing=rt`, one `?timing=gt`) and merged by `runnerName` should:
 
-- Make a single request with the desired `?timing=` (or omit it and let the server pick the category default).
-- Read `realTime` and `gameTime` directly off each entry. No merge.
-- Delete the secondary fetch + `secondaryByRunner` merge. It was page-bounded and produced `—` for runners whose ranks across timings differed by more than `pageSize` (e.g. a runner ranked 1 GT but 28 RT showed `—` for RT on page 1).
+- Make a single call with the desired `?timing=` (or omit it and let the server pick the category default).
+- Read `realTime` and `gameTime` directly off each entry.
+- Delete the second-call-and-merge code. It was page-bounded and produced `—` for any runner whose ranks across timings differed by more than `pageSize`.
 
-`time` still equals the queried timing's value so existing callers don't break, but new code should prefer `realTime`/`gameTime` explicitly.
+`time` still equals the queried timing's value (so existing callers don't break), but new code should prefer `realTime`/`gameTime` explicitly.
 
 #### Timing defaults
 
-Server-side precedence (don't replicate this on the client — just read the response fields):
+The server picks the timing column using this precedence:
 
-1. `forceRealTime: true` → `"rt"`. `?timing=gt` ignored.
-2. Effective `hideRealTime` (category overrides game) → `"gt"`.
+1. `game.forceRealTime === true` → always `"rt"`. `?timing=gt` is ignored.
+2. Effective `hideRealTime` (category overrides game when category sets either hide flag) → `"gt"`.
 3. Effective `hideGameTime` → `"rt"`.
 4. Explicit `?timing=rt` or `?timing=gt`.
 5. `category.primaryTiming === "gametime"` → `"gt"`, else `"rt"`.
 
-Render the realtime/gametime toggle based on the response:
+Use the returned `timing`, `defaultTiming`, `forceRealTime`, `hideRealTime`, `hideGameTime` to render the toggle:
 
-| Response | Toggle |
-|----------|--------|
-| `forceRealTime: true` | Hide. Realtime only. |
-| `hideRealTime: true` | Hide. Gametime only. |
-| `hideGameTime: true` | Hide. Realtime only. |
-| Otherwise | Show, initialized to `timing`. |
+| Server response | Toggle UI |
+|-----------------|-----------|
+| `forceRealTime: true` | Hide the toggle. Realtime only. |
+| `hideRealTime: true` | Hide the toggle. Gametime only. |
+| `hideGameTime: true` | Hide the toggle. Realtime only. |
+| Otherwise | Show the toggle, initialized to `timing`. |
 
-On first load, call without `?timing=` and the server picks the right default. Only add `?timing=` when the user manually flips the toggle.
+Call the endpoint without `?timing=` on first load and let the server resolve the default for you. Only send `?timing=` when the user manually flips the toggle.
 
-`hideRealTime` and `hideGameTime` are mutually exclusive — the backend rejects requests that set both.
+**Configuring per-category (`PUT /v1/games/{id}/categories/{catId}`):**
+
+```typescript
+{
+  primaryTiming?: "realtime" | "gametime";
+  hideRealTime?: boolean;   // mutually exclusive with hideGameTime
+  hideGameTime?: boolean;
+}
+```
+
+**Configuring per-game (`PUT /v1/games/{id}`):**
+
+```typescript
+{
+  forceRealTime?: boolean;  // legacy; forces realtime regardless of category settings
+  hideRealTime?: boolean;   // mutually exclusive with hideGameTime
+  hideGameTime?: boolean;
+}
+```
+
+`hideRealTime` and `hideGameTime` cannot both be true on the same row — the API returns 400 if you try, and a DB CHECK constraint enforces it as a safety net. A category-level hide flag overrides game-level hide flags (any category hide flag wins).
+
+#### Discovering Variables for a Leaderboard
+
+To render filter chips, subcategory pickers, and validity hints, frontends should fetch the **merged effective variable defs** for a leaderboard. This is the read-side companion to the admin endpoints in §8.
+
+```typescript
+// GET /v1/leaderboards/{game}/{category}/variables
+// Public. Returns the merged view: game-wide defs + category-specific defs,
+// with category-specific entries winning on `nameNormalized` collisions.
+
+// Response (flat — NOT wrapped in `result`)
+{
+  variables: {
+    id: number;
+    gameId: number;
+    categoryId: number | null;     // null = game-wide def
+    name: string;                  // display name
+    nameNormalized: string;        // use this as the query string key
+    role: "subcategory" | "filter";
+    values: string[][];            // value buckets (see §8)
+    defaultValueIndex: number | null;
+    sortOrder: number;
+    description: string | null;
+    version: number;
+    published: boolean;
+  }[];
+  reservedParams: string[];        // builtin query-param names; never variable names
+  validCombinations:
+    | { mode: "open" }                          // no restriction — all combos legal
+    | { mode: "managed"; keys: string[] };      // restricted — only these subcategoryKeys legal
+}
+```
+
+**Auth:** None (public).
+
+**`validCombinations.mode`:**
+- `"open"` — the cartesian product of every subcategory variable's value buckets is legal. The frontend can render any combination.
+- `"managed"` — only the listed `keys` are real boards. Render the subcategory picker as a flat list of `keys` (not a cartesian dropdown), or grey out invalid combinations when constructing them piecemeal.
+
+**Don't use the admin endpoint `GET /v1/games/{gameId}/variables` for this.** That endpoint is strict-scope (returns only rows whose `categoryId` matches the query exactly) and is intended for managing definitions — see §8.
+
+#### Variable Query Params
+
+Variables are passed as **bare query string keys** matching the variable's `nameNormalized` (no `var_` prefix). The value is matched case- and whitespace-insensitively against every bucket entry on the variable's def, then folded to that bucket's canonical-normalized form before filtering.
+
+| Use case | Syntax | Backing |
+|---|---|---|
+| Subcategory variable (selects a specific board) | `?platform=n64` | Affects the `subcategoryKey` the query asks for. Redis-cacheable per resolved key. |
+| Filter variable (narrows a board's rows) | `?platform=n64` | JSONB containment `variables @> {platform: "nintendo64"}`. Always goes to PG. |
+| Multiple filter variables | `?platform=n64&region=us` | AND. JSONB containment with both keys. |
+| Combined view across subcategories | `?combined=1` | Drops the `subcategoryKey` filter — returns best per runner across every subcategory in the category. Always goes to PG. |
+| Verified-only | `?verified=true` (or `=1`) | Uses the `is_verified_entry*` flags instead of `is_leaderboard_entry*`. Redis-cacheable as a separate key (`:v` suffix). |
+| Year cohort | `?year=2024` | Adds `EXTRACT(YEAR FROM ended_at) = 2024`. Goes to PG. |
+| Pagination | `?page=2&pageSize=50` | `pageSize` capped at 100. |
+| Timing override | `?timing=rt` or `?timing=gt` | See [Timing Preferences](#timing-preferences) for precedence. |
+
+Notes:
+- There is no OR combinator across distinct variables (no `filterMode=or`, no comma-separated values). One value per key.
+- There is no "X has any value" (`*`) or "X is unset" (`!`) sentinel. To find runs that didn't supply a variable, query the default subcategory and look at the `subcategoryKey` returned per row.
+- Unknown variable names in the query string are silently ignored (the resolver only consults variables that have a published def).
+- Built-in reserved params: `combined, verified, country, year, page, pagesize, timing, view`. Anything else is treated as a variable name lookup.
+
+#### Performance
+
+- **No filter + default subcategory + no builtins**: Redis-cached, ~1-5ms.
+- **Filter variable applied** (e.g. `?platform=n64` when `platform` is `role: "filter"`): PG with JSONB containment + B-tree on `(gameId, categoryId, subcategoryKey, time)`. ~5-50ms.
+- **`?combined=1`** or any non-trivial builtin (`?year=`): PG, ~5-50ms.
+- **Specific subcategory** (e.g. `?platform=n64` when `platform` is `role: "subcategory"`): Redis-cached at the resolved key, same speed as default.
+
+If the requested combination of subcategory variables isn't in `valid_subcategory_combinations` for the scope (when that table is populated), the API returns 404 with the list of valid combinations so the frontend can offer alternatives.
 
 ### GET /v1/leaderboards/wr-history/{game}/{category}
 
-World record progression timeline.
+World record progression timeline. Also resolves game/category via aliases.
 
 ```typescript
 // Query params
@@ -1118,17 +1214,22 @@ World record progression timeline.
 
 ### GET /v1/leaderboards/user/{userId}/rankings
 
-All leaderboard entries for a user across all games/categories, with rank in each.
+All leaderboard entries for a user across all games/categories, with rank in each. Uses each category's `primaryTiming` (realtime or gametime) to determine the correct leaderboard for ranking.
 
 ```typescript
 // Response
 {
   result: {
-    gameId: number;
-    categoryId: number;
-    rank: number;
+    game: string;
+    category: string;
     time: number;
-    // ... game/category metadata
+    gameTime: number | null;
+    primaryTiming: "rt" | "gt";
+    verificationStatus: string;
+    vodUrl: string | null;
+    runDate: string;
+    rank: number | null;          // null if Redis cache is cold
+    totalRunners: number;
   }[]
 }
 ```
@@ -1137,7 +1238,7 @@ All leaderboard entries for a user across all games/categories, with rank in eac
 
 ### POST /v1/leaderboards/submit
 
-Manually submit a run (for guest/inactive runners). Submitted as verified.
+Manually submit a run (for guest/inactive runners). Submitted as verified. Variable values are resolved through the variable's value buckets — case- and whitespace-insensitively matched against every bucket entry, then stored as the bucket's canonical-normalized form.
 
 ```typescript
 // Request body
@@ -1179,51 +1280,10 @@ Reject a pending run. Promotes next-best run if rejected run held the leaderboar
 }
 
 // Response
-{
-  result: {
-    rejected: true;
-    nextRunIdForUser: number | null;
-  }
-}
+{ result: { rejected: true } }
 ```
-
-`nextRunIdForUser` is the ID of the same runner's promoted entry on the standard (RT) leaderboard, falling back to GT if the runner has no remaining RT-eligible run. `null` if the runner has no other non-rejected run in this subcategory.
 
 **Auth:** Required. Caller must be a moderator for the run's game.
-
-### GET /v1/leaderboards/runs/{runId}
-
-Single run detail. Used by the run management table to render the target row.
-
-```typescript
-// Response
-{
-  result: {
-    runId: number;
-    gameId: number;
-    gameDisplay: string;
-    categoryId: number;
-    categoryDisplay: string;
-    subcategoryHash: string;
-    runnerName: string;
-    userId: number | null;
-    isGuest: boolean;
-    time: number;              // primary-timing ms; falls back to realTime if primary is gametime and gameTime is null
-    realTime: number | null;
-    gameTime: number | null;
-    runDate: string;           // ISO, from ended_at
-    vodUrl: string | null;
-    verificationStatus: 'pending' | 'verified' | 'rejected';
-    variables: Record<string, string>;
-  }
-}
-```
-
-Returns 404 if the run does not exist.
-
-The primary timing applied to `time` follows the same precedence as the leaderboard query: `games.force_real_time` > effective hide flags > `categories.primary_timing`. No `?timing=` override is accepted.
-
-**Auth:** None (public).
 
 ### GET /v1/leaderboards/mod-queue/{gameId}
 
@@ -1255,16 +1315,222 @@ Move a run to a different category.
 
 **Auth:** Required. Caller must be a moderator for the run's game.
 
-### POST /v1/leaderboards/invalidate-cache/{gameId}
+---
 
-Force-clear the Redis leaderboard cache for a game. Use after running a backfill, after editing variables in bulk, or any time the cached board is out of sync with Postgres. The next read of each board re-warms from PG.
+## 8. Variable Management
+
+### Variable Definitions
+
+Variables are defined per game, optionally scoped to a category. Game-wide variables (`categoryId: null` in the body) apply to all categories unless overridden by a category-specific definition with the same name.
+
+Two roles:
+- **`subcategory`**: splits the leaderboard. Each distinct combination of subcategory values produces a different `subcategoryKey` (plain text, e.g. `platform=nintendo64|region=us`). Always effectively required — missing values fall back to the variable's default.
+- **`filter`**: queryable at read-time via bare query params (no prefix). Does not split the board. Always optional — missing means "no filter applied".
+
+Values are stored as **buckets**: a `values: string[][]` where each inner array is a bucket whose first entry is the canonical label. Subsequent entries in the same bucket are inline aliases that all resolve to the canonical:
+
+```typescript
+values: [
+  ["Nintendo 64", "n64", "nin64", "N64"],       // bucket 0 — canonical "Nintendo 64"
+  ["Virtual Console", "VC"],                     // bucket 1
+  ["Emulator", "emu", "Project64", "Mupen"],     // bucket 2
+]
+```
+
+Matching is case- and whitespace-insensitive (and strips `=` / `|`). The *stored* form on each `finished_runs` row is the **canonical-normalized** value — `normalize(bucket[0])` — so `variables.platform` ends up as `"nintendo64"` regardless of how the user wrote it in their splits.
+
+`defaultValueIndex` is an index into `values` (required for `subcategory`, optional for `filter`). It picks which bucket's canonical to use when a run has no value for the variable.
+
+**There is no separate alias system.** The legacy `variable_aliases` / `variable_value_aliases` tables and endpoints were removed — aliases live inline on the bucket. If you need to teach the system that "Console" means "platform", do it via a value bucket on the renamed variable, not a separate alias.
+
+### Variable Endpoints
+
+All admin-only (`edit-customizations` permission for the game).
+
+```typescript
+// GET /v1/games/{gameId}/variables?categoryId=
+// List published variables in scope. STRICT-SCOPE — does NOT merge.
+// categoryId omitted/empty -> only rows where `categoryId IS NULL` (game-wide defs).
+// categoryId=N            -> only rows where `categoryId = N` (category-N overrides).
+//
+// To render an "effective variables for this category" view, either call this
+// twice (once with no categoryId, once with categoryId=N) and merge client-side
+// with the category row winning on nameNormalized collisions, OR use the
+// public merged endpoint documented in §7:
+//   GET /v1/leaderboards/{game}/{category}/variables
+//
+// Response
+{
+  result: {
+    id: number;
+    gameId: number;
+    categoryId: number | null;
+    name: string;                  // display name as entered
+    nameNormalized: string;        // lowercased, stripped — used in URLs/keys
+    role: "subcategory" | "filter";
+    values: string[][];
+    defaultValueIndex: number | null;
+    sortOrder: number;
+    description: string | null;
+    version: number;
+    published: boolean;
+  }[];
+}
+```
+
+```typescript
+// POST /v1/games/{gameId}/variables
+// Create or update by name. Looks up the existing row by (gameId, categoryId,
+// nameNormalized); if found, marks it unpublished and inserts a new row with
+// version+1. PUT to /variables/{anyId} is functionally identical — the path
+// id is unused, the body's name is what matches.
+{
+  name: string;                    // required, max 64 chars
+  role: "subcategory" | "filter";
+  values: string[][];              // required, non-empty buckets of non-empty strings
+  defaultValueIndex: number | null;// required for subcategory, optional for filter
+  sortOrder?: number;
+  description?: string | null;
+  categoryId?: number | null;      // null/omit = game-wide
+}
+
+// Response
+{ result: VariableRow }
+```
+
+```typescript
+// DELETE /v1/games/{gameId}/variables/{anyId}
+// Deletes by name (path id is ignored). Body must carry one of:
+{
+  name?: string;
+  nameNormalized?: string;
+  categoryId?: number | null;
+}
+
+// Response
+{ result: { deleted: true } }
+```
+
+Every create / update / delete enqueues a [re-projection](#re-projection-after-variable-changes); the API returns immediately, and existing runs converge to the new defs in the background.
+
+### Reserved Names
+
+The following normalized names are reserved as built-in query params and **cannot** be used as variable names: `combined`, `verified`, `country`, `year`, `page`, `pagesize`, `timing`, `view`. The API returns 400 on attempts to create one.
+
+### Re-projection After Variable Changes
+
+When a subcategory variable is created, edited, or deleted, the backend asynchronously re-projects every affected `finished_runs` row from its `raw_variables` against the current defs — recomputing `variables` and `subcategoryKey`, and rebuilding the entry flags for any board whose key shifted.
+
+**Trigger is automatic.** `POST/PUT/DELETE` on `/v1/games/{gameId}/variables` enqueues the re-projection. The API call returns immediately; the worker processes the scope in the background (large games may take multiple Lambda invocations via SQS continuations). Frontends don't need to poll — once the worker finishes, the next leaderboard read returns the corrected data.
+
+**Manual recovery via `POST /v1/leaderboards/invalidate-cache/{gameId}`.** This admin-only endpoint is now the one-stop "fix this game's leaderboards" handle. Defaults to Redis flush + enqueue a full-game re-projection. Query params:
+
+| Param | Effect |
+|---|---|
+| _(none)_ | Redis flush + enqueue full-game reproject |
+| `?categoryId=N` | Scope the reproject to one category |
+| `?rebuildAllFlags=1` | Worker rebuilds entry flags for every combo in scope, not just dirty ones (use when `subcategoryKey` is fine but flags drifted) |
+| `?cacheOnly=1` | Original behavior — Redis flush only, no reproject. Escape hatch when you just want to clear caches |
 
 ```typescript
 // Response
-{ result: { invalidated: { gameId: number } } }
+{
+  result: {
+    invalidated: { gameId: number },
+    reproject: { scope: { gameId, categoryId }, rebuildAllFlags: boolean } | null
+  }
+}
 ```
 
-**Auth:** Required. Caller must hold global `edit` permission on the `leaderboard` subject — admin, board-admin, or board-moderator role. Per-game moderators are not authorized; this is a globally-scoped grant only.
+**Auth:** Required. `edit:leaderboard` permission.
+
+### Valid Subcategory Combinations
+
+By default every cartesian combination of subcategory variable values is a legal leaderboard ("open" mode). Site admins can restrict a game (or a single category) to a curated list of legal combinations ("managed" mode) — runs that resolve outside the list get folded onto the default-combination key and the leaderboard read endpoint returns 404 with the legal list when a frontend asks for an illegal combination.
+
+**Auth on all endpoints below:** Required. Site-wide admin (`moderate:admins`) — not game-level `edit-customizations`.
+
+```typescript
+// GET /admin/combinations/{gameId}
+// GET /admin/combinations/{gameId}/{categoryId}
+//
+// Lists every cartesian combination of the in-scope subcategory variables and
+// marks which ones are legal. When no managed list exists, every combo is
+// reported `valid: true` and `mode` is "open".
+//
+// Response
+{
+  combinations: {
+    subcategoryKey: string;     // e.g. "platform=nintendo64|region=us"
+    valid: boolean;
+  }[];
+  mode: "open" | "managed";
+}
+```
+
+```typescript
+// PUT /admin/combinations/{gameId}
+// PUT /admin/combinations/{gameId}/{categoryId}
+//
+// Replaces the entire legal list for the scope. Sending an empty array switches
+// the scope back to "open" mode. Keys are normalized server-side — you can
+// submit display strings (e.g. "Platform=N64|Region=US") and they will be
+// folded to canonical form. Order of `name=value` parts within a key does not
+// matter; parts are sorted by nameNormalized server-side.
+{
+  subcategoryKeys: string[];
+}
+
+// Response
+{ ok: true, replaced: number }
+```
+
+**Note:** Replacing the list does NOT migrate existing runs that now fall on newly-invalid combinations — those runs stay on their current subcategoryKey and remain ineligible-for-leaderboard if their key is no longer legal. Run migration is intentionally not exposed as an API surface; it's handled out-of-band by the rebuild worker when re-projection is triggered (variable edits, manual cache invalidation).
+
+The merged endpoint `GET /v1/leaderboards/{game}/{category}/variables` (§7) reads the same data and surfaces it as `validCombinations: { mode, keys? }` for public consumption.
+
+### Minimum Times
+
+A category can have a minimum-time floor below which runs are flagged ineligible for the leaderboard. Minimums are **strictly per `(gameId, categoryId)`** — one floor covers every subcategoryKey under the category, regardless of how many subcategory variables you've defined. No per-subcategory granularity.
+
+```typescript
+// PUT /v1/games/{gameId}/categories/{catId}/minimums
+{
+  minTimeMs?: number | null;        // realtime floor in ms
+  minGameTimeMs?: number | null;    // gametime floor in ms
+}
+
+// Response — synchronous response. The retroactive flagger runs in the
+// background; results are eventually consistent (typically within seconds).
+{ result: { updated: true, rebuildEnqueued: true } }
+```
+
+At least one of `minTimeMs` or `minGameTimeMs` must be provided. Both validated as finite, `>= 0`, `<= 10 years`.
+
+The upsert is **asynchronous**. The API writes the minimum row, invalidates Redis caches, and enqueues a rebuild message onto the leaderboard-rebuild queue, then returns. The rebuild worker scans every run in the category, applies the new minimum (flips `leaderboard_eligible = false` / `ineligible_reason = "below_minimum"` on violators, unflags runs that no longer violate, rebuilds entry flags on affected boards), and invalidates caches a final time. Latency from PUT to consistent leaderboard is typically seconds; large games can take longer if the worker re-enqueues a continuation.
+
+```typescript
+// DELETE /v1/games/{gameId}/categories/{catId}/minimums
+// No body required.
+
+// Response
+{ result: { deleted: true, rebuildEnqueued: true } }
+```
+
+```typescript
+// GET /v1/games/{gameId}/categories/{catId}/minimums
+// Response
+{
+  result: {
+    minTimeMs: number | null;
+    minGameTimeMs: number | null;
+    setBy: number;
+    updatedAt: string;
+  }[]   // 0 or 1 entries
+}
+```
+
+**Auth:** Required. `edit-category-settings` permission for the game.
 
 ---
 
