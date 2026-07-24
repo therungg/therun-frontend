@@ -9,11 +9,11 @@ export function StepDetails({ data, onAdvance }: StepProps) {
         <section>
             <StepHeader
                 num={1}
-                title="First, the game itself"
+                title="Game details"
                 lede={
                     data.categories.length > 0
-                        ? 'Runners are already racing here — your job is to curate, not build from scratch. Everything below is pre-filled from IGDB where we have it: fix what’s wrong, skip what’s fine. Every step saves as you go.'
-                        : 'No runs have been ingested yet — you’re setting this board up fresh. Everything below is pre-filled from IGDB where we have it: fix what’s wrong, skip what’s fine. Every step saves as you go.'
+                        ? 'Runners are already on this board. The details below are pre-filled from IGDB, so fix anything that’s wrong and move on. Everything saves as you go.'
+                        : 'This board has no runs yet. The details below are pre-filled from IGDB, so fix anything that’s wrong and move on. Everything saves as you go.'
                 }
             />
             <GameDetailsForm

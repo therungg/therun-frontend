@@ -44,7 +44,7 @@ export function StepExceptions({ data, onAdvance }: StepProps) {
                 <StepHeader
                     num={4}
                     title="Per-category exceptions"
-                    lede="Pick your featured categories first — then any category that differs from the defaults gets its override here."
+                    lede="Pick your featured categories first, then set any per-category overrides here."
                 />
                 <button
                     type="button"
@@ -67,10 +67,12 @@ export function StepExceptions({ data, onAdvance }: StepProps) {
         <section>
             <StepHeader
                 num={4}
-                title={`${mains.length} categor${
-                    mains.length === 1 ? 'y uses' : 'ies use'
-                } your defaults — any different?`}
-                lede="Open a category only if its timing or rules differ from the rest. Deeper settings — variables, minimum times — live in the console."
+                title="Any exceptions?"
+                lede={`All ${mains.length} featured categor${
+                    mains.length === 1
+                        ? 'y currently uses'
+                        : 'ies currently use'
+                } the defaults you just set. Open one only if its timing or rules should differ. Variables and minimum times are managed in the console, not here.`}
             />
             <ul className={styles.rows}>
                 {mains.map((c) => (
@@ -116,9 +118,7 @@ export function StepExceptions({ data, onAdvance }: StepProps) {
                 className={`${styles.primaryAction} mt-2`}
                 onClick={onAdvance}
             >
-                {openId === null
-                    ? 'They’re all the same — continue'
-                    : 'Continue'}
+                {openId === null ? 'No exceptions needed' : 'Continue'}
             </button>
         </section>
     );
