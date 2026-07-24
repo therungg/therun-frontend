@@ -199,6 +199,7 @@ export function ContentRouter(props: ContentRouterProps) {
                     identifiers={props.gameDetails.identifiers}
                     metadata={props.gameDetails.metadata}
                     game={props.gameDetails.game}
+                    canRematch={props.gameDetails.canRematch}
                 />
             ) : (
                 <Placeholder title="Details & metadata">

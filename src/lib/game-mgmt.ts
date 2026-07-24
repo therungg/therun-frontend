@@ -32,6 +32,7 @@ export async function getGameIdentifiers(
 export interface UpdateGameBody {
     slug?: string | null;
     coverUrl?: string | null;
+    summaryOverride?: string | null;
     platforms?: string[];
     releaseYear?: number | null;
     discordUrl?: string | null;
@@ -57,6 +58,9 @@ export interface GameMetadata {
     discordUrl: string | null;
     configured: boolean;
     summary: string | null;
+    /** Mod-set description; beats `summary` (IGDB) on display. */
+    summaryOverride: string | null;
+    igdbUrl: string | null;
     firstReleaseDate: string | null;
     seriesDisplay: string | null;
     genres: string[];
@@ -73,6 +77,8 @@ interface GameMetadataPageData {
         discordUrl?: string | null;
         configured?: boolean | null;
         summary?: string | null;
+        summaryOverride?: string | null;
+        igdbUrl?: string | null;
         firstReleaseDate?: string | null;
         seriesDisplay?: string | null;
         links?: GameLink[] | null;
@@ -108,6 +114,8 @@ export async function getGameMetadata(gameId: number): Promise<GameMetadata> {
         configured: data?.game?.configured ?? false,
         // || not ??: unsynced prod rows carry "" and empty must read as absent.
         summary: data?.game?.summary || null,
+        summaryOverride: data?.game?.summaryOverride || null,
+        igdbUrl: data?.game?.igdbUrl || null,
         firstReleaseDate: data?.game?.firstReleaseDate ?? null,
         seriesDisplay: data?.game?.seriesDisplay ?? null,
         genres: (data?.metadata?.genres ?? []).filter(
@@ -143,4 +151,32 @@ export async function updateGame(
         sessionId,
         body,
     });
+}
+
+export interface IgdbSearchResult {
+    id: number;
+    name: string;
+    cover?: { id: number; url: string };
+}
+
+export async function igdbSearchGames(
+    sessionId: string,
+    gameId: number,
+    query: string,
+): Promise<IgdbSearchResult[]> {
+    return apiFetch<IgdbSearchResult[]>(
+        `/v1/games/${gameId}/igdb-search?q=${encodeURIComponent(query)}`,
+        { sessionId },
+    );
+}
+
+export async function igdbSyncGame(
+    sessionId: string,
+    gameId: number,
+    igdbId: number,
+): Promise<{ synced: boolean; igdbId: number; igdbName: string }> {
+    return apiFetch<{ synced: boolean; igdbId: number; igdbName: string }>(
+        `/v1/games/${gameId}/igdb-sync`,
+        { method: 'POST', sessionId, body: { igdbId } },
+    );
 }

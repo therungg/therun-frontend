@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, useTransition } from 'react';
+import Link from '~src/components/link';
 import type {
     GameIdentifiers,
     GameLink,
@@ -17,6 +18,15 @@ import styles from './setup.module.scss';
 
 const ALLOWED_COVER_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
 const MAX_COVER_SIZE = 2 * 1024 * 1024;
+
+// One-click starters for the links every board wants. "Website" is the
+// generic official-site link; the icon on the game page keys off the URL.
+const LINK_PRESETS = [
+    { label: 'speedrun.com' },
+    { label: 'Wiki' },
+    { label: 'Website' },
+    { label: 'Twitch' },
+];
 
 export function GameDetailsForm({
     identifiers,
@@ -47,6 +57,9 @@ export function GameDetailsForm({
         )?.toString() ?? '',
     );
     const [discordUrl, setDiscordUrl] = useState(metadata.discordUrl ?? '');
+    const [about, setAbout] = useState(
+        metadata.summaryOverride ?? metadata.summary ?? '',
+    );
     const [links, setLinks] = useState<GameLink[]>(metadata.links ?? []);
     const [error, setError] = useState<string | null>(null);
     const [isSaving, startSaving] = useTransition();
@@ -121,10 +134,18 @@ export function GameDetailsForm({
                 setError(identRes.error);
                 return;
             }
+            // An About text identical to the IGDB summary stays a null
+            // override, so future IGDB syncs keep refreshing it.
+            const aboutTrimmed = about.trim();
             const metaRes = await updateGameMetadataAction({
                 gameSlug: game.name,
                 gameId: game.id,
                 coverUrl: coverUrl.trim() || null,
+                summaryOverride:
+                    !aboutTrimmed ||
+                    aboutTrimmed === (metadata.summary ?? '').trim()
+                        ? null
+                        : aboutTrimmed,
                 platforms: platformsText
                     .split(',')
                     .map((p) => p.trim())
@@ -228,6 +249,36 @@ export function GameDetailsForm({
                         onChange={(e) => setPlatformsText(e.target.value)}
                         placeholder="PC, Switch, PS5"
                     />
+                    <label className="form-label mt-3" htmlFor="about">
+                        About
+                    </label>
+                    <textarea
+                        id="about"
+                        className="form-control"
+                        rows={4}
+                        maxLength={5000}
+                        value={about}
+                        onChange={(e) => setAbout(e.target.value)}
+                        placeholder="A short description of the game, shown on the game page."
+                    />
+                    {metadata.igdbUrl && (
+                        <p className="text-muted small mt-2 mb-0">
+                            Prefilled data comes from{' '}
+                            <a
+                                href={metadata.igdbUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                            >
+                                this IGDB entry
+                            </a>
+                            . Wrong game?{' '}
+                            <Link
+                                href={`/games-v2/${game.name}/manage?pane=game-details`}
+                            >
+                                Fix the match
+                            </Link>
+                        </p>
+                    )}
                 </div>
                 <div className="col-md-6">
                     <label className="form-label" htmlFor="slug">
@@ -253,6 +304,27 @@ export function GameDetailsForm({
                     <p className="text-muted small mb-2">
                         Shown as chips on the game page. Label + https URL.
                     </p>
+                    <div className="d-flex gap-2 flex-wrap mb-2">
+                        {LINK_PRESETS.map((preset) => (
+                            <button
+                                key={preset.label}
+                                type="button"
+                                className="btn btn-sm btn-outline-secondary"
+                                disabled={
+                                    links.length >= 10 ||
+                                    links.some((l) => l.label === preset.label)
+                                }
+                                onClick={() =>
+                                    setLinks((ls) => [
+                                        ...ls,
+                                        { label: preset.label, url: '' },
+                                    ])
+                                }
+                            >
+                                + {preset.label}
+                            </button>
+                        ))}
+                    </div>
                     {links.map((link, index) => (
                         <div key={index} className="d-flex gap-2 mb-2">
                             <input

@@ -14,6 +14,7 @@ interface Input {
     gameSlug: string;
     gameId: number;
     coverUrl?: string | null;
+    summaryOverride?: string | null;
     platforms?: string[];
     releaseYear?: number | null;
     discordUrl?: string | null;
@@ -48,6 +49,14 @@ export async function updateGameMetadataAction(
         return { error: 'Release year must be a valid year.' };
     }
 
+    if (
+        input.summaryOverride !== undefined &&
+        input.summaryOverride !== null &&
+        input.summaryOverride.length > 5000
+    ) {
+        return { error: 'The description must be 5000 characters or fewer.' };
+    }
+
     if (input.links !== undefined) {
         if (input.links.length > 10) {
             return { error: 'You can add up to 10 links.' };
@@ -69,6 +78,8 @@ export async function updateGameMetadataAction(
 
     const body: UpdateGameBody = {};
     if (input.coverUrl !== undefined) body.coverUrl = input.coverUrl;
+    if (input.summaryOverride !== undefined)
+        body.summaryOverride = input.summaryOverride;
     if (input.platforms !== undefined) body.platforms = input.platforms;
     if (input.releaseYear !== undefined) body.releaseYear = input.releaseYear;
     if (input.discordUrl !== undefined) body.discordUrl = input.discordUrl;
