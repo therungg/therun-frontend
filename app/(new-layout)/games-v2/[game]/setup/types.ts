@@ -21,8 +21,6 @@ export interface WizardData {
     identifiers: GameIdentifiers;
     metadata: GameMetadata;
     completeness: BoardCompleteness;
-    /** categoryId → fastest verified time (ms) in its primary timing, or null. */
-    wrTimes: Record<number, number | null>;
     /** Server-render stamp used to remount steps when fresh data lands. */
     renderedAt: number;
 }
