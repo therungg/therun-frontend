@@ -189,6 +189,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
                     name: game.name,
                     image: game.image ?? null,
                 },
+                canRematch: ability.can('edit', 'game'),
             };
         }
     }

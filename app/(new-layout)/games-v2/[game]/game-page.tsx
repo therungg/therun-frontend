@@ -223,6 +223,10 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                             yourRuns={data.yourRuns}
                             recentPbs={data.recentPbs}
                             claim={claim}
+                            about={
+                                data.gameMeta.summaryOverride ??
+                                data.gameMeta.summary
+                            }
                         />
                     </aside>
                 </div>
