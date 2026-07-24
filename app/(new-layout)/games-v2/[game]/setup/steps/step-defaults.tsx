@@ -4,8 +4,13 @@ import { useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import type { PrimaryTiming } from '~src/lib/category-mgmt';
 import { RULES_STARTER_TEMPLATE } from '~src/lib/setup/rules-template';
+import { formatTimeInput, parseTimeInput } from '~src/lib/time-input';
 import { updateCategorySettingsAction } from '../../manage/category-tab/actions/update-category-settings.action';
-import { createPolicyAction } from '../../manage/moderation/policies/actions/policies-actions.action';
+import {
+    createPolicyAction,
+    deletePolicyAction,
+    updatePolicyAction,
+} from '../../manage/moderation/policies/actions/policies-actions.action';
 import { updateTimingSettingsAction } from '../../manage/timing/actions/update-timing-settings.action';
 import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
@@ -27,6 +32,31 @@ export function StepDefaults({ data, onAdvance }: StepProps) {
     const [enablePolicy, setEnablePolicy] = useState(true);
     const [rulesEnabled, setRulesEnabled] = useState(true);
     const [rules, setRules] = useState(RULES_STARTER_TEMPLATE);
+
+    // Game-wide minimum time = the categoryId-null min_time policy. A
+    // category-scoped one (next step) beats it, mirroring enforcement.
+    const gameMinPolicy = data.policies.find(
+        (p) =>
+            p.policyType === 'min_time' &&
+            p.categoryId === null &&
+            p.subcategoryKey === null,
+    );
+    const gameMinValue = (gameMinPolicy?.value ?? {}) as {
+        minTimeMs?: number | null;
+        minGameTimeMs?: number | null;
+    };
+    const [minPolicyId, setMinPolicyId] = useState<number | null>(
+        gameMinPolicy?.id ?? null,
+    );
+    const [minEnabled, setMinEnabled] = useState(gameMinPolicy != null);
+    const [minTimeText, setMinTimeText] = useState(
+        gameMinValue.minTimeMs ? formatTimeInput(gameMinValue.minTimeMs) : '',
+    );
+    const [minGameTimeText, setMinGameTimeText] = useState(
+        gameMinValue.minGameTimeMs
+            ? formatTimeInput(gameMinValue.minGameTimeMs)
+            : '',
+    );
 
     const [guardError, setGuardError] = useState<string | null>(null);
     const [rowErrors, setRowErrors] = useState<Record<number, string>>({});
@@ -71,6 +101,39 @@ export function StepDefaults({ data, onAdvance }: StepProps) {
         ) {
             setGuardError('Top N must be a positive whole number.');
             return;
+        }
+
+        let minValue: { minTimeMs?: number; minGameTimeMs?: number } | null =
+            null;
+        if (minEnabled) {
+            minValue = {};
+            if (minTimeText.trim()) {
+                const ms = parseTimeInput(minTimeText);
+                if (!ms || ms <= 0) {
+                    setGuardError('Enter the minimum time as h:mm:ss or m:ss.');
+                    return;
+                }
+                minValue.minTimeMs = ms;
+            }
+            if (minGameTimeText.trim()) {
+                const ms = parseTimeInput(minGameTimeText);
+                if (!ms || ms <= 0) {
+                    setGuardError(
+                        'Enter the in-game minimum as h:mm:ss or m:ss.',
+                    );
+                    return;
+                }
+                minValue.minGameTimeMs = ms;
+            }
+            if (
+                minValue.minTimeMs === undefined &&
+                minValue.minGameTimeMs === undefined
+            ) {
+                setGuardError(
+                    'Set a minimum time value, or untick the minimum-time row.',
+                );
+                return;
+            }
         }
 
         startApplying(async () => {
@@ -137,7 +200,43 @@ export function StepDefaults({ data, onAdvance }: StepProps) {
                 }
             }
 
-            if (Object.keys(newErrors).length === 0 && !policyFailed) {
+            let minFailed = false;
+            if (minEnabled && minValue) {
+                const res = minPolicyId
+                    ? await updatePolicyAction(
+                          data.game.name,
+                          minPolicyId,
+                          minValue,
+                      )
+                    : await createPolicyAction(data.game.name, {
+                          policyType: 'min_time',
+                          value: minValue,
+                          categoryId: null,
+                      });
+                if ('error' in res) {
+                    setGuardError(res.error);
+                    minFailed = true;
+                } else {
+                    setMinPolicyId(res.policy.id);
+                }
+            } else if (!minEnabled && minPolicyId) {
+                const res = await deletePolicyAction(
+                    data.game.name,
+                    minPolicyId,
+                );
+                if ('error' in res) {
+                    setGuardError(res.error);
+                    minFailed = true;
+                } else {
+                    setMinPolicyId(null);
+                }
+            }
+
+            if (
+                Object.keys(newErrors).length === 0 &&
+                !policyFailed &&
+                !minFailed
+            ) {
                 toast.success(
                     `Defaults applied to ${mains.length} featured categor${
                         mains.length === 1 ? 'y' : 'ies'
@@ -290,6 +389,74 @@ export function StepDefaults({ data, onAdvance }: StepProps) {
                         </span>
                     </label>
                 </div>
+            </div>
+
+            <div className={styles.section}>
+                <h3 className="h6">Minimum time</h3>
+                <div className="form-check">
+                    <input
+                        type="checkbox"
+                        className="form-check-input"
+                        id="defaults-min"
+                        checked={minEnabled}
+                        onChange={(e) => setMinEnabled(e.target.checked)}
+                    />
+                    <label className="form-check-label" htmlFor="defaults-min">
+                        <strong>Hold impossibly fast runs</strong>{' '}
+                        <span className="text-muted small">
+                            anything under the minimum waits for a mod
+                        </span>
+                    </label>
+                </div>
+                {minEnabled && (
+                    <>
+                        <div className="mt-2 ms-4 d-flex gap-3 flex-wrap align-items-end">
+                            <div>
+                                <label
+                                    className="form-label small mb-1"
+                                    htmlFor="defaults-min-rt"
+                                >
+                                    Real time
+                                </label>
+                                <input
+                                    id="defaults-min-rt"
+                                    className="form-control form-control-sm"
+                                    style={{ width: '7rem' }}
+                                    value={minTimeText}
+                                    onChange={(e) =>
+                                        setMinTimeText(e.target.value)
+                                    }
+                                    placeholder="e.g. 10:00"
+                                />
+                            </div>
+                            <div>
+                                <label
+                                    className="form-label small mb-1"
+                                    htmlFor="defaults-min-igt"
+                                >
+                                    In-game time{' '}
+                                    <span className="text-muted">
+                                        (optional)
+                                    </span>
+                                </label>
+                                <input
+                                    id="defaults-min-igt"
+                                    className="form-control form-control-sm"
+                                    style={{ width: '7rem' }}
+                                    value={minGameTimeText}
+                                    onChange={(e) =>
+                                        setMinGameTimeText(e.target.value)
+                                    }
+                                    placeholder="e.g. 8:00"
+                                />
+                            </div>
+                        </div>
+                        <p className="text-muted small mt-2 mb-0 ms-4">
+                            Applies to the whole game. The next step can set a
+                            different minimum per category.
+                        </p>
+                    </>
+                )}
             </div>
 
             <div className={styles.section}>
