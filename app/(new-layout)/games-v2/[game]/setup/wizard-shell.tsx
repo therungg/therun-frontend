@@ -1,8 +1,6 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Fragment } from 'react';
-import { Check2, Dot } from 'react-bootstrap-icons';
 import {
     SETUP_STEP_ORDER,
     type SetupStepId,
@@ -62,122 +60,87 @@ export function WizardShell({ data, initialStep }: Props) {
 
     return (
         <div className={styles.page}>
-            <header className={styles.header}>
+            <header className={styles.identityStrip}>
                 {data.game.image && (
                     <img
                         src={data.game.image}
-                        alt={data.game.display}
-                        width={44}
-                        height={59}
-                        className={styles.cover}
+                        alt=""
+                        width={36}
+                        height={48}
+                        className={styles.identityCover}
                     />
                 )}
                 <div>
-                    <div className={styles.eyebrow}>Game setup</div>
-                    <h1 className={styles.title}>Set up {data.game.display}</h1>
-                    <div className={styles.subtitle}>
-                        Every step saves as you go — you can leave and come back
-                        anytime.
-                    </div>
+                    <span className={styles.eyebrow}>Board setup</span>
+                    <span className={styles.identityTitle}>
+                        {data.game.display}
+                    </span>
                 </div>
                 <BackLink
                     href={`/games-v2/${data.game.name}/manage`}
                     label="Back to console"
-                    className={styles.headerBack}
+                    className={styles.identityBack}
                 />
             </header>
 
-            <nav className={styles.stepper} aria-label="Setup steps">
+            <nav className={styles.progressStrip} aria-label="Setup steps">
+                <span className={styles.progressCount}>
+                    {stepIndex + 1} / {STEPS.length}
+                </span>
                 {STEPS.map((s, i) => (
-                    <Fragment key={s.id}>
-                        {i > 0 && (
-                            <span
-                                className={styles.stepConnector}
-                                aria-hidden
-                            />
-                        )}
-                        <button
-                            type="button"
-                            className={`${styles.stepNode} ${
-                                i === stepIndex
-                                    ? styles.stepCurrent
-                                    : statusFor(s.id)?.status === 'done'
-                                      ? styles.stepDone
-                                      : ''
-                            }`}
-                            onClick={() => goTo(s.id)}
-                        >
-                            <span className={styles.stepNum}>
-                                {statusFor(s.id)?.status === 'done' &&
-                                i !== stepIndex ? (
-                                    <Check2 size={12} aria-hidden />
-                                ) : (
-                                    i + 1
-                                )}
-                            </span>
-                            {s.label}
-                        </button>
-                    </Fragment>
+                    <button
+                        key={s.id}
+                        type="button"
+                        title={s.label}
+                        aria-label={`Step ${i + 1}: ${s.label}`}
+                        aria-current={i === stepIndex ? 'step' : undefined}
+                        className={`${styles.progressSegment} ${
+                            i === stepIndex
+                                ? styles.progressCurrent
+                                : statusFor(s.id)?.status === 'done'
+                                  ? styles.progressDone
+                                  : ''
+                        }`}
+                        onClick={() => goTo(s.id)}
+                    />
                 ))}
+                <span className={styles.progressLabel}>
+                    {STEPS[stepIndex].label}
+                </span>
             </nav>
 
-            <div className={styles.layout}>
-                <main className={styles.main}>
-                    <CurrentStep
-                        key={`${step}-${data.renderedAt}`}
-                        step={step}
-                        data={data}
-                        onAdvance={onAdvance}
-                        onBack={onBack}
-                    />
-                    <div className={styles.navBar}>
-                        {stepIndex > 0 && (
-                            <button
-                                type="button"
-                                className={styles.backAction}
-                                onClick={onBack}
-                            >
-                                Back
-                            </button>
-                        )}
-                        <span className={styles.spacer} />
-                        {STEPS[stepIndex].skippable && (
-                            <button
-                                type="button"
-                                className={styles.skipAction}
-                                onClick={onAdvance}
-                            >
-                                Skip this step
-                            </button>
-                        )}
-                    </div>
-                </main>
-                <aside className={styles.rail}>
-                    <div className={styles.railCard}>
-                        <span className={styles.railTitle}>
-                            Your board so far
-                        </span>
-                        {data.completeness.steps.map((s) => (
-                            <div key={s.step} className={styles.railRow}>
-                                {s.status === 'done' ? (
-                                    <Check2
-                                        size={12}
-                                        className={`${styles.railIcon} ${styles.railIconDone}`}
-                                        aria-label="done"
-                                    />
-                                ) : (
-                                    <Dot
-                                        size={12}
-                                        className={styles.railIcon}
-                                        aria-hidden
-                                    />
-                                )}
-                                <span>{s.summary}</span>
-                            </div>
-                        ))}
-                    </div>
-                </aside>
-            </div>
+            <main
+                key={`${step}-${data.renderedAt}`}
+                className={styles.stepBody}
+            >
+                <CurrentStep
+                    step={step}
+                    data={data}
+                    onAdvance={onAdvance}
+                    onBack={onBack}
+                />
+                <div className={styles.navBar}>
+                    {stepIndex > 0 && (
+                        <button
+                            type="button"
+                            className={styles.backAction}
+                            onClick={onBack}
+                        >
+                            Back
+                        </button>
+                    )}
+                    <span className={styles.spacer} />
+                    {STEPS[stepIndex].skippable && (
+                        <button
+                            type="button"
+                            className={styles.skipAction}
+                            onClick={onAdvance}
+                        >
+                            Skip this step
+                        </button>
+                    )}
+                </div>
+            </main>
         </div>
     );
 }
@@ -210,17 +173,17 @@ function CurrentStep({
                     onBack={onBack}
                 />
             );
-        case 'exceptions':
+        case 'defaults':
             return (
-                <StepCategoryConfig
+                <StepDefaults
                     data={data}
                     onAdvance={onAdvance}
                     onBack={onBack}
                 />
             );
-        case 'defaults':
+        case 'exceptions':
             return (
-                <StepDefaults
+                <StepCategoryConfig
                     data={data}
                     onAdvance={onAdvance}
                     onBack={onBack}
