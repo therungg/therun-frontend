@@ -16,6 +16,7 @@ import {
 import { setGameConfiguredAction } from '../actions/set-configured.action';
 import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
+import { StepHeader } from './step-header';
 
 const STEP_LABELS: Record<SetupStepId, string> = {
     details: 'Game details',
@@ -155,11 +156,11 @@ export function StepFinish({ data }: StepProps) {
 
     return (
         <section>
-            <h2 className="h4">Mod team</h2>
-            <p className="text-muted">
-                Don’t moderate alone — a second pair of eyes keeps the queue
-                moving.
-            </p>
+            <StepHeader
+                num={5}
+                title="Mod team, then go live"
+                lede="Don’t moderate alone — a second pair of eyes keeps the queue moving. Review the checklist, then put the board live."
+            />
             <ul className={`${styles.rows} mb-2`}>
                 {mods.map((m) => (
                     <li key={m.assignmentId} className={styles.rowItem}>
@@ -211,7 +212,7 @@ export function StepFinish({ data }: StepProps) {
                 </button>
             </div>
 
-            <h2 className="h4">Review & finish</h2>
+            <h3 className="h6">Review & finish</h3>
             <ul className={`${styles.rows} mb-3`}>
                 {reviewSteps.map((s) => (
                     <li key={s.step} className={styles.rowItem}>
@@ -255,7 +256,7 @@ export function StepFinish({ data }: StepProps) {
             {error && <div className={styles.errorNote}>{error}</div>}
             <button
                 type="button"
-                className="btn btn-success"
+                className={styles.primaryAction}
                 disabled={isPending || blockers.length > 0}
                 onClick={finish}
             >
