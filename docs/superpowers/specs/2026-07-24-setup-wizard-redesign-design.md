@@ -1,7 +1,7 @@
 # Setup Wizard Redesign — Design
 
 **Date:** 2026-07-24
-**Status:** Approved (design), pending implementation plan
+**Status:** Implemented 2026-07-24 (branch `setup-wizard-redesign`)
 **Scope:** `app/(new-layout)/games-v2/[game]/setup/` + the console entry point (`SetupChecklistCard`). Frontend only — no backend changes; every write goes through existing server actions.
 
 ## Problem
