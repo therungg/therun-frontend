@@ -81,10 +81,14 @@ export function StepCategories({ data, onAdvance }: StepProps) {
         );
     }
 
-    const legacyHiddenCount = rows.filter((r) => {
-        const orig = data.categories.find((c) => c.id === r.id);
-        return orig && !orig.archived && !(orig.isMain ?? false) && !r.main;
-    }).length;
+    const legacyHiddenCount = hasExplicitMains
+        ? rows.filter((r) => {
+              const orig = data.categories.find((c) => c.id === r.id);
+              return (
+                  orig && !orig.archived && !(orig.isMain ?? false) && !r.main
+              );
+          }).length
+        : 0;
 
     const checkedCount = rows.filter((r) => r.main).length;
     const share = activityShare(
