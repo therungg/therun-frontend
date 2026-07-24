@@ -75,7 +75,7 @@ export function SetupChecklistCard({ gameSlug, completeness }: Props) {
                                 <Check2
                                     size={12}
                                     className={styles.setupStepDone}
-                                    aria-label="done"
+                                    aria-hidden
                                 />
                             ) : (
                                 <Dot
@@ -83,7 +83,9 @@ export function SetupChecklistCard({ gameSlug, completeness }: Props) {
                                     className={
                                         s.status === 'blocker'
                                             ? styles.setupStepBlocker
-                                            : styles.setupStepTodo
+                                            : s.status === 'warning'
+                                              ? styles.setupStepWarning
+                                              : styles.setupStepTodo
                                     }
                                     aria-hidden
                                 />
