@@ -42,7 +42,7 @@ export function StepDefaults({ data, onAdvance }: StepProps) {
                 <StepHeader
                     num={3}
                     title="Set the rules once"
-                    lede="Defaults apply to your featured categories — pick those first, then come back here."
+                    lede="Pick your featured categories first, then come back here."
                 />
                 <button
                     type="button"
@@ -153,9 +153,9 @@ export function StepDefaults({ data, onAdvance }: StepProps) {
             <StepHeader
                 num={3}
                 title="Set the rules once"
-                lede={`These defaults apply to all ${mains.length} featured categor${
+                lede={`These get applied to all ${mains.length} featured categor${
                     mains.length === 1 ? 'y' : 'ies'
-                }. The next step handles any category that differs.`}
+                } in one go. If one category works differently, you can override it in the next step.`}
             />
 
             <div className={styles.section}>
@@ -312,21 +312,9 @@ export function StepDefaults({ data, onAdvance }: StepProps) {
                 {rulesEnabled && (
                     <>
                         <p className="text-muted small mb-2">
-                            Replace the [bracketed] parts.{' '}
+                            Fill in the [brackets].{' '}
                             {mains.length - mainsWithoutRules.length > 0 &&
-                                `${
-                                    mains.length - mainsWithoutRules.length
-                                } categor${
-                                    mains.length - mainsWithoutRules.length ===
-                                    1
-                                        ? 'y'
-                                        : 'ies'
-                                } already ${
-                                    mains.length - mainsWithoutRules.length ===
-                                    1
-                                        ? 'has'
-                                        : 'have'
-                                } rules — they keep theirs.`}
+                                'Categories that already have rules keep them.'}
                         </p>
                         <textarea
                             className="form-control font-monospace"

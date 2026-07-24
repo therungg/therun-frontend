@@ -133,8 +133,8 @@ export function StepFinish({ data }: StepProps) {
             <section className={`${styles.section} text-center py-5`}>
                 <h2>Your board is live</h2>
                 <p className="text-muted">
-                    Nice work. Runs are on the board and your standards are
-                    active — moderation curates instead of gatekeeping.
+                    Runs are on the board and your standards are active. Point
+                    runners at the submission form and keep an eye on the queue.
                 </p>
                 <div className="d-flex gap-2 justify-content-center">
                     <Link
@@ -159,7 +159,7 @@ export function StepFinish({ data }: StepProps) {
             <StepHeader
                 num={5}
                 title="Mod team, then go live"
-                lede="Don’t moderate alone — a second pair of eyes keeps the queue moving. Review the checklist, then put the board live."
+                lede="Add a co-mod or two so the queue doesn’t depend on you alone. Then check the list below and put the board live."
             />
             <ul className={`${styles.rows} mb-2`}>
                 {mods.map((m) => (
@@ -249,7 +249,7 @@ export function StepFinish({ data }: StepProps) {
             )}
             {warnings.length > 0 && blockers.length === 0 && (
                 <div className={styles.warnNote}>
-                    Worth a look (won’t block you):{' '}
+                    Not blocking, but worth a look:{' '}
                     {warnings.map((w) => w.summary).join(' · ')}
                 </div>
             )}

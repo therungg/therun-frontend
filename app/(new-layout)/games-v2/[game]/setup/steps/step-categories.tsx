@@ -63,7 +63,7 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                 <StepHeader
                     num={2}
                     title="No categories yet"
-                    lede="Categories appear automatically when runs are submitted or ingested from timers — there’s nothing to curate yet. Once the first runs arrive, come back here (or use the console) to choose what shows on the board."
+                    lede="Categories show up on their own when runs are submitted or ingested from timers, so there’s nothing to pick yet. Once runs come in, choose what shows on the board here or from the console."
                 />
                 <Link href={`/games-v2/${data.game.name}/submit`}>
                     Point runners at the submission form →
@@ -169,10 +169,10 @@ export function StepCategories({ data, onAdvance }: StepProps) {
         <section>
             <StepHeader
                 num={2}
-                title={`We found ${rows.length} categor${
+                title="Which categories do you actually want?"
+                lede={`This board has ${rows.length} categor${
                     rows.length === 1 ? 'y' : 'ies'
-                } — probably too many`}
-                lede="They come from ingested runs and submissions across the whole site. Pick the ones that belong on your board; the rest stay hidden, and you can bring any of them back later from the console."
+                }: everything that ever came in from timers or submissions. Untick what doesn’t belong. Hidden categories aren’t deleted, you can bring them back from the console.`}
             />
 
             <div className="d-flex gap-3 flex-wrap mb-4">
@@ -189,9 +189,10 @@ export function StepCategories({ data, onAdvance }: StepProps) {
 
             {legacyHiddenCount > 0 && (
                 <div className={styles.warnNote}>
-                    {legacyHiddenCount} previously shown categor
-                    {legacyHiddenCount === 1 ? 'y' : 'ies'} will be hidden when
-                    you save — check them to keep them on the board.
+                    {legacyHiddenCount} categor
+                    {legacyHiddenCount === 1 ? 'y' : 'ies'} currently on the
+                    board {legacyHiddenCount === 1 ? 'is' : 'are'} unticked and
+                    will be hidden when you save.
                 </div>
             )}
 
@@ -333,8 +334,7 @@ export function StepCategories({ data, onAdvance }: StepProps) {
 
             {!mainOk && (
                 <div className={`${styles.warnNote} mt-2`}>
-                    Keep at least one category on the board — it’s what visitors
-                    see.
+                    Pick at least one category.
                 </div>
             )}
             {progress && <div className="text-muted small">{progress}</div>}
