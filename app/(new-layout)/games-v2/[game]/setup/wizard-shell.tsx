@@ -14,16 +14,14 @@ import { StepCategoryConfig } from './steps/step-category-config';
 import { StepDefaults } from './steps/step-defaults';
 import { StepDetails } from './steps/step-details';
 import { StepFinish } from './steps/step-finish';
-import { StepWelcome } from './steps/step-welcome';
 import type { WizardData } from './types';
 
 const STEPS: { id: SetupStepId; label: string; skippable: boolean }[] = [
-    { id: 'welcome', label: 'Welcome', skippable: false },
-    { id: 'details', label: 'Details', skippable: true },
+    { id: 'details', label: 'Game', skippable: true },
     { id: 'categories', label: 'Categories', skippable: true },
-    { id: 'category-config', label: 'Configure', skippable: true },
-    { id: 'defaults', label: 'All categories', skippable: true },
-    { id: 'finish', label: 'Mods & finish', skippable: false },
+    { id: 'defaults', label: 'Defaults', skippable: true },
+    { id: 'exceptions', label: 'Exceptions', skippable: true },
+    { id: 'finish', label: 'Finish', skippable: false },
 ];
 
 interface Props {
@@ -196,14 +194,6 @@ function CurrentStep({
     onBack: () => void;
 }) {
     switch (step) {
-        case 'welcome':
-            return (
-                <StepWelcome
-                    data={data}
-                    onAdvance={onAdvance}
-                    onBack={onBack}
-                />
-            );
         case 'details':
             return (
                 <StepDetails
@@ -220,7 +210,7 @@ function CurrentStep({
                     onBack={onBack}
                 />
             );
-        case 'category-config':
+        case 'exceptions':
             return (
                 <StepCategoryConfig
                     data={data}

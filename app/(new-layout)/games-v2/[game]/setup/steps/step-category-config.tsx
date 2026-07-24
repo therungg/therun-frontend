@@ -48,7 +48,7 @@ function formatMs(ms: number): string {
 }
 
 function urlFor(gameSlug: string, catId: number): string {
-    return `/games-v2/${gameSlug}/setup?step=category-config&cat=${catId}`;
+    return `/games-v2/${gameSlug}/setup?step=exceptions&cat=${catId}`;
 }
 
 export function StepCategoryConfig({ data, onAdvance }: StepProps) {

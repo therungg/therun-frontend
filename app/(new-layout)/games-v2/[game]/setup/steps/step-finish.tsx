@@ -18,11 +18,10 @@ import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
 
 const STEP_LABELS: Record<SetupStepId, string> = {
-    welcome: 'Welcome',
     details: 'Game details',
     categories: 'Categories',
-    'category-config': 'Category configuration',
-    defaults: 'All-categories settings',
+    defaults: 'Game-wide defaults',
+    exceptions: 'Per-category exceptions',
     finish: 'Finish',
 };
 
@@ -35,7 +34,7 @@ export function StepFinish({ data }: StepProps) {
     const [isPending, startPending] = useTransition();
 
     const reviewSteps = data.completeness.steps.filter(
-        (s) => s.step !== 'welcome' && s.step !== 'finish',
+        (s) => s.step !== 'finish',
     );
     const blockers = reviewSteps.filter((s) => s.status === 'blocker');
     const warnings = reviewSteps.filter((s) => s.status === 'warning');
@@ -52,10 +51,10 @@ export function StepFinish({ data }: StepProps) {
         )[0];
 
     const editLinkFor = (s: (typeof reviewSteps)[number]) => {
-        if (s.step === 'category-config' && s.status !== 'done') {
+        if (s.step === 'exceptions' && s.status !== 'done') {
             return firstUnconfiguredMain
-                ? `/games-v2/${data.game.name}/setup?step=category-config&cat=${firstUnconfiguredMain.id}`
-                : `/games-v2/${data.game.name}/setup?step=category-config`;
+                ? `/games-v2/${data.game.name}/setup?step=exceptions&cat=${firstUnconfiguredMain.id}`
+                : `/games-v2/${data.game.name}/setup?step=exceptions`;
         }
         return `/games-v2/${data.game.name}/setup?step=${s.step}`;
     };

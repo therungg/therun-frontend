@@ -1,11 +1,10 @@
 import type { ResolvedCategory } from '../../../types/leaderboards.types';
 
 export type SetupStepId =
-    | 'welcome'
     | 'details'
     | 'categories'
-    | 'category-config'
     | 'defaults'
+    | 'exceptions'
     | 'finish';
 
 export type SetupStepStatus = 'done' | 'todo' | 'warning' | 'blocker';
@@ -44,11 +43,10 @@ export interface BoardCompleteness {
 }
 
 export const SETUP_STEP_ORDER: SetupStepId[] = [
-    'welcome',
     'details',
     'categories',
-    'category-config',
     'defaults',
+    'exceptions',
     'finish',
 ];
 
@@ -72,8 +70,6 @@ export function computeCompleteness(
     const mains = input.categories.filter((c) => c.active && c.isMain);
     const emptyBoard = input.categories.length === 0;
     const steps: SetupStepState[] = [];
-
-    steps.push({ step: 'welcome', status: 'done', summary: 'Board snapshot' });
 
     steps.push(
         input.slug
@@ -113,42 +109,38 @@ export function computeCompleteness(
         });
     }
 
+    const hasDefaultsContent =
+        input.policyCount > 0 || input.requireVideoAnywhere;
+    steps.push({
+        step: 'defaults',
+        status: 'done',
+        summary: hasDefaultsContent
+            ? 'Standards set'
+            : 'Optional — game-wide defaults',
+    });
+
     if (emptyBoard || mains.length === 0) {
         steps.push({
-            step: 'category-config',
+            step: 'exceptions',
             status: 'todo',
-            summary: 'Configure categories after choosing featured categories',
+            summary: 'Review exceptions after choosing featured categories',
         });
     } else {
         const mainsWithoutRules = mains.filter((c) => !c.hasRules);
         if (mainsWithoutRules.length === 0) {
             steps.push({
-                step: 'category-config',
+                step: 'exceptions',
                 status: 'done',
-                summary: `All ${mains.length} featured categories configured`,
+                summary: `All ${mains.length} featured categories have rules`,
             });
         } else {
             steps.push({
-                step: 'category-config',
+                step: 'exceptions',
                 status: 'warning',
-                summary: `${mainsWithoutRules.length} of ${mains.length} featured categories not configured`,
+                summary: `${mainsWithoutRules.length} of ${mains.length} featured categories missing rules`,
             });
         }
     }
-
-    const hasDefaultsContent =
-        input.variableCount > 0 ||
-        input.policyCount > 0 ||
-        input.requireVideoAnywhere;
-    steps.push({
-        step: 'defaults',
-        status: 'done',
-        summary: hasDefaultsContent
-            ? `${input.variableCount} variable${
-                  input.variableCount === 1 ? '' : 's'
-              } · standards set`
-            : 'Optional bulk settings',
-    });
 
     steps.push(
         input.configured

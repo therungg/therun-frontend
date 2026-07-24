@@ -8,8 +8,8 @@ function completeness(over: Partial<BoardCompleteness>): BoardCompleteness {
     return {
         steps: [],
         firstIncomplete: null,
-        doneCount: 6,
-        totalCount: 6,
+        doneCount: 5,
+        totalCount: 5,
         blockers: [],
         warnings: [],
         ...over,
@@ -59,15 +59,15 @@ describe('computeBoardHealth', () => {
         });
     });
 
-    it('maps a category-config warning to the rules pane', () => {
+    it('maps an exceptions warning to the rules pane', () => {
         const h = computeBoardHealth({
             completeness: completeness({
-                warnings: ['1 of 2 main categories not configured'],
+                warnings: ['1 of 2 main categories missing rules'],
                 steps: [
                     {
-                        step: 'category-config',
+                        step: 'exceptions',
                         status: 'warning',
-                        summary: '1 of 2 main categories not configured',
+                        summary: '1 of 2 main categories missing rules',
                     },
                 ],
             }),
@@ -77,7 +77,7 @@ describe('computeBoardHealth', () => {
         expect(h.grade).toBe('needs-attention');
         expect(h.items).toContainEqual({
             severity: 'warning',
-            label: '1 of 2 main categories not configured',
+            label: '1 of 2 main categories missing rules',
             pane: 'rules',
         });
     });
