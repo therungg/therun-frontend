@@ -1,28 +1,26 @@
 @use '../../../styles/design-tokens' as dt;
 @use '../../../styles/board' as board;
 
+// Full-focus wizard: one job per screen. A single centered column; the
+// identity strip and progress strip are the only chrome.
 .page {
-    max-width: 72rem;
+    max-width: 46rem;
     margin: 0 auto;
     padding: dt.$spacing-2xl dt.$spacing-lg dt.$spacing-3xl;
 }
 
-// ---- Header (console pattern) ------------------------------
-.header {
+// ---- Identity strip -----------------------------------------
+.identityStrip {
     display: flex;
     align-items: center;
-    gap: dt.$spacing-lg;
+    gap: dt.$spacing-md;
+    padding-bottom: dt.$spacing-lg;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
 }
 
-// pushes the header's BackLink to the right edge (Task 9, requirement 4)
-.headerBack {
-    margin-left: auto;
-    flex-shrink: 0;
-}
-
-.cover {
-    width: 44px;
-    height: 59px;
+.identityCover {
+    width: 36px;
+    height: 48px;
     border-radius: dt.$radius-md;
     object-fit: cover;
     box-shadow: dt.$shadow-sm;
@@ -31,103 +29,112 @@
 
 .eyebrow {
     @include board.board-eyebrow;
+    display: block;
 }
 
-.title {
-    font-size: dt.$font-size-xl;
+.identityTitle {
+    font-size: dt.$font-size-md;
     font-weight: 700;
     letter-spacing: -0.01em;
-    margin: 0;
-    line-height: 1.1;
+    line-height: 1.2;
 }
 
-.subtitle {
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-}
-
-// ---- Progress rail -----------------------------------------
-// Canonical board-stepper spec — the reassignment wizard converges
-// onto this (see reassignments.module.scss).
-.stepper {
-    @include board.board-stepper;
-    gap: 2px;
-    margin: dt.$spacing-xl 0 dt.$spacing-2xl;
-}
-
-.stepNode {
-    display: inline-flex;
-    align-items: center;
-    gap: dt.$spacing-sm;
-    font-size: dt.$font-size-xs;
-    font-weight: 500;
-    color: var(--bs-tertiary-color);
-    background: none;
-    border: 0;
-    padding: 0.25rem 0.5rem;
-    border-radius: dt.$radius-md;
-    cursor: pointer;
-    transition: color dt.$transition-fast, background-color dt.$transition-fast;
-
-    &:hover {
-        color: var(--bs-body-color);
-        background: rgba(var(--bs-primary-rgb), 0.06);
-    }
-}
-
-.stepNum {
-    @include board.board-step-num;
-}
-
-.stepConnector {
-    width: 1.25rem;
-    height: 1px;
-    background: rgba(var(--bs-border-color-rgb), 0.6);
+.identityBack {
+    margin-left: auto;
     flex-shrink: 0;
 }
 
-.stepCurrent {
-    @include board.board-step-current;
+// ---- Progress strip -----------------------------------------
+.progressStrip {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin: dt.$spacing-lg 0 dt.$spacing-3xl;
+}
 
-    .stepNum {
-        @include board.board-step-current-num;
+.progressCount {
+    @include board.mono-time;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+    margin-right: dt.$spacing-sm;
+}
+
+.progressSegment {
+    flex: 1;
+    height: 3px;
+    border: 0;
+    border-radius: 2px;
+    padding: 0;
+    background: rgba(var(--bs-border-color-rgb), 0.6);
+    cursor: pointer;
+    transition: background-color dt.$transition-fast;
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.5);
     }
 }
 
-.stepDone {
-    @include board.board-step-done;
-
-    .stepNum {
-        @include board.board-step-done-num;
-    }
+.progressDone {
+    background: rgba(var(--bs-primary-rgb), 0.55);
 }
 
-// ---- Layout -------------------------------------------------
-.layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 17rem;
-    gap: dt.$spacing-3xl;
-    align-items: start;
+.progressCurrent {
+    background: var(--bs-primary);
 }
 
-@media (max-width: 900px) {
-    .layout {
-        grid-template-columns: minmax(0, 1fr);
-    }
+.progressLabel {
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    margin-left: dt.$spacing-sm;
+    white-space: nowrap;
 }
 
-// wraps step content: unify raw Bootstrap inputs inside
-.main {
+// ---- Step header (ghost numeral) ----------------------------
+.stepHeader {
+    display: flex;
+    align-items: flex-start;
+    gap: dt.$spacing-lg;
+    margin-bottom: dt.$spacing-2xl;
+}
+
+.ghostNum {
+    @include board.mono-time;
+    font-size: 3.25rem;
+    font-weight: 700;
+    line-height: 0.9;
+    color: rgba(var(--bs-border-color-rgb), 0.9);
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.stepHeaderText {
+    min-width: 0;
+}
+
+.stepTitle {
+    font-size: dt.$font-size-2xl;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin: 0;
+}
+
+.stepLede {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: dt.$spacing-sm 0 0;
+    max-width: 38rem;
+}
+
+// ---- Step body ----------------------------------------------
+.stepBody {
+    animation: stepIn dt.$transition-base both;
+
+    // unify raw Bootstrap inputs inside step content
     :global(.form-control),
     :global(.form-select) {
         @include board.board-input-rules;
-    }
-
-    :global(h2.h4) {
-        font-size: dt.$font-size-lg;
-        font-weight: 700;
-        letter-spacing: -0.01em;
-        margin-bottom: dt.$spacing-sm;
     }
 
     :global(h3.h6) {
@@ -140,41 +147,65 @@
     }
 }
 
-// ---- Right rail ---------------------------------------------
-.rail {
-    font-size: dt.$font-size-sm;
+@keyframes stepIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
 }
 
-.railCard {
-    @include board.board-surface(dt.$spacing-lg);
-    position: sticky;
-    top: dt.$spacing-lg;
+@media (prefers-reduced-motion: reduce) {
+    .stepBody {
+        animation: none;
+    }
+    .meterFill,
+    .activityFill {
+        transition: none;
+    }
 }
 
-.railTitle {
-    @include board.board-eyebrow;
-    display: block;
-    margin-bottom: dt.$spacing-sm;
+// ---- Coverage meter (triage step) ---------------------------
+.meter {
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(var(--bs-border-color-rgb), 0.5);
+    overflow: hidden;
+    margin-top: dt.$spacing-xs;
 }
 
-.railRow {
-    display: flex;
-    align-items: baseline;
-    gap: dt.$spacing-sm;
-    padding-block: 2px;
-    color: var(--bs-secondary-color);
-    font-size: dt.$font-size-xs;
+.meterFill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--bs-primary);
+    transition: width dt.$transition-base;
 }
 
-.railIcon {
-    flex-shrink: 0;
-    position: relative;
-    top: 1px;
+// ---- Per-row activity bar (triage step) ---------------------
+.activityBar {
+    width: 4.5rem;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(var(--bs-border-color-rgb), 0.4);
+    overflow: hidden;
+}
+
+.activityFill {
+    height: 100%;
+    border-radius: 2px;
+    background: rgba(var(--bs-primary-rgb), 0.7);
+    transition: width dt.$transition-base;
+}
+
+.rowDimmed {
     color: var(--bs-tertiary-color);
-}
 
-.railIconDone {
-    color: var(--bs-primary);
+    .activityFill {
+        background: rgba(var(--bs-border-color-rgb), 0.9);
+    }
 }
 
 // ---- Step nav -----------------------------------------------
@@ -191,7 +222,7 @@
     flex: 1;
 }
 
-// ---- Action hierarchy (Task 9) --------------------------------
+// ---- Action hierarchy ---------------------------------------
 // primary = board-btn-primary (step Continue/Save actions), secondary =
 // control-pill (nav Back, finish step's "View your board"), tertiary =
 // board-quiet-link (nav Skip). See system.md.
@@ -224,7 +255,7 @@
     }
 }
 
-// ---- Step section anatomy (Tasks 7–8) ----------------------
+// ---- Step section anatomy -----------------------------------
 .section {
     @include board.board-surface(dt.$spacing-xl);
     margin-bottom: dt.$spacing-lg;
