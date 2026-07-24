@@ -22,7 +22,6 @@ const MAX_COVER_SIZE = 2 * 1024 * 1024;
 // One-click starters for the links every board wants. "Website" is the
 // generic official-site link; the icon on the game page keys off the URL.
 const LINK_PRESETS = [
-    { label: 'speedrun.com' },
     { label: 'Wiki' },
     { label: 'Website' },
     { label: 'Twitch' },
