@@ -1,14 +1,18 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useRef, useState, useTransition } from 'react';
 import type {
     GameIdentifiers,
     GameLink,
     GameMetadata,
 } from '~src/lib/game-mgmt';
 import { updateIdentifiersAction } from '../manage/identifiers/actions/update-identifiers.action';
+import { getCoverUploadUrlAction } from './actions/get-cover-upload-url.action';
 import { updateGameMetadataAction } from './actions/update-game-metadata.action';
 import styles from './setup.module.scss';
+
+const ALLOWED_COVER_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
+const MAX_COVER_SIZE = 2 * 1024 * 1024;
 
 export function GameDetailsForm({
     identifiers,
@@ -35,6 +39,50 @@ export function GameDetailsForm({
     const [links, setLinks] = useState<GameLink[]>(metadata.links ?? []);
     const [error, setError] = useState<string | null>(null);
     const [isSaving, startSaving] = useTransition();
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const uploadCover = async (file: File | undefined) => {
+        if (!file) return;
+        setError(null);
+
+        if (!ALLOWED_COVER_TYPES.includes(file.type)) {
+            setError('Image must be PNG, JPEG, or WEBP.');
+            return;
+        }
+        if (file.size > MAX_COVER_SIZE) {
+            setError('Image must be 2 MB or smaller.');
+            return;
+        }
+
+        setIsUploading(true);
+        try {
+            const res = await getCoverUploadUrlAction({
+                gameSlug: game.name,
+                gameId: game.id,
+                contentType: file.type,
+                contentLength: file.size,
+            });
+            if ('error' in res) {
+                setError(res.error);
+                return;
+            }
+            const putRes = await fetch(res.result.uploadUrl, {
+                method: 'PUT',
+                body: file,
+                headers: { 'Content-Type': file.type },
+            });
+            if (!putRes.ok) {
+                setError(`Upload failed (${putRes.status}).`);
+                return;
+            }
+            setCoverUrl(res.result.imageUrl);
+        } catch {
+            setError('Upload failed.');
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const updateLink = (index: number, patch: Partial<GameLink>) => {
         setLinks((ls) =>
@@ -92,27 +140,62 @@ export function GameDetailsForm({
         <>
             <div className="row g-4">
                 <div className="col-md-6">
-                    <label className="form-label" htmlFor="cover-url">
-                        Cover image URL
+                    <label className="form-label" htmlFor="cover-upload">
+                        Cover image
                     </label>
-                    <div className="d-flex gap-3">
+                    <div className="d-flex gap-3 align-items-start">
                         {preview && (
                             <img
                                 src={preview}
                                 alt="Cover preview"
-                                width={72}
-                                height={96}
+                                width={96}
+                                height={128}
                                 className="rounded"
-                                style={{ aspectRatio: '3 / 4' }}
+                                style={{
+                                    aspectRatio: '3 / 4',
+                                    objectFit: 'cover',
+                                }}
                             />
                         )}
-                        <input
-                            id="cover-url"
-                            className="form-control"
-                            value={coverUrl}
-                            onChange={(e) => setCoverUrl(e.target.value)}
-                            placeholder="https://… (leave empty for IGDB art)"
-                        />
+                        <div>
+                            <input
+                                ref={fileInputRef}
+                                id="cover-upload"
+                                type="file"
+                                accept={ALLOWED_COVER_TYPES.join(',')}
+                                className="d-none"
+                                onChange={(e) => {
+                                    void uploadCover(e.target.files?.[0]);
+                                    e.target.value = '';
+                                }}
+                            />
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-outline-primary d-block"
+                                disabled={isUploading || isSaving}
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                {isUploading
+                                    ? 'Uploading…'
+                                    : coverUrl.trim()
+                                      ? 'Replace image'
+                                      : 'Upload image'}
+                            </button>
+                            {coverUrl.trim() && (
+                                <button
+                                    type="button"
+                                    className="btn btn-sm btn-link px-0 d-block"
+                                    disabled={isUploading || isSaving}
+                                    onClick={() => setCoverUrl('')}
+                                >
+                                    Remove, use IGDB art
+                                </button>
+                            )}
+                            <div className="text-muted small mt-1">
+                                PNG, JPEG, or WEBP, up to 2 MB. Applies when you
+                                save.
+                            </div>
+                        </div>
                     </div>
                     <label className="form-label mt-3" htmlFor="release-year">
                         Release year
@@ -203,7 +286,7 @@ export function GameDetailsForm({
             <button
                 type="button"
                 className={`${styles.primaryAction} mt-3`}
-                disabled={isSaving}
+                disabled={isSaving || isUploading}
                 onClick={save}
             >
                 {isSaving ? 'Saving…' : saveLabel}
