@@ -123,14 +123,22 @@ export function GameOverviewPage({
                                 {s.name && (
                                     <h2 className={styles.sectionTitle}>
                                         {s.name}
+                                        <span
+                                            className={styles.sectionRule}
+                                            aria-hidden
+                                        />
+                                        <span className={styles.sectionCount}>
+                                            {s.cards.length}
+                                        </span>
                                     </h2>
                                 )}
                                 <div className={styles.cardGrid}>
-                                    {s.cards.map((card) => (
+                                    {s.cards.map((card, i) => (
                                         <CategoryCard
                                             key={card.category.id}
                                             gameSlug={data.game.name}
                                             card={card}
+                                            index={i}
                                         />
                                     ))}
                                 </div>
@@ -144,6 +152,10 @@ export function GameOverviewPage({
                         yourRuns={data.yourRuns}
                         recentPbs={data.recentPbs}
                         claim={claim}
+                        about={
+                            data.gameMeta.summaryOverride ??
+                            data.gameMeta.summary
+                        }
                     />
                 </aside>
             </div>
