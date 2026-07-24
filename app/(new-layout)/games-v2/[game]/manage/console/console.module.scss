@@ -615,6 +615,13 @@ $rail: 3px; // severity spine / active accent width
     top: 1px;
 }
 
+.setupStepWarning {
+    color: dt.$accent-amber;
+    flex-shrink: 0;
+    position: relative;
+    top: 1px;
+}
+
 .setupStepLabel {
     font-weight: 600;
     white-space: nowrap;
