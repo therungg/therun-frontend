@@ -138,7 +138,7 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
     const initialStep: SetupStepId =
         step && SETUP_STEP_ORDER.includes(step as SetupStepId)
             ? (step as SetupStepId)
-            : (completeness.firstIncomplete ?? 'welcome');
+            : (completeness.firstIncomplete ?? 'details');
 
     return <WizardShell data={data} initialStep={initialStep} />;
 }

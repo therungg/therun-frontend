@@ -37,7 +37,36 @@ describe('computeCompleteness', () => {
         expect(c.doneCount).toBe(c.totalCount);
     });
 
-    it('flags no-main as a blocker on categories, todo on category-config', () => {
+    it('emits the five steps in wizard order', () => {
+        const c = computeCompleteness(input({}));
+        expect(c.steps.map((s) => s.step)).toEqual([
+            'details',
+            'categories',
+            'defaults',
+            'exceptions',
+            'finish',
+        ]);
+    });
+
+    it('warns on exceptions when featured categories lack rules', () => {
+        const c = computeCompleteness(
+            input({
+                categories: [
+                    {
+                        id: 1,
+                        display: 'Any%',
+                        active: true,
+                        isMain: true,
+                        hasRules: false,
+                    },
+                ],
+            }),
+        );
+        const exceptions = c.steps.find((s) => s.step === 'exceptions');
+        expect(exceptions?.status).toBe('warning');
+    });
+
+    it('flags no-main as a blocker on categories, todo on exceptions', () => {
         const c = computeCompleteness(
             input({
                 categories: [
@@ -68,10 +97,10 @@ describe('computeCompleteness', () => {
         );
         expect(c.firstIncomplete).toBe('categories');
 
-        const config = c.steps.find((s) => s.step === 'category-config');
-        expect(config?.status).toBe('todo');
-        expect(config?.summary).toBe(
-            'Configure categories after choosing featured categories',
+        const exceptions = c.steps.find((s) => s.step === 'exceptions');
+        expect(exceptions?.status).toBe('todo');
+        expect(exceptions?.summary).toBe(
+            'Review exceptions after choosing featured categories',
         );
     });
 
@@ -92,12 +121,12 @@ describe('computeCompleteness', () => {
         expect(c.steps.find((s) => s.step === 'categories')?.status).toBe(
             'blocker',
         );
-        expect(c.steps.find((s) => s.step === 'category-config')?.status).toBe(
+        expect(c.steps.find((s) => s.step === 'exceptions')?.status).toBe(
             'todo',
         );
     });
 
-    it('treats an ingestion-empty board as completable (categories and category-config not blocking)', () => {
+    it('treats an ingestion-empty board as completable (categories and exceptions not blocking)', () => {
         const c = computeCompleteness(input({ categories: [] }));
         const cats = c.steps.find((s) => s.step === 'categories');
         expect(cats?.status).toBe('done');
@@ -105,8 +134,8 @@ describe('computeCompleteness', () => {
             'No ingested categories yet — they appear as runs arrive',
         );
 
-        const config = c.steps.find((s) => s.step === 'category-config');
-        expect(config?.status).toBe('todo');
+        const exceptions = c.steps.find((s) => s.step === 'exceptions');
+        expect(exceptions?.status).toBe('todo');
         expect(c.blockers).toEqual([]);
     });
 
@@ -143,7 +172,7 @@ describe('computeCompleteness', () => {
         );
     });
 
-    it('warns on category-config counting only mains without rules (a hidden category without rules is ignored)', () => {
+    it('warns on exceptions counting only mains without rules (a hidden category without rules is ignored)', () => {
         const c = computeCompleteness(
             input({
                 categories: [
@@ -171,17 +200,17 @@ describe('computeCompleteness', () => {
                 ],
             }),
         );
-        const config = c.steps.find((s) => s.step === 'category-config');
-        expect(config?.status).toBe('warning');
-        expect(config?.summary).toBe(
-            '1 of 2 featured categories not configured',
+        const exceptions = c.steps.find((s) => s.step === 'exceptions');
+        expect(exceptions?.status).toBe('warning');
+        expect(exceptions?.summary).toBe(
+            '1 of 2 featured categories missing rules',
         );
         expect(c.warnings).toContain(
-            '1 of 2 featured categories not configured',
+            '1 of 2 featured categories missing rules',
         );
     });
 
-    it('marks category-config done when all mains have rules', () => {
+    it('marks exceptions done when all mains have rules', () => {
         const c = computeCompleteness(
             input({
                 categories: [
@@ -202,15 +231,16 @@ describe('computeCompleteness', () => {
                 ],
             }),
         );
-        const config = c.steps.find((s) => s.step === 'category-config');
-        expect(config?.status).toBe('done');
-        expect(config?.summary).toBe('All 2 featured categories configured');
+        const exceptions = c.steps.find((s) => s.step === 'exceptions');
+        expect(exceptions?.status).toBe('done');
+        expect(exceptions?.summary).toBe(
+            'All 2 featured categories have rules',
+        );
     });
 
-    it('always marks defaults done, with a summary reflecting bulk settings state', () => {
+    it('always marks defaults done, with a summary reflecting standards state', () => {
         const optional = computeCompleteness(
             input({
-                variableCount: 0,
                 policyCount: 0,
                 requireVideoAnywhere: false,
             }),
@@ -219,38 +249,26 @@ describe('computeCompleteness', () => {
             (s) => s.step === 'defaults',
         );
         expect(defaultsOptional?.status).toBe('done');
-        expect(defaultsOptional?.summary).toBe('Optional bulk settings');
+        expect(defaultsOptional?.summary).toBe('Optional — game-wide defaults');
 
-        const configured = computeCompleteness(
-            input({
-                variableCount: 3,
-                policyCount: 0,
-                requireVideoAnywhere: false,
-            }),
-        );
-        const defaultsConfigured = configured.steps.find(
+        const viaPolicy = computeCompleteness(input({ policyCount: 2 }));
+        const defaultsViaPolicy = viaPolicy.steps.find(
             (s) => s.step === 'defaults',
         );
-        expect(defaultsConfigured?.status).toBe('done');
-        expect(defaultsConfigured?.summary).toContain('standards set');
-
-        const viaPolicy = computeCompleteness(
-            input({ variableCount: 0, policyCount: 2 }),
-        );
-        expect(viaPolicy.steps.find((s) => s.step === 'defaults')?.status).toBe(
-            'done',
-        );
+        expect(defaultsViaPolicy?.status).toBe('done');
+        expect(defaultsViaPolicy?.summary).toBe('Standards set');
 
         const viaVideo = computeCompleteness(
             input({
-                variableCount: 0,
                 policyCount: 0,
                 requireVideoAnywhere: true,
             }),
         );
-        expect(viaVideo.steps.find((s) => s.step === 'defaults')?.status).toBe(
-            'done',
+        const defaultsViaVideo = viaVideo.steps.find(
+            (s) => s.step === 'defaults',
         );
+        expect(defaultsViaVideo?.status).toBe('done');
+        expect(defaultsViaVideo?.summary).toBe('Standards set');
     });
 
     it('marks details todo when slug missing, and finish todo when unconfigured', () => {
@@ -258,11 +276,6 @@ describe('computeCompleteness', () => {
         expect(c.steps.find((s) => s.step === 'details')?.status).toBe('todo');
         expect(c.steps.find((s) => s.step === 'finish')?.status).toBe('todo');
         expect(c.firstIncomplete).toBe('details');
-    });
-
-    it('always marks welcome done', () => {
-        const c = computeCompleteness(input({ configured: false }));
-        expect(c.steps.find((s) => s.step === 'welcome')?.status).toBe('done');
     });
 
     it('orders firstIncomplete by SETUP_STEP_ORDER, not by step-array insertion', () => {
