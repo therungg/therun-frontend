@@ -63,7 +63,7 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                 <StepHeader
                     num={2}
                     title="No categories yet"
-                    lede="Categories appear automatically when runs are submitted or ingested from timers — there's nothing to curate yet. Once the first runs arrive, come back here (or use the console) to choose what shows on the board."
+                    lede="Categories appear automatically when runs are submitted or ingested from timers — there’s nothing to curate yet. Once the first runs arrive, come back here (or use the console) to choose what shows on the board."
                 />
                 <Link href={`/games-v2/${data.game.name}/submit`}>
                     Point runners at the submission form →
@@ -329,7 +329,7 @@ export function StepCategories({ data, onAdvance }: StepProps) {
 
             {!mainOk && (
                 <div className={`${styles.warnNote} mt-2`}>
-                    Keep at least one category on the board — it's what visitors
+                    Keep at least one category on the board — it’s what visitors
                     see.
                 </div>
             )}
