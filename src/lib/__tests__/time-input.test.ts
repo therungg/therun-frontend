@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { parseTimeInput } from '../time-input';
+import { formatTimeInput, parseTimeInput } from '../time-input';
 
 describe('parseTimeInput', () => {
     test('empty / garbage → undefined', () => {
@@ -18,5 +18,18 @@ describe('parseTimeInput', () => {
     });
     test('tolerates formatTimeMs decimals', () => {
         expect(parseTimeInput('1:40:00.0')).toBe((1 * 3600 + 40 * 60) * 1000);
+    });
+});
+
+describe('formatTimeInput', () => {
+    test('sub-hour renders m:ss', () => {
+        expect(formatTimeInput(12 * 60_000 + 30_000)).toBe('12:30');
+    });
+    test('hour-plus renders h:mm:ss', () => {
+        expect(formatTimeInput((1 * 3600 + 40 * 60) * 1000)).toBe('1:40:00');
+    });
+    test('round-trips through parseTimeInput', () => {
+        const ms = (2 * 3600 + 5 * 60 + 9) * 1000;
+        expect(parseTimeInput(formatTimeInput(ms))).toBe(ms);
     });
 });

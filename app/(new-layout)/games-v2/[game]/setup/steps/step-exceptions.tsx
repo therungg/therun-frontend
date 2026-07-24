@@ -6,8 +6,15 @@ import { Check2 } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import type { PrimaryTiming } from '~src/lib/category-mgmt';
 import { RULES_STARTER_TEMPLATE } from '~src/lib/setup/rules-template';
+import { formatTimeInput, parseTimeInput } from '~src/lib/time-input';
 import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
+import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
 import { updateCategorySettingsAction } from '../../manage/category-tab/actions/update-category-settings.action';
+import {
+    createPolicyAction,
+    deletePolicyAction,
+    updatePolicyAction,
+} from '../../manage/moderation/policies/actions/policies-actions.action';
 import { updateTimingSettingsAction } from '../../manage/timing/actions/update-timing-settings.action';
 import {
     CategoryLeaderboardPreview,
@@ -19,6 +26,36 @@ import { StepHeader } from './step-header';
 
 function toPrimaryTiming(short: 'rt' | 'gt'): PrimaryTiming {
     return short === 'gt' ? 'gametime' : 'realtime';
+}
+
+interface MinTimeValue {
+    minTimeMs?: number | null;
+    minGameTimeMs?: number | null;
+}
+
+// categoryId null = the game-wide minimum from the defaults step; a
+// category-scoped policy beats it (mirrors backend getMinimumTime).
+function minPolicyFor(
+    policies: BoardPolicyRow[],
+    categoryId: number | null,
+): BoardPolicyRow | undefined {
+    return policies.find(
+        (p) =>
+            p.policyType === 'min_time' &&
+            p.categoryId === categoryId &&
+            p.subcategoryKey === null,
+    );
+}
+
+interface MinRowState {
+    catId: number;
+    /** 'rt' writes minTimeMs, 'gt' writes minGameTimeMs. */
+    primary: 'rt' | 'gt';
+    text: string;
+    initialText: string;
+    policyId: number | null;
+    existing: MinTimeValue;
+    error: string | null;
 }
 
 export function StepExceptions({ data, onAdvance }: StepProps) {
@@ -37,6 +74,149 @@ export function StepExceptions({ data, onAdvance }: StepProps) {
     const [openId, setOpenId] = useState<number | null>(
         catParam ? Number(catParam) : null,
     );
+
+    const gameMin = (minPolicyFor(data.policies, null)?.value ??
+        null) as MinTimeValue | null;
+    const [minRows, setMinRows] = useState<MinRowState[]>(() =>
+        mains.map((c) => {
+            const policy = minPolicyFor(data.policies, c.id);
+            const existing = (policy?.value ?? {}) as MinTimeValue;
+            const primary = c.primaryTiming === 'gt' ? 'gt' : 'rt';
+            const ms =
+                primary === 'gt' ? existing.minGameTimeMs : existing.minTimeMs;
+            const text = ms ? formatTimeInput(ms) : '';
+            return {
+                catId: c.id,
+                primary,
+                text,
+                initialText: text,
+                policyId: policy?.id ?? null,
+                existing,
+                error: null,
+            };
+        }),
+    );
+    const [progress, setProgress] = useState<string | null>(null);
+    const [isSaving, startSaving] = useTransition();
+
+    const setMinText = (catId: number, text: string) =>
+        setMinRows((rs) =>
+            rs.map((r) =>
+                r.catId === catId ? { ...r, text, error: null } : r,
+            ),
+        );
+
+    const gameMinMs = gameMin?.minTimeMs ?? gameMin?.minGameTimeMs ?? null;
+    const minPlaceholder = gameMinMs
+        ? `${formatTimeInput(gameMinMs)} (game-wide)`
+        : 'e.g. 10:00';
+
+    const changedMinRows = minRows.filter(
+        (r) => r.text.trim() !== r.initialText.trim(),
+    );
+
+    const saveAndContinue = () => {
+        const invalidIds = minRows
+            .filter((r) => r.text.trim() && !parseTimeInput(r.text))
+            .map((r) => r.catId);
+        if (invalidIds.length > 0) {
+            setMinRows((rs) =>
+                rs.map((r) =>
+                    invalidIds.includes(r.catId)
+                        ? { ...r, error: 'Use h:mm:ss or m:ss.' }
+                        : r,
+                ),
+            );
+            return;
+        }
+        startSaving(async () => {
+            // Sequential batch, same pattern as the triage save: per-row
+            // errors stay on their row, advance only when everything saved.
+            let failures = 0;
+            for (let i = 0; i < changedMinRows.length; i++) {
+                const r = changedMinRows[i];
+                setProgress(
+                    `Saving minimums ${i + 1} / ${changedMinRows.length}…`,
+                );
+                const field =
+                    r.primary === 'gt' ? 'minGameTimeMs' : 'minTimeMs';
+                const otherField =
+                    r.primary === 'gt' ? 'minTimeMs' : 'minGameTimeMs';
+                const otherValue = r.existing[otherField] ?? null;
+                const parsed = r.text.trim()
+                    ? parseTimeInput(r.text)
+                    : undefined;
+
+                let res:
+                    | { error: string }
+                    | { ok: true; policy: BoardPolicyRow }
+                    | { ok: true };
+                let nextPolicyId: number | null = r.policyId;
+                if (parsed) {
+                    const value: Record<string, unknown> = { [field]: parsed };
+                    if (otherValue) value[otherField] = otherValue;
+                    res = r.policyId
+                        ? await updatePolicyAction(
+                              data.game.name,
+                              r.policyId,
+                              value,
+                          )
+                        : await createPolicyAction(data.game.name, {
+                              policyType: 'min_time',
+                              value,
+                              categoryId: r.catId,
+                          });
+                    if (!('error' in res) && 'policy' in res) {
+                        nextPolicyId = res.policy.id;
+                    }
+                } else if (r.policyId) {
+                    // Cleared: keep the policy if the other timing still has
+                    // a minimum, otherwise drop it (game-wide takes over).
+                    if (otherValue) {
+                        res = await updatePolicyAction(
+                            data.game.name,
+                            r.policyId,
+                            { [otherField]: otherValue },
+                        );
+                    } else {
+                        res = await deletePolicyAction(
+                            data.game.name,
+                            r.policyId,
+                        );
+                        nextPolicyId = null;
+                    }
+                } else {
+                    continue;
+                }
+
+                if ('error' in res) {
+                    failures++;
+                    const message = res.error;
+                    setMinRows((rs) =>
+                        rs.map((row) =>
+                            row.catId === r.catId
+                                ? { ...row, error: message }
+                                : row,
+                        ),
+                    );
+                } else {
+                    setMinRows((rs) =>
+                        rs.map((row) =>
+                            row.catId === r.catId
+                                ? {
+                                      ...row,
+                                      policyId: nextPolicyId,
+                                      initialText: row.text,
+                                  }
+                                : row,
+                        ),
+                    );
+                }
+            }
+            setProgress(null);
+            if (failures === 0) onAdvance();
+        });
+    };
 
     if (mains.length === 0) {
         return (
@@ -67,41 +247,83 @@ export function StepExceptions({ data, onAdvance }: StepProps) {
         <section>
             <StepHeader
                 num={4}
-                title="Any exceptions?"
-                lede={`All ${mains.length} featured categor${
-                    mains.length === 1
-                        ? 'y currently uses'
-                        : 'ies currently use'
-                } the defaults you just set. Open one only if its timing or rules should differ. Variables and minimum times are managed in the console, not here.`}
+                title="Minimum times & exceptions"
+                lede="Set a minimum time per category: anything faster is held for review. Timers auto-submit a lot of junk runs, so this is your main defense. Open a category only if its timing or rules should differ from the defaults."
             />
             <ul className={styles.rows}>
-                {mains.map((c) => (
-                    <li key={c.id} className={styles.rowItem}>
-                        <strong>{c.display}</strong>
-                        <span className="text-muted small">
-                            {c.primaryTiming === 'gt' ? 'IGT' : 'RTA'}
-                            {(c.showMilliseconds ?? true) ? ' · ms' : ''}
-                            {(c.requireVideo ?? false) ? ' · video' : ''}
-                        </span>
-                        {(c.rules ?? '').trim() ? (
-                            <span className={styles.textSuccess}>
-                                <Check2 size={14} aria-hidden /> rules
+                {mains.map((c) => {
+                    const row = minRows.find((r) => r.catId === c.id);
+                    return (
+                        <li key={c.id} className={styles.rowItem}>
+                            <strong>{c.display}</strong>
+                            <span className="text-muted small">
+                                {c.primaryTiming === 'gt' ? 'IGT' : 'RTA'}
+                                {(c.showMilliseconds ?? true) ? ' · ms' : ''}
+                                {(c.requireVideo ?? false) ? ' · video' : ''}
                             </span>
-                        ) : (
-                            <span className={styles.textWarning}>no rules</span>
-                        )}
-                        <button
-                            type="button"
-                            className="btn btn-link btn-sm ms-auto"
-                            onClick={() =>
-                                setOpenId((id) => (id === c.id ? null : c.id))
-                            }
-                        >
-                            {openId === c.id ? 'Close' : 'Adjust'}
-                        </button>
-                    </li>
-                ))}
+                            {(c.rules ?? '').trim() ? (
+                                <span className={styles.textSuccess}>
+                                    <Check2 size={14} aria-hidden /> rules
+                                </span>
+                            ) : (
+                                <span className={styles.textWarning}>
+                                    no rules
+                                </span>
+                            )}
+                            {row && (
+                                <span className="d-flex align-items-center gap-1 small ms-auto">
+                                    <label
+                                        htmlFor={`min-${c.id}`}
+                                        className="text-muted"
+                                    >
+                                        min
+                                    </label>
+                                    <input
+                                        id={`min-${c.id}`}
+                                        className="form-control form-control-sm"
+                                        style={{ width: '7.5rem' }}
+                                        value={row.text}
+                                        disabled={isSaving}
+                                        onChange={(e) =>
+                                            setMinText(c.id, e.target.value)
+                                        }
+                                        placeholder={minPlaceholder}
+                                        aria-label={`Minimum ${
+                                            c.primaryTiming === 'gt'
+                                                ? 'in-game'
+                                                : 'real'
+                                        } time for ${c.display}`}
+                                    />
+                                </span>
+                            )}
+                            {row?.error && (
+                                <span
+                                    className={`${styles.textDanger} small w-100 text-end`}
+                                >
+                                    {row.error}
+                                </span>
+                            )}
+                            <button
+                                type="button"
+                                className="btn btn-link btn-sm"
+                                onClick={() =>
+                                    setOpenId((id) =>
+                                        id === c.id ? null : c.id,
+                                    )
+                                }
+                            >
+                                {openId === c.id ? 'Close' : 'Adjust'}
+                            </button>
+                        </li>
+                    );
+                })}
             </ul>
+            <p className="text-muted small">
+                Minimums use each category’s primary timing.{' '}
+                {gameMinMs
+                    ? 'Empty fields fall back to the game-wide minimum from the previous step.'
+                    : 'You can also set one game-wide minimum in the previous step.'}
+            </p>
             {openId !== null &&
                 (() => {
                     const cat = mains.find((c) => c.id === openId);
@@ -113,12 +335,20 @@ export function StepExceptions({ data, onAdvance }: StepProps) {
                         />
                     ) : null;
                 })()}
+            {progress && <div className="text-muted small">{progress}</div>}
             <button
                 type="button"
                 className={`${styles.primaryAction} mt-2`}
-                onClick={onAdvance}
+                disabled={isSaving}
+                onClick={saveAndContinue}
             >
-                {openId === null ? 'No exceptions needed' : 'Continue'}
+                {isSaving
+                    ? 'Saving…'
+                    : changedMinRows.length > 0
+                      ? 'Save minimums & continue'
+                      : openId === null
+                        ? 'No exceptions needed'
+                        : 'Continue'}
             </button>
         </section>
     );
