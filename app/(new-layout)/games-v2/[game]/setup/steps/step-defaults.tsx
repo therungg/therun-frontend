@@ -60,7 +60,7 @@ export function StepDefaults({ data, onAdvance }: StepProps) {
 
         if (!showRt && !showIgt) {
             setGuardError(
-                "A category can't hide both real time and in-game time — turn at least one back on.",
+                'A category can’t hide both real time and in-game time — turn at least one back on.',
             );
             return;
         }
