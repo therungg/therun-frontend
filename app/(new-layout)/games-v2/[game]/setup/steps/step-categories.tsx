@@ -2,11 +2,12 @@
 
 import { useState, useTransition } from 'react';
 import Link from '~src/components/link';
-import { activityShare } from '~src/lib/setup/suggestions';
+import { activityShare, suggestFeaturedIds } from '~src/lib/setup/suggestions';
 import { createGroupAction } from '../actions/create-group.action';
 import { curateCategoryAction } from '../actions/curate-category.action';
 import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
+import { StepHeader } from './step-header';
 
 interface RowState {
     id: number;
@@ -19,22 +20,36 @@ interface RowState {
 }
 
 export function StepCategories({ data, onAdvance }: StepProps) {
-    // Pre-check: resolveCategory already filters low-activity categories, so
-    // everything we see is worth showing; keep current flags as the baseline
-    // and default the top category to main when none is set.
-    const anyMain = data.categories.some(
+    // Baseline: boards that already curated keep their flags; fresh boards
+    // get suggested picks (high-activity categories pre-checked).
+    const hasExplicitMains = data.categories.some(
         (c) => !c.archived && (c.isMain ?? false),
     );
-    const [rows, setRows] = useState<RowState[]>(
-        data.categories.map((c, i) => ({
+    const suggested = suggestFeaturedIds(
+        data.categories.map((c) => ({
             id: c.id,
-            display: c.display,
-            main: (!c.archived && (c.isMain ?? false)) || (!anyMain && i === 0),
-            groupId: c.groupId ?? null,
-            uniqueRunners: c.uniqueRunners ?? 0,
             totalFinishedAttemptCount: c.totalFinishedAttemptCount ?? 0,
-            error: null,
+            uniqueRunners: c.uniqueRunners ?? 0,
         })),
+    );
+    const [rows, setRows] = useState<RowState[]>(
+        [...data.categories]
+            .sort(
+                (a, b) =>
+                    (b.totalFinishedAttemptCount ?? 0) -
+                    (a.totalFinishedAttemptCount ?? 0),
+            )
+            .map((c) => ({
+                id: c.id,
+                display: c.display,
+                main: hasExplicitMains
+                    ? !c.archived && (c.isMain ?? false)
+                    : suggested.has(c.id),
+                groupId: c.groupId ?? null,
+                uniqueRunners: c.uniqueRunners ?? 0,
+                totalFinishedAttemptCount: c.totalFinishedAttemptCount ?? 0,
+                error: null,
+            })),
     );
     const [groups, setGroups] = useState(data.groups);
     const [groupName, setGroupName] = useState('');
@@ -45,13 +60,11 @@ export function StepCategories({ data, onAdvance }: StepProps) {
     if (data.categories.length === 0) {
         return (
             <section>
-                <h2 className="h4">Categories</h2>
-                <p>
-                    Categories appear automatically when runs are submitted or
-                    ingested from timers — there’s nothing to curate yet. Once
-                    the first runs arrive, come back here (or use the console)
-                    to choose what shows on the board.
-                </p>
+                <StepHeader
+                    num={2}
+                    title="No categories yet"
+                    lede="Categories appear automatically when runs are submitted or ingested from timers — there's nothing to curate yet. Once the first runs arrive, come back here (or use the console) to choose what shows on the board."
+                />
                 <Link href={`/games-v2/${data.game.name}/submit`}>
                     Point runners at the submission form →
                 </Link>
@@ -79,6 +92,10 @@ export function StepCategories({ data, onAdvance }: StepProps) {
             totalFinishedAttemptCount: r.totalFinishedAttemptCount,
             active: r.main,
         })),
+    );
+    const maxRuns = Math.max(
+        1,
+        ...rows.map((r) => r.totalFinishedAttemptCount),
     );
     const mainOk = checkedCount > 0;
 
@@ -146,12 +163,26 @@ export function StepCategories({ data, onAdvance }: StepProps) {
 
     return (
         <section>
-            <h2 className="h4">Categories</h2>
-            <div className={styles.infoNote}>
-                Checked categories are your featured categories — they appear on
-                the leaderboards. Unchecked categories stay hidden. Checked
-                categories hold {share}% of this board’s finished runs.
+            <StepHeader
+                num={2}
+                title={`We found ${rows.length} categor${
+                    rows.length === 1 ? 'y' : 'ies'
+                } — probably too many`}
+                lede="They come from ingested runs and submissions across the whole site. Pick the ones that belong on your board; the rest stay hidden, and you can bring any of them back later from the console."
+            />
+
+            <div className="d-flex gap-3 flex-wrap mb-4">
+                <StatTile value={rows.length} label="categories discovered" />
+                <StatTile
+                    value={data.stats.uniqueRunners}
+                    label="unique runners"
+                />
+                <StatTile
+                    value={data.stats.totalFinishedAttemptCount}
+                    label="finished runs"
+                />
             </div>
+
             {legacyHiddenCount > 0 && (
                 <div className={styles.warnNote}>
                     {legacyHiddenCount} previously shown categor
@@ -159,11 +190,13 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                     you save — check them to keep them on the board.
                 </div>
             )}
+
             <table className={styles.table}>
                 <thead>
                     <tr>
-                        <th>Show on board (featured)</th>
+                        <th>Show on board</th>
                         <th>Category</th>
+                        <th>Activity</th>
                         <th className="text-end">Runners</th>
                         <th className="text-end">Runs</th>
                         {showGroups && <th>Group</th>}
@@ -171,11 +204,15 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                 </thead>
                 <tbody>
                     {rows.map((r) => (
-                        <tr key={r.id} className={r.main ? '' : 'text-muted'}>
+                        <tr
+                            key={r.id}
+                            className={r.main ? '' : styles.rowDimmed}
+                        >
                             <td>
                                 <input
                                     type="checkbox"
                                     className="form-check-input"
+                                    aria-label={`Show ${r.display} on the board`}
                                     checked={r.main}
                                     onChange={(e) =>
                                         setMain(r.id, e.target.checked)
@@ -192,6 +229,23 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                                     </div>
                                 )}
                             </td>
+                            <td>
+                                <div className={styles.activityBar}>
+                                    <div
+                                        className={styles.activityFill}
+                                        style={{
+                                            width: `${Math.max(
+                                                2,
+                                                Math.round(
+                                                    (r.totalFinishedAttemptCount /
+                                                        maxRuns) *
+                                                        100,
+                                                ),
+                                            )}%`,
+                                        }}
+                                    />
+                                </div>
+                            </td>
                             <td className="text-end">
                                 {r.uniqueRunners.toLocaleString()}
                             </td>
@@ -202,6 +256,7 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                                 <td>
                                     <select
                                         className="form-select form-select-sm"
+                                        aria-label={`Group for ${r.display}`}
                                         value={r.groupId ?? ''}
                                         onChange={(e) =>
                                             setGroup(
@@ -225,8 +280,25 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                     ))}
                 </tbody>
             </table>
-            <div className="text-muted small mb-2">
-                {checkedCount} shown / {rows.length - checkedCount} hidden
+
+            <div className="mb-3">
+                <div className="text-muted small">
+                    {checkedCount} shown · {rows.length - checkedCount} hidden ·{' '}
+                    {share}% of runs covered
+                </div>
+                <div
+                    className={styles.meter}
+                    role="progressbar"
+                    aria-label="Share of finished runs covered by shown categories"
+                    aria-valuenow={share}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                >
+                    <div
+                        className={styles.meterFill}
+                        style={{ width: `${share}%` }}
+                    />
+                </div>
             </div>
 
             <button
@@ -257,8 +329,8 @@ export function StepCategories({ data, onAdvance }: StepProps) {
 
             {!mainOk && (
                 <div className={`${styles.warnNote} mt-2`}>
-                    Mark at least one category as featured — they’re what
-                    visitors see.
+                    Keep at least one category on the board — it's what visitors
+                    see.
                 </div>
             )}
             {progress && <div className="text-muted small">{progress}</div>}
@@ -271,5 +343,14 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                 {isSaving ? 'Saving…' : 'Save & continue'}
             </button>
         </section>
+    );
+}
+
+function StatTile({ value, label }: { value: number; label: string }) {
+    return (
+        <div className={styles.statTile}>
+            <span className={styles.statValue}>{value.toLocaleString()}</span>
+            <span className={styles.statLabel}>{label}</span>
+        </div>
     );
 }
