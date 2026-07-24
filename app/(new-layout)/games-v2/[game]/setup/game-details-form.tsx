@@ -6,6 +6,10 @@ import type {
     GameLink,
     GameMetadata,
 } from '~src/lib/game-mgmt';
+import {
+    igdbPrefillPlatforms,
+    igdbPrefillYear,
+} from '~src/lib/setup/igdb-prefill';
 import { updateIdentifiersAction } from '../manage/identifiers/actions/update-identifiers.action';
 import { getCoverUploadUrlAction } from './actions/get-cover-upload-url.action';
 import { updateGameMetadataAction } from './actions/update-game-metadata.action';
@@ -29,11 +33,18 @@ export function GameDetailsForm({
 }) {
     const [slug, setSlug] = useState(identifiers.slug ?? '');
     const [coverUrl, setCoverUrl] = useState(metadata.coverUrl ?? '');
+    // Seed from IGDB when the mod-editable columns are still empty — sync
+    // fills firstReleaseDate/igdbPlatforms, not these (see igdb-prefill.ts).
     const [platformsText, setPlatformsText] = useState(
-        metadata.platforms.join(', '),
+        (metadata.platforms.length
+            ? metadata.platforms
+            : igdbPrefillPlatforms(metadata.igdbPlatforms)
+        ).join(', '),
     );
     const [releaseYear, setReleaseYear] = useState(
-        metadata.releaseYear?.toString() ?? '',
+        (
+            metadata.releaseYear ?? igdbPrefillYear(metadata.firstReleaseDate)
+        )?.toString() ?? '',
     );
     const [discordUrl, setDiscordUrl] = useState(metadata.discordUrl ?? '');
     const [links, setLinks] = useState<GameLink[]>(metadata.links ?? []);
