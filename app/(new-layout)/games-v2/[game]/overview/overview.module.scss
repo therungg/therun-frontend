@@ -5,40 +5,135 @@
     margin-bottom: dt.$spacing-2xl;
 }
 
+// Section header: eyebrow label, hairline running to the row's edge,
+// board count at the far end.
 .sectionTitle {
     @include board.board-eyebrow;
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
     margin: 0 0 dt.$spacing-md;
 }
 
+.sectionRule {
+    flex: 1;
+    height: 1px;
+    background: rgba(var(--bs-border-color-rgb), 0.6);
+}
+
+.sectionCount {
+    @include board.mono-time;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+}
+
 .cardGrid {
+    // Cap at 3 columns: each track must be at least a third of the row
+    // (minus gaps), so a 4th track never fits; 280px floor keeps wrapping
+    // behavior on narrow viewports.
+    --card-gap: #{dt.$spacing-lg};
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: dt.$spacing-md;
+    grid-template-columns: repeat(
+        auto-fill,
+        minmax(max(280px, calc((100% - 2 * var(--card-gap)) / 3)), 1fr)
+    );
+    gap: var(--card-gap);
 }
 
 // ---- Plaque (record-wall card) --------------------------------
+// Anatomy: a body (label + record numeral) over an optional podium
+// footer. Padding lives on those two zones, never on the card, so the
+// podium's rule runs the full plate width instead of floating inside a
+// gutter. The body flexes so every plate in a row bottoms out level.
 .plaque {
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: dt.$spacing-md;
-    padding: dt.$spacing-md dt.$spacing-lg;
+    padding: 0;
     background: var(--bs-tertiary-bg);
-    border: 1px solid var(--bs-border-color);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.7);
     border-radius: dt.$radius-lg;
     transition: border-color dt.$transition-fast,
-        background-color dt.$transition-fast;
+        transform dt.$transition-fast,
+        box-shadow dt.$transition-fast;
 
-    &:hover {
-        border-color: var(--bs-secondary-color);
-        background: var(--bs-secondary-bg);
+    // Hover lifts the plate off the wall; the surface itself doesn't
+    // change tone — a whole-card bg swap across nine plaques reads as
+    // flicker, not response.
+    &:hover,
+    &:focus-within {
+        border-color: rgba(var(--bs-border-color-rgb), 1);
+        transform: translateY(dt.$hover-lift);
+        box-shadow: dt.$shadow-md;
     }
+
+    // The title link is the card's stretched hit area, so keyboard focus
+    // is promoted to the whole plate rather than ringing a text run.
+    &:focus-within {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        &:hover,
+        &:focus-within {
+            transform: none;
+        }
+    }
+}
+
+.plaqueBody {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-lg;
+    padding: dt.$spacing-lg;
+}
+
+// Verified world record: the plate's top edge in gold — the engraved
+// accent. It recolours the existing 1px border rather than thickening it,
+// so a verified card and its unverified neighbour keep identical box
+// metrics and their contents stay on the same baseline across a row.
+// Gold's loud carrier is the numeral; up here it only needs to whisper.
+.plaqueGold {
+    border-top-color: dt.$accent-gold;
+
+    &:hover,
+    &:focus-within {
+        border-top-color: dt.$accent-gold;
+    }
+}
+
+// Entrance: plaques rise onto the wall once, with a short stagger driven
+// by the card's own index — no nth-child ceiling that silently stops
+// staggering past a fixed count. Capped so a long wall doesn't crawl.
+@media (prefers-reduced-motion: no-preference) {
+    .cardGrid .plaque {
+        animation: plaque-rise 0.35s ease-out backwards;
+        animation-delay: min(calc(var(--i, 0) * 40ms), 320ms);
+    }
+}
+
+@keyframes plaque-rise {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
+// ---- Label zone ----------------------------------------------
+.plaqueLabel {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    min-width: 0;
 }
 
 .plaqueHead {
     display: flex;
     align-items: center;
-    gap: dt.$spacing-sm;
+    gap: dt.$spacing-md;
+    min-width: 0;
 }
 
 .emblem {
@@ -47,76 +142,65 @@
     border-radius: dt.$radius-md;
     object-fit: cover;
     flex-shrink: 0;
+    // Emblem art often ships on a near-white plate; a hairline keeps it
+    // an object on the surface rather than a bleed into it.
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
 }
 
-.plaqueTitleBlock {
+// The title is the plate's label, not its headline — the record numeral
+// carries the weight. 600 + tight tracking keeps it authoritative
+// without competing with the time below it.
+.plaqueTitle {
     min-width: 0;
     flex: 1;
-}
-
-.plaqueTitle {
     font-size: dt.$font-size-md;
-    font-weight: 700;
+    font-weight: 600;
+    letter-spacing: -0.01em;
     margin: 0;
-    line-height: 1.2;
+    line-height: 1.25;
 
     a {
         color: var(--bs-emphasis-color);
         text-decoration: none;
+
+        // Ring is promoted to the plate (.plaque:focus-within).
+        &:focus-visible {
+            outline: none;
+        }
     }
 }
 
+// Spec-plate meta: uppercase, letter-spaced, tertiary — a label voice,
+// so it reads as engraving under the title rather than a stray sentence.
 .plaqueStats {
+    display: block;
     font-size: dt.$font-size-2xs;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.4;
     color: var(--bs-tertiary-color);
 }
 
-.eyebrowGold {
-    @include board.board-eyebrow;
-    color: dt.$accent-gold;
-    flex-shrink: 0;
-}
-
-.eyebrowDim {
-    @include board.board-eyebrow;
-    flex-shrink: 0;
-}
-
-// ---- Record row ----------------------------------------------
-.recordRow {
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-md;
-}
-
-// Ring around the holder's avatar; gold only when the record is verified.
-.avatarRing,
-.avatarRingGold {
-    display: inline-flex;
-    border-radius: 50%;
-    flex-shrink: 0;
-    box-shadow: 0 0 0 2px var(--bs-border-color);
-}
-
-.avatarRingGold {
-    box-shadow:
-        0 0 0 2px dt.$accent-gold,
-        0 0 0 5px rgba(dt.$accent-gold, 0.15);
-}
-
-.recordText {
-    min-width: 0;
+// ---- Record zone ---------------------------------------------
+// The numeral owns a full line — unobstructed, it can be set nearly
+// twice the title's size, which is what makes the plate read as a record
+// rather than a list row. Attribution sits beneath it.
+.record {
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: dt.$spacing-sm;
+    min-width: 0;
 }
 
 .recordTime,
-.recordTimeGold {
+.recordTimeGold,
+.recordTimeEmpty {
     @include board.mono-time;
-    font-size: dt.$font-size-xl;
+    font-size: dt.$font-size-3xl;
     font-weight: 700;
-    line-height: 1.15;
+    letter-spacing: -0.02em;
+    line-height: 1;
     color: var(--bs-emphasis-color);
 }
 
@@ -124,7 +208,16 @@
     color: dt.$accent-gold;
 }
 
+.recordTimeEmpty {
+    color: var(--bs-tertiary-color);
+    opacity: 0.5;
+}
+
 .recordHolder {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    min-width: 0;
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
     // Runner link must stay clickable above the card's stretched link.
@@ -132,40 +225,93 @@
     z-index: 2;
 }
 
+.recordHolderName {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .recordWhen {
     color: var(--bs-tertiary-color);
+    white-space: nowrap;
+
+    // Separator lives in CSS so the date can drop out (no runDate)
+    // without leaving a dangling middot in the markup.
+    &::before {
+        content: '· ';
+    }
 }
 
 // ---- Podium footer -------------------------------------------
+// Ranks 2–3 as a miniature board: rank gutter, avatar, name, times
+// right-aligned into one tabular column.
 .podium {
     display: flex;
-    flex-wrap: wrap;
-    gap: dt.$spacing-xs dt.$spacing-md;
-    margin-top: auto;
-    padding-top: dt.$spacing-sm;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-md dt.$spacing-lg dt.$spacing-lg;
     border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
-    font-size: dt.$font-size-2xs;
+    font-size: dt.$font-size-xs;
     color: var(--bs-tertiary-color);
     // Runner-up links clickable above the stretched link.
     position: relative;
     z-index: 2;
 }
 
-.podiumSpot {
-    white-space: nowrap;
+.podiumRow {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    min-width: 0;
 }
 
+// Rank accents (board signature): 2 silver, 3 bronze. Rank 1's gold is
+// spent on the record numeral, so no numeral gutter competes with it.
 .podiumRank {
     @include board.mono-time;
-    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-2xs;
+    font-weight: 600;
+    color: var(--bs-tertiary-color);
+    width: 1ch;
+    flex-shrink: 0;
+}
+
+.rankSilver {
+    color: dt.$accent-silver;
+}
+
+.rankBronze {
+    color: dt.$accent-bronze;
+}
+
+// Fixed slot centres the 20px runner-up avatars under the 28px record
+// holder's, so both rows share one avatar axis.
+.podiumAvatar {
+    display: flex;
+    justify-content: center;
+    width: dt.$avatar-sm;
+    flex-shrink: 0;
+}
+
+.podiumName {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .podiumTime {
     @include board.mono-time;
+    color: var(--bs-secondary-color);
+    margin-left: auto;
+    flex-shrink: 0;
 }
 
+// Empty slot's attribution line — same position and tone as a held
+// record's holder line, but plain inline flow (the flex row's gap would
+// otherwise split the sentence from its link).
 .plaqueEmpty {
-    margin-top: auto;
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
 }
