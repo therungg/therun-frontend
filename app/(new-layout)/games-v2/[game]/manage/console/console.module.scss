@@ -544,3 +544,82 @@ $rail: 3px; // severity spine / active accent width
         @include board.board-overlay-enter(fade);
     }
 }
+
+// ---- Setup checklist card ----------------------------------
+.setupCardBody {
+    width: 100%;
+}
+
+.setupCardHead {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.setupCardAction {
+    @include board.board-btn-primary;
+    text-decoration: none;
+}
+
+.setupMeter {
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(var(--bs-border-color-rgb), 0.5);
+    overflow: hidden;
+    margin: dt.$spacing-sm 0 dt.$spacing-md;
+}
+
+.setupMeterFill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--bs-primary);
+    transition: width dt.$transition-base;
+}
+
+.setupSteps {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.setupStep {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-xs;
+}
+
+.setupStepDone {
+    color: var(--bs-primary);
+    flex-shrink: 0;
+    position: relative;
+    top: 1px;
+}
+
+.setupStepTodo {
+    color: var(--bs-tertiary-color);
+    flex-shrink: 0;
+    position: relative;
+    top: 1px;
+}
+
+.setupStepBlocker {
+    color: dt.$accent-red;
+    flex-shrink: 0;
+    position: relative;
+    top: 1px;
+}
+
+.setupStepLabel {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.setupStepSummary {
+    color: var(--bs-secondary-color);
+}
