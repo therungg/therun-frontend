@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState, useTransition } from 'react';
 import { Check2 } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import type { PrimaryTiming } from '~src/lib/category-mgmt';
+import { RULES_STARTER_TEMPLATE } from '~src/lib/setup/rules-template';
 import { suggestMinTimeMs } from '~src/lib/setup/suggestions';
 import { parseTimeInput } from '~src/lib/time-input';
 import type {
@@ -24,14 +25,6 @@ import {
 } from '../category-leaderboard-preview';
 import styles from '../setup.module.scss';
 import type { StepProps, WizardData } from '../types';
-
-const STARTER_TEMPLATE = `Timing starts on [first input / cutscene end].
-Timing ends on [final hit / last input].
-
-- Video proof is [required / recommended] for all submissions.
-- Allowed platforms and versions: [list them].
-- No cheating, game modifications, or macros. Emulator: [allowed / banned].
-`;
 
 function toPrimaryTiming(short: 'rt' | 'gt'): PrimaryTiming {
     return short === 'gt' ? 'gametime' : 'realtime';
@@ -384,7 +377,7 @@ function RulesSection({
     category: ResolvedCategory;
 }) {
     const [rules, setRules] = useState(
-        category.rules?.trim() ? category.rules : STARTER_TEMPLATE,
+        category.rules?.trim() ? category.rules : RULES_STARTER_TEMPLATE,
     );
     const [saved, setSaved] = useState(
         (category.rules ?? '').trim().length > 0,
