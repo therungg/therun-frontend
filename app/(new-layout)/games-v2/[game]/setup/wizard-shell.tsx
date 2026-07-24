@@ -8,9 +8,9 @@ import {
 import { BackLink } from '../shared/back-link';
 import styles from './setup.module.scss';
 import { StepCategories } from './steps/step-categories';
-import { StepCategoryConfig } from './steps/step-category-config';
 import { StepDefaults } from './steps/step-defaults';
 import { StepDetails } from './steps/step-details';
+import { StepExceptions } from './steps/step-exceptions';
 import { StepFinish } from './steps/step-finish';
 import type { WizardData } from './types';
 
@@ -183,7 +183,7 @@ function CurrentStep({
             );
         case 'exceptions':
             return (
-                <StepCategoryConfig
+                <StepExceptions
                     data={data}
                     onAdvance={onAdvance}
                     onBack={onBack}

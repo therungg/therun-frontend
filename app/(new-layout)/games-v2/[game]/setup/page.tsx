@@ -6,7 +6,6 @@ import { getGameIdentifiers, getGameMetadata } from '~src/lib/game-mgmt';
 import { listGameModerators } from '~src/lib/game-moderators';
 import { getQuickStats, resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { listGameVariables } from '~src/lib/leaderboard-variables';
-import { getLeaderboard } from '~src/lib/leaderboards-v1';
 import { listPolicies } from '~src/lib/moderation/policies';
 import {
     categoryFactsFromResolved,
@@ -26,8 +25,6 @@ interface PageProps {
     params: Promise<{ game: string }>;
     searchParams: Promise<{ step?: string }>;
 }
-
-const WR_FETCH_CAP = 10;
 
 export async function generateMetadata({
     params,
@@ -75,39 +72,6 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         getGameMetadata(game.id),
     ]);
 
-    // Fastest verified time per active category (for min-time suggestions).
-    // Mains sorted first so legacy active-non-main rows can't displace them
-    // out of the top-N fetch cap.
-    const activeCats = catData.categories
-        .filter((c) => !c.archived)
-        .sort(
-            (a, b) =>
-                Number(!b.archived && (b.isMain ?? false)) -
-                    Number(!a.archived && (a.isMain ?? false)) ||
-                (b.totalFinishedAttemptCount ?? 0) -
-                    (a.totalFinishedAttemptCount ?? 0),
-        )
-        .slice(0, WR_FETCH_CAP);
-    const wrTimes: Record<number, number | null> = {};
-    await Promise.all(
-        activeCats.map(async (c) => {
-            try {
-                const lb = await getLeaderboard({
-                    gameSlug: game.name,
-                    categorySlug: c.name,
-                    timing: c.primaryTiming,
-                    verified: true,
-                    pageSize: 1,
-                });
-                wrTimes[c.id] = lb.ok
-                    ? (lb.result.entries[0]?.time ?? null)
-                    : null;
-            } catch {
-                wrTimes[c.id] = null;
-            }
-        }),
-    );
-
     const completeness = computeCompleteness({
         categories: categoryFactsFromResolved(catData.categories),
         variableCount: variables.length,
@@ -131,7 +95,6 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         identifiers,
         metadata,
         completeness,
-        wrTimes,
         renderedAt: Date.now(),
     };
 
