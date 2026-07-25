@@ -1,0 +1,51 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-lg;
+    padding-top: dt.$spacing-xl;
+}
+
+.title,
+.explainer,
+.pill,
+.row {
+    @include board.board-skeleton;
+    border-radius: dt.$radius-sm;
+}
+
+.title {
+    width: 16rem;
+    height: 1.6rem;
+}
+
+.explainer {
+    width: min(100%, 40rem);
+    height: 2.5rem;
+}
+
+.band {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+    padding-bottom: dt.$spacing-md;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+}
+
+.pill {
+    width: 7rem;
+    height: 2rem;
+    border-radius: dt.$badge-radius;
+}
+
+.table {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+.row {
+    height: 2.25rem;
+}
