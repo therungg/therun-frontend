@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import RunDetail from '~app/(new-layout)/[username]/[game]/[run]/run';
 import { getSession } from '~src/actions/session.action';
 import { getGameGlobal } from '~src/components/game/get-game';
@@ -31,7 +32,10 @@ export default async function RunPage(props: PageProps) {
         getGlobalUser(username),
     ]);
 
-    if (!run) throw new Error('Could not find run');
+    // A URL for a run that doesn't exist is a 404, not a server error. Bots
+    // probing paths and users following dead links were both producing 500s
+    // and filling the runtime logs.
+    if (!run) notFound();
 
     const liveData = await getLiveRunForUser(username);
     const viewerSession = await getSession();

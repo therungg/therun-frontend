@@ -207,7 +207,12 @@ export async function getUserRankingsByName(
     cacheTag(`user-rankings:name:${username.toLowerCase()}`);
 
     try {
-        const path = `/v1/leaderboards/user/by-name/${encodeURIComponent(username)}/rankings`;
+        // Rides the `/mod` base-path mapping: the main gateway is at its
+        // 500-resource cap, so this route was never registered there and every
+        // profile view 403'd into the catch below — rankings silently absent
+        // for everyone. `/mod` is proxy:true and strips the prefix, so the
+        // Lambda still sees /v1/leaderboards/...
+        const path = `/mod/v1/leaderboards/user/by-name/${encodeURIComponent(username)}/rankings`;
         const body = await v1Fetch<{ result: UserRanking[] }>(path);
         return body.result ?? [];
     } catch (e) {
