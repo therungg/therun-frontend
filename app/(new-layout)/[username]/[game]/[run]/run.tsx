@@ -24,7 +24,7 @@ import { GameSessions } from '~src/components/run/run-sessions/game-sessions';
 import { SplitStats } from '~src/components/run/splits/split-stats';
 import { Title } from '~src/components/title';
 import { useLiveRunsWebsocket } from '~src/components/websocket/use-reconnect-websocket';
-import { safeEncodeURI } from '~src/utils/uri';
+import { safeDecodeURI, safeEncodeURI } from '~src/utils/uri';
 
 interface RunPageProps {
     run: Run;
@@ -53,6 +53,7 @@ export interface GlobalGameData {
 export default function RunDetail({
     run,
     username,
+    game,
     runName,
     globalGameData,
     liveData,
@@ -60,6 +61,15 @@ export default function RunDetail({
     viewerUsername,
 }: RunPageProps) {
     const { baseUrl } = React.useContext(AppContext);
+    // Older run records carry `game: null` and a slugified `run`, even though
+    // the type promises display strings for both. `displayRun` keeps the
+    // readable "Game#Category" pair on every record, so prefer it over the
+    // route segments, which arrive URL-encoded. Split on the first # only —
+    // category names may contain one, game names may not.
+    const hash = run.displayRun?.indexOf('#') ?? -1;
+    const displayGame = hash >= 0 ? run.displayRun!.slice(0, hash) : '';
+    const displayCategory = hash >= 0 ? run.displayRun!.slice(hash + 1) : '';
+    const gameDisplay = run.game || displayGame || safeDecodeURI(game) || '';
     const forceRealTime = !!globalGameData.forceRealTime;
     const [activeTab, setActiveTab] = useState<string>(tab);
 
@@ -92,10 +102,12 @@ export default function RunDetail({
         }
     }, [lastMessage]);
 
-    runName = run.run;
+    // Display only — identical to run.run on every modern record, readable
+    // instead of a slug on the legacy ones.
+    runName = displayCategory || run.run;
 
     const loadCompare = async () => {
-        const gameName = safeEncodeURI(run.game);
+        const gameName = safeEncodeURI(gameDisplay);
 
         const url = `${baseUrl}/api/games/${gameName}`;
         const gamesData: StatsData = await (
@@ -172,8 +184,8 @@ export default function RunDetail({
             <Row>
                 <Col xl={9}>
                     <Title>
-                        <UserGameLink game={run.game} username={username} /> -{' '}
-                        {runName} by <UserLink username={username} />
+                        <UserGameLink game={gameDisplay} username={username} />{' '}
+                        - {runName} by <UserLink username={username} />
                     </Title>
                     <i>{run.description}</i>
 
