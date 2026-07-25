@@ -267,3 +267,41 @@ export interface SubmitRunResult {
     warnings: SubmitWarning[];
     subcategoryKey: string;
 }
+
+// ---- Cross-category standings -------------------------------------------
+// Backend: GET /mod/v1/games/{gameId}/standings (public).
+// See docs/frontend-guide-game-standings.md — the backend copy is
+// authoritative. Columnar on purpose: `cells` indexes into `categories` and
+// `runners` rather than repeating runner identity per row, which costs
+// roughly a quarter of the bytes an entry-shaped payload would.
+
+export interface StandingsCategory {
+    id: number;
+    name: string;
+    display: string;
+    /** Which clock this board is ranked by. Display only — pct is a ratio. */
+    timing: 'rt' | 'gt';
+    /** Fastest time on the board; the denominator for this column's pct. */
+    wrTimeMs: number;
+    entryCount: number;
+}
+
+export interface StandingsRunner {
+    name: string;
+    userId: number | null;
+    isGuest: boolean;
+    picture: string | null;
+    country: string | null;
+}
+
+/** [categoryIndex, runnerIndex, rank, timeMs] */
+export type StandingsCell = [number, number, number, number];
+
+export interface GameStandings {
+    categories: StandingsCategory[];
+    runners: StandingsRunner[];
+    /** Sparse: a runner has a cell only for categories they've run. */
+    cells: StandingsCell[];
+    /** Set when the backend's 5000-runner guard fired. */
+    truncated: boolean;
+}

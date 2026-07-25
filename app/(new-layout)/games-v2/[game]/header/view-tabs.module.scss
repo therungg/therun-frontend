@@ -1,0 +1,57 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+// A hairline rail with the active tab sitting on it. Depth is a border and a
+// weight shift, never a filled pill — the board vocabulary's control-pill is
+// spent on the filter band inside the page, and reusing it up here would put
+// two identical-looking control languages one above the other.
+.tabs {
+    display: flex;
+    gap: dt.$spacing-lg;
+    margin-bottom: dt.$spacing-xl;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+}
+
+.tab,
+.tabActive {
+    @include board.board-eyebrow;
+    position: relative;
+    padding: dt.$spacing-sm 0 dt.$spacing-md;
+    text-decoration: none;
+    background: none;
+    border: 0;
+    transition: color dt.$transition-fast;
+
+    // The 2px underline is painted at rest in transparent so the tab doesn't
+    // shift by 2px when it becomes active.
+    &::after {
+        content: '';
+        position: absolute;
+        inset: auto 0 -1px;
+        height: 2px;
+        background: transparent;
+        transition: background-color dt.$transition-fast;
+    }
+
+    &:hover {
+        color: var(--bs-emphasis-color);
+        text-decoration: none;
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 2px;
+    }
+
+    @media (pointer: coarse) {
+        min-height: 44px;
+    }
+}
+
+.tabActive {
+    color: var(--bs-emphasis-color);
+
+    &::after {
+        background: var(--bs-primary);
+    }
+}

@@ -1,0 +1,245 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xl;
+}
+
+.intro {
+    max-width: 46rem;
+}
+
+.title {
+    font-size: dt.$font-size-xl;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0 0 dt.$spacing-sm;
+}
+
+// The scoring rule is unusual enough that it has to be stated, or the table
+// reads as broken when a world-record holder sits below an all-rounder.
+.explainer {
+    margin: 0;
+    font-size: dt.$font-size-sm;
+    line-height: 1.6;
+    color: var(--bs-secondary-color);
+
+    strong {
+        color: var(--bs-emphasis-color);
+        font-weight: 600;
+    }
+}
+
+// ---- Toggle band ---------------------------------------------
+.toggleBand {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    padding-bottom: dt.$spacing-md;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+}
+
+.togglePills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+}
+
+.pill,
+.pillOn {
+    @include board.control-pill;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.7);
+    // control-pill sets its own padding, so the coarse-pointer rule inside the
+    // mixin is overridden by that shorthand — restate it here (see the note in
+    // _board.scss on control-pill).
+    @media (pointer: coarse) {
+        padding-block: dt.$spacing-lg;
+    }
+}
+
+.pillOn {
+    @include board.control-pill-active;
+    border-color: rgba(var(--bs-primary-rgb), 0.45);
+}
+
+// The board's size, so a toggle carries the weight of what it adds.
+.pillCount {
+    @include board.mono-time;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+}
+
+.toggleActions {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    margin-left: auto;
+}
+
+// The divisor is the whole scoring rule in one number — stated, not implied.
+.divisorNote {
+    @include board.board-eyebrow;
+}
+
+.quietAction {
+    @include board.board-quiet-link;
+}
+
+.truncatedNote {
+    margin: 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+}
+
+// ---- Table ---------------------------------------------------
+.tableScroll {
+    overflow-x: auto;
+    // Keeps the focus ring on a scrolled-to cell from being clipped.
+    padding-bottom: dt.$spacing-xs;
+}
+
+.table {
+    @include board.board-table;
+    min-width: 100%;
+
+    thead th {
+        vertical-align: bottom;
+    }
+}
+
+.thRank {
+    width: 2.5rem;
+    text-align: right;
+}
+
+.thScore {
+    width: 8rem;
+}
+
+.thCategory {
+    min-width: 7.5rem;
+    text-align: right;
+    white-space: normal;
+}
+
+.thLink {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+        color: var(--bs-primary);
+    }
+}
+
+// Two categories in one grid can be ranked by different clocks; the tag says
+// which, without pretending the percentages need converting (they don't —
+// pct is a ratio).
+.timingTag {
+    display: block;
+    font-size: dt.$font-size-2xs;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: var(--bs-tertiary-color);
+}
+
+.tdRank {
+    @include board.board-rank;
+}
+
+.rankGold {
+    color: dt.$accent-gold;
+}
+
+.rankSilver {
+    color: dt.$accent-silver;
+}
+
+.rankBronze {
+    color: dt.$accent-bronze;
+}
+
+.tdRunner {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    min-width: 0;
+}
+
+.runnerName {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tdScore {
+    position: relative;
+}
+
+.scoreValue {
+    @include board.mono-time;
+    font-size: dt.$font-size-md;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+// Proportional to the leader rather than to 100, so the column still reads as
+// a ranking when every score is low — which is the normal case, because
+// missing categories count as zero.
+.scoreBar {
+    display: block;
+    height: 3px;
+    width: var(--fill, 0%);
+    margin-top: 3px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--bs-primary) 55%, transparent);
+}
+
+.tdCell {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.cellPct {
+    @include board.mono-time;
+    display: block;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+}
+
+.cellMeta {
+    @include board.mono-time;
+    display: block;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+}
+
+.cellTime {
+    margin-left: dt.$spacing-xs;
+}
+
+// An em dash, not a 0.0% — the runner has no run here, and printing a score
+// they never earned would misread as a bad result rather than an absence.
+.cellAbsent {
+    color: var(--bs-tertiary-color);
+    opacity: 0.5;
+}
+
+// ---- Empty ---------------------------------------------------
+.empty {
+    @include board.board-empty;
+}
+
+.emptyTitle {
+    @include board.board-empty-title;
+}
+
+.emptyBody {
+    margin: 0;
+    font-size: dt.$font-size-sm;
+    max-width: 30rem;
+}

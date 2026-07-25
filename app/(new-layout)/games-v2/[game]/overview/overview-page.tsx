@@ -4,6 +4,7 @@ import { sortCategoriesForDisplay } from '../category-sort';
 import type { ClaimCtaState } from '../claim/claim-cta';
 import gamePageStyles from '../game-page.module.scss';
 import { GameHero } from '../header/game-hero';
+import { ViewTabs } from '../header/view-tabs';
 import { Sidebar } from '../sidebar/sidebar';
 import { CategoryCard } from './category-card';
 import type { GameOverviewData } from './data';
@@ -98,6 +99,11 @@ export function GameOverviewPage({
             />
             <div className={gamePageStyles.grid}>
                 <div className={gamePageStyles.colMain}>
+                    {/* Standings across a single category is just that board,
+                        so the tabs only exist once there are two. */}
+                    {data.cards.length > 1 && (
+                        <ViewTabs gameSlug={data.game.name} />
+                    )}
                     {data.cards.length === 0 ? (
                         <div className={styles.emptyState}>
                             <p className={styles.emptyTitle}>
