@@ -5,6 +5,7 @@ import { useState } from 'react';
 import useSWR from 'swr';
 import type { LiveRun } from '~app/(new-layout)/live/live.types';
 import { fetcher } from '~src/utils/fetcher';
+import { RunnerAvatar } from '../leaderboard/runner-avatar';
 import styles from './sidebar.module.scss';
 
 const LiveDrawer = dynamic(
@@ -26,9 +27,12 @@ export function LivePanel({ gameDisplay }: Props) {
     const loading = data === undefined;
 
     return (
-        <section className={styles.panelGlass}>
+        <section className={styles.panel}>
             <div className={styles.panelHead}>
-                <span className={styles.eyebrow}>Live now</span>
+                <span className={`${styles.eyebrow} ${styles.eyebrowLive}`}>
+                    <span className={styles.liveDot} aria-hidden />
+                    Live now
+                </span>
                 {!loading && runners.length > 0 && (
                     <button
                         type="button"
@@ -49,14 +53,21 @@ export function LivePanel({ gameDisplay }: Props) {
                 <ul className="list-unstyled mb-0">
                     {runners.slice(0, 5).map((r) => (
                         <li key={r.login} className={styles.row}>
-                            <a
-                                href={r.url}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-decoration-none"
-                            >
-                                {r.user}
-                            </a>
+                            <span className={styles.rowUser}>
+                                <RunnerAvatar
+                                    name={r.user}
+                                    picture={r.picture}
+                                    size="xs"
+                                />
+                                <a
+                                    href={r.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-decoration-none"
+                                >
+                                    {r.user}
+                                </a>
+                            </span>
                             {r.category && (
                                 <span className={styles.rowMeta}>
                                     {r.category}

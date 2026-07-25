@@ -7,7 +7,7 @@ import styles from './leaderboard.module.scss';
 interface Props {
     name: string;
     picture?: string | null;
-    size?: 'sm' | 'md';
+    size?: 'xs' | 'sm' | 'md';
 }
 
 function initials(name: string): string {
@@ -20,7 +20,12 @@ export function RunnerAvatar({ name, picture, size = 'sm' }: Props) {
     // Stale Twitch CDN URLs 404; fall back to the monogram instead of a
     // broken-image glyph.
     const [imageFailed, setImageFailed] = useState(false);
-    const sizeClass = size === 'md' ? styles.avatarMd : styles.avatar;
+    const sizeClass =
+        size === 'md'
+            ? styles.avatarMd
+            : size === 'xs'
+              ? styles.avatarXs
+              : styles.avatar;
 
     if (picture && !imageFailed) {
         return (

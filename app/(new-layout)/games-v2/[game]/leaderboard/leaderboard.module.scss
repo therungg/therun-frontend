@@ -437,6 +437,10 @@ tr:focus-within .reveal {
     @include board.board-avatar(dt.$avatar-sm);
 }
 
+.avatarXs {
+    @include board.board-avatar(dt.$avatar-xs);
+}
+
 .avatarMd {
     @include board.board-avatar(dt.$avatar-md);
 }
