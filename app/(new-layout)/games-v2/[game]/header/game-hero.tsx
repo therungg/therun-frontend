@@ -1,7 +1,7 @@
 'use client';
 
+import { Discord } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
-import { DurationToFormatted } from '~src/components/util/datetime';
 import { buildSubmitHref } from '~src/lib/board-url';
 import type { GameMetadata } from '~src/lib/game-mgmt';
 import type {
@@ -10,6 +10,7 @@ import type {
 } from '../../../../../types/leaderboards.types';
 import { ClaimCta, type ClaimCtaState } from '../claim/claim-cta';
 import styles from '../game-page.module.scss';
+import { gameLinkIcon } from '../shared/game-link-icon';
 import {
     deriveDeveloper,
     deriveGenres,
@@ -73,6 +74,8 @@ export function GameHero({
         .filter(Boolean)
         .join(' · ');
 
+    const hoursPlayed = Math.round(stats.totalRunTime / 3_600_000);
+
     return (
         <header className={styles.hero}>
             <div className={styles.heroRow}>
@@ -91,17 +94,34 @@ export function GameHero({
                     {factsLine && (
                         <p className={styles.heroFactsLine}>{factsLine}</p>
                     )}
-                    <p className={styles.heroStatsLine}>
-                        <b>{stats.uniqueRunners.toLocaleString()}</b> runners ·{' '}
-                        <b>{stats.totalAttemptCount.toLocaleString()}</b>{' '}
-                        attempts ·{' '}
-                        <b>
-                            <DurationToFormatted
-                                duration={stats.totalRunTime}
-                            />
-                        </b>{' '}
-                        played
-                    </p>
+                    <div className={styles.heroStatBand}>
+                        <div className={styles.heroStat}>
+                            <span className={styles.heroStatValue}>
+                                {stats.uniqueRunners.toLocaleString()}
+                            </span>
+                            <span className={styles.heroStatLabel}>
+                                runners
+                            </span>
+                        </div>
+                        <div className={styles.heroStat}>
+                            <span className={styles.heroStatValue}>
+                                {stats.totalAttemptCount.toLocaleString()}
+                            </span>
+                            <span className={styles.heroStatLabel}>
+                                attempts
+                            </span>
+                        </div>
+                        {hoursPlayed > 0 && (
+                            <div className={styles.heroStat}>
+                                <span className={styles.heroStatValue}>
+                                    {hoursPlayed.toLocaleString()}
+                                </span>
+                                <span className={styles.heroStatLabel}>
+                                    hours played
+                                </span>
+                            </div>
+                        )}
+                    </div>
                 </div>
                 <div className={styles.heroActions}>
                     {claim && !claim.hasModerators && (
@@ -117,20 +137,23 @@ export function GameHero({
                             rel="noreferrer"
                             className={styles.quietChip}
                         >
-                            Discord
+                            <Discord size={13} aria-hidden /> Discord
                         </a>
                     )}
-                    {gameMeta.links.map((link) => (
-                        <a
-                            key={`${link.label}-${link.url}`}
-                            href={link.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className={styles.quietChip}
-                        >
-                            {link.label}
-                        </a>
-                    ))}
+                    {gameMeta.links.map((link) => {
+                        const LinkIcon = gameLinkIcon(link.label, link.url);
+                        return (
+                            <a
+                                key={`${link.label}-${link.url}`}
+                                href={link.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className={styles.quietChip}
+                            >
+                                <LinkIcon size={13} aria-hidden /> {link.label}
+                            </a>
+                        );
+                    })}
                     {(canManage || canModerate) && (
                         <Link
                             href={`/games-v2/${game.name}/manage`}
