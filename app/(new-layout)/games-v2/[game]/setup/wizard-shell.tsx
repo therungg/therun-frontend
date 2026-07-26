@@ -5,22 +5,16 @@ import {
     SETUP_STEP_ORDER,
     type SetupStepId,
 } from '~src/lib/setup/completeness';
+import { SETUP_STEPS, setupStepIndex } from '~src/lib/setup/steps';
 import { BackLink } from '../shared/back-link';
 import styles from './setup.module.scss';
+import { SetupRail } from './setup-rail';
 import { StepCategories } from './steps/step-categories';
 import { StepDefaults } from './steps/step-defaults';
 import { StepDetails } from './steps/step-details';
 import { StepExceptions } from './steps/step-exceptions';
 import { StepFinish } from './steps/step-finish';
 import type { WizardData } from './types';
-
-const STEPS: { id: SetupStepId; label: string; skippable: boolean }[] = [
-    { id: 'details', label: 'Game', skippable: true },
-    { id: 'categories', label: 'Categories', skippable: true },
-    { id: 'defaults', label: 'Defaults', skippable: true },
-    { id: 'exceptions', label: 'Exceptions', skippable: true },
-    { id: 'finish', label: 'Finish', skippable: false },
-];
 
 interface Props {
     data: WizardData;
@@ -35,7 +29,7 @@ export function WizardShell({ data, initialStep }: Props) {
         stepParam && SETUP_STEP_ORDER.includes(stepParam as SetupStepId)
             ? (stepParam as SetupStepId)
             : initialStep;
-    const stepIndex = STEPS.findIndex((s) => s.id === step);
+    const stepIndex = setupStepIndex(step);
 
     const goTo = (id: SetupStepId) => {
         // Keep the URL shareable/resumable and re-read server state so a step
@@ -47,16 +41,13 @@ export function WizardShell({ data, initialStep }: Props) {
     };
 
     const onAdvance = () => {
-        const next = STEPS[stepIndex + 1];
+        const next = SETUP_STEPS[stepIndex + 1];
         if (next) goTo(next.id);
     };
     const onBack = () => {
-        const prev = STEPS[stepIndex - 1];
+        const prev = SETUP_STEPS[stepIndex - 1];
         if (prev) goTo(prev.id);
     };
-
-    const statusFor = (id: SetupStepId) =>
-        data.completeness.steps.find((s) => s.step === id);
 
     return (
         <div className={styles.page}>
@@ -83,31 +74,13 @@ export function WizardShell({ data, initialStep }: Props) {
                 />
             </header>
 
-            <nav className={styles.progressStrip} aria-label="Setup steps">
-                <span className={styles.progressCount}>
-                    {stepIndex + 1} / {STEPS.length}
-                </span>
-                {STEPS.map((s, i) => (
-                    <button
-                        key={s.id}
-                        type="button"
-                        title={s.label}
-                        aria-label={`Step ${i + 1}: ${s.label}`}
-                        aria-current={i === stepIndex ? 'step' : undefined}
-                        className={`${styles.progressSegment} ${
-                            i === stepIndex
-                                ? styles.progressCurrent
-                                : statusFor(s.id)?.status === 'done'
-                                  ? styles.progressDone
-                                  : ''
-                        }`}
-                        onClick={() => goTo(s.id)}
-                    />
-                ))}
-                <span className={styles.progressLabel}>
-                    {STEPS[stepIndex].label}
-                </span>
-            </nav>
+            <SetupRail
+                steps={data.completeness.steps}
+                active={step}
+                doneCount={data.completeness.doneCount}
+                totalCount={data.completeness.totalCount}
+                onSelect={goTo}
+            />
 
             <main
                 key={`${step}-${data.renderedAt}`}
@@ -130,7 +103,7 @@ export function WizardShell({ data, initialStep }: Props) {
                         </button>
                     )}
                     <span className={styles.spacer} />
-                    {STEPS[stepIndex].skippable && (
+                    {SETUP_STEPS[stepIndex].skippable && (
                         <button
                             type="button"
                             className={styles.skipAction}
