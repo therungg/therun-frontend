@@ -73,6 +73,17 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
         );
     }
 
+    // The category wall only exists as a route when 2+ categories are
+    // featured — decideGameRootView sends a single-category game straight to
+    // its board, where "All categories" would just reload this same page.
+    const backToWall =
+        data.categories.length > 1
+            ? {
+                  href: `/games-v2/${data.game.name}`,
+                  label: 'All categories',
+              }
+            : undefined;
+
     const subcategoryKey = data.activeFilters.combined
         ? ''
         : Object.keys(data.activeFilters.subcategoryValues)
@@ -111,6 +122,7 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                     canManage={canManage}
                     canModerate={canManageRuns}
                     claim={claim}
+                    back={backToWall}
                 />
                 <div className={styles.band}>
                     <div className={styles.bandRow}>

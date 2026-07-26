@@ -122,6 +122,12 @@
     padding: dt.$spacing-xl 0 dt.$spacing-lg;
 }
 
+// Up-navigation row. Lives inside the hero's own padding so it aligns with
+// the cover's left edge rather than floating loose at the top of the page.
+.heroBack {
+    margin-bottom: dt.$spacing-md;
+}
+
 .heroRow {
     display: flex;
     gap: dt.$spacing-xl;

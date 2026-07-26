@@ -10,6 +10,7 @@ import type {
 } from '../../../../../types/leaderboards.types';
 import { ClaimCta, type ClaimCtaState } from '../claim/claim-cta';
 import styles from '../game-page.module.scss';
+import { BackLink } from '../shared/back-link';
 import { gameLinkIcon } from '../shared/game-link-icon';
 import {
     deriveDeveloper,
@@ -29,6 +30,12 @@ interface Props {
     canManage?: boolean;
     canModerate?: boolean;
     claim?: ClaimCtaState | null;
+    /**
+     * Up-navigation shown above the hero. Set only on drill-down views that
+     * have somewhere to go back to — a board reached from the category wall.
+     * Omitted on the wall itself and on games whose root *is* the board.
+     */
+    back?: { href: string; label: string };
 }
 
 export function GameHero({
@@ -40,6 +47,7 @@ export function GameHero({
     canManage,
     canModerate,
     claim,
+    back,
 }: Props) {
     // Carries the current board context (category + subcategory) into the
     // submit form so it preselects both — see submit/page.tsx requirement 1.
@@ -78,6 +86,11 @@ export function GameHero({
 
     return (
         <header className={styles.hero}>
+            {back && (
+                <div className={styles.heroBack}>
+                    <BackLink href={back.href} label={back.label} />
+                </div>
+            )}
             <div className={styles.heroRow}>
                 {cover && (
                     <img
