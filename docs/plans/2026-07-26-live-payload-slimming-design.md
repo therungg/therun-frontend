@@ -1,5 +1,10 @@
 # Live payload slimming — backend handoff
 
+**Status: IMPLEMENTED 2026-07-26.**
+Backend `e440a0f`, `e7dc40f`, `4558982` (deployed, on main); frontend `1623456c`.
+What actually shipped differs from the original proposal below — see
+[What shipped](#what-shipped) at the end before using this as a reference.
+
 **Date:** 2026-07-26
 **Repo affected:** `therun-backend` (the `/live` endpoint), then `therun-frontend`
 **Motivation:** Vercel cost. Runtime Cache Writes are the second-largest line on the
@@ -143,3 +148,67 @@ slimming achieves more saving with no freshness cost.
 - Vercel does not document the behaviour of an over-limit write. The ~0.9
   writes-per-invocation ratio strongly indicates the entries are not retained,
   but that is inferred rather than documented.
+
+---
+
+## What shipped
+
+The proposal above was to drop `splits` entirely and add
+`splitsCount`/`currentSplit`/`previousSplit`/`finalSplit`. That is not what
+shipped, because auditing the consumers turned up a cheaper route that needed no
+frontend refactor at all.
+
+The existing `minify` shape already keeps `splitTime`, `comparisons` and `name`
+per split — which is *everything* `getSplitSegments` and `getSplitStatus` read —
+and it was already serving the live page and frontpage via `getAllLiveRuns`. It
+simply was never applied to the `?limit=` and `?random=` code paths, which is
+exactly where the 413s were coming from (`[7]` and `[5]` in the cache key are the
+`n` argument to `getTopNLiveRuns`).
+
+So:
+
+1. **`e440a0f`** — `?limit=` and `?random=` honour `minify`.
+2. **`e7dc40f`** — `sob` added to the minified shape. The frontpage hero
+   (`hero-content.tsx:406`) and `recommended-stream.tsx:324` render it as the SOB
+   stat, and minify was dropping it. One float.
+3. **`4558982`** — minified became the **default** for every multi-run response,
+   with `?full=true` / `?minify=false` to opt out.
+4. Frontend **`1623456c`** — `getTopNLiveRuns` passes `minify=true` explicitly.
+   Redundant after (3), kept as documentation of the requirement.
+
+`?username=` is untouched and still returns the full run. It returns one run, so
+it has never been near either limit, and it is the call the race focused-runner
+and commentary drawer make when they need everything.
+
+### The second ceiling
+
+Investigating `api-entry`'s error log during the deploy turned up a second,
+independent size limit that the original design missed: **AWS Lambda caps a
+response at 6 MB.** A bare `GET /live` had been exceeding it continuously —
+
+```
+LAMBDA_RUNTIME Failed to post handler success response. Http response code: 413.
+{"errorMessage":"Exceeded maximum allowed payload size (6291556 bytes)"}
+```
+
+— which is the real cause of the chronic `api.therun.gg/live returned 502` in
+`.claude/monitoring/status.log`, present in every run for days. Change (3) fixes
+it. Same root cause as the Vercel 2 MB limit, different ceiling.
+
+### Measured on production, immediately after deploy
+
+```
+/live?limit=5                 572,609 b
+/live?limit=5&minify=true      93,221 b   -84%
+/live?random=true              53,172 b
+/live?random=true&minify=true   3,670 b   -93%
+```
+
+### Still available if more is needed
+
+Dropping `splits` outright (the original proposal) still models at **48 KB for 70
+runners, -98%**, versus roughly 0.5-0.7 MB for the minified shape. It needs the
+frontend refactor described above — `splits.length` → `splitsCount` in
+`use-run-refresh.ts`, `live.tsx` and `hero-content.tsx`, plus `previousSplit` /
+`finalSplit` in `live-split-timer.component.tsx`. Worth doing only if the
+minified shape turns out not to hold under peak runner counts.
