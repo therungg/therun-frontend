@@ -1,18 +1,8 @@
 import { Check2, Dot } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
-import type {
-    BoardCompleteness,
-    SetupStepId,
-} from '~src/lib/setup/completeness';
+import type { BoardCompleteness } from '~src/lib/setup/completeness';
+import { SETUP_STEP_LABELS } from '~src/lib/setup/steps';
 import styles from './console.module.scss';
-
-const STEP_LABELS: Record<SetupStepId, string> = {
-    details: 'Game details',
-    categories: 'Categories',
-    defaults: 'Defaults',
-    exceptions: 'Exceptions',
-    finish: 'Go live',
-};
 
 interface Props {
     gameSlug: string;
@@ -20,8 +10,9 @@ interface Props {
 }
 
 export function SetupChecklistCard({ gameSlug, completeness }: Props) {
-    const open = completeness.steps.filter((s) => s.status !== 'done');
-    if (open.length === 0) return null;
+    // A finished board still shows the card — it's the console's only door back
+    // into the wizard, and moderators revisit settings after going live.
+    const complete = completeness.steps.every((s) => s.status === 'done');
     const pct = Math.round(
         (completeness.doneCount / completeness.totalCount) * 100,
     );
@@ -38,8 +29,9 @@ export function SetupChecklistCard({ gameSlug, completeness }: Props) {
                             Setup
                         </span>
                         <strong>
-                            {completeness.doneCount} of{' '}
-                            {completeness.totalCount} steps done
+                            {complete
+                                ? 'Setup complete'
+                                : `${completeness.doneCount} of ${completeness.totalCount} steps done`}
                         </strong>
                     </div>
                     <Link
@@ -48,11 +40,17 @@ export function SetupChecklistCard({ gameSlug, completeness }: Props) {
                                 ? `?step=${completeness.firstIncomplete}`
                                 : ''
                         }`}
-                        className={styles.setupCardAction}
+                        className={
+                            complete
+                                ? styles.setupCardQuietAction
+                                : styles.setupCardAction
+                        }
                     >
-                        {completeness.doneCount <= 1
-                            ? 'Set up this board'
-                            : 'Continue setup'}
+                        {complete
+                            ? 'Revisit setup'
+                            : completeness.doneCount <= 1
+                              ? 'Set up this board'
+                              : 'Continue setup'}
                     </Link>
                 </div>
                 <div
@@ -91,7 +89,7 @@ export function SetupChecklistCard({ gameSlug, completeness }: Props) {
                                 />
                             )}
                             <span className={styles.setupStepLabel}>
-                                {STEP_LABELS[s.step]}
+                                {SETUP_STEP_LABELS[s.step]}
                             </span>
                             <span className={styles.setupStepSummary}>
                                 {s.summary}

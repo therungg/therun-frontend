@@ -1,20 +1,34 @@
 @use '../../../styles/design-tokens' as dt;
 @use '../../../styles/board' as board;
 
-// Full-focus wizard: one job per screen. A single centered column; the
-// identity strip and progress strip are the only chrome.
+$rail-width: 16rem;
+$rail-accent: 3px;
+$rail-collapse: 900px;
+
+// Full-focus wizard: one job per screen. Identity strip across the top, a
+// persistent step rail on the left, one step's work in the content column.
 .page {
-    max-width: 62rem;
+    max-width: 76rem;
     margin: 0 auto;
     padding: dt.$spacing-2xl dt.$spacing-lg dt.$spacing-3xl;
+    display: grid;
+    grid-template-columns: $rail-width minmax(0, 1fr);
+    column-gap: dt.$spacing-3xl;
+    align-items: start;
+
+    @media (max-width: $rail-collapse) {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }
 
 // ---- Identity strip -----------------------------------------
 .identityStrip {
+    grid-column: 1 / -1;
     display: flex;
     align-items: center;
     gap: dt.$spacing-md;
     padding-bottom: dt.$spacing-lg;
+    margin-bottom: dt.$spacing-2xl;
     border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
 }
 
@@ -44,50 +58,244 @@
     flex-shrink: 0;
 }
 
-// ---- Progress strip -----------------------------------------
-.progressStrip {
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-sm;
-    margin: dt.$spacing-lg 0 dt.$spacing-3xl;
-}
+// ---- Step rail ----------------------------------------------
+// Borrows the admin console's sidebar vocabulary (16rem, sticky, right border,
+// 3px active accent) — the wizard and the console are the same moderator
+// surface and shouldn't read as two products.
+.rail {
+    position: sticky;
+    top: dt.$spacing-lg;
+    padding-right: dt.$spacing-lg;
+    border-right: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
 
-.progressCount {
-    @include board.mono-time;
-    font-size: dt.$font-size-xs;
-    color: var(--bs-tertiary-color);
-    margin-right: dt.$spacing-sm;
-}
-
-.progressSegment {
-    flex: 1;
-    height: 3px;
-    border: 0;
-    border-radius: 2px;
-    padding: 0;
-    background: rgba(var(--bs-border-color-rgb), 0.6);
-    cursor: pointer;
-    transition: background-color dt.$transition-fast;
-
-    &:hover {
-        background: rgba(var(--bs-primary-rgb), 0.5);
+    @media (max-width: $rail-collapse) {
+        position: static;
+        padding-right: 0;
+        border-right: 0;
+        padding-bottom: dt.$spacing-lg;
+        margin-bottom: dt.$spacing-xl;
+        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
     }
 }
 
-.progressDone {
-    background: rgba(var(--bs-primary-rgb), 0.55);
+// Progress summary: its own block on wide viewports, folded into the
+// disclosure trigger below the collapse breakpoint.
+.railHead {
+    padding: 0 dt.$spacing-sm dt.$spacing-md;
+
+    @media (max-width: $rail-collapse) {
+        display: none;
+    }
 }
 
-.progressCurrent {
-    background: var(--bs-primary);
+.railProgress {
+    display: block;
 }
 
-.progressLabel {
+.railProgressLine {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+    min-width: 0;
+}
+
+.railCount {
+    @include board.mono-time;
     font-size: dt.$font-size-xs;
-    font-weight: 600;
     color: var(--bs-secondary-color);
-    margin-left: dt.$spacing-sm;
+}
+
+.railTriggerStep {
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.railMeter {
+    display: block;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(var(--bs-border-color-rgb), 0.5);
+    overflow: hidden;
+    margin-top: dt.$spacing-sm;
+}
+
+.railMeterFill {
+    display: block;
+    height: 100%;
+    border-radius: 2px;
+    background: var(--bs-primary);
+    transition: width dt.$transition-base;
+}
+
+// ---- Rail disclosure (narrow viewports only) ----------------
+.railTrigger {
+    display: none;
+
+    @media (max-width: $rail-collapse) {
+        display: flex;
+        align-items: center;
+        gap: dt.$spacing-md;
+        width: 100%;
+        text-align: left;
+        padding: dt.$spacing-md;
+        border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+        border-radius: dt.$radius-md;
+        background: transparent;
+        color: var(--bs-body-color);
+        cursor: pointer;
+
+        &:focus-visible {
+            outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+            outline-offset: 1px;
+        }
+
+        > .railProgress {
+            flex: 1;
+            min-width: 0;
+        }
+    }
+}
+
+.railChevron {
+    flex-shrink: 0;
+    opacity: 0.7;
+    transition: transform dt.$transition-fast;
+}
+
+.railChevronOpen {
+    transform: rotate(180deg);
+}
+
+// ---- Rail rows ----------------------------------------------
+.railList {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    @media (max-width: $rail-collapse) {
+        display: none;
+        margin-top: dt.$spacing-sm;
+    }
+}
+
+.railListOpen {
+    @media (max-width: $rail-collapse) {
+        display: flex;
+    }
+}
+
+.railItem {
+    display: flex;
+    align-items: flex-start;
+    gap: dt.$spacing-sm;
+    width: 100%;
+    min-height: 52px;
+    text-align: left;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border: 0;
+    border-radius: dt.$radius-md;
+    background: transparent;
+    color: var(--bs-body-color);
+    cursor: pointer;
+    position: relative;
+    transition: background-color dt.$transition-fast, color dt.$transition-fast;
+
+    // quiet left accent rail, revealed on active
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%) scaleY(0);
+        width: $rail-accent;
+        height: 60%;
+        border-radius: 0 $rail-accent $rail-accent 0;
+        background: var(--bs-primary);
+        transition: transform dt.$transition-base;
+    }
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.06);
+        color: var(--bs-emphasis-color);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+}
+
+.railItemActive {
+    background: rgba(var(--bs-primary-rgb), 0.1);
+
+    &::before {
+        transform: translateY(-50%) scaleY(1);
+    }
+
+    .railItemLabel {
+        color: var(--bs-primary);
+    }
+}
+
+.railGlyph {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.railItemText {
+    min-width: 0;
+    flex: 1;
+}
+
+.railItemLabel {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.railItemNum {
+    @include board.mono-time;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+}
+
+.railItemSummary {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: dt.$font-size-xs;
+    line-height: 1.35;
+    color: var(--bs-secondary-color);
+    margin-top: 2px;
+}
+
+// Status tones — same vocabulary as the console's setup checklist.
+.toneDone {
+    color: var(--bs-primary);
+}
+
+.toneTodo {
+    color: var(--bs-tertiary-color);
+}
+
+.toneWarning {
+    color: dt.$accent-amber;
+}
+
+.toneBlocker {
+    color: dt.$accent-red;
 }
 
 // ---- Step header (ghost numeral) ----------------------------
@@ -163,7 +371,12 @@
         animation: none;
     }
     .meterFill,
-    .activityFill {
+    .activityFill,
+    .railMeterFill,
+    .railChevron {
+        transition: none;
+    }
+    .railItem::before {
         transition: none;
     }
 }

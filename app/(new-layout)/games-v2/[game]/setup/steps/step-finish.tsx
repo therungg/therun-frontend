@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { Check2, Dot } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import Link from '~src/components/link';
-import type { SetupStepId } from '~src/lib/setup/completeness';
+import { SETUP_STEP_LABELS } from '~src/lib/setup/steps';
 import type {
     BoardModRole,
     GameModerator,
@@ -17,14 +17,6 @@ import { setGameConfiguredAction } from '../actions/set-configured.action';
 import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
 import { StepHeader } from './step-header';
-
-const STEP_LABELS: Record<SetupStepId, string> = {
-    details: 'Game details',
-    categories: 'Categories',
-    defaults: 'Game-wide defaults',
-    exceptions: 'Per-category exceptions',
-    finish: 'Finish',
-};
 
 export function StepFinish({ data }: StepProps) {
     const [mods, setMods] = useState<GameModerator[]>(data.moderators);
@@ -233,7 +225,7 @@ export function StepFinish({ data }: StepProps) {
                                 <Dot size={14} aria-hidden />
                             )}
                         </span>
-                        <strong>{STEP_LABELS[s.step]}</strong>
+                        <strong>{SETUP_STEP_LABELS[s.step]}</strong>
                         <span className="text-muted small">{s.summary}</span>
                         <Link href={editLinkFor(s)} className="ms-auto small">
                             edit
