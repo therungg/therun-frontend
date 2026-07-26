@@ -54,6 +54,13 @@ export interface RecentPb {
     username: string;
     game: string;
     category: string;
+    /**
+     * Backend `FINISHED_RUN_SELECT.categoryId` — the row's resolved category,
+     * which is what the sidebar filters on. Optional only because
+     * `getRecentPbs` casts the raw response with no mapping; treat absence as
+     * "unknown category" rather than assuming it matches.
+     */
+    categoryId?: number | null;
     time: number;
     gameTime?: number | null;
     endedAt: string;
