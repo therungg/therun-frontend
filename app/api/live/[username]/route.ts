@@ -9,5 +9,7 @@ export async function GET(
     const params = await props.params;
     const result = await getLiveRunForUser(params.username);
 
-    return apiResponse({ body: result });
+    // Overlays poll this ~1/s per runner. getLiveRunForUser is only 5s-fresh
+    // anyway, so a matching CDN maxAge costs no freshness.
+    return apiResponse({ body: result, cache: { maxAge: 5, swr: 30 } });
 }
