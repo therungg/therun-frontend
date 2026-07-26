@@ -15,6 +15,10 @@ import type {
     ResolvedGroup,
     UserRanking,
 } from '../../../../../types/leaderboards.types';
+import {
+    filterPbsToFeatured,
+    RECENT_PB_FETCH_LIMIT,
+} from '../sidebar/featured-pbs';
 
 export interface OverviewCardData {
     category: ResolvedCategory;
@@ -75,7 +79,9 @@ export async function loadGameOverviewData(
                 uniqueRunners: 0,
             })),
             getGameMetadata(game.id).catch(() => EMPTY_GAME_METADATA),
-            getRecentPbs(game.id).catch(() => []),
+            getRecentPbs(game.id, RECENT_PB_FETCH_LIMIT, {
+                featuredOnly: true,
+            }).catch(() => []),
             sessionUsername
                 ? getUserRankingsByName(sessionUsername).catch(() => [])
                 : Promise.resolve([]),
@@ -91,7 +97,8 @@ export async function loadGameOverviewData(
             category,
             entries: cardEntries[i],
         })),
-        recentPbs,
+        // The sidebar must not surface PBs from boards the wall can't link to.
+        recentPbs: filterPbsToFeatured(recentPbs, featured),
         yourRuns: rawYourRuns.filter((r) => r.gameSlug === game.name),
         sessionUsername,
     };

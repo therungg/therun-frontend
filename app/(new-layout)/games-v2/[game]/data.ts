@@ -11,6 +11,10 @@ import {
     getUserRankingsByName,
     getVariables,
 } from '~src/lib/leaderboards-v1';
+import {
+    filterPbsToFeatured,
+    RECENT_PB_FETCH_LIMIT,
+} from './sidebar/featured-pbs';
 import type { GamePageData, GamePageSearchParams } from './types';
 
 const DEFAULT_PAGE_SIZE = 25;
@@ -137,7 +141,9 @@ export async function loadGamePageData(
                 totalFinishedAttemptCount: 0,
                 uniqueRunners: 0,
             })),
-            getRecentPbs(game.id).catch(() => []),
+            getRecentPbs(game.id, RECENT_PB_FETCH_LIMIT, {
+                featuredOnly: true,
+            }).catch(() => []),
             sessionUsername
                 ? getUserRankingsByName(sessionUsername).catch(() => [])
                 : Promise.resolve([]),
@@ -146,6 +152,10 @@ export async function loadGamePageData(
     // Best-per-board only — see `getUserRankingsByName` and the
     // `yourRuns` field doc on GamePageData for the honest-scope note.
     const yourRuns = rawYourRuns.filter((r) => r.gameSlug === game.name);
+
+    // `categories` is already the Featured set — the sidebar must not surface
+    // PBs from boards this page can't link to. See filterPbsToFeatured.
+    const featuredPbs = filterPbsToFeatured(recentPbs, categories);
 
     const leaderboard = boardResult.ok ? boardResult.result : emptyBoard();
     const invalidCombination = boardResult.ok
@@ -164,7 +174,7 @@ export async function loadGamePageData(
         invalidCombination,
         quickStats,
         gameMeta,
-        recentPbs,
+        recentPbs: featuredPbs,
         yourRuns,
         sessionUsername,
         activeFilters: {

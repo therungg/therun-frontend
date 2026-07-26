@@ -240,15 +240,24 @@ export async function resolveCategory(
     return { categories, selected, groups };
 }
 
+/**
+ * `featuredOnly` narrows to boards the site actually publishes, server-side —
+ * `is_main=true&active=true` on /v1/finished-runs (the API keeps the column
+ * names; the UI calls them Featured and Archived). Without it the feed spans
+ * every category the game has ever seen, including ones whose boards aren't
+ * publicly reachable.
+ */
 export async function getRecentPbs(
     gameId: number,
     limit = 10,
+    { featuredOnly = false }: { featuredOnly?: boolean } = {},
 ): Promise<RecentPb[]> {
     'use cache';
     cacheLife('minutes');
     cacheTag(`recent-pbs:${gameId}`);
 
-    const path = `/v1/finished-runs?game_id=${gameId}&is_pb=true&sort=-ended_at&limit=${limit}`;
+    const featured = featuredOnly ? '&is_main=true&active=true' : '';
+    const path = `/v1/finished-runs?game_id=${gameId}&is_pb=true${featured}&sort=-ended_at&limit=${limit}`;
     const body = await v1Fetch<{ result: { data: RecentPb[] } }>(path);
     return body.result?.data ?? [];
 }
