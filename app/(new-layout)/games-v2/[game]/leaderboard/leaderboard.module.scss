@@ -76,6 +76,11 @@
     // itself for as long as the menu is open.
     &:has(:global(.dropdown.show)) {
         z-index: dt.$z-popover;
+        // An open menu must not depend on the row still matching
+        // `tr:hover` / `tr:focus-within` to stay visible — the pointer sits
+        // on the menu, and focus can leave the row entirely (Safari doesn't
+        // focus buttons on click).
+        opacity: 1;
     }
 }
 
@@ -426,9 +431,20 @@ tr:focus-within .reveal {
     }
 }
 
-// initial navigation: first ten rows stagger in
+// initial navigation: first ten rows stagger in.
+//
+// `backwards`, NOT `both`: a forwards fill keeps the `to` keyframe applied
+// for the life of the row, and a filled `transform` computes to the identity
+// matrix rather than back to `none`. A transform other than `none` makes the
+// row a stacking context AND the containing block for `position: fixed`
+// descendants — which silently broke the row-actions dropdown (popper's
+// viewport coordinates resolved against the row, landing the menu at the top
+// of the page, and no z-index on the menu could lift it past the next row).
+// `backwards` still holds the `from` state through the stagger delay; the
+// `to` state is identical to the row's natural style, so nothing is lost by
+// letting the animation stop applying once it ends.
 .boardStagger tbody tr {
-    animation: boardRowIn 150ms cubic-bezier(0.4, 0, 0.2, 1) both;
+    animation: boardRowIn 150ms cubic-bezier(0.4, 0, 0.2, 1) backwards;
 
     @for $i from 1 through 10 {
         &:nth-child(#{$i}) {
