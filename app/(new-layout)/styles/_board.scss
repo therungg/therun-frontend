@@ -627,3 +627,159 @@
         margin: calc(#{dt.$spacing-sm} * -1);
     }
 }
+
+// ---- Category rail (board masthead) --------------------------------
+// A group of boards is one recessed well with its name engraved into a
+// darker endcap welded to its left edge, so membership is structural
+// rather than implied by proximity.
+//
+// INVARIANT: the endcap never sets the row height. The chips set it and
+// the cap centres itself in whatever they need. Both directions matter —
+// a tall cap must not strand dead space under a single chip row, and a
+// well wrapped to three rows must not strand the cap's label at the top.
+@mixin board-rail-block {
+    display: flex;
+    align-items: stretch;
+
+    // Narrow screens can't spare a 9rem gutter: the cap becomes a full
+    // width label above its well.
+    @media (max-width: 767.98px) {
+        flex-direction: column;
+    }
+}
+
+@mixin board-rail-endcap($width: 9.25rem) {
+    display: flex;
+    align-items: center;
+    width: $width;
+    flex-shrink: 0;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    border-right: 0;
+    border-radius: dt.$radius-lg 0 0 dt.$radius-lg;
+    background: rgba(0, 0, 0, 0.28);
+    box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.035);
+    font-size: dt.$font-size-2xs;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    line-height: 1.25;
+    color: var(--bs-secondary-color);
+    // Engraved into the recess rather than printed on it.
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.7);
+
+    @media (max-width: 767.98px) {
+        width: 100%;
+        border-right: 1px solid rgba(0, 0, 0, 0.4);
+        border-bottom: 0;
+        border-radius: dt.$radius-lg dt.$radius-lg 0 0;
+        box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.035);
+    }
+}
+
+@mixin board-rail-well {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    border-left: 0;
+    border-radius: 0 dt.$radius-lg dt.$radius-lg 0;
+    background: rgba(0, 0, 0, 0.22);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.35);
+
+    @media (max-width: 767.98px) {
+        border-left: 1px solid rgba(0, 0, 0, 0.4);
+        border-radius: 0 0 dt.$radius-lg dt.$radius-lg;
+    }
+}
+
+// An ungrouped section has no endcap, so its well is round on both ends.
+@mixin board-rail-well-solo {
+    border-left: 1px solid rgba(0, 0, 0, 0.4);
+    border-radius: dt.$radius-lg;
+}
+
+// Rows centre inside the well — this is the half of the invariant that
+// stops space pooling beneath the chips when the cap is the taller side.
+@mixin board-rail-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    gap: dt.$spacing-xs;
+    padding: dt.$spacing-xs;
+    height: 100%;
+}
+
+@mixin board-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+    font-weight: 500;
+    padding: dt.$spacing-xs dt.$spacing-md;
+    border-radius: dt.$radius-md;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color dt.$transition-fast,
+        color dt.$transition-fast;
+
+    &:hover {
+        background: rgba(var(--bs-body-color-rgb), 0.05);
+        color: var(--bs-emphasis-color);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
+
+    @media (pointer: coarse) {
+        padding-block: dt.$spacing-sm;
+    }
+}
+
+// The board you are on: a solid key, not a tint. This is the single
+// biggest departure from the old 10%-opacity pill and the reason the
+// band read as undifferentiated.
+@mixin board-chip-active {
+    background: var(--bs-primary);
+    border-color: color-mix(in srgb, var(--bs-primary) 70%, white);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15),
+        0 2px 6px rgba(0, 0, 0, 0.35);
+
+    &:hover {
+        background: var(--bs-primary);
+        color: #fff;
+    }
+
+    // The standard green ring disappears against a green fill.
+    &:focus-visible {
+        outline-color: var(--bs-emphasis-color);
+    }
+}
+
+// Collapsed-group chip: present but not yet expanded.
+@mixin board-chip-ghost {
+    border-style: dashed;
+    border-color: rgba(var(--bs-border-color-rgb), 0.45);
+    font-size: dt.$font-size-2xs;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+}
+
+@mixin board-chip-count {
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    font-size: dt.$font-size-2xs;
+    opacity: 0.5;
+}

@@ -10,7 +10,7 @@ import { FiltersPopover } from './filters/filters-popover';
 import { BoardNavProvider, useBoardNavState } from './filters/use-board-nav';
 import { VerifiedToggle } from './filters/verified-toggle';
 import styles from './game-page.module.scss';
-import { CategoryPills } from './header/category-pills';
+import { CategoryRail } from './header/category-rail';
 import { GameHero } from './header/game-hero';
 import { formatSubcategoryKey, type LabelVariableDef } from './labels';
 import { LeaderboardPager } from './leaderboard/leaderboard-pager';
@@ -126,7 +126,7 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                 />
                 <div className={styles.band}>
                     <div className={styles.bandRow}>
-                        <CategoryPills
+                        <CategoryRail
                             categories={data.categories}
                             groups={data.groups}
                             selectedCategoryName={data.selectedCategory.name}
