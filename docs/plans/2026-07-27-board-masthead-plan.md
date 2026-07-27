@@ -418,6 +418,8 @@ git commit -m "feat(games-v2): board-name and emblem-uniformity helpers"
 
 ### Task 3: Rail vocabulary + the category rail
 
+> **Amendment (2026-07-27, after review).** The `_board.scss` code below hardcodes recess colours as raw `rgba(0,0,0,X)` / `rgba(255,255,255,X)`, which contradicts this plan's own "Tokens, not magic numbers" constraint and renders as dark smudges in light mode (`ThemeProvider` has no `forcedTheme`, so `system` can select light). Ruled by Joey: route them through theme variables — well `color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-body-color) 8%)`, endcap the same at 86%/14%, borders `rgba(var(--bs-border-color-rgb), .55)`, inner shadow `rgba(var(--bs-body-color-rgb), .10)`, and the engraved label `text-shadow: 0 1px 0 rgba(var(--bs-body-bg-rgb), .7)` so it inverts with the theme. The solid-green active chip keeps its white inner highlight and dark drop shadow — those sit on a saturated fill and read correctly in both themes.
+
 Adds the shared mixins and swaps `CategoryPills` for `CategoryRail` **inside today's `.band`**, so the page keeps working and the improvement is visible on its own.
 
 **Files:**
