@@ -1,5 +1,6 @@
 import type { GameMetadata } from '~src/lib/game-mgmt';
 import type {
+    LeaderboardEntry,
     LeaderboardResponse,
     QuickStats,
     RecentPb,
@@ -29,6 +30,11 @@ export interface GamePageData {
     reservedParams: string[];
     validCombinations: ValidCombinations;
     leaderboard: LeaderboardResponse;
+    /**
+     * Rank 1 of the board being shown, filters included — the masthead's
+     * record line. Null when the board is empty or the read failed.
+     */
+    wrEntry: LeaderboardEntry | null;
     invalidCombination: { validCombinations: string[] } | null;
     quickStats: QuickStats;
     /** IGDB + moderator game metadata from pageData; EMPTY_GAME_METADATA when the fetch fails. */
