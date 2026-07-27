@@ -138,7 +138,30 @@ export function RowActionsMenu({
                 </Dropdown.Toggle>
                 <Dropdown.Menu
                     className={styles.menu}
-                    popperConfig={{ strategy: 'fixed' }}
+                    // `fixed` so the panel escapes the table wrapper's
+                    // overflow. `adaptive: false` because Popper's adaptive
+                    // mode anchors with `inset: auto 0 0 auto` and expresses
+                    // the real offset as a delta measured against
+                    // `getOffsetParent(popper).clientWidth/clientHeight` —
+                    // and for a fixed-strategy popper that offsetParent is
+                    // not the box the browser resolves `right/bottom: 0`
+                    // against. The two disagreed, parking the menu in the
+                    // viewport corner instead of beside its toggle.
+                    // Non-adaptive emits plain viewport `top`/`left`
+                    // (and, with gpuAcceleration off, no transform at all,
+                    // so no CSS animation can fight it for the property).
+                    popperConfig={{
+                        strategy: 'fixed',
+                        modifiers: [
+                            {
+                                name: 'computeStyles',
+                                options: {
+                                    adaptive: false,
+                                    gpuAcceleration: false,
+                                },
+                            },
+                        ],
+                    }}
                 >
                     <Dropdown.Item
                         as="button"
