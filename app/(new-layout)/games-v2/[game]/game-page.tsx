@@ -117,6 +117,7 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                     canManageRuns={canManageRuns}
                     claim={claim}
                     back={backToWall}
+                    subcategoryKey={subcategoryKey}
                     rulesOpen={rulesOpen}
                     onToggleRules={() => setRulesOpen((o) => !o)}
                     onOpenHistory={() => setHistoryOpen(true)}

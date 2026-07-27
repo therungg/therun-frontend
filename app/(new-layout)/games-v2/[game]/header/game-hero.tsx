@@ -125,7 +125,16 @@ export function GameHero({
                     />
                 )}
                 <div className={styles.heroText}>
-                    <h1 className={styles.heroTitle}>{game.display}</h1>
+                    {variant === 'condensed' ? (
+                        // The board line's <h1> (BoardMasthead) is the page
+                        // heading here — the game is context, not the
+                        // subject, so its name is not a heading at all.
+                        // Same class as the full variant's <h1> so nothing
+                        // shifts visually.
+                        <p className={styles.heroTitle}>{game.display}</p>
+                    ) : (
+                        <h1 className={styles.heroTitle}>{game.display}</h1>
+                    )}
                     {factsLine && (
                         <p className={styles.heroFactsLine}>{factsLine}</p>
                     )}

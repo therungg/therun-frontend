@@ -20,6 +20,8 @@ interface Props {
     canManageRuns: boolean;
     claim?: ClaimCtaState | null;
     back?: { href: string; label: string };
+    /** The board's active subcategory key, used for submit-link context only — never displayed. */
+    subcategoryKey: string;
     rulesOpen: boolean;
     onToggleRules: () => void;
     onOpenHistory: () => void;
@@ -31,6 +33,7 @@ export function BoardMasthead({
     canManageRuns,
     claim,
     back,
+    subcategoryKey,
     rulesOpen,
     onToggleRules,
     onOpenHistory,
@@ -52,7 +55,7 @@ export function BoardMasthead({
                     stats={data.quickStats}
                     gameMeta={data.gameMeta}
                     categorySlug={category.name}
-                    subcategoryKey=""
+                    subcategoryKey={subcategoryKey}
                     canManage={canManage}
                     canModerate={canManageRuns}
                     claim={claim}
