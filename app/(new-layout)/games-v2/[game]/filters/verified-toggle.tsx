@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useSearchParams } from 'next/navigation';
-import styles from '../game-page.module.scss';
+import mastheadStyles from '../header/masthead.module.scss';
 import { useBoardNav } from './use-board-nav';
 
 interface Props {
@@ -45,7 +45,7 @@ export function VerifiedToggle({ verified }: Props) {
             onClick={onClick}
             aria-pressed={optimisticVerified}
             aria-busy={isPending || undefined}
-            className={`${styles.pill} ${optimisticVerified ? styles.pillActive : ''}`}
+            className={`${mastheadStyles.chip} ${optimisticVerified ? mastheadStyles.chipActive : ''}`}
         >
             Verified runs only
         </button>

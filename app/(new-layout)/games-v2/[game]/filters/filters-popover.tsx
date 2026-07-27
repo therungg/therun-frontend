@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Sliders } from 'react-bootstrap-icons';
 import type { VariableDef } from '../../../../../types/leaderboards.types';
 import styles from '../game-page.module.scss';
+import mastheadStyles from '../header/masthead.module.scss';
 import { usePopoverFocus } from '../shared/use-popover-focus';
 import { VariablePills } from './variable-pills';
 
@@ -42,7 +43,7 @@ export function FiltersPopover({ defs, selectedVarFilters }: Props) {
         <div className={styles.popoverRoot} ref={rootRef}>
             <button
                 type="button"
-                className={`${styles.pill} ${count > 0 ? styles.pillActive : ''}`}
+                className={`${mastheadStyles.chip} ${count > 0 ? mastheadStyles.chipActive : ''}`}
                 aria-haspopup="dialog"
                 aria-expanded={open}
                 onClick={() => setOpen((o) => !o)}
