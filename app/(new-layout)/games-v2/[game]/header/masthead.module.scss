@@ -56,3 +56,14 @@
     color: var(--bs-tertiary-color);
     padding: dt.$spacing-xs dt.$spacing-sm;
 }
+
+// The subcategory tier is the same anatomy one rank down, separated by a
+// full-width hairline: these narrow the board rather than choosing it.
+.tier {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    margin-top: dt.$spacing-sm;
+    padding-top: dt.$spacing-sm;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+}
