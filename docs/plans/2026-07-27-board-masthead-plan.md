@@ -20,6 +20,10 @@ Spec: `docs/plans/2026-07-27-board-masthead-design.md`. Read it before Task 1.
 - **Motion:** `dt.$transition-fast`, deceleration easing, no bounce. Anything animated must be disabled under `@media (prefers-reduced-motion: reduce)`.
 - **Unused variables must be prefixed `_`** (Biome/ESLint rule).
 - **Test scope:** repo convention (root `CLAUDE.md`) is that the user runs the suite. Each task runs only the single colocated test file it authors, via `npm run test -- <path>`. Do not run the full suite.
+- **Verification gates are differential, not absolute.** `npm run typecheck` and `npm run lint` are already dirty at this branch's base — 357 type errors and 1 lint error + 42 warnings, none of them in `games-v2` (they live in old files like `src/components/user/userform.tsx` and `app/(new-layout)/data/results-table.tsx`). A baseline is captured at `.superpowers/sdd/2026-07-27-board-masthead-plan/typecheck-baseline.txt`. **Never try to make the whole repo clean, and never touch a file outside your task to silence a diagnostic.** A task passes its gate when it adds no new diagnostics of its own:
+  - Types: `npm run typecheck 2>&1 | grep -E "games-v2|styles/_board"` — expected empty.
+  - Lint: `npx @biomejs/biome check <the files you touched>` — expected clean.
+  - The single pre-existing `src/lib/game-metadata.ts` error (`EMPTY_GAME_METADATA` missing `summaryOverride`, `igdbUrl`) is in the baseline. It is not yours; leave it.
 - **Commit per task.** Do not add yourself as a co-author. Do not push, do not open a PR.
 - **Branch:** work on the current branch (`game-standings`). Do not create a worktree.
 
@@ -208,7 +212,7 @@ If `baseQuery` is not the identifier used for the shared query object in the cur
 - [ ] **Step 7: Typecheck**
 
 Run: `npm run typecheck`
-Expected: no errors.
+Expected: no *new* diagnostics from your files — apply the differential gate in Global Constraints, do not chase the pre-existing repo-wide errors.
 
 - [ ] **Step 8: Commit**
 
@@ -862,7 +866,7 @@ In `app/(new-layout)/games-v2/[game]/game-page.tsx`:
 - [ ] **Step 5: Typecheck and lint**
 
 Run: `npm run typecheck && npm run lint`
-Expected: no errors. If Biome reformats `masthead.module.scss` or the new component, accept its formatting.
+Expected: no *new* diagnostics from your files — apply the differential gate in Global Constraints, do not chase the pre-existing repo-wide errors. If Biome reformats `masthead.module.scss` or the new component, accept its formatting.
 
 - [ ] **Step 6: Browser check**
 
@@ -1060,7 +1064,7 @@ export function FilterBar({
 - [ ] **Step 5: Typecheck and lint**
 
 Run: `npm run typecheck && npm run lint`
-Expected: no errors.
+Expected: no *new* diagnostics from your files — apply the differential gate in Global Constraints, do not chase the pre-existing repo-wide errors.
 
 - [ ] **Step 6: Browser check**
 
@@ -1425,7 +1429,7 @@ Anything else still referencing a removed class must be found before committing:
 - [ ] **Step 6: Typecheck and lint**
 
 Run: `npm run typecheck && npm run lint`
-Expected: no errors.
+Expected: no *new* diagnostics from your files — apply the differential gate in Global Constraints, do not chase the pre-existing repo-wide errors.
 
 - [ ] **Step 7: Browser check**
 
@@ -1662,7 +1666,7 @@ In `board-masthead.tsx`, add the import and render it immediately after the clos
 - [ ] **Step 4: Typecheck and lint**
 
 Run: `npm run typecheck && npm run lint`
-Expected: no errors. If `ResolvedGame` has no `image` field, drop that half of the `coverUrl` expression.
+Expected: no *new* diagnostics from your files — apply the differential gate in Global Constraints, do not chase the pre-existing repo-wide errors. If `ResolvedGame` has no `image` field, drop that half of the `coverUrl` expression.
 
 - [ ] **Step 5: Browser check**
 
@@ -1748,7 +1752,7 @@ Delete the now-unused `styles.previewBand` wrapper only if it becomes empty; oth
 - [ ] **Step 3: Typecheck and lint**
 
 Run: `npm run typecheck && npm run lint`
-Expected: no errors.
+Expected: no *new* diagnostics from your files — apply the differential gate in Global Constraints, do not chase the pre-existing repo-wide errors.
 
 - [ ] **Step 4: Verify no dangling references remain**
 
@@ -1853,7 +1857,7 @@ Update the file's header comment to say it mirrors the masthead plate.
 - [ ] **Step 3: Typecheck and lint**
 
 Run: `npm run typecheck && npm run lint`
-Expected: no errors.
+Expected: no *new* diagnostics from your files — apply the differential gate in Global Constraints, do not chase the pre-existing repo-wide errors.
 
 - [ ] **Step 4: Browser check**
 
