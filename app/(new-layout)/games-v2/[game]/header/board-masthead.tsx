@@ -13,6 +13,7 @@ import { effectiveSubcategoryLabel } from './board-identity';
 import { CategoryRail } from './category-rail';
 import { GameHero } from './game-hero';
 import styles from './masthead.module.scss';
+import { StickyBoardBar } from './sticky-board-bar';
 
 interface Props {
     data: GamePageData;
@@ -43,107 +44,123 @@ export function BoardMasthead({
         data.variables,
         data.activeFilters.subcategoryValues,
     );
+    const boardName = suffix
+        ? `${category.display} · ${suffix}`
+        : category.display;
     const wr = data.wrEntry;
     const variableKeys = data.variables.map((v) => v.nameNormalized);
 
     return (
-        <div className={styles.plate}>
-            <div className={styles.plateTop}>
-                <GameHero
-                    variant="condensed"
-                    game={data.game}
-                    stats={data.quickStats}
-                    gameMeta={data.gameMeta}
-                    categorySlug={category.name}
-                    subcategoryKey={subcategoryKey}
-                    canManage={canManage}
-                    canModerate={canManageRuns}
-                    claim={claim}
-                    back={back}
-                />
-                <div className={styles.boardLine}>
-                    <div>
-                        {category.groupName && (
-                            <span className={styles.groupEyebrow}>
-                                {category.groupName}
-                            </span>
-                        )}
-                        <h1 className={styles.boardTitle}>
-                            {category.display}
-                            {suffix && (
-                                <span className={styles.boardTitleSuffix}>
-                                    {' · '}
-                                    {suffix}
+        <>
+            <div className={styles.plate}>
+                <div className={styles.plateTop}>
+                    <GameHero
+                        variant="condensed"
+                        game={data.game}
+                        stats={data.quickStats}
+                        gameMeta={data.gameMeta}
+                        categorySlug={category.name}
+                        subcategoryKey={subcategoryKey}
+                        canManage={canManage}
+                        canModerate={canManageRuns}
+                        claim={claim}
+                        back={back}
+                    />
+                    <div className={styles.boardLine}>
+                        <div>
+                            {category.groupName && (
+                                <span className={styles.groupEyebrow}>
+                                    {category.groupName}
                                 </span>
                             )}
-                        </h1>
-                        <p className={styles.boardMeta}>
-                            {data.leaderboard.totalItems.toLocaleString()} runs
-                            on this board
-                        </p>
-                    </div>
-                    {wr?.time != null && (
-                        <div className={styles.record}>
-                            <span className={styles.groupEyebrow}>
-                                World record
-                            </span>
-                            <span className={styles.recordTime}>
-                                <DurationToFormatted
-                                    duration={wr.time}
-                                    withMillis={
-                                        category.showMilliseconds ?? true
-                                    }
-                                />
-                            </span>
-                            <span className={styles.recordHolder}>
-                                {wr.isGuest ? (
-                                    wr.runnerName
-                                ) : (
-                                    <UserLink username={wr.runnerName} />
+                            <h1 className={styles.boardTitle}>
+                                {category.display}
+                                {suffix && (
+                                    <span className={styles.boardTitleSuffix}>
+                                        {' · '}
+                                        {suffix}
+                                    </span>
                                 )}
-                            </span>
+                            </h1>
+                            <p className={styles.boardMeta}>
+                                {data.leaderboard.totalItems.toLocaleString()}{' '}
+                                runs on this board
+                            </p>
                         </div>
-                    )}
+                        {wr?.time != null && (
+                            <div className={styles.record}>
+                                <span className={styles.groupEyebrow}>
+                                    World record
+                                </span>
+                                <span className={styles.recordTime}>
+                                    <DurationToFormatted
+                                        duration={wr.time}
+                                        withMillis={
+                                            category.showMilliseconds ?? true
+                                        }
+                                    />
+                                </span>
+                                <span className={styles.recordHolder}>
+                                    {wr.isGuest ? (
+                                        wr.runnerName
+                                    ) : (
+                                        <UserLink username={wr.runnerName} />
+                                    )}
+                                </span>
+                            </div>
+                        )}
+                    </div>
                 </div>
-            </div>
 
-            <div className={styles.railZone}>
-                <CategoryRail
-                    categories={data.categories}
-                    groups={data.groups}
-                    selectedCategoryName={category.name}
-                    variableKeys={variableKeys}
-                />
-                <FilterBar
-                    defs={data.variables}
-                    selectedSubcategoryValues={
-                        data.activeFilters.subcategoryValues
-                    }
-                    selectedVarFilters={data.activeFilters.varFilters}
-                />
-                <div className={styles.utilities}>
-                    <VerifiedToggle verified={data.activeFilters.verified} />
-                    <span className={styles.utilitySep} aria-hidden />
-                    <FiltersPopover
+                <div className={styles.railZone}>
+                    <CategoryRail
+                        categories={data.categories}
+                        groups={data.groups}
+                        selectedCategoryName={category.name}
+                        variableKeys={variableKeys}
+                    />
+                    <FilterBar
                         defs={data.variables}
+                        selectedSubcategoryValues={
+                            data.activeFilters.subcategoryValues
+                        }
                         selectedVarFilters={data.activeFilters.varFilters}
                     />
-                    <span className={styles.utilitySep} aria-hidden />
-                    <RulesPanel
-                        rules={category.rules}
-                        open={rulesOpen}
-                        onToggle={onToggleRules}
-                    />
-                    <span className={styles.utilitySep} aria-hidden />
-                    <button
-                        type="button"
-                        className={gamePageStyles.quietLink}
-                        onClick={onOpenHistory}
-                    >
-                        WR history
-                    </button>
+                    <div className={styles.utilities}>
+                        <VerifiedToggle
+                            verified={data.activeFilters.verified}
+                        />
+                        <span className={styles.utilitySep} aria-hidden />
+                        <FiltersPopover
+                            defs={data.variables}
+                            selectedVarFilters={data.activeFilters.varFilters}
+                        />
+                        <span className={styles.utilitySep} aria-hidden />
+                        <RulesPanel
+                            rules={category.rules}
+                            open={rulesOpen}
+                            onToggle={onToggleRules}
+                        />
+                        <span className={styles.utilitySep} aria-hidden />
+                        <button
+                            type="button"
+                            className={gamePageStyles.quietLink}
+                            onClick={onOpenHistory}
+                        >
+                            WR history
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
+            <StickyBoardBar
+                coverUrl={data.gameMeta.coverUrl ?? data.game.image ?? null}
+                gameDisplay={data.game.display}
+                boardName={boardName}
+                verified={data.activeFilters.verified}
+                defs={data.variables}
+                selectedVarFilters={data.activeFilters.varFilters}
+                onOpenHistory={onOpenHistory}
+            />
+        </>
     );
 }

@@ -157,3 +157,71 @@
     height: 0.9rem;
     background: rgba(var(--bs-border-color-rgb), 0.6);
 }
+
+// ---- Sticky slim bar -------------------------------------------------
+// What the plate used to do badly: today the whole multi-row band pins to
+// the top for the length of a hundred-row board. One row, bounded height,
+// regardless of how many categories the game has.
+.sentinel {
+    height: 0;
+}
+
+.stickyBar {
+    @include board.board-glass;
+    position: sticky;
+    top: dt.$spacing-sm;
+    z-index: dt.$z-sticky;
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    border-radius: dt.$radius-lg;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    margin-bottom: dt.$spacing-lg;
+    box-shadow: dt.$shadow-md;
+    animation: masthead-bar-in dt.$transition-base both;
+}
+
+@keyframes masthead-bar-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .stickyBar {
+        animation: none;
+    }
+}
+
+.stickyArt {
+    width: 20px;
+    height: 27px;
+    border-radius: dt.$radius-sm;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.stickyTitle {
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.stickyGame {
+    color: var(--bs-tertiary-color);
+    font-weight: 400;
+}
+
+.stickyEnd {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+}
