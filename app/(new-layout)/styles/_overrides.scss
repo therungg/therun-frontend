@@ -29,4 +29,30 @@
     .bg-tertiary {
         background-color: var(--bs-tertiary-bg) !important;
     }
+
+    // Category rail recess (games-v2 board masthead). A single theme-agnostic
+    // color-mix() can't do this: the well sits inside the masthead's rail
+    // zone (--bs-secondary-bg, #1C221E), so "recessed" means below THAT, not
+    // below the page canvas — and the highlight/engrave shadow need opposite
+    // directions per theme. These are the reviewed/approved dark values.
+    --board-recess-bg: #0d0f0d;
+    --board-recess-strong-bg: #080a08;
+    --board-recess-border: rgba(0, 0, 0, 0.45);
+    --board-recess-shadow: rgba(0, 0, 0, 0.35);
+    --board-recess-highlight: rgba(255, 255, 255, 0.035);
+    --board-engrave-shadow: rgba(0, 0, 0, 0.7);
+}
+
+[data-bs-theme="light"] {
+    // Category rail recess, light-theme counterpart — see the dark block's
+    // comment above. Not yet reviewed by eye; only needs to read as clearly
+    // recessed against a light rail zone.
+    --board-recess-bg: #e6e9e6;
+    --board-recess-strong-bg: #dbdfdb;
+    --board-recess-border: rgba(0, 0, 0, 0.12);
+    --board-recess-shadow: rgba(0, 0, 0, 0.1);
+    --board-recess-highlight: rgba(255, 255, 255, 0.7);
+    // Engraving inverts: light catches the top edge of the groove, so the
+    // shadow under the text goes light on a light surface.
+    --board-engrave-shadow: rgba(255, 255, 255, 0.85);
 }
