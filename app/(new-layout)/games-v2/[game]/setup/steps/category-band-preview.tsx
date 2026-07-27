@@ -1,12 +1,13 @@
 'use client';
 
+import { CaretRightFill } from 'react-bootstrap-icons';
 import type {
     ResolvedCategory,
     ResolvedGroup,
     VariableRow,
 } from '../../../../../../types/leaderboards.types';
-import band from '../../game-page.module.scss';
 import { computeCategoryVisibility } from '../../header/category-visibility';
+import band from '../../header/masthead.module.scss';
 import styles from '../setup.module.scss';
 
 interface Props {
@@ -32,13 +33,13 @@ function dedupeByName(variables: VariableRow[]): VariableRow[] {
  * The board's category band, rendered from unsaved wizard state.
  *
  * Deliberately runs the *same* `computeCategoryVisibility` the public page
- * runs (header/category-pills.tsx) rather than approximating it, so the
+ * runs (header/category-rail.tsx) rather than approximating it, so the
  * preview can't drift from the thing it previews. That includes the
  * flatten-when-trivial rule: one group in use collapses back to a single
  * unlabeled row, which is exactly the surprise this preview exists to show
  * before someone saves and wonders why nothing changed.
  *
- * Pills are inert spans — this is a picture of the board, not the board.
+ * Chips are inert spans — this is a picture of the board, not the board.
  */
 export function CategoryBandPreview({ categories, groups, variables }: Props) {
     const { sections } = computeCategoryVisibility(categories, groups);
@@ -52,6 +53,12 @@ export function CategoryBandPreview({ categories, groups, variables }: Props) {
     // Read the flatten out of the real output rather than re-deriving the
     // rule — one source of truth for when headings appear.
     const flattened = groups.length > 0 && sections.length === 1;
+    // Mirror the real rail's split: a group marked hidden-by-default renders
+    // as a ghost chip in one shared trailing well, not its own labeled row —
+    // a collapsed group must not own a whole block for one chip, same as
+    // header/category-rail.tsx.
+    const open = sections.filter((s) => !s.collapsedByDefault);
+    const collapsed = sections.filter((s) => s.collapsedByDefault);
 
     return (
         <div className={styles.previewPanel}>
@@ -69,72 +76,99 @@ export function CategoryBandPreview({ categories, groups, variables }: Props) {
                 </p>
             ) : (
                 <div className={styles.previewBand}>
-                    {sections.map((section, idx) => (
+                    {open.map((section, idx) => (
                         <div
                             key={section.id ?? `ungrouped-${idx}`}
-                            className={band.bandRow}
+                            className={band.block}
                         >
                             {section.name && (
-                                <span className={band.groupLabel}>
+                                <span className={band.endcap}>
                                     {section.name}
                                 </span>
                             )}
-                            {section.collapsedByDefault && (
-                                <span className={styles.previewNote}>
-                                    collapsed — {section.pills.length} behind a
-                                    click
-                                </span>
-                            )}
-                            {section.pills.length === 0 ? (
-                                <span className="text-muted small">
-                                    No categories in this group.
-                                </span>
-                            ) : (
-                                !section.collapsedByDefault &&
-                                section.pills.map((c) => (
-                                    <span key={c.id} className={band.pill}>
-                                        {c.display}
-                                    </span>
-                                ))
-                            )}
+                            <div
+                                className={`${band.well} ${section.name ? '' : band.wellSolo}`}
+                            >
+                                <div className={band.chips}>
+                                    {section.pills.length === 0 ? (
+                                        <span className={band.emptyGroup}>
+                                            No categories in this group.
+                                        </span>
+                                    ) : (
+                                        section.pills.map((c) => (
+                                            <span
+                                                key={c.id}
+                                                className={band.chip}
+                                            >
+                                                {c.display}
+                                            </span>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     ))}
 
-                    {subcategories.length > 0 && (
-                        <div className={`${band.bandRow} ${band.bandRowSub}`}>
-                            <div className="d-flex flex-column gap-1">
-                                {subcategories.map((v) => {
-                                    const defaultValue =
-                                        v.defaultValueIndex != null
-                                            ? (v.values[
-                                                  v.defaultValueIndex
-                                              ]?.[0] ?? '')
-                                            : '';
-                                    return (
-                                        <div
-                                            key={v.id}
-                                            className="d-flex align-items-center gap-2 flex-wrap"
+                    {collapsed.length > 0 && (
+                        <div className={band.block}>
+                            <div className={`${band.well} ${band.wellSolo}`}>
+                                <div className={band.chips}>
+                                    {collapsed.map((section) => (
+                                        <span
+                                            key={`collapsed-${section.id}`}
+                                            className={`${band.chip} ${band.chipGhost}`}
                                         >
-                                            <span className={band.groupLabel}>
-                                                {v.name}
+                                            <CaretRightFill
+                                                size={9}
+                                                aria-hidden
+                                            />
+                                            {section.name}
+                                            <span
+                                                aria-hidden
+                                                className={band.chipCount}
+                                            >
+                                                {section.pills.length}
                                             </span>
-                                            {v.values.map((bucket) => (
-                                                <span
-                                                    key={bucket[0]}
-                                                    className={`${band.pill} ${
-                                                        bucket[0] ===
-                                                        defaultValue
-                                                            ? band.pillActive
-                                                            : ''
-                                                    }`}
-                                                >
-                                                    {bucket[0]}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    );
-                                })}
+                                        </span>
+                                    ))}
+                                </div>
                             </div>
+                        </div>
+                    )}
+
+                    {subcategories.length > 0 && (
+                        <div className={band.tier}>
+                            {subcategories.map((v) => {
+                                const defaultValue =
+                                    v.defaultValueIndex != null
+                                        ? (v.values[v.defaultValueIndex]?.[0] ??
+                                          '')
+                                        : '';
+                                return (
+                                    <div key={v.id} className={band.block}>
+                                        <span className={band.endcap}>
+                                            {v.name}
+                                        </span>
+                                        <div className={band.well}>
+                                            <div className={band.chips}>
+                                                {v.values.map((bucket) => (
+                                                    <span
+                                                        key={bucket[0]}
+                                                        className={`${band.chip} ${
+                                                            bucket[0] ===
+                                                            defaultValue
+                                                                ? band.chipActive
+                                                                : ''
+                                                        }`}
+                                                    >
+                                                        {bucket[0]}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     )}
                 </div>
