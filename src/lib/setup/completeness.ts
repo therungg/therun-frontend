@@ -3,6 +3,8 @@ import type { ResolvedCategory } from '../../../types/leaderboards.types';
 export type SetupStepId =
     | 'details'
     | 'categories'
+    | 'groups'
+    | 'variables'
     | 'defaults'
     | 'exceptions'
     | 'finish';
@@ -21,6 +23,7 @@ export interface CategoryFacts {
     active: boolean;
     isMain: boolean;
     hasRules: boolean;
+    groupId: number | null;
 }
 
 export interface CompletenessInput {
@@ -31,6 +34,9 @@ export interface CompletenessInput {
     slug: string | null;
     moderatorCount: number;
     configured: boolean;
+    groupCount: number;
+    /** Featured categories sitting outside every group. */
+    ungroupedMainCount: number;
 }
 
 export interface BoardCompleteness {
@@ -45,6 +51,8 @@ export interface BoardCompleteness {
 export const SETUP_STEP_ORDER: SetupStepId[] = [
     'details',
     'categories',
+    'groups',
+    'variables',
     'defaults',
     'exceptions',
     'finish',
@@ -59,6 +67,7 @@ export function categoryFactsFromResolved(
         active: !c.archived,
         isMain: c.isMain ?? false,
         hasRules: (c.rules ?? '').trim().length > 0,
+        groupId: c.groupId ?? null,
     }));
 }
 
@@ -108,6 +117,55 @@ export function computeCompleteness(
             } hidden`,
         });
     }
+
+    // Grouping is optional, so "no groups" is a finished state, not a todo.
+    // The one unfinished shape is several groups with categories loose
+    // between them — the band can't render that (labeled sections plus an
+    // unlabeled orphan row), so it blocks.
+    if (emptyBoard || mains.length === 0) {
+        steps.push({
+            step: 'groups',
+            status: 'done',
+            summary: 'Optional — nothing to group yet',
+        });
+    } else if (input.groupCount === 0) {
+        steps.push({
+            step: 'groups',
+            status: 'done',
+            summary: 'One flat list',
+        });
+    } else if (input.groupCount > 1 && input.ungroupedMainCount > 0) {
+        steps.push({
+            step: 'groups',
+            status: 'blocker',
+            summary: `${input.ungroupedMainCount} featured ${
+                input.ungroupedMainCount === 1
+                    ? 'category is'
+                    : 'categories are'
+            } not in a group`,
+        });
+    } else {
+        steps.push({
+            step: 'groups',
+            status: 'done',
+            summary: `${input.groupCount} ${
+                input.groupCount === 1 ? 'group' : 'groups'
+            }`,
+        });
+    }
+
+    // Variables are optional too — plenty of games have one board per
+    // category and nothing to split. Having none is a finished state.
+    steps.push({
+        step: 'variables',
+        status: 'done',
+        summary:
+            input.variableCount > 0
+                ? `${input.variableCount} ${
+                      input.variableCount === 1 ? 'variable' : 'variables'
+                  }`
+                : 'Optional — no splits or filters',
+    });
 
     const hasDefaultsContent =
         input.policyCount > 0 || input.requireVideoAnywhere;

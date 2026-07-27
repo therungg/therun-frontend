@@ -82,6 +82,10 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         slug: identifiers.slug,
         moderatorCount: moderators.length,
         configured: metadata.configured,
+        groupCount: catData.groups.length,
+        ungroupedMainCount: catData.categories.filter(
+            (c) => !c.archived && (c.isMain ?? false) && c.groupId == null,
+        ).length,
     });
 
     const data: WizardData = {

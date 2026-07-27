@@ -13,6 +13,12 @@ export interface ResolvedGroup {
     id: number;
     name: string;
     sortOrder: number;
+    /**
+     * Collapsed on the public page: the label shows, its categories are
+     * behind a disclosure. Absent/false = expanded. Backed by
+     * category_groups.hidden_by_default.
+     */
+    hiddenByDefault?: boolean;
 }
 
 export interface ResolvedCategory {

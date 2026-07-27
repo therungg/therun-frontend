@@ -81,17 +81,27 @@ export default async function GameStandingsPage({ params }: PageProps) {
             />
             <div className={gamePageStyles.colMain}>
                 <ViewTabs gameSlug={resolvedGame.name} />
-                {standings ? (
+                {standings.status === 'ok' ? (
                     <StandingsView
                         gameSlug={resolvedGame.name}
-                        data={standings}
+                        data={standings.standings}
                     />
-                ) : (
+                ) : standings.status === 'empty' ? (
                     <div className={styles.empty}>
                         <p className={styles.emptyTitle}>No standings yet.</p>
                         <p className={styles.emptyBody}>
                             Standings appear once this game&apos;s featured
                             categories have ranked runs.
+                        </p>
+                    </div>
+                ) : (
+                    <div className={styles.empty}>
+                        <p className={styles.emptyTitle}>
+                            Standings couldn&apos;t be loaded.
+                        </p>
+                        <p className={styles.emptyBody}>
+                            This is a problem on our end, not an empty
+                            leaderboard — try again shortly.
                         </p>
                     </div>
                 )}

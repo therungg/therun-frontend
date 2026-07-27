@@ -7,6 +7,7 @@ import { GameHero } from '../header/game-hero';
 import { ViewTabs } from '../header/view-tabs';
 import { Sidebar } from '../sidebar/sidebar';
 import { CategoryCard } from './category-card';
+import { CollapsibleSection } from './collapsible-section';
 import type { GameOverviewData } from './data';
 import styles from './overview.module.scss';
 
@@ -21,6 +22,8 @@ interface CardSection {
     key: string;
     name: string | null;
     cards: GameOverviewData['cards'];
+    /** Group flagged hidden-by-default: its cards start behind a disclosure. */
+    collapsed: boolean;
 }
 
 // Cards' own order isn't guaranteed to reflect category sortOrder — sort
@@ -62,6 +65,7 @@ function sectionize(
                 key: `g${g.id}`,
                 name: g.name,
                 cards: byCategoryOrder(arr),
+                collapsed: g.hiddenByDefault ?? false,
             });
         }
     }
@@ -70,10 +74,15 @@ function sectionize(
             key: 'ungrouped',
             name: null,
             cards: byCategoryOrder(ungrouped),
+            collapsed: false,
         });
     }
-    // Single unlabeled section: skip headers entirely.
-    if (sections.length === 1) sections[0].name = null;
+    // Single unlabeled section: skip headers entirely — and with no header
+    // there's nothing to collapse behind, so it stays open.
+    if (sections.length === 1) {
+        sections[0].name = null;
+        sections[0].collapsed = false;
+    }
     return sections;
 }
 
@@ -124,20 +133,8 @@ export function GameOverviewPage({
                             )}
                         </div>
                     ) : (
-                        sections.map((s) => (
-                            <section key={s.key} className={styles.section}>
-                                {s.name && (
-                                    <h2 className={styles.sectionTitle}>
-                                        {s.name}
-                                        <span
-                                            className={styles.sectionRule}
-                                            aria-hidden
-                                        />
-                                        <span className={styles.sectionCount}>
-                                            {s.cards.length}
-                                        </span>
-                                    </h2>
-                                )}
+                        sections.map((s) => {
+                            const grid = (
                                 <div className={styles.cardGrid}>
                                     {s.cards.map((card, i) => (
                                         <CategoryCard
@@ -148,8 +145,38 @@ export function GameOverviewPage({
                                         />
                                     ))}
                                 </div>
-                            </section>
-                        ))
+                            );
+                            if (s.collapsed && s.name) {
+                                return (
+                                    <CollapsibleSection
+                                        key={s.key}
+                                        name={s.name}
+                                        count={s.cards.length}
+                                    >
+                                        {grid}
+                                    </CollapsibleSection>
+                                );
+                            }
+                            return (
+                                <section key={s.key} className={styles.section}>
+                                    {s.name && (
+                                        <h2 className={styles.sectionTitle}>
+                                            {s.name}
+                                            <span
+                                                className={styles.sectionRule}
+                                                aria-hidden
+                                            />
+                                            <span
+                                                className={styles.sectionCount}
+                                            >
+                                                {s.cards.length}
+                                            </span>
+                                        </h2>
+                                    )}
+                                    {grid}
+                                </section>
+                            );
+                        })
                     )}
                 </div>
                 <aside className={gamePageStyles.rail}>

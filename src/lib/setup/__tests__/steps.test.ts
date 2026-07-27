@@ -27,7 +27,7 @@ describe('SETUP_STEPS', () => {
 
     it('derives labels and indexes from the same list', () => {
         expect(SETUP_STEP_LABELS.finish).toBe('Go live');
-        expect(setupStepIndex('defaults')).toBe(2);
+        expect(setupStepIndex('defaults')).toBe(4);
         // Unknown ids are impossible via SetupStepId, but the lookup must not
         // silently report position 0 for one.
         expect(setupStepIndex('nope' as never)).toBe(-1);

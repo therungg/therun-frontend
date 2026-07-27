@@ -149,7 +149,7 @@ export function StepFinish({ data }: StepProps) {
     return (
         <section>
             <StepHeader
-                num={5}
+                step="finish"
                 title="Mod team, then go live"
                 lede="Add a co-mod or two so the queue doesn’t depend on you alone. Then check the list below and put the board live."
             />

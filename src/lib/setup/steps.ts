@@ -18,9 +18,11 @@ export interface SetupStepMeta {
 export const SETUP_STEPS: SetupStepMeta[] = [
     { id: 'details', num: 1, label: 'Game details', skippable: true },
     { id: 'categories', num: 2, label: 'Categories', skippable: true },
-    { id: 'defaults', num: 3, label: 'Defaults', skippable: true },
-    { id: 'exceptions', num: 4, label: 'Exceptions', skippable: true },
-    { id: 'finish', num: 5, label: 'Go live', skippable: false },
+    { id: 'groups', num: 3, label: 'Groups', skippable: true },
+    { id: 'variables', num: 4, label: 'Variables', skippable: true },
+    { id: 'defaults', num: 5, label: 'Defaults', skippable: true },
+    { id: 'exceptions', num: 6, label: 'Exceptions', skippable: true },
+    { id: 'finish', num: 7, label: 'Go live', skippable: false },
 ];
 
 export const SETUP_STEP_LABELS: Record<SetupStepId, string> =

@@ -11,9 +11,11 @@ import {
     igdbPrefillPlatforms,
     igdbPrefillYear,
 } from '~src/lib/setup/igdb-prefill';
+import { normalizeDiscordInvite } from '~src/utils/discord-invite';
 import { updateIdentifiersAction } from '../manage/identifiers/actions/update-identifiers.action';
 import { getCoverUploadUrlAction } from './actions/get-cover-upload-url.action';
 import { updateGameMetadataAction } from './actions/update-game-metadata.action';
+import { FieldLabel } from './field-hint';
 import styles from './setup.module.scss';
 
 const ALLOWED_COVER_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
@@ -171,9 +173,11 @@ export function GameDetailsForm({
         <>
             <div className="row g-4">
                 <div className="col-md-6">
-                    <label className="form-label" htmlFor="cover-upload">
-                        Cover image
-                    </label>
+                    <FieldLabel
+                        htmlFor="cover-upload"
+                        label="Cover image"
+                        hint="The box art shown for this game across the site. Prefilled from IGDB — upload your own if it's wrong or missing. Portrait (3:4); anything else gets cropped."
+                    />
                     <div className="d-flex gap-3 align-items-start">
                         {preview && (
                             <img
@@ -228,9 +232,12 @@ export function GameDetailsForm({
                             </div>
                         </div>
                     </div>
-                    <label className="form-label mt-3" htmlFor="release-year">
-                        Release year
-                    </label>
+                    <FieldLabel
+                        className="mt-3"
+                        htmlFor="release-year"
+                        label="Release year"
+                        hint="The year the game released, shown on the game page. Prefilled from IGDB — change it if the IGDB date is wrong."
+                    />
                     <input
                         id="release-year"
                         className="form-control"
@@ -238,9 +245,12 @@ export function GameDetailsForm({
                         value={releaseYear}
                         onChange={(e) => setReleaseYear(e.target.value)}
                     />
-                    <label className="form-label mt-3" htmlFor="platforms">
-                        Platforms (comma-separated)
-                    </label>
+                    <FieldLabel
+                        className="mt-3"
+                        htmlFor="platforms"
+                        label="Platforms"
+                        hint="The platforms this game is on, shown on the game page. Comma-separated. Prefilled from IGDB — edit it if you want."
+                    />
                     <input
                         id="platforms"
                         className="form-control"
@@ -248,9 +258,12 @@ export function GameDetailsForm({
                         onChange={(e) => setPlatformsText(e.target.value)}
                         placeholder="PC, Switch, PS5"
                     />
-                    <label className="form-label mt-3" htmlFor="about">
-                        About
-                    </label>
+                    <FieldLabel
+                        className="mt-3"
+                        htmlFor="about"
+                        label="About"
+                        hint="The description shown on the game page. Prefilled from IGDB — once you edit it, later IGDB syncs leave your text alone. Clear it to go back to the IGDB summary."
+                    />
                     <textarea
                         id="about"
                         className="form-control"
@@ -280,28 +293,56 @@ export function GameDetailsForm({
                     )}
                 </div>
                 <div className="col-md-6">
-                    <label className="form-label" htmlFor="slug">
-                        URL slug
-                    </label>
+                    <FieldLabel
+                        htmlFor="slug"
+                        label="URL slug"
+                        hint={
+                            <>
+                                The name in this board&apos;s web address —{' '}
+                                <code>sm64</code> makes the page{' '}
+                                <code>therun.gg/games-v2/sm64</code>. Stored
+                                lowercase with non-alphanumerics turned into
+                                dashes, and must be unique across all games.
+                                Leave it empty to keep the derived name.
+                            </>
+                        }
+                    />
                     <input
                         id="slug"
                         className="form-control"
                         value={slug}
                         onChange={(e) => setSlug(e.target.value)}
                     />
-                    <label className="form-label mt-3" htmlFor="discord">
-                        Discord invite
-                    </label>
+                    <FieldLabel
+                        className="mt-3"
+                        htmlFor="discord"
+                        label="Discord invite"
+                        hint="Adds a Discord button to the game page. Use an invite that doesn't expire, or the button eventually leads nowhere."
+                    />
                     <input
                         id="discord"
                         className="form-control"
                         value={discordUrl}
                         onChange={(e) => setDiscordUrl(e.target.value)}
-                        placeholder="https://discord.gg/…"
+                        onBlur={(e) =>
+                            setDiscordUrl(
+                                normalizeDiscordInvite(e.target.value) ??
+                                    e.target.value,
+                            )
+                        }
+                        placeholder="https://discord.gg/… or just the code"
                     />
-                    <label className="form-label mt-3">Links</label>
+                    <p className="text-muted small mt-1 mb-0">
+                        Paste the full invite link or only the code after
+                        discord.gg/.
+                    </p>
+                    <FieldLabel
+                        className="mt-3"
+                        label="Links"
+                        hint="Extra links shown as chips on the game page — wiki, official site, Twitch. Up to ten."
+                    />
                     <p className="text-muted small mb-2">
-                        Shown as chips on the game page. Label + https URL.
+                        A short label plus an https URL.
                     </p>
                     <div className="d-flex gap-2 flex-wrap mb-2">
                         {LINK_PRESETS.map((preset) => (

@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
+import { boardPulse } from '~src/lib/setup/board-pulse';
 import {
     SETUP_STEP_ORDER,
     type SetupStepId,
@@ -14,6 +15,8 @@ import { StepDefaults } from './steps/step-defaults';
 import { StepDetails } from './steps/step-details';
 import { StepExceptions } from './steps/step-exceptions';
 import { StepFinish } from './steps/step-finish';
+import { StepGroups } from './steps/step-groups';
+import { StepVariables } from './steps/step-variables';
 import type { WizardData } from './types';
 
 interface Props {
@@ -30,6 +33,9 @@ export function WizardShell({ data, initialStep }: Props) {
             ? (stepParam as SetupStepId)
             : initialStep;
     const stepIndex = setupStepIndex(step);
+    // What the board already has on it, so setup doesn't read like work on a
+    // dead page. Empty on a board with nothing yet — see board-pulse.ts.
+    const pulse = boardPulse(data.stats);
 
     const goTo = (id: SetupStepId) => {
         // Keep the URL shareable/resumable and re-read server state so a step
@@ -67,6 +73,23 @@ export function WizardShell({ data, initialStep }: Props) {
                         {data.game.display}
                     </span>
                 </div>
+                {pulse.length > 0 && (
+                    <div className={styles.identityStats}>
+                        {pulse.map((stat) => (
+                            <span
+                                key={stat.label}
+                                className={styles.identityStat}
+                            >
+                                <span className={styles.identityStatValue}>
+                                    {stat.value}
+                                </span>
+                                <span className={styles.identityStatLabel}>
+                                    {stat.label}
+                                </span>
+                            </span>
+                        ))}
+                    </div>
+                )}
                 <BackLink
                     href={`/games-v2/${data.game.name}/manage`}
                     label="Back to console"
@@ -141,6 +164,18 @@ function CurrentStep({
         case 'categories':
             return (
                 <StepCategories
+                    data={data}
+                    onAdvance={onAdvance}
+                    onBack={onBack}
+                />
+            );
+        case 'groups':
+            return (
+                <StepGroups data={data} onAdvance={onAdvance} onBack={onBack} />
+            );
+        case 'variables':
+            return (
+                <StepVariables
                     data={data}
                     onAdvance={onAdvance}
                     onBack={onBack}
