@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { ClaimCtaState } from '../claim/claim-cta';
@@ -49,6 +50,25 @@ export function BoardMasthead({
         : category.display;
     const wr = data.wrEntry;
     const variableKeys = data.variables.map((v) => v.nameNormalized);
+
+    // Owns the sentinel/observer (moved up from StickyBoardBar) so the plate
+    // can react to `stuck` too: once the bar takes over, the plate's own
+    // controls must stop being a second, off-screen, keyboard-reachable
+    // copy — see the `inert` + re-key on `.utilities` below.
+    const [stuck, setStuck] = useState(false);
+    const sentinel = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const el = sentinel.current;
+        if (!el) return;
+        const io = new IntersectionObserver(
+            ([e]) =>
+                setStuck(!e.isIntersecting && e.boundingClientRect.top < 0),
+            { threshold: 0 },
+        );
+        io.observe(el);
+        return () => io.disconnect();
+    }, []);
 
     return (
         <>
@@ -126,7 +146,22 @@ export function BoardMasthead({
                         }
                         selectedVarFilters={data.activeFilters.varFilters}
                     />
-                    <div className={styles.utilities}>
+                    <div
+                        // `inert` (React 19) — same precedent as
+                        // game-page.tsx's colMain: pointer-events alone
+                        // doesn't stop keyboard/AT users reaching an
+                        // off-screen duplicate once the sticky bar is the
+                        // interactive copy. The `key` forces this row to
+                        // unmount/remount across the stuck/unstuck boundary
+                        // — `inert` removes it from the tab order but can't
+                        // tear down a document-level listener an
+                        // already-open FiltersPopover installed (its Tab
+                        // trap), so an open popover needs to actually
+                        // unmount, not just go inert.
+                        key={stuck ? 'stuck' : 'top'}
+                        className={styles.utilities}
+                        inert={stuck}
+                    >
                         <VerifiedToggle
                             verified={data.activeFilters.verified}
                         />
@@ -152,15 +187,18 @@ export function BoardMasthead({
                     </div>
                 </div>
             </div>
-            <StickyBoardBar
-                coverUrl={data.gameMeta.coverUrl ?? data.game.image ?? null}
-                gameDisplay={data.game.display}
-                boardName={boardName}
-                verified={data.activeFilters.verified}
-                defs={data.variables}
-                selectedVarFilters={data.activeFilters.varFilters}
-                onOpenHistory={onOpenHistory}
-            />
+            <div ref={sentinel} className={styles.sentinel} aria-hidden />
+            {stuck && (
+                <StickyBoardBar
+                    coverUrl={data.gameMeta.coverUrl ?? data.game.image ?? null}
+                    gameDisplay={data.game.display}
+                    boardName={boardName}
+                    verified={data.activeFilters.verified}
+                    defs={data.variables}
+                    selectedVarFilters={data.activeFilters.varFilters}
+                    onOpenHistory={onOpenHistory}
+                />
+            )}
         </>
     );
 }
