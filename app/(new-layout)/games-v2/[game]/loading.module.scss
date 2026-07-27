@@ -2,41 +2,34 @@
 @use '../../styles/board' as board;
 
 // ============================================================
-// Route-level loading skeleton for the board page. Hero geometry
-// mirrors the one-row identity band in game-page.module.scss (.hero/
-// .heroRow) — see there for the real dimensions this predicts
-// (132×176 cover, single text column, column-stacked actions); band/grid
-// mirror this file's own board.
+// Route-level loading skeleton for the board page. Mirrors the masthead
+// plate in header/masthead.module.scss — one bordered surface holding the
+// condensed game line (56px cover, one facts line), the board line (category
+// headline plus its meta line), and the rail zone on its deeper tint below —
+// see there for the real dimensions this predicts. grid/table mirror this
+// file's own board.
 // ============================================================
 
-// ---- Hero (one-row identity band) ------------------------------
-.hero {
-    border-bottom: 1px solid var(--bs-border-color);
+// ---- Masthead plate --------------------------------------------
+.plate {
+    @include board.board-surface(0);
+    overflow: hidden;
     margin-bottom: dt.$spacing-lg;
-    padding: dt.$spacing-xl 0 dt.$spacing-lg;
 }
 
-.heroRow {
+.plateTop {
+    padding: dt.$spacing-lg dt.$spacing-xl;
     display: flex;
     gap: dt.$spacing-xl;
     align-items: center;
-
-    @media (max-width: 991.98px) {
-        flex-wrap: wrap;
-    }
 }
 
 .cover {
     @include board.board-skeleton;
-    width: 132px;
-    height: 176px;
-    border-radius: dt.$radius-lg;
+    width: 56px;
+    height: 75px;
+    border-radius: dt.$radius-md;
     flex-shrink: 0;
-
-    @media (max-width: 991.98px) {
-        width: 72px;
-        height: 96px;
-    }
 }
 
 .heroText {
@@ -61,41 +54,26 @@
     border-radius: dt.$radius-sm;
 }
 
-.statsLine {
+// The board line's headline — category display name, real font-size-2xl.
+.boardTitleBar {
     @include board.board-skeleton;
-    height: 0.8rem;
-    width: 45%;
+    height: 1.9rem;
+    width: 40%;
     border-radius: dt.$radius-sm;
 }
 
-.actionsRow {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: dt.$spacing-sm;
-    flex-wrap: wrap;
-    flex-shrink: 0;
-
-    @media (max-width: 991.98px) {
-        flex-direction: row;
-        align-items: center;
-        width: 100%;
-    }
+// The rail is the plate's floor: deeper tint, its own top hairline — same
+// treatment as .railZone in header/masthead.module.scss.
+.railZone {
+    background: var(--bs-secondary-bg);
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    padding: dt.$spacing-md dt.$spacing-xl;
 }
 
-.actionChip {
+.railBlock {
     @include board.board-skeleton;
-    width: 7rem;
-    height: 2rem;
-    border-radius: dt.$badge-radius;
-}
-
-// ---- Control band -----------------------------------------
-.band {
-    @include board.board-skeleton;
-    height: 2.75rem;
+    height: 2.5rem;
     border-radius: dt.$radius-lg;
-    margin-bottom: dt.$spacing-lg;
 }
 
 // ---- Page grid ----------------------------------------------
