@@ -207,6 +207,14 @@
 }
 
 .stickyTitle {
+    // The only shrinkable child of `.stickyBar`'s flex row: a flex item's
+    // automatic minimum size is its min-content width, which for `nowrap`
+    // text is the full unwrapped line, so without `min-width: 0` this could
+    // never actually shrink and the ellipsis never engaged — the bar
+    // overflowed horizontally instead. `flex: 1 1 auto` makes it the one
+    // element that absorbs available/missing space.
+    min-width: 0;
+    flex: 1 1 auto;
     font-size: dt.$font-size-sm;
     font-weight: 600;
     white-space: nowrap;
@@ -219,7 +227,61 @@
     font-weight: 400;
 }
 
+// The switch-board trigger + the utility controls: fixed-size siblings of
+// `.stickyTitle` that must hold their width so the title is the only thing
+// that ever truncates.
+//
+// Self-contained popover anatomy rather than composing game-page.module
+// .scss's `.popoverRoot`/`.popoverPanel` — those live in a sibling CSS
+// module and a same-specificity override across two separate stylesheets
+// depends on bundler concatenation order, not the className list order.
+// Building the (small) equivalent here keeps it deterministic.
+.switchRoot {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.switchTrigger {
+    flex-shrink: 0;
+}
+
+.switchPanel {
+    @include board.board-surface(dt.$spacing-md dt.$spacing-lg);
+    position: absolute;
+    right: 0;
+    top: calc(100% + #{dt.$spacing-xs});
+    z-index: dt.$z-popover;
+    background: var(--bs-body-bg);
+    box-shadow: dt.$shadow-md;
+    min-width: 18rem;
+    max-height: min(70vh, 26rem);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    @include board.board-overlay-enter(rise);
+}
+
+.switchGroup {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+
+    & + & {
+        margin-top: dt.$spacing-sm;
+        padding-top: dt.$spacing-sm;
+        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    }
+}
+
+.switchChips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs;
+}
+
 .stickyEnd {
+    flex-shrink: 0;
     margin-left: auto;
     display: flex;
     align-items: center;

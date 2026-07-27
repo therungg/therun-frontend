@@ -181,8 +181,12 @@
 }
 
 // ---- Glass ---------------------------------------------------
-// Frosted material. Sanctioned uses only: hero action chips, the
-// sticky control band, the rail's live panel. Never content surfaces.
+// Frosted material, reserved for sticky bars that float above scrolled
+// content — the board page's sticky slim board bar and the moderation
+// console's sticky batch-selection bar. Never content surfaces. (The
+// masthead's old sticky control band is gone; its stickiness and its
+// glass moved to the slim board bar, and the plate itself is a normal
+// board surface — see system.md.)
 @mixin board-glass {
     background: color-mix(in srgb, var(--bs-body-bg) 72%, transparent);
     backdrop-filter: blur(20px) saturate(180%);
