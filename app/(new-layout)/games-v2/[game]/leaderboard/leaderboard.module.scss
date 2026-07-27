@@ -66,6 +66,17 @@
     position: relative;
     z-index: 2;
     transition: opacity dt.$transition-fast;
+
+    // The z-index above makes this a stacking context, so the row-actions
+    // dropdown is painted *inside* it — its own z-index (and `position:
+    // fixed`) rank it only among its siblings here, leaving the whole menu
+    // at level 2 against the rest of the table. Every later row's cells sit
+    // at 2 as well and win on tree order, so they'd paint over the open menu
+    // and (being opacity-0, not hidden) swallow its clicks. Lift the context
+    // itself for as long as the menu is open.
+    &:has(:global(.dropdown.show)) {
+        z-index: dt.$z-popover;
+    }
 }
 
 tr:hover .reveal,
@@ -289,6 +300,13 @@ tr:focus-within .reveal {
     display: inline-flex;
     position: relative;
     z-index: 2;
+
+    // Same stacking-context trap as .reveal above — the panel's own
+    // $z-popover only ranks it inside this wrapper. The panel is mounted
+    // only while open, so its presence is the open signal.
+    &:has(.infoPopoverPanel) {
+        z-index: dt.$z-popover;
+    }
 }
 
 .infoPopoverPanel {
