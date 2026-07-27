@@ -38,7 +38,15 @@
     border-radius: dt.$radius-md;
     background: var(--bs-body-bg);
     box-shadow: dt.$shadow-md;
-    @include board.board-overlay-enter(rise);
+
+    // `fade`, NOT `rise`: this panel's position is owned by Popper, which
+    // (via @restart/ui's disabledApplyStylesModifier) hands its computed
+    // styles back as a React inline `style` prop — and a CSS animation
+    // outranks inline styles in the cascade. `rise` animates `transform`
+    // and fills forwards, so its `transform: none` permanently overwrote
+    // Popper's translate and the menu jumped to the top of the viewport.
+    // Two owners of one property; the animation gives up its claim.
+    @include board.board-overlay-enter(fade);
 }
 
 .item {
