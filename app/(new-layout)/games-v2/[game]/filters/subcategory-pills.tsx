@@ -2,7 +2,7 @@
 
 import { usePathname, useSearchParams } from 'next/navigation';
 import type { VariableDef } from '../../../../../types/leaderboards.types';
-import styles from '../game-page.module.scss';
+import styles from '../header/masthead.module.scss';
 import { useBoardNav } from './use-board-nav';
 
 interface Props {
@@ -36,10 +36,7 @@ export function SubcategoryPills({ defs, selected }: Props) {
     };
 
     return (
-        <div
-            className="d-flex flex-column gap-1"
-            aria-busy={isPending || undefined}
-        >
+        <>
             {subcatDefs.map((def) => {
                 const defaultCanonical =
                     def.defaultValueIndex != null
@@ -60,36 +57,48 @@ export function SubcategoryPills({ defs, selected }: Props) {
                             pendingKey === pendingKeyFor(def, canonical),
                     );
                 const optimisticActiveValue = pendingValue ?? activeValue;
+                const capId = `subcat-${def.nameNormalized}`;
                 return (
                     <div
                         key={def.nameNormalized}
-                        className="d-flex align-items-center gap-2 flex-wrap"
+                        className={styles.block}
+                        role="group"
+                        aria-labelledby={capId}
+                        aria-busy={isPending || undefined}
                     >
-                        <span className={styles.groupLabel}>{def.name}</span>
-                        {def.values.map((bucket, idx) => {
-                            const canonical = bucket[0];
-                            const isActive =
-                                optimisticActiveValue === canonical;
-                            return (
-                                <button
-                                    key={`${def.nameNormalized}-${idx}`}
-                                    type="button"
-                                    onClick={() => onPick(def, canonical)}
-                                    aria-pressed={isActive}
-                                    className={`${styles.pill} ${isActive ? styles.pillActive : ''}`}
-                                    title={
-                                        bucket.length > 1
-                                            ? `Aliases: ${bucket.slice(1).join(', ')}`
-                                            : undefined
-                                    }
-                                >
-                                    {canonical}
-                                </button>
-                            );
-                        })}
+                        <span className={styles.endcap} id={capId}>
+                            {def.name}
+                        </span>
+                        <div className={styles.well}>
+                            <div className={styles.chips}>
+                                {def.values.map((bucket, idx) => {
+                                    const canonical = bucket[0];
+                                    const isActive =
+                                        optimisticActiveValue === canonical;
+                                    return (
+                                        <button
+                                            key={`${def.nameNormalized}-${idx}`}
+                                            type="button"
+                                            onClick={() =>
+                                                onPick(def, canonical)
+                                            }
+                                            aria-pressed={isActive}
+                                            className={`${styles.chip} ${isActive ? styles.chipActive : ''}`}
+                                            title={
+                                                bucket.length > 1
+                                                    ? `Aliases: ${bucket.slice(1).join(', ')}`
+                                                    : undefined
+                                            }
+                                        >
+                                            {canonical}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
                     </div>
                 );
             })}
-        </div>
+        </>
     );
 }

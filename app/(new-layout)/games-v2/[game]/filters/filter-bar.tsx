@@ -1,5 +1,5 @@
 import type { VariableDef } from '../../../../../types/leaderboards.types';
-import styles from '../game-page.module.scss';
+import styles from '../header/masthead.module.scss';
 import { ActiveFilterChips } from './active-filter-chips';
 import { SubcategoryPills } from './subcategory-pills';
 
@@ -19,7 +19,7 @@ export function FilterBar({
     if (!hasSubcategories && !hasVarFilters) return null;
 
     return (
-        <div className={`${styles.bandRow} ${styles.bandRowSub}`}>
+        <div className={styles.tier}>
             <SubcategoryPills
                 defs={defs}
                 selected={selectedSubcategoryValues}
