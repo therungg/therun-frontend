@@ -654,56 +654,49 @@
     width: $width;
     flex-shrink: 0;
     padding: dt.$spacing-sm dt.$spacing-md;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.55);
+    border: 1px solid var(--board-recess-border);
     border-right: 0;
     border-radius: dt.$radius-lg 0 0 dt.$radius-lg;
-    background: color-mix(
-        in srgb,
-        var(--bs-body-bg) 86%,
-        var(--bs-body-color) 14%
-    );
-    box-shadow: inset -1px 0 0 rgba(var(--bs-body-bg-rgb), 0.5);
+    background: var(--board-recess-strong-bg);
+    box-shadow: inset -1px 0 0 var(--board-recess-highlight);
     font-size: dt.$font-size-2xs;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.09em;
     line-height: 1.25;
     color: var(--bs-secondary-color);
-    // Engraved into the recess rather than printed on it. Inverts
-    // automatically per theme via the bg-tinted shadow colour.
-    text-shadow: 0 1px 0 rgba(var(--bs-body-bg-rgb), 0.7);
+    // Engraved into the recess rather than printed on it. The two theme
+    // blocks in _overrides.scss point this shadow the opposite direction
+    // per theme, so it stays a groove rather than becoming a glow.
+    text-shadow: 0 1px 0 var(--board-engrave-shadow);
 
     @media (max-width: 767.98px) {
         width: 100%;
-        border-right: 1px solid rgba(var(--bs-border-color-rgb), 0.55);
+        border-right: 1px solid var(--board-recess-border);
         border-bottom: 0;
         border-radius: dt.$radius-lg dt.$radius-lg 0 0;
-        box-shadow: inset 0 -1px 0 rgba(var(--bs-body-bg-rgb), 0.5);
+        box-shadow: inset 0 -1px 0 var(--board-recess-highlight);
     }
 }
 
 @mixin board-rail-well {
     flex: 1;
     min-width: 0;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.55);
+    border: 1px solid var(--board-recess-border);
     border-left: 0;
     border-radius: 0 dt.$radius-lg dt.$radius-lg 0;
-    background: color-mix(
-        in srgb,
-        var(--bs-body-bg) 92%,
-        var(--bs-body-color) 8%
-    );
-    box-shadow: inset 0 2px 5px rgba(var(--bs-body-color-rgb), 0.1);
+    background: var(--board-recess-bg);
+    box-shadow: inset 0 2px 5px var(--board-recess-shadow);
 
     @media (max-width: 767.98px) {
-        border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.55);
+        border-left: 1px solid var(--board-recess-border);
         border-radius: 0 0 dt.$radius-lg dt.$radius-lg;
     }
 }
 
 // An ungrouped section has no endcap, so its well is round on both ends.
 @mixin board-rail-well-solo {
-    border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.55);
+    border-left: 1px solid var(--board-recess-border);
     border-radius: dt.$radius-lg;
 }
 
