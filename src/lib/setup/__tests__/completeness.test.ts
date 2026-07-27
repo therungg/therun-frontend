@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { type CompletenessInput, computeCompleteness } from '../completeness';
+import {
+    type CompletenessInput,
+    computeCompleteness,
+    SETUP_STEP_ORDER,
+} from '../completeness';
 
 function input(over: Partial<CompletenessInput>): CompletenessInput {
     return {
@@ -10,6 +14,7 @@ function input(over: Partial<CompletenessInput>): CompletenessInput {
                 active: true,
                 isMain: true,
                 hasRules: true,
+                groupId: null,
             },
             {
                 id: 2,
@@ -17,6 +22,7 @@ function input(over: Partial<CompletenessInput>): CompletenessInput {
                 active: false,
                 isMain: false,
                 hasRules: true,
+                groupId: null,
             },
         ],
         variableCount: 0,
@@ -25,6 +31,8 @@ function input(over: Partial<CompletenessInput>): CompletenessInput {
         slug: 'mygame',
         moderatorCount: 1,
         configured: true,
+        groupCount: 0,
+        ungroupedMainCount: 0,
         ...over,
     };
 }
@@ -37,15 +45,9 @@ describe('computeCompleteness', () => {
         expect(c.doneCount).toBe(c.totalCount);
     });
 
-    it('emits the five steps in wizard order', () => {
+    it('emits every step in wizard order', () => {
         const c = computeCompleteness(input({}));
-        expect(c.steps.map((s) => s.step)).toEqual([
-            'details',
-            'categories',
-            'defaults',
-            'exceptions',
-            'finish',
-        ]);
+        expect(c.steps.map((s) => s.step)).toEqual(SETUP_STEP_ORDER);
     });
 
     it('warns on exceptions when featured categories lack rules', () => {
@@ -58,6 +60,7 @@ describe('computeCompleteness', () => {
                         active: true,
                         isMain: true,
                         hasRules: false,
+                        groupId: null,
                     },
                 ],
             }),
@@ -76,6 +79,7 @@ describe('computeCompleteness', () => {
                         active: true,
                         isMain: false,
                         hasRules: true,
+                        groupId: null,
                     },
                     {
                         id: 2,
@@ -83,6 +87,7 @@ describe('computeCompleteness', () => {
                         active: false,
                         isMain: false,
                         hasRules: false,
+                        groupId: null,
                     },
                 ],
             }),
@@ -114,6 +119,7 @@ describe('computeCompleteness', () => {
                         active: false,
                         isMain: true,
                         hasRules: true,
+                        groupId: null,
                     },
                 ],
             }),
@@ -149,6 +155,7 @@ describe('computeCompleteness', () => {
                         active: true,
                         isMain: true,
                         hasRules: true,
+                        groupId: null,
                     },
                     {
                         id: 2,
@@ -156,6 +163,7 @@ describe('computeCompleteness', () => {
                         active: false,
                         isMain: false,
                         hasRules: true,
+                        groupId: null,
                     },
                     {
                         id: 3,
@@ -163,6 +171,7 @@ describe('computeCompleteness', () => {
                         active: true,
                         isMain: false,
                         hasRules: true,
+                        groupId: null,
                     },
                 ],
             }),
@@ -182,6 +191,7 @@ describe('computeCompleteness', () => {
                         active: true,
                         isMain: true,
                         hasRules: true,
+                        groupId: null,
                     },
                     {
                         id: 2,
@@ -189,6 +199,7 @@ describe('computeCompleteness', () => {
                         active: true,
                         isMain: true,
                         hasRules: false,
+                        groupId: null,
                     },
                     {
                         id: 3,
@@ -196,6 +207,7 @@ describe('computeCompleteness', () => {
                         active: false,
                         isMain: false,
                         hasRules: false,
+                        groupId: null,
                     },
                 ],
             }),
@@ -220,6 +232,7 @@ describe('computeCompleteness', () => {
                         active: true,
                         isMain: true,
                         hasRules: true,
+                        groupId: null,
                     },
                     {
                         id: 2,
@@ -227,6 +240,7 @@ describe('computeCompleteness', () => {
                         active: true,
                         isMain: true,
                         hasRules: true,
+                        groupId: null,
                     },
                 ],
             }),
@@ -289,6 +303,7 @@ describe('computeCompleteness', () => {
                         active: false,
                         isMain: false,
                         hasRules: false,
+                        groupId: null,
                     },
                 ],
                 configured: false,
@@ -296,5 +311,93 @@ describe('computeCompleteness', () => {
         );
         // details, categories, and finish are all incomplete; details comes first.
         expect(c.firstIncomplete).toBe('details');
+    });
+
+    describe('groups step', () => {
+        const step = (c: ReturnType<typeof computeCompleteness>) =>
+            c.steps.find((s) => s.step === 'groups');
+
+        it('is done, not todo, when the board uses no groups at all', () => {
+            const c = computeCompleteness(input({ groupCount: 0 }));
+            expect(step(c)).toMatchObject({
+                status: 'done',
+                summary: 'One flat list',
+            });
+        });
+
+        it('is done with one group holding everything', () => {
+            const c = computeCompleteness(
+                input({ groupCount: 1, ungroupedMainCount: 0 }),
+            );
+            expect(step(c)).toMatchObject({
+                status: 'done',
+                summary: '1 group',
+            });
+        });
+
+        it('tolerates loose categories while only one group exists', () => {
+            const c = computeCompleteness(
+                input({ groupCount: 1, ungroupedMainCount: 3 }),
+            );
+            expect(step(c)?.status).toBe('done');
+        });
+
+        it('blocks on loose categories once a second group exists', () => {
+            const c = computeCompleteness(
+                input({ groupCount: 2, ungroupedMainCount: 3 }),
+            );
+            expect(step(c)).toMatchObject({
+                status: 'blocker',
+                summary: '3 featured categories are not in a group',
+            });
+            expect(c.blockers).toContain(
+                '3 featured categories are not in a group',
+            );
+        });
+
+        it('singularizes the blocker for one loose category', () => {
+            const c = computeCompleteness(
+                input({ groupCount: 2, ungroupedMainCount: 1 }),
+            );
+            expect(step(c)?.summary).toBe(
+                '1 featured category is not in a group',
+            );
+        });
+
+        it('has nothing to say on a board with no featured categories', () => {
+            const c = computeCompleteness(
+                input({
+                    categories: [],
+                    groupCount: 2,
+                    ungroupedMainCount: 0,
+                }),
+            );
+            expect(step(c)).toMatchObject({
+                status: 'done',
+                summary: 'Optional — nothing to group yet',
+            });
+        });
+    });
+
+    describe('variables step', () => {
+        const step = (c: ReturnType<typeof computeCompleteness>) =>
+            c.steps.find((s) => s.step === 'variables');
+
+        it('stays done with no variables — splitting is optional', () => {
+            const c = computeCompleteness(input({ variableCount: 0 }));
+            expect(step(c)).toMatchObject({
+                status: 'done',
+                summary: 'Optional — no splits or filters',
+            });
+        });
+
+        it('counts the variables a board does have', () => {
+            expect(
+                step(computeCompleteness(input({ variableCount: 1 })))?.summary,
+            ).toBe('1 variable');
+            expect(
+                step(computeCompleteness(input({ variableCount: 4 })))?.summary,
+            ).toBe('4 variables');
+        });
     });
 });

@@ -8,6 +8,12 @@ export interface CategorySection {
     id: number | null;
     name: string | null;
     pills: ResolvedCategory[];
+    /**
+     * The group is marked hidden-by-default: render the label with its
+     * categories behind a disclosure. Never set on the trivial flattened
+     * section — with one section there is nothing left to collapse against.
+     */
+    collapsedByDefault: boolean;
 }
 
 export interface CategoryVisibility {
@@ -34,7 +40,16 @@ export function computeCategoryVisibility(
     const trivial =
         groups.length === 0 || (groups.length <= 1 && usedGroupIds.size <= 1);
     if (trivial) {
-        return { sections: [{ id: null, name: null, pills: visible }] };
+        return {
+            sections: [
+                {
+                    id: null,
+                    name: null,
+                    pills: visible,
+                    collapsedByDefault: false,
+                },
+            ],
+        };
     }
 
     const byGroup = new Map<number, ResolvedCategory[]>();
@@ -51,12 +66,16 @@ export function computeCategoryVisibility(
         id: g.id,
         name: g.name,
         pills: sortCategoriesForDisplay(byGroup.get(g.id) ?? []),
+        collapsedByDefault: g.hiddenByDefault ?? false,
     }));
     if (ungrouped.length > 0) {
         sections.push({
             id: null,
             name: null,
             pills: sortCategoriesForDisplay(ungrouped),
+            // Ungrouped categories have no group to carry the flag, and
+            // hiding the unlabeled section would hide them with no way back.
+            collapsedByDefault: false,
         });
     }
     return { sections };

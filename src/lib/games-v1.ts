@@ -127,12 +127,54 @@ interface PageDataGroup {
     id: number;
     name: string;
     sortOrder?: number;
+    hiddenByDefault?: boolean;
     categories?: PageDataCategoryFlags[];
 }
 
 interface PageDataForCats {
     ungroupedCategories?: PageDataCategoryFlags[];
     groups?: PageDataGroup[];
+}
+
+// /v1/runs/categories hard-caps `limit` at 100 server-side (parseLimit's
+// maxLimit in the backend's query-runs.ts) and silently returns 100 for any
+// larger ask — this used to request 200 and get 100, which quietly dropped
+// every category outside a game's top 100 by playtime. SM64 has ~1000 with
+// real activity, so a Featured category could go missing from the board
+// entirely. It does honour `offset`, so page through it.
+const CATEGORY_PAGE_SIZE = 100;
+/** Ceiling of 2000 categories; the largest game today is ~1250 rows. */
+const CATEGORY_MAX_PAGES = 20;
+/** Pages per round trip — SM64 finishes in three batches rather than 13 hops. */
+const CATEGORY_PAGE_BATCH = 5;
+
+async function fetchAllCategoryStats(
+    gameId: number,
+): Promise<CategoriesEndpointRow[]> {
+    const page = async (offset: number) => {
+        const body = await v1Fetch<{ result: CategoriesEndpointRow[] }>(
+            `/v1/runs/categories?game_id=${gameId}&sort=-total_run_time&limit=${CATEGORY_PAGE_SIZE}&offset=${offset}`,
+        );
+        return body.result ?? [];
+    };
+
+    const rows: CategoriesEndpointRow[] = [];
+    for (
+        let start = 0;
+        start < CATEGORY_MAX_PAGES;
+        start += CATEGORY_PAGE_BATCH
+    ) {
+        const offsets: number[] = [];
+        const end = Math.min(start + CATEGORY_PAGE_BATCH, CATEGORY_MAX_PAGES);
+        for (let i = start; i < end; i++) offsets.push(i * CATEGORY_PAGE_SIZE);
+
+        const pages = await Promise.all(offsets.map(page));
+        for (const p of pages) rows.push(...p);
+        // A short page is the end of the list; later pages in the batch came
+        // back empty and cost nothing.
+        if (pages.some((p) => p.length < CATEGORY_PAGE_SIZE)) break;
+    }
+    return rows;
 }
 
 export async function resolveCategory(
@@ -150,9 +192,8 @@ export async function resolveCategory(
     // category selections for the same game.
     cacheTag(`game-cats:${gameId}`);
 
-    const runsPath = `/v1/runs/categories?game_id=${gameId}&sort=-total_run_time&limit=200`;
-    const [runsResp, pageDataResp] = await Promise.all([
-        v1Fetch<{ result: CategoriesEndpointRow[] }>(runsPath),
+    const [categoryStats, pageDataResp] = await Promise.all([
+        fetchAllCategoryStats(gameId),
         v1Fetch<{ result?: PageDataForCats }>(`/v1/games/${gameId}`).catch(
             () => ({ result: undefined as PageDataForCats | undefined }),
         ),
@@ -189,10 +230,15 @@ export async function resolveCategory(
     }
 
     const groups: ResolvedGroup[] = (pageDataResp.result?.groups ?? [])
-        .map((g) => ({ id: g.id, name: g.name, sortOrder: g.sortOrder ?? 0 }))
+        .map((g) => ({
+            id: g.id,
+            name: g.name,
+            sortOrder: g.sortOrder ?? 0,
+            hiddenByDefault: g.hiddenByDefault ?? false,
+        }))
         .sort((a, b) => a.sortOrder - b.sortOrder);
 
-    const rows = (runsResp.result ?? []).filter(
+    const rows = categoryStats.filter(
         (r) =>
             !isLowActivityCategory({
                 totalRunTime: r.total_run_time,

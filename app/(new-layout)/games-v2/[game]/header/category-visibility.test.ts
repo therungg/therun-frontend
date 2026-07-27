@@ -35,7 +35,12 @@ describe('computeCategoryVisibility', () => {
         const categories = [cat({ id: 1 }), cat({ id: 2 })];
         const result = computeCategoryVisibility(categories, []);
         expect(result.sections).toEqual([
-            { id: null, name: null, pills: categories },
+            {
+                id: null,
+                name: null,
+                pills: categories,
+                collapsedByDefault: false,
+            },
         ]);
     });
 
@@ -131,7 +136,58 @@ describe('computeCategoryVisibility', () => {
         ];
         const result = computeCategoryVisibility(categories, groups);
         expect(result.sections).toEqual([
-            { id: null, name: null, pills: [categories[0], categories[1]] },
+            {
+                id: null,
+                name: null,
+                pills: [categories[0], categories[1]],
+                collapsedByDefault: false,
+            },
         ]);
+    });
+
+    it('marks a hidden-by-default group as collapsed', () => {
+        const groups: ResolvedGroup[] = [
+            { id: 10, name: 'Main Game', sortOrder: 0 },
+            {
+                id: 20,
+                name: 'Category Extensions',
+                sortOrder: 1,
+                hiddenByDefault: true,
+            },
+        ];
+        const categories = [
+            cat({ id: 1, groupId: 10 }),
+            cat({ id: 2, groupId: 20 }),
+        ];
+        const result = computeCategoryVisibility(categories, groups);
+        expect(result.sections.map((s) => s.collapsedByDefault)).toEqual([
+            false,
+            true,
+        ]);
+    });
+
+    it('ignores hidden-by-default on the flattened single-group section', () => {
+        const groups: ResolvedGroup[] = [
+            { id: 10, name: 'Main Game', sortOrder: 0, hiddenByDefault: true },
+        ];
+        const categories = [cat({ id: 1, groupId: 10 })];
+        const result = computeCategoryVisibility(categories, groups);
+        expect(result.sections[0].collapsedByDefault).toBe(false);
+    });
+
+    it('never collapses the trailing ungrouped section', () => {
+        const groups: ResolvedGroup[] = [
+            { id: 10, name: 'Main Game', sortOrder: 0, hiddenByDefault: true },
+            { id: 20, name: 'DLC', sortOrder: 1, hiddenByDefault: true },
+        ];
+        const categories = [
+            cat({ id: 1, groupId: 10 }),
+            cat({ id: 2, groupId: null }),
+        ];
+        const result = computeCategoryVisibility(categories, groups);
+        expect(result.sections.at(-1)).toMatchObject({
+            name: null,
+            collapsedByDefault: false,
+        });
     });
 });

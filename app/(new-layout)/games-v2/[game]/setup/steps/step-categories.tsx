@@ -1,19 +1,28 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 import Link from '~src/components/link';
+import { formatPlaytime } from '~src/lib/setup/board-pulse';
 import { activityShare, suggestFeaturedIds } from '~src/lib/setup/suggestions';
-import { createGroupAction } from '../actions/create-group.action';
+import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
 import { curateCategoryAction } from '../actions/curate-category.action';
 import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
+import { CategoryBandPreview } from './category-band-preview';
 import { StepHeader } from './step-header';
+
+/** Rows rendered before the list is cut and search takes over. */
+const VISIBLE_ROW_LIMIT = 50;
+
+/** In-flight category writes during a save. */
+const SAVE_CONCURRENCY = 6;
 
 interface RowState {
     id: number;
     display: string;
     main: boolean;
-    groupId: number | null;
+    sortOrder: number;
+    totalRunTime: number;
     uniqueRunners: number;
     totalFinishedAttemptCount: number;
     error: string | null;
@@ -34,10 +43,14 @@ export function StepCategories({ data, onAdvance }: StepProps) {
     );
     const [rows, setRows] = useState<RowState[]>(
         [...data.categories]
+            // Runners first: how many people a category has is the better
+            // signal of whether it belongs on a board than raw run count,
+            // which one prolific runner can inflate on their own.
             .sort(
                 (a, b) =>
+                    (b.uniqueRunners ?? 0) - (a.uniqueRunners ?? 0) ||
                     (b.totalFinishedAttemptCount ?? 0) -
-                    (a.totalFinishedAttemptCount ?? 0),
+                        (a.totalFinishedAttemptCount ?? 0),
             )
             .map((c) => ({
                 id: c.id,
@@ -45,23 +58,79 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                 main: hasExplicitMains
                     ? !c.archived && (c.isMain ?? false)
                     : suggested.has(c.id),
-                groupId: c.groupId ?? null,
+                sortOrder: c.sortOrder,
+                totalRunTime: c.totalRunTime ?? 0,
                 uniqueRunners: c.uniqueRunners ?? 0,
                 totalFinishedAttemptCount: c.totalFinishedAttemptCount ?? 0,
                 error: null,
             })),
     );
-    const [groups, setGroups] = useState(data.groups);
-    const [groupName, setGroupName] = useState('');
-    const [showGroups, setShowGroups] = useState(false);
+    const [query, setQuery] = useState('');
+    const [showAll, setShowAll] = useState(false);
     const [progress, setProgress] = useState<string | null>(null);
     const [isSaving, startSaving] = useTransition();
+
+    const shown = useMemo(() => rows.filter((r) => r.main), [rows]);
+
+    // Big games carry a thousand-plus categories, nearly all of them junk from
+    // timer splits. Rendering every row is unusable, so the table shows the
+    // busiest few and search reaches the rest — but a ticked category is
+    // always rendered, however far down it ranks, or you could hide something
+    // from the board without ever seeing it.
+    const matches = useMemo(() => {
+        const q = query.trim().toLowerCase();
+        return q
+            ? rows.filter((r) => r.display.toLowerCase().includes(q))
+            : rows;
+    }, [rows, query]);
+
+    const visibleRows = useMemo(() => {
+        if (showAll || query.trim() || matches.length <= VISIBLE_ROW_LIMIT) {
+            return matches;
+        }
+        const head = matches.slice(0, VISIBLE_ROW_LIMIT);
+        const headIds = new Set(head.map((r) => r.id));
+        const tickedBelow = matches
+            .slice(VISIBLE_ROW_LIMIT)
+            .filter((r) => r.main && !headIds.has(r.id));
+        return [...head, ...tickedBelow];
+    }, [matches, query, showAll]);
+
+    const hiddenCount = matches.length - visibleRows.length;
+
+    // Saved group assignment per category. This step doesn't edit it — that's
+    // step 3 — but a board that already has groups should preview as it
+    // actually looks, not as a flat band it hasn't been in for months.
+    // Categories ticked here but not yet filed show up ungrouped, which is
+    // the truth until step 3 files them.
+    const savedGroupIdById = useMemo(() => {
+        const m = new Map<number, number | null>();
+        for (const c of data.categories) m.set(c.id, c.groupId ?? null);
+        return m;
+    }, [data.categories]);
+
+    // The band preview runs the public renderer, which wants ResolvedCategory.
+    const previewCategories = useMemo<ResolvedCategory[]>(
+        () =>
+            shown.map((r) => ({
+                id: r.id,
+                name: String(r.id),
+                display: r.display,
+                primaryTiming: 'rt',
+                archived: false,
+                isMain: true,
+                sortOrder: r.sortOrder,
+                groupId: savedGroupIdById.get(r.id) ?? null,
+                totalRunTime: r.totalRunTime,
+            })),
+        [shown, savedGroupIdById],
+    );
 
     if (data.categories.length === 0) {
         return (
             <section>
                 <StepHeader
-                    num={2}
+                    step="categories"
                     title="No categories yet"
                     lede="Categories show up on their own when runs are submitted or ingested from timers, so there’s nothing to pick yet. Once runs come in, choose what shows on the board here or from the console."
                 />
@@ -81,120 +150,150 @@ export function StepCategories({ data, onAdvance }: StepProps) {
         );
     }
 
-    const legacyHiddenCount = hasExplicitMains
-        ? rows.filter((r) => {
-              const orig = data.categories.find((c) => c.id === r.id);
-              return (
-                  orig && !orig.archived && !(orig.isMain ?? false) && !r.main
-              );
-          }).length
-        : 0;
+    // Categories that are on the board right now and are about to come off it.
+    // This used to count every active non-Featured category as well, which on
+    // a big board meant warning that ~860 categories "will be hidden" — none
+    // of which were on the board or touched by the save.
+    const leavingBoardCount = rows.filter((r) => {
+        const orig = data.categories.find((c) => c.id === r.id);
+        return orig && !orig.archived && (orig.isMain ?? false) && !r.main;
+    }).length;
 
-    const checkedCount = rows.filter((r) => r.main).length;
+    const checkedCount = shown.length;
     const share = activityShare(
         rows.map((r) => ({
             totalFinishedAttemptCount: r.totalFinishedAttemptCount,
             active: r.main,
         })),
     );
-    const maxRuns = Math.max(
-        1,
-        ...rows.map((r) => r.totalFinishedAttemptCount),
-    );
+    // The bar tracks runners, matching the sort — a bar keyed to anything
+    // else would read as non-monotonic and look broken.
+    const maxRunners = Math.max(1, ...rows.map((r) => r.uniqueRunners));
     const mainOk = checkedCount > 0;
 
     const setMain = (id: number, main: boolean) =>
         setRows((rs) => rs.map((r) => (r.id === id ? { ...r, main } : r)));
 
-    const setGroup = (id: number, groupId: number | null) =>
-        setRows((rs) => rs.map((r) => (r.id === id ? { ...r, groupId } : r)));
-
-    const addGroup = () => {
-        startSaving(async () => {
-            const res = await createGroupAction({
-                gameSlug: data.game.name,
-                gameId: data.game.id,
-                name: groupName,
-            });
-            if ('error' in res) return;
-            setGroups((gs) => [
-                ...gs,
-                { id: res.result.id, name: groupName.trim(), sortOrder: 99 },
-            ]);
-            setGroupName('');
-        });
-    };
-
     const save = () => {
         startSaving(async () => {
-            // Sequential batch: report per-row failures, retry just those.
-            const changed = rows.filter((r) => {
+            // The tickbox means Featured, and nothing else.
+            //
+            // It used to also write `active`, which made unticking archive the
+            // category. Since every public surface filters `!archived &&
+            // isMain`, a category that isn't Featured is already off the board,
+            // so those writes changed nothing anyone could see — but on a game
+            // like SM64 the first save fired ~860 of them, one per unticked
+            // category, and silently swept the lot into the console's Archived
+            // tab. Nobody asked for that: the boxes start unticked.
+            //
+            // Archiving stays a deliberate act in the console. The one time
+            // `active` is written here is restoring a Featured pick that was
+            // archived, which would otherwise stay invisible despite the tick.
+            //
+            // Group assignment belongs to the next step, so groupId is omitted
+            // from the body, which leaves the column alone.
+            const changed = rows.flatMap((r) => {
                 const orig = data.categories.find((c) => c.id === r.id);
-                return (
-                    orig &&
-                    (!orig.archived !== r.main ||
-                        (orig.isMain ?? false) !== r.main ||
-                        (orig.groupId ?? null) !== r.groupId)
-                );
+                if (!orig) return [];
+                const wasMain = orig.isMain ?? false;
+                const restore = r.main && orig.archived;
+                if (wasMain === r.main && !restore) return [];
+                return [{ row: r, restore }];
             });
-            let failures = 0;
-            for (let i = 0; i < changed.length; i++) {
-                const r = changed[i];
-                setProgress(`Saving ${i + 1} / ${changed.length}…`);
-                const res = await curateCategoryAction({
-                    gameSlug: data.game.name,
-                    gameId: data.game.id,
-                    categoryId: r.id,
-                    active: r.main,
-                    isMain: r.main,
-                    groupId: r.groupId,
-                });
-                if ('error' in res) {
-                    failures++;
-                    setRows((rs) =>
-                        rs.map((row) =>
-                            row.id === r.id
-                                ? { ...row, error: res.error }
-                                : row,
-                        ),
-                    );
-                }
+
+            if (changed.length === 0) {
+                onAdvance();
+                return;
             }
+
+            let done = 0;
+            const failures: number[] = [];
+            setProgress(`Saving 0 / ${changed.length}…`);
+
+            // Bounded parallelism: a mod re-curating a big board can still
+            // change hundreds of rows, and one round trip at a time made that
+            // take minutes.
+            const queue = [...changed];
+            const worker = async () => {
+                for (;;) {
+                    const next = queue.shift();
+                    if (!next) return;
+                    const res = await curateCategoryAction({
+                        gameSlug: data.game.name,
+                        gameId: data.game.id,
+                        categoryId: next.row.id,
+                        isMain: next.row.main,
+                        ...(next.restore ? { active: true } : {}),
+                    });
+                    done++;
+                    setProgress(`Saving ${done} / ${changed.length}…`);
+                    if ('error' in res) {
+                        failures.push(next.row.id);
+                        setRows((rs) =>
+                            rs.map((row) =>
+                                row.id === next.row.id
+                                    ? { ...row, error: res.error }
+                                    : row,
+                            ),
+                        );
+                    }
+                }
+            };
+            await Promise.all(
+                Array.from(
+                    { length: Math.min(SAVE_CONCURRENCY, changed.length) },
+                    worker,
+                ),
+            );
+
             setProgress(null);
-            if (failures === 0) onAdvance();
+            if (failures.length === 0) onAdvance();
         });
     };
 
     return (
         <section>
             <StepHeader
-                num={2}
-                title="Which categories do you actually want?"
-                lede={`This board has ${rows.length} categor${
+                step="categories"
+                title="Which categories belong on the board?"
+                lede={`Runners have submitted runs in ${rows.length} categor${
                     rows.length === 1 ? 'y' : 'ies'
-                }: everything that ever came in from timers or submissions. Untick what doesn’t belong. Hidden categories aren’t deleted, you can bring them back from the console.`}
+                }. These come from timers and submissions, not from you, so many of them probably don’t belong on a leaderboard. Pick the ones that do — the rest are hidden, not deleted, and you can bring them back from the console.`}
             />
 
-            <div className="d-flex gap-3 flex-wrap mb-4">
-                <StatTile value={rows.length} label="categories discovered" />
-                <StatTile
-                    value={data.stats.uniqueRunners}
-                    label="unique runners"
-                />
-                <StatTile
-                    value={data.stats.totalFinishedAttemptCount}
-                    label="finished runs"
-                />
-            </div>
+            <CategoryBandPreview
+                categories={previewCategories}
+                groups={data.groups}
+                variables={data.variables}
+            />
 
-            {legacyHiddenCount > 0 && (
+            {leavingBoardCount > 0 && (
                 <div className={styles.warnNote}>
-                    {legacyHiddenCount} categor
-                    {legacyHiddenCount === 1 ? 'y' : 'ies'} currently on the
-                    board {legacyHiddenCount === 1 ? 'is' : 'are'} unticked and
-                    will be hidden when you save.
+                    {leavingBoardCount} categor
+                    {leavingBoardCount === 1 ? 'y' : 'ies'} currently on the
+                    board {leavingBoardCount === 1 ? 'is' : 'are'} unticked and
+                    will come off it when you save.
                 </div>
             )}
+
+            <div className="d-flex gap-2 align-items-center flex-wrap mb-2">
+                <input
+                    type="search"
+                    className="form-control form-control-sm"
+                    style={{ maxWidth: '22rem' }}
+                    placeholder={`Search ${rows.length.toLocaleString()} categories…`}
+                    aria-label="Search categories"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                />
+                <span className="text-muted small">
+                    {query.trim()
+                        ? `${matches.length.toLocaleString()} match${
+                              matches.length === 1 ? '' : 'es'
+                          }`
+                        : `showing ${visibleRows.length.toLocaleString()} of ${rows.length.toLocaleString()}`}
+                </span>
+            </div>
 
             <table className={styles.table}>
                 <thead>
@@ -203,12 +302,12 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                         <th>Category</th>
                         <th>Activity</th>
                         <th className="text-end">Runners</th>
-                        <th className="text-end">Runs</th>
-                        {showGroups && <th>Group</th>}
+                        <th className="text-end">Finished runs</th>
+                        <th className="text-end">Playtime</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {rows.map((r) => (
+                    {visibleRows.map((r) => (
                         <tr
                             key={r.id}
                             className={r.main ? '' : styles.rowDimmed}
@@ -242,8 +341,8 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                                             width: `${Math.max(
                                                 2,
                                                 Math.round(
-                                                    (r.totalFinishedAttemptCount /
-                                                        maxRuns) *
+                                                    (r.uniqueRunners /
+                                                        maxRunners) *
                                                         100,
                                                 ),
                                             )}%`,
@@ -257,39 +356,38 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                             <td className="text-end">
                                 {r.totalFinishedAttemptCount.toLocaleString()}
                             </td>
-                            {showGroups && (
-                                <td>
-                                    <select
-                                        className="form-select form-select-sm"
-                                        aria-label={`Group for ${r.display}`}
-                                        value={r.groupId ?? ''}
-                                        onChange={(e) =>
-                                            setGroup(
-                                                r.id,
-                                                e.target.value
-                                                    ? Number(e.target.value)
-                                                    : null,
-                                            )
-                                        }
-                                    >
-                                        <option value="">Ungrouped</option>
-                                        {groups.map((g) => (
-                                            <option key={g.id} value={g.id}>
-                                                {g.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </td>
-                            )}
+                            <PlaytimeCell ms={r.totalRunTime} />
                         </tr>
                     ))}
                 </tbody>
             </table>
 
+            {hiddenCount > 0 && (
+                <div className="d-flex gap-2 align-items-center mb-3">
+                    <span className="text-muted small">
+                        {hiddenCount.toLocaleString()} quieter categor
+                        {hiddenCount === 1 ? 'y' : 'ies'} not shown.
+                    </span>
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-link px-0"
+                        onClick={() => setShowAll(true)}
+                    >
+                        Show all
+                    </button>
+                </div>
+            )}
+
+            {query.trim() && matches.length === 0 && (
+                <p className="text-muted small">
+                    No category matches “{query.trim()}”.
+                </p>
+            )}
+
             <div className="mb-3">
                 <div className="text-muted small">
                     {checkedCount} shown · {rows.length - checkedCount} hidden ·{' '}
-                    {share}% of runs covered
+                    {share}% of finished runs covered
                 </div>
                 <div
                     className={styles.meter}
@@ -305,32 +403,6 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                     />
                 </div>
             </div>
-
-            <button
-                type="button"
-                className="btn btn-link btn-sm px-0"
-                onClick={() => setShowGroups((v) => !v)}
-            >
-                {showGroups ? 'Hide groups' : 'Organize into groups (optional)'}
-            </button>
-            {showGroups && (
-                <div className="d-flex gap-2 my-2">
-                    <input
-                        className="form-control form-control-sm w-auto"
-                        value={groupName}
-                        onChange={(e) => setGroupName(e.target.value)}
-                        placeholder="New group name (e.g. Category Extensions)"
-                    />
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-outline-secondary"
-                        disabled={isSaving || !groupName.trim()}
-                        onClick={addGroup}
-                    >
-                        Add group
-                    </button>
-                </div>
-            )}
 
             {!mainOk && (
                 <div className={`${styles.warnNote} mt-2`}>
@@ -350,11 +422,8 @@ export function StepCategories({ data, onAdvance }: StepProps) {
     );
 }
 
-function StatTile({ value, label }: { value: number; label: string }) {
-    return (
-        <div className={styles.statTile}>
-            <span className={styles.statValue}>{value.toLocaleString()}</span>
-            <span className={styles.statLabel}>{label}</span>
-        </div>
-    );
+/** Compact hours, same vocabulary as the wizard header's playtime stat. */
+function PlaytimeCell({ ms }: { ms: number }) {
+    const hours = formatPlaytime(ms);
+    return <td className="text-end">{hours ? `${hours} h` : '—'}</td>;
 }

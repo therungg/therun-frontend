@@ -1,14 +1,21 @@
 import type { ReactNode } from 'react';
+import type { SetupStepId } from '~src/lib/setup/completeness';
+import { setupStepMeta } from '~src/lib/setup/steps';
 import styles from '../setup.module.scss';
 
 interface Props {
-    num: number;
+    step: SetupStepId;
     title: ReactNode;
     lede?: ReactNode;
 }
 
-/** Shared full-focus step header: ghost numeral + job statement + context. */
-export function StepHeader({ num, title, lede }: Props) {
+/**
+ * Shared full-focus step header: ghost numeral + job statement + context.
+ * The numeral comes from steps.ts rather than a literal, so inserting a step
+ * renumbers every header at once.
+ */
+export function StepHeader({ step, title, lede }: Props) {
+    const { num } = setupStepMeta(step);
     return (
         <header className={styles.stepHeader}>
             <span className={styles.ghostNum} aria-hidden>

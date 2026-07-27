@@ -70,7 +70,7 @@ export function StepDefaults({ data, onAdvance }: StepProps) {
         return (
             <section>
                 <StepHeader
-                    num={3}
+                    step="defaults"
                     title="Set the rules once"
                     lede="Pick your featured categories first, then come back here."
                 />
@@ -250,7 +250,7 @@ export function StepDefaults({ data, onAdvance }: StepProps) {
     return (
         <section>
             <StepHeader
-                num={3}
+                step="defaults"
                 title="Set the rules once"
                 lede={`These get applied to all ${mains.length} featured categor${
                     mains.length === 1 ? 'y' : 'ies'

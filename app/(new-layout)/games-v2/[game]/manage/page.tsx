@@ -175,6 +175,11 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 slug: identifiers.slug,
                 moderatorCount: moderators.length,
                 configured: metadata.configured,
+                groupCount: groups.length,
+                ungroupedMainCount: categories.filter(
+                    (c) =>
+                        !c.archived && (c.isMain ?? false) && c.groupId == null,
+                ).length,
             });
             boardHealth = computeBoardHealth({
                 completeness: setupCompleteness,

@@ -9,6 +9,7 @@ import {
     updateGame,
 } from '~src/lib/game-mgmt';
 import { confirmPermission } from '~src/rbac/confirm-permission';
+import { normalizeDiscordInvite } from '~src/utils/discord-invite';
 
 interface Input {
     gameSlug: string;
@@ -33,11 +34,15 @@ export async function updateGameMetadataAction(
         return { error: 'Not authorized to edit game details.' };
     }
 
-    if (
-        input.discordUrl &&
-        !/^https:\/\/(www\.)?discord\.(gg|com)\//.test(input.discordUrl)
-    ) {
-        return { error: 'Discord link must be a discord.gg invite URL.' };
+    let discordUrl = input.discordUrl;
+    if (discordUrl) {
+        const normalized = normalizeDiscordInvite(discordUrl);
+        if (!normalized) {
+            return {
+                error: 'Discord invite must be an invite link (discord.gg/…) or just the invite code.',
+            };
+        }
+        discordUrl = normalized;
     }
     if (
         input.releaseYear !== undefined &&
@@ -82,7 +87,7 @@ export async function updateGameMetadataAction(
         body.summaryOverride = input.summaryOverride;
     if (input.platforms !== undefined) body.platforms = input.platforms;
     if (input.releaseYear !== undefined) body.releaseYear = input.releaseYear;
-    if (input.discordUrl !== undefined) body.discordUrl = input.discordUrl;
+    if (input.discordUrl !== undefined) body.discordUrl = discordUrl ?? null;
     if (input.links !== undefined) {
         body.links = input.links.map((link) => ({
             label: link.label.trim(),

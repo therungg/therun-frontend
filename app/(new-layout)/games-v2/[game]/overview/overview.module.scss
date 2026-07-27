@@ -15,6 +15,25 @@
     margin: 0 0 dt.$spacing-md;
 }
 
+// Disclosure form of the section label, for hidden-by-default groups.
+.sectionToggle {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    cursor: pointer;
+
+    &:hover {
+        color: var(--bs-emphasis-color);
+    }
+}
+
 .sectionRule {
     flex: 1;
     height: 1px;

@@ -73,6 +73,29 @@
     margin-right: dt.$spacing-xs;
 }
 
+// Same eyebrow as .groupLabel, but it's a disclosure: hidden-by-default
+// groups keep their label visible and put the pills behind a click.
+.groupToggle {
+    @include board.board-eyebrow;
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    margin-right: dt.$spacing-xs;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+
+    &:hover {
+        color: var(--bs-emphasis-color);
+    }
+}
+
+.groupCount {
+    font-variant-numeric: tabular-nums;
+    opacity: 0.7;
+}
+
 .pill {
     @include board.control-pill;
 }

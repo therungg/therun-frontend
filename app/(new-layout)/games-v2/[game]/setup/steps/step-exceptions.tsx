@@ -222,7 +222,7 @@ export function StepExceptions({ data, onAdvance }: StepProps) {
         return (
             <section>
                 <StepHeader
-                    num={4}
+                    step="exceptions"
                     title="Per-category exceptions"
                     lede="Pick your featured categories first, then set any per-category overrides here."
                 />
@@ -246,7 +246,7 @@ export function StepExceptions({ data, onAdvance }: StepProps) {
     return (
         <section>
             <StepHeader
-                num={4}
+                step="exceptions"
                 title="Minimum times & exceptions"
                 lede="Set a minimum time per category: anything faster is held for review. Timers auto-submit a lot of junk runs, so this is your main defense. Open a category only if its timing or rules should differ from the defaults."
             />

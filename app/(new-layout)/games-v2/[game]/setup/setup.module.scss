@@ -26,6 +26,7 @@ $rail-collapse: 900px;
     grid-column: 1 / -1;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: dt.$spacing-md;
     padding-bottom: dt.$spacing-lg;
     margin-bottom: dt.$spacing-2xl;
@@ -56,6 +57,52 @@ $rail-collapse: 900px;
 .identityBack {
     margin-left: auto;
     flex-shrink: 0;
+}
+
+// What the board already has on it — setup shouldn't read like work on a
+// dead page. Sits behind a rule so it reads as evidence about the game, not
+// as part of its title.
+.identityStats {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0 dt.$spacing-md;
+    margin: 0;
+    padding-left: dt.$spacing-lg;
+    border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+
+    @media (max-width: $rail-collapse) {
+        flex-basis: 100%;
+        order: 3;
+        padding-left: 0;
+        border-left: 0;
+    }
+}
+
+.identityStat {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-xs;
+
+    // Sits inside the flex row, so the item's own gap covers its right side —
+    // margin-right only has to make up the difference to the parent's gap.
+    & + &::before {
+        content: '·';
+        margin-right: dt.$spacing-sm;
+        color: var(--bs-secondary-color);
+        opacity: 0.6;
+    }
+}
+
+.identityStatValue {
+    @include board.mono-time;
+    font-size: dt.$font-size-sm;
+    font-weight: 700;
+}
+
+.identityStatLabel {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
 }
 
 // ---- Step rail ----------------------------------------------
@@ -373,11 +420,135 @@ $rail-collapse: 900px;
     .meterFill,
     .activityFill,
     .railMeterFill,
-    .railChevron {
+    .railChevron,
+    .hintBubble {
         transition: none;
     }
     .railItem::before {
         transition: none;
+    }
+}
+
+// ---- Live band preview (categories step) --------------------
+// Sticks while the category table scrolls past: ticking a row 40 rows down
+// should still show its effect on the band.
+.previewPanel {
+    @include board.board-surface(dt.$spacing-lg);
+    position: sticky;
+    top: dt.$spacing-lg;
+    z-index: 5;
+    margin-bottom: dt.$spacing-lg;
+
+    @media (max-width: $rail-collapse) {
+        position: static;
+    }
+}
+
+.previewHead {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+    flex-wrap: wrap;
+    margin-bottom: dt.$spacing-md;
+}
+
+.previewNote {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+}
+
+.previewBand {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+}
+
+// ---- Group builder (categories step) ------------------------
+.segmented {
+    display: inline-flex;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    border-radius: dt.$radius-md;
+    overflow: hidden;
+    margin-bottom: dt.$spacing-md;
+
+    button {
+        border: 0;
+        background: none;
+        padding: dt.$spacing-xs dt.$spacing-lg;
+        font-size: dt.$font-size-sm;
+        color: var(--bs-secondary-color);
+        transition: background-color 0.12s ease;
+
+        & + button {
+            border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+        }
+
+        &:hover {
+            background: rgba(var(--bs-emphasis-color-rgb), 0.05);
+        }
+    }
+}
+
+.segmentActive {
+    background: var(--bs-primary) !important;
+    color: var(--bs-body-bg) !important;
+    font-weight: 600;
+}
+
+.groupBuilder {
+    margin-top: dt.$spacing-md;
+}
+
+// Grouping step: one column per group plus a trailing unfiled column, so the
+// shape of the board is visible while you file categories into it.
+.board {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: dt.$spacing-lg;
+    margin-bottom: dt.$spacing-lg;
+}
+
+.boardColumn {
+    @include board.board-surface(dt.$spacing-lg);
+}
+
+.boardColumnHead {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+    margin-bottom: dt.$spacing-sm;
+}
+
+.boardColumnName {
+    @include board.board-eyebrow;
+}
+
+.boardColumnCount {
+    @include board.mono-time;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    margin-left: auto;
+}
+
+// Term/definition pairs for the "what does this mean" explainers.
+.defList {
+    margin: 0;
+
+    dt {
+        font-size: dt.$font-size-sm;
+        font-weight: 700;
+        margin-top: dt.$spacing-md;
+
+        &:first-of-type {
+            margin-top: 0;
+        }
+    }
+
+    dd {
+        margin: dt.$spacing-xs 0 0;
+        font-size: dt.$font-size-sm;
+        color: var(--bs-secondary-color);
+        max-width: 60ch;
     }
 }
 
@@ -494,6 +665,85 @@ $rail-collapse: 900px;
 
 .table {
     @include board.board-table;
+}
+
+// ---- Field labels + hover explanations ----------------------
+.fieldLabel {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    margin-bottom: dt.$spacing-sm;
+}
+
+.hint {
+    position: relative;
+    display: inline-flex;
+}
+
+.hintTrigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--bs-secondary-color);
+    cursor: help;
+    line-height: 1;
+    transition: color 0.12s ease;
+
+    &:hover,
+    &:focus-visible {
+        color: var(--bs-primary);
+    }
+}
+
+.hintBubble {
+    position: absolute;
+    bottom: calc(100% + #{dt.$spacing-xs});
+    left: 50%;
+    transform: translateX(-50%) translateY(2px);
+    z-index: 20;
+    width: max-content;
+    max-width: 20rem;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-md;
+    background: var(--bs-body-bg);
+    box-shadow: dt.$shadow-md;
+    color: var(--bs-body-color);
+    font-size: dt.$font-size-xs;
+    font-weight: 400;
+    line-height: 1.45;
+    white-space: normal;
+    text-align: left;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+        opacity 0.12s ease,
+        transform 0.12s ease;
+
+    // Left-column fields sit near the viewport edge on narrow screens; let
+    // the bubble grow inward rather than off-screen.
+    @media (max-width: 480px) {
+        left: 0;
+        transform: translateX(0) translateY(2px);
+        max-width: min(20rem, calc(100vw - #{dt.$spacing-3xl}));
+    }
+
+    code {
+        font-size: 0.95em;
+    }
+}
+
+.hint:hover .hintBubble,
+.hintTrigger:focus-visible + .hintBubble {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+
+    @media (max-width: 480px) {
+        transform: translateX(0) translateY(0);
+    }
 }
 
 // calm notices with a severity spine (replace Bootstrap alerts)

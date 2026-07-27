@@ -8,7 +8,7 @@ export function StepDetails({ data, onAdvance }: StepProps) {
     return (
         <section>
             <StepHeader
-                num={1}
+                step="details"
                 title="Game details"
                 lede={
                     data.categories.length > 0
