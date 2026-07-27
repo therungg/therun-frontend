@@ -13,6 +13,7 @@ export type NavItemId =
     | 'variables'
     | 'combinations'
     | 'category-settings'
+    | 'setup'
     | 'game-details'
     | 'moderators'
     | 'groups'
@@ -66,6 +67,12 @@ const ALL_GROUPS: NavGroup[] = [
         id: 'game',
         label: 'Game',
         items: [
+            // Leaves the console for the wizard rather than opening a pane —
+            // see handleNavigate in console-shell.tsx. It's the permanent
+            // door back into setup, which is why it sits first and stays
+            // visible after the board is live; the setup checklist card only
+            // covers the not-yet-finished case.
+            { id: 'setup', label: 'Setup wizard', categoryScoped: false },
             {
                 id: 'game-details',
                 label: 'Details & metadata',
@@ -138,9 +145,27 @@ export function buildNav(flags: NavFlags): NavGroup[] {
     })).filter((g) => g.items.length > 0);
 }
 
-/** First visible item, used as the default landing pane. */
+/**
+ * Sidebar items that are never a content pane: `history` is an overlay,
+ * `roster` and `setup` leave the console for their own routes, and `reports`
+ * normalizes into the attention pane. Shared by `defaultItem` and
+ * `isLandingPaneId` so neither can land the console on one of them.
+ */
+const NON_LANDING_IDS: readonly NavItemId[] = [
+    'history',
+    'roster',
+    'reports',
+    'setup',
+];
+
+/** First visible item that can actually render, used as the landing pane. */
 export function defaultItem(groups: NavGroup[]): NavItemId | null {
-    return groups[0]?.items[0]?.id ?? null;
+    for (const group of groups) {
+        for (const item of group.items) {
+            if (!NON_LANDING_IDS.includes(item.id)) return item.id;
+        }
+    }
+    return null;
 }
 
 /**
@@ -182,10 +207,11 @@ export function showSetupCard(
 }
 
 /**
- * `history`, `roster`, and `reports` are never a landing pane — see the
- * mount-time comment in console-shell.tsx. Both the `?pane=` URL reader and
- * the per-game localStorage last-pane reader share this same guard so a
- * stored/URL id from either source is held to the same bar.
+ * `history`, `roster`, `reports` and `setup` are never a landing pane — see
+ * NON_LANDING_IDS above and the mount-time comment in console-shell.tsx. Both
+ * the `?pane=` URL reader and the per-game localStorage last-pane reader share
+ * this same guard so a stored/URL id from either source is held to the same
+ * bar.
  */
 export function isLandingPaneId(
     id: string | null | undefined,
@@ -193,9 +219,7 @@ export function isLandingPaneId(
 ): id is NavItemId {
     return (
         !!id &&
-        id !== 'history' &&
-        id !== 'roster' &&
-        id !== 'reports' &&
+        !NON_LANDING_IDS.includes(id as NavItemId) &&
         visible.includes(id as NavItemId)
     );
 }

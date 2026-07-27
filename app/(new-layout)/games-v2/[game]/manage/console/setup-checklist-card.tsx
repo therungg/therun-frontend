@@ -10,9 +10,9 @@ interface Props {
 }
 
 export function SetupChecklistCard({ gameSlug, completeness }: Props) {
-    // A finished board still shows the card — it's the console's only door back
-    // into the wizard, and moderators revisit settings after going live.
-    const complete = completeness.steps.every((s) => s.status === 'done');
+    // Only rendered while setup is unfinished (console-shell.tsx swaps in
+    // BoardHealthCard once it is) — this card is the nudge, not the door. The
+    // permanent way back into the wizard is the sidebar's "Setup wizard" item.
     const pct = Math.round(
         (completeness.doneCount / completeness.totalCount) * 100,
     );
@@ -29,9 +29,7 @@ export function SetupChecklistCard({ gameSlug, completeness }: Props) {
                             Setup
                         </span>
                         <strong>
-                            {complete
-                                ? 'Setup complete'
-                                : `${completeness.doneCount} of ${completeness.totalCount} steps done`}
+                            {`${completeness.doneCount} of ${completeness.totalCount} steps done`}
                         </strong>
                     </div>
                     <Link
@@ -40,17 +38,11 @@ export function SetupChecklistCard({ gameSlug, completeness }: Props) {
                                 ? `?step=${completeness.firstIncomplete}`
                                 : ''
                         }`}
-                        className={
-                            complete
-                                ? styles.setupCardQuietAction
-                                : styles.setupCardAction
-                        }
+                        className={styles.setupCardAction}
                     >
-                        {complete
-                            ? 'Revisit setup'
-                            : completeness.doneCount <= 1
-                              ? 'Set up this board'
-                              : 'Continue setup'}
+                        {completeness.doneCount <= 1
+                            ? 'Set up this board'
+                            : 'Continue setup'}
                     </Link>
                 </div>
                 <div

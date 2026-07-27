@@ -26,6 +26,12 @@ export function StepFinish({ data }: StepProps) {
     const [error, setError] = useState<string | null>(null);
     const [isPending, startPending] = useTransition();
 
+    // Revisiting a board that already went live: there's nothing left to
+    // flip, so the step reads as a review instead of a launch.
+    const alreadyLive =
+        data.completeness.steps.find((s) => s.step === 'finish')?.status ===
+        'done';
+
     const reviewSteps = data.completeness.steps.filter(
         (s) => s.step !== 'finish',
     );
@@ -150,8 +156,16 @@ export function StepFinish({ data }: StepProps) {
         <section>
             <StepHeader
                 step="finish"
-                title="Mod team, then go live"
-                lede="Add a co-mod or two so the queue doesn’t depend on you alone. Then check the list below and put the board live."
+                title={
+                    alreadyLive
+                        ? 'Mod team and review'
+                        : 'Mod team, then go live'
+                }
+                lede={
+                    alreadyLive
+                        ? 'Your board is already live. Adjust the mod team here, and use the list below to jump back into any step.'
+                        : 'Add a co-mod or two so the queue doesn’t depend on you alone. Then check the list below and put the board live.'
+                }
             />
             <ul className={`${styles.rows} mb-2`}>
                 {mods.map((m) => (
@@ -204,7 +218,7 @@ export function StepFinish({ data }: StepProps) {
                 </button>
             </div>
 
-            <h3 className="h6">Review & finish</h3>
+            <h3 className="h6">{alreadyLive ? 'Review' : 'Review & finish'}</h3>
             <ul className={`${styles.rows} mb-3`}>
                 {reviewSteps.map((s) => (
                     <li key={s.step} className={styles.rowItem}>
@@ -246,14 +260,23 @@ export function StepFinish({ data }: StepProps) {
                 </div>
             )}
             {error && <div className={styles.errorNote}>{error}</div>}
-            <button
-                type="button"
-                className={styles.primaryAction}
-                disabled={isPending || blockers.length > 0}
-                onClick={finish}
-            >
-                {isPending ? 'Finishing…' : 'Finish setup'}
-            </button>
+            {alreadyLive ? (
+                <Link
+                    href={`/games-v2/${data.game.name}/manage`}
+                    className={styles.primaryAction}
+                >
+                    Back to console
+                </Link>
+            ) : (
+                <button
+                    type="button"
+                    className={styles.primaryAction}
+                    disabled={isPending || blockers.length > 0}
+                    onClick={finish}
+                >
+                    {isPending ? 'Finishing…' : 'Finish setup'}
+                </button>
+            )}
         </section>
     );
 }

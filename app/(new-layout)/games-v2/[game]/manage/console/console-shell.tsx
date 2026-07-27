@@ -308,12 +308,18 @@ export function ConsoleShell({
         );
     }, []);
 
-    // History is a quick-reference overlay, not a destination pane. Roster
-    // always leaves the console for its dedicated route. Reports is a
+    // History is a quick-reference overlay, not a destination pane. Roster and
+    // Setup always leave the console for their dedicated routes. Reports is a
     // pre-filtered view of the attention pane, not a pane of its own.
     const handleNavigate = (id: NavItemId) => {
         if (id === 'roster') {
             router.push(`/games-v2/${game.name}/manage/moderation/roster`);
+            return;
+        }
+        // The wizard is a full-focus page with its own "Back to console"
+        // link — it must not write `?pane=` or become activeItem here.
+        if (id === 'setup') {
+            router.push(`/games-v2/${game.name}/setup`);
             return;
         }
         if (id === 'reports') {
