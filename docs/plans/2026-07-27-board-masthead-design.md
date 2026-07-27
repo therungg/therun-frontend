@@ -152,7 +152,7 @@ The deep-page refetch is the block deleted in `e1e58060`; reinstate it verbatim.
 - The stuck bar is `aria-hidden` while collapsed so its duplicate controls never enter the tab order twice.
 - Focus-visible rings on chips follow `control-pill`'s existing ring; the solid active chip needs a ring that reads against `--bs-primary`.
 
-## Open for Joey
+## Resolved while writing (each reversible in one line)
 
-1. **Category emblems in chips.** `ResolvedCategory.imageUrl` exists and `CategoryEmblem` renders nothing when absent (your call, 2026-07-22), so a rail would be a mix of chips with and without art. Include at ~17px, or leave chips text-only?
-2. **Chip run counts.** Specced as included above since every chosen mockup carried them, but you never said so explicitly.
+1. **Category emblems in chips: yes, but all-or-nothing per group.** A group renders emblems only when *every* category in it has an `imageUrl`; otherwise that group's chips are text-only. `CategoryEmblem` renders nothing when absent (Joey's call, 2026-07-22), so a per-chip rule would produce a ragged mix of chips with and without art inside one well — the exact inconsistency this redesign exists to remove. Deciding per group keeps every row internally uniform while still rewarding moderators who set the full set. Emblem size ~17px, leading, inside the chip.
+2. **Chip numerals: included**, as specced in decision 4.
