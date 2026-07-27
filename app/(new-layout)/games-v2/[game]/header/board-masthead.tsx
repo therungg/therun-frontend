@@ -132,7 +132,29 @@ export function BoardMasthead({
                     </div>
                 </div>
 
-                <div className={styles.railZone}>
+                <div
+                    // `inert` (React 19) — same precedent as
+                    // game-page.tsx's colMain: pointer-events alone doesn't
+                    // stop keyboard/AT users reaching an off-screen
+                    // duplicate once the sticky bar is the interactive
+                    // copy. Applied to the whole rail zone, not just
+                    // `.utilities` — CategoryRail and FilterBar are
+                    // equally off-screen-but-focusable siblings here, and
+                    // tabbing into either one while stuck triggers the
+                    // browser's focus-into-view scroll, which un-intersects
+                    // the sentinel and unmounts the bar mid-navigation.
+                    // `inert` on a parent makes the whole subtree
+                    // uninteractive/unfocusable for descendants (there's no
+                    // way for a child to opt back in), so this alone covers
+                    // CategoryRail and FilterBar. `.utilities` keeps its own
+                    // `key` below regardless: `inert` removes a node from
+                    // the tab order but can't tear down a document-level
+                    // listener an already-open FiltersPopover installed
+                    // (its Tab trap) — that needs an actual unmount, which
+                    // only the key remount provides.
+                    className={styles.railZone}
+                    inert={stuck}
+                >
                     <CategoryRail
                         categories={data.categories}
                         groups={data.groups}
@@ -147,20 +169,8 @@ export function BoardMasthead({
                         selectedVarFilters={data.activeFilters.varFilters}
                     />
                     <div
-                        // `inert` (React 19) — same precedent as
-                        // game-page.tsx's colMain: pointer-events alone
-                        // doesn't stop keyboard/AT users reaching an
-                        // off-screen duplicate once the sticky bar is the
-                        // interactive copy. The `key` forces this row to
-                        // unmount/remount across the stuck/unstuck boundary
-                        // — `inert` removes it from the tab order but can't
-                        // tear down a document-level listener an
-                        // already-open FiltersPopover installed (its Tab
-                        // trap), so an open popover needs to actually
-                        // unmount, not just go inert.
                         key={stuck ? 'stuck' : 'top'}
                         className={styles.utilities}
-                        inert={stuck}
                     >
                         <VerifiedToggle
                             verified={data.activeFilters.verified}
@@ -197,6 +207,10 @@ export function BoardMasthead({
                     defs={data.variables}
                     selectedVarFilters={data.activeFilters.varFilters}
                     onOpenHistory={onOpenHistory}
+                    categories={data.categories}
+                    groups={data.groups}
+                    selectedCategoryName={category.name}
+                    variableKeys={variableKeys}
                 />
             )}
         </>

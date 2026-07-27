@@ -82,6 +82,14 @@
     box-shadow: dt.$shadow-md;
     object-fit: cover;
     flex-shrink: 0;
+
+    // Decision 8: below 992px the condensed game line drops to a 40px
+    // cover, same breakpoint as `.heroCover`'s own step-down. 40×53 holds
+    // the 3:4 game-art aspect ratio the codebase uses elsewhere.
+    @media (max-width: 991.98px) {
+        width: 40px;
+        height: 53px;
+    }
 }
 
 // Up-navigation row. Lives inside the hero's own padding so it aligns with
