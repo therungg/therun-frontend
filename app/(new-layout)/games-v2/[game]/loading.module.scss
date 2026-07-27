@@ -3,11 +3,13 @@
 
 // ============================================================
 // Route-level loading skeleton for the board page. Mirrors the masthead
-// plate in header/masthead.module.scss — one bordered surface holding the
-// condensed game line (56px cover, one facts line), the board line (category
-// headline plus its meta line), and the rail zone on its deeper tint below —
-// see there for the real dimensions this predicts. grid/table mirror this
-// file's own board.
+// plate in header/masthead.module.scss: two vertically stacked blocks —
+// the cover-bound hero row (`.heroRow`: 56px cover + title/facts, its
+// height set by the cover per `.heroCondensed`/`.heroCoverSm`) and the
+// board line below it (`.boardLine`: category headline + meta, per
+// `.boardTitle`/`.boardMeta`) — inside `.plate`, with the rail zone on its
+// deeper tint below. See those files for the real dimensions this
+// predicts. grid/table mirror this file's own board.
 // ============================================================
 
 // ---- Masthead plate --------------------------------------------
@@ -19,6 +21,12 @@
 
 .plateTop {
     padding: dt.$spacing-lg dt.$spacing-xl;
+}
+
+// The condensed game line. Cover-bound: the 75px cover is taller than the
+// two text lines beside it, so the row's height comes from the cover, not
+// the text — same as the real `.heroCondensed .heroRow`.
+.heroRow {
     display: flex;
     gap: dt.$spacing-xl;
     align-items: center;
@@ -54,7 +62,25 @@
     border-radius: dt.$radius-sm;
 }
 
-// The board line's headline — category display name, real font-size-2xl.
+// `.heroActions` always renders a "Submit a run" button even with no
+// claim/Discord/links — reserve its space on the row's right edge.
+.heroActionChip {
+    @include board.board-skeleton;
+    width: 7rem;
+    height: 2rem;
+    border-radius: dt.$radius-md;
+    flex-shrink: 0;
+}
+
+// The board line — a second block stacked below the hero row, separated
+// by roughly `.heroCondensed`'s own bottom padding.
+.boardLine {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    margin-top: dt.$spacing-md;
+}
+
 .boardTitleBar {
     @include board.board-skeleton;
     height: 1.9rem;
@@ -62,8 +88,9 @@
     border-radius: dt.$radius-sm;
 }
 
-// The rail is the plate's floor: deeper tint, its own top hairline — same
-// treatment as .railZone in header/masthead.module.scss.
+// ---- Rail zone (inside the plate) --------------------------------
+// Deeper tint, its own top hairline — same treatment as .railZone in
+// header/masthead.module.scss.
 .railZone {
     background: var(--bs-secondary-bg);
     border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
@@ -129,7 +156,7 @@
     flex-shrink: 0;
 }
 
-// ---- Rail -----------------------------------------------------
+// ---- Rail (aside panels) -----------------------------------------
 .railPanel {
     @include board.board-skeleton;
     height: 10rem;
