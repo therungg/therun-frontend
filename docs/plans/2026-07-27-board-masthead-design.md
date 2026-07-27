@@ -84,7 +84,7 @@ Note the deliberate unit mismatch: the chip numeral counts **runners**, the boar
 
 > The endcap never determines the row height. The chips set it, and the cap centres its content within whatever they need. The chip container fills the well and centres its rows, so no dead space can pool above or below in either direction.
 
-**Collapsed groups** (`hiddenByDefault`): render as a single dashed chip `▸ Name 12` in place of the group's block, expanding in place. Auto-expands when it holds the active board — the contract `category-pills.tsx` already implements. The count lives here because a collapsed group has no expanded panel to make its size visible.
+**Collapsed groups** (`hiddenByDefault`): every currently-collapsed group is represented by one dashed chip `▸ Name 12`, and all of them share a **single trailing block with no endcap** — a collapsed group must not occupy a whole block row for one chip. Clicking a chip promotes that group to its own endcap block above; auto-promoted when it holds the active board, the contract `category-pills.tsx` already implements. The count lives on the chip because a collapsed group has no expanded panel to make its size visible.
 
 **Trivial case**: `computeCategoryVisibility` already flattens a single group to one unlabelled section. That section renders as a well with no endcap. Most games never see group chrome at all.
 
