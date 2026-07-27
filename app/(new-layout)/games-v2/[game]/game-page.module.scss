@@ -1,28 +1,6 @@
 @use '../../styles/design-tokens' as dt;
 @use '../../styles/board' as board;
 
-// ---- Control band ------------------------------------------
-.band {
-    @include board.board-glass;
-    border-radius: dt.$radius-lg;
-    padding: dt.$spacing-sm dt.$spacing-lg;
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-xs;
-    margin-bottom: dt.$spacing-lg;
-    position: sticky;
-    top: dt.$spacing-sm;
-    z-index: dt.$z-sticky;
-}
-
-.bandEnd {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-xs;
-    flex-shrink: 0;
-}
-
 .popoverRoot {
     position: relative;
 }
@@ -48,60 +26,6 @@
     background: rgba(var(--bs-primary-rgb), 0.15);
     border-radius: 999px;
     padding: 0 dt.$spacing-sm;
-}
-
-.bandRow {
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-xs;
-    flex-wrap: wrap;
-}
-
-// subordinate second row: hairline above, smaller quieter pills
-.bandRowSub {
-    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.3);
-    padding-top: dt.$spacing-xs;
-
-    .pill {
-        font-size: dt.$font-size-xs;
-        padding: dt.$spacing-xs 0.6rem;
-    }
-}
-
-.groupLabel {
-    @include board.board-eyebrow;
-    margin-right: dt.$spacing-xs;
-}
-
-// Same eyebrow as .groupLabel, but it's a disclosure: hidden-by-default
-// groups keep their label visible and put the pills behind a click.
-.groupToggle {
-    @include board.board-eyebrow;
-    display: inline-flex;
-    align-items: center;
-    gap: dt.$spacing-xs;
-    margin-right: dt.$spacing-xs;
-    padding: 0;
-    border: 0;
-    background: none;
-    cursor: pointer;
-
-    &:hover {
-        color: var(--bs-emphasis-color);
-    }
-}
-
-.groupCount {
-    font-variant-numeric: tabular-nums;
-    opacity: 0.7;
-}
-
-.pill {
-    @include board.control-pill;
-}
-
-.pillActive {
-    @include board.control-pill-active;
 }
 
 .rulesToggle {
@@ -143,6 +67,21 @@
     border-bottom: 1px solid var(--bs-border-color);
     margin-bottom: dt.$spacing-lg;
     padding: dt.$spacing-xl 0 dt.$spacing-lg;
+}
+
+// Board-page hero: the game is context here, the category below it is the
+// subject — so no bottom rule (the plate encloses it) and no stat band.
+.heroCondensed {
+    padding: dt.$spacing-lg 0 dt.$spacing-md;
+}
+
+.heroCoverSm {
+    width: 56px;
+    height: 75px;
+    border-radius: dt.$radius-md;
+    box-shadow: dt.$shadow-md;
+    object-fit: cover;
+    flex-shrink: 0;
 }
 
 // Up-navigation row. Lives inside the hero's own padding so it aligns with

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import type { VariableDef } from '../../../../../types/leaderboards.types';
 import styles from '../game-page.module.scss';
+import mastheadStyles from '../header/masthead.module.scss';
 import { toggleFilterValue } from './filter-values';
 import { useFilterNav } from './use-filter-nav';
 
@@ -78,7 +79,7 @@ export function VariablePill({
                 disabled={isPending}
                 aria-haspopup="listbox"
                 aria-expanded={isOpen}
-                className={`${styles.pill} ${selectedValues.length > 0 ? styles.pillActive : ''}`}
+                className={`${mastheadStyles.chip} ${selectedValues.length > 0 ? mastheadStyles.chipActive : ''}`}
             >
                 {label}
             </button>

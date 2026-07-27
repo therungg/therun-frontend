@@ -67,3 +67,93 @@
     padding-top: dt.$spacing-sm;
     border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
 }
+
+// ---- The plate ------------------------------------------------------
+// One contained surface holding the condensed game line, the board line
+// and the rail. Deliberately NOT sticky — the slim bar takes that job, so
+// rail height stops being a scrolling cost.
+.plate {
+    @include board.board-surface(0);
+    overflow: hidden;
+    margin-bottom: dt.$spacing-lg;
+}
+
+.plateTop {
+    padding: 0 dt.$spacing-xl dt.$spacing-lg;
+}
+
+.boardLine {
+    display: flex;
+    align-items: flex-end;
+    gap: dt.$spacing-lg;
+    flex-wrap: wrap;
+}
+
+.groupEyebrow {
+    @include board.board-eyebrow;
+    display: block;
+}
+
+.boardTitle {
+    font-size: dt.$font-size-2xl;
+    font-weight: 750;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+    margin: dt.$spacing-xs 0 0;
+}
+
+// The subcategory half of the board's name, one rank down in weight.
+.boardTitleSuffix {
+    font-size: dt.$font-size-md;
+    font-weight: 500;
+    color: var(--bs-secondary-color);
+    letter-spacing: 0;
+}
+
+.boardMeta {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+    font-variant-numeric: tabular-nums;
+    margin: dt.$spacing-xs 0 0;
+}
+
+.record {
+    margin-left: auto;
+    text-align: right;
+    line-height: 1.3;
+}
+
+.recordTime {
+    @include board.mono-time;
+    font-size: dt.$font-size-xl;
+    color: dt.$accent-gold;
+    display: block;
+}
+
+.recordHolder {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+// The rail is the plate's floor: deeper tint, its own top hairline.
+.railZone {
+    background: var(--bs-secondary-bg);
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    padding: dt.$spacing-md dt.$spacing-xl;
+}
+
+.utilities {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: dt.$spacing-sm;
+    margin-top: dt.$spacing-sm;
+    padding-top: dt.$spacing-sm;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+}
+
+.utilitySep {
+    width: 1px;
+    height: 0.9rem;
+    background: rgba(var(--bs-border-color-rgb), 0.6);
+}

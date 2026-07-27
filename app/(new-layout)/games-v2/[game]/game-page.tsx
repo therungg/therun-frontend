@@ -5,16 +5,14 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from '~src/components/link';
 import { buildBoardHref } from '~src/lib/board-url';
 import type { ClaimCtaState } from './claim/claim-cta';
-import { FilterBar } from './filters/filter-bar';
-import { FiltersPopover } from './filters/filters-popover';
 import { BoardNavProvider, useBoardNavState } from './filters/use-board-nav';
-import { VerifiedToggle } from './filters/verified-toggle';
 import styles from './game-page.module.scss';
-import { CategoryRail } from './header/category-rail';
+import { BoardMasthead } from './header/board-masthead';
 import { GameHero } from './header/game-hero';
+import mastheadStyles from './header/masthead.module.scss';
 import { formatSubcategoryKey, type LabelVariableDef } from './labels';
 import { LeaderboardPager } from './leaderboard/leaderboard-pager';
-import { RulesBody, RulesPanel } from './rules/rules-panel';
+import { RulesBody } from './rules/rules-panel';
 import { Sidebar } from './sidebar/sidebar';
 import type { GamePageData } from './types';
 
@@ -113,57 +111,16 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
     return (
         <BoardNavProvider value={boardNav}>
             <div>
-                <GameHero
-                    game={data.game}
-                    stats={data.quickStats}
-                    gameMeta={data.gameMeta}
-                    categorySlug={data.selectedCategory.name}
-                    subcategoryKey={subcategoryKey}
+                <BoardMasthead
+                    data={data}
                     canManage={canManage}
-                    canModerate={canManageRuns}
+                    canManageRuns={canManageRuns}
                     claim={claim}
                     back={backToWall}
+                    rulesOpen={rulesOpen}
+                    onToggleRules={() => setRulesOpen((o) => !o)}
+                    onOpenHistory={() => setHistoryOpen(true)}
                 />
-                <div className={styles.band}>
-                    <div className={styles.bandRow}>
-                        <CategoryRail
-                            categories={data.categories}
-                            groups={data.groups}
-                            selectedCategoryName={data.selectedCategory.name}
-                            variableKeys={variableKeys}
-                        />
-                        <div className={styles.bandEnd}>
-                            <VerifiedToggle
-                                verified={data.activeFilters.verified}
-                            />
-                            <FiltersPopover
-                                defs={data.variables}
-                                selectedVarFilters={
-                                    data.activeFilters.varFilters
-                                }
-                            />
-                            <RulesPanel
-                                rules={data.selectedCategory.rules}
-                                open={rulesOpen}
-                                onToggle={() => setRulesOpen((o) => !o)}
-                            />
-                            <button
-                                type="button"
-                                className={styles.quietLink}
-                                onClick={() => setHistoryOpen(true)}
-                            >
-                                WR history
-                            </button>
-                        </div>
-                    </div>
-                    <FilterBar
-                        defs={data.variables}
-                        selectedSubcategoryValues={
-                            data.activeFilters.subcategoryValues
-                        }
-                        selectedVarFilters={data.activeFilters.varFilters}
-                    />
-                </div>
                 {rulesOpen && data.selectedCategory.rules && (
                     <RulesBody rules={data.selectedCategory.rules} />
                 )}
@@ -273,7 +230,7 @@ function InvalidCombinationNotice({
                             categorySlug,
                             subcategoryKey: key,
                         })}
-                        className={styles.pill}
+                        className={mastheadStyles.chip}
                     >
                         {formatSubcategoryKey(key, defs)}
                     </Link>

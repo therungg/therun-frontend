@@ -36,6 +36,13 @@ interface Props {
      * Omitted on the wall itself and on games whose root *is* the board.
      */
     back?: { href: string; label: string };
+    /**
+     * `full` (default) is the spec-sheet hero the category wall and the
+     * standings page use, where the game is the subject. `condensed` is for
+     * a board page, where the game is context and the category below it is
+     * the subject: a small cover and one facts line, no stat band.
+     */
+    variant?: 'full' | 'condensed';
 }
 
 export function GameHero({
@@ -48,6 +55,7 @@ export function GameHero({
     canModerate,
     claim,
     back,
+    variant = 'full',
 }: Props) {
     // Carries the current board context (category + subcategory) into the
     // submit form so it preselects both — see submit/page.tsx requirement 1.
@@ -78,6 +86,12 @@ export function GameHero({
         gameMeta.seriesDisplay
             ? `Part of the ${gameMeta.seriesDisplay} series`
             : null,
+        variant === 'condensed'
+            ? `${stats.uniqueRunners.toLocaleString()} runners`
+            : null,
+        variant === 'condensed' && stats.totalAttemptCount > 0
+            ? `${stats.totalAttemptCount.toLocaleString()} attempts`
+            : null,
     ]
         .filter(Boolean)
         .join(' · ');
@@ -85,7 +99,11 @@ export function GameHero({
     const hoursPlayed = Math.round(stats.totalRunTime / 3_600_000);
 
     return (
-        <header className={styles.hero}>
+        <header
+            className={
+                variant === 'condensed' ? styles.heroCondensed : styles.hero
+            }
+        >
             {back && (
                 <div className={styles.heroBack}>
                     <BackLink href={back.href} label={back.label} />
@@ -96,9 +114,13 @@ export function GameHero({
                     <img
                         src={cover}
                         alt={game.display}
-                        width={132}
-                        height={176}
-                        className={styles.heroCover}
+                        width={variant === 'condensed' ? 56 : 132}
+                        height={variant === 'condensed' ? 75 : 176}
+                        className={
+                            variant === 'condensed'
+                                ? styles.heroCoverSm
+                                : styles.heroCover
+                        }
                         loading="eager"
                     />
                 )}
@@ -107,34 +129,36 @@ export function GameHero({
                     {factsLine && (
                         <p className={styles.heroFactsLine}>{factsLine}</p>
                     )}
-                    <div className={styles.heroStatBand}>
-                        <div className={styles.heroStat}>
-                            <span className={styles.heroStatValue}>
-                                {stats.uniqueRunners.toLocaleString()}
-                            </span>
-                            <span className={styles.heroStatLabel}>
-                                runners
-                            </span>
-                        </div>
-                        <div className={styles.heroStat}>
-                            <span className={styles.heroStatValue}>
-                                {stats.totalAttemptCount.toLocaleString()}
-                            </span>
-                            <span className={styles.heroStatLabel}>
-                                attempts
-                            </span>
-                        </div>
-                        {hoursPlayed > 0 && (
+                    {variant === 'full' && (
+                        <div className={styles.heroStatBand}>
                             <div className={styles.heroStat}>
                                 <span className={styles.heroStatValue}>
-                                    {hoursPlayed.toLocaleString()}
+                                    {stats.uniqueRunners.toLocaleString()}
                                 </span>
                                 <span className={styles.heroStatLabel}>
-                                    hours played
+                                    runners
                                 </span>
                             </div>
-                        )}
-                    </div>
+                            <div className={styles.heroStat}>
+                                <span className={styles.heroStatValue}>
+                                    {stats.totalAttemptCount.toLocaleString()}
+                                </span>
+                                <span className={styles.heroStatLabel}>
+                                    attempts
+                                </span>
+                            </div>
+                            {hoursPlayed > 0 && (
+                                <div className={styles.heroStat}>
+                                    <span className={styles.heroStatValue}>
+                                        {hoursPlayed.toLocaleString()}
+                                    </span>
+                                    <span className={styles.heroStatLabel}>
+                                        hours played
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
                 <div className={styles.heroActions}>
                     {claim && !claim.hasModerators && (
