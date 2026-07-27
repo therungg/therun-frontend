@@ -563,15 +563,6 @@ $rail: 3px; // severity spine / active accent width
     text-decoration: none;
 }
 
-// Complete boards keep the door open, but it shouldn't compete with the work
-// on the page the way the primary "Continue setup" call does.
-.setupCardQuietAction {
-    @include board.control-pill;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-    padding: dt.$spacing-xs dt.$spacing-lg;
-    text-decoration: none;
-}
-
 .setupMeter {
     height: 4px;
     border-radius: 2px;

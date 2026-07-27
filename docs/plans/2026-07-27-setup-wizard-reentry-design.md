@@ -1,7 +1,7 @@
 # Re-entering the board setup wizard after setup is done
 
 Date: 2026-07-27
-Status: designed
+Status: implemented
 
 ## Problem
 
@@ -46,10 +46,18 @@ door tied to a card that comes and goes).
 - No change to `itemVisible` — game-group items already require
   `flags.canConfigure`, which is the same ability the `/setup` page gates on
   (`edit` / `category-settings` for this game).
-- Add `'setup'` to the `isLandingPaneId` exclusion list, alongside
-  `history`, `roster` and `reports`. It navigates away from the console, so
-  it is never an active pane; without the guard a hand-typed `?pane=setup`
-  would select a pane `ContentRouter` cannot render.
+- Add `'setup'` to the never-a-landing-pane set alongside `history`,
+  `roster` and `reports`. It navigates away from the console, so it is never
+  an active pane; without the guard a hand-typed `?pane=setup` would select
+  a pane `ContentRouter` cannot render.
+
+  Found during implementation: that set has to be shared with `defaultItem`,
+  not just `isLandingPaneId`. `defaultItem` returned `groups[0].items[0].id`
+  verbatim, so making `setup` the first Game item would have made it the
+  landing pane for any viewer whose first group is `game` — i.e. a board
+  configurer who isn't a moderator — leaving them on a blank console. Both
+  functions now read a shared `NON_LANDING_IDS`, and `defaultItem` returns
+  the first item that isn't in it.
 
 `manage/console/console-sidebar.tsx`:
 

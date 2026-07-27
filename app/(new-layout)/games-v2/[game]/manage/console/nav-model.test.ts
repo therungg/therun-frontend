@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
     buildNav,
+    defaultItem,
     isLandingPaneId,
     type NavFlags,
     resolveCategoryId,
@@ -46,6 +47,38 @@ describe('buildNav', () => {
             .flatMap((g) => g.items)
             .find((it) => it.id === 'standards');
         expect(standards?.categoryScoped).toBe(true);
+    });
+
+    it('gives a board configurer the setup wizard as the first Game item', () => {
+        const groups = buildNav({ ...NO_FLAGS, canConfigure: true });
+        const gameGroup = groups.find((g) => g.id === 'game');
+        expect(gameGroup?.items[0]?.id).toBe('setup');
+    });
+
+    it('hides the setup wizard from a viewer who cannot configure', () => {
+        const ids = buildNav({ ...NO_FLAGS, canModerate: true })
+            .flatMap((g) => g.items)
+            .map((it) => it.id);
+        expect(ids).not.toContain('setup');
+    });
+});
+
+describe('defaultItem', () => {
+    it('skips the setup wizard — it navigates away instead of rendering a pane', () => {
+        const groups = buildNav({ ...NO_FLAGS, canConfigure: true });
+        // 'setup' is first in the Game group, which is this viewer's first
+        // group; the landing pane must be the first item that can render.
+        expect(defaultItem(groups)).toBe('game-details');
+    });
+
+    it('lands a moderator on Needs attention', () => {
+        expect(defaultItem(buildNav({ ...NO_FLAGS, canModerate: true }))).toBe(
+            'attention',
+        );
+    });
+
+    it('returns null when the viewer has no items at all', () => {
+        expect(defaultItem(buildNav(NO_FLAGS))).toBeNull();
     });
 });
 
@@ -101,6 +134,14 @@ describe('isLandingPaneId', () => {
         expect(isLandingPaneId('reports', visible)).toBe(false);
     });
 
+    it('rejects the setup wizard — a hand-typed ?pane=setup must not select it', () => {
+        const configurerVisible = buildNav({ ...NO_FLAGS, canConfigure: true })
+            .flatMap((g) => g.items)
+            .map((it) => it.id);
+        expect(configurerVisible).toContain('setup');
+        expect(isLandingPaneId('setup', configurerVisible)).toBe(false);
+    });
+
     it('rejects an id not visible to this viewer', () => {
         expect(isLandingPaneId('game-details', visible)).toBe(false);
     });
@@ -142,6 +183,16 @@ describe('resolveInitialPane', () => {
     it('rejects overlay/redirect ids from both the URL and storage', () => {
         expect(resolveInitialPane('history', 'reports', groups)).toBe(
             'attention',
+        );
+    });
+
+    it('rejects setup from both the URL and storage', () => {
+        const configurerGroups = buildNav({ ...NO_FLAGS, canConfigure: true });
+        expect(resolveInitialPane('setup', null, configurerGroups)).toBe(
+            'game-details',
+        );
+        expect(resolveInitialPane(null, 'setup', configurerGroups)).toBe(
+            'game-details',
         );
     });
 
