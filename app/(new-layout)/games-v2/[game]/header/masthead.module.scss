@@ -1,0 +1,58 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+.rail {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+.block {
+    @include board.board-rail-block;
+}
+
+.endcap {
+    @include board.board-rail-endcap;
+}
+
+.well {
+    @include board.board-rail-well;
+}
+
+.wellSolo {
+    @include board.board-rail-well-solo;
+}
+
+.chips {
+    @include board.board-rail-chips;
+}
+
+.chip {
+    @include board.board-chip;
+}
+
+.chipActive {
+    @include board.board-chip-active;
+}
+
+.chipGhost {
+    @include board.board-chip-ghost;
+}
+
+.chipCount {
+    @include board.board-chip-count;
+}
+
+.chipEmblem {
+    width: 17px;
+    height: 17px;
+    border-radius: dt.$radius-sm;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.emptyGroup {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+    padding: dt.$spacing-xs dt.$spacing-sm;
+}
