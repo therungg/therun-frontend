@@ -55,8 +55,38 @@ describe('describeConsequences', () => {
             moved: 30,
             unresolved: 0,
             categories: [
-                { categoryId: 1, display: 'Any%', moved: 20, boards: [] },
-                { categoryId: 2, display: '100%', moved: 10, boards: [] },
+                {
+                    categoryId: 1,
+                    display: 'Any%',
+                    moved: 20,
+                    boards: [
+                        {
+                            key: 'platform=nintendo64',
+                            label: 'Nintendo 64',
+                            before: 40,
+                            after: 20,
+                        },
+                        {
+                            key: 'platform=emulator',
+                            label: 'Emulator',
+                            before: 0,
+                            after: 20,
+                        },
+                    ],
+                },
+                {
+                    categoryId: 2,
+                    display: '100%',
+                    moved: 10,
+                    boards: [
+                        {
+                            key: 'platform=nintendo64',
+                            label: 'Nintendo 64',
+                            before: 15,
+                            after: 5,
+                        },
+                    ],
+                },
             ],
         };
         const copy = describeConsequences(many, {
