@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowClockwise } from 'react-bootstrap-icons';
 import { countAttentionAction } from '~src/actions/count-attention.action';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
+import type { CategoryConfigRow } from '~src/lib/console/category-rows';
 import {
     isRetiredPaneId,
     legacyPaneRedirect,
@@ -47,9 +48,10 @@ export interface ConsoleShellProps {
      * the cross-game hub only shows when there's more than one. */
     moderatedGamesCount?: number;
     modApplications?: BoardClaimRequest[];
-    initialCategoryId: number | null;
     initialSlug: string | null;
     initialRows: ManageCategoryRow[];
+    /** Per-category configuration for the index matrix. */
+    categoryConfig: CategoryConfigRow[];
     initialGroups: ManageGroup[];
     setupCompleteness?: BoardCompleteness | null;
     boardHealth?: BoardHealth | null;
@@ -65,9 +67,9 @@ export function ConsoleShell({
     degradedSources,
     moderatedGamesCount = 0,
     modApplications,
-    initialCategoryId,
     initialSlug,
     initialRows,
+    categoryConfig,
     initialGroups,
     setupCompleteness,
     boardHealth,
@@ -433,6 +435,11 @@ export function ConsoleShell({
                 <ContentRouter
                     activeItem={activeItem}
                     game={game}
+                    categories={categories.map((c) => ({
+                        id: c.id,
+                        display: c.display,
+                    }))}
+                    categoryConfig={categoryConfig}
                     canEditStandards={flags.canEditStandards}
                     gameDetails={gameDetails}
                     attentionItems={attentionItems}
