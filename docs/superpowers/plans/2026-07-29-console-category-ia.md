@@ -21,6 +21,27 @@
 - **Test file convention:** under `src/lib`, tests live in a sibling `__tests__/` directory (`src/lib/setup/__tests__/steps.test.ts`). Under `app/`, they are colocated (`nav-model.test.ts`). Follow whichever applies to the file you are testing.
 - Run `npm run typecheck` and `npx vitest run <file>` per task. Do not run the full suite unless a task says to.
 
+## Interaction with the variables work in flight
+
+The approved variables redesign is being implemented **on this same branch, in
+parallel** (`3e4153bb`, `94a01ee1`, `66d98594` and counting). Two points of contact:
+
+1. **Task 11 mounts the variables UI.** Today that is `VariablesSection` +
+   `CombinationsSection`. The variables plan's Task 16 replaces both with a single
+   `variables-screen.tsx` whose third zone *is* sub-boards. Whichever has landed when Task
+   11 runs is what the detail screen mounts — check before writing the imports. If
+   `variables-screen.tsx` exists, the detail screen has **six** sections, not seven, and the
+   `combinations` entry in `SECTIONS` becomes an anchor inside the variables section rather
+   than a section of its own. Task 6's `legacyPaneRedirect` still maps `?pane=combinations`
+   to `#combinations` either way, so nothing else changes.
+
+2. **Naming proximity, no conflict.** `src/lib/variables/language.ts` is the vocabulary of
+   variable *roles* ("splits this board" / "filter only"). `src/lib/console/vocabulary.ts`
+   (Task 1) is the vocabulary of *nav concepts*. Different scope, no shared symbols — do not
+   merge them.
+
+Rebase before starting each phase; do not assume the tree matches what this plan saw.
+
 ## File Structure
 
 **Created**
