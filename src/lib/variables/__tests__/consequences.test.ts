@@ -64,6 +64,7 @@ describe('describeConsequences', () => {
             action: 'save',
         });
         expect(copy.detail).toBe('This changes 2 categories.');
+        expect(copy.boards).toEqual([]);
     });
 
     it('mentions values that match nothing', () => {
@@ -98,5 +99,18 @@ describe('describeConsequences', () => {
             describeConsequences(one, { variableName: 'P', action: 'save' })
                 .headline,
         ).toBe('1 run moves to a different board.');
+    });
+
+    it('appends unresolved sentence when nothing moves but some runs unmatched', () => {
+        const copy = describeConsequences(
+            { moved: 0, unresolved: 5, categories: [] },
+            { variableName: 'Platform', action: 'save' },
+        );
+        expect(copy.nothingMoves).toBe(true);
+        expect(copy.headline).toBe('Nothing moves.');
+        expect(copy.detail).toContain(
+            '5 runs have a Platform that matches none',
+        );
+        expect(copy.boards).toEqual([]);
     });
 });
