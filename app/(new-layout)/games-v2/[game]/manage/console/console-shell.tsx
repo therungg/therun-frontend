@@ -5,6 +5,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowClockwise } from 'react-bootstrap-icons';
 import { countAttentionAction } from '~src/actions/count-attention.action';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
+import {
+    isRetiredPaneId,
+    legacyPaneRedirect,
+} from '~src/lib/console/legacy-panes';
 import type { BoardCompleteness } from '~src/lib/setup/completeness';
 import type { BoardHealth } from '~src/lib/setup/health';
 import type {
@@ -108,6 +112,36 @@ export function ConsoleShell({
     // default and re-clobbering storage. Every subsequent run (pane
     // switches, Back/Forward) just syncs to `initialActive` — the URL alone
     // is authoritative once this one-time bootstrap has run.
+    // Legacy deep links: `?pane=rules&cat=12` became
+    // /manage/category/12#rules. This runs before the stored-pane bootstrap
+    // below so a localStorage value written before the IA change is migrated
+    // too, instead of silently falling through to the default pane.
+    const legacyHandledRef = useRef(false);
+    useEffect(() => {
+        if (legacyHandledRef.current) return;
+        legacyHandledRef.current = true;
+
+        if (typeof window !== 'undefined') {
+            const key = `console:${game.id}:lastPane`;
+            if (isRetiredPaneId(window.localStorage.getItem(key))) {
+                window.localStorage.removeItem(key);
+            }
+        }
+
+        const redirect = legacyPaneRedirect(
+            searchParams.get('pane'),
+            searchParams.get('cat'),
+        );
+        if (!redirect) return;
+        if (redirect.kind === 'detail') {
+            router.replace(
+                `/games-v2/${game.name}/manage/category/${redirect.categoryId}#${redirect.hash}`,
+            );
+        } else {
+            router.replace(`?pane=${redirect.pane}`, { scroll: false });
+        }
+    }, [searchParams, router, game.id, game.name]);
+
     const appliedStoredPaneRef = useRef(false);
     useEffect(() => {
         if (!appliedStoredPaneRef.current) {
