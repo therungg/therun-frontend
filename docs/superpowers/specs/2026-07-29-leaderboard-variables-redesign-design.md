@@ -262,6 +262,18 @@ Reuses the existing resolution path (`resolve-run-variables.ts`, the same code t
 and the drift probe use) so the preview cannot disagree with what the rebuild later does.
 Read-only — it must not write, enqueue, or invalidate anything.
 
+**Reuse means the whole call, not just the function.** Every production caller wraps
+`resolveRunVariables` with `applyEntityFallbacks(pickProjectionSource(...), entity, defs)`
+and passes `{ validCombinations }` — see `sync/sync-runs-to-postgres.ts:139-149` and
+`services/leaderboard-rebuild/execute.ts:234-250`. The preview must do the same, with the
+same parent-vs-own precedence for the `platform` / `emulator` / `gameRegion` columns.
+Calling the function bare still type-checks and still returns plausible numbers, which is
+what makes this worth stating: runs whose board-determining value lives in those columns
+rather than in `variables` would resolve to the default bucket in the preview and to their
+real bucket in the rebuild, and without the valid-combination set the preview can show a
+board the rebuild would never produce. Found in review of the first implementation; the
+resolve sites are a documented must-stay-in-sync set, and this is now a fourth member.
+
 **5.2 Rebuild trigger authz**
 
 `POST /v1/leaderboards/invalidate-cache/{gameId}` currently requires a global role
