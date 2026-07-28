@@ -4,7 +4,6 @@ import {
     defaultItem,
     isLandingPaneId,
     type NavFlags,
-    resolveCategoryId,
     resolveInitialPane,
     showSetupCard,
     sidebarActiveItem,
@@ -41,18 +40,32 @@ describe('sidebarActiveItem', () => {
 });
 
 describe('buildNav', () => {
-    it('makes Minimum time category-scoped so it uses the shared picker', () => {
-        const groups = buildNav({ ...NO_FLAGS, canModerate: true });
-        const standards = groups
+    it('no longer exposes per-category settings as nav items', () => {
+        const ids = buildNav({
+            canModerate: true,
+            canEditStandards: true,
+            canConfigure: true,
+            canReassign: true,
+            canEditMods: true,
+        })
             .flatMap((g) => g.items)
-            .find((it) => it.id === 'standards');
-        expect(standards?.categoryScoped).toBe(true);
+            .map((it) => it.id as string);
+        for (const retired of [
+            'standards',
+            'timing',
+            'rules',
+            'variables',
+            'combinations',
+            'category-settings',
+        ]) {
+            expect(ids, retired).not.toContain(retired);
+        }
     });
 
-    it('gives a board configurer the setup wizard as the first Game item', () => {
+    it('gives a board configurer the setup wizard as the first Board item', () => {
         const groups = buildNav({ ...NO_FLAGS, canConfigure: true });
-        const gameGroup = groups.find((g) => g.id === 'game');
-        expect(gameGroup?.items[0]?.id).toBe('setup');
+        const boardGroup = groups.find((g) => g.id === 'board');
+        expect(boardGroup?.items[0]?.id).toBe('setup');
     });
 
     it('hides the setup wizard from a viewer who cannot configure', () => {
@@ -83,7 +96,7 @@ describe('defaultItem', () => {
 });
 
 describe('showSetupCard', () => {
-    it('shows on a Game-group pane', () => {
+    it('shows on a Board-group pane', () => {
         const groups = buildNav({ ...NO_FLAGS, canConfigure: true });
         expect(showSetupCard(groups, 'game-details')).toBe(true);
         expect(showSetupCard(groups, 'identifiers')).toBe(true);
@@ -100,11 +113,15 @@ describe('showSetupCard', () => {
         expect(showSetupCard(groups, 'bans')).toBe(false);
     });
 
-    it('hides on a per-category pane that is not the landing default', () => {
-        const groups = buildNav({ ...NO_FLAGS, canConfigure: true });
-        // Landing pane is 'game-details' (game group is first once moderate
-        // is filtered out) — 'timing' is per-category, not game-group.
-        expect(showSetupCard(groups, 'timing')).toBe(false);
+    it('hides on a triage pane that is not the landing default', () => {
+        const groups = buildNav({
+            ...NO_FLAGS,
+            canModerate: true,
+            canConfigure: true,
+        });
+        // Landing pane is 'attention' (moderate group first); 'bans' is
+        // neither that nor a board pane, so the nag stays out of the queue.
+        expect(showSetupCard(groups, 'bans')).toBe(false);
     });
 
     it('shows when nothing is active yet', () => {
@@ -113,8 +130,8 @@ describe('showSetupCard', () => {
 
     it('hides when the game group does not exist for this viewer', () => {
         const groups = buildNav({ ...NO_FLAGS, canModerate: true });
-        // No 'game' group present at all (only 'moderate') — a non-default,
-        // non-game pane must not crash on the missing group.
+        // No 'board' group present at all (only 'moderate') — a non-default,
+        // non-board pane must not crash on the missing group.
         expect(showSetupCard(groups, 'roster')).toBe(false);
     });
 });
@@ -201,26 +218,37 @@ describe('resolveInitialPane', () => {
     });
 });
 
-describe('resolveCategoryId', () => {
-    const categories = [{ id: 1 }, { id: 2 }, { id: 3 }];
+describe('nav shape', () => {
+    const ALL: NavFlags = {
+        canModerate: true,
+        canEditStandards: true,
+        canConfigure: true,
+        canReassign: true,
+        canEditMods: true,
+    };
 
-    it('accepts a requested id that exists in the category list', () => {
-        expect(resolveCategoryId('2', categories, 1)).toBe(2);
+    it('has exactly two groups', () => {
+        expect(buildNav(ALL).map((g) => g.id)).toEqual(['moderate', 'board']);
     });
 
-    it('falls back when the requested id is absent', () => {
-        expect(resolveCategoryId(null, categories, 1)).toBe(1);
+    it('shows twelve items to a fully privileged viewer', () => {
+        expect(buildNav(ALL).flatMap((g) => g.items)).toHaveLength(12);
     });
 
-    it('falls back when the requested id is not a number', () => {
-        expect(resolveCategoryId('not-a-number', categories, 1)).toBe(1);
+    it('orders the board group to match the wizard', () => {
+        const board = buildNav(ALL).find((g) => g.id === 'board');
+        expect(board?.items.slice(0, 4).map((i) => i.id)).toEqual([
+            'setup',
+            'game-details',
+            'categories',
+            'groups',
+        ]);
     });
 
-    it("falls back when the requested id doesn't belong to this game", () => {
-        expect(resolveCategoryId('999', categories, 1)).toBe(1);
-    });
-
-    it('the fallback may itself be null', () => {
-        expect(resolveCategoryId(null, categories, null)).toBeNull();
+    it('gives the category index to a moderator who cannot configure', () => {
+        const ids = buildNav({ ...NO_FLAGS, canModerate: true })
+            .flatMap((g) => g.items)
+            .map((it) => it.id);
+        expect(ids).toContain('categories');
     });
 });
