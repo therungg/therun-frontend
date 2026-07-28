@@ -6,20 +6,14 @@ import {
     ClockHistory,
     Collection,
     Controller,
-    Diagram3,
     ExclamationTriangle,
-    Eye,
     Flag,
-    Gear,
-    Grid3x3Gap,
     type Icon as IconType,
-    JournalText,
     ListCheck,
     ListOl,
+    ListUl,
     PersonX,
     ShieldLock,
-    Sliders,
-    Stopwatch,
     Tag,
 } from 'react-bootstrap-icons';
 import styles from './console.module.scss';
@@ -33,9 +27,6 @@ interface Props {
     /** True when one or more attention sources failed to load — the count
      * shown may be an undercount, not a confirmed total. */
     badgeDegraded?: boolean;
-    categories: Array<{ id: number; display: string }>;
-    selectedCategoryId: number | null;
-    onSelectCategory: (id: number) => void;
 }
 
 // One consistent icon set (react-bootstrap-icons) — no emoji.
@@ -45,18 +36,12 @@ const NAV_ICON: Record<NavItemId, IconType> = {
     reports: Flag,
     bans: PersonX,
     history: ClockHistory,
-    standards: Sliders,
-    timing: Stopwatch,
-    rules: JournalText,
-    variables: Diagram3,
-    combinations: Grid3x3Gap,
-    'category-settings': Gear,
     setup: ListCheck,
     'game-details': Controller,
-    moderators: ShieldLock,
+    categories: ListUl,
     groups: Collection,
-    'categories-visibility': Eye,
     identifiers: Tag,
+    moderators: ShieldLock,
     reassign: ArrowLeftRight,
 };
 
@@ -66,48 +51,12 @@ export function ConsoleSidebar({
     onSelect,
     attentionCount,
     badgeDegraded = false,
-    categories,
-    selectedCategoryId,
-    onSelectCategory,
 }: Props) {
-    // The per-category picker only matters when a category-scoped pane is
-    // open — every per-category pane (including Minimum time) shares it.
-    const activeIsCategoryScoped =
-        groups.flatMap((g) => g.items).find((it) => it.id === activeItem)
-            ?.categoryScoped ?? false;
-
     return (
         <nav aria-label="Game admin console">
             {groups.map((group) => (
                 <div key={group.id} className={styles.navGroup}>
                     <div className={styles.groupLabel}>{group.label}</div>
-
-                    {group.id === 'per-category' &&
-                        activeIsCategoryScoped &&
-                        categories.length > 0 && (
-                            <div className={styles.pickerWrap}>
-                                <select
-                                    className={styles.picker}
-                                    aria-label="Category"
-                                    value={selectedCategoryId ?? ''}
-                                    onChange={(e) => {
-                                        const id = Number.parseInt(
-                                            e.target.value,
-                                            10,
-                                        );
-                                        if (Number.isFinite(id)) {
-                                            onSelectCategory(id);
-                                        }
-                                    }}
-                                >
-                                    {categories.map((c) => (
-                                        <option key={c.id} value={c.id}>
-                                            {c.display}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        )}
 
                     {group.items.map((item) => {
                         const Icon = NAV_ICON[item.id];

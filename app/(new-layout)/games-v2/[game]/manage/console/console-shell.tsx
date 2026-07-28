@@ -28,7 +28,6 @@ import {
     sidebarActiveItem as deriveSidebarActiveItem,
     type NavFlags,
     type NavItemId,
-    resolveCategoryId,
     resolveInitialPane,
     showSetupCard,
 } from './nav-model';
@@ -158,36 +157,6 @@ export function ConsoleShell({
         }
     }, [searchParams, router, game.name]);
 
-    // A valid `?cat=` deep-link seeds the selection on mount (a refresh
-    // mid-edit of, say, "Rules — 100%" returns to 100%, not the server's
-    // computed default); an absent/invalid one falls back to
-    // `initialCategoryId`.
-    const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
-        () =>
-            resolveCategoryId(
-                searchParams.get('cat'),
-                categories,
-                initialCategoryId,
-            ),
-    );
-
-    // Browser Back/Forward (or a fresh `?cat=` deep link) restores the
-    // category a history entry was showing — but only when that entry's URL
-    // actually names one. Category-scoped navigation always writes `cat`
-    // alongside `pane` (see handleNavigate/onSelectCategory/onEditCategory
-    // below), so every history entry for a category-scoped pane carries it;
-    // entries for non-category-scoped panes simply don't, which must NOT be
-    // read as "reset to the default category" — that would blow away the
-    // selection the moment the viewer glances at an unrelated pane like
-    // Moderators.
-    useEffect(() => {
-        const requested = searchParams.get('cat');
-        if (requested == null) return;
-        setSelectedCategoryId((prev) =>
-            resolveCategoryId(requested, categories, prev),
-        );
-    }, [searchParams, categories]);
-
     const [rows, setRows] = useState<ManageCategoryRow[]>(initialRows);
     const [manageGroups, setManageGroups] =
         useState<ManageGroup[]>(initialGroups);
@@ -282,11 +251,6 @@ export function ConsoleShell({
         }
     }, [searchParams]);
 
-    const selectedCategory = useMemo<ResolvedCategory | null>(
-        () => categories.find((c) => c.id === selectedCategoryId) ?? null,
-        [categories, selectedCategoryId],
-    );
-
     const applyRowPatch = useCallback(
         (categoryId: number, patch: { isMain?: boolean; active?: boolean }) => {
             setRows((rs) =>
@@ -341,35 +305,11 @@ export function ConsoleShell({
             return;
         }
         // Every other pane switch is a real destination, not a
-        // normalization — push so Back retraces panes one switch at a time
-        // (requirement 2). Category-scoped panes carry the current
-        // selection along as `cat=` so a refresh, share, or Back/Forward
-        // lands on the same category the viewer was editing.
-        const item = groups.flatMap((g) => g.items).find((it) => it.id === id);
-        const params = new URLSearchParams();
-        params.set('pane', id);
-        if (item?.categoryScoped && selectedCategoryId != null) {
-            params.set('cat', String(selectedCategoryId));
-        }
-        router.push(`?${params.toString()}`, { scroll: false });
+        // normalization — push so Back retraces panes one switch at a time.
+        // No `cat=` any more: per-category work lives on its own route
+        // (/manage/category/[id]), so a pane no longer carries a selection.
+        router.push(`?pane=${id}`, { scroll: false });
         setActiveItem(id);
-    };
-
-    // The category picker only renders while a category-scoped pane is
-    // active (console-sidebar.tsx), so `activeItem` here is always that
-    // pane. Kept as `replace` rather than `push`: picking through categories
-    // within the same pane is a filter refinement, not a new destination —
-    // mirrors the roster page's own category select, which is also
-    // `replace` (roster-view.tsx). The pane itself is still push-navigable
-    // via handleNavigate; this only ever rewrites `cat`.
-    const handleSelectCategory = (id: number) => {
-        setSelectedCategoryId(id);
-        if (activeItem) {
-            const params = new URLSearchParams(searchParams);
-            params.set('pane', activeItem);
-            params.set('cat', String(id));
-            router.replace(`?${params.toString()}`, { scroll: false });
-        }
     };
 
     // The sidebar highlight for Reports vs. Needs attention is derived, not
@@ -380,11 +320,6 @@ export function ConsoleShell({
     const activeSidebarItem = useMemo(
         () => deriveSidebarActiveItem(activeItem, searchParams.get('kind')),
         [activeItem, searchParams],
-    );
-
-    const categoryOptions = useMemo(
-        () => categories.map((c) => ({ id: c.id, display: c.display })),
-        [categories],
     );
 
     // Focus + announce the pane heading on every switch after the initial
@@ -423,9 +358,6 @@ export function ConsoleShell({
                 attentionCount={liveAttentionCount}
                 badgeDegraded={degradedSources.length > 0}
                 moderatedGamesCount={moderatedGamesCount}
-                categories={categoryOptions}
-                selectedCategoryId={selectedCategoryId}
-                onSelectCategory={handleSelectCategory}
             >
                 {hasNewAttention && (
                     <div className={styles.liveBanner} role="status">
@@ -467,8 +399,6 @@ export function ConsoleShell({
                 <ContentRouter
                     activeItem={activeItem}
                     game={game}
-                    categories={categoryOptions}
-                    selectedCategory={selectedCategory}
                     canEditStandards={flags.canEditStandards}
                     gameDetails={gameDetails}
                     attentionItems={attentionItems}
@@ -492,20 +422,12 @@ export function ConsoleShell({
                         )
                     }
                     onEditCategory={(id) => {
-                        // A deliberate jump to a specific category's
-                        // settings (e.g. an "Edit" click from the
-                        // categories table) — pushed, like handleNavigate,
-                        // so Back returns to the table instead of skipping
-                        // over this stop. `cat` travels with `pane` so a
-                        // refresh doesn't lose place.
-                        setSelectedCategoryId(id);
-                        const params = new URLSearchParams();
-                        params.set('pane', 'category-settings');
-                        params.set('cat', String(id));
-                        router.push(`?${params.toString()}`, {
-                            scroll: false,
-                        });
-                        setActiveItem('category-settings');
+                        // A deliberate jump to one category's configuration.
+                        // That is now its own route rather than a pane +
+                        // `cat=`, so Back returns to the index cleanly.
+                        router.push(
+                            `/games-v2/${game.name}/manage/category/${id}`,
+                        );
                     }}
                 />
             </ConsoleChrome>
