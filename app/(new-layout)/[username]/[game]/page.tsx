@@ -1,4 +1,5 @@
 import { cacheLife } from 'next/cache';
+import { notFound } from 'next/navigation';
 import RunDetail from '~app/(new-layout)/[username]/[game]/[run]/run';
 import { getGameGlobal } from '~src/components/game/get-game';
 import { getRunByCustomUrl } from '~src/lib/get-run';
@@ -17,12 +18,16 @@ export default async function CustomRunPage(props: PageProps) {
     const customUrl: string = params.game as string;
 
     const run = await getRunByCustomUrl(username, customUrl);
-    const game = run.game;
+    // The guard used to sit below these reads, so every miss — mostly bots
+    // probing for /server/.env and friends, which land here as
+    // /{username}/{customUrl} — crashed on `run.game` before reaching it.
+    if (!run) notFound();
+
+    // Older records carry `game: null`; displayRun keeps "Game#Category".
+    const game = run.game || run.displayRun?.split('#')[0] || '';
     const runName = run.run;
 
-    const globalGameData = await getGameGlobal(run.game);
-
-    if (!run) throw new Error('Could not find run');
+    const globalGameData = await getGameGlobal(game);
 
     const liveData = await getLiveRunForUser(username);
 

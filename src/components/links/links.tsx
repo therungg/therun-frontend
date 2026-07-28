@@ -135,7 +135,13 @@ export const GameCategoryLink = ({
     );
 };
 
-export const display = (subject: string): string => {
+// Tolerates a missing subject on purpose. Run records predating the game
+// column carry `game: null` despite the type claiming otherwise, and
+// UserGameCategoryLink's own empty-state branch feeds this the very values it
+// just checked for. Both used to take the whole page down with a TypeError.
+export const display = (subject: string | null | undefined): string => {
+    if (!subject) return '';
+
     return subject
         .replace(/&nbsp;/gi, ' ')
         .replace(/&amp;/gi, '&')
