@@ -18,7 +18,10 @@ export async function GET(request: NextRequest) {
 
     result.runs = result.runs.filter((run) => !!run.pb || !!run.pbgt);
 
+    // Keyed by `q`, and findUserOrRun is cached for minutes regardless — the
+    // uncached response meant every keystroke re-ran the search backend.
     return apiResponse({
         body: result,
+        cache: { maxAge: 60, swr: 600 },
     });
 }

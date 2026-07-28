@@ -15,10 +15,14 @@ export async function GET(
 
     const result = await getUserRuns(user);
 
+    // Consumed by third-party overlays, not by the site itself (profile pages
+    // render through getUserRuns directly). At maxAge 60 the CDN entry expired
+    // faster than pollers hit it, so ~30 revalidations/min per popular user
+    // reached a function. PB data does not change minute to minute.
     return apiResponse({
         body: result,
         cache: {
-            maxAge: 60,
+            maxAge: 300,
             swr: 1500,
         },
     });

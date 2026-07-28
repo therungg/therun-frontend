@@ -70,7 +70,10 @@ export const getTopNLiveRuns = async (n = 5): Promise<LiveRun[]> => {
     'use cache: remote';
     // Backup-polled by every open frontpage tab (use-run-refresh).
     cacheLife({ stale: 5, revalidate: 15, expire: 120 });
-    const result = await fetch(`${LIVE_RUN_URL}?limit=${n}`);
+    // minify is essential here, not an optimisation: unminified this response
+    // reached 2.7 MB, over the 2 MB runtime-cache item limit, so every write
+    // 413'd and this key never cached at all. Same shape getAllLiveRuns uses.
+    const result = await fetch(`${LIVE_RUN_URL}?limit=${n}&minify=true`);
 
     return (await result.json()).result;
 };
