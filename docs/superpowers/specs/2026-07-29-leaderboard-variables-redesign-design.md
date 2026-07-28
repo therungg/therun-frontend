@@ -224,8 +224,15 @@ Three additions. No schema change, no migration.
 
 **5.1 Dry-run preview**
 
+Delivered as a **`?dryRun=1` mode on the existing variables route**, not a new path. The
+`api` CDK stack sits at 496 of 500 CloudFormation resources, so a new API Gateway resource
+is a deploy risk for no benefit: `POST|DELETE /v1/games/{gameId}/variables` already exists,
+already authenticates, and already validates the exact body shape the preview needs. The
+handler returns the preview and writes nothing when the flag is set.
+
 ```
-POST /v1/games/{gameId}/variables/preview     (auth: category-settings for this game)
+POST   /v1/games/{gameId}/variables?dryRun=1    (auth: unchanged — edit-customizations)
+DELETE /v1/games/{gameId}/variables?dryRun=1    (preview a delete)
 
 body: {
   categoryId: number | null,        // scope of the proposed definition; null = game-wide
