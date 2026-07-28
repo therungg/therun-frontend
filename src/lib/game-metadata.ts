@@ -11,6 +11,8 @@ export const EMPTY_GAME_METADATA: GameMetadata = {
     discordUrl: null,
     configured: false,
     summary: null,
+    summaryOverride: null,
+    igdbUrl: null,
     firstReleaseDate: null,
     seriesDisplay: null,
     genres: [],
