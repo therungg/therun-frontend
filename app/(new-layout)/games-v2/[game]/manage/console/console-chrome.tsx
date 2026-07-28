@@ -23,9 +23,6 @@ interface Props {
     /** How many games this viewer moderates — the "All your games" link to
      * the cross-game hub only shows when there's more than one. */
     moderatedGamesCount?: number;
-    categories: Array<{ id: number; display: string }>;
-    selectedCategoryId: number | null;
-    onSelectCategory: (id: number) => void;
     children: ReactNode;
 }
 
@@ -43,9 +40,6 @@ export function ConsoleChrome({
     attentionCount,
     badgeDegraded = false,
     moderatedGamesCount = 0,
-    categories,
-    selectedCategoryId,
-    onSelectCategory,
     children,
 }: Props) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -150,10 +144,7 @@ export function ConsoleChrome({
                         onSelect={handleSelect}
                         attentionCount={attentionCount}
                         badgeDegraded={badgeDegraded}
-                        categories={categories}
-                        selectedCategoryId={selectedCategoryId}
-                        onSelectCategory={onSelectCategory}
-                    />
+                                            />
                 </aside>
 
                 <section className={styles.content}>{children}</section>

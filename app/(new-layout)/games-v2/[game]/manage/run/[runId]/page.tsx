@@ -55,7 +55,6 @@ export default async function GameRunManagePage({ params }: Props) {
     return (
         <SubrouteChrome
             game={game}
-            categories={chrome.categories}
             flags={chrome.flags}
             attentionCount={chrome.attentionCount}
             badgeDegraded={chrome.degradedSources.length > 0}
