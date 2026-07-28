@@ -167,7 +167,7 @@ The heart of the dry-run. No DB, no IO — given the entries that exist today an
 - Test: `test/manual/integration/variables-preview.test.ts`
 
 **Interfaces:**
-- Consumes: `resolveRunVariables(userVars, defs, opts)` from `src/leaderboards/resolve-run-variables` returning `{ rawVariables, variables, subcategoryKey, warnings }`; `VariableRow` from `src/services/leaderboard-variables-service`; `normalizeVariableString` from `src/common/normalizeVariable`.
+- Consumes: `resolveRunVariables(userVars, defs, opts)`, `applyEntityFallbacks(variables, entity, defs)` and the `RunEntityAttributes` type from `src/leaderboards/resolve-run-variables`; `VariableRow` from `src/services/leaderboard-variables-service`; `normalizeVariableString` from `src/common/normalizeVariable`.
 - Produces:
   - `interface EntrySnapshot { subcategoryKey: string; sourceVariables: Record<string, unknown> }`
   - `interface BoardMovement { key: string; label: string; before: number; after: number }`
@@ -286,7 +286,11 @@ Create `src/leaderboards/variables/preview-movement.ts`:
 ```typescript
 import { normalizeVariableString } from "../../common/normalizeVariable";
 import { VariableRow } from "../../services/leaderboard-variables-service";
-import { resolveRunVariables } from "../resolve-run-variables";
+import {
+    applyEntityFallbacks,
+    resolveRunVariables,
+    type RunEntityAttributes,
+} from "../resolve-run-variables";
 
 /** One leaderboard entry as it exists today, plus the variables it resolves from. */
 export interface EntrySnapshot {
@@ -294,6 +298,16 @@ export interface EntrySnapshot {
     subcategoryKey: string;
     /** Parent speedrun_runs.variables, or the row's own raw_variables. */
     sourceVariables: Record<string, unknown>;
+    /**
+     * The run's platform/emulator/gameRegion columns. Resolution falls back to
+     * these when `variables` doesn't set the matching variable.
+     */
+    entity: RunEntityAttributes;
+}
+
+export interface PlanOptions {
+    /** Current valid-combination set; null/absent means every combo is valid. */
+    validCombinations?: Set<string> | null;
 }
 
 export interface BoardMovement {
@@ -339,6 +353,7 @@ export function labelForKey(key: string, defs: VariableRow[]): string {
 export function planMovement(
     entries: EntrySnapshot[],
     proposedDefs: VariableRow[],
+    opts: PlanOptions = {},
 ): MovementResult {
     const before = new Map<string, number>();
     const after = new Map<string, number>();
@@ -348,7 +363,15 @@ export function planMovement(
     for (const e of entries) {
         before.set(e.subcategoryKey, (before.get(e.subcategoryKey) ?? 0) + 1);
 
-        const resolved = resolveRunVariables(e.sourceVariables, proposedDefs);
+        // The same wrapping every production caller uses. Calling
+        // resolveRunVariables bare type-checks and returns plausible numbers,
+        // which is exactly why it has to be spelled out: without it the preview
+        // disagrees with the rebuild it is supposed to predict.
+        const resolved = resolveRunVariables(
+            applyEntityFallbacks(e.sourceVariables, e.entity, proposedDefs),
+            proposedDefs,
+            { validCombinations: opts.validCombinations ?? null },
+        );
         after.set(
             resolved.subcategoryKey,
             (after.get(resolved.subcategoryKey) ?? 0) + 1,
@@ -422,6 +445,7 @@ import {
     VariableRow,
 } from "../../services/leaderboard-variables-service";
 import { pickProjectionSource } from "../resolve-run-variables";
+import { getValidCombinationsSet } from "../../services/valid-combinations-service";
 import {
     BoardMovement,
     EntrySnapshot,
@@ -519,6 +543,12 @@ async function loadEntries(
             subcategoryKey: finishedRuns.subcategoryKey,
             rawVariables: finishedRuns.rawVariables,
             parentVariables: speedrunRuns.variables,
+            runId: finishedRuns.runId,
+            ownPlatform: finishedRuns.platform,
+            ownEmulator: finishedRuns.emulator,
+            parentPlatform: speedrunRuns.platform,
+            parentEmulator: speedrunRuns.emulator,
+            parentGameRegion: speedrunRuns.gameRegion,
         })
         .from(finishedRuns)
         .leftJoin(speedrunRuns, eq(finishedRuns.runId, speedrunRuns.id))
@@ -537,9 +567,18 @@ async function loadEntries(
     return rows.map((r) => ({
         subcategoryKey: r.subcategoryKey ?? "",
         sourceVariables: pickProjectionSource(
-            r.parentVariables as Record<string, unknown> | null,
+            r.runId !== null
+                ? (r.parentVariables as Record<string, unknown> | null)
+                : null,
             r.rawVariables as Record<string, unknown> | null,
         ),
+        // Parent wins when there is one, mirroring the rebuild. A parentless
+        // row (guest submit, manual time) uses its own columns.
+        entity: {
+            platform: r.runId !== null ? r.parentPlatform : r.ownPlatform,
+            emulator: r.runId !== null ? r.parentEmulator : r.ownEmulator,
+            gameRegion: r.runId !== null ? r.parentGameRegion : null,
+        },
     }));
 }
 
@@ -577,8 +616,11 @@ export async function previewVariableChange(args: {
             args.proposed,
             args.nameNormalized,
         );
+        const validCombos = await getValidCombinationsSet(args.gameId, id);
         const entries = await loadEntries(args.gameId, id);
-        const result = planMovement(entries, defs);
+        const result = planMovement(entries, defs, {
+            validCombinations: validCombos,
+        });
         moved += result.moved;
         unresolved += result.unresolved;
         // Categories where nothing moves are noise in the dialog.
