@@ -5,6 +5,10 @@ import { toast } from 'react-toastify';
 import { assignCategoryGroupAction } from '~src/actions/category-group/assign-category-group.action';
 import { createGroupAction } from '~src/actions/category-group/create-group.action';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
+import {
+    type CategoryConfigRow,
+    disagreementsByColumn,
+} from '~src/lib/console/category-rows';
 import { formatCount, formatHours } from '~src/utils/format-stats';
 import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
 import { effectiveSortKey } from '../../category-sort';
@@ -32,6 +36,8 @@ function toggleLabel(field: 'isMain' | 'active', value: boolean): string {
 interface Props {
     game: ResolvedGame;
     rows: ManageCategoryRow[];
+    /** Per-category configuration, keyed by id — the matrix columns. */
+    config: CategoryConfigRow[];
     groups: ManageGroup[];
     onRowChange: (
         categoryId: number,
@@ -50,6 +56,7 @@ interface Props {
 export function CategoriesTable({
     game,
     rows,
+    config,
     groups,
     onRowChange,
     onRowGroupChange,
@@ -58,6 +65,15 @@ export function CategoriesTable({
     onEdit,
 }: Props) {
     const [pendingIds, setPendingIds] = useState<Set<number>>(new Set());
+
+    // The matrix half of this table. `differs` is computed once for the whole
+    // board — never per row — and answers "which category is the odd one out"
+    // for each column. See src/lib/console/agreement.ts.
+    const configById = useMemo(
+        () => new Map(config.map((c) => [c.id, c])),
+        [config],
+    );
+    const differs = useMemo(() => disagreementsByColumn(config), [config]);
     const [filter, setFilter] = useState<Filter>('all');
     const [query, setQuery] = useState('');
     const [_isPending, startTransition] = useTransition();
@@ -554,6 +570,11 @@ export function CategoriesTable({
                                     <th className="text-end">Runs</th>
                                     <th className="text-end">Runners</th>
                                     <th className="text-end">Playtime</th>
+                                    <th className="text-center">Timing</th>
+                                    <th className="text-end">Minimum</th>
+                                    <th className="text-center">Rules</th>
+                                    <th className="text-center">Proof</th>
+                                    <th className="text-end">Sub-boards</th>
                                     <th className="text-center">Featured</th>
                                     <th className="text-center">Archived</th>
                                     <th />
@@ -743,6 +764,10 @@ export function CategoriesTable({
                                             <td className="text-end">
                                                 {formatHours(row.totalRunTime)}h
                                             </td>
+                                            <ConfigCells
+                                                cfg={configById.get(row.id)}
+                                                differs={differs}
+                                            />
                                             <td className="text-center">
                                                 <input
                                                     type="checkbox"
@@ -824,4 +849,83 @@ export function CategoriesTable({
             />
         </section>
     );
+}
+
+/**
+ * The five configuration columns. Split out so the row body stays readable;
+ * `differs` is precomputed for the whole board by the caller.
+ */
+function ConfigCells({
+    cfg,
+    differs,
+}: {
+    cfg: CategoryConfigRow | undefined;
+    differs: ReturnType<typeof disagreementsByColumn>;
+}) {
+    if (!cfg) {
+        return (
+            <>
+                <td className="text-center text-muted">—</td>
+                <td className="text-end text-muted">—</td>
+                <td className="text-center text-muted">—</td>
+                <td className="text-center text-muted">—</td>
+                <td className="text-end text-muted">—</td>
+            </>
+        );
+    }
+    return (
+        <>
+            <td className="text-center">
+                {cfg.timing === 'gametime' ? 'IGT' : 'RTA'}
+                <Outlier on={differs.timing.has(cfg.id)} />
+            </td>
+            <td className="text-end">
+                {formatMinimum(cfg.minTimeMs)}
+                <Outlier on={differs.minimum.has(cfg.id)} />
+            </td>
+            <td className="text-center">
+                {cfg.hasRules ? '\u2713' : '\u2014'}
+                <Outlier on={differs.rules.has(cfg.id)} />
+            </td>
+            <td className="text-center">
+                {proofLabel(cfg)}
+                <Outlier on={differs.proof.has(cfg.id)} />
+            </td>
+            <td className="text-end">
+                {cfg.subBoards}
+                <Outlier on={differs.subBoards.has(cfg.id)} />
+            </td>
+        </>
+    );
+}
+
+function Outlier({ on }: { on: boolean }) {
+    if (!on) return null;
+    return (
+        <span
+            className={`ms-1 ${styles.outlier}`}
+            title="Differs from the rest of the board"
+            aria-label="differs from the rest of the board"
+        >
+            {'\u25B2'}
+        </span>
+    );
+}
+
+/** Board minimum as h:mm:ss / m:ss. Null renders as unset, never as 0. */
+export function formatMinimum(ms: number | null): string {
+    if (ms == null) return '\u2014';
+    const total = Math.round(ms / 1000);
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const sec = total % 60;
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return h > 0 ? `${h}:${pad(m)}:${pad(sec)}` : `${m}:${pad(sec)}`;
+}
+
+function proofLabel(cfg: CategoryConfigRow): string {
+    if (!cfg.requireVideo) return 'none';
+    return cfg.requireVideoTopN == null
+        ? 'all'
+        : `top ${cfg.requireVideoTopN}`;
 }

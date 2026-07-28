@@ -9,3 +9,11 @@
     top: dt.$spacing-sm;
     z-index: dt.$z-sticky;
 }
+
+// The "odd one out" marker in the configuration columns. Deliberately quiet:
+// it flags a difference, it does not assert a problem.
+.outlier {
+    color: var(--bs-warning-text-emphasis, #997404);
+    font-size: 0.7em;
+    vertical-align: middle;
+}
