@@ -91,6 +91,10 @@
 // the cover's left edge rather than floating loose at the top of the page.
 .heroBack {
     margin-bottom: dt.$spacing-md;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
 }
 
 .heroRow {
