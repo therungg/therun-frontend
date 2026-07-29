@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
     buildNav,
-    defaultItem,
     isLandingPaneId,
     type NavFlags,
     resolveInitialPane,
@@ -76,25 +75,6 @@ describe('buildNav', () => {
     });
 });
 
-describe('defaultItem', () => {
-    it('skips the setup wizard — it navigates away instead of rendering a pane', () => {
-        const groups = buildNav({ ...NO_FLAGS, canConfigure: true });
-        // 'setup' is first in the Game group, which is this viewer's first
-        // group; the landing pane must be the first item that can render.
-        expect(defaultItem(groups)).toBe('game-details');
-    });
-
-    it('lands a moderator on Needs attention', () => {
-        expect(defaultItem(buildNav({ ...NO_FLAGS, canModerate: true }))).toBe(
-            'attention',
-        );
-    });
-
-    it('returns null when the viewer has no items at all', () => {
-        expect(defaultItem(buildNav(NO_FLAGS))).toBeNull();
-    });
-});
-
 describe('showSetupCard', () => {
     it('shows on a Board-group pane', () => {
         const groups = buildNav({ ...NO_FLAGS, canConfigure: true });
@@ -102,30 +82,22 @@ describe('showSetupCard', () => {
         expect(showSetupCard(groups, 'groups')).toBe(true);
     });
 
-    it("shows on this viewer's default landing pane even outside the game group", () => {
-        const groups = buildNav({ ...NO_FLAGS, canModerate: true });
-        // Landing pane for a moderator is 'attention' (moderate group is first).
-        expect(showSetupCard(groups, 'attention')).toBe(true);
-    });
-
     it('hides on a non-default triage pane', () => {
         const groups = buildNav({ ...NO_FLAGS, canModerate: true });
         expect(showSetupCard(groups, 'bans')).toBe(false);
     });
 
-    it('hides on a triage pane that is not the landing default', () => {
-        const groups = buildNav({
-            ...NO_FLAGS,
-            canModerate: true,
-            canConfigure: true,
-        });
-        // Landing pane is 'attention' (moderate group first); 'bans' is
-        // neither that nor a board pane, so the nag stays out of the queue.
-        expect(showSetupCard(groups, 'bans')).toBe(false);
+    it('shows on the tile grid — the front door is where a setup nag belongs', () => {
+        expect(showSetupCard([], null)).toBe(true);
+        expect(
+            showSetupCard(buildNav({ ...NO_FLAGS, canModerate: true }), null),
+        ).toBe(true);
     });
 
-    it('shows when nothing is active yet', () => {
-        expect(showSetupCard([], null)).toBe(true);
+    it('stays out of every triage pane now that none of them is a default', () => {
+        const groups = buildNav({ ...NO_FLAGS, canModerate: true });
+        expect(showSetupCard(groups, 'attention')).toBe(false);
+        expect(showSetupCard(groups, 'bans')).toBe(false);
     });
 
     it('hides when the game group does not exist for this viewer', () => {
@@ -174,47 +146,35 @@ describe('resolveInitialPane', () => {
     const groups = buildNav({ ...NO_FLAGS, canModerate: true });
 
     it('a valid ?pane= deep link wins outright', () => {
-        expect(resolveInitialPane('bans', 'attention', groups)).toBe('bans');
+        expect(resolveInitialPane('bans', groups)).toBe('bans');
     });
 
-    it('falls back to the stored pane when the URL carries none', () => {
-        expect(resolveInitialPane(null, 'bans', groups)).toBe('bans');
+    it('a bare URL lands on the tile grid, not a default pane', () => {
+        expect(resolveInitialPane(null, groups)).toBeNull();
     });
 
-    it('ignores an invalid stored pane and falls back to the default', () => {
-        expect(resolveInitialPane(null, 'not-a-pane', groups)).toBe(
-            'attention',
-        );
+    it('an unrecognised ?pane= lands on the tile grid', () => {
+        expect(resolveInitialPane('not-a-pane', groups)).toBeNull();
     });
 
-    it('the URL always wins over a conflicting stored pane', () => {
-        expect(resolveInitialPane('bans', 'attention', groups)).toBe('bans');
+    it('a pane this viewer cannot see lands on the tile grid', () => {
+        // 'game-details' needs canConfigure, which this viewer lacks.
+        expect(resolveInitialPane('game-details', groups)).toBeNull();
     });
 
-    it('an invalid ?pane= falls through to the default, not the stored pane — storage is only consulted when the URL carries none', () => {
-        expect(resolveInitialPane('not-a-pane', 'bans', groups)).toBe(
-            'attention',
-        );
+    it('rejects overlay and redirect ids', () => {
+        expect(resolveInitialPane('history', groups)).toBeNull();
+        expect(resolveInitialPane('roster', groups)).toBeNull();
+        expect(resolveInitialPane('reports', groups)).toBeNull();
     });
 
-    it('rejects overlay/redirect ids from both the URL and storage', () => {
-        expect(resolveInitialPane('history', 'reports', groups)).toBe(
-            'attention',
-        );
-    });
-
-    it('rejects setup from both the URL and storage', () => {
+    it('rejects the setup wizard — a hand-typed ?pane=setup must not select it', () => {
         const configurerGroups = buildNav({ ...NO_FLAGS, canConfigure: true });
-        expect(resolveInitialPane('setup', null, configurerGroups)).toBe(
-            'game-details',
-        );
-        expect(resolveInitialPane(null, 'setup', configurerGroups)).toBe(
-            'game-details',
-        );
+        expect(resolveInitialPane('setup', configurerGroups)).toBeNull();
     });
 
-    it('falls back to the default landing pane when nothing is valid', () => {
-        expect(resolveInitialPane(null, null, groups)).toBe('attention');
+    it('lands a viewer with no visible items on the tile grid', () => {
+        expect(resolveInitialPane(null, buildNav(NO_FLAGS))).toBeNull();
     });
 });
 
@@ -231,8 +191,8 @@ describe('nav shape', () => {
         expect(buildNav(ALL).map((g) => g.id)).toEqual(['moderate', 'board']);
     });
 
-    it('shows twelve items to a fully privileged viewer', () => {
-        expect(buildNav(ALL).flatMap((g) => g.items)).toHaveLength(12);
+    it('shows eleven items to a fully privileged viewer', () => {
+        expect(buildNav(ALL).flatMap((g) => g.items)).toHaveLength(11);
     });
 
     it('orders the board group to match the wizard', () => {
