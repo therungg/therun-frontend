@@ -446,6 +446,9 @@ export function ConsoleShell({
                     onAttentionCountChange={setLiveAttentionCount}
                     rows={rows}
                     groups={manageGroups}
+                    navGroups={groups}
+                    onNavigate={handleNavigate}
+                    attentionCount={liveAttentionCount}
                     onGroupsChange={setManageGroups}
                     onRowChange={applyRowPatch}
                     onRowsReorder={applyRowsReorder}

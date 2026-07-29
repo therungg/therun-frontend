@@ -630,3 +630,66 @@ $rail: 3px; // severity spine / active accent width
 .setupStepSummary {
     color: var(--bs-secondary-color);
 }
+
+// ---- Tile grid (the console front door) --------------------
+// Deliberately lighter than the overview `plaque` cards: those carry record
+// times and podium rows, and a one-sentence tile at that weight would read
+// as a row of empty boxes.
+
+.tileGroups {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xl;
+}
+
+.tileGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: dt.$spacing-md;
+    margin-top: dt.$spacing-sm;
+}
+
+.tile {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    width: 100%;
+    text-align: left;
+    padding: dt.$spacing-lg;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-lg;
+    background: transparent;
+    color: inherit;
+    transition:
+        border-color 0.15s ease,
+        background 0.15s ease;
+
+    &:hover {
+        border-color: rgba(var(--bs-primary-rgb), 0.5);
+        background: rgba(var(--bs-primary-rgb), 0.04);
+    }
+}
+
+.tileTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-sm;
+    margin-bottom: dt.$spacing-xs;
+}
+
+.tileIcon {
+    flex-shrink: 0;
+    color: var(--bs-primary);
+    opacity: 0.85;
+}
+
+.tileAction {
+    font-weight: 600;
+}
+
+.tileBlurb {
+    font-size: dt.$font-size-sm;
+    line-height: 1.4;
+    color: var(--bs-secondary-color);
+}

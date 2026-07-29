@@ -29,7 +29,8 @@ import styles from './console.module.scss';
 import type { GameDetailsData } from './game-details-pane';
 import { GameDetailsPane } from './game-details-pane';
 import { ModeratorsPane } from './moderators-pane';
-import type { NavItemId } from './nav-model';
+import type { NavGroup, NavItemId } from './nav-model';
+import { TileGrid } from './tile-grid';
 
 export interface ContentRouterProps {
     activeItem: NavItemId | null;
@@ -46,6 +47,13 @@ export interface ContentRouterProps {
     gameDetails?: GameDetailsData | null;
     rows: ManageCategoryRow[];
     groups: ManageGroup[];
+    /** Permission-filtered console nav, for the tile grid. Distinct from
+     * `groups`, which is the category-grouping model. */
+    navGroups: NavGroup[];
+    /** Pane switcher, shared with the sidebar — the tile grid calls it too. */
+    onNavigate: (id: NavItemId) => void;
+    /** Live attention total for the grid's badge. */
+    attentionCount: number;
     onGroupsChange: (g: ManageGroup[]) => void;
     onRowChange: (
         categoryId: number,
@@ -86,6 +94,8 @@ export function ContentRouter(props: ContentRouterProps) {
         degradedSources,
         modApplications,
         moderators,
+        onNavigate,
+        attentionCount,
     } = props;
 
     switch (activeItem) {
@@ -167,6 +177,16 @@ export function ContentRouter(props: ContentRouterProps) {
                     // sidebar picker is gone and per-category work lives on
                     // its own route. Reassign picks its own source.
                     selectedCategory={null}
+                />
+            );
+        case null:
+            return (
+                <TileGrid
+                    groups={props.navGroups}
+                    onNavigate={onNavigate}
+                    attentionCount={attentionCount}
+                    badgeDegraded={degradedSources.length > 0}
+                    pendingApplications={modApplications?.length ?? 0}
                 />
             );
         default:
