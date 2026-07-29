@@ -93,9 +93,6 @@ export default async function GameAdminConsolePage({ params }: Props) {
     const categoryName = (id: number) =>
         categoryById.get(id) ?? `Category ${id}`;
 
-    const initialCategory =
-        categories.find((c) => !c.archived) ?? categories[0] ?? null;
-
     const [identifiers, rawRows, groups, queueRes, reportsRes, manualTimesRes] =
         await Promise.all([
             getGameIdentifiers(game.id).catch(() => ({
