@@ -33,7 +33,7 @@ function readState(category: ResolvedCategory | null): State {
 }
 
 /**
- * Proof & review — the wizard's own name for this (step-defaults.tsx:335).
+ * Proof & review — the name the wizard uses too, on step 1 (board defaults).
  *
  * It used to be two fields inside the catch-all "Category Settings" pane,
  * which is why a mod who set it during setup could never find it again. It

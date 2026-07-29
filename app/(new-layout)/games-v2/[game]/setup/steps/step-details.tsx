@@ -38,7 +38,7 @@ export function StepDetails({ data, onAdvance }: StepProps) {
     >(data.metadata.emulatorPolicy ?? null);
 
     // Game-wide minimum time = the categoryId-null min_time policy (mirrors
-    // step-defaults.tsx). The bound key follows `timing`, never both.
+    // the retired defaults step). The bound key follows `timing`, never both.
     const gameMinPolicy = findGameMinPolicy(data.policies);
     const [minPolicyId, setMinPolicyId] = useState<number | null>(
         gameMinPolicy?.id ?? null,

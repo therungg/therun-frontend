@@ -1,24 +1,139 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useId, useMemo, useState, useTransition } from 'react';
 import { Check2, Dot } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import Link from '~src/components/link';
+import {
+    findCategoryMinPolicy,
+    findGameMinPolicy,
+    minMsFromPolicy,
+} from '~src/lib/setup/game-minimum';
 import { SETUP_STEP_LABELS } from '~src/lib/setup/steps';
 import type {
     BoardModRole,
     GameModerator,
 } from '../../../../../../types/board-claims.types';
+import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
 import {
     addGameModeratorAction,
     removeGameModeratorAction,
 } from '../actions/manage-moderators.action';
 import { setGameConfiguredAction } from '../actions/set-configured.action';
+import {
+    CategoryLeaderboardPreview,
+    type PreviewDraft,
+} from '../category-leaderboard-preview';
 import styles from '../setup.module.scss';
-import type { StepProps } from '../types';
+import type { StepProps, WizardData } from '../types';
 import { StepHeader } from './step-header';
 
-export function StepFinish({ data }: StepProps) {
+/**
+ * Step 5: what the boards actually look like, then go live.
+ *
+ * The curation half is a read-only preview per featured category for now —
+ * the interactive BoardCuration (remove / correct / add a run) lands in the
+ * next commit and takes this slot. The go-live half moved here verbatim from
+ * the retired step 7.
+ */
+export function StepBoards({ data }: StepProps) {
+    return (
+        <section>
+            <StepHeader
+                step="boards"
+                title="Check the boards, then go live"
+                lede="This is what runners will see. Read each board top-down; anything wrong on it is worth fixing before you put it live."
+            />
+            <BoardPreview data={data} />
+            <GoLiveFooter data={data} />
+        </section>
+    );
+}
+
+/** Derives the preview's draft from saved state — nothing here is editable. */
+function draftFor(category: ResolvedCategory, data: WizardData): PreviewDraft {
+    const timing = category.primaryTiming === 'gt' ? 'gt' : 'rt';
+    const policy =
+        findCategoryMinPolicy(data.policies, category.id) ??
+        findGameMinPolicy(data.policies);
+    const minMs = minMsFromPolicy(policy, timing);
+    return {
+        primaryTiming: timing === 'gt' ? 'gametime' : 'realtime',
+        hideRealTime: category.hideRealTime ?? false,
+        hideGameTime: category.hideGameTime ?? false,
+        showMilliseconds: category.showMilliseconds ?? false,
+        minTimeMs: timing === 'rt' ? minMs : null,
+        minGameTimeMs: timing === 'gt' ? minMs : null,
+        requireVideo: category.requireVideo ?? false,
+    };
+}
+
+function BoardPreview({ data }: { data: WizardData }) {
+    const mains = useMemo(
+        () =>
+            data.categories
+                .filter((c) => !c.archived && (c.isMain ?? false))
+                .sort(
+                    (a, b) =>
+                        (a.sortOrder || Number.MAX_SAFE_INTEGER) -
+                            (b.sortOrder || Number.MAX_SAFE_INTEGER) ||
+                        a.display.localeCompare(b.display),
+                ),
+        [data.categories],
+    );
+    const [selectedId, setSelectedId] = useState<number | null>(
+        mains[0]?.id ?? null,
+    );
+    const selectId = useId();
+    const selected = mains.find((c) => c.id === selectedId) ?? mains[0] ?? null;
+
+    if (!selected) {
+        return (
+            <div className={styles.infoNote}>
+                Nothing to show yet — feature at least one category on step 2
+                and its board appears here.
+            </div>
+        );
+    }
+
+    return (
+        <div className={styles.section}>
+            {/* A select rather than a segmented control: a board can have a
+                dozen featured categories, and pills would run off the edge. */}
+            {mains.length > 1 && (
+                <label className={styles.fieldLabel} htmlFor={selectId}>
+                    Board
+                    <select
+                        id={selectId}
+                        className="form-select w-auto"
+                        value={selected.id}
+                        onChange={(e) => setSelectedId(Number(e.target.value))}
+                    >
+                        {mains.map((c) => (
+                            <option key={c.id} value={c.id}>
+                                {c.display}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+            )}
+            <CategoryLeaderboardPreview
+                key={selected.id}
+                gameSlug={data.game.name}
+                categorySlug={selected.name}
+                draft={draftFor(selected, data)}
+            />
+        </div>
+    );
+}
+
+/**
+ * Mod team + review + the one irreversible-feeling button in setup. Lifted
+ * from the retired finish step; the review list now derives its edit links
+ * from the five-step canon (the old exceptions special case is gone — the
+ * per-category step takes a `cat` of its own).
+ */
+function GoLiveFooter({ data }: { data: WizardData }) {
     const [mods, setMods] = useState<GameModerator[]>(data.moderators);
     const [username, setUsername] = useState('');
     const [role, setRole] = useState<BoardModRole>('game-mod');
@@ -29,11 +144,11 @@ export function StepFinish({ data }: StepProps) {
     // Revisiting a board that already went live: there's nothing left to
     // flip, so the step reads as a review instead of a launch.
     const alreadyLive =
-        data.completeness.steps.find((s) => s.step === 'finish')?.status ===
+        data.completeness.steps.find((s) => s.step === 'boards')?.status ===
         'done';
 
     const reviewSteps = data.completeness.steps.filter(
-        (s) => s.step !== 'finish',
+        (s) => s.step !== 'boards',
     );
     const blockers = reviewSteps.filter((s) => s.status === 'blocker');
     const warnings = reviewSteps.filter((s) => s.status === 'warning');
@@ -50,10 +165,15 @@ export function StepFinish({ data }: StepProps) {
         )[0];
 
     const editLinkFor = (s: (typeof reviewSteps)[number]) => {
-        if (s.step === 'exceptions' && s.status !== 'done') {
-            return firstUnconfiguredMain
-                ? `/games-v2/${data.game.name}/setup?step=exceptions&cat=${firstUnconfiguredMain.id}`
-                : `/games-v2/${data.game.name}/setup?step=exceptions`;
+        // An unfinished category-setup step means one specific category is
+        // missing rules — send the moderator into that category's editor
+        // rather than back to the hub to hunt for it.
+        if (
+            s.step === 'category-setup' &&
+            s.status !== 'done' &&
+            firstUnconfiguredMain
+        ) {
+            return `/games-v2/${data.game.name}/setup?step=category-setup&cat=${firstUnconfiguredMain.id}`;
         }
         return `/games-v2/${data.game.name}/setup?step=${s.step}`;
     };
@@ -128,7 +248,7 @@ export function StepFinish({ data }: StepProps) {
 
     if (done) {
         return (
-            <section className={`${styles.section} text-center py-5`}>
+            <div className={`${styles.section} text-center py-5`}>
                 <h2>Your board is live</h2>
                 <p className="text-muted">
                     Runs are on the board and your standards are active. Point
@@ -148,25 +268,18 @@ export function StepFinish({ data }: StepProps) {
                         View your board
                     </Link>
                 </div>
-            </section>
+            </div>
         );
     }
 
     return (
-        <section>
-            <StepHeader
-                step="finish"
-                title={
-                    alreadyLive
-                        ? 'Mod team and review'
-                        : 'Mod team, then go live'
-                }
-                lede={
-                    alreadyLive
-                        ? 'Your board is already live. Adjust the mod team here, and use the list below to jump back into any step.'
-                        : 'Add a co-mod or two so the queue doesn’t depend on you alone. Then check the list below and put the board live.'
-                }
-            />
+        <div>
+            <h3 className="h6">Mod team</h3>
+            <p className="text-muted small">
+                {alreadyLive
+                    ? 'Your board is already live. Adjust the mod team here, and use the list below to jump back into any step.'
+                    : 'Add a co-mod or two so the queue doesn’t depend on you alone. Then check the list below and put the board live.'}
+            </p>
             <ul className={`${styles.rows} mb-2`}>
                 {mods.map((m) => (
                     <li key={m.assignmentId} className={styles.rowItem}>
@@ -274,9 +387,9 @@ export function StepFinish({ data }: StepProps) {
                     disabled={isPending || blockers.length > 0}
                     onClick={finish}
                 >
-                    {isPending ? 'Finishing…' : 'Finish setup'}
+                    {isPending ? 'Putting it live…' : 'Put the board live'}
                 </button>
             )}
-        </section>
+        </div>
     );
 }
