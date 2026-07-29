@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useRef, useState, useTransition } from 'react';
 import {
     findGameMinPolicy,
     minMsFromPolicy,
@@ -50,6 +50,12 @@ export function StepDetails({ data, onAdvance }: StepProps) {
 
     const [defaultsError, setDefaultsError] = useState<string | null>(null);
     const [isSavingDefaults, startSavingDefaults] = useTransition();
+    // Belt-and-suspenders against a double-invoke of handleDetailsSaved (e.g.
+    // a double-click landing in the gap between GameDetailsForm's own save
+    // completing and isSavingDefaults flipping true). A ref is required, not
+    // isSavingDefaults itself — that state update isn't visible to a second
+    // synchronous call in the same tick.
+    const isSavingDefaultsRef = useRef(false);
 
     // Switching timing relabels the field and re-reads the value bound to
     // that timing — a value typed for one binding never leaks into the other.
@@ -60,6 +66,8 @@ export function StepDetails({ data, onAdvance }: StepProps) {
     };
 
     const handleDetailsSaved = () => {
+        if (isSavingDefaultsRef.current) return;
+
         setDefaultsError(null);
 
         const minMsValue = minText.trim() ? parseTimeInput(minText) : undefined;
@@ -68,51 +76,56 @@ export function StepDetails({ data, onAdvance }: StepProps) {
             return;
         }
 
+        isSavingDefaultsRef.current = true;
         startSavingDefaults(async () => {
-            const metaRes = await updateGameMetadataAction({
-                gameSlug: data.game.name,
-                gameId: data.game.id,
-                primaryTiming: timing,
-                rulesTemplate: rulesTemplate.trim() || null,
-                gameRules: gameRules.trim() || null,
-                emulatorPolicy,
-            });
-            if ('error' in metaRes) {
-                setDefaultsError(metaRes.error);
-                return;
-            }
-
-            if (minMsValue) {
-                const value = minValueForTiming(timing, minMsValue);
-                const policyRes = minPolicyId
-                    ? await updatePolicyAction(
-                          data.game.name,
-                          minPolicyId,
-                          value,
-                      )
-                    : await createPolicyAction(data.game.name, {
-                          policyType: 'min_time',
-                          value,
-                          categoryId: null,
-                      });
-                if ('error' in policyRes) {
-                    setDefaultsError(policyRes.error);
+            try {
+                const metaRes = await updateGameMetadataAction({
+                    gameSlug: data.game.name,
+                    gameId: data.game.id,
+                    primaryTiming: timing,
+                    rulesTemplate: rulesTemplate.trim() || null,
+                    gameRules: gameRules.trim() || null,
+                    emulatorPolicy,
+                });
+                if ('error' in metaRes) {
+                    setDefaultsError(metaRes.error);
                     return;
                 }
-                setMinPolicyId(policyRes.policy.id);
-            } else if (minPolicyId) {
-                const deleteRes = await deletePolicyAction(
-                    data.game.name,
-                    minPolicyId,
-                );
-                if ('error' in deleteRes) {
-                    setDefaultsError(deleteRes.error);
-                    return;
-                }
-                setMinPolicyId(null);
-            }
 
-            onAdvance();
+                if (minMsValue) {
+                    const value = minValueForTiming(timing, minMsValue);
+                    const policyRes = minPolicyId
+                        ? await updatePolicyAction(
+                              data.game.name,
+                              minPolicyId,
+                              value,
+                          )
+                        : await createPolicyAction(data.game.name, {
+                              policyType: 'min_time',
+                              value,
+                              categoryId: null,
+                          });
+                    if ('error' in policyRes) {
+                        setDefaultsError(policyRes.error);
+                        return;
+                    }
+                    setMinPolicyId(policyRes.policy.id);
+                } else if (minPolicyId) {
+                    const deleteRes = await deletePolicyAction(
+                        data.game.name,
+                        minPolicyId,
+                    );
+                    if ('error' in deleteRes) {
+                        setDefaultsError(deleteRes.error);
+                        return;
+                    }
+                    setMinPolicyId(null);
+                }
+
+                onAdvance();
+            } finally {
+                isSavingDefaultsRef.current = false;
+            }
         });
     };
 
@@ -136,6 +149,7 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                     image: data.game.image ?? null,
                 }}
                 onSaved={handleDetailsSaved}
+                savingExternally={isSavingDefaults}
             />
 
             <div className={styles.section}>
