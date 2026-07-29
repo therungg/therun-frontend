@@ -124,12 +124,17 @@ export function LeaderboardTable({
                                 aria-label={`${primary.label} — ranking column`}
                             >
                                 {primary.label}
-                                <span
-                                    className={styles.rankedTag}
-                                    aria-hidden="true"
-                                >
-                                    Ranked
-                                </span>
+                                {/* Only when a second time column exists —
+                                    with one column there is nothing to
+                                    disambiguate. */}
+                                {!hidden(secondary.key) && (
+                                    <span
+                                        className={styles.rankedTag}
+                                        aria-hidden="true"
+                                    >
+                                        Ranked
+                                    </span>
+                                )}
                             </th>
                         )}
                         {!hidden(secondary.key) && (
