@@ -1,3 +1,9 @@
+.headerRow {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+}
+
 .body {
     display: grid;
     grid-template-columns: 12rem 1fr;

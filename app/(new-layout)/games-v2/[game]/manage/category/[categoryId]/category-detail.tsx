@@ -7,7 +7,7 @@ import type {
     ResolvedCategory,
     ResolvedGame,
 } from '../../../../../../../types/leaderboards.types';
-import { CategoryEditor } from '../category-editor';
+import { CategoryEditor, type CopySources } from '../category-editor';
 import styles from './category-detail.module.scss';
 
 interface Props {
@@ -16,6 +16,7 @@ interface Props {
     canConfigure: boolean;
     canModerate: boolean;
     canEditStandards: boolean;
+    copySources?: CopySources;
     prev: ResolvedCategory | null;
     next: ResolvedCategory | null;
 }
@@ -26,6 +27,7 @@ export function CategoryDetail({
     canConfigure,
     canModerate,
     canEditStandards,
+    copySources,
     prev,
     next,
 }: Props) {
@@ -61,6 +63,7 @@ export function CategoryDetail({
                 canConfigure={canConfigure}
                 canModerate={canModerate}
                 canEditStandards={canEditStandards}
+                copySources={copySources}
                 context="console"
             />
         </div>
