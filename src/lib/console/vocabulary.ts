@@ -51,6 +51,87 @@ export function conceptLabel(id: ConceptId): string {
 }
 
 /**
+ * The console sections that get a tile on the `/manage` front door.
+ *
+ * `reports` is deliberately absent: it is the attention pane pre-filtered by
+ * `?kind=report`, so a tile for it would be a second door to the same room.
+ * The attention tile's blurb covers reports instead.
+ *
+ * Spelled out rather than derived from `NavItemId` because nav-model.ts
+ * imports from this file — the reverse import would be circular. The
+ * vocabulary test pins the two lists together.
+ */
+export const TILE_CONCEPT_IDS = [
+    'attention',
+    'roster',
+    'bans',
+    'history',
+    'setup',
+    'game-details',
+    'categories',
+    'groups',
+    'moderators',
+    'reassign',
+] as const;
+
+export type TileConceptId = (typeof TILE_CONCEPT_IDS)[number];
+
+export interface ConceptTile {
+    /** Verb-led title — what you came to do, not what the section is called. */
+    action: string;
+    /** One sentence naming the concrete things behind the tile. */
+    blurb: string;
+}
+
+/**
+ * Tile copy for the console front door. The sidebar keeps the terse nouns in
+ * CONCEPT_LABEL; these are the same sections described as jobs, for a
+ * moderator who has not learned the console yet.
+ */
+export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
+    attention: {
+        action: "Review what's waiting",
+        blurb: 'Runs flagged for review, reports from runners, and people asking to moderate this board.',
+    },
+    roster: {
+        action: 'Look up a run or runner',
+        blurb: "Search every submitted run, check a runner's history, and act on anything you find.",
+    },
+    bans: {
+        action: 'Manage banned runners',
+        blurb: "See who's banned from this board and why, and lift a ban.",
+    },
+    history: {
+        action: 'See what mods have done',
+        blurb: 'Every moderation action on this board — who did it, when, and undo.',
+    },
+    setup: {
+        action: 'Set the board up step by step',
+        blurb: 'The guided walkthrough for configuring this board from scratch.',
+    },
+    'game-details': {
+        action: "Edit the game's details",
+        blurb: "Cover art, release info, the board's URL, and how it's matched to IGDB.",
+    },
+    categories: {
+        action: 'Configure categories',
+        blurb: "Add and edit categories, set timing, proof and minimum-time rules, and pick what's featured.",
+    },
+    groups: {
+        action: 'Sort categories into groups',
+        blurb: 'Bundle related categories so the leaderboard reads in a sensible order.',
+    },
+    moderators: {
+        action: 'Manage who moderates',
+        blurb: 'Add or remove moderators, and review applications from people who want to help.',
+    },
+    reassign: {
+        action: 'Merge duplicates',
+        blurb: 'Fold a duplicate game or category into the right one and move its runs across.',
+    },
+};
+
+/**
  * Which console concepts a wizard step covers. Step 5 ("Defaults") is one
  * screen with four headings (step-defaults.tsx:261,335,395,463) and therefore
  * maps to four concepts; the console reaches all four from the category index.
