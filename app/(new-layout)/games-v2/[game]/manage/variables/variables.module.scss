@@ -199,3 +199,53 @@
 .dialogFooter {
     @include board.board-dialog-footer;
 }
+
+// ============================================================
+// VariableForm — the create/edit form itself. States its own scope up
+// front and surfaces the consequence of the role choice while it is
+// still free to change, rather than only after the fact in edit mode.
+// ============================================================
+
+// The scope the form is about to save to. Small and secondary — this is
+// orientation, not the main content — but the scope portion should read
+// as the emphasized part of the sentence.
+.formScope {
+    margin: 0 0 dt.$spacing-md 0;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+}
+
+// Live sentence under the role fieldset — what the current role + value
+// count actually does, updating as the mod types.
+.roleConsequence {
+    margin: dt.$spacing-xs 0 0 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-emphasis-color);
+}
+
+// The state today's UI never surfaces: a category-scoped create that
+// would shadow a game-wide variable of the same name. Same amber warning
+// vocabulary as .sourceOverride and the console's sevMedium/
+// setupStepWarning pieces above.
+.shadowWarning {
+    margin-top: dt.$spacing-md;
+    padding: dt.$spacing-md dt.$spacing-lg;
+    border: 1px solid color-mix(in srgb, #{dt.$accent-amber} 35%, transparent);
+    border-radius: dt.$radius-md;
+    background: color-mix(in srgb, #{dt.$accent-amber} 12%, transparent);
+    font-size: dt.$font-size-sm;
+    color: color-mix(in srgb, #{dt.$accent-amber} 75%, var(--bs-emphasis-color));
+}
+
+// Sort order + description fold — neither is a first-run concern, so
+// they live behind a disclosure instead of the top of the form.
+.more {
+    margin-top: dt.$spacing-lg;
+
+    > summary {
+        cursor: pointer;
+        font-size: dt.$font-size-sm;
+        color: var(--bs-secondary-color);
+    }
+}
