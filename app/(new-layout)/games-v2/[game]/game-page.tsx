@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { useEffect, useMemo, useState } from 'react';
 import Link from '~src/components/link';
 import { buildBoardHref } from '~src/lib/board-url';
+import type { GameModerator } from '../../../../types/board-claims.types';
 import type { ClaimCtaState } from './claim/claim-cta';
 import { BoardNavProvider, useBoardNavState } from './filters/use-board-nav';
 import styles from './game-page.module.scss';
@@ -27,9 +28,16 @@ interface Props {
     canManage: boolean;
     canManageRuns: boolean;
     claim?: ClaimCtaState | null;
+    moderators?: GameModerator[];
 }
 
-export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
+export function GamePage({
+    data,
+    canManage,
+    canManageRuns,
+    claim,
+    moderators,
+}: Props) {
     const variableKeys = useMemo(
         () => data.variables.map((v) => v.nameNormalized),
         [data.variables],
@@ -202,6 +210,7 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                             yourRuns={data.yourRuns}
                             recentPbs={data.recentPbs}
                             claim={claim}
+                            moderators={moderators}
                             about={
                                 data.gameMeta.summaryOverride ??
                                 data.gameMeta.summary
