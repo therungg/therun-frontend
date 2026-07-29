@@ -174,6 +174,13 @@ export function StepCategories({ data, onAdvance }: StepProps) {
     const setMain = (id: number, main: boolean) =>
         setRows((rs) => rs.map((r) => (r.id === id ? { ...r, main } : r)));
 
+    // Newly-featured categories seed from the game's defaults so a category
+    // that's never been touched doesn't land on the board with no timing
+    // and no rules. Re-curation (a category that was already Featured, or
+    // one restored from Archived) isn't first setup, so it stays seedless.
+    const defaultTiming: 'realtime' | 'gametime' =
+        data.metadata.primaryTiming === 'gt' ? 'gametime' : 'realtime';
+
     const save = () => {
         startSaving(async () => {
             // The tickbox means Featured, and nothing else.
@@ -198,7 +205,9 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                 const wasMain = orig.isMain ?? false;
                 const restore = r.main && orig.archived;
                 if (wasMain === r.main && !restore) return [];
-                return [{ row: r, restore }];
+                return [
+                    { row: r, restore, becomingMain: r.main && !wasMain, orig },
+                ];
             });
 
             if (changed.length === 0) {
@@ -224,6 +233,18 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                         categoryId: next.row.id,
                         isMain: next.row.main,
                         ...(next.restore ? { active: true } : {}),
+                        ...(next.becomingMain
+                            ? {
+                                  seed: {
+                                      primaryTiming: defaultTiming,
+                                      rulesTemplate:
+                                          data.metadata.rulesTemplate,
+                                  },
+                                  currentRulesEmpty: !(
+                                      next.orig.rules ?? ''
+                                  ).trim(),
+                              }
+                            : {}),
                     });
                     done++;
                     setProgress(`Saving ${done} / ${changed.length}…`);

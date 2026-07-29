@@ -16,6 +16,18 @@ interface Input {
     active?: boolean;
     isMain?: boolean;
     groupId?: number | null;
+    /**
+     * Game-default timing + rules template to apply when this call features
+     * a category (`isMain: true`). Only the setup wizard's feature-on
+     * transition passes this — it's first-setup seeding, not curation, so
+     * the console categories table always leaves it unset.
+     */
+    seed?: {
+        primaryTiming: 'realtime' | 'gametime';
+        rulesTemplate: string | null;
+    };
+    /** Whether the category's current rules were empty before this call — gates whether `seed.rulesTemplate` gets written. */
+    currentRulesEmpty?: boolean;
 }
 
 export async function curateCategoryAction(
@@ -46,6 +58,22 @@ export async function curateCategoryAction(
             input.categoryId,
             body,
         );
+
+        if (input.isMain === true && input.seed) {
+            const seedBody: UpdateCategoryBody = {
+                primaryTiming: input.seed.primaryTiming,
+                ...(input.currentRulesEmpty && input.seed.rulesTemplate?.trim()
+                    ? { rules: input.seed.rulesTemplate }
+                    : {}),
+            };
+            await updateCategory(
+                user.id,
+                input.gameId,
+                input.categoryId,
+                seedBody,
+            );
+        }
+
         updateTag(`game-cats:${input.gameId}`);
         return { result };
     } catch (e) {
