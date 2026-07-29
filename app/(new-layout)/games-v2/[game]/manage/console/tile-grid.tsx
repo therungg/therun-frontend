@@ -40,9 +40,12 @@ export function TileGrid({
                 const items = group.items.filter((it) => it.id in CONCEPT_TILE);
                 if (items.length === 0) return null;
 
+                const headingId = `tile-group-${group.id}`;
                 return (
-                    <section key={group.id}>
-                        <div className={styles.groupLabel}>{group.label}</div>
+                    <section key={group.id} aria-labelledby={headingId}>
+                        <h3 id={headingId} className={styles.groupLabel}>
+                            {group.label}
+                        </h3>
                         <div className={styles.tileGrid}>
                             {items.map((item) => {
                                 const Icon = NAV_ICON[item.id];

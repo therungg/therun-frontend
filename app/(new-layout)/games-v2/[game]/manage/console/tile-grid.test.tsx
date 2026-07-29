@@ -196,6 +196,28 @@ describe('TileGrid moderators count', () => {
     });
 });
 
+describe('TileGrid inventory pinned to nav inventory', () => {
+    it('gives every nav item a tile, except the deliberately-tileless reports', () => {
+        const ALL_FLAGS: NavFlags = {
+            canModerate: true,
+            canEditStandards: true,
+            canConfigure: true,
+            canReassign: true,
+            canEditMods: true,
+        };
+        const groups = buildNav(ALL_FLAGS);
+        const navIds = groups.flatMap((g) => g.items.map((it) => it.id));
+
+        for (const id of navIds) {
+            if (id === 'reports') continue;
+            expect(
+                CONCEPT_TILE[id as keyof typeof CONCEPT_TILE],
+                `nav item "${id}" has no CONCEPT_TILE entry — add one in src/lib/console/vocabulary.ts (CONCEPT_TILE and TILE_CONCEPT_IDS), or if it's deliberately tileless, add it to the exclusion list in this test`,
+            ).toBeTruthy();
+        }
+    });
+});
+
 describe('TileGrid navigation', () => {
     it('calls onNavigate with the clicked tile nav id', () => {
         const groups = buildNav({ ...NO_FLAGS, canConfigure: true });
