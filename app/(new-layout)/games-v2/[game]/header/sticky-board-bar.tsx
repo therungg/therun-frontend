@@ -34,7 +34,7 @@ interface Props {
  * here — they exist in exactly one place, the leaderboard's meta bar, so
  * no duplicate-instance/focus-trap machinery is needed for them. While
  * this bar is showing, the plate's rail is still mounted just above the
- * viewport; `inert` on `.railZone` (board-masthead.tsx) keeps that copy
+ * viewport; `inert` on `.railCard` (board-masthead.tsx) keeps that copy
  * out of the tab order.
  */
 export function StickyBoardBar({

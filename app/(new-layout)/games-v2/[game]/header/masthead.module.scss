@@ -7,7 +7,7 @@
     gap: dt.$spacing-sm;
 }
 
-// Flat rail rows: the railZone is the only surface. A group is one row —
+// Flat rail rows: the railCard is the only surface. A group is one row —
 // eyebrow label + chips — separated by hairlines, no recessed boxes
 // (the engraved-well treatment read as a stack of disabled inputs and
 // cost ~60px of chrome; the audit's "grey on grey on grey").
@@ -88,8 +88,9 @@
     padding: dt.$spacing-xs dt.$spacing-sm;
 }
 
-// The subcategory tier is the same anatomy one rank down, separated by a
-// full-width hairline: these narrow the board rather than choosing it.
+// The subcategory tier narrows the board rather than choosing it — filter
+// vocabulary, visually distinct from the category chips above: smaller,
+// squarer, outlined instead of filled, quieter active state.
 .tier {
     display: flex;
     flex-direction: column;
@@ -97,94 +98,63 @@
     margin-top: dt.$spacing-sm;
     padding-top: dt.$spacing-sm;
     border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+
+    .endcap {
+        // Lowercase, lighter than the category group labels: a filter
+        // name, not a section heading.
+        text-transform: none;
+        letter-spacing: 0.02em;
+        font-weight: 600;
+        color: var(--bs-tertiary-color);
+    }
+
+    .chip {
+        font-size: dt.$font-size-xs;
+        border-radius: dt.$radius-sm;
+        border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+        padding: 2px dt.$spacing-sm;
+        background: transparent;
+        color: var(--bs-secondary-color);
+    }
+
+    .chipActive {
+        background: rgba(var(--bs-primary-rgb), 0.1);
+        border-color: rgba(var(--bs-primary-rgb), 0.55);
+        color: var(--bs-emphasis-color);
+        font-weight: 600;
+    }
 }
 
 // ---- The plate ------------------------------------------------------
-// One contained surface holding the condensed game line, the board line
-// and the rail. Deliberately NOT sticky — the slim bar takes that job, so
-// rail height stops being a scrolling cost.
+// Game identity only: back row + condensed game line + actions. The
+// category selector lives in its own card below (.railCard). Deliberately
+// NOT sticky — the slim bar takes that job.
 .plate {
     @include board.board-surface(0);
     overflow: hidden;
-    margin-bottom: dt.$spacing-lg;
-    // Per-game identity: a flat 3px accent edge sampled from the cover art
-    // (AccentFromCover). Unset custom prop → transparent → today's look.
-    border-top: 3px solid var(--board-accent, transparent);
+    margin-bottom: dt.$spacing-md;
 }
 
 .plateTop {
-    padding: 0 dt.$spacing-xl dt.$spacing-lg;
-    // Same accent one whisper down: a flat 5%-alpha tint, not a gradient.
+    padding: 0 dt.$spacing-xl;
+    // Per-game identity: a flat 5%-alpha cover-art tint (AccentFromCover).
+    // Unset custom prop → transparent. No border, no gradient.
     background: var(--board-accent-soft, transparent);
 }
 
-.boardLine {
-    display: flex;
-    align-items: flex-end;
-    gap: dt.$spacing-lg;
-    flex-wrap: wrap;
-}
-
+// Small uppercase group label — used by the switch-board popover's
+// section headings.
 .groupEyebrow {
     @include board.board-eyebrow;
     display: block;
 }
 
-.boardTitle {
-    font-size: dt.$font-size-2xl;
-    font-weight: 750;
-    letter-spacing: -0.025em;
-    line-height: 1.1;
-    margin: 0;
-}
-
-// The subcategory half of the board's name, one rank down in weight.
-.boardTitleSuffix {
-    font-size: dt.$font-size-md;
-    font-weight: 500;
-    color: var(--bs-secondary-color);
-    letter-spacing: 0;
-}
-
-.boardMeta {
-    font-size: dt.$font-size-xs;
-    color: var(--bs-tertiary-color);
-    font-variant-numeric: tabular-nums;
-    margin: dt.$spacing-xs 0 0;
-}
-
-.record {
-    margin-left: auto;
-    text-align: right;
-    line-height: 1.3;
-}
-
-.recordTime {
-    @include board.mono-time;
-    font-size: dt.$font-size-xl;
-    color: dt.$accent-gold;
-    display: block;
-}
-
-.recordHolder {
-    font-size: dt.$font-size-xs;
-    color: var(--bs-secondary-color);
-}
-
-// The record's own drill-down: history lives with the number it explains.
-.recordHistoryLink {
-    @include board.board-quiet-link;
-    display: block;
-    margin-left: auto;
-    margin-top: dt.$spacing-xs;
-    font-size: dt.$font-size-xs;
-}
-
-// The rail is the plate's floor: deeper tint, its own top hairline.
-.railZone {
-    background: var(--bs-secondary-bg);
-    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-    padding: dt.$spacing-sm dt.$spacing-xl;
+// ---- Selector card ---------------------------------------------------
+// Categories choose the board; the subcategory tier below them narrows it
+// (filter vocabulary — see `.tier`). Its own surface, not the header's.
+.railCard {
+    @include board.board-surface(dt.$spacing-sm dt.$spacing-xl);
+    margin-bottom: dt.$spacing-lg;
 }
 
 // ---- Sticky slim bar -------------------------------------------------
