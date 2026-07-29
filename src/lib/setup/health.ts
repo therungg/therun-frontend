@@ -18,12 +18,17 @@ export interface BoardHealth {
 
 export const STALE_TRIAGE_MS = 7 * 24 * 60 * 60 * 1000;
 
+// Board-wide steps point at the category index, not at one arbitrary
+// category. `timing` and `rules` used to be per-category panes, so a
+// board-wide warning deep-linked to whichever category happened to be
+// selected in the sidebar picker — which no longer exists.
 const STEP_PANE: Partial<Record<SetupStepId, string>> = {
     details: 'game-details',
-    categories: 'categories-visibility',
+    categories: 'categories',
     groups: 'groups',
-    defaults: 'timing',
-    exceptions: 'rules',
+    variables: 'categories',
+    defaults: 'categories',
+    exceptions: 'categories',
 };
 
 export function computeBoardHealth(input: {

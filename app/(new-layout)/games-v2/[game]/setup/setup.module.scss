@@ -823,3 +823,12 @@ $rail-collapse: 900px;
 .textSuccess {
     color: var(--bs-primary);
 }
+
+// Wizard -> console wayfinding line under each step body. Quiet by design:
+// it teaches where the work lives later without competing with the step's
+// own forward action.
+.wayfinding {
+    margin: 1.5rem 0 0;
+    font-size: 0.8rem;
+    color: var(--bs-secondary-color);
+}

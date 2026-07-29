@@ -33,7 +33,7 @@ describe('computeBoardHealth', () => {
         ]);
     });
 
-    it('grades any completeness blocker at-risk and maps categories to categories-visibility', () => {
+    it('grades any completeness blocker at-risk and maps categories to the index', () => {
         const h = computeBoardHealth({
             completeness: completeness({
                 blockers: [
@@ -55,11 +55,11 @@ describe('computeBoardHealth', () => {
         expect(h.items[0]).toEqual({
             severity: 'blocker',
             label: 'No categories are marked main (shown on the board)',
-            pane: 'categories-visibility',
+            pane: 'categories',
         });
     });
 
-    it('maps an exceptions warning to the rules pane', () => {
+    it('sends an exceptions warning to the index, not one arbitrary category', () => {
         const h = computeBoardHealth({
             completeness: completeness({
                 warnings: ['1 of 2 main categories missing rules'],
@@ -78,11 +78,11 @@ describe('computeBoardHealth', () => {
         expect(h.items).toContainEqual({
             severity: 'warning',
             label: '1 of 2 main categories missing rules',
-            pane: 'rules',
+            pane: 'categories',
         });
     });
 
-    it('maps a defaults item to the timing pane', () => {
+    it('sends a board-wide defaults item to the index', () => {
         const h = computeBoardHealth({
             completeness: completeness({
                 warnings: ['Optional bulk settings not reviewed'],
@@ -100,7 +100,7 @@ describe('computeBoardHealth', () => {
         expect(h.items).toContainEqual({
             severity: 'warning',
             label: 'Optional bulk settings not reviewed',
-            pane: 'timing',
+            pane: 'categories',
         });
     });
 
