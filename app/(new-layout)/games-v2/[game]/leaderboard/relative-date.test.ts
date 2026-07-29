@@ -16,8 +16,10 @@ describe('relativeDate', () => {
     it('months under a year', () => {
         expect(relativeDate('2026-02-16T08:00:00Z', NOW)).toBe('5 mo ago');
     });
-    it('years', () => {
-        expect(relativeDate('2024-05-16T08:00:00Z', NOW)).toBe('2 yr ago');
+    it('a year or more old gets an absolute month + year', () => {
+        expect(relativeDate('2024-05-16T08:00:00Z', NOW)).toBe('May 2024');
+        expect(relativeDate('2025-07-16T08:00:00Z', NOW)).toBe('Jul 2025');
+        expect(relativeDate('2023-03-12T10:00:00Z', NOW)).toBe('Mar 2023');
     });
     it('date-only strings work', () => {
         expect(relativeDate('2026-07-15', NOW)).toBe('yesterday');
