@@ -1,21 +1,9 @@
 'use client';
 
 import clsx from 'clsx';
-import {
-    ArrowLeftRight,
-    ClockHistory,
-    Collection,
-    Controller,
-    ExclamationTriangle,
-    Flag,
-    type Icon as IconType,
-    ListCheck,
-    ListOl,
-    ListUl,
-    PersonX,
-    ShieldLock,
-} from 'react-bootstrap-icons';
+import { AttentionBadge } from './attention-badge';
 import styles from './console.module.scss';
+import { NAV_ICON } from './nav-icons';
 import type { NavGroup, NavItemId } from './nav-model';
 
 interface Props {
@@ -27,21 +15,6 @@ interface Props {
      * shown may be an undercount, not a confirmed total. */
     badgeDegraded?: boolean;
 }
-
-// One consistent icon set (react-bootstrap-icons) — no emoji.
-const NAV_ICON: Record<NavItemId, IconType> = {
-    attention: ExclamationTriangle,
-    roster: ListOl,
-    reports: Flag,
-    bans: PersonX,
-    history: ClockHistory,
-    setup: ListCheck,
-    'game-details': Controller,
-    categories: ListUl,
-    groups: Collection,
-    moderators: ShieldLock,
-    reassign: ArrowLeftRight,
-};
 
 export function ConsoleSidebar({
     groups,
@@ -82,31 +55,12 @@ export function ConsoleSidebar({
                                 {item.reserved && (
                                     <span className={styles.soon}>soon</span>
                                 )}
-                                {item.id === 'attention' &&
-                                    (attentionCount > 0 || badgeDegraded) && (
-                                        <span
-                                            className={styles.count}
-                                            aria-label={
-                                                badgeDegraded
-                                                    ? attentionCount > 0
-                                                        ? `${attentionCount} items need attention — some sources didn't load, actual count may be higher`
-                                                        : 'Some sources failed to load — counts may be incomplete'
-                                                    : `${attentionCount} items need attention`
-                                            }
-                                            title={
-                                                badgeDegraded
-                                                    ? 'Some sources failed to load — counts may be incomplete'
-                                                    : undefined
-                                            }
-                                        >
-                                            {badgeDegraded &&
-                                            attentionCount === 0
-                                                ? '!'
-                                                : attentionCount > 99
-                                                  ? '99+'
-                                                  : `${attentionCount}${badgeDegraded ? '+' : ''}`}
-                                        </span>
-                                    )}
+                                {item.id === 'attention' && (
+                                    <AttentionBadge
+                                        count={attentionCount}
+                                        degraded={badgeDegraded}
+                                    />
+                                )}
                             </button>
                         );
                     })}

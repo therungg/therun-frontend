@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { SETUP_STEP_ORDER } from '../../setup/completeness';
 import {
     CONCEPT_LABEL,
+    CONCEPT_TILE,
     conceptLabel,
     consoleLocationForStep,
     STEP_CONCEPTS,
+    TILE_CONCEPT_IDS,
 } from '../vocabulary';
 
 describe('vocabulary', () => {
@@ -48,6 +50,33 @@ describe('vocabulary', () => {
     it('never returns an empty label', () => {
         for (const [id, label] of Object.entries(CONCEPT_LABEL)) {
             expect(label.trim().length, id).toBeGreaterThan(0);
+        }
+    });
+});
+
+describe('CONCEPT_TILE', () => {
+    it('gives every tiled concept a verb-led action and a blurb', () => {
+        for (const id of TILE_CONCEPT_IDS) {
+            expect(CONCEPT_TILE[id]?.action, id).toBeTruthy();
+            expect(CONCEPT_TILE[id]?.blurb, id).toBeTruthy();
+        }
+    });
+
+    it('has no tile for reports — it is the attention pane pre-filtered', () => {
+        expect(Object.keys(CONCEPT_TILE)).not.toContain('reports');
+    });
+
+    it('only tiles concepts that also have a sidebar label', () => {
+        for (const id of TILE_CONCEPT_IDS) {
+            expect(CONCEPT_LABEL[id], id).toBeTruthy();
+        }
+    });
+
+    it('phrases every action as something you do, not a section name', () => {
+        for (const id of TILE_CONCEPT_IDS) {
+            // A tile action that merely repeats the sidebar noun means the
+            // grid has stopped answering "what can I do here".
+            expect(CONCEPT_TILE[id].action, id).not.toBe(CONCEPT_LABEL[id]);
         }
     });
 });
