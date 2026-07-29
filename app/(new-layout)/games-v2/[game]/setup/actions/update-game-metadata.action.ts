@@ -20,6 +20,10 @@ interface Input {
     releaseYear?: number | null;
     discordUrl?: string | null;
     links?: GameLink[];
+    primaryTiming?: 'rt' | 'gt';
+    rulesTemplate?: string | null;
+    gameRules?: string | null;
+    emulatorPolicy?: 'allowed' | 'banned' | null;
 }
 
 export async function updateGameMetadataAction(
@@ -94,6 +98,13 @@ export async function updateGameMetadataAction(
             url: link.url,
         }));
     }
+    if (input.primaryTiming !== undefined)
+        body.primaryTiming = input.primaryTiming;
+    if (input.rulesTemplate !== undefined)
+        body.rulesTemplate = input.rulesTemplate;
+    if (input.gameRules !== undefined) body.gameRules = input.gameRules;
+    if (input.emulatorPolicy !== undefined)
+        body.emulatorPolicy = input.emulatorPolicy;
 
     if (Object.keys(body).length === 0) {
         return { result: { updated: false } };
