@@ -5,7 +5,9 @@ import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 import type {
     ResolvedCategory,
     ResolvedGame,
+    VariableRow,
 } from '../../../../../../types/leaderboards.types';
+import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
 import { CategorySettingsSection } from '../category-tab/category-settings-section';
 import { ProofSection } from '../category-tab/proof-section';
 import { RulesSection } from '../category-tab/rules-section';
@@ -14,6 +16,13 @@ import { TimingSettingsSection } from '../timing/timing-settings-section';
 import { CombinationsSection } from '../variables/combinations-section';
 import { VariablesSection } from '../variables/variables-section';
 import styles from './category-editor.module.scss';
+import { CopyFromControl } from './copy-from-control';
+
+export interface CopySources {
+    categories: ResolvedCategory[];
+    variables: VariableRow[];
+    policies: BoardPolicyRow[];
+}
 
 interface Props {
     game: ResolvedGame;
@@ -22,6 +31,10 @@ interface Props {
     canModerate: boolean;
     canEditStandards: boolean;
     context: 'console' | 'wizard';
+    /** All featured categories + game variables/policies, for the "Copy
+     *  from…" control. Omitted callers simply don't get the control — it
+     *  renders only when this is provided AND the moderator can configure. */
+    copySources?: CopySources;
 }
 
 /**
@@ -50,6 +63,7 @@ export function CategoryEditor({
     canModerate,
     canEditStandards,
     context,
+    copySources,
 }: Props) {
     const visible = useMemo(
         () =>
@@ -143,40 +157,56 @@ export function CategoryEditor({
     };
 
     return (
-        <div className={styles.body} data-context={context}>
-            <nav className={styles.rail} aria-label="Sections">
-                {visible.map((s) => (
-                    <a
-                        key={s.id}
-                        href={`#${s.id}`}
-                        className={
-                            current === s.id ? styles.railCurrent : undefined
-                        }
-                        aria-current={current === s.id ? 'true' : undefined}
-                    >
-                        {CONCEPT_LABEL[s.id]}
-                    </a>
-                ))}
-            </nav>
+        <div data-context={context}>
+            {copySources && canConfigure && (
+                <div className={styles.headerRow}>
+                    <CopyFromControl
+                        gameSlug={game.name}
+                        gameId={game.id}
+                        target={category}
+                        categories={copySources.categories}
+                        variables={copySources.variables}
+                        policies={copySources.policies}
+                    />
+                </div>
+            )}
+            <div className={styles.body}>
+                <nav className={styles.rail} aria-label="Sections">
+                    {visible.map((s) => (
+                        <a
+                            key={s.id}
+                            href={`#${s.id}`}
+                            className={
+                                current === s.id
+                                    ? styles.railCurrent
+                                    : undefined
+                            }
+                            aria-current={current === s.id ? 'true' : undefined}
+                        >
+                            {CONCEPT_LABEL[s.id]}
+                        </a>
+                    ))}
+                </nav>
 
-            <div className={styles.sections}>
-                {visible.map((s) => (
-                    <section
-                        key={s.id}
-                        id={s.id}
-                        data-section={s.id}
-                        // Focusable so an in-page anchor lands focus here
-                        // for keyboard and screen-reader users.
-                        tabIndex={-1}
-                        className={styles.section}
-                        ref={(el) => {
-                            if (el) refs.current.set(s.id, el);
-                            else refs.current.delete(s.id);
-                        }}
-                    >
-                        {body[s.id]}
-                    </section>
-                ))}
+                <div className={styles.sections}>
+                    {visible.map((s) => (
+                        <section
+                            key={s.id}
+                            id={s.id}
+                            data-section={s.id}
+                            // Focusable so an in-page anchor lands focus here
+                            // for keyboard and screen-reader users.
+                            tabIndex={-1}
+                            className={styles.section}
+                            ref={(el) => {
+                                if (el) refs.current.set(s.id, el);
+                                else refs.current.delete(s.id);
+                            }}
+                        >
+                            {body[s.id]}
+                        </section>
+                    ))}
+                </div>
             </div>
         </div>
     );
