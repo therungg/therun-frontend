@@ -85,11 +85,10 @@ export function BoardMasthead({
                     />
                     <div className={styles.boardLine}>
                         <div>
-                            {category.groupName && (
-                                <span className={styles.groupEyebrow}>
-                                    {category.groupName}
-                                </span>
-                            )}
+                            {/* No group eyebrow here — the rail's endcap
+                                already names the group; repeating it above
+                                the title was the audit's duplicate-
+                                vocabulary finding. */}
                             <h1 className={styles.boardTitle}>
                                 {category.display}
                                 {suffix && (
