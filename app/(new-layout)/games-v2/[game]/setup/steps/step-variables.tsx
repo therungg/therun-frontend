@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { CombinationsSection } from '../../manage/variables/combinations-section';
 import { VariablesSection } from '../../manage/variables/variables-section';
 import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
@@ -81,14 +82,7 @@ export function StepVariables({ data, onAdvance }: StepProps) {
             </div>
 
             <div className={styles.section}>
-                <h3 className="h6">Scope</h3>
-                <p className="text-muted small mb-0">
-                    A variable set on the game applies to every category. Set it
-                    on one category and only that category gets it — handy when
-                    only your main run splits by platform. Pick which category
-                    the editor below is scoped to:
-                </p>
-                <label className="form-label mt-3" htmlFor="var-category">
+                <label className="form-label" htmlFor="var-category">
                     Editing category
                 </label>
                 <select
@@ -105,18 +99,27 @@ export function StepVariables({ data, onAdvance }: StepProps) {
                 </select>
             </div>
 
-            <VariablesSection
-                gameSlug={data.game.name}
-                gameId={data.game.id}
-                selectedCategory={selected}
-            />
+            {selected && (
+                <>
+                    <VariablesSection
+                        gameSlug={data.game.name}
+                        gameId={data.game.id}
+                        selectedCategory={selected}
+                    />
+                    <CombinationsSection
+                        gameSlug={data.game.name}
+                        gameId={data.game.id}
+                        selectedCategory={selected}
+                    />
+                </>
+            )}
 
             <button
                 type="button"
                 className={`${styles.primaryAction} mt-3`}
                 onClick={onAdvance}
             >
-                Save &amp; continue
+                Continue
             </button>
         </section>
     );

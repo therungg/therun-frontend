@@ -181,13 +181,6 @@ export function CategoryBandPreview({ categories, groups, variables }: Props) {
                     categories in it.
                 </p>
             )}
-
-            {subcategories.length > 0 && (
-                <p className={`${styles.previewNote} mb-0 mt-2`}>
-                    Subcategories come from variables, which you set up in the
-                    console — not in this wizard.
-                </p>
-            )}
         </div>
     );
 }
