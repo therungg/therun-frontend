@@ -30,6 +30,10 @@ interface Props {
     categoryDisplay: string;
     /** Game-wide rows, for shadow detection on a category-scoped create. */
     gameWide: VariableRow[];
+    /** True when this form saves a category-scoped row. Passed explicitly rather
+     *  than inferred from scopeLabel — the shadow warning must not depend on
+     *  matching a display string. */
+    isCategoryScoped: boolean;
     onSubmit: (values: VariableFormValues) => void;
     onCancel: () => void;
     isBusy: boolean;
@@ -68,6 +72,7 @@ export function VariableForm({
     scopeLabel,
     categoryDisplay,
     gameWide,
+    isCategoryScoped,
     onSubmit,
     onCancel,
     isBusy,
@@ -277,7 +282,7 @@ export function VariableForm({
             </p>
 
             {mode === 'create' &&
-                scopeLabel !== 'Shared by all categories' &&
+                isCategoryScoped &&
                 (() => {
                     const shadowed = findShadowed(name, gameWide);
                     return shadowed ? (

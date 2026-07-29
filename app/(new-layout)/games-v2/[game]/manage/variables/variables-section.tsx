@@ -2,24 +2,39 @@
 
 import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
+import type { VariablePreview } from '~src/lib/variables/consequences';
 import type {
     ResolvedCategory,
     VariableRow as VariableRowData,
 } from '../../../../../../types/leaderboards.types';
-import { ConfirmDialog } from '../../shared/confirm-dialog';
 import { createVariableAction } from './actions/create-variable.action';
 import { deleteVariableAction } from './actions/delete-variable.action';
+import { loadMergedVariablesAction } from './actions/load-merged-variables.action';
 import { loadVariablesAction } from './actions/load-variables.action';
+import { previewVariableAction } from './actions/preview-variable.action';
 import { updateVariableAction } from './actions/update-variable.action';
+import { ConsequenceDialog } from './consequence-dialog';
+import { InEffectPanel } from './in-effect-panel';
 import { VariableForm, type VariableFormValues } from './variable-form';
-import { VariableRow } from './variable-row';
+import { VariableTable } from './variable-table';
 
 type Scope = 'game' | 'category';
 
 type FormState =
     | { open: false }
-    | { open: true; mode: 'create' }
-    | { open: true; mode: 'edit'; editing: VariableRowData };
+    | {
+          open: true;
+          mode: 'create';
+          scopeCategoryId: number | null;
+          scopeLabel: string;
+      }
+    | {
+          open: true;
+          mode: 'edit';
+          editing: VariableRowData;
+          scopeCategoryId: number | null;
+          scopeLabel: string;
+      };
 
 interface Props {
     gameSlug: string;
@@ -33,6 +48,8 @@ export function VariablesSection({
     selectedCategory,
 }: Props) {
     const [rows, setRows] = useState<VariableRowData[]>([]);
+    const [merged, setMerged] = useState<VariableRowData[]>([]);
+    const [highlightId, setHighlightId] = useState<number | null>(null);
     const [reservedParams, setReservedParams] = useState<string[]>([]);
     const [loadError, setLoadError] = useState<string | null>(null);
     const [scope, setScope] = useState<Scope>('game');
@@ -40,10 +57,14 @@ export function VariablesSection({
     const [formError, setFormError] = useState<string | null>(null);
     const [isLoading, startLoadTransition] = useTransition();
     const [isSaving, startSaveTransition] = useTransition();
-    const [confirmDelete, setConfirmDelete] = useState<VariableRowData | null>(
-        null,
-    );
-    const [deleteError, setDeleteError] = useState<string | null>(null);
+    const [pendingWrite, setPendingWrite] = useState<
+        | { action: 'save'; values: VariableFormValues }
+        | { action: 'delete'; row: VariableRowData }
+        | null
+    >(null);
+    const [preview, setPreview] = useState<VariablePreview | null>(null);
+    const [previewError, setPreviewError] = useState<string | null>(null);
+    const [isPreviewing, startPreview] = useTransition();
     const busy = isLoading || isSaving;
 
     const refresh = async () => {
@@ -63,10 +84,51 @@ export function VariablesSection({
         }
     };
 
+    const loadMerged = async () => {
+        if (!selectedCategory) {
+            setMerged([]);
+            return;
+        }
+        const res = await loadMergedVariablesAction({
+            gameSlug,
+            categorySlug: selectedCategory.name,
+        });
+        if ('error' in res) {
+            setMerged([]);
+            return;
+        }
+        setMerged(res.result);
+    };
+
+    // The in-effect panel must reflect what the public board actually shows,
+    // so it is reloaded alongside the admin list on every scope-relevant
+    // change and after every write commits.
+    const refreshAll = async () => {
+        await Promise.all([refresh(), loadMerged()]);
+    };
+
+    const closeForm = () => {
+        setFormState({ open: false });
+        setFormError(null);
+    };
+
     useEffect(() => {
-        startLoadTransition(() => refresh());
+        startLoadTransition(() => refreshAll());
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [gameId, selectedCategory?.id]);
+
+    // A form whose captured scope no longer matches the selected category
+    // (e.g. the moderator navigated to a different category rail entry while
+    // a create form was open) is no longer valid — close it rather than let
+    // it silently retarget.
+    useEffect(() => {
+        if (!formState.open) return;
+        const stillValid =
+            formState.scopeCategoryId === null ||
+            formState.scopeCategoryId === selectedCategory?.id;
+        if (!stillValid) closeForm();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedCategory?.id]);
 
     const visible = (Array.isArray(rows) ? rows : [])
         .filter((r) =>
@@ -79,21 +141,118 @@ export function VariablesSection({
             (a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name),
         );
 
+    const gameWideRows = rows.filter((r) => r.categoryId === null);
     const subcategoryRows = visible.filter((r) => r.role === 'subcategory');
     const filterRows = visible.filter((r) => r.role === 'filter');
 
-    const closeForm = () => {
-        setFormState({ open: false });
-        setFormError(null);
+    const requestScopeChange = (next: Scope) => {
+        if (
+            formState.open &&
+            !window.confirm(
+                'Discard the variable you are editing? Your changes are not saved.',
+            )
+        ) {
+            return;
+        }
+        setScope(next);
+        closeForm();
     };
 
+    const openCreate = () =>
+        setFormState({
+            open: true,
+            mode: 'create',
+            scopeCategoryId:
+                scope === 'category' ? (selectedCategory?.id ?? null) : null,
+            scopeLabel:
+                scope === 'category'
+                    ? `${selectedCategory?.display ?? 'this category'} only`
+                    : 'Shared by all categories',
+        });
+
+    const openEdit = (row: VariableRowData) =>
+        setFormState({
+            open: true,
+            mode: 'edit',
+            editing: row,
+            scopeCategoryId: row.categoryId,
+            scopeLabel:
+                row.categoryId == null
+                    ? 'Shared by all categories'
+                    : `${selectedCategory?.display ?? 'this category'} only`,
+        });
+
+    // Only requests the preview — the write itself happens in commitWrite(),
+    // invoked by the dialog's onConfirm. No path here reaches the server.
     const handleSubmit = (values: VariableFormValues) => {
         setFormError(null);
+        setPreview(null);
+        setPreviewError(null);
+        setPendingWrite({ action: 'save', values });
+        // Captured when the form opened. Reading it from live props here is
+        // the bug that let an open create form silently retarget to
+        // whichever category was selected by the time you hit Save.
+        const categoryId = formState.open ? formState.scopeCategoryId : null;
+        startPreview(async () => {
+            const res = await previewVariableAction({
+                gameSlug,
+                gameId,
+                mode: 'save',
+                body: { categoryId, ...values },
+            });
+            if ('error' in res) setPreviewError(res.error);
+            else setPreview(res.result);
+        });
+    };
 
-        const categoryId =
-            scope === 'category' ? (selectedCategory?.id ?? null) : null;
+    const handleDelete = (row: VariableRowData) => {
+        setPreview(null);
+        setPreviewError(null);
+        setPendingWrite({ action: 'delete', row });
+        startPreview(async () => {
+            const res = await previewVariableAction({
+                gameSlug,
+                gameId,
+                mode: 'delete',
+                body: { categoryId: row.categoryId, name: row.name },
+            });
+            if ('error' in res) setPreviewError(res.error);
+            else setPreview(res.result);
+        });
+    };
 
-        if (formState.open && formState.mode === 'create') {
+    // The actual create/update/delete call. Only reachable through the
+    // dialog's confirm button, after a preview has been shown.
+    const commitWrite = () => {
+        if (!pendingWrite) return;
+
+        if (pendingWrite.action === 'delete') {
+            const row = pendingWrite.row;
+            startSaveTransition(async () => {
+                const res = await deleteVariableAction({
+                    gameSlug,
+                    gameId,
+                    categoryId: row.categoryId,
+                    name: row.name,
+                });
+                if ('error' in res) {
+                    setPreviewError(res.error);
+                    return;
+                }
+                toast.success(`Deleted "${row.name}"`);
+                setPendingWrite(null);
+                setPreview(null);
+                setPreviewError(null);
+                await refreshAll();
+            });
+            return;
+        }
+
+        if (!formState.open) return;
+        const values = pendingWrite.values;
+        const categoryId = formState.scopeCategoryId;
+
+        if (formState.mode === 'create') {
             startSaveTransition(async () => {
                 const res = await createVariableAction({
                     gameSlug,
@@ -109,71 +268,48 @@ export function VariablesSection({
                     },
                 });
                 if ('error' in res) {
-                    setFormError(res.error);
+                    setPreviewError(res.error);
                     return;
                 }
                 toast.success(`Created variable "${values.name}"`);
+                setPendingWrite(null);
+                setPreview(null);
+                setPreviewError(null);
                 closeForm();
-                await refresh();
+                await refreshAll();
             });
             return;
         }
 
-        if (formState.open && formState.mode === 'edit') {
-            const editing = formState.editing;
-            startSaveTransition(async () => {
-                const res = await updateVariableAction({
-                    gameSlug,
-                    gameId,
-                    body: {
-                        // Upsert key is (gameId, categoryId, nameNormalized).
-                        // Use the editing row's identity, NOT the form's
-                        // (the name field is locked in edit mode anyway).
-                        categoryId: editing.categoryId,
-                        name: editing.name,
-                        role: editing.role,
-                        values: values.values,
-                        defaultValueIndex: values.defaultValueIndex,
-                        sortOrder: values.sortOrder,
-                        description: values.description,
-                    },
-                });
-                if ('error' in res) {
-                    setFormError(res.error);
-                    return;
-                }
-                toast.success(`Updated "${editing.name}"`);
-                closeForm();
-                await refresh();
-            });
-        }
-    };
-
-    const handleDelete = (row: VariableRowData) => {
-        setConfirmDelete(row);
-    };
-
-    const closeConfirmDelete = () => {
-        setConfirmDelete(null);
-        setDeleteError(null);
-    };
-
-    const doDelete = (row: VariableRowData) => {
+        // formState.mode === 'edit'
+        const editing = formState.editing;
         startSaveTransition(async () => {
-            setDeleteError(null);
-            const res = await deleteVariableAction({
+            const res = await updateVariableAction({
                 gameSlug,
                 gameId,
-                categoryId: row.categoryId,
-                name: row.name,
+                body: {
+                    // Upsert key is (gameId, categoryId, nameNormalized).
+                    // Use the editing row's identity, NOT the form's (the
+                    // name field is locked in edit mode anyway).
+                    categoryId: editing.categoryId,
+                    name: editing.name,
+                    role: editing.role,
+                    values: values.values,
+                    defaultValueIndex: values.defaultValueIndex,
+                    sortOrder: values.sortOrder,
+                    description: values.description,
+                },
             });
             if ('error' in res) {
-                setDeleteError(res.error);
+                setPreviewError(res.error);
                 return;
             }
-            toast.success(`Deleted "${row.name}"`);
-            await refresh();
-            setConfirmDelete(null);
+            toast.success(`Updated "${editing.name}"`);
+            setPendingWrite(null);
+            setPreview(null);
+            setPreviewError(null);
+            closeForm();
+            await refreshAll();
         });
     };
 
@@ -202,7 +338,7 @@ export function VariablesSection({
         if ('error' in bRes) {
             toast.error(bRes.error);
         }
-        await refresh();
+        await refreshAll();
     };
 
     const handleMoveUp = (row: VariableRowData) => {
@@ -238,15 +374,24 @@ export function VariablesSection({
                 </div>
             </div>
 
+            {selectedCategory && (
+                <InEffectPanel
+                    merged={merged}
+                    gameWide={gameWideRows}
+                    categoryDisplay={selectedCategory.display}
+                    onJump={(v) => {
+                        setScope(v.categoryId == null ? 'game' : 'category');
+                        setHighlightId(v.id);
+                    }}
+                />
+            )}
+
             <ul className="nav nav-pills mb-3">
                 <li className="nav-item">
                     <button
                         type="button"
                         className={`nav-link ${scope === 'game' ? 'active' : ''}`}
-                        onClick={() => {
-                            setScope('game');
-                            closeForm();
-                        }}
+                        onClick={() => requestScopeChange('game')}
                         disabled={busy}
                     >
                         Game-wide
@@ -256,10 +401,7 @@ export function VariablesSection({
                     <button
                         type="button"
                         className={`nav-link ${scope === 'category' ? 'active' : ''}`}
-                        onClick={() => {
-                            setScope('category');
-                            closeForm();
-                        }}
+                        onClick={() => requestScopeChange('category')}
                         disabled={busy}
                     >
                         Category-specific
@@ -289,9 +431,7 @@ export function VariablesSection({
                     <button
                         type="button"
                         className="btn btn-sm btn-primary"
-                        onClick={() =>
-                            setFormState({ open: true, mode: 'create' })
-                        }
+                        onClick={openCreate}
                         disabled={busy}
                     >
                         + Add variable
@@ -306,6 +446,12 @@ export function VariablesSection({
                         formState.mode === 'edit' ? formState.editing : null
                     }
                     reservedParams={reservedParams}
+                    scopeLabel={formState.scopeLabel}
+                    categoryDisplay={
+                        selectedCategory?.display ?? 'this category'
+                    }
+                    gameWide={gameWideRows}
+                    isCategoryScoped={formState.scopeCategoryId !== null}
                     onSubmit={handleSubmit}
                     onCancel={closeForm}
                     isBusy={isSaving}
@@ -315,7 +461,7 @@ export function VariablesSection({
 
             {(scope === 'game' || categorySelected) && (
                 <>
-                    <RoleTable
+                    <VariableTable
                         title="Subcategory variables"
                         rows={subcategoryRows}
                         emptyLabel={
@@ -323,19 +469,14 @@ export function VariablesSection({
                                 ? 'No game-wide subcategory variables yet.'
                                 : 'No category-specific subcategory variables yet.'
                         }
-                        onEdit={(r) =>
-                            setFormState({
-                                open: true,
-                                mode: 'edit',
-                                editing: r,
-                            })
-                        }
+                        onEdit={openEdit}
                         onDelete={handleDelete}
                         onMoveUp={handleMoveUp}
                         onMoveDown={handleMoveDown}
                         busy={busy}
+                        highlightId={highlightId}
                     />
-                    <RoleTable
+                    <VariableTable
                         title="Filter variables"
                         rows={filterRows}
                         emptyLabel={
@@ -343,98 +484,37 @@ export function VariablesSection({
                                 ? 'No game-wide filter variables yet.'
                                 : 'No category-specific filter variables yet.'
                         }
-                        onEdit={(r) =>
-                            setFormState({
-                                open: true,
-                                mode: 'edit',
-                                editing: r,
-                            })
-                        }
+                        onEdit={openEdit}
                         onDelete={handleDelete}
                         onMoveUp={handleMoveUp}
                         onMoveDown={handleMoveDown}
                         busy={busy}
+                        highlightId={highlightId}
                     />
                 </>
             )}
-            <ConfirmDialog
-                open={confirmDelete != null}
-                onClose={closeConfirmDelete}
-                onConfirm={() => {
-                    if (confirmDelete) doDelete(confirmDelete);
-                }}
-                labelledBy="delete-variable-title"
-                title="Delete variable?"
-                message={`Delete variable "${confirmDelete?.name}"? Existing finished runs keep their resolved values until a re-resolve worker runs.`}
-                confirmLabel="Delete"
+
+            <ConsequenceDialog
+                open={pendingWrite !== null}
+                preview={preview}
+                loading={isPreviewing}
+                error={previewError}
+                variableName={
+                    pendingWrite?.action === 'delete'
+                        ? pendingWrite.row.name
+                        : (pendingWrite?.values.name ?? '')
+                }
+                action={pendingWrite?.action ?? 'save'}
+                gameSlug={gameSlug}
+                gameId={gameId}
                 pending={isSaving}
-                error={deleteError}
+                onConfirm={commitWrite}
+                onCancel={() => {
+                    setPendingWrite(null);
+                    setPreview(null);
+                    setPreviewError(null);
+                }}
             />
         </section>
-    );
-}
-
-interface RoleTableProps {
-    title: string;
-    rows: VariableRowData[];
-    emptyLabel: string;
-    onEdit: (row: VariableRowData) => void;
-    onDelete: (row: VariableRowData) => void;
-    onMoveUp: (row: VariableRowData) => void;
-    onMoveDown: (row: VariableRowData) => void;
-    busy: boolean;
-}
-
-function RoleTable({
-    title,
-    rows,
-    emptyLabel,
-    onEdit,
-    onDelete,
-    onMoveUp,
-    onMoveDown,
-    busy,
-}: RoleTableProps) {
-    return (
-        <div className="mb-3">
-            <h3 className="h6 mb-2">{title}</h3>
-            <div className="table-responsive">
-                <table className="table table-sm align-middle">
-                    <thead>
-                        <tr>
-                            <th />
-                            <th>Name</th>
-                            <th>Values</th>
-                            <th>Default</th>
-                            <th>Sort</th>
-                            <th />
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {rows.length === 0 ? (
-                            <tr>
-                                <td colSpan={6} className="text-muted">
-                                    {emptyLabel}
-                                </td>
-                            </tr>
-                        ) : (
-                            rows.map((row, idx) => (
-                                <VariableRow
-                                    key={row.id}
-                                    row={row}
-                                    isFirst={idx === 0}
-                                    isLast={idx === rows.length - 1}
-                                    onEdit={onEdit}
-                                    onDelete={onDelete}
-                                    onMoveUp={onMoveUp}
-                                    onMoveDown={onMoveDown}
-                                    isBusy={busy}
-                                />
-                            ))
-                        )}
-                    </tbody>
-                </table>
-            </div>
-        </div>
     );
 }
