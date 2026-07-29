@@ -14,7 +14,8 @@ interface Props {
 // Legacy URL. Task 12 made this a redirect into the unified console —
 // gate it the same way the console page does *before* redirecting, so a
 // non-mod hitting this old link gets the recruiting door, not a redirect
-// loop into the console's own notFound().
+// loop into the console's own notFound(). Lands on the console's tile
+// grid rather than a pane — see the tile-grid design doc.
 export default async function ModerationPage({ params }: Props) {
     const { game: slug } = await params;
 
@@ -37,5 +38,5 @@ export default async function ModerationPage({ params }: Props) {
         );
     }
 
-    redirect(`/games-v2/${slug}/manage?pane=attention`);
+    redirect(`/games-v2/${slug}/manage`);
 }

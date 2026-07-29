@@ -104,7 +104,14 @@ export function ConsoleChrome({
                 )}
                 <div>
                     <div className={styles.eyebrow}>Admin</div>
-                    <h1 className={styles.title}>{game.display}</h1>
+                    <h1 className={styles.title}>
+                        <Link
+                            href={`/games-v2/${game.name}/manage`}
+                            className={styles.titleLink}
+                        >
+                            {game.display}
+                        </Link>
+                    </h1>
                 </div>
                 <div className={styles.headerActions}>
                     {moderatedGamesCount > 1 && (
