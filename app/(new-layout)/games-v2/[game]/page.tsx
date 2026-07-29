@@ -60,15 +60,16 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
         caslSubject('leaderboard', { game: resolvedGame.name }),
     );
 
+    // Fetched unconditionally now: the sidebar's Moderators panel needs it
+    // on every board view, not just the claim-CTA path.
+    const moderators = await listGameModerators(resolvedGame.id);
+
     let claim: ClaimCtaState | null = null;
     if (sessionUsername && !canManage && !canManageRuns) {
-        const [mods, myClaim] = await Promise.all([
-            listGameModerators(resolvedGame.id),
-            getMyBoardClaim(session.id, resolvedGame.id),
-        ]);
+        const myClaim = await getMyBoardClaim(session.id, resolvedGame.id);
         claim = {
             gameId: resolvedGame.id,
-            hasModerators: mods.length > 0,
+            hasModerators: moderators.length > 0,
             myClaimPending: myClaim?.status === 'pending',
         };
     }
@@ -106,6 +107,7 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
             canManage={canManage}
             canManageRuns={canManageRuns}
             claim={claim}
+            moderators={moderators}
         />
     );
 }

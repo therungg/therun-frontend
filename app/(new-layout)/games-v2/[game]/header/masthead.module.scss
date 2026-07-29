@@ -107,10 +107,15 @@
     @include board.board-surface(0);
     overflow: hidden;
     margin-bottom: dt.$spacing-lg;
+    // Per-game identity: a flat 3px accent edge sampled from the cover art
+    // (AccentFromCover). Unset custom prop → transparent → today's look.
+    border-top: 3px solid var(--board-accent, transparent);
 }
 
 .plateTop {
     padding: 0 dt.$spacing-xl dt.$spacing-lg;
+    // Same accent one whisper down: a flat 5%-alpha tint, not a gradient.
+    background: var(--board-accent-soft, transparent);
 }
 
 .boardLine {
