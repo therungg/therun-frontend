@@ -144,7 +144,7 @@ export function ConsoleChrome({
                         onSelect={handleSelect}
                         attentionCount={attentionCount}
                         badgeDegraded={badgeDegraded}
-                                            />
+                    />
                 </aside>
 
                 <section className={styles.content}>{children}</section>

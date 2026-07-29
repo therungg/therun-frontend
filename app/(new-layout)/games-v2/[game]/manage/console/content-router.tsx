@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
+import type { CategoryConfigRow } from '~src/lib/console/category-rows';
 import type {
     BoardClaimRequest,
     GameModerator,
@@ -23,10 +24,9 @@ import { ReassignPane } from '../reassignments/reassign-pane';
 import { TimingSettingsSection } from '../timing/timing-settings-section';
 import { CombinationsSection } from '../variables/combinations-section';
 import { VariablesSection } from '../variables/variables-section';
+import { CategoriesPane } from './categories-pane';
 import styles from './console.module.scss';
 import type { GameDetailsData } from './game-details-pane';
-import type { CategoryConfigRow } from '~src/lib/console/category-rows';
-import { CategoriesPane } from './categories-pane';
 import { GameDetailsPane } from './game-details-pane';
 import { ModeratorsPane } from './moderators-pane';
 import type { NavItemId } from './nav-model';
