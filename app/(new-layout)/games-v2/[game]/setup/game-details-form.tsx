@@ -48,12 +48,17 @@ export function GameDetailsForm({
     game,
     onSaved,
     saveLabel = 'Save & continue',
+    savingExternally = false,
 }: {
     identifiers: GameIdentifiers;
     metadata: GameMetadata;
     game: { id: number; name: string; image: string | null };
     onSaved: () => void;
     saveLabel?: string;
+    // Set while a caller's own post-onSaved work is still in flight, so the
+    // button stays disabled through that gap instead of re-enabling between
+    // this form's save and the caller's (see step-details.tsx).
+    savingExternally?: boolean;
 }) {
     const [slug, setSlug] = useState(identifiers.slug ?? '');
     const [coverUrl, setCoverUrl] = useState(metadata.coverUrl ?? '');
@@ -449,10 +454,10 @@ export function GameDetailsForm({
             <button
                 type="button"
                 className={`${styles.primaryAction} mt-3`}
-                disabled={isSaving || isUploading}
+                disabled={isSaving || isUploading || savingExternally}
                 onClick={save}
             >
-                {isSaving ? 'Saving…' : saveLabel}
+                {isSaving || savingExternally ? 'Saving…' : saveLabel}
             </button>
         </>
     );
