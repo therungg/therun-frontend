@@ -89,6 +89,11 @@ export function BoardMasthead({
                         canModerate={canManageRuns}
                         claim={claim}
                         back={back}
+                        standingsHref={
+                            data.categories.length > 1
+                                ? `/games-v2/${data.game.name}/standings`
+                                : undefined
+                        }
                     />
                     <div className={styles.boardLine}>
                         <div>

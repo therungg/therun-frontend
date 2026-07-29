@@ -37,6 +37,13 @@ interface Props {
      */
     back?: { href: string; label: string };
     /**
+     * Cross-category standings link, shown opposite the back link. Board
+     * pages pass it when the game has 2+ featured categories (same
+     * suppression rule as ViewTabs — single-category standings is just the
+     * board itself).
+     */
+    standingsHref?: string;
+    /**
      * `full` (default) is the spec-sheet hero the category wall and the
      * standings page use, where the game is the subject. `condensed` is for
      * a board page, where the game is context and the category below it is
@@ -55,6 +62,7 @@ export function GameHero({
     canModerate,
     claim,
     back,
+    standingsHref,
     variant = 'full',
 }: Props) {
     // Carries the current board context (category + subcategory) into the
@@ -104,9 +112,14 @@ export function GameHero({
                 variant === 'condensed' ? styles.heroCondensed : styles.hero
             }
         >
-            {back && (
+            {(back || standingsHref) && (
                 <div className={styles.heroBack}>
-                    <BackLink href={back.href} label={back.label} />
+                    {back && <BackLink href={back.href} label={back.label} />}
+                    {standingsHref && (
+                        <Link href={standingsHref} className={styles.quietLink}>
+                            Cross-category standings
+                        </Link>
+                    )}
                 </div>
             )}
             <div className={styles.heroRow}>
