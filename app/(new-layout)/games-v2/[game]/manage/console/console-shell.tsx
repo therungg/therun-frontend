@@ -48,7 +48,6 @@ export interface ConsoleShellProps {
      * the cross-game hub only shows when there's more than one. */
     moderatedGamesCount?: number;
     modApplications?: BoardClaimRequest[];
-    initialSlug: string | null;
     initialRows: ManageCategoryRow[];
     /** Per-category configuration for the index matrix. */
     categoryConfig: CategoryConfigRow[];
@@ -67,7 +66,6 @@ export function ConsoleShell({
     degradedSources,
     moderatedGamesCount = 0,
     modApplications,
-    initialSlug,
     initialRows,
     categoryConfig,
     initialGroups,
@@ -446,7 +444,6 @@ export function ConsoleShell({
                     modApplications={modApplications}
                     moderators={moderators}
                     onAttentionCountChange={setLiveAttentionCount}
-                    initialSlug={initialSlug}
                     rows={rows}
                     groups={manageGroups}
                     onGroupsChange={setManageGroups}

@@ -43,7 +43,6 @@ export interface ContentRouterProps {
     moderators?: GameModerator[];
     /** Live item-count reporter from NeedsAttention, forwarded to the sidebar badge. */
     onAttentionCountChange?: (count: number) => void;
-    initialSlug: string | null;
     gameDetails?: GameDetailsData | null;
     rows: ManageCategoryRow[];
     groups: ManageGroup[];
@@ -125,22 +124,14 @@ export function ContentRouter(props: ContentRouterProps) {
                     onEditCategory={props.onEditCategory}
                 />
             );
-        // Both items live inside the single GameTab component — it scrolls to
-        // the matching section rather than remounting.
         case 'groups':
-        case 'identifiers':
             return (
                 <GameTab
                     game={game}
-                    activeSection={activeItem}
-                    initialSlug={props.initialSlug}
                     rows={props.rows}
                     groups={props.groups}
                     onGroupsChange={props.onGroupsChange}
-                    onRowChange={props.onRowChange}
                     onRowGroupChange={props.onRowGroupChange}
-                    onRowsReorder={props.onRowsReorder}
-                    onEditCategory={props.onEditCategory}
                 />
             );
         case 'game-details':
