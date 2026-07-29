@@ -59,6 +59,12 @@ export async function curateCategoryAction(
             body,
         );
 
+        // Invalidate as soon as the first write lands, not after the seed
+        // write too: the seed call below is a second, separate request, and
+        // if it throws the first write must still not be left stale behind
+        // the cache.
+        updateTag(`game-cats:${input.gameId}`);
+
         if (input.isMain === true && input.seed) {
             const seedBody: UpdateCategoryBody = {
                 primaryTiming: input.seed.primaryTiming,
@@ -74,7 +80,6 @@ export async function curateCategoryAction(
             );
         }
 
-        updateTag(`game-cats:${input.gameId}`);
         return { result };
     } catch (e) {
         if (e instanceof ApiError) return { error: e.message };

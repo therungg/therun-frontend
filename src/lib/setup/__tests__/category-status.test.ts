@@ -105,4 +105,48 @@ describe('categorySetupStatus', () => {
         expect(result.parts.some((p) => p.includes('variable'))).toBe(false);
         expect(result.ok).toBe(true);
     });
+
+    it('counts a game-wide variable and a differently-named category variable as 2', () => {
+        const cat = makeCategory({ id: 1 });
+        const variables: VariableRow[] = [
+            makeVariable({
+                id: 1,
+                categoryId: null,
+                name: 'Console',
+                nameNormalized: 'console',
+            }),
+            makeVariable({
+                id: 2,
+                categoryId: 1,
+                name: 'Version',
+                nameNormalized: 'version',
+            }),
+        ];
+
+        const result = categorySetupStatus(cat, variables, []);
+
+        expect(result.parts).toContain('2 variables');
+    });
+
+    it('does not double-count a game-wide variable shadowed by a same-named category variable', () => {
+        const cat = makeCategory({ id: 1 });
+        const variables: VariableRow[] = [
+            makeVariable({
+                id: 1,
+                categoryId: null,
+                name: 'Version',
+                nameNormalized: 'version',
+            }),
+            makeVariable({
+                id: 2,
+                categoryId: 1,
+                name: 'Version',
+                nameNormalized: 'version',
+            }),
+        ];
+
+        const result = categorySetupStatus(cat, variables, []);
+
+        expect(result.parts).toContain('1 variable');
+    });
 });
