@@ -4,7 +4,11 @@ import type {
     VariableRow,
 } from '../../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../../types/moderation.types';
-import { type CopyChoices, planCategoryCopy } from '../copy-category';
+import {
+    type CopyChoices,
+    eligibleCopySources,
+    planCategoryCopy,
+} from '../copy-category';
 
 function mkCat(overrides: Partial<ResolvedCategory> = {}): ResolvedCategory {
     return {
@@ -314,5 +318,39 @@ describe('planCategoryCopy', () => {
 
         expect(plan.steps).toEqual([]);
         expect(plan.overwrites).toEqual([]);
+    });
+});
+
+describe('eligibleCopySources', () => {
+    it('includes featured, non-archived categories other than the target', () => {
+        const target = mkCat({ id: 1, isMain: true, archived: false });
+        const categories: ResolvedCategory[] = [
+            target,
+            mkCat({ id: 2, isMain: true, archived: false }),
+        ];
+
+        expect(eligibleCopySources(categories, target)).toEqual([
+            categories[1],
+        ]);
+    });
+
+    it('excludes an archived category even when it still carries isMain: true', () => {
+        const target = mkCat({ id: 1, isMain: true, archived: false });
+        const categories: ResolvedCategory[] = [
+            target,
+            mkCat({ id: 2, isMain: true, archived: true }),
+        ];
+
+        expect(eligibleCopySources(categories, target)).toEqual([]);
+    });
+
+    it('excludes non-featured (isMain: false) categories', () => {
+        const target = mkCat({ id: 1, isMain: true, archived: false });
+        const categories: ResolvedCategory[] = [
+            target,
+            mkCat({ id: 2, isMain: false, archived: false }),
+        ];
+
+        expect(eligibleCopySources(categories, target)).toEqual([]);
     });
 });

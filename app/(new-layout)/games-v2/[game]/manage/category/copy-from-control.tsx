@@ -7,6 +7,7 @@ import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 import {
     type CopyChoices,
     type CopyStep,
+    eligibleCopySources,
     planCategoryCopy,
 } from '~src/lib/setup/copy-category';
 import { normalizeVariableName } from '~src/lib/variables/effective';
@@ -76,8 +77,8 @@ export function CopyFromControl({
     const panelRef = useRef<HTMLDivElement>(null);
 
     const sources = useMemo(
-        () => categories.filter((c) => c.isMain && c.id !== target.id),
-        [categories, target.id],
+        () => eligibleCopySources(categories, target),
+        [categories, target],
     );
 
     const [sourceId, setSourceId] = useState<number | ''>(sources[0]?.id ?? '');
