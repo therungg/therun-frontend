@@ -1,5 +1,6 @@
 import { apiFetch } from '~src/lib/api-client';
 import { V1FetchError } from '~src/lib/v1-fetch';
+import type { VariablePreview } from '~src/lib/variables/consequences';
 import type { VariableRow } from '../../types/leaderboards.types';
 
 function basePath(gameId: number) {
@@ -113,8 +114,34 @@ export async function deleteGameVariable(
     });
 }
 
+/**
+ * Dry run: what a proposed definition would move, without writing it. Rides
+ * the same route as the real write (`?dryRun=1`) so it shares its auth and
+ * validation — and so no new API Gateway resource was needed.
+ */
+export async function previewGameVariable(
+    sessionId: string,
+    gameId: number,
+    body: UpsertVariableInput | DeleteVariableInput,
+    mode: 'save' | 'delete',
+): Promise<VariablePreview> {
+    const raw = await apiFetch<{ preview: VariablePreview }>(
+        `${basePath(gameId)}?dryRun=1`,
+        {
+            sessionId,
+            method: mode === 'delete' ? 'DELETE' : 'POST',
+            body,
+        },
+    );
+    return raw.preview;
+}
+
 export interface CombinationsResult {
-    combinations: { subcategoryKey: string; valid: boolean }[];
+    combinations: {
+        subcategoryKey: string;
+        valid: boolean;
+        entryCount: number;
+    }[];
     mode: 'open' | 'managed';
 }
 
