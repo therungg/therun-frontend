@@ -1,7 +1,10 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { findShadowed } from '~src/lib/variables/effective';
+import { roleConsequence } from '~src/lib/variables/language';
 import type { VariableRow } from '../../../../../../types/leaderboards.types';
+import styles from './variables.module.scss';
 
 export interface VariableFormValues {
     name: string;
@@ -22,6 +25,11 @@ interface Props {
     mode: 'create' | 'edit';
     editing?: VariableRow | null;
     reservedParams: string[];
+    /** Scope captured when the form opened, e.g. "Any% only". Printed in the header. */
+    scopeLabel: string;
+    categoryDisplay: string;
+    /** Game-wide rows, for shadow detection on a category-scoped create. */
+    gameWide: VariableRow[];
     onSubmit: (values: VariableFormValues) => void;
     onCancel: () => void;
     isBusy: boolean;
@@ -57,6 +65,9 @@ export function VariableForm({
     mode,
     editing,
     reservedParams,
+    scopeLabel,
+    categoryDisplay,
+    gameWide,
     onSubmit,
     onCancel,
     isBusy,
@@ -133,7 +144,7 @@ export function VariableForm({
         }
         if (nameCollidesReserved) {
             setLocalError(
-                `"${normalizedName}" is reserved. Pick a different name.`,
+                `"${normalizedName}" is reserved — pick a different name.`,
             );
             return;
         }
@@ -181,6 +192,12 @@ export function VariableForm({
 
     return (
         <form onSubmit={handleSubmit} className="border rounded p-3 mb-3">
+            <p className={styles.formScope}>
+                {mode === 'create'
+                    ? `New variable — ${scopeLabel}`
+                    : `Editing ${editing?.name} — ${scopeLabel}`}
+            </p>
+
             <div className="row g-2">
                 <div className="col-md-6">
                     <label htmlFor="var-name" className="form-label small mb-1">
@@ -196,32 +213,15 @@ export function VariableForm({
                         disabled={isBusy || mode === 'edit'}
                     />
                     <small className="text-muted d-block">
-                        URL key:{' '}
+                        Web address:{' '}
                         <code>{normalizedName || '(enter a name)'}</code>
                     </small>
                     {nameCollidesReserved && (
                         <small className="text-danger d-block">
-                            Reserved name. Reserved:{' '}
-                            <code>{reservedParams.join(', ')}</code>
+                            "{normalizedName}" is reserved — pick a different
+                            name.
                         </small>
                     )}
-                </div>
-                <div className="col-md-3">
-                    <label htmlFor="var-sort" className="form-label small mb-1">
-                        Sort order
-                    </label>
-                    <input
-                        id="var-sort"
-                        type="number"
-                        className="form-control form-control-sm"
-                        value={sortOrder}
-                        onChange={(e) =>
-                            setSortOrder(
-                                Number.parseInt(e.target.value, 10) || 0,
-                            )
-                        }
-                        disabled={isBusy}
-                    />
                 </div>
             </div>
 
@@ -260,13 +260,35 @@ export function VariableForm({
                         per run.
                     </label>
                 </div>
-                {mode === 'edit' && (
-                    <small className="text-muted d-block mt-1">
-                        Role is locked once a variable exists. To change role,
-                        delete and recreate.
-                    </small>
-                )}
+                <small className="text-muted d-block mt-1">
+                    {mode === 'edit'
+                        ? 'This can’t be changed. To switch, delete the variable and make a new one.'
+                        : 'Choose carefully — this can’t be changed later without deleting the variable and making a new one.'}
+                </small>
             </fieldset>
+
+            <p className={styles.roleConsequence}>
+                {roleConsequence({
+                    role,
+                    variableName: name.trim() || 'this variable',
+                    categoryDisplay,
+                    valueCount: bucketsToValues(buckets).length,
+                })}
+            </p>
+
+            {mode === 'create' &&
+                scopeLabel !== 'Shared by all categories' &&
+                (() => {
+                    const shadowed = findShadowed(name, gameWide);
+                    return shadowed ? (
+                        <div className={styles.shadowWarning}>
+                            This replaces the shared{' '}
+                            <strong>{shadowed.name}</strong> for{' '}
+                            {categoryDisplay} only — its values and its default.
+                            Other categories keep the shared one.
+                        </div>
+                    ) : null;
+                })()}
 
             <div className="mt-3">
                 <label className="form-label small mb-1">Values</label>
@@ -301,8 +323,8 @@ export function VariableForm({
                                     disabled={isBusy}
                                 >
                                     {bucket.aliasesExpanded
-                                        ? '− aliases'
-                                        : '+ aliases'}
+                                        ? '− also accept'
+                                        : '+ also accept'}
                                 </button>
                                 <button
                                     type="button"
@@ -351,7 +373,7 @@ export function VariableForm({
                         htmlFor="var-default"
                         className="form-label small mb-1"
                     >
-                        Default value
+                        Used when a run doesn't say
                     </label>
                     <select
                         id="var-default"
@@ -371,28 +393,50 @@ export function VariableForm({
                         ))}
                     </select>
                     <small className="text-muted">
-                        Used when a run doesn't specify this variable.
+                        Runs that don't specify {name.trim() || 'this variable'}{' '}
+                        land on this board.
                     </small>
                 </div>
             )}
 
-            <div className="mt-3">
-                <label
-                    htmlFor="var-description"
-                    className="form-label small mb-1"
-                >
-                    Description (optional)
-                </label>
-                <textarea
-                    id="var-description"
-                    className="form-control form-control-sm"
-                    rows={2}
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Mod-facing note. Not shown to runners."
-                    disabled={isBusy}
-                />
-            </div>
+            <details className={styles.more}>
+                <summary>More</summary>
+                <div className="mt-3">
+                    <label htmlFor="var-sort" className="form-label small mb-1">
+                        Sort order
+                    </label>
+                    <input
+                        id="var-sort"
+                        type="number"
+                        className="form-control form-control-sm"
+                        value={sortOrder}
+                        onChange={(e) =>
+                            setSortOrder(
+                                Number.parseInt(e.target.value, 10) || 0,
+                            )
+                        }
+                        disabled={isBusy}
+                    />
+                </div>
+
+                <div className="mt-3">
+                    <label
+                        htmlFor="var-description"
+                        className="form-label small mb-1"
+                    >
+                        Description (optional)
+                    </label>
+                    <textarea
+                        id="var-description"
+                        className="form-control form-control-sm"
+                        rows={2}
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder="Mod-facing note. Not shown to runners."
+                        disabled={isBusy}
+                    />
+                </div>
+            </details>
 
             {(localError || error) && (
                 <div className="alert alert-danger py-2 mb-2 mt-2" role="alert">
