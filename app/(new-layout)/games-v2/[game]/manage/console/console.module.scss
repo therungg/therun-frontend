@@ -693,3 +693,15 @@ $rail: 3px; // severity spine / active accent width
     line-height: 1.4;
     color: var(--bs-secondary-color);
 }
+
+// Without this the tile grid is unreachable after the first click — the
+// header title is the console's app-logo-goes-home affordance, and the
+// moderation sub-route pages share this chrome, so they get it too.
+.titleLink {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}

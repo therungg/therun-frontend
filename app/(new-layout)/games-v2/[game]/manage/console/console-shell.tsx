@@ -6,10 +6,7 @@ import { ArrowClockwise } from 'react-bootstrap-icons';
 import { countAttentionAction } from '~src/actions/count-attention.action';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type { CategoryConfigRow } from '~src/lib/console/category-rows';
-import {
-    isRetiredPaneId,
-    legacyPaneRedirect,
-} from '~src/lib/console/legacy-panes';
+import { legacyPaneRedirect } from '~src/lib/console/legacy-panes';
 import type { BoardCompleteness } from '~src/lib/setup/completeness';
 import type { BoardHealth } from '~src/lib/setup/health';
 import type {
@@ -78,16 +75,13 @@ export function ConsoleShell({
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    // A `?pane=` deep-link (used by sub-route pages navigating back) wins over
-    // the default landing pane — but only if it's a pane this viewer can see.
-    // `history` is an overlay, `roster` always leaves for its own route, and
-    // `reports` normalizes into the attention pane — none of the three is
-    // ever a landing content pane. Per-game localStorage memory isn't
-    // consulted here — reading it during the initial render would desync
-    // from the server-rendered HTML and trip a hydration mismatch — the
-    // mount effect below applies it once, after hydration, instead.
+    // A `?pane=` deep link (used by sub-route pages navigating back) decides
+    // the pane. Anything else — a bare /manage — resolves to `null`, the tile
+    // grid. `history` is an overlay, `roster` and `setup` leave the console,
+    // and `reports` normalizes into the attention pane, so none of the four is
+    // ever a landing pane.
     const initialActive = useMemo<NavItemId | null>(
-        () => resolveInitialPane(searchParams.get('pane'), null, groups),
+        () => resolveInitialPane(searchParams.get('pane'), groups),
         [searchParams, groups],
     );
 
@@ -95,38 +89,15 @@ export function ConsoleShell({
         initialActive,
     );
 
-    // Same-page ?pane= links (health card, moderators pane) update the URL
-    // without remounting the shell — sync state to the validated param. This
-    // also fires on browser Back/Forward: Next re-renders `useSearchParams()`
-    // on popstate, which recomputes `initialActive` and lands here.
-    //
-    // The first run (post-hydration only) additionally consults this
-    // viewer's per-game "last pane" memory, but ONLY when the URL carries no
-    // `?pane=` at all — a deep link always wins over what they last had
-    // open. When that happens, the resolved pane is written straight back
-    // into the URL via `router.replace` (preserving any other params, e.g.
-    // `?pane=history` never reaches here — see the guard below). That makes
-    // every history entry self-describing: entry #0 becomes `?pane=timing`
-    // instead of staying bare, so browser Back always lands on a URL that
-    // already names its pane instead of silently falling through to the
-    // default and re-clobbering storage. Every subsequent run (pane
-    // switches, Back/Forward) just syncs to `initialActive` — the URL alone
-    // is authoritative once this one-time bootstrap has run.
     // Legacy deep links: `?pane=rules&cat=12` became
-    // /manage/category/12#rules. This runs before the stored-pane bootstrap
-    // below so a localStorage value written before the IA change is migrated
-    // too, instead of silently falling through to the default pane.
+    // /manage/category/12#rules. Runs once per mount, before the plain sync
+    // effect below applies `initialActive` — same-page `?pane=` links
+    // (health card, moderators pane) and browser Back/Forward both recompute
+    // `initialActive` and land there without remounting the shell.
     const legacyHandledRef = useRef(false);
     useEffect(() => {
         if (legacyHandledRef.current) return;
         legacyHandledRef.current = true;
-
-        if (typeof window !== 'undefined') {
-            const key = `console:${game.id}:lastPane`;
-            if (isRetiredPaneId(window.localStorage.getItem(key))) {
-                window.localStorage.removeItem(key);
-            }
-        }
 
         const redirect = legacyPaneRedirect(
             searchParams.get('pane'),
@@ -142,35 +113,15 @@ export function ConsoleShell({
         }
     }, [searchParams, router, game.id, game.name]);
 
-    const appliedStoredPaneRef = useRef(false);
     useEffect(() => {
-        if (!appliedStoredPaneRef.current) {
-            appliedStoredPaneRef.current = true;
-            const urlPane = searchParams.get('pane');
-            if (!urlPane && typeof window !== 'undefined') {
-                const stored = window.localStorage.getItem(
-                    `console:${game.id}:lastPane`,
-                );
-                const resolved = resolveInitialPane(urlPane, stored, groups);
-                setActiveItem(resolved);
-                if (resolved) {
-                    const params = new URLSearchParams(searchParams);
-                    params.set('pane', resolved);
-                    router.replace(`?${params.toString()}`, {
-                        scroll: false,
-                    });
-                }
-                return;
-            }
-        }
         setActiveItem(initialActive);
-    }, [initialActive, searchParams, groups, game.id, router]);
+    }, [initialActive]);
 
-    // Remember this viewer's last pane per game so their next visit lands
-    // where they left off instead of always the default — a `?pane=` deep
-    // link still always wins (see the effect above). Skip the write when
-    // it wouldn't change anything (e.g. the sync effect above re-running
-    // after its own `router.replace`) to avoid a redundant localStorage hit.
+    // Deliberately written but never read. Bare /manage now always lands on
+    // the tile grid, so nothing consults this — it is kept for the agreed
+    // per-user "skip the grid" setting, which will most likely skip to the
+    // viewer's last pane. Keeping the write means that lands as a one-line
+    // change rather than a re-derivation of this bookkeeping.
     useEffect(() => {
         if (typeof window === 'undefined' || !activeItem) return;
         const key = `console:${game.id}:lastPane`;
