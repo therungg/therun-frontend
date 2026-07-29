@@ -37,7 +37,6 @@ export interface ContentRouterProps {
     categories: Array<{ id: number; display: string }>;
     /** Per-category configuration for the index matrix. */
     categoryConfig: CategoryConfigRow[];
-    canEditStandards: boolean;
     attentionItems: AttentionItem[];
     degradedSources: string[];
     modApplications?: BoardClaimRequest[];
@@ -84,7 +83,6 @@ export function ContentRouter(props: ContentRouterProps) {
         activeItem,
         game,
         categories,
-        canEditStandards,
         attentionItems,
         degradedSources,
         modApplications,

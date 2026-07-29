@@ -440,7 +440,6 @@ export function ConsoleShell({
                         display: c.display,
                     }))}
                     categoryConfig={categoryConfig}
-                    canEditStandards={flags.canEditStandards}
                     gameDetails={gameDetails}
                     attentionItems={attentionItems}
                     degradedSources={degradedSources}
