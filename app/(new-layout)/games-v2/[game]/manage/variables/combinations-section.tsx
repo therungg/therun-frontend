@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
+import { parseSubcategoryKey } from '~src/lib/variables/keys';
 import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
 import { loadCombinationsAction } from './actions/load-combinations.action';
 import { saveCombinationsAction } from './actions/save-combinations.action';
@@ -17,16 +18,6 @@ interface Combo {
     subcategoryKey: string;
     valid: boolean;
     entryCount: number;
-}
-
-function parseKey(key: string): { name: string; value: string }[] {
-    if (!key) return [];
-    return key.split('|').map((pair) => {
-        const eq = pair.indexOf('=');
-        return eq < 0
-            ? { name: pair, value: '' }
-            : { name: pair.slice(0, eq), value: pair.slice(eq + 1) };
-    });
 }
 
 export function CombinationsSection({
@@ -112,7 +103,7 @@ export function CombinationsSection({
     const validCount = combos.filter((c) => c.valid).length;
 
     const firstParts = useMemo(
-        () => parseKey(combos[0]?.subcategoryKey ?? ''),
+        () => parseSubcategoryKey(combos[0]?.subcategoryKey ?? ''),
         [combos],
     );
 
@@ -189,7 +180,9 @@ export function CombinationsSection({
                             </thead>
                             <tbody>
                                 {combos.map((c, idx) => {
-                                    const parts = parseKey(c.subcategoryKey);
+                                    const parts = parseSubcategoryKey(
+                                        c.subcategoryKey,
+                                    );
                                     return (
                                         <tr
                                             key={c.subcategoryKey}
