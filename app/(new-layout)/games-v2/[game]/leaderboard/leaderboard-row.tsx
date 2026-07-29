@@ -21,7 +21,7 @@ import {
 } from './timing-columns';
 
 /**
- * "Set time"/"pending" pill that opens a small info popover on click/tap
+ * "Set time" pill that opens a small info popover on click/tap
  * instead of relying on a hover-only `title` tooltip (inaccessible to touch
  * and keyboard-only users). The panel is `position: fixed`, positioned from
  * the trigger's bounding rect on open, and closes on scroll/resize rather
@@ -247,15 +247,14 @@ export function LeaderboardRow({
                     />
                     <UserLink username={entry.runnerName} url={undefined} />
                     <CountryFlag country={entry.country} />
-                    {entry.rank === 1 &&
-                        entry.verificationStatus === 'verified' && (
-                            <span className={styles.wrChip}>
-                                <span className="visually-hidden">
-                                    World record
-                                </span>
-                                <span aria-hidden="true">WR</span>
+                    {entry.rank === 1 && (
+                        <span className={styles.wrChip}>
+                            <span className="visually-hidden">
+                                World record
                             </span>
-                        )}
+                            <span aria-hidden="true">WR</span>
+                        </span>
+                    )}
                 </span>
             </td>
             {primaryVisible && time(timingValue(primary.key), false, true)}
@@ -274,17 +273,6 @@ export function LeaderboardRow({
                         explanation="A moderator-set leaderboard time"
                     />
                 )}
-                {entry.source !== 'manual' &&
-                    entry.verificationStatus === 'pending' && (
-                        <InfoPill
-                            label="pending"
-                            explanation={
-                                isCurrentUser
-                                    ? "Your run is awaiting verification — you'll be notified."
-                                    : 'Awaiting moderator verification'
-                            }
-                        />
-                    )}
                 {entry.vodUrl && (
                     <a
                         href={entry.vodUrl}

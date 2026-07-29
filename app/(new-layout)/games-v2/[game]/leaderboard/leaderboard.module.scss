@@ -108,8 +108,8 @@ tr:focus-within .reveal {
     margin-right: 1px;
 }
 
-// "WR" chip on the verified rank-1 row (crown honesty rule: pending
-// rank-1 rows keep the pending pill instead — see leaderboard-row.tsx).
+// "WR" chip on the rank-1 row. Verification caveats are carried by the
+// board-level note in the meta bar, not per-row.
 .wrChip {
     @include board.board-pill(dt.$accent-gold);
     flex-shrink: 0;
@@ -296,7 +296,7 @@ tr:focus-within .reveal {
     }
 }
 
-// Info popover anchored to a .setPill trigger (set time / pending). The
+// Info popover anchored to a .setPill trigger (set time). The
 // panel is `position: fixed`, coordinates computed from the trigger's
 // bounding rect on open — this escapes .wrapper's overflow-y: hidden
 // (see .wrapper above), which an absolutely-positioned panel would get
@@ -375,6 +375,11 @@ tr:focus-within .reveal {
     @media (pointer: coarse) {
         padding: dt.$spacing-lg;
     }
+}
+
+.pendingNote {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
 }
 
 .notFoundNote {

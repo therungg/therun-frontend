@@ -151,6 +151,13 @@ export function LeaderboardPager({
     };
 
     const merged = mergeEntries(pages);
+    // No verified/pending counts exist on LeaderboardResponse, so this is
+    // derived from the loaded window: honest ("includes"), never a count.
+    const hasPendingLoaded =
+        !query.verified &&
+        merged.some(
+            (e) => e.source !== 'manual' && e.verificationStatus === 'pending',
+        );
     const isCurrentUserVisible =
         sessionUsername !== null &&
         merged.some((e) => isSameRunner(e.runnerName, sessionUsername));
@@ -307,6 +314,7 @@ export function LeaderboardPager({
                 </div>
             )}
             {(range ||
+                hasPendingLoaded ||
                 showFindMe ||
                 findMeStatus === 'not-found' ||
                 findMeStatus === 'partial-miss') && (
@@ -319,6 +327,11 @@ export function LeaderboardPager({
                                 {range.last.toLocaleString()}
                             </span>{' '}
                             of <span>{range.total.toLocaleString()}</span>
+                        </span>
+                    )}
+                    {hasPendingLoaded && (
+                        <span className={styles.pendingNote}>
+                            Includes runs awaiting verification
                         </span>
                     )}
                     {showFindMe && (
