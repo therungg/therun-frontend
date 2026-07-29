@@ -12,6 +12,12 @@
 
     tbody td {
         padding: dt.$spacing-md dt.$spacing-lg;
+
+        // Mobile: horizontal padding is the other thing eating the time
+        // column's room.
+        @media (max-width: 575.98px) {
+            padding-inline: dt.$spacing-sm;
+        }
     }
 
     tbody tr:last-child td {
@@ -43,10 +49,30 @@
     gap: dt.$spacing-sm;
     position: relative;
     z-index: 2;
+
+    @media (max-width: 575.98px) {
+        display: flex;
+        min-width: 0;
+
+        // Only the name shrinks — avatar, flag and WR chip hold their size.
+        a {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
 }
 
 .when {
     white-space: nowrap;
+
+    // Mobile column priority: rank, runner and the time always fit; the
+    // date is the sacrifice (it stays in the row title attr and on the run
+    // detail page). Hiding th+td together keeps the table's column model
+    // consistent.
+    @media (max-width: 575.98px) {
+        display: none;
+    }
 }
 
 .trailing {
@@ -128,6 +154,15 @@ tr:focus-within .reveal {
 .runner {
     font-weight: 600;
     color: var(--bs-emphasis-color);
+
+    // Mobile: this cell absorbs all slack (max-width: 0 + width: 100% is
+    // the table-cell shrink trick) so the time cell keeps its intrinsic
+    // width — a long username ellipsizes instead of pushing the time off
+    // the right edge.
+    @media (max-width: 575.98px) {
+        max-width: 0;
+        width: 100%;
+    }
 }
 
 .time {
