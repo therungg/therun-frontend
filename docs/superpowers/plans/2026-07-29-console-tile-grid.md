@@ -400,7 +400,7 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
     },
     roster: {
         action: 'Look up a run or runner',
-        blurb: 'Search every submitted run, check a runner’s history, and act on anything you find.',
+        blurb: "Search every submitted run, check a runner's history, and act on anything you find.",
     },
     bans: {
         action: 'Manage banned runners',
@@ -420,7 +420,7 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
     },
     categories: {
         action: 'Configure categories',
-        blurb: 'Add and edit categories, set timing, proof and minimum-time rules, and pick what’s featured.',
+        blurb: "Add and edit categories, set timing, proof and minimum-time rules, and pick what's featured.",
     },
     groups: {
         action: 'Sort categories into groups',
