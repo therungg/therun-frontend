@@ -60,7 +60,8 @@ arbitrary category.
 | The index | A comparison matrix, not a list. It is where bulk edits happen. |
 | Category picker | Deleted. The index replaces it. |
 | `categories-visibility` | Merged into the index as a column + bulk action. It was the same screen. |
-| Nav groups | Three → two (`moderate`, `board`). 18 items → 12. |
+| Nav groups | Three → two (`moderate`, `board`). 18 items → 11. |
+| `URL slug` | Deleted. `GameDetailsForm` already edits the slug through the same `updateIdentifiersAction`, so the item was a second door to one field. Its client-side validation moved into that form. |
 | Detail screen | Real sub-route, like `roster` and `run/[runId]` already are. |
 | Board-wide edits | Multi-select on the index. (Rejected: separate board-wide panes — a whole second settings surface to keep in sync.) |
 | Variables | Stays category-scoped on the detail screen, per the approved variables plan. |
@@ -75,21 +76,20 @@ arbitrary category.
 ```
 MODERATE                        BOARD
   Needs attention  3              Setup wizard
-  Browse runs                     Game details            → GameTab #details
+  Browse runs                     Game details            → GameDetailsPane
   Reports                         Categories              → the index  ★
-  Bans                            Groups                  → GameTab #groups
-  History                         URL slug                → GameTab #identifiers
-                                  Moderators
+  Bans                            Groups                  → GameTab
+  History                         Moderators
                                   Merge games & categories
 ```
 
-18 items → 12. `NavGroupId` becomes `'moderate' | 'board'`. `per-category` is deleted along
+18 items → 11. `NavGroupId` becomes `'moderate' | 'board'`. `per-category` is deleted along
 with its six ids; `categories-visibility` is renamed `categories` and moves to the board
 group between `game-details` and `groups` — which is wizard order (details 1, categories 2,
 groups 3).
 
-**`Cache` deliberately gets no nav row.** `game-tab.tsx:78-84` has a `CACHE_ANCHOR` section
-with no way to reach it, so it looked like an orphan worth linking. It isn't:
+**`Cache` deliberately gets no nav row.** `game-tab.tsx:41-49` has a `CACHE_ANCHOR` section
+reachable only by scrolling the Groups pane, so it looked like an orphan worth linking. It isn't:
 `invalidate-cache.action.ts:10-11` gates the button on the global `admin` / `board-admin`
 roles, so the per-game `game-admin` this console exists for cannot use it. Adding a nav row
 would advertise dead UI to exactly the wrong audience. The approved variables plan opens
@@ -228,7 +228,7 @@ landing pane and a good `defaultItem` for a board admin.
 
 | Wizard step | Console today | Console after |
 |---|---|---|
-| 1 Game details | Details & metadata + URL slug | **Game details** + URL slug |
+| 1 Game details | Details & metadata + URL slug | **Game details** (slug is a field on it) |
 | 2 Categories | Categories & visibility | **Categories** (the index) |
 | 3 Groups | Groups | Groups |
 | 4 Variables | Variables + Sub-boards | Category ▸ **Variables** / **Sub-boards** |
