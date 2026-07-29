@@ -21,6 +21,19 @@ import styles from './setup.module.scss';
 const ALLOWED_COVER_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
 const MAX_COVER_SIZE = 2 * 1024 * 1024;
 
+// Mirrors how the backend stores a slug, so the field can show what will
+// actually be saved and reject input that normalizes to nothing before the
+// request goes out. Not `~src/lib/normalize-slug` — that one strips spaces and
+// dashes for *comparison*, which is a different transform.
+const SLUG_MAX = 64;
+
+function normalizeSlugForStorage(s: string): string {
+    return s
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+}
+
 // One-click starters for the links every board wants. "Website" is the
 // generic official-site link; the icon on the game page keys off the URL.
 const LINK_PRESETS = [
@@ -123,9 +136,22 @@ export function GameDetailsForm({
         setLinks((ls) => [...ls, { label: '', url: '' }]);
     };
 
+    const slugPreview = normalizeSlugForStorage(slug);
+
     const save = () => {
+        setError(null);
+        if (slug.trim() !== '' && slugPreview === '') {
+            setError(
+                'URL slug must contain at least one alphanumeric character.',
+            );
+            return;
+        }
+        if (slugPreview.length > SLUG_MAX) {
+            setError(`URL slug must be ${SLUG_MAX} characters or fewer.`);
+            return;
+        }
+
         startSaving(async () => {
-            setError(null);
             const identRes = await updateIdentifiersAction({
                 gameSlug: game.name,
                 gameId: game.id,
@@ -312,7 +338,21 @@ export function GameDetailsForm({
                         className="form-control"
                         value={slug}
                         onChange={(e) => setSlug(e.target.value)}
+                        placeholder="e.g. super-mario-64"
                     />
+                    <small className="text-muted">
+                        {slug.trim() === '' ? (
+                            <>No slug set — falls back to the derived name.</>
+                        ) : slugPreview !== slug ? (
+                            <>
+                                Will be stored as <code>{slugPreview}</code>
+                            </>
+                        ) : (
+                            <>
+                                {slugPreview.length}/{SLUG_MAX} characters.
+                            </>
+                        )}
+                    </small>
                     <FieldLabel
                         className="mt-3"
                         htmlFor="discord"

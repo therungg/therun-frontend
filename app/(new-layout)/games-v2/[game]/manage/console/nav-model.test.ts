@@ -99,7 +99,7 @@ describe('showSetupCard', () => {
     it('shows on a Board-group pane', () => {
         const groups = buildNav({ ...NO_FLAGS, canConfigure: true });
         expect(showSetupCard(groups, 'game-details')).toBe(true);
-        expect(showSetupCard(groups, 'identifiers')).toBe(true);
+        expect(showSetupCard(groups, 'groups')).toBe(true);
     });
 
     it("shows on this viewer's default landing pane even outside the game group", () => {

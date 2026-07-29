@@ -230,7 +230,6 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 degradedSources={degradedSources}
                 moderatedGamesCount={session.moderatedGames?.length ?? 0}
                 modApplications={modApplications}
-                initialSlug={identifiers.slug}
                 initialRows={rows}
                 categoryConfig={categoryConfig}
                 initialGroups={groups}

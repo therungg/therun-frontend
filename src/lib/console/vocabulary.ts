@@ -15,7 +15,6 @@ export type ConceptId =
     | 'game-details'
     | 'categories'
     | 'groups'
-    | 'identifiers'
     | 'moderators'
     | 'reassign'
     | 'variables'
@@ -36,7 +35,6 @@ export const CONCEPT_LABEL: Record<ConceptId, string> = {
     'game-details': 'Game details',
     categories: 'Categories',
     groups: 'Groups',
-    identifiers: 'URL slug',
     moderators: 'Moderators',
     reassign: 'Merge games & categories',
     variables: 'Variables',
@@ -58,7 +56,8 @@ export function conceptLabel(id: ConceptId): string {
  * maps to four concepts; the console reaches all four from the category index.
  */
 export const STEP_CONCEPTS: Record<SetupStepId, ConceptId[]> = {
-    details: ['game-details', 'identifiers'],
+    // The URL slug lives inside the Game details pane, not beside it.
+    details: ['game-details'],
     categories: ['categories'],
     groups: ['groups'],
     variables: ['variables', 'combinations'],
@@ -78,7 +77,6 @@ const BOARD_PANES: ReadonlySet<ConceptId> = new Set<ConceptId>([
     'game-details',
     'categories',
     'groups',
-    'identifiers',
     'moderators',
     'reassign',
 ]);

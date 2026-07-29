@@ -14,7 +14,6 @@ export type NavItemId =
     | 'game-details'
     | 'categories'
     | 'groups'
-    | 'identifiers'
     | 'moderators'
     | 'reassign';
 
@@ -70,7 +69,6 @@ const ALL_GROUPS: NavGroup[] = [
             // Order matches the wizard: details 1, categories 2, groups 3.
             { id: 'categories', label: CONCEPT_LABEL.categories },
             { id: 'groups', label: CONCEPT_LABEL.groups },
-            { id: 'identifiers', label: CONCEPT_LABEL.identifiers },
             { id: 'moderators', label: CONCEPT_LABEL.moderators },
             { id: 'reassign', label: CONCEPT_LABEL.reassign },
         ],
