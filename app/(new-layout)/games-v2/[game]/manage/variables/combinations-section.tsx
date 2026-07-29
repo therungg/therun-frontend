@@ -121,10 +121,18 @@ export function CombinationsSection({
             <div className="d-flex align-items-center justify-content-between mb-3">
                 <div>
                     <h2 className="h5 mb-1">{CONCEPT_LABEL.combinations}</h2>
+                    {/* Never assert a mode we failed to load. `mode` defaults
+                        to 'open' and `combos` to [], so on a load error the
+                        old copy read "0 combinations, all live boards" —
+                        stating as fact something the request never told us. */}
                     <p className="text-muted small mb-0">
-                        {mode === 'open'
-                            ? `${combos.length} combinations, all live boards. Runners can submit any of them.`
-                            : `${validCount} of ${combos.length} combinations are live boards. Runs in the others keep their current board until the next rebuild.`}
+                        {loadError
+                            ? 'Couldn’t load this category’s sub-boards.'
+                            : isLoading
+                              ? 'Loading sub-boards…'
+                              : mode === 'open'
+                                ? `${combos.length} combinations, all live boards. Runners can submit any of them.`
+                                : `${validCount} of ${combos.length} combinations are live boards. Runs in the others keep their current board until the next rebuild.`}
                     </p>
                 </div>
                 <div className="d-flex gap-2">
@@ -157,8 +165,9 @@ export function CombinationsSection({
 
             {combos.length === 0 ? (
                 <p className="text-muted">
-                    No subcategory variables in scope — no combinations to
-                    manage.
+                    {loadError
+                        ? 'Sub-boards couldn’t be loaded, so this list is empty for a reason we don’t know. Retry once the error above clears.'
+                        : 'No subcategory variables in scope — no combinations to manage.'}
                 </p>
             ) : (
                 <>
