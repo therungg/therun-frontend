@@ -105,8 +105,8 @@ export function buildNav(flags: NavFlags): NavGroup[] {
 /**
  * Sidebar items that are never a content pane: `history` is an overlay,
  * `roster` and `setup` leave the console for their own routes, and `reports`
- * normalizes into the attention pane. Shared by `defaultItem` and
- * `isLandingPaneId` so neither can land the console on one of them.
+ * normalizes into the attention pane. Used by `isLandingPaneId` so neither can
+ * land the console on one of them.
  */
 const NON_LANDING_IDS: readonly NavItemId[] = [
     'history',
@@ -114,16 +114,6 @@ const NON_LANDING_IDS: readonly NavItemId[] = [
     'reports',
     'setup',
 ];
-
-/** First visible item that can actually render, used as the landing pane. */
-export function defaultItem(groups: NavGroup[]): NavItemId | null {
-    for (const group of groups) {
-        for (const item of group.items) {
-            if (!NON_LANDING_IDS.includes(item.id)) return item.id;
-        }
-    }
-    return null;
-}
 
 /**
  * Reports isn't a real pane — `handleNavigate('reports')` lands on the
@@ -145,20 +135,17 @@ export function sidebarActiveItem(
 
 /**
  * The setup-nudge slot (SetupChecklistCard while setup is incomplete,
- * BoardHealthCard once it's done) belongs above Board-group panes — where a
- * board admin is already in a "configure this board" mindset — and on
- * whichever pane is this viewer's actual console landing page, so newcomers
- * see it on arrival regardless of which group happens to be first for their
- * permission set. It has no business sitting above triage panes (Needs
- * attention, Roster, Bans...): a moderator mid-queue doesn't need a "finish
- * setup" nag competing for their attention.
+ * BoardHealthCard once it's done) belongs on the tile grid — the front door,
+ * where every viewer arrives — and above Board-group panes, where a board
+ * admin is already in a "configure this board" mindset. It has no business
+ * sitting above triage panes (Needs attention, Bans...): a moderator mid-queue
+ * doesn't need a "finish setup" nag competing for their attention.
  */
 export function showSetupCard(
     groups: NavGroup[],
     activeItem: NavItemId | null,
 ): boolean {
     if (activeItem == null) return true;
-    if (activeItem === defaultItem(groups)) return true;
     const boardGroup = groups.find((g) => g.id === 'board');
     return boardGroup?.items.some((it) => it.id === activeItem) ?? false;
 }
@@ -182,21 +169,15 @@ export function isLandingPaneId(
 }
 
 /**
- * Resolves which pane the console should land on: a valid `?pane=` deep link
- * wins outright; otherwise a valid per-game `localStorage` memory of the last
- * pane this viewer used; otherwise this viewer's default landing pane.
+ * Resolves which pane the console lands on: a valid `?pane=` deep link wins,
+ * and anything else lands on the tile grid (`null`) — the console's front
+ * door. There is no default pane and no stored-pane restore any more; see
+ * docs/superpowers/specs/2026-07-29-console-tile-grid-design.md.
  */
 export function resolveInitialPane(
     requestedPane: string | null,
-    storedPane: string | null,
     groups: NavGroup[],
 ): NavItemId | null {
     const visible = groups.flatMap((g) => g.items).map((it) => it.id);
-    if (isLandingPaneId(requestedPane, visible)) {
-        return requestedPane;
-    }
-    if (!requestedPane && isLandingPaneId(storedPane, visible)) {
-        return storedPane;
-    }
-    return defaultItem(groups);
+    return isLandingPaneId(requestedPane, visible) ? requestedPane : null;
 }
