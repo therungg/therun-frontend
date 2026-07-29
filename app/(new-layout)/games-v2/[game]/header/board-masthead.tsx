@@ -5,9 +5,6 @@ import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { ClaimCtaState } from '../claim/claim-cta';
 import { FilterBar } from '../filters/filter-bar';
-import { FiltersPopover } from '../filters/filters-popover';
-import { VerifiedToggle } from '../filters/verified-toggle';
-import gamePageStyles from '../game-page.module.scss';
 import { RulesPanel } from '../rules/rules-panel';
 import type { GamePageData } from '../types';
 import { effectiveSubcategoryLabel } from './board-identity';
@@ -52,9 +49,9 @@ export function BoardMasthead({
     const variableKeys = data.variables.map((v) => v.nameNormalized);
 
     // Owns the sentinel/observer (moved up from StickyBoardBar) so the plate
-    // can react to `stuck` too: once the bar takes over, the plate's own
-    // controls must stop being a second, off-screen, keyboard-reachable
-    // copy — see the `inert` + re-key on `.utilities` below.
+    // can react to `stuck` too: once the bar takes over, the plate's rail
+    // must stop being a second, off-screen, keyboard-reachable copy — see
+    // the `inert` on `.railZone` below.
     const [stuck, setStuck] = useState(false);
     const sentinel = useRef<HTMLDivElement>(null);
 
@@ -88,11 +85,10 @@ export function BoardMasthead({
                     />
                     <div className={styles.boardLine}>
                         <div>
-                            {category.groupName && (
-                                <span className={styles.groupEyebrow}>
-                                    {category.groupName}
-                                </span>
-                            )}
+                            {/* No group eyebrow here — the rail's endcap
+                                already names the group; repeating it above
+                                the title was the audit's duplicate-
+                                vocabulary finding. */}
                             <h1 className={styles.boardTitle}>
                                 {category.display}
                                 {suffix && (
@@ -127,9 +123,21 @@ export function BoardMasthead({
                                         <UserLink username={wr.runnerName} />
                                     )}
                                 </span>
+                                <button
+                                    type="button"
+                                    className={styles.recordHistoryLink}
+                                    onClick={onOpenHistory}
+                                >
+                                    WR history
+                                </button>
                             </div>
                         )}
                     </div>
+                    <RulesPanel
+                        rules={category.rules}
+                        open={rulesOpen}
+                        onToggle={onToggleRules}
+                    />
                 </div>
 
                 <div
@@ -137,21 +145,14 @@ export function BoardMasthead({
                     // game-page.tsx's colMain: pointer-events alone doesn't
                     // stop keyboard/AT users reaching an off-screen
                     // duplicate once the sticky bar is the interactive
-                    // copy. Applied to the whole rail zone, not just
-                    // `.utilities` — CategoryRail and FilterBar are
-                    // equally off-screen-but-focusable siblings here, and
-                    // tabbing into either one while stuck triggers the
-                    // browser's focus-into-view scroll, which un-intersects
-                    // the sentinel and unmounts the bar mid-navigation.
-                    // `inert` on a parent makes the whole subtree
+                    // copy. CategoryRail and FilterBar are
+                    // off-screen-but-focusable while stuck, and tabbing
+                    // into either one triggers the browser's
+                    // focus-into-view scroll, which un-intersects the
+                    // sentinel and unmounts the bar mid-navigation.
+                    // `inert` on the parent makes the whole subtree
                     // uninteractive/unfocusable for descendants (there's no
-                    // way for a child to opt back in), so this alone covers
-                    // CategoryRail and FilterBar. `.utilities` keeps its own
-                    // `key` below regardless: `inert` removes a node from
-                    // the tab order but can't tear down a document-level
-                    // listener an already-open FiltersPopover installed
-                    // (its Tab trap) — that needs an actual unmount, which
-                    // only the key remount provides.
+                    // way for a child to opt back in).
                     className={styles.railZone}
                     inert={stuck}
                 >
@@ -168,33 +169,6 @@ export function BoardMasthead({
                         }
                         selectedVarFilters={data.activeFilters.varFilters}
                     />
-                    <div
-                        key={stuck ? 'stuck' : 'top'}
-                        className={styles.utilities}
-                    >
-                        <VerifiedToggle
-                            verified={data.activeFilters.verified}
-                        />
-                        <span className={styles.utilitySep} aria-hidden />
-                        <FiltersPopover
-                            defs={data.variables}
-                            selectedVarFilters={data.activeFilters.varFilters}
-                        />
-                        <span className={styles.utilitySep} aria-hidden />
-                        <RulesPanel
-                            rules={category.rules}
-                            open={rulesOpen}
-                            onToggle={onToggleRules}
-                        />
-                        <span className={styles.utilitySep} aria-hidden />
-                        <button
-                            type="button"
-                            className={gamePageStyles.quietLink}
-                            onClick={onOpenHistory}
-                        >
-                            WR history
-                        </button>
-                    </div>
                 </div>
             </div>
             <div ref={sentinel} className={styles.sentinel} aria-hidden />
@@ -203,9 +177,6 @@ export function BoardMasthead({
                     coverUrl={data.gameMeta.coverUrl ?? data.game.image ?? null}
                     gameDisplay={data.game.display}
                     boardName={boardName}
-                    verified={data.activeFilters.verified}
-                    defs={data.variables}
-                    selectedVarFilters={data.activeFilters.varFilters}
                     onOpenHistory={onOpenHistory}
                     categories={data.categories}
                     groups={data.groups}

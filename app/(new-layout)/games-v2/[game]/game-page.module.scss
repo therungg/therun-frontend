@@ -72,24 +72,19 @@
 // Board-page hero: the game is context here, the category below it is the
 // subject — so no bottom rule (the plate encloses it) and no stat band.
 .heroCondensed {
-    padding: dt.$spacing-lg 0 dt.$spacing-md;
+    padding: dt.$spacing-md 0 dt.$spacing-sm;
 }
 
 .heroCoverSm {
-    width: 56px;
-    height: 75px;
+    // Board pages always use the 40px cover — the game line is context at
+    // every viewport. 40×53 holds the 3:4 game-art aspect ratio the
+    // codebase uses elsewhere.
+    width: 40px;
+    height: 53px;
     border-radius: dt.$radius-md;
     box-shadow: dt.$shadow-md;
     object-fit: cover;
     flex-shrink: 0;
-
-    // Decision 8: below 992px the condensed game line drops to a 40px
-    // cover, same breakpoint as `.heroCover`'s own step-down. 40×53 holds
-    // the 3:4 game-art aspect ratio the codebase uses elsewhere.
-    @media (max-width: 991.98px) {
-        width: 40px;
-        height: 53px;
-    }
 }
 
 // Up-navigation row. Lives inside the hero's own padding so it aligns with
@@ -140,6 +135,16 @@
     @media (max-width: 991.98px) {
         font-size: dt.$font-size-2xl;
     }
+}
+
+// Board pages: the game is context, not the subject — one visual rank
+// above body text, well under the category h1's 2xl.
+.heroTitleCondensed {
+    font-size: dt.$font-size-lg;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    margin: 0;
 }
 
 .heroFactsLine {

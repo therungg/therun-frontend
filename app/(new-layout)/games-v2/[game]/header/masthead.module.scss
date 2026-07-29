@@ -7,24 +7,55 @@
     gap: dt.$spacing-sm;
 }
 
+// Flat rail rows: the railZone is the only surface. A group is one row —
+// eyebrow label + chips — separated by hairlines, no recessed boxes
+// (the engraved-well treatment read as a stack of disabled inputs and
+// cost ~60px of chrome; the audit's "grey on grey on grey").
 .block {
-    @include board.board-rail-block;
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-lg;
+
+    & + & {
+        margin-top: dt.$spacing-sm;
+        padding-top: dt.$spacing-sm;
+        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    }
+
+    // Narrow screens can't spare the label gutter: label above chips.
+    @media (max-width: 767.98px) {
+        flex-direction: column;
+        gap: dt.$spacing-xs;
+    }
 }
 
 .endcap {
-    @include board.board-rail-endcap;
+    @include board.board-eyebrow;
+    flex-shrink: 0;
+    min-width: 7.5rem;
+
+    @media (max-width: 767.98px) {
+        min-width: 0;
+    }
 }
 
 .well {
-    @include board.board-rail-well;
+    flex: 1;
+    min-width: 0;
+
+    @media (max-width: 767.98px) {
+        width: 100%;
+    }
 }
 
 .wellSolo {
-    @include board.board-rail-well-solo;
+    // No label column — chips span the full row.
 }
 
 .chips {
-    @include board.board-rail-chips;
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs;
 }
 
 .chip {
@@ -99,7 +130,7 @@
     font-weight: 750;
     letter-spacing: -0.025em;
     line-height: 1.1;
-    margin: dt.$spacing-xs 0 0;
+    margin: 0;
 }
 
 // The subcategory half of the board's name, one rank down in weight.
@@ -135,27 +166,20 @@
     color: var(--bs-secondary-color);
 }
 
+// The record's own drill-down: history lives with the number it explains.
+.recordHistoryLink {
+    @include board.board-quiet-link;
+    display: block;
+    margin-left: auto;
+    margin-top: dt.$spacing-xs;
+    font-size: dt.$font-size-xs;
+}
+
 // The rail is the plate's floor: deeper tint, its own top hairline.
 .railZone {
     background: var(--bs-secondary-bg);
     border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-    padding: dt.$spacing-md dt.$spacing-xl;
-}
-
-.utilities {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: dt.$spacing-sm;
-    margin-top: dt.$spacing-sm;
-    padding-top: dt.$spacing-sm;
-    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
-}
-
-.utilitySep {
-    width: 1px;
-    height: 0.9rem;
-    background: rgba(var(--bs-border-color-rgb), 0.6);
+    padding: dt.$spacing-sm dt.$spacing-xl;
 }
 
 // ---- Sticky slim bar -------------------------------------------------
