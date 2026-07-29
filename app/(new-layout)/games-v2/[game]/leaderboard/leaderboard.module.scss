@@ -12,6 +12,12 @@
 
     tbody td {
         padding: dt.$spacing-md dt.$spacing-lg;
+
+        // Mobile: horizontal padding is the other thing eating the time
+        // column's room.
+        @media (max-width: 575.98px) {
+            padding-inline: dt.$spacing-sm;
+        }
     }
 
     tbody tr:last-child td {
@@ -43,10 +49,30 @@
     gap: dt.$spacing-sm;
     position: relative;
     z-index: 2;
+
+    @media (max-width: 575.98px) {
+        display: flex;
+        min-width: 0;
+
+        // Only the name shrinks — avatar, flag and WR chip hold their size.
+        a {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
 }
 
 .when {
     white-space: nowrap;
+
+    // Mobile column priority: rank, runner and the time always fit; the
+    // date is the sacrifice (it stays in the row title attr and on the run
+    // detail page). Hiding th+td together keeps the table's column model
+    // consistent.
+    @media (max-width: 575.98px) {
+        display: none;
+    }
 }
 
 .trailing {
@@ -108,8 +134,8 @@ tr:focus-within .reveal {
     margin-right: 1px;
 }
 
-// "WR" chip on the verified rank-1 row (crown honesty rule: pending
-// rank-1 rows keep the pending pill instead — see leaderboard-row.tsx).
+// "WR" chip on the rank-1 row. Verification caveats are carried by the
+// board-level note in the meta bar, not per-row.
 .wrChip {
     @include board.board-pill(dt.$accent-gold);
     flex-shrink: 0;
@@ -128,6 +154,15 @@ tr:focus-within .reveal {
 .runner {
     font-weight: 600;
     color: var(--bs-emphasis-color);
+
+    // Mobile: this cell absorbs all slack (max-width: 0 + width: 100% is
+    // the table-cell shrink trick) so the time cell keeps its intrinsic
+    // width — a long username ellipsizes instead of pushing the time off
+    // the right edge.
+    @media (max-width: 575.98px) {
+        max-width: 0;
+        width: 100%;
+    }
 }
 
 .time {
@@ -296,7 +331,7 @@ tr:focus-within .reveal {
     }
 }
 
-// Info popover anchored to a .setPill trigger (set time / pending). The
+// Info popover anchored to a .setPill trigger (set time). The
 // panel is `position: fixed`, coordinates computed from the trigger's
 // bounding rect on open — this escapes .wrapper's overflow-y: hidden
 // (see .wrapper above), which an absolutely-positioned panel would get
@@ -347,6 +382,66 @@ tr:focus-within .reveal {
     }
 }
 
+// ---- Live strip ----------------------------------------------
+// Someone is running this exact board right now. `.liveDot`'s treatment is
+// replicated from sidebar.module.scss rather than composed across modules
+// (cross-module class composition depends on bundler concat order).
+.liveStrip {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    margin-block-end: dt.$spacing-sm;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-lg;
+    font-size: dt.$font-size-sm;
+}
+
+.liveStripDot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: dt.$accent-red;
+    flex-shrink: 0;
+    animation: liveStripPulse 2s ease-in-out infinite;
+}
+
+@keyframes liveStripPulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.4;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .liveStripDot {
+        animation: none;
+    }
+}
+
+.liveStripText {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.liveStripLink {
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.liveStripMore {
+    @include board.control-pill;
+    margin-left: auto;
+    flex-shrink: 0;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    padding: dt.$spacing-xs dt.$spacing-md;
+}
+
 // ---- Range indicator + Find me --------------------------------
 .boardMetaBar {
     display: flex;
@@ -355,6 +450,24 @@ tr:focus-within .reveal {
     flex-wrap: wrap;
     gap: dt.$spacing-sm;
     margin-block-end: dt.$spacing-sm;
+}
+
+.metaLead {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    flex-wrap: wrap;
+}
+
+// The board's view controls (Find me, Verified, Filters) — right-aligned,
+// single instance on the page (deliberately not duplicated in the sticky
+// bar — see sticky-board-bar.tsx).
+.metaControls {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin-left: auto;
+    position: relative;
 }
 
 .rangeIndicator {
@@ -375,6 +488,11 @@ tr:focus-within .reveal {
     @media (pointer: coarse) {
         padding: dt.$spacing-lg;
     }
+}
+
+.pendingNote {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
 }
 
 .notFoundNote {

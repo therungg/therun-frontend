@@ -123,6 +123,14 @@ export function CategoryRail({
                                                         ? undefined
                                                         : `${c.display}, ${runners} runners`
                                                 }
+                                                // The count's unit differs
+                                                // from the plate's run
+                                                // count — name it on hover.
+                                                title={
+                                                    runners == null
+                                                        ? undefined
+                                                        : `${runners.toLocaleString()} runners`
+                                                }
                                                 className={`${styles.chip} ${active ? styles.chipActive : ''}`}
                                             >
                                                 {withEmblems && c.imageUrl && (

@@ -17,7 +17,7 @@ export function RecentPbsPanel({ pbs, gameSlug }: Props) {
         return (
             <section className={styles.panel}>
                 <span className={`${styles.eyebrow} d-block mb-2`}>
-                    Recent PBs
+                    Recent PBs · all boards
                 </span>
                 <p className="text-muted mb-0">No recent PBs.</p>
             </section>
@@ -26,7 +26,11 @@ export function RecentPbsPanel({ pbs, gameSlug }: Props) {
 
     return (
         <section className={styles.panel}>
-            <span className={`${styles.eyebrow} d-block mb-2`}>Recent PBs</span>
+            {/* "all boards": this panel is game-wide — without the scope the
+                16 Star entries beside a 120 Star board read as a bug. */}
+            <span className={`${styles.eyebrow} d-block mb-2`}>
+                Recent PBs · all boards
+            </span>
             <ul className="list-unstyled mb-0">
                 {pbs.slice(0, 5).map((p) => (
                     <li key={p.id} className={styles.pbRow}>
