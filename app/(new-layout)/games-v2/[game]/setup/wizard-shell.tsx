@@ -1,6 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { consoleLocationForStep } from '~src/lib/console/vocabulary';
 import { boardPulse } from '~src/lib/setup/board-pulse';
 import {
     SETUP_STEP_ORDER,
@@ -115,6 +117,7 @@ export function WizardShell({ data, initialStep }: Props) {
                     onAdvance={onAdvance}
                     onBack={onBack}
                 />
+                <ConsoleWayfinding step={step} gameSlug={data.game.name} />
                 <div className={styles.navBar}>
                     {stepIndex > 0 && (
                         <button
@@ -202,4 +205,30 @@ function CurrentStep({
                 <StepFinish data={data} onAdvance={onAdvance} onBack={onBack} />
             );
     }
+}
+
+/**
+ * Teaches the console while the mod is still in the relevant context: every
+ * step says where its work lives once setup is done. Answers the audit's §D2
+ * ("nothing maps wizard -> console") without a separate tour.
+ */
+function ConsoleWayfinding({
+    step,
+    gameSlug,
+}: {
+    step: SetupStepId;
+    gameSlug: string;
+}) {
+    const location = consoleLocationForStep(step);
+    // The final step has no console home — it isn't a thing you maintain.
+    if (!location) return null;
+    return (
+        <p className={styles.wayfinding}>
+            After setup this lives in the console under{' '}
+            <Link href={`/games-v2/${gameSlug}/manage?pane=${location.pane}`}>
+                {location.crumb}
+            </Link>
+            .
+        </p>
+    );
 }

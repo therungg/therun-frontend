@@ -8,7 +8,6 @@ import { buildNav, type NavFlags, type NavItemId } from './nav-model';
 
 interface Props {
     game: ResolvedGame;
-    categories: Array<{ id: number; display: string }>;
     flags: NavFlags;
     attentionCount: number;
     /** True when one or more attention sources failed to load — the badge
@@ -30,7 +29,6 @@ interface Props {
  */
 export function SubrouteChrome({
     game,
-    categories,
     flags,
     attentionCount,
     badgeDegraded = false,
@@ -65,9 +63,6 @@ export function SubrouteChrome({
             attentionCount={attentionCount}
             badgeDegraded={badgeDegraded}
             moderatedGamesCount={moderatedGamesCount}
-            categories={categories}
-            selectedCategoryId={null}
-            onSelectCategory={() => {}}
         >
             {children}
         </ConsoleChrome>

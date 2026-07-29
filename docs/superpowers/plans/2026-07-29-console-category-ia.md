@@ -19,7 +19,8 @@
 - Unused variables must be prefixed `_`. Icons come from `react-bootstrap-icons` — no emoji.
 - Never run the dev server as part of a task. Never push to `main` in this repo. Do not open a PR.
 - **Test file convention:** under `src/lib`, tests live in a sibling `__tests__/` directory (`src/lib/setup/__tests__/steps.test.ts`). Under `app/`, they are colocated (`nav-model.test.ts`). Follow whichever applies to the file you are testing.
-- Run `npm run typecheck` and `npx vitest run <file>` per task. Do not run the full suite unless a task says to.
+- **`npm run typecheck` does NOT pass on main — it reports 356 pre-existing errors** (untyped legacy components, mostly implicit-any). A clean run is not achievable and is not the bar. Use `./scripts/tc-diff.sh`, which fails only on errors absent from `.claude/tc-baseline.txt`. Wherever a task below says "typecheck", it means that script. Never "fix" a baseline error as part of a task — it is out of scope and hides the signal.
+- Run `./scripts/tc-diff.sh` and `npx vitest run <file>` per task. Do not run the full suite unless a task says to.
 
 ## Interaction with the variables work in flight
 

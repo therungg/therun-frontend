@@ -67,7 +67,6 @@ export default async function RunnerPage({ params, searchParams }: Props) {
     return (
         <SubrouteChrome
             game={game}
-            categories={chrome.categories}
             flags={chrome.flags}
             attentionCount={chrome.attentionCount}
             badgeDegraded={chrome.degradedSources.length > 0}

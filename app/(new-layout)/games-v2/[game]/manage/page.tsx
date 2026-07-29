@@ -5,6 +5,10 @@ import { Suspense } from 'react';
 import { getSession } from '~src/actions/session.action';
 import { listGameBoardClaims } from '~src/lib/board-claims';
 import { listManageCategories, listManageGroups } from '~src/lib/category-mgmt';
+import {
+    buildCategoryRows,
+    type CategoryConfigRow,
+} from '~src/lib/console/category-rows';
 import { getGameIdentifiers, getGameMetadata } from '~src/lib/game-mgmt';
 import { listGameModerators } from '~src/lib/game-moderators';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
@@ -89,9 +93,6 @@ export default async function GameAdminConsolePage({ params }: Props) {
     const categoryName = (id: number) =>
         categoryById.get(id) ?? `Category ${id}`;
 
-    const initialCategory =
-        categories.find((c) => !c.archived) ?? categories[0] ?? null;
-
     const [identifiers, rawRows, groups, queueRes, reportsRes, manualTimesRes] =
         await Promise.all([
             getGameIdentifiers(game.id).catch(() => ({
@@ -156,6 +157,13 @@ export default async function GameAdminConsolePage({ params }: Props) {
     // Safe because every edit-moderators holder also has category-settings:
     // backend deriveGameLists guarantees adminedGames ⊆ moderatedGames, and
     // the board-admin role grants both (src/rbac/ability.ts).
+    // The index matrix needs variables + policies whether or not metadata
+    // loads, so they are fetched here rather than inside the metadata branch.
+    let categoryConfig: CategoryConfigRow[] = buildCategoryRows({
+        categories,
+        policies: [],
+        variables: [],
+    });
     if (canConfigure) {
         const [variables, policies, gameMods, metadata] = await Promise.all([
             listGameVariables(sessionId, game.id).catch(() => []),
@@ -164,6 +172,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
             getGameMetadata(game.id).catch(() => null),
         ]);
         moderators = gameMods;
+        categoryConfig = buildCategoryRows({ categories, policies, variables });
         if (metadata) {
             setupCompleteness = computeCompleteness({
                 categories: categoryFactsFromResolved(categories),
@@ -221,9 +230,9 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 degradedSources={degradedSources}
                 moderatedGamesCount={session.moderatedGames?.length ?? 0}
                 modApplications={modApplications}
-                initialCategoryId={initialCategory?.id ?? null}
                 initialSlug={identifiers.slug}
                 initialRows={rows}
+                categoryConfig={categoryConfig}
                 initialGroups={groups}
                 setupCompleteness={setupCompleteness}
                 boardHealth={boardHealth}
