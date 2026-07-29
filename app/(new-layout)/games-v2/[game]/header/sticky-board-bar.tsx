@@ -1,10 +1,7 @@
 import type {
     ResolvedCategory,
     ResolvedGroup,
-    VariableDef,
 } from '../../../../../types/leaderboards.types';
-import { FiltersPopover } from '../filters/filters-popover';
-import { VerifiedToggle } from '../filters/verified-toggle';
 import gamePageStyles from '../game-page.module.scss';
 import styles from './masthead.module.scss';
 import { SwitchBoardPopover } from './switch-board-popover';
@@ -14,9 +11,6 @@ interface Props {
     gameDisplay: string;
     /** The board's full name, subcategory values included. */
     boardName: string;
-    verified: boolean;
-    defs: VariableDef[];
-    selectedVarFilters: Record<string, string>;
     onOpenHistory: () => void;
     /** Passed through to `SwitchBoardPopover` — its own state stays local
      * to that component, not lifted up here. */
@@ -36,25 +30,17 @@ interface Props {
  * internally rather than lifting it here — this component only threads its
  * data props through.
  *
- * While this bar is showing, the plate (and its own VerifiedToggle /
- * FiltersPopover) is still mounted just above the viewport, so two live
- * instances of each control exist in the DOM. Both components were checked
- * for anything id-based or otherwise instance-unsafe (see task-6-report.md)
- * and neither has hardcoded ids, aria-controls targets, or module-level
- * shared state, so plain duplication is safe — the one reachable defect
- * was the plate's copy staying interactive and keeping an open popover's
- * focus trap alive after the bar took over, which `inert` on the plate's
- * whole `.railZone` (covering CategoryRail, FilterBar and `.utilities`
- * alike) plus a re-key on `.utilities` itself (in board-masthead.tsx) now
- * fixes.
+ * View controls (VerifiedToggle, FiltersPopover) deliberately do NOT live
+ * here — they exist in exactly one place, the leaderboard's meta bar, so
+ * no duplicate-instance/focus-trap machinery is needed for them. While
+ * this bar is showing, the plate's rail is still mounted just above the
+ * viewport; `inert` on `.railZone` (board-masthead.tsx) keeps that copy
+ * out of the tab order.
  */
 export function StickyBoardBar({
     coverUrl,
     gameDisplay,
     boardName,
-    verified,
-    defs,
-    selectedVarFilters,
     onOpenHistory,
     categories,
     groups,
@@ -85,11 +71,6 @@ export function StickyBoardBar({
                 variableKeys={variableKeys}
             />
             <span className={styles.stickyEnd}>
-                <VerifiedToggle verified={verified} />
-                <FiltersPopover
-                    defs={defs}
-                    selectedVarFilters={selectedVarFilters}
-                />
                 <button
                     type="button"
                     className={gamePageStyles.quietLink}

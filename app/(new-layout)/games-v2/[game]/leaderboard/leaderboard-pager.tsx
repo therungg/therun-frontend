@@ -5,8 +5,11 @@ import type { LeaderboardQuery } from '~src/lib/leaderboards-v1';
 import type {
     LeaderboardEntry,
     LeaderboardResponse,
+    VariableDef,
 } from '../../../../../types/leaderboards.types';
 import { fetchLeaderboardPage } from '../actions/fetch-page.action';
+import { FiltersPopover } from '../filters/filters-popover';
+import { VerifiedToggle } from '../filters/verified-toggle';
 import { isSameRunner } from '../shared/is-same-runner';
 import { computeBoardRange } from './board-range';
 import { planFindMeSearch } from './find-me-plan';
@@ -43,6 +46,10 @@ interface Props {
     subcategoryKey: string;
     /** Subcategory-role variable names, for building a row's own subcategory key from `entry.variables`. */
     subcategoryDefKeys: string[];
+    /** All variable defs — the meta bar's Filters popover needs the filter-role ones. */
+    variableDefs: VariableDef[];
+    /** Active filter-variable selections, keyed by `nameNormalized`. */
+    selectedVarFilters: Record<string, string>;
 }
 
 // Module-level flag (not state): the parent keys this component by the
@@ -74,6 +81,8 @@ export function LeaderboardPager({
     categorySlug,
     subcategoryKey,
     subcategoryDefKeys,
+    variableDefs,
+    selectedVarFilters,
 }: Props) {
     const [pages, setPages] = useState<LeaderboardEntry[][]>([initial.entries]);
     const [minPage, setMinPage] = useState(initial.page);
@@ -151,6 +160,13 @@ export function LeaderboardPager({
     };
 
     const merged = mergeEntries(pages);
+    // No verified/pending counts exist on LeaderboardResponse, so this is
+    // derived from the loaded window: honest ("includes"), never a count.
+    const hasPendingLoaded =
+        !query.verified &&
+        merged.some(
+            (e) => e.source !== 'manual' && e.verificationStatus === 'pending',
+        );
     const isCurrentUserVisible =
         sessionUsername !== null &&
         merged.some((e) => isSameRunner(e.runnerName, sessionUsername));
@@ -306,45 +322,56 @@ export function LeaderboardPager({
                     )}
                 </div>
             )}
-            {(range ||
-                showFindMe ||
-                findMeStatus === 'not-found' ||
-                findMeStatus === 'partial-miss') && (
+            {(initial.totalItems > 0 || filtersActive) && (
                 <div className={styles.boardMetaBar}>
-                    {range && (
-                        <span className={styles.rangeIndicator}>
-                            Showing{' '}
-                            <span>
-                                {range.first.toLocaleString()}–
-                                {range.last.toLocaleString()}
-                            </span>{' '}
-                            of <span>{range.total.toLocaleString()}</span>
-                        </span>
-                    )}
-                    {showFindMe && (
-                        <button
-                            type="button"
-                            className={styles.findMeBtn}
-                            disabled={isPending}
-                            onClick={findMe}
-                        >
-                            {findMeStatus === 'searching'
-                                ? 'Finding…'
-                                : 'Find me'}
-                        </button>
-                    )}
-                    {findMeStatus === 'not-found' && (
-                        <span className={styles.notFoundNote}>
-                            {query.verified
-                                ? 'Not on this board — pending runs are hidden by the Verified filter.'
-                                : 'Not on this board yet'}
-                        </span>
-                    )}
-                    {findMeStatus === 'partial-miss' && (
-                        <span className={styles.notFoundNote}>
-                            Couldn't find your run in the pages searched
-                        </span>
-                    )}
+                    <span className={styles.metaLead}>
+                        {range && (
+                            <span className={styles.rangeIndicator}>
+                                Showing{' '}
+                                <span>
+                                    {range.first.toLocaleString()}–
+                                    {range.last.toLocaleString()}
+                                </span>{' '}
+                                of <span>{range.total.toLocaleString()}</span>
+                            </span>
+                        )}
+                        {hasPendingLoaded && (
+                            <span className={styles.pendingNote}>
+                                Includes runs awaiting verification
+                            </span>
+                        )}
+                        {findMeStatus === 'not-found' && (
+                            <span className={styles.notFoundNote}>
+                                {query.verified
+                                    ? 'Not on this board — pending runs are hidden by the Verified filter.'
+                                    : 'Not on this board yet'}
+                            </span>
+                        )}
+                        {findMeStatus === 'partial-miss' && (
+                            <span className={styles.notFoundNote}>
+                                Couldn't find your run in the pages searched
+                            </span>
+                        )}
+                    </span>
+                    <span className={styles.metaControls}>
+                        {showFindMe && (
+                            <button
+                                type="button"
+                                className={styles.findMeBtn}
+                                disabled={isPending}
+                                onClick={findMe}
+                            >
+                                {findMeStatus === 'searching'
+                                    ? 'Finding…'
+                                    : 'Find me'}
+                            </button>
+                        )}
+                        <VerifiedToggle verified={query.verified ?? false} />
+                        <FiltersPopover
+                            defs={variableDefs}
+                            selectedVarFilters={selectedVarFilters}
+                        />
+                    </span>
                 </div>
             )}
             <LeaderboardTable

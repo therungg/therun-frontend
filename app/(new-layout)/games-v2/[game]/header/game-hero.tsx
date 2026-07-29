@@ -114,8 +114,8 @@ export function GameHero({
                     <img
                         src={cover}
                         alt={game.display}
-                        width={variant === 'condensed' ? 56 : 132}
-                        height={variant === 'condensed' ? 75 : 176}
+                        width={variant === 'condensed' ? 40 : 132}
+                        height={variant === 'condensed' ? 53 : 176}
                         className={
                             variant === 'condensed'
                                 ? styles.heroCoverSm
@@ -128,10 +128,11 @@ export function GameHero({
                     {variant === 'condensed' ? (
                         // The board line's <h1> (BoardMasthead) is the page
                         // heading here — the game is context, not the
-                        // subject, so its name is not a heading at all.
-                        // Same class as the full variant's <h1> so nothing
-                        // shifts visually.
-                        <p className={styles.heroTitle}>{game.display}</p>
+                        // subject, so its name is not a heading at all and
+                        // sits a full visual rank below the category title.
+                        <p className={styles.heroTitleCondensed}>
+                            {game.display}
+                        </p>
                     ) : (
                         <h1 className={styles.heroTitle}>{game.display}</h1>
                     )}

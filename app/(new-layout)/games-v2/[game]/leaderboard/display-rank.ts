@@ -4,7 +4,7 @@ import { type TimingKey, timingValue } from './timing-columns';
 export interface DisplayRank {
     /** What to render in the rank cell, e.g. "1" or "=1". */
     label: string;
-    /** True when this entry shares its primary time with the entry above it. */
+    /** True when this entry shares its primary time with an adjacent entry. */
     tied: boolean;
 }
 
@@ -25,12 +25,18 @@ export function computeDisplayRanks(
     for (let i = 0; i < entries.length; i++) {
         const entry = entries[i];
         const prev = i > 0 ? entries[i - 1] : null;
+        const next = i < entries.length - 1 ? entries[i + 1] : null;
         const value = timingValue(entry, primaryTiming);
-        const tied =
+        const tiedWithPrev =
             prev != null &&
             value != null &&
             timingValue(prev, primaryTiming) === value;
-        if (!tied) groupRank = entry.rank;
+        const tiedWithNext =
+            next != null &&
+            value != null &&
+            timingValue(next, primaryTiming) === value;
+        if (!tiedWithPrev) groupRank = entry.rank;
+        const tied = tiedWithPrev || tiedWithNext;
         out.push({ label: tied ? `=${groupRank}` : `${groupRank}`, tied });
     }
     return out;
