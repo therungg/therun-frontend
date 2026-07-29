@@ -1758,6 +1758,12 @@ no panel — it looks authoritative."
 
 ### Task 12: The in-effect panel
 
+> **Post-merge note.** Unchanged as a component, but its mount point moved. It is no
+> longer composed into a new screen — Task 16 renders it at the top of the existing
+> `VariablesSection`, which `category-detail.tsx` mounts as the `variables` section of
+> the category rail. Build the component exactly as specified below; do not wire it up.
+
+
 **Files:**
 - Create: `.../manage/variables/in-effect-panel.tsx`
 - Create: `.../manage/variables/variables.module.scss`
@@ -2108,6 +2114,18 @@ to runs that already exist."
 
 ### Task 14: Sub-boards — counts, plain language, an exit from managed mode
 
+> **Post-merge note.** `CombinationsSection` is now mounted by `category-detail.tsx` as
+> its own `combinations` section in the category rail, adjacent to `variables` (human
+> ruling: keep them as two sections rather than folding sub-boards into the variables
+> screen). Modify the component in place as below; do NOT move it, and do not edit
+> `category-detail.tsx`.
+>
+> One correctness note: in that route `selectedCategory` is always a real category, so
+> the count is per-board. The component still computes `categoryId = selectedCategory?.id
+> ?? null`, and a null category makes the backend sum entries across every category
+> sharing a subcategory key. Do not render counts when `selectedCategory` is null.
+
+
 **Files:**
 - Modify: `.../manage/variables/combinations-section.tsx`
 
@@ -2343,29 +2361,107 @@ the role lock where the choice is still free rather than after it."
 
 ---
 
-### Task 16: `variables-screen.tsx` — compose the zones, fix the state bugs
+### Task 16: Rebuild `variables-section.tsx` in place — panel, review step, state fixes
 
-The largest task. It replaces `variables-section.tsx`, extracts the table, wires the preview into the save path, and fixes the retargeting and dirty-state bugs.
+> **REWRITTEN after merging `origin/main` (console category IA).** The original task
+> composed a new `variables-screen.tsx` from three zones and rewired `content-router.tsx`.
+> That is now impossible and unnecessary: the `variables` and `combinations` console panes
+> no longer exist. `NavItemId` dropped them, the sidebar category picker and its prop
+> chain are gone, and both sections are now mounted by
+> `app/(new-layout)/games-v2/[game]/manage/category/[categoryId]/category-detail.tsx`
+> as adjacent entries in a scroll-spy rail (`SECTIONS`, ~line 35; `body`, ~line 98).
+> Human ruling: keep them as two sections. So there is no screen to compose — the work
+> lands inside the existing `VariablesSection`, and `category-detail.tsx` is NOT modified.
 
 **Files:**
 - Create: `.../manage/variables/variable-table.tsx`
-- Create: `.../manage/variables/variables-screen.tsx`
-- Delete: `.../manage/variables/variables-section.tsx`
-- Modify: `.../manage/console/content-router.tsx`
+- Modify: `.../manage/variables/variables-section.tsx`
+- Do NOT touch: `content-router.tsx`, `nav-model.ts`, `console-shell.tsx`, `category-detail.tsx`
 
 **Interfaces:**
-- Consumes: `InEffectPanel` (12), `ConsequenceDialog` (13), `CombinationsSection` (14), `VariableForm` (15), `previewVariableAction` (10), `describeSource` (8), existing `loadVariablesAction` / `createVariableAction` / `updateVariableAction` / `deleteVariableAction`, and `getVariables` from `~src/lib/leaderboards-v1`.
-- Produces: `<VariablesScreen gameSlug gameId selectedCategory mergedVariables />` where `mergedVariables: VariableRow[]` is the public merged list passed from the server.
+- Consumes: `InEffectPanel` (Task 12), `ConsequenceDialog` (Task 13), `VariableForm` (Task 15), `previewVariableAction` (Task 10), `getVariables` from `~src/lib/leaderboards-v1`, and the existing `loadVariablesAction` / `createVariableAction` / `updateVariableAction` / `deleteVariableAction`.
+- Produces: `VariablesSection` keeps its current export name and props — `{ gameSlug: string; gameId: number; selectedCategory: ResolvedCategory | null }`. `category-detail.tsx` and the wizard already pass exactly these; changing the signature would break both.
 
 - [ ] **Step 1: Extract the table**
 
-Create `variable-table.tsx` containing today's `RoleTable` component and its `RoleTableProps` interface, moved verbatim from `variables-section.tsx`, exported as `VariableTable` / `VariableTableProps`. Keep the `VariableRow` import path relative to the new file.
+Move today's `RoleTable` component and its `RoleTableProps` interface out of
+`variables-section.tsx` into a new `variable-table.tsx`, exported as `VariableTable` /
+`VariableTableProps`. Behaviour unchanged; fix the relative import paths for the new file
+location. Import it back into `variables-section.tsx`.
 
-- [ ] **Step 2: Create the screen**
+- [ ] **Step 2: Load the merged list for the in-effect panel**
 
-Create `variables-screen.tsx`. Start from today's `variables-section.tsx` and change these things, keeping everything else (load, sort swap, delete confirm) as-is:
+`VariablesSection` is a client component, so it fetches the merged list through a server
+action. Create `.../manage/variables/actions/load-merged-variables.action.ts`:
 
-**(a) Capture scope when the form opens.** Replace `FormState` with:
+```typescript
+'use server';
+
+import { getSession } from '~src/actions/session.action';
+import { getVariables } from '~src/lib/leaderboards-v1';
+import type { VariableRow } from '../../../../../../../types/leaderboards.types';
+import { confirmPermission } from '~src/rbac/confirm-permission';
+
+interface Input {
+    gameSlug: string;
+    categorySlug: string;
+}
+
+/**
+ * The merged, published list exactly as the public board receives it. Read
+ * through the public endpoint on purpose: the in-effect panel must not be able
+ * to disagree with what runners see.
+ */
+export async function loadMergedVariablesAction(
+    input: Input,
+): Promise<{ result: VariableRow[] } | { error: string }> {
+    const user = await getSession();
+    try {
+        confirmPermission(user, 'edit', 'category-settings', {
+            game: input.gameSlug,
+        });
+    } catch {
+        return { error: 'Not authorized to view variables.' };
+    }
+    try {
+        const { variables } = await getVariables(
+            input.gameSlug,
+            input.categorySlug,
+        );
+        return { result: variables as VariableRow[] };
+    } catch {
+        return { error: 'Could not load what this board currently shows.' };
+    }
+}
+```
+
+Verify the relative depth of the `types/leaderboards.types` import against a sibling
+action file before committing — count the directories, do not copy the line above blind.
+
+In `variables-section.tsx`, load it alongside the existing `refresh()` whenever
+`selectedCategory?.id` changes, into a `merged` state array. Render the panel above the
+scope pills:
+
+```tsx
+            {selectedCategory && (
+                <InEffectPanel
+                    merged={merged}
+                    gameWide={rows.filter((r) => r.categoryId === null)}
+                    categoryDisplay={selectedCategory.display}
+                    onJump={(v) => {
+                        setScope(v.categoryId == null ? 'game' : 'category');
+                        setHighlightId(v.id);
+                    }}
+                />
+            )}
+```
+
+Add `const [highlightId, setHighlightId] = useState<number | null>(null);` and pass it to
+both `VariableTable`s so the jumped-to row can take a highlight class.
+
+- [ ] **Step 3: Capture the form's scope when it opens**
+
+Replace `FormState` with a shape that carries the scope:
 
 ```typescript
 type FormState =
@@ -2373,7 +2469,6 @@ type FormState =
     | {
           open: true;
           mode: 'create';
-          /** Scope captured at open time, NOT read from props at submit. */
           scopeCategoryId: number | null;
           scopeLabel: string;
       }
@@ -2386,7 +2481,7 @@ type FormState =
       };
 ```
 
-Where the form is opened, capture the scope:
+Capture it where the form opens:
 
 ```typescript
     const openCreate = () =>
@@ -2402,35 +2497,39 @@ Where the form is opened, capture the scope:
         });
 ```
 
-In `handleSubmit`, replace `const categoryId = scope === 'category' ? (selectedCategory?.id ?? null) : null;` with:
+In `handleSubmit`, replace
+`const categoryId = scope === 'category' ? (selectedCategory?.id ?? null) : null;` with:
 
 ```typescript
-        // Captured when the form opened. Reading it from live props here is
-        // the bug that let an open create form silently retarget to whichever
+        // Captured when the form opened. Reading it from live props here is the
+        // bug that let an open create form silently retarget to whichever
         // category was selected by the time you hit Save.
         const categoryId = formState.open ? formState.scopeCategoryId : null;
 ```
 
-**(b) Route every write through the preview.** Add:
+- [ ] **Step 4: Route every write through the consequence review**
+
+Add state:
 
 ```typescript
-    const [pendingWrite, setPendingWrite] = useState<{
-        values: VariableFormValues;
-        action: 'save';
-    } | { row: VariableRowData; action: 'delete' } | null>(null);
+    const [pendingWrite, setPendingWrite] = useState<
+        | { action: 'save'; values: VariableFormValues }
+        | { action: 'delete'; row: VariableRowData }
+        | null
+    >(null);
     const [preview, setPreview] = useState<VariablePreview | null>(null);
     const [previewError, setPreviewError] = useState<string | null>(null);
     const [isPreviewing, startPreview] = useTransition();
 ```
 
-`handleSubmit` now only *requests* the preview:
+`handleSubmit` now only requests the preview:
 
 ```typescript
     const handleSubmit = (values: VariableFormValues) => {
         setFormError(null);
         setPreview(null);
         setPreviewError(null);
-        setPendingWrite({ values, action: 'save' });
+        setPendingWrite({ action: 'save', values });
         const categoryId = formState.open ? formState.scopeCategoryId : null;
         startPreview(async () => {
             const res = await previewVariableAction({
@@ -2445,9 +2544,12 @@ In `handleSubmit`, replace `const categoryId = scope === 'category' ? (selectedC
     };
 ```
 
-Move the existing create/update bodies into `commitWrite()`, called by the dialog's `onConfirm`. `handleDelete` follows the identical shape with `mode: 'delete'` and body `{ categoryId: row.categoryId, name: row.name }`; `doDelete` becomes the commit. The old `ConfirmDialog` for deletes is removed — `ConsequenceDialog` replaces it.
+Move the existing create/update bodies into a `commitWrite()` called by the dialog's
+`onConfirm`. `handleDelete` follows the same shape with `mode: 'delete'` and body
+`{ categoryId: row.categoryId, name: row.name }`; `doDelete` becomes its commit. Remove
+the old delete `ConfirmDialog` — `ConsequenceDialog` replaces it.
 
-**(c) Guard the dirty form.** Add:
+- [ ] **Step 5: Guard the dirty form**
 
 ```typescript
     const requestScopeChange = (next: Scope) => {
@@ -2464,13 +2566,10 @@ Move the existing create/update bodies into `commitWrite()`, called by the dialo
     };
 ```
 
-and call it from both scope pills instead of `setScope(...) + closeForm()`.
-
-Add the same guard for a category change:
+Call it from both scope pills instead of `setScope(...) + closeForm()`. And close a form
+whose captured scope no longer matches the selected category:
 
 ```typescript
-    // A category switch while a form is open used to leave the form mounted
-    // against the old scope. Close it explicitly, asking first.
     useEffect(() => {
         if (!formState.open) return;
         const stillValid =
@@ -2481,29 +2580,11 @@ Add the same guard for a category change:
     }, [selectedCategory?.id]);
 ```
 
-**(d) Compose the zones.** The returned JSX becomes:
+- [ ] **Step 6: Render the dialog**
+
+At the end of the returned JSX, beside the existing `ConfirmDialog` slot:
 
 ```tsx
-    return (
-        <div>
-            <InEffectPanel
-                merged={mergedVariables}
-                gameWide={rows.filter((r) => r.categoryId === null)}
-                categoryDisplay={selectedCategory?.display ?? 'this category'}
-                onJump={(v) => {
-                    setScope(v.categoryId == null ? 'game' : 'category');
-                    setHighlightId(v.id);
-                }}
-            />
-
-            {/* …existing scope pills (via requestScopeChange), form, tables… */}
-
-            <CombinationsSection
-                gameSlug={gameSlug}
-                gameId={gameId}
-                selectedCategory={selectedCategory}
-            />
-
             <ConsequenceDialog
                 open={pendingWrite !== null}
                 preview={preview}
@@ -2525,67 +2606,16 @@ Add the same guard for a category change:
                     setPreviewError(null);
                 }}
             />
-        </div>
-    );
 ```
 
-Add `const [highlightId, setHighlightId] = useState<number | null>(null);` and pass it to both `VariableTable`s so the jumped-to row can take a highlight class. Render the sub-boards section inside `<div id="sub-boards">` so the console's deep link can target it.
+- [ ] **Step 7: Verify**
 
-- [ ] **Step 3: Delete the old file**
+Run: `cd /home/joey/therun/therun-fr && npm run test`
+Expected: the full suite still passes.
 
-```bash
-git -C /home/joey/therun/therun-fr rm "app/(new-layout)/games-v2/[game]/manage/variables/variables-section.tsx"
-```
-
-- [ ] **Step 4: Update the console router**
-
-In `content-router.tsx`, replace the `VariablesSection` import with `VariablesScreen`, and change both the `variables` and `combinations` cases:
-
-```tsx
-        case 'variables':
-        case 'combinations':
-            return selectedCategory ? (
-                <VariablesScreen
-                    gameSlug={game.name}
-                    gameId={game.id}
-                    selectedCategory={selectedCategory}
-                    mergedVariables={props.mergedVariables ?? []}
-                />
-            ) : (
-                <Placeholder title="Variables">Pick a category.</Placeholder>
-            );
-```
-
-Delete the `CombinationsSection` import and its old case. Add `mergedVariables?: VariableRow[]` to the router's props and thread it from `ConsoleShell`, which receives it from `manage/page.tsx`.
-
-- [ ] **Step 5: Load the merged list server-side**
-
-In `app/(new-layout)/games-v2/[game]/manage/page.tsx`, inside the existing `if (canConfigure)` block, add to the `Promise.all`:
-
-```typescript
-            initialCategory
-                ? getVariables(game.name, initialCategory.name).catch(() => ({
-                      variables: [],
-                      reservedParams: [],
-                      validCombinations: { mode: 'open' as const },
-                  }))
-                : Promise.resolve({
-                      variables: [],
-                      reservedParams: [],
-                      validCombinations: { mode: 'open' as const },
-                  }),
-```
-
-Import `getVariables` from `~src/lib/games-v1`'s sibling `~src/lib/leaderboards-v1`, and pass `mergedVariables={merged.variables}` down through `ConsoleShell` to `ContentRouter`.
-
-Note the limitation and accept it for now: the merged list is fetched for the *initial* category. When the viewer switches category in the sidebar, the panel needs the new category's merged list — `VariablesScreen` refetches it client-side via a small server action in the same `useEffect` that already reloads `rows` on `selectedCategory?.id`. Add that action as `load-merged-variables.action.ts` calling `getVariables(gameSlug, categorySlug)` and returning `{ result: variables }`.
-
-- [ ] **Step 6: Typecheck**
-
-Run: `cd /home/joey/therun/therun-fr && npm run typecheck`
-Expected: clean. Resolve any remaining `VariableForm` prop errors by passing `scopeLabel`, `categoryDisplay` and `gameWide` from the captured form state.
-
-- [ ] **Step 7: Lint**
+Run: `cd /home/joey/therun/therun-fr && bash scripts/tc-diff.sh`
+Expected: `no new type errors`. (Raw `npm run typecheck` shows 356 pre-existing errors and
+is not the gate.)
 
 Run: `cd /home/joey/therun/therun-fr && npm run lint`
 Expected: clean.
@@ -2593,54 +2623,79 @@ Expected: clean.
 - [ ] **Step 8: Commit**
 
 ```bash
-git -C /home/joey/therun/therun-fr add -A "app/(new-layout)/games-v2/[game]/manage"
-git -C /home/joey/therun/therun-fr commit -m "feat(variables): one screen — in effect, editor, sub-boards
+git -C /home/joey/therun/therun-fr add "app/(new-layout)/games-v2/[game]/manage/variables"
+git -C /home/joey/therun/therun-fr commit -m "feat(variables): in-effect panel and consequence review in the variables section
 
-Every write now goes through the consequence review. The form's scope is
-captured when it opens, fixing the retargeting bug where an open create
-form silently re-aimed at whichever category was selected at submit time.
-Switching scope or category no longer discards a dirty form silently."
+Every write now goes through the review step. The form's scope is captured
+when it opens, fixing the retargeting bug where an open create form silently
+re-aimed at whichever category was selected at submit time. Switching scope
+or category no longer discards a dirty form silently."
 ```
 
----
 
 # Phase 5 — Wizard
 
-### Task 17: Step 4 renders the same screen, and the contradicting copy goes
+### Task 17: Wizard step 4 — sub-boards, and the contradicting copy goes
+
+> **REWRITTEN after merging `origin/main`.** The original task swapped in a composed
+> `VariablesScreen` and added a `mergedVariables` prop chain through `setup/page.tsx`.
+> Neither is needed now: `VariablesSection` gained the in-effect panel internally in
+> Task 16 and loads the merged list itself, so the wizard inherits it for free.
+> `wizard-shell.tsx` also already gained `ConsoleWayfinding` on main, which implements
+> the audit's "nothing maps wizard → console" item — do not re-implement it.
 
 **Files:**
 - Modify: `.../setup/steps/step-variables.tsx`
 - Modify: `.../setup/steps/category-band-preview.tsx`
-- Modify: `.../setup/page.tsx`
+- Do NOT modify: `setup/page.tsx`, `setup/types.ts`, `wizard-shell.tsx`
 
 **Interfaces:**
-- Consumes: `VariablesScreen` (Task 16); `getVariables` from `~src/lib/leaderboards-v1`.
+- Consumes: the existing `VariablesSection` (now carrying the panel and review step) and `CombinationsSection`.
 - Produces: no new exports.
 
-- [ ] **Step 1: Swap the component**
+- [ ] **Step 1: Add sub-boards to the step**
 
-In `step-variables.tsx`, replace the `VariablesSection` import and usage with `VariablesScreen`, passing `mergedVariables` from a new `WizardData` field:
+The console shows Variables and Sub-boards as adjacent sections; the wizard should teach
+the same pair. Import `CombinationsSection` from `../../manage/variables/combinations-section`
+and render it directly below the existing `VariablesSection`, inside the same
+`{selected && (...)}` guard so it is never mounted without a category:
 
 ```tsx
-            <VariablesScreen
-                gameSlug={data.game.name}
-                gameId={data.game.id}
-                selectedCategory={selected}
-                mergedVariables={data.mergedVariables}
-            />
+            {selected && (
+                <>
+                    <VariablesSection
+                        gameSlug={data.game.name}
+                        gameId={data.game.id}
+                        selectedCategory={selected}
+                    />
+                    <CombinationsSection
+                        gameSlug={data.game.name}
+                        gameId={data.game.id}
+                        selectedCategory={selected}
+                    />
+                </>
+            )}
 ```
 
-- [ ] **Step 2: Load the merged list in the wizard page**
+The guard matters: `CombinationsSection` passes `selectedCategory?.id ?? null`, and a null
+category makes the backend count entries across every category sharing a subcategory key —
+a number that would render as if it described one board.
 
-In `setup/page.tsx`, add to the existing `Promise.all` a `getVariables(game.name, <first main category>.name)` call with the same `.catch` fallback used in Task 16 Step 5, and add `mergedVariables` to the `WizardData` object and to the `WizardData` interface in `setup/types.ts`.
+- [ ] **Step 2: Relabel the primary button**
 
-- [ ] **Step 3: Relabel the button**
+Change the button text from `Save & continue` to `Continue`. It calls `onAdvance()` and
+saves nothing; the old label promised a save that never happened.
 
-In `step-variables.tsx`, change the primary button text from `Save & continue` to `Continue`. It calls `onAdvance()` and saves nothing; the old label promised a save that never happened.
+- [ ] **Step 3: Remove the duplicated scope prose**
 
-- [ ] **Step 4: Delete the contradicting note**
+Delete the `<h3>Scope</h3>` block and its paragraph. The in-effect panel and the form's own
+scope header now carry that information, and the prose contradicted the pills below it.
+Keep the "Editing category" select — it is the wizard's only category picker, and the
+console's was removed on main.
 
-In `category-band-preview.tsx`, delete the whole block:
+- [ ] **Step 4: Delete the contradicting preview note**
+
+In `category-band-preview.tsx`, delete this block entirely:
 
 ```tsx
             {subcategories.length > 0 && (
@@ -2653,27 +2708,24 @@ In `category-band-preview.tsx`, delete the whole block:
 
 It renders on steps 2 and 3, one step before the wizard's own variables step.
 
-- [ ] **Step 5: Remove the duplicated scope prose**
+- [ ] **Step 5: Verify**
 
-In `step-variables.tsx`, delete the `Scope` section (the `<h3>Scope</h3>` block and its paragraph). The in-effect panel and the form's own scope header now carry that information, and the section contradicted the pills below it. Keep the "Editing category" select — it is the wizard's only category picker.
+Run: `cd /home/joey/therun/therun-fr && npm run test` — full suite green.
+Run: `cd /home/joey/therun/therun-fr && bash scripts/tc-diff.sh` — `no new type errors`.
+Run: `cd /home/joey/therun/therun-fr && npm run lint` — clean.
 
-- [ ] **Step 6: Typecheck and lint**
-
-Run: `cd /home/joey/therun/therun-fr && npm run typecheck && npm run lint`
-Expected: clean.
-
-- [ ] **Step 7: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
 git -C /home/joey/therun/therun-fr add "app/(new-layout)/games-v2/[game]/setup"
-git -C /home/joey/therun/therun-fr commit -m "feat(setup): step 4 renders the same variables screen as the console
+git -C /home/joey/therun/therun-fr commit -m "feat(setup): wizard step 4 gains sub-boards, drops contradicting copy
 
-Drops the duplicated scope prose, deletes the preview note claiming
-variables are configured in the console rather than the wizard, and
-relabels a button that promised a save it never performed."
+Teaches the same Variables + Sub-boards pair the console shows. Removes the
+duplicated scope prose and the preview note claiming variables are configured
+in the console rather than the wizard, and relabels a button that promised a
+save it never performed."
 ```
 
----
 
 # Phase 6 — Verification
 
