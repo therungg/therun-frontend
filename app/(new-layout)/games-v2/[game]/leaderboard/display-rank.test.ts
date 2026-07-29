@@ -32,11 +32,11 @@ describe('computeDisplayRanks', () => {
         ]);
     });
 
-    it('two-way tie: second entry shares the first entry\'s rank with a "=" prefix', () => {
+    it('two-way tie: both entries share the rank with a "=" mark', () => {
         const entries = [entry(1, 1000), entry(2, 1000), entry(3, 3000)];
         const ranks = computeDisplayRanks(entries, 'rt');
         expect(ranks).toEqual([
-            { label: '1', tied: false },
+            { label: '=1', tied: true },
             { label: '=1', tied: true },
             { label: '3', tied: false },
         ]);
@@ -51,7 +51,7 @@ describe('computeDisplayRanks', () => {
         ];
         const ranks = computeDisplayRanks(entries, 'rt');
         expect(ranks).toEqual([
-            { label: '1', tied: false },
+            { label: '=1', tied: true },
             { label: '=1', tied: true },
             { label: '=1', tied: true },
             { label: '4', tied: false },
@@ -67,9 +67,9 @@ describe('computeDisplayRanks', () => {
         ];
         const ranks = computeDisplayRanks(entries, 'rt');
         expect(ranks).toEqual([
-            { label: '1', tied: false },
             { label: '=1', tied: true },
-            { label: '3', tied: false },
+            { label: '=1', tied: true },
+            { label: '=3', tied: true },
             { label: '=3', tied: true },
         ]);
     });
@@ -88,7 +88,7 @@ describe('computeDisplayRanks', () => {
         const rt2000 = { ...entry(2, 2000), gameTime: 500 };
         const ranks = computeDisplayRanks([rt1000, rt2000], 'gt');
         expect(ranks).toEqual([
-            { label: '1', tied: false },
+            { label: '=1', tied: true },
             { label: '=1', tied: true },
         ]);
     });
