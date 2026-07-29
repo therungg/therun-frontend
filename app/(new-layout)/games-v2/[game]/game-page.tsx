@@ -12,6 +12,7 @@ import { GameHero } from './header/game-hero';
 import mastheadStyles from './header/masthead.module.scss';
 import { formatSubcategoryKey, type LabelVariableDef } from './labels';
 import { LeaderboardPager } from './leaderboard/leaderboard-pager';
+import { LiveStrip } from './leaderboard/live-strip';
 import { RulesBody } from './rules/rules-panel';
 import { Sidebar } from './sidebar/sidebar';
 import type { GamePageData } from './types';
@@ -148,6 +149,10 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                         // regardless, so going inert is harmless.
                         inert={boardNav.isPending}
                     >
+                        <LiveStrip
+                            gameDisplay={data.game.display}
+                            categoryDisplay={data.selectedCategory.display}
+                        />
                         {data.invalidCombination ? (
                             <InvalidCombinationNotice
                                 gameSlug={data.game.name}
