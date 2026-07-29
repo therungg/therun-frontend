@@ -74,6 +74,7 @@ export interface GameMetadata {
     rulesTemplate: string | null;
     gameRules: string | null;
     emulatorPolicy: 'allowed' | 'banned' | null;
+    primaryTiming: 'rt' | 'gt' | null;
 }
 
 interface GameMetadataPageData {
@@ -92,6 +93,7 @@ interface GameMetadataPageData {
         rulesTemplate?: string | null;
         gameRules?: string | null;
         emulatorPolicy?: string | null;
+        primaryTiming?: string | null;
     };
     metadata?: {
         genres?: string[] | null;
@@ -156,6 +158,12 @@ export async function getGameMetadata(gameId: number): Promise<GameMetadata> {
                 | 'banned'
                 | null
                 | undefined) ?? null,
+        primaryTiming:
+            data?.game?.primaryTiming === 'gt'
+                ? 'gt'
+                : data?.game?.primaryTiming === 'rt'
+                  ? 'rt'
+                  : null,
     };
 }
 
