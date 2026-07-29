@@ -83,10 +83,14 @@ export function ConsequenceDialog({
                 </p>
             )}
 
-            {error && <div className={styles.dialogError}>{error}</div>}
+            {error && (
+                <div className={styles.dialogError} role="alert">
+                    {error}
+                </div>
+            )}
 
             {copy && !loading && (
-                <div className={styles.dialogBody}>
+                <div className={styles.dialogBody} aria-live="polite">
                     <p className={styles.dialogHeadline}>{copy.headline}</p>
                     {copy.detail && (
                         <p className={styles.dialogDetail}>{copy.detail}</p>

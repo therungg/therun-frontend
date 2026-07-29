@@ -15,12 +15,24 @@ export const ROLE_LABEL: Record<VariableRoleId, string> = {
     filter: 'filter only',
 };
 
-/** Row-level label, e.g. "splits this board into 4". */
+/** Sentence-case a ROLE_LABEL phrase for use as a heading or a label's
+ *  leading word — the phrases themselves stay lowercase for mid-sentence use. */
+export function capitalize(s: string): string {
+    return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+/**
+ * Row-level label, e.g. "splits this board into 4". A single value doesn't
+ * split anything — "into 1" reads as nonsense — so the count is dropped
+ * until there's actually more than one board to name, mirroring how
+ * roleConsequence already treats a one-value subcategory as not yet split.
+ */
 export function boardCountLabel(
     role: VariableRoleId,
     valueCount: number,
 ): string {
     if (role === 'filter') return ROLE_LABEL.filter;
+    if (valueCount <= 1) return ROLE_LABEL.subcategory;
     return `${ROLE_LABEL.subcategory} into ${valueCount}`;
 }
 

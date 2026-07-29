@@ -58,9 +58,14 @@ export function describeConsequences(
             ? `${runs(preview.moved)} ${move(preview.moved)} to a different board when ${opts.variableName} is deleted.`
             : `${runs(preview.moved)} ${move(preview.moved)} to a different board.`;
 
+    // The backend doesn't guarantee `categories` excludes entries with
+    // moved === 0 — a defensive filter here means the copy doesn't depend on
+    // that unenforced invariant holding on the other side of the API.
+    const affected = preview.categories.filter((c) => c.moved > 0);
+
     const parts: string[] = [];
-    if (preview.categories.length > 1) {
-        parts.push(`This changes ${preview.categories.length} categories.`);
+    if (affected.length > 1) {
+        parts.push(`This changes ${affected.length} categories.`);
     }
     if (preview.unresolved > 0) {
         parts.push(unresolvedSentence(preview.unresolved, opts.variableName));
@@ -72,8 +77,7 @@ export function describeConsequences(
         detail: parts.length > 0 ? parts.join(' ') : null,
         // One category: show its board table. Several: the dialog lists per
         // category instead, so a flattened table here would mislead.
-        boards:
-            preview.categories.length === 1 ? preview.categories[0].boards : [],
+        boards: affected.length === 1 ? affected[0].boards : [],
     };
 }
 
