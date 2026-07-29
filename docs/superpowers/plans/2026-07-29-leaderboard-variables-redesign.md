@@ -2774,8 +2774,8 @@ Rebuilds the leaderboard variables surface per
   moves, in real numbers. "Nothing moves" collapses to a single confirm.
 - **Rebuild now** — applies the change to runs that already exist. Backend authz was
   widened so a game's own admins can trigger their own game's rebuild.
-- **Sub-boards folded onto the same screen**, with entry counts, plain-language mode
-  copy, and an explicit way out of managed mode.
+- **Sub-boards stay a separate section** on the same screen, with entry counts,
+  plain-language mode copy, and an explicit way out of managed mode.
 - **Bug fixes** — an open create form no longer silently retargets to whichever
   category is selected at submit time; switching scope or category no longer discards
   a dirty form without asking.

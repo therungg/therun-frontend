@@ -2,7 +2,11 @@
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { findShadowed } from '~src/lib/variables/effective';
-import { roleConsequence } from '~src/lib/variables/language';
+import {
+    capitalize,
+    ROLE_LABEL,
+    roleConsequence,
+} from '~src/lib/variables/language';
 import type { VariableRow } from '../../../../../../types/leaderboards.types';
 import styles from './variables.module.scss';
 
@@ -242,9 +246,10 @@ export function VariableForm({
                         onChange={() => setRole('subcategory')}
                     />
                     <label className="form-check-label" htmlFor="var-role-sub">
-                        <strong>Subcategory</strong> — splits the category into
-                        separate boards (e.g. <code>platform</code> with PC vs
-                        N64). Always has a default; missing values fall back.
+                        <strong>{capitalize(ROLE_LABEL.subcategory)}</strong>{' '}
+                        (subcategory) — each answer gets its own board (e.g.{' '}
+                        <code>platform</code> with PC vs N64). Always has a
+                        default; missing values fall back.
                     </label>
                 </div>
                 <div className="form-check">
@@ -260,9 +265,10 @@ export function VariableForm({
                         className="form-check-label"
                         htmlFor="var-role-filter"
                     >
-                        <strong>Filter</strong> — refines results within a board
-                        (e.g. <code>region</code> selectable as US/JP). Optional
-                        per run.
+                        <strong>{capitalize(ROLE_LABEL.filter)}</strong>{' '}
+                        (filter) — refines results within a board (e.g.{' '}
+                        <code>region</code> selectable as US/JP). Optional per
+                        run.
                     </label>
                 </div>
                 <small className="text-muted d-block mt-1">

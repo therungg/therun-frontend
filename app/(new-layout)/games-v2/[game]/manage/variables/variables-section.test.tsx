@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import {
     cleanup,
     fireEvent,
@@ -102,13 +103,15 @@ describe('VariablesSection write path', () => {
         expect(mocks.updateVariableAction).not.toHaveBeenCalled();
     });
 
-    // CRITICAL #1 regression test: if the preview promise never resolves to
-    // either a result or an `{ error }` (a rejected server action — network
-    // failure, deploy-time action-id mismatch, anything outside
-    // previewVariableAction's own try/catch), `preview` stays null and the
-    // dialog must refuse to commit a write. Both defenses are exercised
-    // here: the confirm button is disabled, and clicking it anyway (a user
-    // agent could still dispatch the event) results in no write call.
+    // CRITICAL #1 regression test: while a preview is still in flight (mocked
+    // here as a promise that never resolves within the test), `preview` stays
+    // null and the dialog must refuse to commit a write. This exercises the
+    // `!preview` half of commitWrite()'s guard, not the catch block — the
+    // catch path (a rejected server action: network failure, deploy-time
+    // action-id mismatch) is untested here but leaves `preview` null the same
+    // way, so the same guard covers it. Both defenses under test: the confirm
+    // button is disabled, and clicking it anyway (a user agent could still
+    // dispatch the event) results in no write call.
     it('does not write when confirming while preview is still null', async () => {
         let resolvePreview: (value: unknown) => void = () => {
             // Replaced synchronously below, before this default is ever

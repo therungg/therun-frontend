@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { capitalize, ROLE_LABEL } from '~src/lib/variables/language';
 import { CombinationsSection } from '../../manage/variables/combinations-section';
 import { VariablesSection } from '../../manage/variables/variables-section';
 import styles from '../setup.module.scss';
@@ -53,7 +54,7 @@ export function StepVariables({ data, onAdvance }: StepProps) {
             <div className={styles.section}>
                 <h3 className="h6">The two kinds</h3>
                 <dl className={styles.defList}>
-                    <dt>Subcategory — makes separate boards</dt>
+                    <dt>{capitalize(ROLE_LABEL.subcategory)} (subcategory)</dt>
                     <dd>
                         Each answer gets its own leaderboard with its own world
                         record. Runners pick one row of buttons under the
@@ -64,7 +65,7 @@ export function StepVariables({ data, onAdvance }: StepProps) {
                         version, different rules. One answer is the default:
                         that&apos;s the board people land on.
                     </dd>
-                    <dt>Filter — narrows one board</dt>
+                    <dt>{capitalize(ROLE_LABEL.filter)}</dt>
                     <dd>
                         All the answers share a single leaderboard and one world
                         record; the answer is extra information on a run that

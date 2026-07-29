@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import type { VariablePreview } from '~src/lib/variables/consequences';
+import { ROLE_LABEL } from '~src/lib/variables/language';
 import type {
     ResolvedCategory,
     VariableRow as VariableRowData,
@@ -158,17 +159,21 @@ export function VariablesSection({
     const subcategoryRows = visible.filter((r) => r.role === 'subcategory');
     const filterRows = visible.filter((r) => r.role === 'filter');
 
-    const requestScopeChange = (next: Scope) => {
+    // Returns whether the scope actually changed, so callers that pair the
+    // switch with another effect (e.g. onJump's highlight) can skip that
+    // effect when the moderator declines the discard prompt.
+    const requestScopeChange = (next: Scope): boolean => {
         if (
             formState.open &&
             !window.confirm(
                 'Discard the variable you are editing? Your changes are not saved.',
             )
         ) {
-            return;
+            return false;
         }
         setScope(next);
         closeForm();
+        return true;
     };
 
     const openCreate = () => {
@@ -403,12 +408,13 @@ export function VariablesSection({
                 <div>
                     <h2 className="h5 mb-1">Leaderboard variables</h2>
                     <p className="text-muted small mb-0">
-                        Subcategory variables split a category into separate
-                        boards (e.g. <code>platform</code> with N64 / Switch /
-                        PC). Filter variables refine results within a board
-                        (e.g. <code>region</code>). Game-wide rows apply to
-                        every category; category-specific rows override them for
-                        one category.
+                        One kind {ROLE_LABEL.subcategory} (subcategory) — each
+                        answer gets its own leaderboard (e.g.{' '}
+                        <code>platform</code> with N64 / Switch / PC). The other
+                        is {ROLE_LABEL.filter} — answers refine results within
+                        one board (e.g. <code>region</code>). Rows shared by all
+                        categories apply everywhere; rows for one category
+                        override them there.
                     </p>
                 </div>
             </div>
@@ -434,8 +440,14 @@ export function VariablesSection({
                     gameWide={gameWideRows}
                     categoryDisplay={selectedCategory.display}
                     onJump={(v) => {
-                        setScope(v.categoryId == null ? 'game' : 'category');
-                        setHighlightId(v.id);
+                        // All-or-nothing: if a dirty form declines the
+                        // discard prompt, the scope doesn't switch and the
+                        // row doesn't highlight either.
+                        const next: Scope =
+                            v.categoryId == null ? 'game' : 'category';
+                        if (requestScopeChange(next)) {
+                            setHighlightId(v.id);
+                        }
                     }}
                 />
             )}
@@ -448,7 +460,7 @@ export function VariablesSection({
                         onClick={() => requestScopeChange('game')}
                         disabled={busy}
                     >
-                        Game-wide
+                        Shared by all categories
                     </button>
                 </li>
                 <li className="nav-item">
@@ -458,12 +470,9 @@ export function VariablesSection({
                         onClick={() => requestScopeChange('category')}
                         disabled={busy}
                     >
-                        Category-specific
-                        {categorySelected && (
-                            <span className="ms-1 text-muted small">
-                                · {selectedCategory?.display}
-                            </span>
-                        )}
+                        {categorySelected
+                            ? `${selectedCategory?.display} only`
+                            : 'This category only'}
                     </button>
                 </li>
             </ul>
@@ -516,12 +525,12 @@ export function VariablesSection({
             {(scope === 'game' || categorySelected) && (
                 <>
                     <VariableTable
-                        title="Subcategory variables"
+                        title="Variables that split this board"
                         rows={subcategoryRows}
                         emptyLabel={
                             scope === 'game'
-                                ? 'No game-wide subcategory variables yet.'
-                                : 'No category-specific subcategory variables yet.'
+                                ? 'No board-splitting variables shared by all categories yet.'
+                                : 'No board-splitting variables for this category yet.'
                         }
                         onEdit={openEdit}
                         onDelete={handleDelete}
@@ -531,12 +540,12 @@ export function VariablesSection({
                         highlightId={highlightId}
                     />
                     <VariableTable
-                        title="Filter variables"
+                        title="Filter-only variables"
                         rows={filterRows}
                         emptyLabel={
                             scope === 'game'
-                                ? 'No game-wide filter variables yet.'
-                                : 'No category-specific filter variables yet.'
+                                ? 'No filter variables shared by all categories yet.'
+                                : 'No filter variables for this category yet.'
                         }
                         onEdit={openEdit}
                         onDelete={handleDelete}

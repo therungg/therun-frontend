@@ -41,13 +41,18 @@ describe('roleConsequence', () => {
 });
 
 describe('boardCountLabel', () => {
-    it('pluralizes', () => {
-        expect(boardCountLabel('subcategory', 1)).toBe(
-            'splits this board into 1',
-        );
+    it('drops the count for a single value — "into 1" is not a split', () => {
+        expect(boardCountLabel('subcategory', 1)).toBe('splits this board');
+        expect(boardCountLabel('subcategory', 0)).toBe('splits this board');
+    });
+
+    it('counts the boards for two or more values', () => {
         expect(boardCountLabel('subcategory', 4)).toBe(
             'splits this board into 4',
         );
+    });
+
+    it('ignores value count for a filter', () => {
         expect(boardCountLabel('filter', 3)).toBe('filter only');
     });
 });

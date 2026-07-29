@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
+import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
 import { loadCombinationsAction } from './actions/load-combinations.action';
 import { saveCombinationsAction } from './actions/save-combinations.action';
@@ -119,7 +120,7 @@ export function CombinationsSection({
         <section className="border rounded p-3 mb-4">
             <div className="d-flex align-items-center justify-content-between mb-3">
                 <div>
-                    <h2 className="h5 mb-1">Sub-boards</h2>
+                    <h2 className="h5 mb-1">{CONCEPT_LABEL.combinations}</h2>
                     <p className="text-muted small mb-0">
                         {mode === 'open'
                             ? `${combos.length} combinations, all live boards. Runners can submit any of them.`
