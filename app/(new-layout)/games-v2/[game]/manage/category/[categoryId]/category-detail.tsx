@@ -1,0 +1,215 @@
+'use client';
+
+import Link from 'next/link';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'react-bootstrap-icons';
+import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
+import type {
+    ResolvedCategory,
+    ResolvedGame,
+} from '../../../../../../../types/leaderboards.types';
+import { CategorySettingsSection } from '../../category-tab/category-settings-section';
+import { ProofSection } from '../../category-tab/proof-section';
+import { RulesSection } from '../../category-tab/rules-section';
+import { Standards } from '../../moderation/configure/standards';
+import { TimingSettingsSection } from '../../timing/timing-settings-section';
+import { CombinationsSection } from '../../variables/combinations-section';
+import { VariablesSection } from '../../variables/variables-section';
+import styles from './category-detail.module.scss';
+
+interface Props {
+    game: ResolvedGame;
+    category: ResolvedCategory;
+    canConfigure: boolean;
+    canModerate: boolean;
+    canEditStandards: boolean;
+    prev: ResolvedCategory | null;
+    next: ResolvedCategory | null;
+}
+
+/**
+ * Section order is the wizard's order — variables (step 4), then step 5's four
+ * headings in the order that step presents them. A mod who just finished setup
+ * meets the same sequence here, which is the whole point of the reconciliation.
+ */
+const SECTIONS = [
+    { id: 'variables', requires: 'configure' },
+    { id: 'combinations', requires: 'configure' },
+    { id: 'timing', requires: 'configure' },
+    { id: 'proof', requires: 'configure' },
+    // Minimum time is visible to ANY moderator — this is the carve-out that
+    // used to live in nav-model's itemVisible for the `standards` nav item.
+    { id: 'standards', requires: 'moderate' },
+    { id: 'rules', requires: 'configure' },
+    { id: 'category-settings', requires: 'configure' },
+] as const;
+
+type SectionId = (typeof SECTIONS)[number]['id'];
+
+export function CategoryDetail({
+    game,
+    category,
+    canConfigure,
+    canModerate,
+    canEditStandards,
+    prev,
+    next,
+}: Props) {
+    const visible = useMemo(
+        () =>
+            SECTIONS.filter((s) =>
+                s.requires === 'moderate' ? canModerate : canConfigure,
+            ),
+        [canConfigure, canModerate],
+    );
+
+    const [current, setCurrent] = useState<SectionId | null>(
+        visible[0]?.id ?? null,
+    );
+    const refs = useRef(new Map<SectionId, HTMLElement>());
+
+    // Highlight the section the reader is actually in. rootMargin pins the
+    // trigger line near the top of the viewport so the rail advances when a
+    // heading reaches it, not when the section happens to be centred.
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const hit = entries
+                    .filter((e) => e.isIntersecting)
+                    .sort(
+                        (a, b) =>
+                            a.boundingClientRect.top - b.boundingClientRect.top,
+                    )[0];
+                if (hit?.target instanceof HTMLElement) {
+                    const id = hit.target.dataset.section as
+                        | SectionId
+                        | undefined;
+                    if (id) setCurrent(id);
+                }
+            },
+            { rootMargin: '-80px 0px -70% 0px', threshold: 0 },
+        );
+        for (const el of refs.current.values()) observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
+
+    const base = `/games-v2/${game.name}/manage`;
+
+    const body: Record<SectionId, React.ReactNode> = {
+        variables: (
+            <VariablesSection
+                gameSlug={game.name}
+                gameId={game.id}
+                selectedCategory={category}
+            />
+        ),
+        combinations: (
+            <CombinationsSection
+                gameSlug={game.name}
+                gameId={game.id}
+                selectedCategory={category}
+            />
+        ),
+        timing: (
+            <TimingSettingsSection
+                gameSlug={game.name}
+                gameId={game.id}
+                category={category}
+            />
+        ),
+        proof: (
+            <ProofSection
+                gameSlug={game.name}
+                gameId={game.id}
+                category={category}
+            />
+        ),
+        standards: (
+            <Standards
+                gameSlug={game.name}
+                gameDisplay={game.display}
+                category={category}
+                canEdit={canEditStandards}
+            />
+        ),
+        rules: (
+            <RulesSection
+                gameSlug={game.name}
+                gameId={game.id}
+                category={category}
+            />
+        ),
+        'category-settings': (
+            <CategorySettingsSection
+                gameSlug={game.name}
+                gameId={game.id}
+                category={category}
+            />
+        ),
+    };
+
+    return (
+        <div className={styles.wrap}>
+            <header className={styles.header}>
+                <Link href={`${base}?pane=categories`} className={styles.back}>
+                    <ChevronLeft size={12} aria-hidden="true" />{' '}
+                    {CONCEPT_LABEL.categories}
+                </Link>
+                <h1 className={styles.title}>{category.display}</h1>
+                <nav className={styles.step} aria-label="Adjacent categories">
+                    {prev && (
+                        <Link href={`${base}/category/${prev.id}`}>
+                            <ChevronLeft size={12} aria-hidden="true" />
+                            {prev.display}
+                        </Link>
+                    )}
+                    {next && (
+                        <Link href={`${base}/category/${next.id}`}>
+                            {next.display}
+                            <ChevronRight size={12} aria-hidden="true" />
+                        </Link>
+                    )}
+                </nav>
+            </header>
+
+            <div className={styles.body}>
+                <nav className={styles.rail} aria-label="Sections">
+                    {visible.map((s) => (
+                        <a
+                            key={s.id}
+                            href={`#${s.id}`}
+                            className={
+                                current === s.id
+                                    ? styles.railCurrent
+                                    : undefined
+                            }
+                            aria-current={current === s.id ? 'true' : undefined}
+                        >
+                            {CONCEPT_LABEL[s.id]}
+                        </a>
+                    ))}
+                </nav>
+
+                <div className={styles.sections}>
+                    {visible.map((s) => (
+                        <section
+                            key={s.id}
+                            id={s.id}
+                            data-section={s.id}
+                            // Focusable so an in-page anchor lands focus here
+                            // for keyboard and screen-reader users.
+                            tabIndex={-1}
+                            className={styles.section}
+                            ref={(el) => {
+                                if (el) refs.current.set(s.id, el);
+                                else refs.current.delete(s.id);
+                            }}
+                        >
+                            {body[s.id]}
+                        </section>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}

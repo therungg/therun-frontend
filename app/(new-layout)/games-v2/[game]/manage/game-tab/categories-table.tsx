@@ -925,7 +925,5 @@ export function formatMinimum(ms: number | null): string {
 
 function proofLabel(cfg: CategoryConfigRow): string {
     if (!cfg.requireVideo) return 'none';
-    return cfg.requireVideoTopN == null
-        ? 'all'
-        : `top ${cfg.requireVideoTopN}`;
+    return cfg.requireVideoTopN == null ? 'all' : `top ${cfg.requireVideoTopN}`;
 }

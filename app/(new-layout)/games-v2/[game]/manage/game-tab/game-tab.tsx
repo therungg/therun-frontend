@@ -91,7 +91,6 @@ export function GameTab({
                     onRowGroupChange={onRowGroupChange}
                 />
             </div>
-
         </div>
     );
 }
