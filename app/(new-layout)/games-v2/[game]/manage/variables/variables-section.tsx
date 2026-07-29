@@ -27,6 +27,9 @@ type FormState =
           mode: 'create';
           scopeCategoryId: number | null;
           scopeLabel: string;
+          /** Plain category display name at capture time, for the discard
+           *  notice if this form gets closed out from under the moderator. */
+          scopeCategoryDisplay: string;
       }
     | {
           open: true;
@@ -34,6 +37,7 @@ type FormState =
           editing: VariableRowData;
           scopeCategoryId: number | null;
           scopeLabel: string;
+          scopeCategoryDisplay: string;
       };
 
 interface Props {
@@ -55,6 +59,7 @@ export function VariablesSection({
     const [scope, setScope] = useState<Scope>('game');
     const [formState, setFormState] = useState<FormState>({ open: false });
     const [formError, setFormError] = useState<string | null>(null);
+    const [discardNotice, setDiscardNotice] = useState<string | null>(null);
     const [isLoading, startLoadTransition] = useTransition();
     const [isSaving, startSaveTransition] = useTransition();
     const [pendingWrite, setPendingWrite] = useState<
@@ -120,13 +125,21 @@ export function VariablesSection({
     // A form whose captured scope no longer matches the selected category
     // (e.g. the moderator navigated to a different category rail entry while
     // a create form was open) is no longer valid — close it rather than let
-    // it silently retarget.
+    // it silently retarget. This component doesn't own category selection,
+    // so it can't revert the navigation or prompt-and-cancel from inside an
+    // effect; the best it can do is close the form and say so, rather than
+    // discard it with no word at all.
     useEffect(() => {
         if (!formState.open) return;
         const stillValid =
             formState.scopeCategoryId === null ||
             formState.scopeCategoryId === selectedCategory?.id;
-        if (!stillValid) closeForm();
+        if (!stillValid) {
+            setDiscardNotice(
+                `Your unsaved variable for ${formState.scopeCategoryDisplay} was closed when you switched category.`,
+            );
+            closeForm();
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedCategory?.id]);
 
@@ -158,7 +171,8 @@ export function VariablesSection({
         closeForm();
     };
 
-    const openCreate = () =>
+    const openCreate = () => {
+        setDiscardNotice(null);
         setFormState({
             open: true,
             mode: 'create',
@@ -168,9 +182,12 @@ export function VariablesSection({
                 scope === 'category'
                     ? `${selectedCategory?.display ?? 'this category'} only`
                     : 'Shared by all categories',
+            scopeCategoryDisplay: selectedCategory?.display ?? 'this category',
         });
+    };
 
-    const openEdit = (row: VariableRowData) =>
+    const openEdit = (row: VariableRowData) => {
+        setDiscardNotice(null);
         setFormState({
             open: true,
             mode: 'edit',
@@ -180,7 +197,9 @@ export function VariablesSection({
                 row.categoryId == null
                     ? 'Shared by all categories'
                     : `${selectedCategory?.display ?? 'this category'} only`,
+            scopeCategoryDisplay: selectedCategory?.display ?? 'this category',
         });
+    };
 
     // Only requests the preview — the write itself happens in commitWrite(),
     // invoked by the dialog's onConfirm. No path here reaches the server.
@@ -194,14 +213,25 @@ export function VariablesSection({
         // whichever category was selected by the time you hit Save.
         const categoryId = formState.open ? formState.scopeCategoryId : null;
         startPreview(async () => {
-            const res = await previewVariableAction({
-                gameSlug,
-                gameId,
-                mode: 'save',
-                body: { categoryId, ...values },
-            });
-            if ('error' in res) setPreviewError(res.error);
-            else setPreview(res.result);
+            try {
+                const res = await previewVariableAction({
+                    gameSlug,
+                    gameId,
+                    mode: 'save',
+                    body: { categoryId, ...values },
+                });
+                if ('error' in res) setPreviewError(res.error);
+                else setPreview(res.result);
+            } catch {
+                // previewVariableAction is a server action: a network
+                // failure or a deploy-time action-id mismatch rejects the
+                // promise instead of returning `{ error }`. Without this,
+                // preview/previewError both stay null and the dialog looks
+                // like an ordinary confirm with nothing to disable it.
+                setPreviewError(
+                    'Could not check what this change would do. Try again.',
+                );
+            }
         });
     };
 
@@ -210,21 +240,30 @@ export function VariablesSection({
         setPreviewError(null);
         setPendingWrite({ action: 'delete', row });
         startPreview(async () => {
-            const res = await previewVariableAction({
-                gameSlug,
-                gameId,
-                mode: 'delete',
-                body: { categoryId: row.categoryId, name: row.name },
-            });
-            if ('error' in res) setPreviewError(res.error);
-            else setPreview(res.result);
+            try {
+                const res = await previewVariableAction({
+                    gameSlug,
+                    gameId,
+                    mode: 'delete',
+                    body: { categoryId: row.categoryId, name: row.name },
+                });
+                if ('error' in res) setPreviewError(res.error);
+                else setPreview(res.result);
+            } catch {
+                setPreviewError(
+                    'Could not check what this change would do. Try again.',
+                );
+            }
         });
     };
 
     // The actual create/update/delete call. Only reachable through the
-    // dialog's confirm button, after a preview has been shown.
+    // dialog's confirm button, after a preview has been shown. The `!preview`
+    // half of this guard is load-bearing: without it, a rejected preview
+    // (caught above, but still leaving `preview === null`) would otherwise
+    // let a click through with nothing previewed.
     const commitWrite = () => {
-        if (!pendingWrite) return;
+        if (!pendingWrite || !preview) return;
 
         if (pendingWrite.action === 'delete') {
             const row = pendingWrite.row;
@@ -373,6 +412,21 @@ export function VariablesSection({
                     </p>
                 </div>
             </div>
+
+            {discardNotice && (
+                <div
+                    className="alert alert-warning py-2 d-flex justify-content-between align-items-center gap-2"
+                    role="alert"
+                >
+                    <span>{discardNotice}</span>
+                    <button
+                        type="button"
+                        className="btn-close"
+                        aria-label="Dismiss"
+                        onClick={() => setDiscardNotice(null)}
+                    />
+                </div>
+            )}
 
             {selectedCategory && (
                 <InEffectPanel

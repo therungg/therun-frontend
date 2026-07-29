@@ -162,7 +162,7 @@ export function ConsequenceDialog({
                             : 'btn btn-sm btn-primary'
                     }
                     onClick={onConfirm}
-                    disabled={pending || loading || !!error}
+                    disabled={pending || loading || !!error || !preview}
                 >
                     {pending
                         ? 'Saving…'
