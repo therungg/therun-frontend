@@ -15,6 +15,7 @@ interface Props {
 interface Combo {
     subcategoryKey: string;
     valid: boolean;
+    entryCount: number;
 }
 
 function parseKey(key: string): { name: string; value: string }[] {
@@ -40,6 +41,11 @@ export function CombinationsSection({
     const [isSaving, startSaveTransition] = useTransition();
     const busy = isLoading || isSaving;
     const categoryId = selectedCategory?.id ?? null;
+    // A null category means the backend sums entryCount across every
+    // category sharing a subcategory key (and doesn't exclude categories
+    // that override the variable) — not this board's count. Only render
+    // counts when a real category is selected.
+    const showCounts = selectedCategory != null;
 
     const refresh = async () => {
         const res = await loadCombinationsAction({
@@ -115,36 +121,22 @@ export function CombinationsSection({
                 <div>
                     <h2 className="h5 mb-1">Sub-boards</h2>
                     <p className="text-muted small mb-0">
-                        {mode === 'open' ? (
-                            <>
-                                <span className="badge text-bg-secondary me-1">
-                                    Open
-                                </span>
-                                — runners can submit any combination. Every
-                                combination is a real leaderboard; mark rows
-                                invalid below to switch to managed mode.
-                            </>
-                        ) : (
-                            <>
-                                <span className="badge text-bg-primary me-1">
-                                    Managed
-                                </span>
-                                — only listed sub-boards are valid leaderboards.
-                                Runs in unchecked combos keep their stale key
-                                until a re-resolve runs.
-                            </>
-                        )}
+                        {mode === 'open'
+                            ? `${combos.length} combinations, all live boards. Runners can submit any of them.`
+                            : `${validCount} of ${combos.length} combinations are live boards. Runs in the others keep their current board until the next rebuild.`}
                     </p>
                 </div>
                 <div className="d-flex gap-2">
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-outline-secondary"
-                        onClick={() => setAll(true)}
-                        disabled={busy || combos.length === 0}
-                    >
-                        Check all
-                    </button>
+                    {mode === 'managed' && (
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={() => setAll(true)}
+                            disabled={busy || combos.length === 0}
+                        >
+                            Allow every combination
+                        </button>
+                    )}
                     <button
                         type="button"
                         className="btn btn-sm btn-outline-secondary"
@@ -179,6 +171,7 @@ export function CombinationsSection({
                             <thead>
                                 <tr>
                                     <th />
+                                    {showCounts && <th>Runs</th>}
                                     {firstParts.map((p) => (
                                         <th key={p.name}>{p.name}</th>
                                     ))}
@@ -204,6 +197,11 @@ export function CombinationsSection({
                                                     disabled={busy}
                                                 />
                                             </td>
+                                            {showCounts && (
+                                                <td className="text-muted small">
+                                                    {c.entryCount.toLocaleString()}
+                                                </td>
+                                            )}
                                             {parts.map((p) => (
                                                 <td key={p.name}>{p.value}</td>
                                             ))}
@@ -213,6 +211,25 @@ export function CombinationsSection({
                             </tbody>
                         </table>
                     </div>
+                    {showCounts &&
+                        (() => {
+                            const stranded = combos
+                                .filter(
+                                    (c, i) =>
+                                        !c.valid &&
+                                        original[i]?.valid &&
+                                        c.entryCount > 0,
+                                )
+                                .reduce((sum, c) => sum + c.entryCount, 0);
+                            return stranded > 0 ? (
+                                <p className="text-warning small mb-2">
+                                    {stranded.toLocaleString()} run
+                                    {stranded === 1 ? '' : 's'} sit on boards
+                                    you are switching off. They move to the
+                                    default board on the next rebuild.
+                                </p>
+                            ) : null;
+                        })()}
                     <div className="d-flex gap-2">
                         <button
                             type="button"
