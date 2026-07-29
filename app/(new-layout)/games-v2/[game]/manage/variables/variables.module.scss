@@ -114,3 +114,88 @@
     font-size: dt.$font-size-2xs;
     color: var(--bs-tertiary-color);
 }
+
+// ============================================================
+// ConsequenceDialog — the review step in front of every variable
+// write. Built on the shared BoardDialog primitive; reuses the same
+// board-dialog-header/title/body/footer anatomy as ConfirmDialog and
+// PromptDialog (_board.scss), with header+title combined onto the
+// title element since this dialog has no separate header wrapper.
+// ============================================================
+
+.dialogTitle {
+    @include board.board-dialog-header;
+    @include board.board-dialog-title;
+}
+
+.dialogBody {
+    @include board.board-dialog-body;
+}
+
+.dialogHeadline {
+    margin: 0 0 dt.$spacing-sm 0;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.dialogDetail {
+    margin: 0 0 dt.$spacing-md 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.dialogError {
+    @include board.board-error-alert;
+    margin: 0 dt.$spacing-xl;
+    margin-top: dt.$spacing-md;
+}
+
+.boardList {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    margin: 0 0 dt.$spacing-md 0;
+    padding: 0;
+    list-style: none;
+}
+
+.boardRow {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+    font-size: dt.$font-size-sm;
+
+    &:last-child {
+        border-bottom: 0;
+    }
+}
+
+.boardCounts {
+    @include board.mono-time;
+    font-size: dt.$font-size-sm;
+}
+
+.rebuildRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    margin-top: dt.$spacing-md;
+    padding-top: dt.$spacing-md;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.rebuildDone {
+    font-size: dt.$font-size-xs;
+    color: dt.$accent-green;
+}
+
+.dialogFooter {
+    @include board.board-dialog-footer;
+}
