@@ -357,6 +357,24 @@ tr:focus-within .reveal {
     margin-block-end: dt.$spacing-sm;
 }
 
+.metaLead {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    flex-wrap: wrap;
+}
+
+// The board's view controls (Find me, Verified, Filters) — right-aligned,
+// single instance on the page (deliberately not duplicated in the sticky
+// bar — see sticky-board-bar.tsx).
+.metaControls {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin-left: auto;
+    position: relative;
+}
+
 .rangeIndicator {
     font-size: dt.$font-size-xs;
     color: var(--bs-tertiary-color);

@@ -184,6 +184,10 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                                 categorySlug={data.selectedCategory.name}
                                 subcategoryKey={subcategoryKey}
                                 subcategoryDefKeys={subcategoryDefKeys}
+                                variableDefs={data.variables}
+                                selectedVarFilters={
+                                    data.activeFilters.varFilters
+                                }
                             />
                         )}
                     </div>

@@ -135,27 +135,20 @@
     color: var(--bs-secondary-color);
 }
 
+// The record's own drill-down: history lives with the number it explains.
+.recordHistoryLink {
+    @include board.board-quiet-link;
+    display: block;
+    margin-left: auto;
+    margin-top: dt.$spacing-xs;
+    font-size: dt.$font-size-xs;
+}
+
 // The rail is the plate's floor: deeper tint, its own top hairline.
 .railZone {
     background: var(--bs-secondary-bg);
     border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
     padding: dt.$spacing-md dt.$spacing-xl;
-}
-
-.utilities {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: dt.$spacing-sm;
-    margin-top: dt.$spacing-sm;
-    padding-top: dt.$spacing-sm;
-    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
-}
-
-.utilitySep {
-    width: 1px;
-    height: 0.9rem;
-    background: rgba(var(--bs-border-color-rgb), 0.6);
 }
 
 // ---- Sticky slim bar -------------------------------------------------
