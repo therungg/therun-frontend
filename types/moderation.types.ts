@@ -307,6 +307,7 @@ export interface RosterFilter {
     runnerName?: string;
     endedAfter?: string;
     endedBefore?: string;
+    markedForLater?: boolean;
     limit?: number;
     offset?: number;
 }
@@ -323,6 +324,10 @@ export interface LeaderboardRosterRow {
     endedAt: string;
     isLeaderboardEntry: boolean;
     isLeaderboardEntryGt: boolean;
+    /** Backend item 2 (2026-07-30 handoff): shared mark-for-later flag. */
+    markedForLater?: boolean;
+    /** Backend item 3: mod-set board assignment override; run data untouched. */
+    boardOverride?: { categoryId: number; subcategoryKey: string } | null;
 }
 
 export interface UserExclusionRuleInput {

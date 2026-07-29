@@ -38,6 +38,10 @@ export interface UpdateGameBody {
     discordUrl?: string | null;
     configured?: boolean;
     links?: GameLink[];
+    primaryTiming?: 'rt' | 'gt';
+    rulesTemplate?: string | null;
+    gameRules?: string | null;
+    emulatorPolicy?: 'allowed' | 'banned' | null;
 }
 
 export interface GameCompanyMeta {
@@ -67,6 +71,9 @@ export interface GameMetadata {
     igdbPlatforms: GameIgdbPlatformMeta[];
     companies: GameCompanyMeta[];
     links: GameLink[];
+    rulesTemplate: string | null;
+    gameRules: string | null;
+    emulatorPolicy: 'allowed' | 'banned' | null;
 }
 
 interface GameMetadataPageData {
@@ -82,6 +89,9 @@ interface GameMetadataPageData {
         firstReleaseDate?: string | null;
         seriesDisplay?: string | null;
         links?: GameLink[] | null;
+        rulesTemplate?: string | null;
+        gameRules?: string | null;
+        emulatorPolicy?: string | null;
     };
     metadata?: {
         genres?: string[] | null;
@@ -138,6 +148,14 @@ export async function getGameMetadata(gameId: number): Promise<GameMetadata> {
                 : [],
         ),
         links: data?.game?.links ?? [],
+        rulesTemplate: data?.game?.rulesTemplate ?? null,
+        gameRules: data?.game?.gameRules ?? null,
+        emulatorPolicy:
+            (data?.game?.emulatorPolicy as
+                | 'allowed'
+                | 'banned'
+                | null
+                | undefined) ?? null,
     };
 }
 
