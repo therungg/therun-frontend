@@ -95,14 +95,18 @@ export function HistoryDrawer({ gameSlug, open, onClose }: Props) {
     const [actionFilter, setActionFilter] = useState(ANY_FILTER);
     const panelRef = useRef<HTMLDivElement>(null);
 
-    // Lazy-load when the drawer first opens.
+    // Lazy-load when the drawer first opens; a failed load retries on the
+    // next open. `loading`/`error` must stay out of the deps and the effect
+    // must not read them: with `loading` as a dep, the `setLoading(true)`
+    // re-render re-fired this effect and its cleanup discarded the in-flight
+    // response, sticking the drawer on "Loading history…" forever. No
+    // stale-response guard needed — a response landing after close just
+    // caches for the next open.
     useEffect(() => {
-        if (!open || actions !== null || loading) return;
-        let cancelled = false;
+        if (!open || actions !== null) return;
         setLoading(true);
         setError(null);
         loadHistoryAction(gameSlug).then((res) => {
-            if (cancelled) return;
             if ('error' in res) {
                 setError(res.error);
             } else {
@@ -116,10 +120,7 @@ export function HistoryDrawer({ gameSlug, open, onClose }: Props) {
             }
             setLoading(false);
         });
-        return () => {
-            cancelled = true;
-        };
-    }, [open, gameSlug, actions, loading]);
+    }, [open, gameSlug, actions]);
 
     // Focus trap + autofocus + restore-on-close + Escape-to-close + scroll
     // lock — same behavior as BoardDialog, kept here directly since this
