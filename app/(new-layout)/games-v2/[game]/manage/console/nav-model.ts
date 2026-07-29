@@ -1,33 +1,28 @@
 // Pure description of the console's sidebar IA + permission-driven visibility.
 // No React, no fetching — trivially reasoned about and reused by the shell.
 
+// Import kept first so the labels below can't drift from the wizard's.
+import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
+
 export type NavItemId =
     | 'attention'
     | 'roster'
     | 'reports'
     | 'bans'
     | 'history'
-    | 'standards'
-    | 'timing'
-    | 'rules'
-    | 'variables'
-    | 'combinations'
-    | 'category-settings'
     | 'setup'
     | 'game-details'
-    | 'moderators'
+    | 'categories'
     | 'groups'
-    | 'categories-visibility'
     | 'identifiers'
+    | 'moderators'
     | 'reassign';
 
-export type NavGroupId = 'moderate' | 'game' | 'per-category';
+export type NavGroupId = 'moderate' | 'board';
 
 export interface NavItem {
     id: NavItemId;
     label: string;
-    /** Per-category items need the selected category to render. */
-    categoryScoped: boolean;
     /** Reserved/not-yet-built items render a "coming soon" placeholder. */
     reserved?: boolean;
 }
@@ -52,77 +47,42 @@ const ALL_GROUPS: NavGroup[] = [
         id: 'moderate',
         label: 'Moderate',
         items: [
-            {
-                id: 'attention',
-                label: 'Needs attention',
-                categoryScoped: false,
-            },
-            { id: 'roster', label: 'Browse runs', categoryScoped: false },
-            { id: 'reports', label: 'Reports', categoryScoped: false },
-            { id: 'bans', label: 'Bans', categoryScoped: false },
-            { id: 'history', label: 'History', categoryScoped: false },
+            { id: 'attention', label: CONCEPT_LABEL.attention },
+            { id: 'roster', label: CONCEPT_LABEL.roster },
+            { id: 'reports', label: CONCEPT_LABEL.reports },
+            { id: 'bans', label: CONCEPT_LABEL.bans },
+            { id: 'history', label: CONCEPT_LABEL.history },
         ],
     },
     {
-        id: 'game',
-        label: 'Game',
+        id: 'board',
+        label: 'Board',
         items: [
             // Leaves the console for the wizard rather than opening a pane —
             // see handleNavigate in console-shell.tsx. It's the permanent
             // door back into setup, which is why it sits first and stays
             // visible after the board is live; the setup checklist card only
             // covers the not-yet-finished case.
-            { id: 'setup', label: 'Setup wizard', categoryScoped: false },
-            {
-                id: 'game-details',
-                label: 'Details & metadata',
-                categoryScoped: false,
-            },
-            {
-                id: 'moderators',
-                label: 'Moderators',
-                categoryScoped: false,
-            },
-            { id: 'groups', label: 'Groups', categoryScoped: false },
-            {
-                id: 'categories-visibility',
-                label: 'Categories & visibility',
-                categoryScoped: false,
-            },
-            {
-                id: 'identifiers',
-                label: 'URL slug',
-                categoryScoped: false,
-            },
-            {
-                id: 'reassign',
-                label: 'Merge games & categories',
-                categoryScoped: false,
-            },
-        ],
-    },
-    {
-        id: 'per-category',
-        label: 'Per category',
-        items: [
-            { id: 'standards', label: 'Minimum time', categoryScoped: true },
-            { id: 'timing', label: 'Timing', categoryScoped: true },
-            { id: 'rules', label: 'Rules', categoryScoped: true },
-            { id: 'variables', label: 'Variables', categoryScoped: true },
-            { id: 'combinations', label: 'Sub-boards', categoryScoped: true },
-            {
-                id: 'category-settings',
-                label: 'Category settings',
-                categoryScoped: true,
-            },
+            { id: 'setup', label: CONCEPT_LABEL.setup },
+            { id: 'game-details', label: CONCEPT_LABEL['game-details'] },
+            // The category index: the door to every per-category setting, and
+            // the featured/archived screen that used to be its own pane.
+            // Order matches the wizard: details 1, categories 2, groups 3.
+            { id: 'categories', label: CONCEPT_LABEL.categories },
+            { id: 'groups', label: CONCEPT_LABEL.groups },
+            { id: 'identifiers', label: CONCEPT_LABEL.identifiers },
+            { id: 'moderators', label: CONCEPT_LABEL.moderators },
+            { id: 'reassign', label: CONCEPT_LABEL.reassign },
         ],
     },
 ];
 
 /**
- * Standards lives in the per-category group but is visible to ANY moderator
- * (read-only preview); only board-admins (canEditStandards) may edit it, and that
- * edit-gating is handled by the Standards component, not by visibility here.
+ * The category index is reachable by ANY moderator, because Minimum time is —
+ * that used to be the `standards` carve-out here. Now that the six
+ * per-category panes are sections on one detail screen, the gating moved to
+ * section level (category-detail.tsx): a moderator who cannot configure sees
+ * the index and Minimum time, and nothing else.
  */
 function itemVisible(
     groupId: NavGroupId,
@@ -132,8 +92,7 @@ function itemVisible(
     if (itemId === 'reassign') return flags.canReassign;
     if (itemId === 'moderators') return flags.canEditMods;
     if (groupId === 'moderate') return flags.canModerate;
-    if (itemId === 'standards') return flags.canModerate;
-    // remaining per-category items + all game items
+    if (itemId === 'categories') return flags.canConfigure || flags.canModerate;
     return flags.canConfigure;
 }
 
@@ -188,7 +147,7 @@ export function sidebarActiveItem(
 
 /**
  * The setup-nudge slot (SetupChecklistCard while setup is incomplete,
- * BoardHealthCard once it's done) belongs above Game-group panes — where a
+ * BoardHealthCard once it's done) belongs above Board-group panes — where a
  * board admin is already in a "configure this board" mindset — and on
  * whichever pane is this viewer's actual console landing page, so newcomers
  * see it on arrival regardless of which group happens to be first for their
@@ -202,8 +161,8 @@ export function showSetupCard(
 ): boolean {
     if (activeItem == null) return true;
     if (activeItem === defaultItem(groups)) return true;
-    const gameGroup = groups.find((g) => g.id === 'game');
-    return gameGroup?.items.some((it) => it.id === activeItem) ?? false;
+    const boardGroup = groups.find((g) => g.id === 'board');
+    return boardGroup?.items.some((it) => it.id === activeItem) ?? false;
 }
 
 /**
@@ -242,27 +201,4 @@ export function resolveInitialPane(
         return storedPane;
     }
     return defaultItem(groups);
-}
-
-/**
- * Resolves the selected category from a `?cat=` URL value: a valid id (one
- * that's actually in this game's category list) wins; an absent or invalid
- * id falls back to the caller-supplied default rather than `null`, so a
- * malformed `cat` never blanks out the per-category picker.
- */
-export function resolveCategoryId(
-    requestedCat: string | null,
-    categories: readonly { id: number }[],
-    fallback: number | null,
-): number | null {
-    if (requestedCat) {
-        const parsed = Number.parseInt(requestedCat, 10);
-        if (
-            Number.isFinite(parsed) &&
-            categories.some((c) => c.id === parsed)
-        ) {
-            return parsed;
-        }
-    }
-    return fallback;
 }

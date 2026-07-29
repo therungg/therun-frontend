@@ -21,13 +21,9 @@ interface Props {
     category: ResolvedCategory | null;
 }
 
-type VideoPolicy = 'none' | 'top-n' | 'all';
-
 interface State {
     sortAscending: boolean;
     showMilliseconds: boolean;
-    videoPolicy: VideoPolicy;
-    topN: string;
     imageUrl: string;
 }
 
@@ -36,22 +32,12 @@ function readState(category: ResolvedCategory | null): State {
         return {
             sortAscending: true,
             showMilliseconds: true,
-            videoPolicy: 'none',
-            topN: '',
             imageUrl: '',
         };
     }
-    const requireVideo = category.requireVideo ?? false;
-    const topNValue = category.requireVideoTopN;
-    let videoPolicy: VideoPolicy;
-    if (!requireVideo) videoPolicy = 'none';
-    else if (topNValue != null) videoPolicy = 'top-n';
-    else videoPolicy = 'all';
     return {
         sortAscending: category.sortAscending ?? true,
         showMilliseconds: category.showMilliseconds ?? true,
-        videoPolicy,
-        topN: topNValue != null ? String(topNValue) : '',
         imageUrl: category?.imageUrl ?? '',
     };
 }
@@ -72,8 +58,6 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
         category?.id,
         category?.sortAscending,
         category?.showMilliseconds,
-        category?.requireVideo,
-        category?.requireVideoTopN,
         category?.imageUrl,
     ]);
 
@@ -130,34 +114,12 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
     const dirty =
         state.sortAscending !== original.sortAscending ||
         state.showMilliseconds !== original.showMilliseconds ||
-        state.videoPolicy !== original.videoPolicy ||
-        (state.videoPolicy === 'top-n' && state.topN !== original.topN) ||
         state.imageUrl.trim() !== original.imageUrl.trim();
     const busy = isSaving || isUploading;
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
         setFormError(null);
-
-        let requireVideo: boolean;
-        let requireVideoTopN: number | null;
-        if (state.videoPolicy === 'none') {
-            requireVideo = false;
-            requireVideoTopN = null;
-        } else if (state.videoPolicy === 'all') {
-            requireVideo = true;
-            requireVideoTopN = null;
-        } else {
-            const parsed = Number.parseInt(state.topN, 10);
-            if (!Number.isInteger(parsed) || parsed < 1) {
-                setFormError(
-                    'Enter a positive integer for "Require video for top N".',
-                );
-                return;
-            }
-            requireVideo = true;
-            requireVideoTopN = parsed;
-        }
 
         startSave(async () => {
             const res = await updateCategorySettingsAction({
@@ -171,15 +133,6 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
                 showMilliseconds:
                     state.showMilliseconds !== original.showMilliseconds
                         ? state.showMilliseconds
-                        : undefined,
-                requireVideo:
-                    state.videoPolicy !== original.videoPolicy
-                        ? requireVideo
-                        : undefined,
-                requireVideoTopN:
-                    state.videoPolicy !== original.videoPolicy ||
-                    state.topN !== original.topN
-                        ? requireVideoTopN
                         : undefined,
                 imageUrl:
                     state.imageUrl.trim() !== original.imageUrl.trim()
@@ -197,7 +150,7 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
 
     return (
         <section className="border rounded p-3 mb-4">
-            <h2 className="h5 mb-1">Category Settings</h2>
+            <h2 className="h5 mb-1">Settings</h2>
             <p className="text-muted small mb-3">
                 Ranking direction, display precision, and video requirement for{' '}
                 <strong>{category.display}</strong>.
@@ -322,90 +275,6 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
                     <div className="form-text small">
                         PNG/JPEG/WebP, max 2 MB. Square, iconic art — renders at
                         36px. A boss face or item beats a screenshot.
-                    </div>
-                </div>
-
-                <div className="mb-3">
-                    <label className="form-label small">
-                        Video requirement
-                    </label>
-                    <div className="form-check">
-                        <input
-                            type="radio"
-                            className="form-check-input"
-                            id="vidNone"
-                            checked={state.videoPolicy === 'none'}
-                            onChange={() =>
-                                setState((s) => ({
-                                    ...s,
-                                    videoPolicy: 'none',
-                                }))
-                            }
-                            disabled={busy}
-                        />
-                        <label
-                            htmlFor="vidNone"
-                            className="form-check-label small"
-                        >
-                            No video required
-                        </label>
-                    </div>
-                    <div className="form-check d-flex align-items-center gap-2">
-                        <input
-                            type="radio"
-                            className="form-check-input"
-                            id="vidTopN"
-                            checked={state.videoPolicy === 'top-n'}
-                            onChange={() =>
-                                setState((s) => ({
-                                    ...s,
-                                    videoPolicy: 'top-n',
-                                }))
-                            }
-                            disabled={busy}
-                        />
-                        <label
-                            htmlFor="vidTopN"
-                            className="form-check-label small mb-0"
-                        >
-                            Require video for top
-                        </label>
-                        <input
-                            type="number"
-                            min={1}
-                            step={1}
-                            className="form-control form-control-sm"
-                            style={{ width: '5rem' }}
-                            value={state.topN}
-                            onChange={(e) =>
-                                setState((s) => ({
-                                    ...s,
-                                    topN: e.target.value,
-                                }))
-                            }
-                            disabled={busy || state.videoPolicy !== 'top-n'}
-                        />
-                        <span className="form-check-label small mb-0">
-                            runs
-                        </span>
-                    </div>
-                    <div className="form-check">
-                        <input
-                            type="radio"
-                            className="form-check-input"
-                            id="vidAll"
-                            checked={state.videoPolicy === 'all'}
-                            onChange={() =>
-                                setState((s) => ({ ...s, videoPolicy: 'all' }))
-                            }
-                            disabled={busy}
-                        />
-                        <label
-                            htmlFor="vidAll"
-                            className="form-check-label small"
-                        >
-                            Require video for all runs
-                        </label>
                     </div>
                 </div>
 

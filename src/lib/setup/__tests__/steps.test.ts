@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { SETUP_STEP_ORDER } from '../completeness';
+import {
+    CONCEPT_LABEL,
+    consoleLocationForStep,
+    STEP_CONCEPTS,
+} from '../../console/vocabulary';
+import { SETUP_STEP_ORDER, type SetupStepId } from '../completeness';
 import { SETUP_STEP_LABELS, SETUP_STEPS, setupStepIndex } from '../steps';
 
 describe('SETUP_STEPS', () => {
@@ -31,5 +36,30 @@ describe('SETUP_STEPS', () => {
         // Unknown ids are impossible via SetupStepId, but the lookup must not
         // silently report position 0 for one.
         expect(setupStepIndex('nope' as never)).toBe(-1);
+    });
+});
+
+describe('vocabulary alignment', () => {
+    // `defaults` and `exceptions` are the two multi-concept steps: step 5 is
+    // one screen with four headings, and step 6 is per-category overrides
+    // across all of them. They keep their own rail labels; the console
+    // reaches their contents through the category index.
+    const MULTI_CONCEPT: SetupStepId[] = ['defaults', 'exceptions'];
+
+    it('takes every single-concept rail label from the shared vocabulary', () => {
+        for (const step of SETUP_STEPS) {
+            if (MULTI_CONCEPT.includes(step.id)) continue;
+            const concepts = STEP_CONCEPTS[step.id];
+            if (concepts.length === 0) continue;
+            expect(step.label, step.id).toBe(CONCEPT_LABEL[concepts[0]]);
+        }
+    });
+
+    it('names the console destination for every step but the last', () => {
+        for (const step of SETUP_STEPS) {
+            const location = consoleLocationForStep(step.id);
+            if (step.id === 'finish') expect(location).toBeNull();
+            else expect(location, step.id).not.toBeNull();
+        }
     });
 });
