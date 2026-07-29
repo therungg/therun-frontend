@@ -139,13 +139,14 @@ export function GameHero({
                 )}
                 <div className={styles.heroText}>
                     {variant === 'condensed' ? (
-                        // The board line's <h1> (BoardMasthead) is the page
-                        // heading here — the game is context, not the
-                        // subject, so its name is not a heading at all and
-                        // sits a full visual rank below the category title.
-                        <p className={styles.heroTitleCondensed}>
+                        // With the category title line removed from the
+                        // plate, the game name is the page heading again —
+                        // visually small (the board is identified by the
+                        // active category chip and the document title), but
+                        // semantically the h1.
+                        <h1 className={styles.heroTitleCondensed}>
                             {game.display}
-                        </p>
+                        </h1>
                     ) : (
                         <h1 className={styles.heroTitle}>{game.display}</h1>
                     )}

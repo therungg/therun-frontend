@@ -2,28 +2,25 @@
 @use '../../styles/board' as board;
 
 // ============================================================
-// Route-level loading skeleton for the board page. Mirrors the masthead
-// plate in header/masthead.module.scss: two vertically stacked blocks —
-// the cover-bound hero row (`.heroRow`: 56px cover + title/facts, its
-// height set by the cover per `.heroCondensed`/`.heroCoverSm`) and the
-// board line below it (`.boardLine`: category headline + meta, per
-// `.boardTitle`/`.boardMeta`) — inside `.plate`, with the rail zone on its
-// deeper tint below. See those files for the real dimensions this
-// predicts. grid/table mirror this file's own board.
+// Route-level loading skeleton for the board page. Mirrors the slim
+// masthead in header/masthead.module.scss: the compact game-identity
+// plate (`.heroRow`: 40px cover + title/facts) and, on its own surface,
+// the selector card (`.railCard`). See those files for the real
+// dimensions this predicts. grid/table mirror this file's own board.
 // ============================================================
 
 // ---- Masthead plate --------------------------------------------
 .plate {
     @include board.board-surface(0);
     overflow: hidden;
-    margin-bottom: dt.$spacing-lg;
+    margin-bottom: dt.$spacing-md;
 }
 
 .plateTop {
-    padding: dt.$spacing-lg dt.$spacing-xl;
+    padding: dt.$spacing-md dt.$spacing-xl;
 }
 
-// The condensed game line. Cover-bound: the 75px cover is taller than the
+// The condensed game line. Cover-bound: the 53px cover is taller than the
 // two text lines beside it, so the row's height comes from the cover, not
 // the text — same as the real `.heroCondensed .heroRow`.
 .heroRow {
@@ -34,8 +31,8 @@
 
 .cover {
     @include board.board-skeleton;
-    width: 56px;
-    height: 75px;
+    width: 40px;
+    height: 53px;
     border-radius: dt.$radius-md;
     flex-shrink: 0;
 }
@@ -50,8 +47,8 @@
 
 .titleBar {
     @include board.board-skeleton;
-    height: 2.75rem;
-    width: 40%;
+    height: 1.25rem;
+    width: 30%;
     border-radius: dt.$radius-sm;
 }
 
@@ -72,29 +69,11 @@
     flex-shrink: 0;
 }
 
-// The board line — a second block stacked below the hero row, separated
-// by roughly `.heroCondensed`'s own bottom padding.
-.boardLine {
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-xs;
-    margin-top: dt.$spacing-md;
-}
-
-.boardTitleBar {
-    @include board.board-skeleton;
-    height: 1.9rem;
-    width: 40%;
-    border-radius: dt.$radius-sm;
-}
-
-// ---- Rail zone (inside the plate) --------------------------------
-// Deeper tint, its own top hairline — same treatment as .railZone in
-// header/masthead.module.scss.
-.railZone {
-    background: var(--bs-secondary-bg);
-    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-    padding: dt.$spacing-md dt.$spacing-xl;
+// ---- Selector card (standalone, below the plate) -----------------
+// Same treatment as .railCard in header/masthead.module.scss.
+.railCard {
+    @include board.board-surface(dt.$spacing-sm dt.$spacing-xl);
+    margin-bottom: dt.$spacing-lg;
 }
 
 .railBlock {

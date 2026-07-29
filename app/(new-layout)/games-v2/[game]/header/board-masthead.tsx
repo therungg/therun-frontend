@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { UserLink } from '~src/components/links/links';
-import { DurationToFormatted } from '~src/components/util/datetime';
 import type { ClaimCtaState } from '../claim/claim-cta';
 import { FilterBar } from '../filters/filter-bar';
 import { RulesPanel } from '../rules/rules-panel';
@@ -46,13 +44,12 @@ export function BoardMasthead({
     const boardName = suffix
         ? `${category.display} · ${suffix}`
         : category.display;
-    const wr = data.wrEntry;
     const variableKeys = data.variables.map((v) => v.nameNormalized);
 
     // Owns the sentinel/observer (moved up from StickyBoardBar) so the plate
     // can react to `stuck` too: once the bar takes over, the plate's rail
     // must stop being a second, off-screen, keyboard-reachable copy — see
-    // the `inert` on `.railZone` below.
+    // the `inert` on `.railCard` below.
     const [stuck, setStuck] = useState(false);
     const sentinel = useRef<HTMLDivElement>(null);
     // Accent target: AccentFromCover writes --board-accent(-soft) here.
@@ -95,93 +92,45 @@ export function BoardMasthead({
                                 : undefined
                         }
                     />
-                    <div className={styles.boardLine}>
-                        <div>
-                            {/* No group eyebrow here — the rail's endcap
-                                already names the group; repeating it above
-                                the title was the audit's duplicate-
-                                vocabulary finding. */}
-                            <h1 className={styles.boardTitle}>
-                                {category.display}
-                                {suffix && (
-                                    <span className={styles.boardTitleSuffix}>
-                                        {' · '}
-                                        {suffix}
-                                    </span>
-                                )}
-                            </h1>
-                            <p className={styles.boardMeta}>
-                                {data.leaderboard.totalItems.toLocaleString()}{' '}
-                                runs on this board
-                            </p>
-                        </div>
-                        {wr?.time != null && (
-                            <div className={styles.record}>
-                                <span className={styles.groupEyebrow}>
-                                    World record
-                                </span>
-                                <span className={styles.recordTime}>
-                                    <DurationToFormatted
-                                        duration={wr.time}
-                                        withMillis={
-                                            category.showMilliseconds ?? true
-                                        }
-                                    />
-                                </span>
-                                <span className={styles.recordHolder}>
-                                    {wr.isGuest ? (
-                                        wr.runnerName
-                                    ) : (
-                                        <UserLink username={wr.runnerName} />
-                                    )}
-                                </span>
-                                <button
-                                    type="button"
-                                    className={styles.recordHistoryLink}
-                                    onClick={onOpenHistory}
-                                >
-                                    WR history
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                    <RulesPanel
-                        rules={category.rules}
-                        open={rulesOpen}
-                        onToggle={onToggleRules}
-                    />
                 </div>
+            </div>
 
-                <div
-                    // `inert` (React 19) — same precedent as
-                    // game-page.tsx's colMain: pointer-events alone doesn't
-                    // stop keyboard/AT users reaching an off-screen
-                    // duplicate once the sticky bar is the interactive
-                    // copy. CategoryRail and FilterBar are
-                    // off-screen-but-focusable while stuck, and tabbing
-                    // into either one triggers the browser's
-                    // focus-into-view scroll, which un-intersects the
-                    // sentinel and unmounts the bar mid-navigation.
-                    // `inert` on the parent makes the whole subtree
-                    // uninteractive/unfocusable for descendants (there's no
-                    // way for a child to opt back in).
-                    className={styles.railZone}
-                    inert={stuck}
-                >
-                    <CategoryRail
-                        categories={data.categories}
-                        groups={data.groups}
-                        selectedCategoryName={category.name}
-                        variableKeys={variableKeys}
-                    />
-                    <FilterBar
-                        defs={data.variables}
-                        selectedSubcategoryValues={
-                            data.activeFilters.subcategoryValues
-                        }
-                        selectedVarFilters={data.activeFilters.varFilters}
-                    />
-                </div>
+            {/* Standalone selector card — deliberately OUTSIDE the plate:
+                the header is game identity, this is navigation. */}
+            <div
+                // `inert` (React 19) — same precedent as
+                // game-page.tsx's colMain: pointer-events alone doesn't
+                // stop keyboard/AT users reaching an off-screen
+                // duplicate once the sticky bar is the interactive
+                // copy. CategoryRail and FilterBar are
+                // off-screen-but-focusable while stuck, and tabbing
+                // into either one triggers the browser's
+                // focus-into-view scroll, which un-intersects the
+                // sentinel and unmounts the bar mid-navigation.
+                // `inert` on the parent makes the whole subtree
+                // uninteractive/unfocusable for descendants (there's no
+                // way for a child to opt back in).
+                className={styles.railCard}
+                inert={stuck}
+            >
+                <CategoryRail
+                    categories={data.categories}
+                    groups={data.groups}
+                    selectedCategoryName={category.name}
+                    variableKeys={variableKeys}
+                />
+                <FilterBar
+                    defs={data.variables}
+                    selectedSubcategoryValues={
+                        data.activeFilters.subcategoryValues
+                    }
+                    selectedVarFilters={data.activeFilters.varFilters}
+                />
+                <RulesPanel
+                    rules={category.rules}
+                    open={rulesOpen}
+                    onToggle={onToggleRules}
+                />
             </div>
             <div ref={sentinel} className={styles.sentinel} aria-hidden />
             {stuck && (

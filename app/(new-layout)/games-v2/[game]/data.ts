@@ -11,7 +11,6 @@ import {
     getUserRankingsByName,
     getVariables,
 } from '~src/lib/leaderboards-v1';
-import { resolveWrEntry } from './header/wr-entry';
 import {
     filterPbsToFeatured,
     RECENT_PB_FETCH_LIMIT,
@@ -70,7 +69,6 @@ export async function loadGamePageData(
             reservedParams: [],
             validCombinations: { mode: 'open' },
             leaderboard: emptyBoard(),
-            wrEntry: null,
             invalidCombination: null,
             quickStats,
             gameMeta,
@@ -164,20 +162,6 @@ export async function loadGamePageData(
         ? null
         : { validCombinations: boardResult.validCombinations };
 
-    // Filters included, so the masthead's record always matches its run
-    // count. Later pages route their page-1 read through the same cached
-    // getLeaderboard a normal page-1 load would take.
-    const wrEntry = boardResult.ok
-        ? await resolveWrEntry(leaderboard, async () => {
-              const first = await getLeaderboard({
-                  ...baseQuery,
-                  page: 1,
-                  timing: selected.primaryTiming,
-              });
-              return first.ok ? first.result.entries : null;
-          })
-        : null;
-
     return {
         game,
         selectedCategory: selected,
@@ -187,7 +171,6 @@ export async function loadGamePageData(
         reservedParams: varsResp.reservedParams,
         validCombinations: varsResp.validCombinations,
         leaderboard,
-        wrEntry,
         invalidCombination,
         quickStats,
         gameMeta,
