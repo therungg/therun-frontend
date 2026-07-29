@@ -23,7 +23,8 @@ export type ConceptId =
     | 'proof'
     | 'standards'
     | 'rules'
-    | 'category-settings';
+    | 'category-settings'
+    | 'boards';
 
 export const CONCEPT_LABEL: Record<ConceptId, string> = {
     attention: 'Needs attention',
@@ -44,6 +45,7 @@ export const CONCEPT_LABEL: Record<ConceptId, string> = {
     standards: 'Minimum time',
     rules: 'Rules',
     'category-settings': 'Settings',
+    boards: 'Boards',
 };
 
 export function conceptLabel(id: ConceptId): string {
@@ -70,6 +72,7 @@ export const TILE_CONCEPT_IDS = [
     'game-details',
     'categories',
     'groups',
+    'boards',
     'moderators',
     'reassign',
 ] as const;
@@ -121,6 +124,10 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
         action: 'Sort categories into groups',
         blurb: 'Bundle related categories so the leaderboard reads in a sensible order.',
     },
+    boards: {
+        action: 'Curate the boards',
+        blurb: 'See each leaderboard as runners do, and fix what’s wrong — remove, correct, or add runs.',
+    },
     moderators: {
         action: 'Manage who moderates',
         blurb: 'Add or remove moderators, and review applications from people who want to help.',
@@ -132,19 +139,18 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
 };
 
 /**
- * Which console concepts a wizard step covers. Step 5 ("Defaults") is one
- * screen with four headings (step-defaults.tsx:261,335,395,463) and therefore
- * maps to four concepts; the console reaches all four from the category index.
+ * Which console concepts a wizard step covers. Two steps are multi-concept:
+ * step 1 carries the board-wide timing and rules-template defaults alongside
+ * the game's own details, and step 4 is every per-category setting on one
+ * screen. The console reaches the per-category ones from the category index.
  */
 export const STEP_CONCEPTS: Record<SetupStepId, ConceptId[]> = {
     // The URL slug lives inside the Game details pane, not beside it.
-    details: ['game-details'],
+    details: ['game-details', 'timing', 'rules'],
     categories: ['categories'],
     groups: ['groups'],
-    variables: ['variables', 'combinations'],
-    defaults: ['timing', 'proof', 'standards', 'rules'],
-    exceptions: ['categories'],
-    finish: [],
+    'category-setup': ['categories'],
+    boards: ['boards'],
 };
 
 export interface ConsoleLocation {
@@ -158,6 +164,7 @@ const BOARD_PANES: ReadonlySet<ConceptId> = new Set<ConceptId>([
     'game-details',
     'categories',
     'groups',
+    'boards',
     'moderators',
     'reassign',
 ]);

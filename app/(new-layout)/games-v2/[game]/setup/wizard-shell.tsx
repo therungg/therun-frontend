@@ -4,21 +4,20 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { consoleLocationForStep } from '~src/lib/console/vocabulary';
 import { boardPulse } from '~src/lib/setup/board-pulse';
+import type { SetupStepId } from '~src/lib/setup/completeness';
 import {
-    SETUP_STEP_ORDER,
-    type SetupStepId,
-} from '~src/lib/setup/completeness';
-import { SETUP_STEPS, setupStepIndex } from '~src/lib/setup/steps';
+    resolveSetupStep,
+    SETUP_STEPS,
+    setupStepIndex,
+} from '~src/lib/setup/steps';
 import { BackLink } from '../shared/back-link';
 import styles from './setup.module.scss';
 import { SetupRail } from './setup-rail';
+import { StepBoards } from './steps/step-boards';
 import { StepCategories } from './steps/step-categories';
-import { StepDefaults } from './steps/step-defaults';
+import { StepCategorySetup } from './steps/step-category-setup';
 import { StepDetails } from './steps/step-details';
-import { StepExceptions } from './steps/step-exceptions';
-import { StepFinish } from './steps/step-finish';
 import { StepGroups } from './steps/step-groups';
-import { StepVariables } from './steps/step-variables';
 import type { WizardData } from './types';
 
 interface Props {
@@ -29,11 +28,12 @@ interface Props {
 export function WizardShell({ data, initialStep }: Props) {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const stepParam = searchParams.get('step');
+    // `resolveSetupStep` folds the retired seven-step ids onto their
+    // successors, so an old bookmark still lands somewhere real. It does not
+    // rewrite the URL: `?step=exceptions&cat=12` keeps its `cat`, which the
+    // per-category step reads to open that category straight away.
     const step: SetupStepId =
-        stepParam && SETUP_STEP_ORDER.includes(stepParam as SetupStepId)
-            ? (stepParam as SetupStepId)
-            : initialStep;
+        resolveSetupStep(searchParams.get('step')) ?? initialStep;
     const stepIndex = setupStepIndex(step);
     // What the board already has on it, so setup doesn't read like work on a
     // dead page. Empty on a board with nothing yet — see board-pulse.ts.
@@ -176,33 +176,17 @@ function CurrentStep({
             return (
                 <StepGroups data={data} onAdvance={onAdvance} onBack={onBack} />
             );
-        case 'variables':
+        case 'category-setup':
             return (
-                <StepVariables
+                <StepCategorySetup
                     data={data}
                     onAdvance={onAdvance}
                     onBack={onBack}
                 />
             );
-        case 'defaults':
+        case 'boards':
             return (
-                <StepDefaults
-                    data={data}
-                    onAdvance={onAdvance}
-                    onBack={onBack}
-                />
-            );
-        case 'exceptions':
-            return (
-                <StepExceptions
-                    data={data}
-                    onAdvance={onAdvance}
-                    onBack={onBack}
-                />
-            );
-        case 'finish':
-            return (
-                <StepFinish data={data} onAdvance={onAdvance} onBack={onBack} />
+                <StepBoards data={data} onAdvance={onAdvance} onBack={onBack} />
             );
     }
 }
@@ -220,7 +204,6 @@ function ConsoleWayfinding({
     gameSlug: string;
 }) {
     const location = consoleLocationForStep(step);
-    // The final step has no console home — it isn't a thing you maintain.
     if (!location) return null;
     return (
         <p className={styles.wayfinding}>

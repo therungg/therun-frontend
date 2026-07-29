@@ -824,6 +824,41 @@ $rail-collapse: 900px;
     color: var(--bs-primary);
 }
 
+// ---- Step 4: the category hub + full-screen editor ----------
+// A hub row is a .rowItem with its own two-line middle: the category's name
+// over the muted parts line categorySetupStatus() produces.
+.hubMain {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+}
+
+.hubParts {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.hubAction {
+    margin-left: auto;
+}
+
+// Back-to-hub bar above the mounted CategoryEditor. The editor brings its own
+// section rail, so this only has to name where you are and how to leave.
+.editorHead {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    margin-bottom: dt.$spacing-lg;
+}
+
+.editorTitle {
+    margin: 0;
+    font-size: dt.$font-size-xl;
+    font-weight: 700;
+    min-width: 0;
+}
+
 // Wizard -> console wayfinding line under each step body. Quiet by design:
 // it teaches where the work lives later without competing with the step's
 // own forward action.

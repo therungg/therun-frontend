@@ -59,13 +59,13 @@ describe('computeBoardHealth', () => {
         });
     });
 
-    it('sends an exceptions warning to the index, not one arbitrary category', () => {
+    it('sends a category-setup warning to the index, not one arbitrary category', () => {
         const h = computeBoardHealth({
             completeness: completeness({
                 warnings: ['1 of 2 main categories missing rules'],
                 steps: [
                     {
-                        step: 'exceptions',
+                        step: 'category-setup',
                         status: 'warning',
                         summary: '1 of 2 main categories missing rules',
                     },
@@ -82,15 +82,15 @@ describe('computeBoardHealth', () => {
         });
     });
 
-    it('sends a board-wide defaults item to the index', () => {
+    it('maps a groups blocker to the groups pane', () => {
         const h = computeBoardHealth({
             completeness: completeness({
-                warnings: ['Optional bulk settings not reviewed'],
+                blockers: ['3 featured categories are not in a group'],
                 steps: [
                     {
-                        step: 'defaults',
-                        status: 'warning',
-                        summary: 'Optional bulk settings not reviewed',
+                        step: 'groups',
+                        status: 'blocker',
+                        summary: '3 featured categories are not in a group',
                     },
                 ],
             }),
@@ -98,9 +98,9 @@ describe('computeBoardHealth', () => {
             now: NOW,
         });
         expect(h.items).toContainEqual({
-            severity: 'warning',
-            label: 'Optional bulk settings not reviewed',
-            pane: 'categories',
+            severity: 'blocker',
+            label: '3 featured categories are not in a group',
+            pane: 'groups',
         });
     });
 

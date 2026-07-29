@@ -4,10 +4,8 @@ export type SetupStepId =
     | 'details'
     | 'categories'
     | 'groups'
-    | 'variables'
-    | 'defaults'
-    | 'exceptions'
-    | 'finish';
+    | 'category-setup'
+    | 'boards';
 
 export type SetupStepStatus = 'done' | 'todo' | 'warning' | 'blocker';
 
@@ -52,10 +50,8 @@ export const SETUP_STEP_ORDER: SetupStepId[] = [
     'details',
     'categories',
     'groups',
-    'variables',
-    'defaults',
-    'exceptions',
-    'finish',
+    'category-setup',
+    'boards',
 ];
 
 export function categoryFactsFromResolved(
@@ -80,12 +76,20 @@ export function computeCompleteness(
     const emptyBoard = input.categories.length === 0;
     const steps: SetupStepState[] = [];
 
+    // Board-wide defaults (timing, proof, minimum time, rules template) share
+    // step 1 with the game's details, so their state rides on this summary
+    // rather than carrying a step — and a missing slug still owns the line,
+    // because that is the only thing here that is actually unfinished.
+    const hasDefaultsContent =
+        input.policyCount > 0 || input.requireVideoAnywhere;
     steps.push(
         input.slug
             ? {
                   step: 'details',
                   status: 'done',
-                  summary: `Slug ${input.slug}`,
+                  summary: hasDefaultsContent
+                      ? `Slug ${input.slug} · standards set`
+                      : `Slug ${input.slug}`,
               }
             : {
                   step: 'details',
@@ -154,57 +158,45 @@ export function computeCompleteness(
         });
     }
 
-    // Variables are optional too — plenty of games have one board per
-    // category and nothing to split. Having none is a finished state.
-    steps.push({
-        step: 'variables',
-        status: 'done',
-        summary:
-            input.variableCount > 0
-                ? `${input.variableCount} ${
-                      input.variableCount === 1 ? 'variable' : 'variables'
-                  }`
-                : 'Optional — no splits or filters',
-    });
-
-    const hasDefaultsContent =
-        input.policyCount > 0 || input.requireVideoAnywhere;
-    steps.push({
-        step: 'defaults',
-        status: 'done',
-        summary: hasDefaultsContent
-            ? 'Standards set'
-            : 'Optional — game-wide defaults',
-    });
-
+    // Step 4 is every per-category setting on one screen — rules, timing,
+    // minimum time, variables. Rules are the one part that can be genuinely
+    // missing, so they drive the status; variables are optional (plenty of
+    // games have one board per category and nothing to split) and only ride
+    // along on the summary as a count.
+    const variableSuffix =
+        input.variableCount > 0
+            ? ` · ${input.variableCount} ${
+                  input.variableCount === 1 ? 'variable' : 'variables'
+              }`
+            : '';
     if (emptyBoard || mains.length === 0) {
         steps.push({
-            step: 'exceptions',
+            step: 'category-setup',
             status: 'todo',
-            summary: 'Review exceptions after choosing featured categories',
+            summary: 'Set up each category after choosing featured ones',
         });
     } else {
         const mainsWithoutRules = mains.filter((c) => !c.hasRules);
         if (mainsWithoutRules.length === 0) {
             steps.push({
-                step: 'exceptions',
+                step: 'category-setup',
                 status: 'done',
-                summary: `All ${mains.length} featured categories have rules`,
+                summary: `All ${mains.length} featured categories have rules${variableSuffix}`,
             });
         } else {
             steps.push({
-                step: 'exceptions',
+                step: 'category-setup',
                 status: 'warning',
-                summary: `${mainsWithoutRules.length} of ${mains.length} featured categories missing rules`,
+                summary: `${mainsWithoutRules.length} of ${mains.length} featured categories missing rules${variableSuffix}`,
             });
         }
     }
 
     steps.push(
         input.configured
-            ? { step: 'finish', status: 'done', summary: 'Setup complete' }
+            ? { step: 'boards', status: 'done', summary: 'Setup complete' }
             : {
-                  step: 'finish',
+                  step: 'boards',
                   status: 'todo',
                   summary: 'Setup not marked complete',
               },

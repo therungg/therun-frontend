@@ -21,6 +21,8 @@ export interface WizardData {
     identifiers: GameIdentifiers;
     metadata: GameMetadata;
     completeness: BoardCompleteness;
+    /** ability.can('edit','moderators') — gates Minimum time in the editor. */
+    canEditStandards: boolean;
     /** Server-render stamp used to remount steps when fresh data lands. */
     renderedAt: number;
 }

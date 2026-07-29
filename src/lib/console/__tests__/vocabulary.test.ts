@@ -24,27 +24,39 @@ describe('vocabulary', () => {
         }
     });
 
-    it('labels the four concepts wizard step 5 splits into', () => {
-        expect(STEP_CONCEPTS.defaults).toEqual([
+    it('labels the concepts wizard step 1 carries alongside the game details', () => {
+        // Board-wide timing and the rules template moved onto step 1 with the
+        // rest of the board defaults.
+        expect(STEP_CONCEPTS.details).toEqual([
+            'game-details',
             'timing',
-            'proof',
-            'standards',
             'rules',
         ]);
         expect(conceptLabel('proof')).toBe('Proof & review');
         expect(conceptLabel('standards')).toBe('Minimum time');
     });
 
-    it('sends board-wide steps to the category index, not one category', () => {
-        expect(consoleLocationForStep('defaults')).toEqual({
-            crumb: 'Categories ▸ Timing',
+    it('sends the per-category step to the category index, not one category', () => {
+        expect(consoleLocationForStep('category-setup')).toEqual({
+            crumb: 'Categories',
             pane: 'categories',
         });
-        expect(consoleLocationForStep('exceptions')?.pane).toBe('categories');
     });
 
-    it('has no console location for the terminal step', () => {
-        expect(consoleLocationForStep('finish')).toBeNull();
+    it('sends step 1 to the game-details pane, not the category index', () => {
+        expect(consoleLocationForStep('details')).toEqual({
+            crumb: 'Game details',
+            pane: 'game-details',
+        });
+    });
+
+    it('gives the terminal step its own console home', () => {
+        // Curating what is on the boards is ongoing work, not a one-off
+        // launch — unlike the old "Go live" step it maps to a real pane.
+        expect(consoleLocationForStep('boards')).toEqual({
+            crumb: 'Boards',
+            pane: 'boards',
+        });
     });
 
     it('never returns an empty label', () => {
@@ -64,6 +76,12 @@ describe('CONCEPT_TILE', () => {
 
     it('has no tile for reports — it is the attention pane pre-filtered', () => {
         expect(Object.keys(CONCEPT_TILE)).not.toContain('reports');
+    });
+
+    it('tiles board curation right after groups', () => {
+        expect(TILE_CONCEPT_IDS.indexOf('boards')).toBe(
+            TILE_CONCEPT_IDS.indexOf('groups') + 1,
+        );
     });
 
     it('only tiles concepts that also have a sidebar label', () => {

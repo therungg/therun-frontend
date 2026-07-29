@@ -367,7 +367,7 @@ export function ConsoleShell({
                 )}
                 {showSetupCard(groups, activeItem) &&
                     (setupCompleteness &&
-                    setupCompleteness.steps.find((s) => s.step === 'finish')
+                    setupCompleteness.steps.find((s) => s.step === 'boards')
                         ?.status !== 'done' ? (
                         <SetupChecklistCard
                             gameSlug={game.name}
