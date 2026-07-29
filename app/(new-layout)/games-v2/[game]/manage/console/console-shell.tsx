@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowClockwise } from 'react-bootstrap-icons';
 import { countAttentionAction } from '~src/actions/count-attention.action';
@@ -25,6 +25,7 @@ import styles from './console.module.scss';
 import { ConsoleChrome } from './console-chrome';
 import { ContentRouter } from './content-router';
 import type { GameDetailsData } from './game-details-pane';
+import { historyCloseQuery } from './history-close-query';
 import {
     buildNav,
     sidebarActiveItem as deriveSidebarActiveItem,
@@ -74,6 +75,7 @@ export function ConsoleShell({
     const groups = useMemo(() => buildNav(flags), [flags]);
     const router = useRouter();
     const searchParams = useSearchParams();
+    const pathname = usePathname();
 
     // A `?pane=` deep link (used by sub-route pages navigating back) decides
     // the pane. Anything else — a bare /manage — resolves to `null`, the tile
@@ -122,6 +124,12 @@ export function ConsoleShell({
     // per-user "skip the grid" setting, which will most likely skip to the
     // viewer's last pane. Keeping the write means that lands as a one-line
     // change rather than a re-derivation of this bookkeeping.
+    // The retired-pane purge that used to run alongside the read was removed
+    // with it, so this key can now silently accumulate pane ids that no
+    // longer exist (retired panes, or ids a permission change made
+    // unreachable). That's safe only because any future read MUST validate
+    // the stored value through `isLandingPaneId` (see nav-model.ts) before
+    // treating it as a landing pane — never trust it raw.
     useEffect(() => {
         if (typeof window === 'undefined' || !activeItem) return;
         const key = `console:${game.id}:lastPane`;
@@ -428,13 +436,13 @@ export function ConsoleShell({
                 open={historyOpen}
                 onClose={() => {
                     setHistoryOpen(false);
-                    if (searchParams.get('pane') === 'history' && activeItem) {
-                        const params = new URLSearchParams(searchParams);
-                        params.set('pane', activeItem);
-                        router.replace(`?${params.toString()}`, {
-                            scroll: false,
-                        });
-                    }
+                    const query = historyCloseQuery(
+                        searchParams.toString(),
+                        activeItem,
+                    );
+                    router.replace(query ? `?${query}` : pathname, {
+                        scroll: false,
+                    });
                 }}
             />
         </>

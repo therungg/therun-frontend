@@ -131,7 +131,7 @@ is inherited with no new logic. Icons are the existing `NAV_ICON` entries.
 |---|---|
 | **Set the board up step by step** | The guided walkthrough for configuring this board from scratch. |
 | **Edit the game's details** | Cover art, release info, the board's URL, and how it's matched to IGDB. |
-| **Configure categories** | Add and edit categories, set timing, proof and minimum-time rules, and pick what's featured. |
+| **Configure categories** | Browse the categories on this board and open any one to configure it. |
 | **Sort categories into groups** | Bundle related categories so the leaderboard reads in a sensible order. |
 | **Manage who moderates** ⁽ⁿ⁾ | Add or remove moderators, and review applications from people who want to help. |
 | **Merge duplicates** | Fold a duplicate game or category into the right one and move its runs across. |

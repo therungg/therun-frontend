@@ -115,7 +115,7 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
     },
     categories: {
         action: 'Configure categories',
-        blurb: "Add and edit categories, set timing, proof and minimum-time rules, and pick what's featured.",
+        blurb: 'Browse the categories on this board and open any one to configure it.',
     },
     groups: {
         action: 'Sort categories into groups',
