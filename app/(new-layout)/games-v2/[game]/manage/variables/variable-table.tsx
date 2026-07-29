@@ -36,14 +36,20 @@ export function VariableTable({
 }: VariableTableProps) {
     const markerRef = useRef<HTMLTableRowElement | null>(null);
 
+    // `rows` is a fresh array on every render (it's produced by .filter() in
+    // the parent), so depending on it directly re-fires this effect — and
+    // re-scrolls the viewport — on every unrelated re-render (a `busy`
+    // toggle, a refresh completing, opening the form) for as long as
+    // highlightId stays set. `present` is a boolean, stable across renders
+    // unless the row's membership in this table actually changes.
+    const present = rows.some((r) => r.id === highlightId);
     useEffect(() => {
-        if (highlightId == null) return;
-        if (!rows.some((r) => r.id === highlightId)) return;
+        if (highlightId == null || !present) return;
         markerRef.current?.scrollIntoView({
             block: 'center',
             behavior: 'smooth',
         });
-    }, [highlightId, rows]);
+    }, [highlightId, present]);
 
     return (
         <div className="mb-3">
