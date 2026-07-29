@@ -46,6 +46,23 @@ function mapTiming(t: 'rt' | 'gt'): 'realtime' | 'gametime' {
     return t === 'gt' ? 'gametime' : 'realtime';
 }
 
+/**
+ * Eligible "Copy from…" sources: featured categories (the codebase's
+ * standing definition is `isMain && !archived` — see
+ * src/lib/console/category-rows.ts's `featured` filter and
+ * games-v2/manage/page.tsx) other than the target itself. An archived
+ * category can still carry `isMain: true` (archiving doesn't clear it), so
+ * `!archived` has to be checked explicitly rather than assumed.
+ */
+export function eligibleCopySources(
+    categories: ResolvedCategory[],
+    target: ResolvedCategory,
+): ResolvedCategory[] {
+    return categories.filter(
+        (c) => c.isMain && !c.archived && c.id !== target.id,
+    );
+}
+
 // Category-scoped (not subcategory-scoped) min_time policy for one category
 // — the same shape the Standards surface manages one of per category.
 function findCategoryMinPolicy(
