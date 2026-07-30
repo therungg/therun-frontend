@@ -9,6 +9,12 @@ export default defineConfig({
         },
     },
     test: {
+        // Needed so @testing-library/react's built-in afterEach(cleanup) can
+        // register itself (it checks for a global `afterEach`) — otherwise
+        // every test file must call cleanup() manually or DOM trees from
+        // earlier `it` blocks in the same file leak into later ones.
+        globals: true,
+        setupFiles: ['./vitest.setup.ts'],
         include: [
             'src/**/__tests__/*.test.ts',
             'app/**/*.test.ts',

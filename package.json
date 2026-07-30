@@ -112,6 +112,7 @@
     },
     "devDependencies": {
         "@biomejs/biome": "2.3.0",
+        "@testing-library/jest-dom": "^7.0.0",
         "@testing-library/react": "^16.3.2",
         "@types/bootstrap": "^5.2",
         "@types/d3": "^7.4.3",

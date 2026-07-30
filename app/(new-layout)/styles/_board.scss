@@ -803,3 +803,88 @@
     font-size: dt.$font-size-2xs;
     opacity: 0.5;
 }
+
+// ---- Segmented control -----------------------------------------------
+// Promoted from the setup wizard's timing/emulator/ranking toggles
+// (originally setup.module.scss .segmented/.segmentActive) so the admin
+// console's form kit renders identically. Split in three because the
+// wizard applies board-segment to bare <button> children via a nested
+// selector while the form kit applies it to an explicit per-button class
+// — both consumers @include board-segment on their own button selector.
+@mixin board-segmented {
+    display: inline-flex;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    border-radius: dt.$radius-md;
+    overflow: hidden;
+    margin-bottom: dt.$spacing-md;
+}
+
+@mixin board-segment {
+    border: 0;
+    background: none;
+    padding: dt.$spacing-xs dt.$spacing-lg;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    transition: background-color 0.12s ease;
+
+    &:not(:first-child) {
+        border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    }
+
+    &:hover {
+        background: rgba(var(--bs-emphasis-color-rgb), 0.05);
+    }
+}
+
+@mixin board-segment-active {
+    background: var(--bs-primary) !important;
+    color: var(--bs-body-bg) !important;
+    font-weight: 600;
+}
+
+// ---- Form switch ---------------------------------------------------
+// role="switch" button: a 32×18 track + 14px thumb, primary when on.
+@mixin board-switch {
+    position: relative;
+    width: 32px;
+    height: 18px;
+    flex-shrink: 0;
+    border-radius: 999px;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.8);
+    background: rgba(var(--bs-secondary-rgb), 0.2);
+    cursor: pointer;
+    transition: background-color dt.$transition-fast,
+        border-color dt.$transition-fast;
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 1px;
+        left: 1px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--bs-body-bg);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        transition: transform dt.$transition-fast;
+    }
+
+    &[aria-checked='true'] {
+        background: var(--bs-primary);
+        border-color: var(--bs-primary);
+
+        &::after {
+            transform: translateX(14px);
+        }
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
+}
