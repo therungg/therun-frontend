@@ -36,6 +36,7 @@ const mocks = vi.hoisted(() => ({
     restoreRunsAction: vi.fn(),
     createManualTimeAction: vi.fn(),
     markRunsAction: vi.fn(),
+    moveRunAction: vi.fn(),
     loadUserEligibleRunsAction: vi.fn(),
     toastSuccess: vi.fn(),
     toastError: vi.fn(),
@@ -56,6 +57,9 @@ vi.mock('../moderation/shared/actions/manual-times.action', () => ({
 }));
 vi.mock('../moderation/shared/actions/marks.action', () => ({
     markRunsAction: mocks.markRunsAction,
+}));
+vi.mock('../moderation/shared/actions/board-override.action', () => ({
+    moveRunAction: mocks.moveRunAction,
 }));
 vi.mock('../moderation/shared/actions/eligible-runs.action', () => ({
     loadUserEligibleRunsAction: mocks.loadUserEligibleRunsAction,

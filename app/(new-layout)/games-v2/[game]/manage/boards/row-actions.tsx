@@ -1,9 +1,16 @@
 'use client';
 
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import { DurationToFormatted } from '~src/components/util/datetime';
-import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
+import {
+    buildSubcategoryKey,
+    parseSubcategoryKey,
+} from '~src/lib/variables/keys';
+import type {
+    ResolvedCategory,
+    VariableRow,
+} from '../../../../../../types/leaderboards.types';
 import type {
     LeaderboardRosterRow,
     ModTiming,
@@ -11,6 +18,7 @@ import type {
     UserEligibleRunRow,
 } from '../../../../../../types/moderation.types';
 import { BoardDialog } from '../../shared/board-dialog';
+import { moveRunAction } from '../moderation/shared/actions/board-override.action';
 import {
     excludeAction,
     previewExcludeAction,
@@ -21,11 +29,21 @@ import {
     msToTimeInput,
     parseTimeInput,
 } from '../moderation/shared/time-format';
+import { fireUndoToast } from '../moderation/shared/undo-toast';
 import styles from './board-curation.module.scss';
+import {
+    defaultCanonicalOf,
+    SubcategoryBands,
+    subcategoryVariablesFor,
+} from './subcategory-bands';
 
 export interface RowActionsProps {
     row: LeaderboardRosterRow;
     category: ResolvedCategory;
+    /** Move-to target choices — the board's featured categories (self
+     * included, so a mod can change only the subcategory). */
+    categories: ResolvedCategory[];
+    variables: VariableRow[];
     subcategoryKey: string;
     gameSlug: string;
     /** Currently-displayed time for the row (already resolved to the
@@ -63,14 +81,16 @@ export function primaryValueOf(
 
 /**
  * Time cell + quiet hover-revealed action cluster for one board-curation row
- * (Later, Remove, Ban, Fix time). Rendered as a fragment of two `<td>`s in
- * place of `BoardCuration`'s old plain time cell — owning both lets "Fix
- * time" turn the time cell itself into an input without a cross-component
- * editing channel.
+ * (Later, Remove, Ban, Fix time, Move). Rendered as a fragment of two
+ * `<td>`s in place of `BoardCuration`'s old plain time cell — owning both
+ * lets "Fix time" turn the time cell itself into an input without a
+ * cross-component editing channel.
  */
 export function RowActions({
     row,
     category,
+    categories,
+    variables,
     subcategoryKey,
     gameSlug,
     timeMs,
@@ -216,13 +236,103 @@ export function RowActions({
         });
     };
 
+    // ---- Move ---------------------------------------------------------
+    const [moveOpen, setMoveOpen] = useState(false);
+    const [moveTargetCategoryId, setMoveTargetCategoryId] = useState<
+        number | ''
+    >('');
+    const [moveSelectedValues, setMoveSelectedValues] = useState<
+        Record<string, string>
+    >({});
+    const [moveError, setMoveError] = useState<string | null>(null);
+    const [isMoving, startMove] = useTransition();
+
+    const openMove = () => {
+        setMoveTargetCategoryId(category.id);
+        // Seed the target bands from the row's *current* placement (not the
+        // target category's defaults) so Apply starts disabled — nothing has
+        // changed yet.
+        const initial: Record<string, string> = {};
+        for (const part of parseSubcategoryKey(subcategoryKey)) {
+            initial[part.name] = part.value;
+        }
+        setMoveSelectedValues(initial);
+        setMoveError(null);
+        setMoveOpen(true);
+    };
+
+    const closeMove = () => {
+        if (isMoving) return;
+        setMoveOpen(false);
+    };
+
+    const moveTargetCategory =
+        categories.find((c) => c.id === moveTargetCategoryId) ?? null;
+    const moveTargetSubcatVars = useMemo(
+        () =>
+            moveTargetCategory
+                ? subcategoryVariablesFor(moveTargetCategory.id, variables)
+                : [],
+        [moveTargetCategory, variables],
+    );
+    const moveTargetKey = useMemo(() => {
+        if (moveTargetSubcatVars.length === 0) return '';
+        return buildSubcategoryKey(
+            moveTargetSubcatVars.map((v) => ({
+                name: v.nameNormalized,
+                value:
+                    moveSelectedValues[v.nameNormalized] ??
+                    defaultCanonicalOf(v),
+            })),
+        );
+    }, [moveTargetSubcatVars, moveSelectedValues]);
+
+    // The backend rejects a move to the run's current placement — prevent
+    // it client-side too rather than round-tripping for the error.
+    const isNoOpMove =
+        moveTargetCategory != null &&
+        moveTargetCategory.id === category.id &&
+        moveTargetKey === subcategoryKey;
+
+    const confirmMove = () => {
+        if (moveTargetCategory == null || isNoOpMove) return;
+        const target = {
+            categoryId: moveTargetCategory.id,
+            subcategoryKey: moveTargetKey,
+        };
+        startMove(async () => {
+            const res = await moveRunAction(gameSlug, row.runId, target);
+            if ('error' in res) {
+                setMoveError(res.error);
+                return;
+            }
+            setMoveOpen(false);
+            // The row leaves this board immediately — no slip needed (unlike
+            // Remove, a moved row has nowhere on *this* board to land a
+            // next-run candidate). The undo toast is a portal, independent
+            // of this row's lifecycle, so it keeps working even after
+            // `onMutated`'s reload unmounts this component.
+            onMutated();
+            fireUndoToast(
+                `Moved ${row.runnerName}.`,
+                () => moveRunAction(gameSlug, row.runId, null),
+                onMutated,
+            );
+        });
+    };
+
     // Mutual exclusion across the cluster: while any one of these row
     // mutations is in flight (Remove's exclude call included, tracked by
     // `BoardCuration` and handed down as `removing`), the other buttons are
     // disabled too — e.g. clicking Ban mid-flight on a Later toggle could
     // file a conflicting mutation for the same run.
     const busy =
-        isMarking || removing || isBanPreviewing || isBanning || isSavingTime;
+        isMarking ||
+        removing ||
+        isBanPreviewing ||
+        isBanning ||
+        isSavingTime ||
+        isMoving;
 
     return (
         <>
@@ -308,6 +418,14 @@ export function RowActions({
                         disabled={busy}
                     >
                         Fix time
+                    </button>
+                    <button
+                        type="button"
+                        className={styles.actionBtn}
+                        onClick={openMove}
+                        disabled={busy}
+                    >
+                        Move…
                     </button>
                 </div>
             </td>
@@ -412,6 +530,99 @@ export function RowActions({
                             }
                         >
                             {isBanning ? 'Banning…' : 'Confirm ban'}
+                        </button>
+                    </div>
+                </BoardDialog>
+            )}
+
+            {moveOpen && (
+                <BoardDialog
+                    open
+                    onClose={closeMove}
+                    labelledBy="move-sheet-title"
+                    size="sm"
+                    closeOnBackdropClick={!isMoving}
+                >
+                    <div className={styles.dialogHeader}>
+                        <h5
+                            id="move-sheet-title"
+                            className={styles.dialogTitle}
+                        >
+                            Move {row.runnerName}
+                        </h5>
+                        <button
+                            type="button"
+                            className="btn-close"
+                            aria-label="Close"
+                            onClick={closeMove}
+                            disabled={isMoving}
+                        />
+                    </div>
+                    <div className={styles.dialogBody}>
+                        <label
+                            htmlFor="move-category"
+                            className={styles.fieldLabel}
+                        >
+                            Category
+                        </label>
+                        <select
+                            id="move-category"
+                            className="form-select form-select-sm mb-2"
+                            value={moveTargetCategoryId}
+                            onChange={(e) => {
+                                setMoveTargetCategoryId(Number(e.target.value));
+                                setMoveSelectedValues({});
+                            }}
+                            disabled={isMoving}
+                        >
+                            {categories.map((c) => (
+                                <option key={c.id} value={c.id}>
+                                    {c.display}
+                                </option>
+                            ))}
+                        </select>
+                        <SubcategoryBands
+                            variables={moveTargetSubcatVars}
+                            selectedValues={moveSelectedValues}
+                            onSelect={(name, canonical) =>
+                                setMoveSelectedValues((prev) => ({
+                                    ...prev,
+                                    [name]: canonical,
+                                }))
+                            }
+                            idPrefix={`move-${row.runId}`}
+                        />
+                        {isNoOpMove && (
+                            <p className={styles.moveNote}>
+                                Already placed here.
+                            </p>
+                        )}
+                        {moveError && (
+                            <div className={styles.errorAlert} role="alert">
+                                {moveError}
+                            </div>
+                        )}
+                    </div>
+                    <div className={styles.dialogFooter}>
+                        <button
+                            type="button"
+                            className={styles.slipAction}
+                            onClick={closeMove}
+                            disabled={isMoving}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            className={styles.applyBtn}
+                            onClick={confirmMove}
+                            disabled={
+                                isMoving ||
+                                moveTargetCategory == null ||
+                                isNoOpMove
+                            }
+                        >
+                            {isMoving ? 'Moving…' : 'Apply'}
                         </button>
                     </div>
                 </BoardDialog>

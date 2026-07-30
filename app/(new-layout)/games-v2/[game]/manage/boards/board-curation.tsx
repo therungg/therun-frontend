@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 import { PinAngleFill } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import { UserLink } from '~src/components/links/links';
@@ -11,7 +11,6 @@ import {
     findGameMinPolicy,
     minMsFromPolicy,
 } from '~src/lib/setup/game-minimum';
-import { toEffective } from '~src/lib/variables/effective';
 import { buildSubcategoryKey } from '~src/lib/variables/keys';
 import type {
     ResolvedCategory,
@@ -22,13 +21,21 @@ import type {
 import type {
     BoardPolicyRow,
     LeaderboardRosterRow,
+    PreviewExcludeResult,
     UserEligibleRunRow,
 } from '../../../../../../types/moderation.types';
 import { relativeDate } from '../../leaderboard/relative-date';
+import { BoardDialog } from '../../shared/board-dialog';
+import { moveRunAction } from '../moderation/shared/actions/board-override.action';
 import { loadUserEligibleRunsAction } from '../moderation/shared/actions/eligible-runs.action';
-import { excludeAction } from '../moderation/shared/actions/exclude.action';
+import {
+    excludeAction,
+    previewExcludeAction,
+} from '../moderation/shared/actions/exclude.action';
+import { markRunsAction } from '../moderation/shared/actions/marks.action';
 import { restoreRunsAction } from '../moderation/shared/actions/restore.action';
 import { fireUndoToast } from '../moderation/shared/undo-toast';
+import { AddRunnerRow } from './add-runner-row';
 import styles from './board-curation.module.scss';
 import {
     type PendingRemoval,
@@ -36,6 +43,11 @@ import {
     primaryValueOf,
     RowActions,
 } from './row-actions';
+import {
+    defaultCanonicalOf,
+    SubcategoryBands,
+    subcategoryVariablesFor,
+} from './subcategory-bands';
 import { useBoardData } from './use-board-data';
 
 const REMOVE_REASON = 'Board curation during setup';
@@ -95,38 +107,6 @@ function sectionsFor(
         sections.push({ id: null, name: null, items: ungrouped });
     }
     return sections;
-}
-
-function canonicalOf(v: VariableRow, idx: number): string {
-    return v.values[idx]?.[0] ?? '';
-}
-
-function defaultCanonicalOf(v: VariableRow): string {
-    return v.defaultValueIndex != null
-        ? canonicalOf(v, v.defaultValueIndex)
-        : '';
-}
-
-/** Published subcategory-role variables in scope for a category, honoring
- * shadowing so a category-scoped variable that replaces a shared one
- * doesn't render two bands for the same name (see `toEffective`). Mirrors
- * `effectiveVariableCount` in `src/lib/setup/category-status.ts`, but needs
- * the rows themselves rather than just a count. */
-function subcategoryVariablesFor(categoryId: number, variables: VariableRow[]) {
-    const gameWide = variables.filter((v) => v.categoryId === null);
-    const categoryScoped = variables.filter((v) => v.categoryId === categoryId);
-    const tagged = toEffective([...gameWide, ...categoryScoped], gameWide);
-    const shadowedNames = new Set(
-        tagged
-            .filter((v) => v.source === 'category-overrides-shared')
-            .map((v) => v.nameNormalized),
-    );
-    return tagged.filter(
-        (v) =>
-            v.role === 'subcategory' &&
-            v.published &&
-            !(v.source === 'shared' && shadowedNames.has(v.nameNormalized)),
-    );
 }
 
 function primaryTimeOf(
@@ -230,10 +210,54 @@ export function BoardCuration({
         new Set(),
     );
 
+    // Runs currently clearing a board-override via the "moved here" tag's
+    // (×) — tracked separately from `RowActions`' own busy state since
+    // clearing a move isn't part of that action cluster.
+    const [clearingMoveRunIds, setClearingMoveRunIds] = useState<Set<number>>(
+        new Set(),
+    );
+
+    // Multi-select for bulk Accept/Ban.
+    const [selectedRunIds, setSelectedRunIds] = useState<Set<number>>(
+        new Set(),
+    );
+
     useEffect(() => {
         setPendingRemovals(new Map());
         setRemovingRunIds(new Set());
+        setSelectedRunIds(new Set());
     }, [category?.id, subcategoryKey]);
+
+    const toggleSelected = (runId: number) => {
+        setSelectedRunIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(runId)) {
+                next.delete(runId);
+            } else {
+                next.add(runId);
+            }
+            return next;
+        });
+    };
+
+    const clearSelection = () => setSelectedRunIds(new Set());
+
+    const handleClearMove = (row: LeaderboardRosterRow) => {
+        setClearingMoveRunIds((prev) => new Set(prev).add(row.runId));
+        (async () => {
+            const res = await moveRunAction(game.name, row.runId, null);
+            setClearingMoveRunIds((prev) => {
+                const next = new Set(prev);
+                next.delete(row.runId);
+                return next;
+            });
+            if ('error' in res) {
+                toast.error(res.error);
+                return;
+            }
+            reload();
+        })();
+    };
 
     const dropPending = (runId: number) => {
         setPendingRemovals((prev) => {
@@ -409,6 +433,116 @@ export function BoardCuration({
         }));
     }, [rows, timing, minMs, pendingRemovals]);
 
+    // ---- Bulk accept ----------------------------------------------------
+    const [isBulkAccepting, startBulkAccept] = useTransition();
+
+    const handleBulkAccept = () => {
+        const ids = Array.from(selectedRunIds);
+        if (ids.length === 0) return;
+        startBulkAccept(async () => {
+            const res = await markRunsAction(game.name, ids, false);
+            if ('error' in res) {
+                toast.error(res.error);
+                return;
+            }
+            clearSelection();
+            reload();
+        });
+    };
+
+    // ---- Bulk ban ---------------------------------------------------------
+    // Aggregates one `previewExcludeAction` per unique selected user (run
+    // by run — the endpoint is user-scoped, not batch) into a single sheet,
+    // then applies them sequentially against one shared reason. Guests have
+    // no persistent identity to ban and are skipped, noted in the sheet.
+    const [bulkBanOpen, setBulkBanOpen] = useState(false);
+    const [bulkBanUserIds, setBulkBanUserIds] = useState<number[]>([]);
+    const [bulkBanGuestCount, setBulkBanGuestCount] = useState(0);
+    const [bulkBanPreviews, setBulkBanPreviews] = useState<Map<
+        number,
+        PreviewExcludeResult
+    > | null>(null);
+    const [bulkBanPreviewError, setBulkBanPreviewError] = useState<
+        string | null
+    >(null);
+    const [bulkBanReason, setBulkBanReason] = useState('');
+    const [isBulkBanPreviewing, startBulkBanPreview] = useTransition();
+    const [isBulkBanning, startBulkBanning] = useTransition();
+
+    const openBulkBan = () => {
+        const selectedRows = boardRows
+            .filter((r) => selectedRunIds.has(r.row.runId))
+            .map((r) => r.row);
+        const userIds = Array.from(
+            new Set(
+                selectedRows
+                    .filter((r) => r.userId != null)
+                    .map((r) => r.userId as number),
+            ),
+        );
+        const guestCount = selectedRows.filter((r) => r.userId == null).length;
+
+        setBulkBanUserIds(userIds);
+        setBulkBanGuestCount(guestCount);
+        setBulkBanReason('');
+        setBulkBanPreviews(null);
+        setBulkBanPreviewError(null);
+        setBulkBanOpen(true);
+
+        if (userIds.length === 0) return;
+        startBulkBanPreview(async () => {
+            const results = new Map<number, PreviewExcludeResult>();
+            for (const userId of userIds) {
+                const res = await previewExcludeAction(game.name, {
+                    rule: { type: 'user', targetId: userId },
+                });
+                if ('error' in res) {
+                    setBulkBanPreviewError(res.error);
+                    return;
+                }
+                results.set(userId, res.preview);
+            }
+            setBulkBanPreviews(results);
+        });
+    };
+
+    const closeBulkBan = () => {
+        if (isBulkBanning) return;
+        setBulkBanOpen(false);
+    };
+
+    const confirmBulkBan = () => {
+        if (bulkBanUserIds.length === 0 || bulkBanReason.trim().length === 0) {
+            return;
+        }
+        const reason = bulkBanReason.trim();
+        startBulkBanning(async () => {
+            for (const userId of bulkBanUserIds) {
+                const res = await excludeAction(game.name, {
+                    rule: { type: 'user', targetId: userId },
+                    reason,
+                });
+                if ('error' in res) {
+                    toast.error(res.error);
+                    return;
+                }
+            }
+            toast.success(
+                `${bulkBanUserIds.length} runner${bulkBanUserIds.length === 1 ? '' : 's'} banned.`,
+            );
+            setBulkBanOpen(false);
+            clearSelection();
+            reload();
+        });
+    };
+
+    const bulkBanCombinedCount = bulkBanPreviews
+        ? Array.from(bulkBanPreviews.values()).reduce(
+              (sum, p) => sum + p.affectedRunCount,
+              0,
+          )
+        : 0;
+
     if (featured.length === 0) {
         return (
             <div className={styles.empty}>
@@ -477,56 +611,45 @@ export function BoardCuration({
                 ))}
             </div>
 
-            {subcatVars.length > 0 && (
-                <div className={styles.subcategoryBands}>
-                    {subcatVars.map((v) => {
-                        const active =
-                            selectedValues[v.nameNormalized] ??
-                            defaultCanonicalOf(v);
-                        return (
-                            <div
-                                key={v.id}
-                                className={styles.block}
-                                role="group"
-                                aria-labelledby={`board-curation-var-${v.id}`}
-                            >
-                                <span
-                                    id={`board-curation-var-${v.id}`}
-                                    className={styles.endcap}
-                                >
-                                    {v.name}
-                                </span>
-                                <div className={styles.well}>
-                                    <div className={styles.chips}>
-                                        {v.values.map((bucket, i) => {
-                                            const canonical = bucket[0];
-                                            const isActive =
-                                                active === canonical;
-                                            return (
-                                                <button
-                                                    key={`${v.id}-${i}`}
-                                                    type="button"
-                                                    aria-pressed={isActive}
-                                                    className={`${styles.chip} ${isActive ? styles.chipActive : ''}`}
-                                                    onClick={() =>
-                                                        setSelectedValues(
-                                                            (prev) => ({
-                                                                ...prev,
-                                                                [v.nameNormalized]:
-                                                                    canonical,
-                                                            }),
-                                                        )
-                                                    }
-                                                >
-                                                    {canonical}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })}
+            <SubcategoryBands
+                variables={subcatVars}
+                selectedValues={selectedValues}
+                onSelect={(name, canonical) =>
+                    setSelectedValues((prev) => ({
+                        ...prev,
+                        [name]: canonical,
+                    }))
+                }
+            />
+
+            {selectedRunIds.size > 0 && (
+                <div className={styles.selectionBar}>
+                    <span>{selectedRunIds.size} selected</span>
+                    <span aria-hidden="true">&middot;</span>
+                    <button
+                        type="button"
+                        className={styles.selectionAction}
+                        onClick={handleBulkAccept}
+                        disabled={isBulkAccepting}
+                    >
+                        Accept
+                    </button>
+                    <span aria-hidden="true">&middot;</span>
+                    <button
+                        type="button"
+                        className={styles.selectionAction}
+                        onClick={openBulkBan}
+                    >
+                        Ban…
+                    </button>
+                    <span aria-hidden="true">&middot;</span>
+                    <button
+                        type="button"
+                        className={styles.selectionAction}
+                        onClick={clearSelection}
+                    >
+                        Clear
+                    </button>
                 </div>
             )}
 
@@ -536,17 +659,16 @@ export function BoardCuration({
                     {!error && loading && rows.length === 0 && (
                         <p className={styles.loadingNote}>Loading board…</p>
                     )}
-                    {!error && !loading && boardRows.length === 0 && (
-                        <div className={styles.empty}>
-                            <p className={styles.emptyTitle}>
-                                No runs on this board yet.
-                            </p>
-                        </div>
-                    )}
-                    {boardRows.length > 0 && (
-                        <table className={styles.table}>
+                    {!error && (!loading || rows.length > 0) && (
+                        <table
+                            className={`${styles.table} ${selectedRunIds.size > 0 ? styles.tableSelecting : ''}`}
+                        >
                             <thead>
                                 <tr>
+                                    <th
+                                        className={styles.selectHeader}
+                                        aria-label="Select"
+                                    />
                                     <th className={styles.rank}>#</th>
                                     <th>Runner</th>
                                     <th className={styles.when}>When</th>
@@ -562,6 +684,16 @@ export function BoardCuration({
                                 </tr>
                             </thead>
                             <tbody>
+                                {boardRows.length === 0 && (
+                                    <tr>
+                                        <td
+                                            colSpan={6}
+                                            className={styles.emptyCell}
+                                        >
+                                            No runs on this board yet.
+                                        </td>
+                                    </tr>
+                                )}
                                 {boardRows.map(
                                     ({ row, rank, timeMs, belowMinimum }) => {
                                         const isGuest = row.userId == null;
@@ -573,6 +705,26 @@ export function BoardCuration({
                                                 key={row.runId}
                                                 className={`${styles.row} ${pending ? styles.rowRemoved : ''}`}
                                             >
+                                                <td
+                                                    className={
+                                                        styles.selectCell
+                                                    }
+                                                >
+                                                    {!pending && (
+                                                        <input
+                                                            type="checkbox"
+                                                            aria-label={`Select ${row.runnerName}`}
+                                                            checked={selectedRunIds.has(
+                                                                row.runId,
+                                                            )}
+                                                            onChange={() =>
+                                                                toggleSelected(
+                                                                    row.runId,
+                                                                )
+                                                            }
+                                                        />
+                                                    )}
+                                                </td>
                                                 <td className={styles.rank}>
                                                     {rank}
                                                 </td>
@@ -605,6 +757,34 @@ export function BoardCuration({
                                                             url={undefined}
                                                         />
                                                     )}
+                                                    {!pending &&
+                                                        row.boardOverride !=
+                                                            null && (
+                                                            <span
+                                                                className={
+                                                                    styles.movedTag
+                                                                }
+                                                            >
+                                                                moved here
+                                                                <button
+                                                                    type="button"
+                                                                    className={
+                                                                        styles.movedClear
+                                                                    }
+                                                                    aria-label={`Clear move for ${row.runnerName}`}
+                                                                    onClick={() =>
+                                                                        handleClearMove(
+                                                                            row,
+                                                                        )
+                                                                    }
+                                                                    disabled={clearingMoveRunIds.has(
+                                                                        row.runId,
+                                                                    )}
+                                                                >
+                                                                    &times;
+                                                                </button>
+                                                            </span>
+                                                        )}
                                                 </td>
                                                 <td
                                                     className={styles.when}
@@ -635,6 +815,8 @@ export function BoardCuration({
                                                     <RowActions
                                                         row={row}
                                                         category={category}
+                                                        categories={featured}
+                                                        variables={variables}
                                                         subcategoryKey={
                                                             subcategoryKey
                                                         }
@@ -659,10 +841,125 @@ export function BoardCuration({
                                         );
                                     },
                                 )}
+                                <AddRunnerRow
+                                    category={category}
+                                    subcategoryKey={subcategoryKey}
+                                    gameSlug={game.name}
+                                    knownRunners={rows}
+                                    onMutated={reload}
+                                />
                             </tbody>
                         </table>
                     )}
                 </div>
+            )}
+
+            {bulkBanOpen && (
+                <BoardDialog
+                    open
+                    onClose={closeBulkBan}
+                    labelledBy="bulk-ban-sheet-title"
+                    size="sm"
+                    closeOnBackdropClick={!isBulkBanning}
+                >
+                    <div className={styles.dialogHeader}>
+                        <h5
+                            id="bulk-ban-sheet-title"
+                            className={styles.dialogTitle}
+                        >
+                            Ban {bulkBanUserIds.length} runner
+                            {bulkBanUserIds.length === 1 ? '' : 's'}
+                        </h5>
+                        <button
+                            type="button"
+                            className="btn-close"
+                            aria-label="Close"
+                            onClick={closeBulkBan}
+                            disabled={isBulkBanning}
+                        />
+                    </div>
+                    <div className={styles.dialogBody}>
+                        {bulkBanGuestCount > 0 && (
+                            <p className={styles.moveNote}>
+                                {bulkBanGuestCount} guest
+                                {bulkBanGuestCount === 1 ? '' : 's'} selected —
+                                guests can’t be banned and will be skipped.
+                            </p>
+                        )}
+                        {bulkBanUserIds.length === 0 ? (
+                            <p className={styles.moveNote}>
+                                No registered runners selected — nothing to ban.
+                            </p>
+                        ) : (
+                            <>
+                                {isBulkBanPreviewing && (
+                                    <p className={styles.slipLoading}>
+                                        Loading preview…
+                                    </p>
+                                )}
+                                {bulkBanPreviewError && (
+                                    <div
+                                        className={styles.errorAlert}
+                                        role="alert"
+                                    >
+                                        {bulkBanPreviewError}
+                                    </div>
+                                )}
+                                {bulkBanPreviews && (
+                                    <p>
+                                        <strong>{bulkBanCombinedCount}</strong>{' '}
+                                        run
+                                        {bulkBanCombinedCount === 1 ? '' : 's'}{' '}
+                                        affected across {bulkBanUserIds.length}{' '}
+                                        runner
+                                        {bulkBanUserIds.length === 1 ? '' : 's'}
+                                        .
+                                    </p>
+                                )}
+                                <label
+                                    htmlFor="bulk-ban-reason"
+                                    className={styles.fieldLabel}
+                                >
+                                    Reason — required
+                                </label>
+                                <textarea
+                                    id="bulk-ban-reason"
+                                    className={styles.dialogTextarea}
+                                    rows={3}
+                                    value={bulkBanReason}
+                                    onChange={(e) =>
+                                        setBulkBanReason(e.target.value)
+                                    }
+                                    disabled={isBulkBanning}
+                                />
+                            </>
+                        )}
+                    </div>
+                    <div className={styles.dialogFooter}>
+                        <button
+                            type="button"
+                            className={styles.slipAction}
+                            onClick={closeBulkBan}
+                            disabled={isBulkBanning}
+                        >
+                            Cancel
+                        </button>
+                        {bulkBanUserIds.length > 0 && (
+                            <button
+                                type="button"
+                                className={styles.confirmBtn}
+                                onClick={confirmBulkBan}
+                                disabled={
+                                    isBulkBanning ||
+                                    bulkBanReason.trim().length === 0 ||
+                                    !!bulkBanPreviewError
+                                }
+                            >
+                                {isBulkBanning ? 'Banning…' : 'Confirm ban'}
+                            </button>
+                        )}
+                    </div>
+                </BoardDialog>
             )}
         </section>
     );

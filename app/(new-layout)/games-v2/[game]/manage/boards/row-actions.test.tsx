@@ -7,7 +7,10 @@ import {
     waitFor,
 } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
+import type {
+    ResolvedCategory,
+    VariableRow,
+} from '../../../../../../types/leaderboards.types';
 import type {
     LeaderboardRosterRow,
     UserEligibleRunRow,
@@ -28,6 +31,7 @@ const mocks = vi.hoisted(() => ({
     previewExcludeAction: vi.fn(),
     createManualTimeAction: vi.fn(),
     markRunsAction: vi.fn(),
+    moveRunAction: vi.fn(),
     toastSuccess: vi.fn(),
     toastError: vi.fn(),
 }));
@@ -42,6 +46,9 @@ vi.mock('../moderation/shared/actions/manual-times.action', () => ({
 vi.mock('../moderation/shared/actions/marks.action', () => ({
     markRunsAction: mocks.markRunsAction,
 }));
+vi.mock('../moderation/shared/actions/board-override.action', () => ({
+    moveRunAction: mocks.moveRunAction,
+}));
 vi.mock('react-toastify', () => ({
     toast: { success: mocks.toastSuccess, error: mocks.toastError },
 }));
@@ -54,6 +61,31 @@ const CATEGORY: ResolvedCategory = {
     archived: false,
     isMain: true,
     sortOrder: 1,
+};
+
+const CATEGORY_ALT: ResolvedCategory = {
+    id: 20,
+    name: 'all-bosses',
+    display: 'All Bosses',
+    primaryTiming: 'rt',
+    archived: false,
+    isMain: true,
+    sortOrder: 2,
+};
+
+const NG_PLUS_VAR: VariableRow = {
+    id: 100,
+    gameId: 1,
+    categoryId: CATEGORY.id,
+    name: 'NG+',
+    nameNormalized: 'ngplus',
+    role: 'subcategory',
+    values: [['No'], ['Yes']],
+    defaultValueIndex: 0,
+    sortOrder: 0,
+    description: null,
+    version: 1,
+    published: true,
 };
 
 function rosterRow(
@@ -82,6 +114,8 @@ function renderRowActions(overrides: Partial<RowActionsProps> = {}) {
     const props: RowActionsProps = {
         row,
         category: CATEGORY,
+        categories: [CATEGORY],
+        variables: [],
         subcategoryKey: '',
         gameSlug: 'some-game',
         timeMs: 20_000,
@@ -175,7 +209,7 @@ describe('RowActions — Remove', () => {
     it('disables the whole cluster while a removal is in flight for this row', () => {
         renderRowActions({ removing: true });
 
-        for (const name of ['Later', 'Remove', 'Ban', 'Fix time']) {
+        for (const name of ['Later', 'Remove', 'Ban', 'Fix time', 'Move…']) {
             expect(
                 (screen.getByRole('button', { name }) as HTMLButtonElement)
                     .disabled,
@@ -243,6 +277,117 @@ describe('RowActions — Ban', () => {
         expect(screen.queryByRole('button', { name: 'Ban' })).toBeNull();
         expect(mocks.previewExcludeAction).not.toHaveBeenCalled();
         expect(mocks.excludeAction).not.toHaveBeenCalled();
+    });
+});
+
+describe('RowActions — Move', () => {
+    it('opens with the current placement selected and Apply disabled (no-op)', () => {
+        renderRowActions({
+            categories: [CATEGORY, CATEGORY_ALT],
+            variables: [NG_PLUS_VAR],
+            subcategoryKey: 'ngplus=No',
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Move…' }));
+
+        expect(
+            (
+                screen.getByRole('button', {
+                    name: 'Apply',
+                }) as HTMLButtonElement
+            ).disabled,
+        ).toBe(true);
+        expect(screen.getByText('Already placed here.')).toBeTruthy();
+    });
+
+    it('builds the target key from the selected bands and calls moveRunAction, then fires an undo toast', async () => {
+        mocks.moveRunAction.mockResolvedValue({ ok: true });
+        const { onMutated } = renderRowActions({
+            categories: [CATEGORY, CATEGORY_ALT],
+            variables: [NG_PLUS_VAR],
+            subcategoryKey: 'ngplus=No',
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Move…' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Yes' }));
+
+        const applyBtn = screen.getByRole('button', {
+            name: 'Apply',
+        }) as HTMLButtonElement;
+        expect(applyBtn.disabled).toBe(false);
+        fireEvent.click(applyBtn);
+
+        await waitFor(() =>
+            expect(mocks.moveRunAction).toHaveBeenCalledWith('some-game', 1, {
+                categoryId: CATEGORY.id,
+                subcategoryKey: 'ngplus=Yes',
+            }),
+        );
+        expect(onMutated).toHaveBeenCalled();
+        expect(mocks.toastSuccess).toHaveBeenCalled();
+
+        // The undo toast's render-prop calls the null variant to restore.
+        const undoRenderProp = mocks.toastSuccess.mock.calls[0][0];
+        render(undoRenderProp({ closeToast: vi.fn() }));
+        mocks.moveRunAction.mockClear();
+        mocks.moveRunAction.mockResolvedValue({ ok: true });
+        fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+        await waitFor(() =>
+            expect(mocks.moveRunAction).toHaveBeenCalledWith(
+                'some-game',
+                1,
+                null,
+            ),
+        );
+    });
+
+    it('calls moveRunAction with a different target category once selected', async () => {
+        mocks.moveRunAction.mockResolvedValue({ ok: true });
+        renderRowActions({
+            categories: [CATEGORY, CATEGORY_ALT],
+            variables: [],
+            subcategoryKey: '',
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Move…' }));
+        fireEvent.change(screen.getByLabelText('Category'), {
+            target: { value: String(CATEGORY_ALT.id) },
+        });
+
+        const applyBtn = screen.getByRole('button', {
+            name: 'Apply',
+        }) as HTMLButtonElement;
+        expect(applyBtn.disabled).toBe(false);
+        fireEvent.click(applyBtn);
+
+        await waitFor(() =>
+            expect(mocks.moveRunAction).toHaveBeenCalledWith('some-game', 1, {
+                categoryId: CATEGORY_ALT.id,
+                subcategoryKey: '',
+            }),
+        );
+    });
+
+    it('surfaces a backend error inline instead of closing the sheet', async () => {
+        mocks.moveRunAction.mockResolvedValue({
+            error: 'Already placed there.',
+        });
+        renderRowActions({
+            categories: [CATEGORY, CATEGORY_ALT],
+            variables: [],
+            subcategoryKey: '',
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Move…' }));
+        fireEvent.change(screen.getByLabelText('Category'), {
+            target: { value: String(CATEGORY_ALT.id) },
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+
+        await waitFor(() =>
+            expect(screen.getByText('Already placed there.')).toBeTruthy(),
+        );
+        expect(screen.getByRole('button', { name: 'Apply' })).toBeTruthy();
     });
 });
 
