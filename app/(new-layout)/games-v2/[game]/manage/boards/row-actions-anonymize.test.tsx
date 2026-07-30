@@ -211,4 +211,40 @@ describe('RowActions — Anonymize', () => {
             screen.getByRole('button', { name: 'Confirm anonymize' }),
         ).toBeTruthy();
     });
+
+    it("disables the row's other actions while anonymize is in flight", async () => {
+        mocks.anonymizeRunnerAction.mockReturnValue(new Promise(() => {}));
+        renderRowActions();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Anonymize' }));
+        fireEvent.change(screen.getByLabelText('Reason — required'), {
+            target: { value: 'ToS violation' },
+        });
+
+        // Before confirming, the row's other actions are still enabled.
+        expect(screen.getByRole('button', { name: 'Later' })).toHaveProperty(
+            'disabled',
+            false,
+        );
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Confirm anonymize' }),
+        );
+
+        // Once the (never-resolving) anonymize call is in flight, the shared
+        // `busy` disjunction disables every other action for this row.
+        await waitFor(() =>
+            expect(
+                screen.getByRole('button', { name: 'Later' }),
+            ).toHaveProperty('disabled', true),
+        );
+        expect(screen.getByRole('button', { name: 'Remove' })).toHaveProperty(
+            'disabled',
+            true,
+        );
+        expect(screen.getByRole('button', { name: 'Ban' })).toHaveProperty(
+            'disabled',
+            true,
+        );
+    });
 });

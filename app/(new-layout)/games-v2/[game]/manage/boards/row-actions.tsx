@@ -214,7 +214,12 @@ export function RowActions({
     };
 
     const confirmAnonymize = () => {
-        if (row.userId == null || anonReason.trim().length === 0) return;
+        if (
+            row.userId == null ||
+            anonReason.trim().length === 0 ||
+            isAnonymizing
+        )
+            return;
         const board = { categoryId: category.id, subcategoryKey };
         startAnonymize(async () => {
             const res = await anonymizeRunnerAction(gameSlug, {
@@ -228,8 +233,10 @@ export function RowActions({
             }
             setAnonOpen(false);
             onMutated();
-            // Same portal-based toast Move uses — survives this row
-            // unmounting when the reload drops the (now-masked) roster row.
+            // The undo toast is a portal, independent of this row's
+            // lifecycle, so it keeps working even after `onMutated`'s reload
+            // (triggered by this or a sibling row's action) unmounts this
+            // component — same rationale as Move's toast below.
             fireUndoToast(
                 `${row.runnerName} anonymized site-wide.`,
                 () => liftSiteBanAction(res.banId, gameSlug, board),
