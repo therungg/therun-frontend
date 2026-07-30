@@ -331,3 +331,114 @@ describe("BoardCuration — a sibling row's reload must not kill a pending remov
         );
     });
 });
+
+describe('BoardCuration — stale-closure reload after a category switch', () => {
+    const CAT1: ResolvedCategory = {
+        id: 10,
+        name: 'any-percent',
+        display: 'Any%',
+        primaryTiming: 'rt',
+        archived: false,
+        isMain: true,
+        sortOrder: 1,
+    };
+    const CAT2: ResolvedCategory = {
+        id: 11,
+        name: '100-percent',
+        display: '100%',
+        primaryTiming: 'rt',
+        archived: false,
+        isMain: true,
+        sortOrder: 2,
+    };
+
+    // Guest (no userId) so Remove takes the no-slip path: exclude, fire the
+    // undo toast, then dropPending+reload immediately — same shape as a
+    // resolved slip, just without the intermediate "next:" step.
+    const GUEST_ROW = rosterRow({
+        runId: 5,
+        userId: null,
+        runnerName: 'guestannie',
+        time: 10_000,
+    });
+    const CAT2_ROW = rosterRow({
+        runId: 6,
+        userId: 8,
+        runnerName: 'carol',
+        time: 15_000,
+    });
+
+    it("does not let an undo triggered after switching category resolve the OLD category's roster into the new view", async () => {
+        mocks.loadRosterAction.mockImplementation(
+            async (_slug: string, categoryId: number) =>
+                categoryId === CAT1.id
+                    ? { ok: true, rows: [GUEST_ROW] }
+                    : { ok: true, rows: [CAT2_ROW] },
+        );
+        mocks.excludeAction.mockResolvedValue({
+            ok: true,
+            result: { affectedRunCount: 1, affectedLeaderboards: [] },
+        });
+        mocks.restoreRunsAction.mockResolvedValue({ ok: true });
+
+        render(
+            <BoardCuration
+                game={GAME}
+                categories={[CAT1, CAT2]}
+                groups={[]}
+                variables={[]}
+                policies={[]}
+                canConfigure
+                context="console"
+            />,
+        );
+
+        await waitFor(() => rowContaining('guestannie'));
+
+        // Remove the guest — no candidate flow, so this fires the undo toast
+        // (capturing `reload` bound to CAT1) and reloads CAT1 immediately.
+        fireEvent.click(
+            within(rowContaining('guestannie')).getByRole('button', {
+                name: 'Remove',
+            }),
+        );
+        await waitFor(() => expect(mocks.toastSuccess).toHaveBeenCalled());
+
+        // Switch to CAT2 before touching the undo toast.
+        fireEvent.click(screen.getByRole('button', { name: '100%' }));
+        await waitFor(() => rowContaining('carol'));
+
+        // Now resolve the STALE undo — its `onUndone` closure was captured
+        // while CAT1 was selected, so without the selection guard in
+        // useBoardData its eventual `loadRosterAction(gameSlug, CAT1.id,
+        // ...)` result would land in the shared `rows` state and silently
+        // replace what CAT2's view is showing.
+        const undoRenderProp = mocks.toastSuccess.mock.calls[0][0];
+        render(undoRenderProp({ closeToast: vi.fn() }));
+        fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+        await waitFor(() =>
+            expect(mocks.restoreRunsAction).toHaveBeenCalledWith(
+                'some-game',
+                [5],
+                'Undo of remove',
+            ),
+        );
+        // Four loadRosterAction calls total: initial CAT1 mount, the
+        // immediate reload after Remove (CAT1), the switch to CAT2, and
+        // finally this stale undo's reload (CAT1 again) — wait for that
+        // last one to actually land before asserting it didn't stick.
+        await waitFor(() =>
+            expect(mocks.loadRosterAction).toHaveBeenCalledTimes(4),
+        );
+
+        // CAT2's roster must still be what's on screen — the stale CAT1
+        // result from the undo's reload must have been dropped, not merged
+        // into the shared `rows` state.
+        await waitFor(() => rowContaining('carol'));
+        expect(
+            screen
+                .queryAllByRole('row')
+                .some((r) => r.textContent?.includes('guestannie')),
+        ).toBe(false);
+    });
+});

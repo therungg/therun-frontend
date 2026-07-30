@@ -438,6 +438,17 @@ export function BoardCuration({
                 return;
             }
 
+            // A removed row can't be part of a bulk Accept/Ban selection
+            // anymore — without this, a stale runId rides along in
+            // `selectedRunIds` and a subsequent bulk action fires against a
+            // run that's no longer on the board.
+            setSelectedRunIds((prev) => {
+                if (!prev.has(row.runId)) return prev;
+                const next = new Set(prev);
+                next.delete(row.runId);
+                return next;
+            });
+
             // Pin the overlay snapshot in place regardless of what future
             // reloads (this row's own, or a sibling's) do to `rows`.
             setPendingRemovals((prev) => {
@@ -525,17 +536,25 @@ export function BoardCuration({
     };
 
     const handleRemoveToo = (runId: number, candidate: UserEligibleRunRow) => {
-        dropPending(runId);
         (async () => {
             const res = await excludeAction(game.name, {
                 runIds: [candidate.runId],
                 reason: REMOVE_REASON,
             });
             if ('error' in res) {
+                // Nothing changed — the original run's overlay entry is
+                // still intact, so there's nothing to resync yet. Dropping
+                // it here (as a prior version did, unconditionally and
+                // before this call even started) meant a failed "Remove
+                // too" silently discarded the Keep it/Remove too slip with
+                // no way back to it, and forced a same-tick reload purely
+                // to paper over that self-inflicted gap.
                 toast.error(res.error);
-                reload();
                 return;
             }
+            // Drop the original's overlay entry and reload together, once
+            // the outcome is actually known — one settle, one reload.
+            dropPending(runId);
             fireUndoToast(
                 'Removed.',
                 () =>
@@ -558,6 +577,13 @@ export function BoardCuration({
         return minMsFromPolicy(policy, timing);
     }, [category, policies, timing]);
 
+    // Defaults to ascending (lower time = better), same default the Display
+    // popover uses (board-controls.tsx) and the same fallback categoryMgmt
+    // applies server-side — an inverted (`sortAscending: false`, "higher
+    // time = better") category must rank its longest time #1, or curation
+    // shows the board backwards from what the public leaderboard renders.
+    const ascending = category?.sortAscending ?? true;
+
     const boardRows: RankedRow[] = useMemo(() => {
         const live = rows
             .filter(
@@ -573,15 +599,37 @@ export function BoardCuration({
             if (a.timeMs == null && b.timeMs == null) return 0;
             if (a.timeMs == null) return 1;
             if (b.timeMs == null) return -1;
-            return a.timeMs - b.timeMs;
+            return ascending ? a.timeMs - b.timeMs : b.timeMs - a.timeMs;
         });
         return merged.map((entry, i) => ({
             ...entry,
             rank: i + 1,
+            // The minimum-time policy is an absolute suspicious-run floor
+            // (guards against implausibly fast completions), not a ranking
+            // concept — it stays "below this ms is suspect" regardless of
+            // which direction the category ranks in, so this check doesn't
+            // flip with `ascending`.
             belowMinimum:
                 minMs != null && entry.timeMs != null && entry.timeMs < minMs,
         }));
-    }, [rows, timing, minMs, pendingRemovals]);
+    }, [rows, timing, minMs, pendingRemovals, ascending]);
+
+    const markedCount = useMemo(
+        () => boardRows.filter((r) => r.row.markedForLater).length,
+        [boardRows],
+    );
+    const [showMarkedOnly, setShowMarkedOnly] = useState(false);
+    const visibleBoardRows = useMemo(
+        () =>
+            showMarkedOnly
+                ? boardRows.filter(
+                      (r) =>
+                          r.row.markedForLater ||
+                          pendingRemovals.has(r.row.runId),
+                  )
+                : boardRows,
+        [boardRows, showMarkedOnly, pendingRemovals],
+    );
 
     // ---- Bulk accept ----------------------------------------------------
     const [isBulkAccepting, startBulkAccept] = useTransition();
@@ -897,6 +945,20 @@ export function BoardCuration({
                 reorderBusy={isReordering}
             />
 
+            {markedCount > 0 && (
+                <div className={styles.markedBar}>
+                    <button
+                        type="button"
+                        aria-pressed={showMarkedOnly}
+                        className={`${styles.toolbarBtn} ${showMarkedOnly ? styles.toolbarBtnActive : ''}`}
+                        onClick={() => setShowMarkedOnly((v) => !v)}
+                    >
+                        <PinAngleFill size={11} aria-hidden />
+                        {markedCount} marked
+                    </button>
+                </div>
+            )}
+
             {selectedRunIds.size > 0 && (
                 <div className={styles.selectionBar}>
                     <span>{selectedRunIds.size} selected</span>
@@ -959,17 +1021,19 @@ export function BoardCuration({
                                 </tr>
                             </thead>
                             <tbody>
-                                {boardRows.length === 0 && (
+                                {visibleBoardRows.length === 0 && (
                                     <tr>
                                         <td
                                             colSpan={6}
                                             className={styles.emptyCell}
                                         >
-                                            No runs on this board yet.
+                                            {showMarkedOnly
+                                                ? 'No marked runs.'
+                                                : 'No runs on this board yet.'}
                                         </td>
                                     </tr>
                                 )}
-                                {boardRows.map(
+                                {visibleBoardRows.map(
                                     ({ row, rank, timeMs, belowMinimum }) => {
                                         const isGuest = row.userId == null;
                                         const pending = pendingRemovals.get(

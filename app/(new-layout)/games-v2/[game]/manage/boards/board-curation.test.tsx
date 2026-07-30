@@ -5,6 +5,7 @@ import {
     render,
     screen,
     waitFor,
+    within,
 } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type {
@@ -247,7 +248,211 @@ describe('BoardCuration ranking', () => {
         expect(screen.queryByText('onboard')).not.toBeNull();
         expect(screen.queryByText('offboard')).toBeNull();
     });
+
+    it('ranks rows descending (highest time first) for a sortAscending: false category', () => {
+        const INVERTED_CATEGORY: ResolvedCategory = {
+            ...CATEGORY,
+            sortAscending: false,
+        };
+        mockUseBoardData.mockReturnValue({
+            rows: [
+                rosterRow({ runId: 1, runnerName: 'lowscore', time: 5_000 }),
+                rosterRow({ runId: 2, runnerName: 'highscore', time: 30_000 }),
+            ],
+            loading: false,
+            error: null,
+            reload: vi.fn(),
+        });
+
+        render(
+            <BoardCuration
+                game={GAME}
+                categories={[INVERTED_CATEGORY]}
+                groups={GROUPS}
+                variables={[]}
+                policies={[]}
+                canConfigure
+                context="wizard"
+            />,
+        );
+
+        const rows = screen.getAllByRole('row').slice(1, -1);
+        expect(rows).toHaveLength(2);
+        expect(rows[0].textContent).toContain('highscore');
+        expect(rows[1].textContent).toContain('lowscore');
+    });
+
+    it('defaults to ascending when sortAscending is unset', () => {
+        mockUseBoardData.mockReturnValue({
+            rows: [
+                rosterRow({ runId: 1, runnerName: 'slow', time: 30_000 }),
+                rosterRow({ runId: 2, runnerName: 'fast', time: 5_000 }),
+            ],
+            loading: false,
+            error: null,
+            reload: vi.fn(),
+        });
+
+        render(
+            <BoardCuration
+                game={GAME}
+                categories={[CATEGORY]}
+                groups={GROUPS}
+                variables={[]}
+                policies={[]}
+                canConfigure
+                context="wizard"
+            />,
+        );
+
+        const rows = screen.getAllByRole('row').slice(1, -1);
+        expect(rows[0].textContent).toContain('fast');
+        expect(rows[1].textContent).toContain('slow');
+    });
 });
+
+describe('BoardCuration — marked-pile filter chip', () => {
+    it('shows a count chip, filters to marked rows on toggle, and hides at zero', () => {
+        mockUseBoardData.mockReturnValue({
+            rows: [
+                rosterRow({
+                    runId: 1,
+                    runnerName: 'plainrunner',
+                    time: 10_000,
+                    markedForLater: false,
+                }),
+                rosterRow({
+                    runId: 2,
+                    runnerName: 'markedrunner',
+                    time: 20_000,
+                    markedForLater: true,
+                }),
+            ],
+            loading: false,
+            error: null,
+            reload: vi.fn(),
+        });
+
+        render(
+            <BoardCuration
+                game={GAME}
+                categories={[CATEGORY]}
+                groups={GROUPS}
+                variables={[]}
+                policies={[]}
+                canConfigure
+                context="console"
+            />,
+        );
+
+        expect(screen.getByText('plainrunner')).toBeTruthy();
+        expect(screen.getByText('markedrunner')).toBeTruthy();
+
+        const chip = screen.getByRole('button', { name: '1 marked' });
+        expect(chip.getAttribute('aria-pressed')).toBe('false');
+
+        fireEvent.click(chip);
+
+        expect(chip.getAttribute('aria-pressed')).toBe('true');
+        expect(screen.queryByText('plainrunner')).toBeNull();
+        expect(screen.getByText('markedrunner')).toBeTruthy();
+
+        fireEvent.click(chip);
+        expect(screen.getByText('plainrunner')).toBeTruthy();
+    });
+
+    it('renders no chip when nothing is marked', () => {
+        mockUseBoardData.mockReturnValue({
+            rows: [
+                rosterRow({
+                    runId: 1,
+                    runnerName: 'plainrunner',
+                    time: 10_000,
+                    markedForLater: false,
+                }),
+            ],
+            loading: false,
+            error: null,
+            reload: vi.fn(),
+        });
+
+        render(
+            <BoardCuration
+                game={GAME}
+                categories={[CATEGORY]}
+                groups={GROUPS}
+                variables={[]}
+                policies={[]}
+                canConfigure
+                context="console"
+            />,
+        );
+
+        expect(screen.queryByText(/marked$/)).toBeNull();
+    });
+});
+
+describe('BoardCuration — bulk selection', () => {
+    it('prunes a removed run out of the current bulk selection', async () => {
+        mocks.excludeAction.mockResolvedValue({
+            ok: true,
+            result: { affectedRunCount: 1, affectedLeaderboards: [] },
+        });
+        const reload = vi.fn();
+        mockUseBoardData.mockReturnValue({
+            rows: [
+                rosterRow({
+                    runId: 1,
+                    userId: null,
+                    runnerName: 'alice',
+                    time: 10_000,
+                }),
+                rosterRow({
+                    runId: 2,
+                    userId: null,
+                    runnerName: 'bob',
+                    time: 20_000,
+                }),
+            ],
+            loading: false,
+            error: null,
+            reload,
+        });
+
+        render(
+            <BoardCuration
+                game={GAME}
+                categories={[CATEGORY]}
+                groups={GROUPS}
+                variables={[]}
+                policies={[]}
+                canConfigure
+                context="console"
+            />,
+        );
+
+        fireEvent.click(screen.getByLabelText('Select alice'));
+        fireEvent.click(screen.getByLabelText('Select bob'));
+        expect(screen.getByText('2 selected')).toBeTruthy();
+
+        fireEvent.click(
+            within(rowContaining('alice')).getByRole('button', {
+                name: 'Remove',
+            }),
+        );
+
+        await waitFor(() =>
+            expect(screen.getByText('1 selected')).toBeTruthy(),
+        );
+    });
+});
+
+function rowContaining(name: string): HTMLElement {
+    const rows = screen.getAllByRole('row');
+    const found = rows.find((r) => r.textContent?.includes(name));
+    if (!found) throw new Error(`No row found containing "${name}"`);
+    return found;
+}
 
 describe('BoardCuration subcategory bands', () => {
     it('re-keys the roster query when a subcategory value is picked', () => {
