@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState, useTransition } from 'react';
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import type {
     LeaderboardRosterRow,
     RosterFilter,
@@ -32,6 +32,18 @@ export function useBoardData(
     const [error, setError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
 
+    // What this render is actually showing — checked before an in-flight
+    // fetch's result gets applied. `reload` is handed out to callers (undo
+    // toasts, sibling-row mutations) that stash it in a closure and may not
+    // invoke it until well after the mod has switched category/subcategory.
+    // Since `rows`/`setRows` live in this one hook instance across that
+    // switch (the component isn't remounted), an old closure's `load` — built
+    // from the *previous* categoryId/subcategoryKey — would otherwise
+    // overwrite the *new* selection's rows with the old board's data once its
+    // request finally resolves.
+    const selectionRef = useRef({ categoryId, subcategoryKey });
+    selectionRef.current = { categoryId, subcategoryKey };
+
     const load = useCallback(() => {
         if (categoryId == null) {
             setRows([]);
@@ -41,8 +53,19 @@ export function useBoardData(
         const filter: RosterFilter = {
             subcategoryKey: subcategoryKey || undefined,
         };
+        const requested = { categoryId, subcategoryKey };
         startTransition(async () => {
             const res = await loadRosterAction(gameSlug, categoryId, filter);
+            const current = selectionRef.current;
+            if (
+                current.categoryId !== requested.categoryId ||
+                current.subcategoryKey !== requested.subcategoryKey
+            ) {
+                // Selection moved on while this request was in flight —
+                // this result belongs to a board the mod isn't looking at
+                // anymore.
+                return;
+            }
             if ('error' in res) {
                 setError(res.error);
                 setRows([]);

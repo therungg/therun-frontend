@@ -258,6 +258,13 @@
     }
 }
 
+// ---- Marked-pile filter chip ----
+// Quiet, left-aligned (unlike .controlsBar's right-aligned Task 12 toolbar)
+// since it sits with the bands/switcher, not the config controls.
+.markedBar {
+    display: flex;
+}
+
 .selectionBar {
     display: flex;
     align-items: center;
