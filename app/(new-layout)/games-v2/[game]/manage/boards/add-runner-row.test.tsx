@@ -3,7 +3,11 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
 import type { LeaderboardRosterRow } from '../../../../../../types/moderation.types';
-import { AddRunnerRow, resolveRunnerRef } from './add-runner-row';
+import {
+    AddRunnerRow,
+    findMatchedRunner,
+    resolveRunnerRef,
+} from './add-runner-row';
 
 const mocks = vi.hoisted(() => ({
     createManualTimeAction: vi.fn(),
@@ -99,7 +103,7 @@ describe('AddRunnerRow', () => {
         fireEvent.change(screen.getByLabelText('Runner time'), {
             target: { value: '35:48' },
         });
-        fireEvent.click(screen.getByRole('button', { name: 'Add' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Add guest' }));
 
         await vi.waitFor(() =>
             expect(mocks.createManualTimeAction).toHaveBeenCalledWith(
@@ -130,7 +134,7 @@ describe('AddRunnerRow', () => {
         fireEvent.change(screen.getByLabelText('Runner time'), {
             target: { value: '10:00' },
         });
-        fireEvent.click(screen.getByRole('button', { name: 'Add' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Add for alice' }));
 
         await vi.waitFor(() =>
             expect(mocks.createManualTimeAction).toHaveBeenCalledWith(
@@ -149,7 +153,7 @@ describe('AddRunnerRow', () => {
         fireEvent.change(screen.getByLabelText('Runner time'), {
             target: { value: 'not-a-time' },
         });
-        fireEvent.click(screen.getByRole('button', { name: 'Add' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Add guest' }));
 
         expect(
             screen.getByText(
@@ -157,5 +161,63 @@ describe('AddRunnerRow', () => {
             ),
         ).toBeTruthy();
         expect(mocks.createManualTimeAction).not.toHaveBeenCalled();
+    });
+
+    it('shows a "will be added as a guest" indicator and label for a non-matching name', () => {
+        renderRow([{ userId: 5, runnerName: 'alice' }]);
+
+        fireEvent.change(screen.getByLabelText('Runner name'), {
+            target: { value: 'newrunner' },
+        });
+
+        expect(screen.getByText('Will be added as a guest entry')).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Add guest' })).toBeTruthy();
+    });
+
+    it('shows a "matched runner" indicator and label for a name matching the roster', () => {
+        renderRow([{ userId: 5, runnerName: 'alice' }]);
+
+        fireEvent.change(screen.getByLabelText('Runner name'), {
+            target: { value: 'Alice' },
+        });
+
+        expect(
+            screen.getByText('Matched runner: alice — links to their account'),
+        ).toBeTruthy();
+        expect(
+            screen.getByRole('button', { name: 'Add for alice' }),
+        ).toBeTruthy();
+    });
+
+    it('shows no indicator text before anything is typed', () => {
+        renderRow([{ userId: 5, runnerName: 'alice' }]);
+
+        expect(screen.queryByText(/guest entry/)).toBeNull();
+        expect(screen.queryByText(/Matched runner/)).toBeNull();
+    });
+});
+
+describe('findMatchedRunner', () => {
+    const knownRunners: Pick<LeaderboardRosterRow, 'userId' | 'runnerName'>[] =
+        [
+            { userId: 5, runnerName: 'alice' },
+            { userId: null, runnerName: 'previously-a-guest' },
+        ];
+
+    it('returns null for an empty name', () => {
+        expect(findMatchedRunner('   ', knownRunners)).toBeNull();
+    });
+
+    it('returns the matched runner case-insensitively', () => {
+        expect(findMatchedRunner('ALICE', knownRunners)).toEqual({
+            userId: 5,
+            runnerName: 'alice',
+        });
+    });
+
+    it('does not match a guest row', () => {
+        expect(
+            findMatchedRunner('previously-a-guest', knownRunners),
+        ).toBeNull();
     });
 });

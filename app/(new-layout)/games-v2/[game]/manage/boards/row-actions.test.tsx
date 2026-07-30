@@ -318,15 +318,21 @@ describe('RowActions — Move', () => {
         fireEvent.click(applyBtn);
 
         await waitFor(() =>
-            expect(mocks.moveRunAction).toHaveBeenCalledWith('some-game', 1, {
-                categoryId: CATEGORY.id,
-                subcategoryKey: 'ngplus=Yes',
-            }),
+            expect(mocks.moveRunAction).toHaveBeenCalledWith(
+                'some-game',
+                1,
+                { categoryId: CATEGORY.id, subcategoryKey: 'ngplus=Yes' },
+                [
+                    { categoryId: CATEGORY.id, subcategoryKey: 'ngplus=No' },
+                    { categoryId: CATEGORY.id, subcategoryKey: 'ngplus=Yes' },
+                ],
+            ),
         );
         expect(onMutated).toHaveBeenCalled();
         expect(mocks.toastSuccess).toHaveBeenCalled();
 
-        // The undo toast's render-prop calls the null variant to restore.
+        // The undo toast's render-prop calls the null variant to restore,
+        // with the same pair reversed (target loses it, source regains it).
         const undoRenderProp = mocks.toastSuccess.mock.calls[0][0];
         render(undoRenderProp({ closeToast: vi.fn() }));
         mocks.moveRunAction.mockClear();
@@ -337,6 +343,10 @@ describe('RowActions — Move', () => {
                 'some-game',
                 1,
                 null,
+                [
+                    { categoryId: CATEGORY.id, subcategoryKey: 'ngplus=Yes' },
+                    { categoryId: CATEGORY.id, subcategoryKey: 'ngplus=No' },
+                ],
             ),
         );
     });
@@ -361,10 +371,15 @@ describe('RowActions — Move', () => {
         fireEvent.click(applyBtn);
 
         await waitFor(() =>
-            expect(mocks.moveRunAction).toHaveBeenCalledWith('some-game', 1, {
-                categoryId: CATEGORY_ALT.id,
-                subcategoryKey: '',
-            }),
+            expect(mocks.moveRunAction).toHaveBeenCalledWith(
+                'some-game',
+                1,
+                { categoryId: CATEGORY_ALT.id, subcategoryKey: '' },
+                [
+                    { categoryId: CATEGORY.id, subcategoryKey: '' },
+                    { categoryId: CATEGORY_ALT.id, subcategoryKey: '' },
+                ],
+            ),
         );
     });
 

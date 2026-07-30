@@ -296,12 +296,18 @@ export function RowActions({
 
     const confirmMove = () => {
         if (moveTargetCategory == null || isNoOpMove) return;
+        const source = { categoryId: category.id, subcategoryKey };
         const target = {
             categoryId: moveTargetCategory.id,
             subcategoryKey: moveTargetKey,
         };
         startMove(async () => {
-            const res = await moveRunAction(gameSlug, row.runId, target);
+            // Source loses the run, target gains it — both leaderboard reads
+            // need their cache invalidated.
+            const res = await moveRunAction(gameSlug, row.runId, target, [
+                source,
+                target,
+            ]);
             if ('error' in res) {
                 setMoveError(res.error);
                 return;
@@ -315,7 +321,10 @@ export function RowActions({
             onMutated();
             fireUndoToast(
                 `Moved ${row.runnerName}.`,
-                () => moveRunAction(gameSlug, row.runId, null),
+                // Undo restores the run to `source` — the same pair, just
+                // reversed, since this closure already knows both sides.
+                () =>
+                    moveRunAction(gameSlug, row.runId, null, [target, source]),
                 onMutated,
             );
         });
