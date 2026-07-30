@@ -18,6 +18,10 @@ import type {
     UserEligibleRunRow,
 } from '../../../../../../types/moderation.types';
 import { BoardDialog } from '../../shared/board-dialog';
+import {
+    anonymizeRunnerAction,
+    liftSiteBanAction,
+} from '../moderation/shared/actions/anonymize.action';
 import { moveRunAction } from '../moderation/shared/actions/board-override.action';
 import {
     excludeAction,
@@ -51,6 +55,11 @@ export interface RowActionsProps {
      * the seed value for the Fix-time editor. */
     timeMs: number | null;
     belowMinimum: boolean;
+    /** Viewer may file a SITE-WIDE anonymize ban — admins only
+     * (`ability.can('moderate', 'admins')`), never game moderators.
+     * Defaults to false so the wizard mounts and older render sites are
+     * unaffected. */
+    canSiteBan?: boolean;
     /**
      * True while `BoardCuration`'s exclude call for this row's Remove is in
      * flight. Remove itself — the exclude call, the undo toast, the
@@ -81,7 +90,7 @@ export function primaryValueOf(
 
 /**
  * Time cell + quiet hover-revealed action cluster for one board-curation row
- * (Later, Remove, Ban, Fix time, Move). Rendered as a fragment of two
+ * (Later, Remove, Ban, Anonymize, Fix time, Move). Rendered as a fragment of two
  * `<td>`s in place of `BoardCuration`'s old plain time cell — owning both
  * lets "Fix time" turn the time cell itself into an input without a
  * cross-component editing channel.
@@ -95,6 +104,7 @@ export function RowActions({
     gameSlug,
     timeMs,
     belowMinimum,
+    canSiteBan = false,
     removing,
     onRemove,
     onMutated,
@@ -184,6 +194,47 @@ export function RowActions({
             toast.success(`${row.runnerName} banned.`);
             setBanOpen(false);
             onMutated();
+        });
+    };
+
+    // ---- Anonymize (site-wide ban, admins only) -----------------------
+    const [anonOpen, setAnonOpen] = useState(false);
+    const [anonReason, setAnonReason] = useState('');
+    const [isAnonymizing, startAnonymize] = useTransition();
+
+    const openAnonymize = () => {
+        if (row.userId == null) return;
+        setAnonReason('');
+        setAnonOpen(true);
+    };
+
+    const closeAnonymize = () => {
+        if (isAnonymizing) return;
+        setAnonOpen(false);
+    };
+
+    const confirmAnonymize = () => {
+        if (row.userId == null || anonReason.trim().length === 0) return;
+        const board = { categoryId: category.id, subcategoryKey };
+        startAnonymize(async () => {
+            const res = await anonymizeRunnerAction(gameSlug, {
+                username: row.runnerName,
+                reason: anonReason.trim(),
+                board,
+            });
+            if ('error' in res) {
+                toast.error(res.error);
+                return;
+            }
+            setAnonOpen(false);
+            onMutated();
+            // Same portal-based toast Move uses — survives this row
+            // unmounting when the reload drops the (now-masked) roster row.
+            fireUndoToast(
+                `${row.runnerName} anonymized site-wide.`,
+                () => liftSiteBanAction(res.banId, gameSlug, board),
+                onMutated,
+            );
         });
     };
 
@@ -340,6 +391,7 @@ export function RowActions({
         removing ||
         isBanPreviewing ||
         isBanning ||
+        isAnonymizing ||
         isSavingTime ||
         isMoving;
 
@@ -418,6 +470,16 @@ export function RowActions({
                             disabled={busy}
                         >
                             Ban
+                        </button>
+                    )}
+                    {canSiteBan && !isGuest && (
+                        <button
+                            type="button"
+                            className={styles.actionBtn}
+                            onClick={openAnonymize}
+                            disabled={busy}
+                        >
+                            Anonymize
                         </button>
                     )}
                     <button
@@ -539,6 +601,81 @@ export function RowActions({
                             }
                         >
                             {isBanning ? 'Banning…' : 'Confirm ban'}
+                        </button>
+                    </div>
+                </BoardDialog>
+            )}
+
+            {anonOpen && !isGuest && (
+                <BoardDialog
+                    open
+                    onClose={closeAnonymize}
+                    labelledBy="anonymize-sheet-title"
+                    size="sm"
+                    closeOnBackdropClick={!isAnonymizing}
+                >
+                    <div className={styles.dialogHeader}>
+                        <h5
+                            id="anonymize-sheet-title"
+                            className={styles.dialogTitle}
+                        >
+                            Anonymize {row.runnerName}
+                        </h5>
+                        <button
+                            type="button"
+                            className="btn-close"
+                            aria-label="Close"
+                            onClick={closeAnonymize}
+                            disabled={isAnonymizing}
+                        />
+                    </div>
+                    <div className={styles.dialogBody}>
+                        <p>
+                            <strong>Site-wide ban, runs kept.</strong>{' '}
+                            {row.runnerName}’s account is locked out of
+                            therun.gg entirely. Their name shows as “Anonymous
+                            Runner” on public boards across every game; their
+                            runs stay on the boards and still count.
+                        </p>
+                        <p>
+                            Moderation views (including this table) keep showing
+                            the real name.
+                        </p>
+                        <label
+                            htmlFor="anonymize-reason"
+                            className={styles.fieldLabel}
+                        >
+                            Reason — required
+                        </label>
+                        <textarea
+                            id="anonymize-reason"
+                            className={styles.dialogTextarea}
+                            rows={3}
+                            value={anonReason}
+                            onChange={(e) => setAnonReason(e.target.value)}
+                            disabled={isAnonymizing}
+                        />
+                    </div>
+                    <div className={styles.dialogFooter}>
+                        <button
+                            type="button"
+                            className={styles.slipAction}
+                            onClick={closeAnonymize}
+                            disabled={isAnonymizing}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            className={styles.confirmBtn}
+                            onClick={confirmAnonymize}
+                            disabled={
+                                isAnonymizing || anonReason.trim().length === 0
+                            }
+                        >
+                            {isAnonymizing
+                                ? 'Anonymizing…'
+                                : 'Confirm anonymize'}
                         </button>
                     </div>
                 </BoardDialog>
