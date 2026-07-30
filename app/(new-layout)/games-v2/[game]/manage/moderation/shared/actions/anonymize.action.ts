@@ -50,7 +50,7 @@ export async function siteBanRunnerAction(
     }
 }
 
-/** Inverse of `anonymizeRunnerAction`, used only by its undo toast. */
+/** Inverse of `siteBanRunnerAction`, used only by its undo toast. */
 export async function liftSiteBanAction(
     banId: number,
     gameSlug: string,
