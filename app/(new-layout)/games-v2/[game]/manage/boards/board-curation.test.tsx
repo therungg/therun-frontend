@@ -1,6 +1,12 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+    cleanup,
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+} from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type {
     ResolvedCategory,
     ResolvedGame,
@@ -18,31 +24,53 @@ vi.mock('./use-board-data', () => ({
     useBoardData: vi.fn(),
 }));
 
-// RowActions (rendered per row) reaches these — mocked here purely to keep
-// this suite's rendering hermetic (avoids pulling in the real 'use server'
-// action modules and their next/headers-touching dependencies). Behavior of
-// the actions themselves is covered by row-actions.test.tsx.
-vi.mock('../moderation/shared/actions/exclude.action', () => ({
+// vi.mock factories are hoisted above these imports, so the mock fns
+// themselves must be created through vi.hoisted — see row-actions.test.tsx
+// for the same pattern. RowActions/AddRunnerRow (rendered per row / at the
+// table end) reach these — mocked here purely to keep this suite's
+// rendering hermetic (avoids pulling in the real 'use server' action
+// modules and their next/headers-touching dependencies), but the bulk
+// accept/ban tests below assert on them directly.
+const mocks = vi.hoisted(() => ({
     excludeAction: vi.fn(),
     previewExcludeAction: vi.fn(),
+    restoreRunsAction: vi.fn(),
+    createManualTimeAction: vi.fn(),
+    markRunsAction: vi.fn(),
+    moveRunAction: vi.fn(),
+    loadUserEligibleRunsAction: vi.fn(),
+    toastSuccess: vi.fn(),
+    toastError: vi.fn(),
+}));
+
+vi.mock('../moderation/shared/actions/exclude.action', () => ({
+    excludeAction: mocks.excludeAction,
+    previewExcludeAction: mocks.previewExcludeAction,
 }));
 vi.mock('../moderation/shared/actions/restore.action', () => ({
-    restoreRunsAction: vi.fn(),
+    restoreRunsAction: mocks.restoreRunsAction,
 }));
 vi.mock('../moderation/shared/actions/manual-times.action', () => ({
-    createManualTimeAction: vi.fn(),
+    createManualTimeAction: mocks.createManualTimeAction,
 }));
 vi.mock('../moderation/shared/actions/marks.action', () => ({
-    markRunsAction: vi.fn(),
+    markRunsAction: mocks.markRunsAction,
+}));
+vi.mock('../moderation/shared/actions/board-override.action', () => ({
+    moveRunAction: mocks.moveRunAction,
 }));
 vi.mock('../moderation/shared/actions/eligible-runs.action', () => ({
-    loadUserEligibleRunsAction: vi.fn(),
+    loadUserEligibleRunsAction: mocks.loadUserEligibleRunsAction,
 }));
 vi.mock('react-toastify', () => ({
-    toast: { success: vi.fn(), error: vi.fn() },
+    toast: { success: mocks.toastSuccess, error: mocks.toastError },
 }));
 
 const mockUseBoardData = vi.mocked(useBoardData);
+
+beforeEach(() => {
+    vi.clearAllMocks();
+});
 
 afterEach(() => {
     cleanup();
@@ -137,7 +165,8 @@ describe('BoardCuration ranking', () => {
             />,
         );
 
-        const rows = screen.getAllByRole('row').slice(1); // drop the header row
+        // Drop the header row and the trailing add-runner ghost row.
+        const rows = screen.getAllByRole('row').slice(1, -1);
         expect(rows).toHaveLength(2);
         expect(rows[0].textContent).toContain('fastrunner');
         expect(rows[1].textContent).toContain('slowrunner');
@@ -247,5 +276,147 @@ describe('BoardCuration subcategory bands', () => {
             CATEGORY.id,
             '',
         );
+    });
+});
+
+function renderTwoRunners() {
+    mockUseBoardData.mockReturnValue({
+        rows: [
+            rosterRow({
+                runId: 1,
+                userId: 5,
+                runnerName: 'alice',
+                time: 10_000,
+            }),
+            rosterRow({
+                runId: 2,
+                userId: null,
+                runnerName: 'guestbob',
+                time: 20_000,
+            }),
+        ],
+        loading: false,
+        error: null,
+        reload: vi.fn(),
+    });
+    return render(
+        <BoardCuration
+            game={GAME}
+            categories={[CATEGORY]}
+            groups={GROUPS}
+            variables={[]}
+            policies={[]}
+            canConfigure
+            context="console"
+        />,
+    );
+}
+
+describe('BoardCuration — multi-select bulk actions', () => {
+    it('shows the selection bar, calls markRunsAction(..., false) for Accept, and clears selection', async () => {
+        mocks.markRunsAction.mockResolvedValue({ ok: true, updated: 2 });
+        renderTwoRunners();
+
+        fireEvent.click(screen.getByLabelText('Select alice'));
+        fireEvent.click(screen.getByLabelText('Select guestbob'));
+        expect(screen.getByText('2 selected')).toBeTruthy();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
+
+        await waitFor(() =>
+            expect(mocks.markRunsAction).toHaveBeenCalledWith(
+                'some-game',
+                [1, 2],
+                false,
+            ),
+        );
+        await waitFor(() =>
+            expect(screen.queryByText('2 selected')).toBeNull(),
+        );
+    });
+
+    it('previews unique userIds, skips guests, and bans sequentially with one shared reason', async () => {
+        mocks.previewExcludeAction.mockResolvedValue({
+            ok: true,
+            preview: {
+                affectedRunCount: 2,
+                affectedLeaderboards: [],
+                sampleRuns: [],
+            },
+        });
+        mocks.excludeAction.mockResolvedValue({
+            ok: true,
+            result: { ruleId: 1, alreadyExists: false },
+        });
+        renderTwoRunners();
+
+        fireEvent.click(screen.getByLabelText('Select alice'));
+        fireEvent.click(screen.getByLabelText('Select guestbob'));
+        fireEvent.click(screen.getByRole('button', { name: 'Ban…' }));
+
+        await waitFor(() =>
+            expect(mocks.previewExcludeAction).toHaveBeenCalledWith(
+                'some-game',
+                { rule: { type: 'user', targetId: 5 } },
+            ),
+        );
+        expect(mocks.previewExcludeAction).toHaveBeenCalledTimes(1);
+        expect(screen.getByText(/1 guest/)).toBeTruthy();
+
+        fireEvent.change(screen.getByLabelText('Reason — required'), {
+            target: { value: 'Mass cheating ring.' },
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'Confirm ban' }));
+
+        await waitFor(() =>
+            expect(mocks.excludeAction).toHaveBeenCalledWith('some-game', {
+                rule: { type: 'user', targetId: 5 },
+                reason: 'Mass cheating ring.',
+            }),
+        );
+        expect(mocks.excludeAction).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe('BoardCuration — moved-here tag', () => {
+    it('shows a moved-here tag and clears it via moveRunAction(gameSlug, runId, null)', async () => {
+        mocks.moveRunAction.mockResolvedValue({ ok: true });
+        const reload = vi.fn();
+        mockUseBoardData.mockReturnValue({
+            rows: [
+                rosterRow({
+                    runId: 1,
+                    runnerName: 'alice',
+                    boardOverride: { categoryId: 10, subcategoryKey: '' },
+                }),
+            ],
+            loading: false,
+            error: null,
+            reload,
+        });
+
+        render(
+            <BoardCuration
+                game={GAME}
+                categories={[CATEGORY]}
+                groups={GROUPS}
+                variables={[]}
+                policies={[]}
+                canConfigure
+                context="console"
+            />,
+        );
+
+        expect(screen.getByText('moved here')).toBeTruthy();
+        fireEvent.click(screen.getByLabelText('Clear move for alice'));
+
+        await waitFor(() =>
+            expect(mocks.moveRunAction).toHaveBeenCalledWith(
+                'some-game',
+                1,
+                null,
+            ),
+        );
+        expect(reload).toHaveBeenCalled();
     });
 });

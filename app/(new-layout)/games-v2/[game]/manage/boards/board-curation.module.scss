@@ -98,7 +98,36 @@
     @include board.board-pill(dt.$accent-amber);
 }
 
-// ---- Row actions (Later / Remove / Ban / Fix time) ----
+// A run currently showing here because of a mod-set board-override rather
+// than its natural placement (see `boardOverride` on `LeaderboardRosterRow`).
+.movedTag {
+    @include board.board-pill;
+    margin-left: dt.$spacing-xs;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.movedClear {
+    background: none;
+    border: 0;
+    padding: 0 0 0 0.15rem;
+    margin: 0;
+    line-height: 1;
+    color: inherit;
+    cursor: pointer;
+
+    &:hover {
+        color: var(--bs-emphasis-color);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
+}
+
+// ---- Row actions (Later / Remove / Ban / Fix time / Move) ----
 // `.row` is the hover/focus anchor for the quiet action cluster — present
 // but invisible until the row is hovered or a control inside it has focus,
 // so the board still reads as a leaderboard rather than an admin table.
@@ -107,6 +136,44 @@
     &:focus-within .actionCluster {
         opacity: 1;
     }
+}
+
+// ---- Multi-select (bulk Accept/Ban) ----
+.selectHeader,
+.selectCell {
+    width: 1%;
+}
+
+.selectCell input {
+    opacity: 0;
+    transition: opacity dt.$transition-fast;
+}
+
+.row:hover .selectCell input,
+.row:focus-within .selectCell input {
+    opacity: 1;
+}
+
+.tableSelecting .selectCell input {
+    opacity: 1;
+}
+
+@media (pointer: coarse) {
+    .selectCell input {
+        opacity: 1;
+    }
+}
+
+.selectionBar {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.selectionAction {
+    @include board.board-quiet-link;
 }
 
 // A row pinned in place by a pending removal (see PendingRemoval in
@@ -196,7 +263,47 @@
     color: dt.$accent-red;
 }
 
-// ---- Ban confirm sheet (BoardDialog content) ----
+// ---- Add-runner ghost row ----
+// Quiet by default — inputs read as placeholder affordances, not a form
+// bolted onto the board, matching the row actions' at-rest opacity.
+.ghostRow {
+    opacity: 0.7;
+
+    &:focus-within,
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.ghostInput {
+    background: none;
+    border: 0;
+    border-bottom: 1px dashed rgba(var(--bs-border-color-rgb), 0.6);
+    padding: 0.15rem 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
+    width: 100%;
+
+    &::placeholder {
+        color: var(--bs-tertiary-color);
+    }
+
+    &:focus-visible {
+        outline: 0;
+        border-bottom-color: var(--bs-primary);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
+
+.ghostTimeInput {
+    @include board.mono-time;
+    width: 7rem;
+}
+
+// ---- Ban / Move confirm sheets (BoardDialog content) ----
 .dialogHeader {
     @include board.board-dialog-header;
     display: flex;
@@ -218,6 +325,16 @@
 
 .dialogTextarea {
     @include board.board-dialog-textarea;
+}
+
+.moveNote {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: dt.$spacing-sm 0 0;
+}
+
+.applyBtn {
+    @include board.board-btn-primary;
 }
 
 .fieldLabel {
@@ -252,6 +369,15 @@
 }
 
 .loadingNote {
+    padding: dt.$spacing-lg;
+    text-align: center;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+// In-table empty state (the ghost row always renders below it, so an empty
+// board is never a dead end without its own empty-state div).
+.emptyCell {
     padding: dt.$spacing-lg;
     text-align: center;
     color: var(--bs-secondary-color);
