@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import Link from '~src/components/link';
 import type {
     GameIdentifiers,
@@ -49,6 +49,9 @@ export function GameDetailsForm({
     onSaved,
     saveLabel = 'Save & continue',
     savingExternally = false,
+    formId,
+    hideAction = false,
+    onBusyChange,
 }: {
     identifiers: GameIdentifiers;
     metadata: GameMetadata;
@@ -59,6 +62,12 @@ export function GameDetailsForm({
     // button stays disabled through that gap instead of re-enabling between
     // this form's save and the caller's (see step-details.tsx).
     savingExternally?: boolean;
+    /** id on the <form>, so an external `<button form=…>` can submit it. */
+    formId?: string;
+    /** Suppress the internal submit button (caller renders its own). */
+    hideAction?: boolean;
+    /** Reports isSaving/isUploading to a caller-rendered external button. */
+    onBusyChange?: (busy: boolean) => void;
 }) {
     const [slug, setSlug] = useState(identifiers.slug ?? '');
     const [coverUrl, setCoverUrl] = useState(metadata.coverUrl ?? '');
@@ -84,6 +93,11 @@ export function GameDetailsForm({
     const [isSaving, startSaving] = useTransition();
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const busy = isSaving || isUploading;
+    useEffect(() => {
+        onBusyChange?.(busy);
+    }, [busy, onBusyChange]);
 
     const uploadCover = async (file: File | undefined) => {
         if (!file) return;
@@ -144,6 +158,7 @@ export function GameDetailsForm({
     const slugPreview = normalizeSlugForStorage(slug);
 
     const save = () => {
+        if (isSaving || isUploading) return;
         setError(null);
         if (slug.trim() !== '' && slugPreview === '') {
             setError(
@@ -201,7 +216,28 @@ export function GameDetailsForm({
     const preview = coverUrl.trim() || game.image;
 
     return (
-        <>
+        <form
+            id={formId}
+            noValidate
+            onSubmit={(e) => {
+                e.preventDefault();
+                save();
+            }}
+        >
+            {metadata.igdbUrl && (
+                <p className="text-muted small mb-3">
+                    Prefilled data comes from{' '}
+                    <a href={metadata.igdbUrl} target="_blank" rel="noreferrer">
+                        this IGDB entry
+                    </a>
+                    . Wrong game?{' '}
+                    <Link
+                        href={`/games-v2/${game.name}/manage?pane=game-details`}
+                    >
+                        Fix the match
+                    </Link>
+                </p>
+            )}
             <div className="row g-4">
                 <div className="col-md-6">
                     <FieldLabel
@@ -304,24 +340,6 @@ export function GameDetailsForm({
                         onChange={(e) => setAbout(e.target.value)}
                         placeholder="A short description of the game, shown on the game page."
                     />
-                    {metadata.igdbUrl && (
-                        <p className="text-muted small mt-2 mb-0">
-                            Prefilled data comes from{' '}
-                            <a
-                                href={metadata.igdbUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                            >
-                                this IGDB entry
-                            </a>
-                            . Wrong game?{' '}
-                            <Link
-                                href={`/games-v2/${game.name}/manage?pane=game-details`}
-                            >
-                                Fix the match
-                            </Link>
-                        </p>
-                    )}
                 </div>
                 <div className="col-md-6">
                     <FieldLabel
@@ -451,14 +469,15 @@ export function GameDetailsForm({
                 </div>
             </div>
             {error && <div className={`${styles.errorNote} mt-3`}>{error}</div>}
-            <button
-                type="button"
-                className={`${styles.primaryAction} mt-3`}
-                disabled={isSaving || isUploading || savingExternally}
-                onClick={save}
-            >
-                {isSaving || savingExternally ? 'Saving…' : saveLabel}
-            </button>
-        </>
+            {!hideAction && (
+                <button
+                    type="submit"
+                    className={`${styles.primaryAction} mt-3`}
+                    disabled={isSaving || isUploading || savingExternally}
+                >
+                    {isSaving || savingExternally ? 'Saving…' : saveLabel}
+                </button>
+            )}
+        </form>
     );
 }
