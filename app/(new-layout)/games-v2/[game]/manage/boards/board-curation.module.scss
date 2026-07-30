@@ -1,0 +1,125 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/board' as board;
+
+// Same visual vocabulary as the public leaderboard (leaderboard.module.scss)
+// and the masthead's category rail (masthead.module.scss) — board curation
+// reads as the board itself, not an admin table bolted onto it.
+
+.root {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-lg;
+}
+
+// ---- Category switcher / subcategory bands (masthead rail vocabulary) ----
+.categorySwitch,
+.subcategoryBands {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+}
+
+.block {
+    @include board.board-rail-block;
+}
+
+.endcap {
+    @include board.board-rail-endcap;
+}
+
+.well {
+    @include board.board-rail-well;
+}
+
+.wellSolo {
+    @include board.board-rail-well-solo;
+}
+
+.chips {
+    @include board.board-rail-chips;
+}
+
+.chip {
+    @include board.board-chip;
+}
+
+.chipActive {
+    @include board.board-chip-active;
+}
+
+// ---- Table (leaderboard vocabulary) ----
+.wrapper {
+    @include board.board-surface(0);
+    overflow: hidden;
+    overflow-x: auto;
+}
+
+.table {
+    @include board.board-table;
+}
+
+.rank {
+    @include board.board-rank;
+}
+
+.runner {
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.time {
+    @include board.mono-time;
+    white-space: nowrap;
+
+    > * + * {
+        margin-left: dt.$spacing-sm;
+    }
+}
+
+.when {
+    white-space: nowrap;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+}
+
+// Present but quiet — informational, not an action, so it doesn't compete
+// with the runner name for attention.
+.pin {
+    color: var(--bs-tertiary-color);
+    margin-right: dt.$spacing-xs;
+    vertical-align: -1px;
+}
+
+.guestTag {
+    @include board.board-pill;
+}
+
+.belowMinTag {
+    @include board.board-pill(dt.$accent-amber);
+}
+
+// ---- Empty / loading / error ----
+.empty {
+    @include board.board-empty;
+}
+
+.emptyTitle {
+    @include board.board-empty-title;
+}
+
+.emptyHint {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: 0;
+}
+
+.loadingNote {
+    padding: dt.$spacing-lg;
+    text-align: center;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.errorNote {
+    @include board.board-error-alert;
+}

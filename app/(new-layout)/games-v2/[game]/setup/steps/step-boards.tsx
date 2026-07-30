@@ -1,29 +1,20 @@
 'use client';
 
-import { useId, useMemo, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { Check2, Dot } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import Link from '~src/components/link';
-import {
-    findCategoryMinPolicy,
-    findGameMinPolicy,
-    minMsFromPolicy,
-} from '~src/lib/setup/game-minimum';
 import { SETUP_STEP_LABELS } from '~src/lib/setup/steps';
 import type {
     BoardModRole,
     GameModerator,
 } from '../../../../../../types/board-claims.types';
-import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
+import { BoardCuration } from '../../manage/boards/board-curation';
 import {
     addGameModeratorAction,
     removeGameModeratorAction,
 } from '../actions/manage-moderators.action';
 import { setGameConfiguredAction } from '../actions/set-configured.action';
-import {
-    CategoryLeaderboardPreview,
-    type PreviewDraft,
-} from '../category-leaderboard-preview';
 import styles from '../setup.module.scss';
 import type { StepProps, WizardData } from '../types';
 import { StepHeader } from './step-header';
@@ -31,10 +22,10 @@ import { StepHeader } from './step-header';
 /**
  * Step 5: what the boards actually look like, then go live.
  *
- * The curation half is a read-only preview per featured category for now —
- * the interactive BoardCuration (remove / correct / add a run) lands in the
- * next commit and takes this slot. The go-live half moved here verbatim from
- * the retired step 7.
+ * The curation half is the real BoardCuration view — category switcher,
+ * subcategory bands, ranked table, sourced live from the mod roster
+ * endpoint — mounted with `context="wizard"`. The go-live half moved here
+ * verbatim from the retired step 7.
  */
 export function StepBoards({ data }: StepProps) {
     return (
@@ -44,86 +35,17 @@ export function StepBoards({ data }: StepProps) {
                 title="Check the boards, then go live"
                 lede="This is what runners will see. Read each board top-down; anything wrong on it is worth fixing before you put it live."
             />
-            <BoardPreview data={data} />
+            <BoardCuration
+                game={data.game}
+                categories={data.categories}
+                groups={data.groups}
+                variables={data.variables}
+                policies={data.policies}
+                canConfigure
+                context="wizard"
+            />
             <GoLiveFooter data={data} />
         </section>
-    );
-}
-
-/** Derives the preview's draft from saved state — nothing here is editable. */
-function draftFor(category: ResolvedCategory, data: WizardData): PreviewDraft {
-    const timing = category.primaryTiming === 'gt' ? 'gt' : 'rt';
-    const policy =
-        findCategoryMinPolicy(data.policies, category.id) ??
-        findGameMinPolicy(data.policies);
-    const minMs = minMsFromPolicy(policy, timing);
-    return {
-        primaryTiming: timing === 'gt' ? 'gametime' : 'realtime',
-        hideRealTime: category.hideRealTime ?? false,
-        hideGameTime: category.hideGameTime ?? false,
-        showMilliseconds: category.showMilliseconds ?? false,
-        minTimeMs: timing === 'rt' ? minMs : null,
-        minGameTimeMs: timing === 'gt' ? minMs : null,
-        requireVideo: category.requireVideo ?? false,
-    };
-}
-
-function BoardPreview({ data }: { data: WizardData }) {
-    const mains = useMemo(
-        () =>
-            data.categories
-                .filter((c) => !c.archived && (c.isMain ?? false))
-                .sort(
-                    (a, b) =>
-                        (a.sortOrder || Number.MAX_SAFE_INTEGER) -
-                            (b.sortOrder || Number.MAX_SAFE_INTEGER) ||
-                        a.display.localeCompare(b.display),
-                ),
-        [data.categories],
-    );
-    const [selectedId, setSelectedId] = useState<number | null>(
-        mains[0]?.id ?? null,
-    );
-    const selectId = useId();
-    const selected = mains.find((c) => c.id === selectedId) ?? mains[0] ?? null;
-
-    if (!selected) {
-        return (
-            <div className={styles.infoNote}>
-                Nothing to show yet — feature at least one category on step 2
-                and its board appears here.
-            </div>
-        );
-    }
-
-    return (
-        <div className={styles.section}>
-            {/* A select rather than a segmented control: a board can have a
-                dozen featured categories, and pills would run off the edge. */}
-            {mains.length > 1 && (
-                <label className={styles.fieldLabel} htmlFor={selectId}>
-                    Board
-                    <select
-                        id={selectId}
-                        className="form-select w-auto"
-                        value={selected.id}
-                        onChange={(e) => setSelectedId(Number(e.target.value))}
-                    >
-                        {mains.map((c) => (
-                            <option key={c.id} value={c.id}>
-                                {c.display}
-                            </option>
-                        ))}
-                    </select>
-                </label>
-            )}
-            <CategoryLeaderboardPreview
-                key={selected.id}
-                gameSlug={data.game.name}
-                categorySlug={selected.name}
-                draft={draftFor(selected, data)}
-            />
-        </div>
     );
 }
 
