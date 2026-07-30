@@ -1,7 +1,9 @@
 # Category-centric setup wizard — design
 
 **Date:** 2026-07-30
-**Status:** Approved pending Joey's spec review
+**Status:** Implemented on branch `setup-category-centric` (2026-07-30); backend items
+1–3 DEPLOYED to prod same date (`therun` main `9a46e9d`). Remaining before merge:
+Joey's browser pass.
 **Approach:** Single branch, full restructure (approach A)
 
 ## Goal
@@ -207,3 +209,16 @@ min_time policies — already exists.
   ban → preview sheet; fix time → manual-time payload; multi-select bulk paths;
   add-runner ghost row (user and guest).
 - Hub status rows: warning states for missing rules/timing/minimum.
+
+## Deviations
+
+- **Move-backed board override, not read-time.** Backend item 3 (board assignment
+  override) executes through the real move-run path instead of resolving the
+  override at read time; `run_board_overrides` only records the run's original
+  placement so the move stays reversible. Same shape and same user-visible
+  behavior as specced, smaller backend blast radius. Details in
+  `docs/plans/2026-07-30-category-centric-backend-handoff.md`.
+- **Verification-policy game setting skipped by request.** Not built in this pass.
+- **Mark-for-later badge needs a backend count endpoint.** The console
+  sidebar/tile-grid badge for marked-for-later runs is stubbed with TODOs pending
+  a backend endpoint to supply the count.

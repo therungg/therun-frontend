@@ -245,7 +245,7 @@ function InvalidCombinationNotice({
         <div className={styles.notice}>
             <h3 className="h5 mb-2">No leaderboard for this combination</h3>
             <p className="text-muted small">
-                The variable combination you picked isn't an active board for
+                The variable combination you picked isn’t an active board for
                 this category. Try one of these instead:
             </p>
             <div className="d-flex flex-wrap gap-2 justify-content-center mt-3">

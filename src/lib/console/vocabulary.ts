@@ -93,16 +93,16 @@ export interface ConceptTile {
  */
 export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
     attention: {
-        action: "Review what's waiting",
+        action: 'Review what’s waiting',
         blurb: 'Runs flagged for review, reports from runners, and people asking to moderate this board.',
     },
     roster: {
         action: 'Look up a run or runner',
-        blurb: "Search every submitted run, check a runner's history, and act on anything you find.",
+        blurb: 'Search every submitted run, check a runner’s history, and act on anything you find.',
     },
     bans: {
         action: 'Manage banned runners',
-        blurb: "See who's banned from this board and why, and lift a ban.",
+        blurb: 'See who’s banned from this board and why, and lift a ban.',
     },
     history: {
         action: 'See what mods have done',
@@ -113,8 +113,8 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
         blurb: 'The guided walkthrough for configuring this board from scratch.',
     },
     'game-details': {
-        action: "Edit the game's details",
-        blurb: "Cover art, release info, the board's URL, and how it's matched to IGDB.",
+        action: 'Edit the game’s details',
+        blurb: 'Cover art, release info, the board’s URL, and how it’s matched to IGDB.',
     },
     categories: {
         action: 'Configure categories',
