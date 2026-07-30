@@ -109,6 +109,16 @@ export function RowActions({
     const [nextRun, setNextRun] = useState<UserEligibleRunRow | null>(null);
     const [isLoadingNext, startLoadNext] = useTransition();
 
+    // IMPORTANT: `onMutated()` (which triggers `useBoardData`'s reload) must
+    // NOT be called the instant the exclude succeeds. `BoardCuration` derives
+    // `boardRows` from the same `rows` state that reload replaces — as soon
+    // as it resolves, this run drops out of `boardRows` and this very
+    // component (including the "next:"/Keep it/Remove too slip below)
+    // unmounts before the eligible-runs fetch even has a chance to resolve.
+    // Reload only fires once there's nothing left worth keeping this row
+    // mounted for: no userId to query, the query failed, there's no
+    // same-board replacement to offer, or the user has explicitly resolved
+    // the slip (Keep it / Remove too) or clicked Undo.
     const handleRemove = () => {
         startRemove(async () => {
             const res = await excludeAction(gameSlug, {
@@ -130,35 +140,54 @@ export function RowActions({
                     onMutated();
                 },
             );
-            onMutated();
 
-            if (row.userId != null) {
-                const userId = row.userId;
-                startLoadNext(async () => {
-                    const eligible = await loadUserEligibleRunsAction(
-                        gameSlug,
-                        userId,
-                    );
-                    if (!('ok' in eligible)) return;
-                    const candidates = eligible.rows
-                        .filter(
-                            (r) =>
-                                r.categoryId === category.id &&
-                                r.subcategoryKey === subcategoryKey &&
-                                r.runId !== row.runId,
-                        )
-                        .sort((a, b) => {
-                            const at = primaryValueOf(a, timing);
-                            const bt = primaryValueOf(b, timing);
-                            if (at == null && bt == null) return 0;
-                            if (at == null) return 1;
-                            if (bt == null) return -1;
-                            return at - bt;
-                        });
-                    setNextRun(candidates[0] ?? null);
-                });
+            if (row.userId == null) {
+                // Guests have no userId to query eligible runs for — no slip
+                // to show, so resync now, same as before this fix.
+                onMutated();
+                return;
             }
+
+            const userId = row.userId;
+            startLoadNext(async () => {
+                const eligible = await loadUserEligibleRunsAction(
+                    gameSlug,
+                    userId,
+                );
+                if (!('ok' in eligible)) {
+                    // Couldn't check for a replacement — nothing left to
+                    // keep this row mounted for.
+                    onMutated();
+                    return;
+                }
+                const candidates = eligible.rows
+                    .filter(
+                        (r) =>
+                            r.categoryId === category.id &&
+                            r.subcategoryKey === subcategoryKey &&
+                            r.runId !== row.runId,
+                    )
+                    .sort((a, b) => {
+                        const at = primaryValueOf(a, timing);
+                        const bt = primaryValueOf(b, timing);
+                        if (at == null && bt == null) return 0;
+                        if (at == null) return 1;
+                        if (bt == null) return -1;
+                        return at - bt;
+                    });
+                const best = candidates[0] ?? null;
+                setNextRun(best);
+                // No same-board replacement to offer — nothing left to show,
+                // safe to resync now. Otherwise, hold off: the slip stays up
+                // until handleKeepIt/handleRemoveToo/Undo above resolves it.
+                if (best == null) onMutated();
+            });
         });
+    };
+
+    const handleKeepIt = () => {
+        setNextRun(null);
+        onMutated();
     };
 
     const handleRemoveToo = () => {
@@ -289,6 +318,13 @@ export function RowActions({
         });
     };
 
+    // Mutual exclusion across the cluster: while any one of these row
+    // mutations is in flight, the other three buttons are disabled too —
+    // e.g. clicking Ban mid-flight on a Later toggle could file a
+    // conflicting mutation for the same run.
+    const busy =
+        isMarking || isRemoving || isBanPreviewing || isBanning || isSavingTime;
+
     return (
         <>
             <td className={styles.time}>
@@ -358,7 +394,7 @@ export function RowActions({
                                 <button
                                     type="button"
                                     className={styles.slipAction}
-                                    onClick={() => setNextRun(null)}
+                                    onClick={handleKeepIt}
                                 >
                                     Keep it
                                 </button>{' '}
@@ -380,7 +416,7 @@ export function RowActions({
                             className={styles.actionBtn}
                             aria-pressed={isMarkedForLater}
                             onClick={handleLater}
-                            disabled={isMarking}
+                            disabled={busy}
                         >
                             Later
                         </button>
@@ -388,7 +424,7 @@ export function RowActions({
                             type="button"
                             className={styles.actionBtn}
                             onClick={handleRemove}
-                            disabled={isRemoving}
+                            disabled={busy}
                         >
                             Remove
                         </button>
@@ -397,6 +433,7 @@ export function RowActions({
                                 type="button"
                                 className={styles.actionBtn}
                                 onClick={openBan}
+                                disabled={busy}
                             >
                                 Ban
                             </button>
@@ -405,6 +442,7 @@ export function RowActions({
                             type="button"
                             className={styles.actionBtn}
                             onClick={startEditTime}
+                            disabled={busy}
                         >
                             Fix time
                         </button>

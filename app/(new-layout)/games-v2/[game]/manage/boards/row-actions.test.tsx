@@ -156,34 +156,35 @@ describe('RowActions — Later', () => {
     });
 });
 
+const CANDIDATE: UserEligibleRunRow = {
+    runId: 2,
+    categoryId: CATEGORY.id,
+    categoryName: 'Any%',
+    subcategoryKey: '',
+    time: 15_000,
+    gameTime: null,
+    primaryTiming: 'realtime',
+    verificationStatus: 'verified',
+    vodUrl: null,
+    endedAt: '2026-01-01T00:00:00.000Z',
+    isLeaderboardEntry: false,
+    isLeaderboardEntryGt: false,
+    rank: null,
+    totalRunners: null,
+};
+
 describe('RowActions — Remove', () => {
     it('excludes immediately, fires an undo toast, and reveals a next-run slip', async () => {
         mocks.excludeAction.mockResolvedValue({
             ok: true,
             result: { affectedRunCount: 1, affectedLeaderboards: [] },
         });
-        const candidate: UserEligibleRunRow = {
-            runId: 2,
-            categoryId: CATEGORY.id,
-            categoryName: 'Any%',
-            subcategoryKey: '',
-            time: 15_000,
-            gameTime: null,
-            primaryTiming: 'realtime',
-            verificationStatus: 'verified',
-            vodUrl: null,
-            endedAt: '2026-01-01T00:00:00.000Z',
-            isLeaderboardEntry: false,
-            isLeaderboardEntryGt: false,
-            rank: null,
-            totalRunners: null,
-        };
         mocks.loadUserEligibleRunsAction.mockResolvedValue({
             ok: true,
-            rows: [candidate],
+            rows: [CANDIDATE],
         });
 
-        const { onMutated } = renderRowActions();
+        renderRowActions();
 
         fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
 
@@ -193,7 +194,6 @@ describe('RowActions — Remove', () => {
                 reason: 'Board curation during setup',
             }),
         );
-        expect(onMutated).toHaveBeenCalled();
         await waitFor(() => expect(mocks.toastSuccess).toHaveBeenCalled());
 
         // The undo toast's render-prop renders its own body with an Undo
@@ -220,16 +220,120 @@ describe('RowActions — Remove', () => {
         expect(screen.getByRole('button', { name: 'Remove too' })).toBeTruthy();
     });
 
-    it('does not surface a slip for a guest row (no userId to query eligible runs for)', async () => {
+    // Regression for the review finding: `onMutated` (which drives
+    // `useBoardData`'s reload in the real BoardCuration parent) must not
+    // fire until the slip's lifecycle is resolved. `BoardCuration` derives
+    // `boardRows` from the same `rows` state reload replaces, so an eager
+    // reload drops this run from `boardRows` and unmounts this very
+    // component — including the still-loading slip — before the
+    // eligible-runs fetch even has a chance to resolve. Under the old
+    // (buggy) sequencing this test fails at the first `not.toHaveBeenCalled`
+    // assertion, immediately after `excludeAction` resolves.
+    it('does not reload until the next-run slip is resolved', async () => {
         mocks.excludeAction.mockResolvedValue({
             ok: true,
             result: { affectedRunCount: 1, affectedLeaderboards: [] },
         });
-        renderRowActions({ row: rosterRow({ userId: null }) });
+        let resolveEligible: (v: unknown) => void = () => {
+            /* replaced synchronously below, before this default is ever
+             * reachable — placeholder to satisfy the type until then. */
+        };
+        mocks.loadUserEligibleRunsAction.mockImplementation(
+            () =>
+                new Promise((resolve) => {
+                    resolveEligible = resolve;
+                }),
+        );
+
+        const { onMutated } = renderRowActions();
+        fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
+
+        await waitFor(() => expect(mocks.excludeAction).toHaveBeenCalled());
+        await waitFor(() => expect(mocks.toastSuccess).toHaveBeenCalled());
+        await waitFor(() =>
+            expect(mocks.loadUserEligibleRunsAction).toHaveBeenCalledWith(
+                'some-game',
+                5,
+            ),
+        );
+
+        // Exclude succeeded and the undo toast fired, but the eligible-runs
+        // query is still in flight — no reload yet.
+        expect(onMutated).not.toHaveBeenCalled();
+
+        resolveEligible({ ok: true, rows: [CANDIDATE] });
+
+        await waitFor(() => expect(screen.getByText(/next:/)).toBeTruthy());
+        // The slip is up and awaiting a decision — still no reload.
+        expect(onMutated).not.toHaveBeenCalled();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Keep it' }));
+        expect(onMutated).toHaveBeenCalledTimes(1);
+    });
+
+    it('"Remove too" excludes the candidate, then reloads', async () => {
+        mocks.excludeAction.mockResolvedValue({
+            ok: true,
+            result: { affectedRunCount: 1, affectedLeaderboards: [] },
+        });
+        mocks.loadUserEligibleRunsAction.mockResolvedValue({
+            ok: true,
+            rows: [CANDIDATE],
+        });
+
+        const { onMutated } = renderRowActions();
+        fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
+        await waitFor(() =>
+            expect(
+                screen.getByRole('button', { name: 'Remove too' }),
+            ).toBeTruthy(),
+        );
+        expect(onMutated).not.toHaveBeenCalled();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Remove too' }));
+
+        await waitFor(() =>
+            expect(mocks.excludeAction).toHaveBeenCalledWith('some-game', {
+                runIds: [CANDIDATE.runId],
+                reason: 'Board curation during setup',
+            }),
+        );
+        await waitFor(() => expect(onMutated).toHaveBeenCalledTimes(1));
+    });
+
+    it('reloads immediately when there is no same-board replacement to offer', async () => {
+        mocks.excludeAction.mockResolvedValue({
+            ok: true,
+            result: { affectedRunCount: 1, affectedLeaderboards: [] },
+        });
+        mocks.loadUserEligibleRunsAction.mockResolvedValue({
+            ok: true,
+            rows: [],
+        });
+
+        const { onMutated } = renderRowActions();
+        fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
+
+        await waitFor(() =>
+            expect(mocks.loadUserEligibleRunsAction).toHaveBeenCalled(),
+        );
+        await waitFor(() => expect(onMutated).toHaveBeenCalledTimes(1));
+        expect(screen.queryByText(/next:/)).toBeNull();
+    });
+
+    it('reloads immediately for a guest row (no userId to query eligible runs for)', async () => {
+        mocks.excludeAction.mockResolvedValue({
+            ok: true,
+            result: { affectedRunCount: 1, affectedLeaderboards: [] },
+        });
+        const { onMutated } = renderRowActions({
+            row: rosterRow({ userId: null }),
+        });
 
         fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
 
         await waitFor(() => expect(mocks.excludeAction).toHaveBeenCalled());
+        await waitFor(() => expect(onMutated).toHaveBeenCalledTimes(1));
         expect(mocks.loadUserEligibleRunsAction).not.toHaveBeenCalled();
     });
 });
