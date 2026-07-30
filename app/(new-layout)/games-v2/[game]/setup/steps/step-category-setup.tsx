@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Check2, Dot } from 'react-bootstrap-icons';
+import { compareByBoardOrder } from '~src/lib/console/category-order';
 import { categorySetupStatus } from '~src/lib/setup/category-status';
 import { CategoryEditor } from '../../manage/category/category-editor';
 import styles from '../setup.module.scss';
@@ -28,12 +29,7 @@ export function StepCategorySetup({ data, onAdvance }: StepProps) {
     // Board order, so the hub reads the way the leaderboard does.
     const mains = data.categories
         .filter((c) => !c.archived && (c.isMain ?? false))
-        .sort(
-            (a, b) =>
-                (a.sortOrder || Number.MAX_SAFE_INTEGER) -
-                    (b.sortOrder || Number.MAX_SAFE_INTEGER) ||
-                a.display.localeCompare(b.display),
-        );
+        .sort(compareByBoardOrder);
 
     const open = mains.find((c) => c.id === catId) ?? null;
 

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
+import { compareByBoardOrder } from '~src/lib/console/category-order';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { listGameVariables } from '~src/lib/leaderboard-variables';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
@@ -55,12 +56,7 @@ export default async function CategoryDetailPage({ params }: Props) {
     // Board order, so prev/next steps the way the public page reads rather
     // than by id. Archived categories stay in the walk — a mod fixing one is
     // exactly who uses prev/next.
-    const ordered = [...categories].sort(
-        (a, b) =>
-            (a.sortOrder || Number.MAX_SAFE_INTEGER) -
-                (b.sortOrder || Number.MAX_SAFE_INTEGER) ||
-            a.display.localeCompare(b.display),
-    );
+    const ordered = [...categories].sort(compareByBoardOrder);
     const index = ordered.findIndex((c) => c.id === categoryId);
 
     // Copy-from-category needs the whole game's variables and policies —
