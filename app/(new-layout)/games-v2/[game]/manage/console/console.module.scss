@@ -12,18 +12,26 @@ $rail: 3px; // severity spine / active accent width
 
 // ---- Shell layout ------------------------------------------
 .shell {
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-2xl;
     padding: dt.$spacing-2xl;
     max-width: 1600px;
     margin-inline: auto;
+}
+
+// The console is one contained panel — the frame IS the surface.
+// Panes inside sit flat on it (see .surface below).
+.frame {
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-lg;
+    background: var(--bs-body-bg);
+    overflow: hidden; // clips the tinted sidebar column to the radius
 }
 
 .header {
     display: flex;
     align-items: center;
     gap: dt.$spacing-lg;
+    padding: dt.$spacing-lg dt.$spacing-xl;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
 }
 
 .cover {
@@ -61,19 +69,26 @@ $rail: 3px; // severity spine / active accent width
 .body {
     display: grid;
     grid-template-columns: $sidebar-width minmax(0, 1fr);
-    gap: dt.$spacing-3xl;
-    align-items: start;
+    align-items: stretch;
 }
 
-// ---- Sidebar (same canvas, border separation) --------------
+// ---- Sidebar (tinted column, full frame height) ------------
 .sidebar {
+    background: color-mix(
+        in srgb,
+        var(--bs-body-bg) 92%,
+        var(--bs-secondary-bg) 8%
+    );
+    border-right: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    padding: dt.$spacing-xl dt.$spacing-lg;
+}
+
+.sidebarInner {
     position: sticky;
     top: dt.$spacing-lg;
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-2xl;
-    padding-right: dt.$spacing-lg;
-    border-right: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
 }
 
 .navGroup {
@@ -272,6 +287,9 @@ $rail: 3px; // severity spine / active accent width
 // (Standards/Timing/Rules/Variables/etc.) that still use raw Bootstrap —
 // unifying their cards + inputs with the console's token language.
 .content {
+    padding: dt.$spacing-2xl;
+    min-width: 0;
+
     :global(.bg-light-subtle) {
         background: color-mix(
             in srgb,
@@ -496,13 +514,21 @@ $rail: 3px; // severity spine / active accent width
 
 @media (max-width: 768px) {
     .shell {
-        padding: dt.$spacing-lg;
-        gap: dt.$spacing-lg;
+        padding: 0;
+    }
+
+    .frame {
+        border: 0;
+        border-radius: 0;
     }
 
     .body {
         grid-template-columns: minmax(0, 1fr);
         gap: dt.$spacing-lg;
+    }
+
+    .content {
+        padding: dt.$spacing-lg;
     }
 
     .menuToggle {
@@ -527,6 +553,10 @@ $rail: 3px; // severity spine / active accent width
         overflow-y: auto;
         // Mirror of slide-right — this drawer is left-anchored.
         @include board.board-overlay-enter(slide-left);
+    }
+
+    .sidebarInner {
+        position: static;
     }
 
     .sidebarHidden {
