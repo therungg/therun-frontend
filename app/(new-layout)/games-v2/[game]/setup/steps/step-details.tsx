@@ -48,6 +48,7 @@ export function StepDetails({ data, onAdvance }: StepProps) {
         return ms ? formatTimeInput(ms) : '';
     });
 
+    const [formBusy, setFormBusy] = useState(false);
     const [defaultsError, setDefaultsError] = useState<string | null>(null);
     const [isSavingDefaults, startSavingDefaults] = useTransition();
     // Belt-and-suspenders against a double-invoke of handleDetailsSaved (e.g.
@@ -136,73 +137,150 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                 title="Game details"
                 lede={
                     data.categories.length > 0
-                        ? 'Runners are already on this board. The details below are pre-filled from IGDB, so fix anything that’s wrong and move on. Everything saves as you go.'
-                        : 'This board has no runs yet. The details below are pre-filled from IGDB, so fix anything that’s wrong and move on. Everything saves as you go.'
+                        ? "Runners are already on this board. The details below are pre-filled from IGDB, so fix anything that's wrong and move on. Everything saves as you go."
+                        : "This board has no runs yet. The details below are pre-filled from IGDB, so fix anything that's wrong and move on. Everything saves as you go."
                 }
             />
-            <GameDetailsForm
-                identifiers={data.identifiers}
-                metadata={data.metadata}
-                game={{
-                    id: data.game.id,
-                    name: data.game.name,
-                    image: data.game.image ?? null,
-                }}
-                onSaved={handleDetailsSaved}
-                savingExternally={isSavingDefaults}
-            />
+
+            <h3 className={styles.zoneTitle}>Check the facts</h3>
+            <div className={styles.section}>
+                <GameDetailsForm
+                    identifiers={data.identifiers}
+                    metadata={data.metadata}
+                    game={{
+                        id: data.game.id,
+                        name: data.game.name,
+                        image: data.game.image ?? null,
+                    }}
+                    formId="game-details-form"
+                    hideAction
+                    onBusyChange={setFormBusy}
+                    onSaved={handleDetailsSaved}
+                />
+            </div>
+
+            <h3 className={styles.zoneTitle}>Set the ground rules</h3>
+            <div className={styles.section}>
+                <div className={styles.pairRow}>
+                    <div>
+                        <h4 className="h6">Timing</h4>
+                        <div
+                            className={styles.segmented}
+                            role="radiogroup"
+                            aria-label="Primary timing"
+                        >
+                            <button
+                                type="button"
+                                role="radio"
+                                aria-checked={timing === 'rt'}
+                                className={
+                                    timing === 'rt'
+                                        ? styles.segmentActive
+                                        : undefined
+                                }
+                                onClick={() => selectTiming('rt')}
+                            >
+                                RTA
+                            </button>
+                            <button
+                                type="button"
+                                role="radio"
+                                aria-checked={timing === 'gt'}
+                                className={
+                                    timing === 'gt'
+                                        ? styles.segmentActive
+                                        : undefined
+                                }
+                                onClick={() => selectTiming('gt')}
+                            >
+                                IGT
+                            </button>
+                        </div>
+                        <p className="text-muted small mb-0">
+                            The default timing method for this board's
+                            categories.
+                        </p>
+                    </div>
+                    <div>
+                        <h4 className="h6">Minimum time</h4>
+                        <label
+                            className="form-label small mb-1"
+                            htmlFor="board-min-time"
+                        >
+                            {timing === 'rt'
+                                ? 'Minimum real time'
+                                : 'Minimum in-game time'}
+                        </label>
+                        <input
+                            id="board-min-time"
+                            className="form-control form-control-sm"
+                            style={{ width: '7rem' }}
+                            value={minText}
+                            onChange={(e) => setMinText(e.target.value)}
+                            placeholder="e.g. 10:00"
+                        />
+                        <p className="text-muted small mt-2 mb-0">
+                            Runs under this minimum wait for a mod. Clear the
+                            field to remove the limit.
+                        </p>
+                    </div>
+                </div>
+            </div>
 
             <div className={styles.section}>
-                <h3 className="h6">Timing</h3>
+                <h4 className="h6">Emulator policy</h4>
                 <div
                     className={styles.segmented}
                     role="radiogroup"
-                    aria-label="Primary timing"
+                    aria-label="Emulator policy"
                 >
                     <button
                         type="button"
                         role="radio"
-                        aria-checked={timing === 'rt'}
+                        aria-checked={emulatorPolicy === null}
                         className={
-                            timing === 'rt' ? styles.segmentActive : undefined
+                            emulatorPolicy === null
+                                ? styles.segmentActive
+                                : undefined
                         }
-                        onClick={() => selectTiming('rt')}
+                        onClick={() => setEmulatorPolicy(null)}
                     >
-                        RTA
+                        Not specified
                     </button>
                     <button
                         type="button"
                         role="radio"
-                        aria-checked={timing === 'gt'}
+                        aria-checked={emulatorPolicy === 'allowed'}
                         className={
-                            timing === 'gt' ? styles.segmentActive : undefined
+                            emulatorPolicy === 'allowed'
+                                ? styles.segmentActive
+                                : undefined
                         }
-                        onClick={() => selectTiming('gt')}
+                        onClick={() => setEmulatorPolicy('allowed')}
                     >
-                        IGT
+                        Allowed
+                    </button>
+                    <button
+                        type="button"
+                        role="radio"
+                        aria-checked={emulatorPolicy === 'banned'}
+                        className={
+                            emulatorPolicy === 'banned'
+                                ? styles.segmentActive
+                                : undefined
+                        }
+                        onClick={() => setEmulatorPolicy('banned')}
+                    >
+                        Banned
                     </button>
                 </div>
                 <p className="text-muted small mb-0">
-                    The default timing method for this board’s categories.
+                    Shown with the rules on every board.
                 </p>
             </div>
 
             <div className={styles.section}>
-                <h3 className="h6">Category rules template</h3>
-                <p className="text-muted small mb-2">
-                    Seeds the rules of every category you feature. Fill in the
-                    [brackets].
-                </p>
-                <textarea
-                    className="form-control font-monospace"
-                    rows={7}
-                    value={rulesTemplate}
-                    onChange={(e) => setRulesTemplate(e.target.value)}
-                />
-            </div>
-
-            <div className={styles.section}>
-                <h3 className="h6">Game rules</h3>
+                <h4 className="h6">Game rules</h4>
                 <p className="text-muted small mb-2">
                     Shown above category rules on every board.
                 </p>
@@ -215,87 +293,30 @@ export function StepDetails({ data, onAdvance }: StepProps) {
             </div>
 
             <div className={styles.section}>
-                <h3 className="h6">Emulator policy</h3>
-                <div className="form-check">
-                    <input
-                        type="radio"
-                        className="form-check-input"
-                        id="board-emulator-unset"
-                        name="board-emulator-policy"
-                        checked={emulatorPolicy === null}
-                        onChange={() => setEmulatorPolicy(null)}
-                    />
-                    <label
-                        className="form-check-label"
-                        htmlFor="board-emulator-unset"
-                    >
-                        Not specified
-                    </label>
-                </div>
-                <div className="form-check">
-                    <input
-                        type="radio"
-                        className="form-check-input"
-                        id="board-emulator-allowed"
-                        name="board-emulator-policy"
-                        checked={emulatorPolicy === 'allowed'}
-                        onChange={() => setEmulatorPolicy('allowed')}
-                    />
-                    <label
-                        className="form-check-label"
-                        htmlFor="board-emulator-allowed"
-                    >
-                        Allowed
-                    </label>
-                </div>
-                <div className="form-check">
-                    <input
-                        type="radio"
-                        className="form-check-input"
-                        id="board-emulator-banned"
-                        name="board-emulator-policy"
-                        checked={emulatorPolicy === 'banned'}
-                        onChange={() => setEmulatorPolicy('banned')}
-                    />
-                    <label
-                        className="form-check-label"
-                        htmlFor="board-emulator-banned"
-                    >
-                        Banned
-                    </label>
-                </div>
-            </div>
-
-            <div className={styles.section}>
-                <h3 className="h6">Minimum time</h3>
-                <label
-                    className="form-label small mb-1"
-                    htmlFor="board-min-time"
-                >
-                    {timing === 'rt'
-                        ? 'Minimum real time'
-                        : 'Minimum in-game time'}
-                </label>
-                <input
-                    id="board-min-time"
-                    className="form-control form-control-sm"
-                    style={{ width: '7rem' }}
-                    value={minText}
-                    onChange={(e) => setMinText(e.target.value)}
-                    placeholder="e.g. 10:00"
-                />
-                <p className="text-muted small mt-2 mb-0">
-                    Runs under this minimum wait for a mod. Clear the field to
-                    remove the limit.
+                <h4 className="h6">Category rules template</h4>
+                <p className="text-muted small mb-2">
+                    Seeds the rules of every category you feature. Fill in the
+                    [brackets].
                 </p>
+                <textarea
+                    className="form-control font-monospace"
+                    rows={7}
+                    value={rulesTemplate}
+                    onChange={(e) => setRulesTemplate(e.target.value)}
+                />
             </div>
 
             {defaultsError && (
                 <div className={styles.errorNote}>{defaultsError}</div>
             )}
-            {isSavingDefaults && (
-                <p className="text-muted small">Saving board defaults…</p>
-            )}
+            <button
+                type="submit"
+                form="game-details-form"
+                className={styles.primaryAction}
+                disabled={formBusy || isSavingDefaults}
+            >
+                {formBusy || isSavingDefaults ? 'Saving…' : 'Save & continue'}
+            </button>
         </section>
     );
 }
