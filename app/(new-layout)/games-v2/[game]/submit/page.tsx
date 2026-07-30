@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { TwitchLoginButton } from '~src/components/twitch/TwitchLoginButton';
 import { buildBoardHref } from '~src/lib/board-url';
+import { EMPTY_GAME_METADATA } from '~src/lib/game-metadata';
+import { getGameMetadata } from '~src/lib/game-mgmt';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
@@ -115,7 +117,10 @@ export default async function SubmitRunPage({
         );
     }
 
-    const { categories, groups } = await resolveCategory(game.id);
+    const [{ categories, groups }, gameMeta] = await Promise.all([
+        resolveCategory(game.id),
+        getGameMetadata(game.id).catch(() => EMPTY_GAME_METADATA),
+    ]);
     const featuredCategories = categories.filter(
         (c) => !c.archived && c.isMain,
     );
@@ -150,6 +155,8 @@ export default async function SubmitRunPage({
                     initialMode={initialMode}
                     initialCategorySlug={sp.category}
                     initialSubcategoryValues={initialSubcategoryValues}
+                    gameRules={gameMeta.gameRules}
+                    emulatorPolicy={gameMeta.emulatorPolicy}
                 />
             </div>
         </div>
