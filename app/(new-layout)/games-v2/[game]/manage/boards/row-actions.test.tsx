@@ -12,7 +12,12 @@ import type {
     LeaderboardRosterRow,
     UserEligibleRunRow,
 } from '../../../../../../types/moderation.types';
-import { RowActions, type RowActionsProps } from './row-actions';
+import {
+    type PendingRemoval,
+    PendingRemovalCells,
+    RowActions,
+    type RowActionsProps,
+} from './row-actions';
 
 // vi.mock factories are hoisted above these imports, so the mock fns
 // themselves must be created through vi.hoisted rather than referenced as
@@ -21,10 +26,8 @@ import { RowActions, type RowActionsProps } from './row-actions';
 const mocks = vi.hoisted(() => ({
     excludeAction: vi.fn(),
     previewExcludeAction: vi.fn(),
-    restoreRunsAction: vi.fn(),
     createManualTimeAction: vi.fn(),
     markRunsAction: vi.fn(),
-    loadUserEligibleRunsAction: vi.fn(),
     toastSuccess: vi.fn(),
     toastError: vi.fn(),
 }));
@@ -33,17 +36,11 @@ vi.mock('../moderation/shared/actions/exclude.action', () => ({
     excludeAction: mocks.excludeAction,
     previewExcludeAction: mocks.previewExcludeAction,
 }));
-vi.mock('../moderation/shared/actions/restore.action', () => ({
-    restoreRunsAction: mocks.restoreRunsAction,
-}));
 vi.mock('../moderation/shared/actions/manual-times.action', () => ({
     createManualTimeAction: mocks.createManualTimeAction,
 }));
 vi.mock('../moderation/shared/actions/marks.action', () => ({
     markRunsAction: mocks.markRunsAction,
-}));
-vi.mock('../moderation/shared/actions/eligible-runs.action', () => ({
-    loadUserEligibleRunsAction: mocks.loadUserEligibleRunsAction,
 }));
 vi.mock('react-toastify', () => ({
     toast: { success: mocks.toastSuccess, error: mocks.toastError },
@@ -80,6 +77,7 @@ function rosterRow(
 
 function renderRowActions(overrides: Partial<RowActionsProps> = {}) {
     const onMutated = vi.fn();
+    const onRemove = vi.fn();
     const row = overrides.row ?? rosterRow({});
     const props: RowActionsProps = {
         row,
@@ -88,6 +86,8 @@ function renderRowActions(overrides: Partial<RowActionsProps> = {}) {
         gameSlug: 'some-game',
         timeMs: 20_000,
         belowMinimum: false,
+        removing: false,
+        onRemove,
         onMutated,
         ...overrides,
     };
@@ -100,7 +100,7 @@ function renderRowActions(overrides: Partial<RowActionsProps> = {}) {
             </tbody>
         </table>,
     );
-    return { onMutated, row: props.row };
+    return { onMutated, onRemove, row: props.row };
 }
 
 beforeEach(() => {
@@ -156,185 +156,31 @@ describe('RowActions — Later', () => {
     });
 });
 
-const CANDIDATE: UserEligibleRunRow = {
-    runId: 2,
-    categoryId: CATEGORY.id,
-    categoryName: 'Any%',
-    subcategoryKey: '',
-    time: 15_000,
-    gameTime: null,
-    primaryTiming: 'realtime',
-    verificationStatus: 'verified',
-    vodUrl: null,
-    endedAt: '2026-01-01T00:00:00.000Z',
-    isLeaderboardEntry: false,
-    isLeaderboardEntryGt: false,
-    rank: null,
-    totalRunners: null,
-};
-
+// Remove's actual mutation (the exclude call, the undo toast, the next-run
+// slip) is owned by `BoardCuration`, not `RowActions` — see the `removing`
+// doc on `RowActionsProps`. That orchestration is covered by
+// board-curation-remove-integration.test.tsx (which also carries the
+// required regression coverage for a sibling row's reload). Here, `RowActions`
+// only needs to prove it defers to the parent and respects `removing`.
 describe('RowActions — Remove', () => {
-    it('excludes immediately, fires an undo toast, and reveals a next-run slip', async () => {
-        mocks.excludeAction.mockResolvedValue({
-            ok: true,
-            result: { affectedRunCount: 1, affectedLeaderboards: [] },
-        });
-        mocks.loadUserEligibleRunsAction.mockResolvedValue({
-            ok: true,
-            rows: [CANDIDATE],
-        });
-
-        renderRowActions();
+    it('calls onRemove and does not talk to the exclude action itself', () => {
+        const { onRemove } = renderRowActions();
 
         fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
 
-        await waitFor(() =>
-            expect(mocks.excludeAction).toHaveBeenCalledWith('some-game', {
-                runIds: [1],
-                reason: 'Board curation during setup',
-            }),
-        );
-        await waitFor(() => expect(mocks.toastSuccess).toHaveBeenCalled());
-
-        // The undo toast's render-prop renders its own body with an Undo
-        // button that calls restoreRunsAction on click.
-        const undoRenderProp = mocks.toastSuccess.mock.calls[0][0];
-        render(undoRenderProp({ closeToast: vi.fn() }));
-        fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
-        await waitFor(() =>
-            expect(mocks.restoreRunsAction).toHaveBeenCalledWith(
-                'some-game',
-                [1],
-                'Undo of remove',
-            ),
-        );
-
-        await waitFor(() =>
-            expect(mocks.loadUserEligibleRunsAction).toHaveBeenCalledWith(
-                'some-game',
-                5,
-            ),
-        );
-        await waitFor(() => expect(screen.getByText(/next:/)).toBeTruthy());
-        expect(screen.getByRole('button', { name: 'Keep it' })).toBeTruthy();
-        expect(screen.getByRole('button', { name: 'Remove too' })).toBeTruthy();
+        expect(onRemove).toHaveBeenCalledTimes(1);
+        expect(mocks.excludeAction).not.toHaveBeenCalled();
     });
 
-    // Regression for the review finding: `onMutated` (which drives
-    // `useBoardData`'s reload in the real BoardCuration parent) must not
-    // fire until the slip's lifecycle is resolved. `BoardCuration` derives
-    // `boardRows` from the same `rows` state reload replaces, so an eager
-    // reload drops this run from `boardRows` and unmounts this very
-    // component — including the still-loading slip — before the
-    // eligible-runs fetch even has a chance to resolve. Under the old
-    // (buggy) sequencing this test fails at the first `not.toHaveBeenCalled`
-    // assertion, immediately after `excludeAction` resolves.
-    it('does not reload until the next-run slip is resolved', async () => {
-        mocks.excludeAction.mockResolvedValue({
-            ok: true,
-            result: { affectedRunCount: 1, affectedLeaderboards: [] },
-        });
-        let resolveEligible: (v: unknown) => void = () => {
-            /* replaced synchronously below, before this default is ever
-             * reachable — placeholder to satisfy the type until then. */
-        };
-        mocks.loadUserEligibleRunsAction.mockImplementation(
-            () =>
-                new Promise((resolve) => {
-                    resolveEligible = resolve;
-                }),
-        );
+    it('disables the whole cluster while a removal is in flight for this row', () => {
+        renderRowActions({ removing: true });
 
-        const { onMutated } = renderRowActions();
-        fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
-
-        await waitFor(() => expect(mocks.excludeAction).toHaveBeenCalled());
-        await waitFor(() => expect(mocks.toastSuccess).toHaveBeenCalled());
-        await waitFor(() =>
-            expect(mocks.loadUserEligibleRunsAction).toHaveBeenCalledWith(
-                'some-game',
-                5,
-            ),
-        );
-
-        // Exclude succeeded and the undo toast fired, but the eligible-runs
-        // query is still in flight — no reload yet.
-        expect(onMutated).not.toHaveBeenCalled();
-
-        resolveEligible({ ok: true, rows: [CANDIDATE] });
-
-        await waitFor(() => expect(screen.getByText(/next:/)).toBeTruthy());
-        // The slip is up and awaiting a decision — still no reload.
-        expect(onMutated).not.toHaveBeenCalled();
-
-        fireEvent.click(screen.getByRole('button', { name: 'Keep it' }));
-        expect(onMutated).toHaveBeenCalledTimes(1);
-    });
-
-    it('"Remove too" excludes the candidate, then reloads', async () => {
-        mocks.excludeAction.mockResolvedValue({
-            ok: true,
-            result: { affectedRunCount: 1, affectedLeaderboards: [] },
-        });
-        mocks.loadUserEligibleRunsAction.mockResolvedValue({
-            ok: true,
-            rows: [CANDIDATE],
-        });
-
-        const { onMutated } = renderRowActions();
-        fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
-        await waitFor(() =>
+        for (const name of ['Later', 'Remove', 'Ban', 'Fix time']) {
             expect(
-                screen.getByRole('button', { name: 'Remove too' }),
-            ).toBeTruthy(),
-        );
-        expect(onMutated).not.toHaveBeenCalled();
-
-        fireEvent.click(screen.getByRole('button', { name: 'Remove too' }));
-
-        await waitFor(() =>
-            expect(mocks.excludeAction).toHaveBeenCalledWith('some-game', {
-                runIds: [CANDIDATE.runId],
-                reason: 'Board curation during setup',
-            }),
-        );
-        await waitFor(() => expect(onMutated).toHaveBeenCalledTimes(1));
-    });
-
-    it('reloads immediately when there is no same-board replacement to offer', async () => {
-        mocks.excludeAction.mockResolvedValue({
-            ok: true,
-            result: { affectedRunCount: 1, affectedLeaderboards: [] },
-        });
-        mocks.loadUserEligibleRunsAction.mockResolvedValue({
-            ok: true,
-            rows: [],
-        });
-
-        const { onMutated } = renderRowActions();
-        fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
-
-        await waitFor(() =>
-            expect(mocks.loadUserEligibleRunsAction).toHaveBeenCalled(),
-        );
-        await waitFor(() => expect(onMutated).toHaveBeenCalledTimes(1));
-        expect(screen.queryByText(/next:/)).toBeNull();
-    });
-
-    it('reloads immediately for a guest row (no userId to query eligible runs for)', async () => {
-        mocks.excludeAction.mockResolvedValue({
-            ok: true,
-            result: { affectedRunCount: 1, affectedLeaderboards: [] },
-        });
-        const { onMutated } = renderRowActions({
-            row: rosterRow({ userId: null }),
-        });
-
-        fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
-
-        await waitFor(() => expect(mocks.excludeAction).toHaveBeenCalled());
-        await waitFor(() => expect(onMutated).toHaveBeenCalledTimes(1));
-        expect(mocks.loadUserEligibleRunsAction).not.toHaveBeenCalled();
+                (screen.getByRole('button', { name }) as HTMLButtonElement)
+                    .disabled,
+            ).toBe(true);
+        }
     });
 });
 
@@ -460,5 +306,80 @@ describe('RowActions — Fix time', () => {
 
         expect(screen.queryByLabelText('Fix time for runner')).toBeNull();
         expect(mocks.createManualTimeAction).not.toHaveBeenCalled();
+    });
+});
+
+const CANDIDATE: UserEligibleRunRow = {
+    runId: 2,
+    categoryId: CATEGORY.id,
+    categoryName: 'Any%',
+    subcategoryKey: '',
+    time: 15_000,
+    gameTime: null,
+    primaryTiming: 'realtime',
+    verificationStatus: 'verified',
+    vodUrl: null,
+    endedAt: '2026-01-01T00:00:00.000Z',
+    isLeaderboardEntry: false,
+    isLeaderboardEntryGt: false,
+    rank: null,
+    totalRunners: null,
+};
+
+function pendingRemoval(overrides: Partial<PendingRemoval>): PendingRemoval {
+    return {
+        row: rosterRow({}),
+        timeMs: 20_000,
+        nextRun: null,
+        nextRunLoading: false,
+        ...overrides,
+    };
+}
+
+function renderPendingCells(overrides: Partial<PendingRemoval> = {}) {
+    const onKeepIt = vi.fn();
+    const onRemoveToo = vi.fn();
+    render(
+        <table>
+            <tbody>
+                <tr>
+                    <PendingRemovalCells
+                        pending={pendingRemoval(overrides)}
+                        timing="rt"
+                        onKeepIt={onKeepIt}
+                        onRemoveToo={onRemoveToo}
+                    />
+                </tr>
+            </tbody>
+        </table>,
+    );
+    return { onKeepIt, onRemoveToo };
+}
+
+describe('PendingRemovalCells', () => {
+    it('shows "Removed." with no slip when there is no candidate yet', () => {
+        renderPendingCells({ nextRun: null, nextRunLoading: false });
+        expect(screen.getByText('Removed.')).toBeTruthy();
+        expect(screen.queryByText(/next:/)).toBeNull();
+    });
+
+    it('shows a loading note while checking for a replacement', () => {
+        renderPendingCells({ nextRunLoading: true });
+        expect(screen.getByText('Checking for a replacement…')).toBeTruthy();
+    });
+
+    it('shows the slip and wires Keep it / Remove too to the callbacks', () => {
+        const { onKeepIt, onRemoveToo } = renderPendingCells({
+            nextRun: CANDIDATE,
+            nextRunLoading: false,
+        });
+
+        expect(screen.getByText(/next:/)).toBeTruthy();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Keep it' }));
+        expect(onKeepIt).toHaveBeenCalledTimes(1);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Remove too' }));
+        expect(onRemoveToo).toHaveBeenCalledTimes(1);
     });
 });

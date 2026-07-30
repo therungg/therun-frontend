@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { PinAngleFill } from 'react-bootstrap-icons';
+import { toast } from 'react-toastify';
 import { UserLink } from '~src/components/links/links';
 import { compareByBoardOrder } from '~src/lib/console/category-order';
 import { formatRunDate } from '~src/lib/format-run-date';
@@ -21,11 +22,23 @@ import type {
 import type {
     BoardPolicyRow,
     LeaderboardRosterRow,
+    UserEligibleRunRow,
 } from '../../../../../../types/moderation.types';
 import { relativeDate } from '../../leaderboard/relative-date';
+import { loadUserEligibleRunsAction } from '../moderation/shared/actions/eligible-runs.action';
+import { excludeAction } from '../moderation/shared/actions/exclude.action';
+import { restoreRunsAction } from '../moderation/shared/actions/restore.action';
+import { fireUndoToast } from '../moderation/shared/undo-toast';
 import styles from './board-curation.module.scss';
-import { RowActions } from './row-actions';
+import {
+    type PendingRemoval,
+    PendingRemovalCells,
+    primaryValueOf,
+    RowActions,
+} from './row-actions';
 import { useBoardData } from './use-board-data';
+
+const REMOVE_REASON = 'Board curation during setup';
 
 export interface BoardCurationProps {
     game: ResolvedGame;
@@ -201,6 +214,168 @@ export function BoardCuration({
 
     const timing: 'rt' | 'gt' = category?.primaryTiming === 'gt' ? 'gt' : 'rt';
 
+    // Rows a Remove has already excluded server-side, pinned in place from a
+    // frozen snapshot rather than `rows` above. `rows` is shared board-wide —
+    // a sibling row's Later/Ban/Fix-time also reloads it, which would
+    // otherwise drop this run from `boardRows` (and unmount its slip) before
+    // the user has resolved it. Cleared on category/subcategory change; each
+    // entry's own lifecycle (Keep it / Remove too / Undo) also clears it.
+    const [pendingRemovals, setPendingRemovals] = useState<
+        Map<number, PendingRemoval>
+    >(new Map());
+    // Rows whose exclude call (the mutation that produces the entry above)
+    // is currently in flight — used only to disable that row's action
+    // cluster while it's uncertain whether Remove succeeded.
+    const [removingRunIds, setRemovingRunIds] = useState<Set<number>>(
+        new Set(),
+    );
+
+    useEffect(() => {
+        setPendingRemovals(new Map());
+        setRemovingRunIds(new Set());
+    }, [category?.id, subcategoryKey]);
+
+    const dropPending = (runId: number) => {
+        setPendingRemovals((prev) => {
+            if (!prev.has(runId)) return prev;
+            const next = new Map(prev);
+            next.delete(runId);
+            return next;
+        });
+    };
+
+    const startRemoval = (
+        row: LeaderboardRosterRow,
+        rowTimeMs: number | null,
+    ) => {
+        setRemovingRunIds((prev) => new Set(prev).add(row.runId));
+        (async () => {
+            const res = await excludeAction(game.name, {
+                runIds: [row.runId],
+                reason: REMOVE_REASON,
+            });
+            setRemovingRunIds((prev) => {
+                const next = new Set(prev);
+                next.delete(row.runId);
+                return next;
+            });
+            if ('error' in res) {
+                toast.error(res.error);
+                return;
+            }
+
+            // Pin the overlay snapshot in place regardless of what future
+            // reloads (this row's own, or a sibling's) do to `rows`.
+            setPendingRemovals((prev) => {
+                const next = new Map(prev);
+                next.set(row.runId, {
+                    row,
+                    timeMs: rowTimeMs,
+                    nextRun: null,
+                    nextRunLoading: row.userId != null,
+                });
+                return next;
+            });
+            fireUndoToast(
+                `Removed ${row.runnerName}.`,
+                () =>
+                    restoreRunsAction(game.name, [row.runId], 'Undo of remove'),
+                () => {
+                    dropPending(row.runId);
+                    reload();
+                },
+            );
+
+            if (row.userId == null) {
+                // Guests have no userId to query eligible runs for — no slip
+                // to show, so resync now.
+                dropPending(row.runId);
+                reload();
+                return;
+            }
+
+            const userId = row.userId;
+            const eligible = await loadUserEligibleRunsAction(
+                game.name,
+                userId,
+            );
+            if (!('ok' in eligible)) {
+                // Couldn't check for a replacement — nothing left to keep
+                // this row pinned for.
+                dropPending(row.runId);
+                reload();
+                return;
+            }
+            const candidates: UserEligibleRunRow[] = eligible.rows
+                .filter(
+                    (r) =>
+                        r.categoryId === category?.id &&
+                        r.subcategoryKey === subcategoryKey &&
+                        r.runId !== row.runId,
+                )
+                .sort((a, b) => {
+                    const at = primaryValueOf(a, timing);
+                    const bt = primaryValueOf(b, timing);
+                    if (at == null && bt == null) return 0;
+                    if (at == null) return 1;
+                    if (bt == null) return -1;
+                    return at - bt;
+                });
+            const best = candidates[0] ?? null;
+            if (best == null) {
+                // No same-board replacement to offer — nothing left to show,
+                // safe to resync now.
+                dropPending(row.runId);
+                reload();
+                return;
+            }
+            // A category/subcategory switch (or Undo) may have already
+            // dropped this entry while the query above was in flight.
+            setPendingRemovals((prev) => {
+                const existing = prev.get(row.runId);
+                if (!existing) return prev;
+                const next = new Map(prev);
+                next.set(row.runId, {
+                    ...existing,
+                    nextRun: best,
+                    nextRunLoading: false,
+                });
+                return next;
+            });
+        })();
+    };
+
+    const handleKeepIt = (runId: number) => {
+        dropPending(runId);
+        reload();
+    };
+
+    const handleRemoveToo = (runId: number, candidate: UserEligibleRunRow) => {
+        dropPending(runId);
+        (async () => {
+            const res = await excludeAction(game.name, {
+                runIds: [candidate.runId],
+                reason: REMOVE_REASON,
+            });
+            if ('error' in res) {
+                toast.error(res.error);
+                reload();
+                return;
+            }
+            fireUndoToast(
+                'Removed.',
+                () =>
+                    restoreRunsAction(
+                        game.name,
+                        [candidate.runId],
+                        'Undo of remove',
+                    ),
+                reload,
+            );
+            reload();
+        })();
+    };
+
     const minMs = useMemo(() => {
         if (!category) return null;
         const policy =
@@ -210,22 +385,29 @@ export function BoardCuration({
     }, [category, policies, timing]);
 
     const boardRows: RankedRow[] = useMemo(() => {
-        const onBoard = rows
-            .filter((r) => isOnBoard(r, timing))
+        const live = rows
+            .filter(
+                (r) => isOnBoard(r, timing) && !pendingRemovals.has(r.runId),
+            )
             .map((row) => ({ row, timeMs: primaryTimeOf(row, timing) }));
-        onBoard.sort((a, b) => {
+        const overlay = Array.from(pendingRemovals.values()).map((p) => ({
+            row: p.row,
+            timeMs: p.timeMs,
+        }));
+        const merged = [...live, ...overlay];
+        merged.sort((a, b) => {
             if (a.timeMs == null && b.timeMs == null) return 0;
             if (a.timeMs == null) return 1;
             if (b.timeMs == null) return -1;
             return a.timeMs - b.timeMs;
         });
-        return onBoard.map((entry, i) => ({
+        return merged.map((entry, i) => ({
             ...entry,
             rank: i + 1,
             belowMinimum:
                 minMs != null && entry.timeMs != null && entry.timeMs < minMs,
         }));
-    }, [rows, timing, minMs]);
+    }, [rows, timing, minMs, pendingRemovals]);
 
     if (featured.length === 0) {
         return (
@@ -383,10 +565,13 @@ export function BoardCuration({
                                 {boardRows.map(
                                     ({ row, rank, timeMs, belowMinimum }) => {
                                         const isGuest = row.userId == null;
+                                        const pending = pendingRemovals.get(
+                                            row.runId,
+                                        );
                                         return (
                                             <tr
                                                 key={row.runId}
-                                                className={styles.row}
+                                                className={`${styles.row} ${pending ? styles.rowRemoved : ''}`}
                                             >
                                                 <td className={styles.rank}>
                                                     {rank}
@@ -429,17 +614,47 @@ export function BoardCuration({
                                                 >
                                                     {relativeDate(row.endedAt)}
                                                 </td>
-                                                <RowActions
-                                                    row={row}
-                                                    category={category}
-                                                    subcategoryKey={
-                                                        subcategoryKey
-                                                    }
-                                                    gameSlug={game.name}
-                                                    timeMs={timeMs}
-                                                    belowMinimum={belowMinimum}
-                                                    onMutated={reload}
-                                                />
+                                                {pending ? (
+                                                    <PendingRemovalCells
+                                                        pending={pending}
+                                                        timing={timing}
+                                                        onKeepIt={() =>
+                                                            handleKeepIt(
+                                                                row.runId,
+                                                            )
+                                                        }
+                                                        onRemoveToo={() =>
+                                                            pending.nextRun &&
+                                                            handleRemoveToo(
+                                                                row.runId,
+                                                                pending.nextRun,
+                                                            )
+                                                        }
+                                                    />
+                                                ) : (
+                                                    <RowActions
+                                                        row={row}
+                                                        category={category}
+                                                        subcategoryKey={
+                                                            subcategoryKey
+                                                        }
+                                                        gameSlug={game.name}
+                                                        timeMs={timeMs}
+                                                        belowMinimum={
+                                                            belowMinimum
+                                                        }
+                                                        removing={removingRunIds.has(
+                                                            row.runId,
+                                                        )}
+                                                        onRemove={() =>
+                                                            startRemoval(
+                                                                row,
+                                                                timeMs,
+                                                            )
+                                                        }
+                                                        onMutated={reload}
+                                                    />
+                                                )}
                                             </tr>
                                         );
                                     },
