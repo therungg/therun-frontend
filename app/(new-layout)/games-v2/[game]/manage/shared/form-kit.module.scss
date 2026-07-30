@@ -74,3 +74,8 @@
 .saveBtn {
     @include board.board-btn-primary;
 }
+
+.resetBtn {
+    @include board.board-quiet-link;
+    font-size: dt.$font-size-sm;
+}

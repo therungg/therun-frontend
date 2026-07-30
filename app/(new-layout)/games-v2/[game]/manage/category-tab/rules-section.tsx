@@ -120,6 +120,17 @@ export function RulesSection({ gameSlug, gameId, category }: Props) {
                     >
                         {isSaving ? 'Saving…' : 'Save rules'}
                     </button>
+                    <button
+                        type="button"
+                        className={kit.resetBtn}
+                        onClick={() => {
+                            setText(original);
+                            setFormError(null);
+                        }}
+                        disabled={busy || !dirty}
+                    >
+                        Reset
+                    </button>
                 </SectionFooter>
             </form>
         </FormSection>
