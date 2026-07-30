@@ -465,35 +465,19 @@ $rail-collapse: 900px;
 }
 
 // ---- Group builder (categories step) ------------------------
+// Rules promoted to board-segmented/board-segment/board-segment-active
+// in _board.scss — consumed here (and by the console's form kit) so the
+// two surfaces can't drift.
 .segmented {
-    display: inline-flex;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
-    border-radius: dt.$radius-md;
-    overflow: hidden;
-    margin-bottom: dt.$spacing-md;
+    @include board.board-segmented;
 
     button {
-        border: 0;
-        background: none;
-        padding: dt.$spacing-xs dt.$spacing-lg;
-        font-size: dt.$font-size-sm;
-        color: var(--bs-secondary-color);
-        transition: background-color 0.12s ease;
-
-        & + button {
-            border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
-        }
-
-        &:hover {
-            background: rgba(var(--bs-emphasis-color-rgb), 0.05);
-        }
+        @include board.board-segment;
     }
 }
 
 .segmentActive {
-    background: var(--bs-primary) !important;
-    color: var(--bs-body-bg) !important;
-    font-weight: 600;
+    @include board.board-segment-active;
 }
 
 .groupBuilder {
