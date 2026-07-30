@@ -27,30 +27,28 @@ import {
 // plain outer `const`s (which would still be in their TDZ when the factory
 // runs) — see variables-section.test.tsx for the same pattern.
 const mocks = vi.hoisted(() => ({
-    excludeAction: vi.fn(),
-    previewExcludeAction: vi.fn(),
-    createManualTimeAction: vi.fn(),
-    markRunsAction: vi.fn(),
+    applyVerdictsAction: vi.fn(),
     moveRunAction: vi.fn(),
     toastSuccess: vi.fn(),
     toastError: vi.fn(),
+    RunnerDialog: vi.fn().mockReturnValue(null),
+    AdjustDialog: vi.fn().mockReturnValue(null),
 }));
 
-vi.mock('../moderation/shared/actions/exclude.action', () => ({
-    excludeAction: mocks.excludeAction,
-    previewExcludeAction: mocks.previewExcludeAction,
-}));
-vi.mock('../moderation/shared/actions/manual-times.action', () => ({
-    createManualTimeAction: mocks.createManualTimeAction,
-}));
-vi.mock('../moderation/shared/actions/marks.action', () => ({
-    markRunsAction: mocks.markRunsAction,
+vi.mock('../moderation/shared/actions/verdicts.action', () => ({
+    applyVerdictsAction: mocks.applyVerdictsAction,
 }));
 vi.mock('../moderation/shared/actions/board-override.action', () => ({
     moveRunAction: mocks.moveRunAction,
 }));
 vi.mock('react-toastify', () => ({
     toast: { success: mocks.toastSuccess, error: mocks.toastError },
+}));
+vi.mock('./runner-dialog', () => ({
+    RunnerDialog: mocks.RunnerDialog,
+}));
+vi.mock('./adjust-dialog', () => ({
+    AdjustDialog: mocks.AdjustDialog,
 }));
 
 const CATEGORY: ResolvedCategory = {
@@ -145,71 +143,36 @@ afterEach(() => {
     cleanup();
 });
 
-describe('RowActions — Later', () => {
-    it('toggles optimistically and calls markRunsAction with the right args', () => {
-        // Replaced synchronously below, before this default is ever
-        // reachable — placeholder to satisfy the type until then.
-        let resolveMark: (v: unknown) => void = () => {
-            /* noop */
-        };
-        mocks.markRunsAction.mockImplementation(
-            () =>
-                new Promise((resolve) => {
-                    resolveMark = resolve;
-                }),
-        );
+describe('RowActions — cluster surface', () => {
+    it('shows Remove, Run… and Runner… for a registered user', () => {
         renderRowActions();
 
-        const laterBtn = screen.getByRole('button', { name: 'Later' });
-        expect(laterBtn.getAttribute('aria-pressed')).toBe('false');
-
-        fireEvent.click(laterBtn);
-
-        // Optimistic: the button flips before the action resolves.
-        expect(laterBtn.getAttribute('aria-pressed')).toBe('true');
-        expect(mocks.markRunsAction).toHaveBeenCalledWith(
-            'some-game',
-            [1],
-            true,
-        );
-
-        resolveMark({ ok: true, updated: 1 });
+        expect(screen.getByRole('button', { name: 'Remove' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Run…' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Runner…' })).toBeTruthy();
     });
 
-    it('reverts the toggle and toasts on error', async () => {
-        mocks.markRunsAction.mockResolvedValue({ error: 'nope' });
+    it('shows only Remove and Run… for a guest row (no Runner…)', () => {
+        renderRowActions({ row: rosterRow({ userId: null }) });
+
+        expect(screen.getByRole('button', { name: 'Remove' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Run…' })).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'Runner…' })).toBeNull();
+    });
+
+    it('never renders the removed Later/Ban/Anonymize/Fix time buttons', () => {
         renderRowActions();
+        fireEvent.click(screen.getByRole('button', { name: 'Run…' }));
 
-        const laterBtn = screen.getByRole('button', { name: 'Later' });
-        fireEvent.click(laterBtn);
-
-        await waitFor(() =>
-            expect(laterBtn.getAttribute('aria-pressed')).toBe('false'),
-        );
-        expect(mocks.toastError).toHaveBeenCalledWith('nope');
-    });
-});
-
-// Remove's actual mutation (the exclude call, the undo toast, the next-run
-// slip) is owned by `BoardCuration`, not `RowActions` — see the `removing`
-// doc on `RowActionsProps`. That orchestration is covered by
-// board-curation-remove-integration.test.tsx (which also carries the
-// required regression coverage for a sibling row's reload). Here, `RowActions`
-// only needs to prove it defers to the parent and respects `removing`.
-describe('RowActions — Remove', () => {
-    it('calls onRemove and does not talk to the exclude action itself', () => {
-        const { onRemove } = renderRowActions();
-
-        fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
-
-        expect(onRemove).toHaveBeenCalledTimes(1);
-        expect(mocks.excludeAction).not.toHaveBeenCalled();
+        for (const name of ['Later', 'Ban', 'Anonymize', 'Fix time']) {
+            expect(screen.queryByRole('button', { name })).toBeNull();
+        }
     });
 
     it('disables the whole cluster while a removal is in flight for this row', () => {
         renderRowActions({ removing: true });
 
-        for (const name of ['Later', 'Remove', 'Ban', 'Fix time', 'Move…']) {
+        for (const name of ['Remove', 'Run…', 'Runner…']) {
             expect(
                 (screen.getByRole('button', { name }) as HTMLButtonElement)
                     .disabled,
@@ -218,76 +181,168 @@ describe('RowActions — Remove', () => {
     });
 });
 
-describe('RowActions — Ban', () => {
-    it('renders the preview sheet before excluding, and gates Confirm on a reason', async () => {
-        mocks.previewExcludeAction.mockResolvedValue({
-            ok: true,
-            preview: {
-                affectedRunCount: 3,
-                affectedLeaderboards: [
-                    {
-                        categoryId: 10,
-                        categoryName: 'Any%',
-                        subcategoryKey: '',
-                        affectedInThisLeaderboard: 3,
-                        rankChanges: [],
-                    },
-                ],
-                sampleRuns: [],
-            },
-        });
-        mocks.excludeAction.mockResolvedValue({
-            ok: true,
-            result: { ruleId: 1, alreadyExists: false },
-        });
+describe('RowActions — Remove', () => {
+    it('calls onRemove and does not talk to any mutation action itself', () => {
+        const { onRemove } = renderRowActions();
 
-        renderRowActions();
+        fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
 
-        fireEvent.click(screen.getByRole('button', { name: 'Ban' }));
+        expect(onRemove).toHaveBeenCalledTimes(1);
+        expect(mocks.applyVerdictsAction).not.toHaveBeenCalled();
+        expect(mocks.moveRunAction).not.toHaveBeenCalled();
+    });
+});
 
-        expect(mocks.previewExcludeAction).toHaveBeenCalledWith('some-game', {
-            rule: { type: 'user', targetId: 5 },
-        });
-        expect(mocks.excludeAction).not.toHaveBeenCalled();
+describe('RowActions — Run… menu', () => {
+    it('lists Approve/Move…/Adjust… for a registered user', () => {
+        renderRowActions({ row: rosterRow({ verificationStatus: 'pending' }) });
+        fireEvent.click(screen.getByRole('button', { name: 'Run…' }));
 
-        await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
-
-        const confirmBtn = screen.getByRole('button', {
-            name: 'Confirm ban',
-        }) as HTMLButtonElement;
-        expect(confirmBtn.disabled).toBe(true);
-
-        fireEvent.change(screen.getByLabelText('Reason — required'), {
-            target: { value: 'Repeated cheating.' },
-        });
-        expect(confirmBtn.disabled).toBe(false);
-
-        fireEvent.click(confirmBtn);
-
-        await waitFor(() =>
-            expect(mocks.excludeAction).toHaveBeenCalledWith('some-game', {
-                rule: { type: 'user', targetId: 5 },
-                reason: 'Repeated cheating.',
-            }),
-        );
+        expect(screen.getByRole('button', { name: 'Approve' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Move…' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Adjust…' })).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'Set time…' })).toBeNull();
     });
 
-    it('never renders Ban, and never calls exclude, for a guest row', () => {
-        renderRowActions({ row: rosterRow({ userId: null }) });
-        expect(screen.queryByRole('button', { name: 'Ban' })).toBeNull();
-        expect(mocks.previewExcludeAction).not.toHaveBeenCalled();
-        expect(mocks.excludeAction).not.toHaveBeenCalled();
+    it('lists Approve/Move…/Set time… for a guest row', () => {
+        renderRowActions({
+            row: rosterRow({ userId: null, verificationStatus: 'pending' }),
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'Run…' }));
+
+        expect(screen.getByRole('button', { name: 'Approve' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Move…' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Set time…' })).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'Adjust…' })).toBeNull();
+    });
+
+    it('calls applyVerdictsAction on Approve and closes the menu', async () => {
+        mocks.applyVerdictsAction.mockResolvedValue({
+            ok: true,
+            result: { affectedRunCount: 1, affectedLeaderboards: [] },
+        });
+        const { onMutated } = renderRowActions({
+            row: rosterRow({ verificationStatus: 'pending' }),
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Run…' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Approve' }));
+
+        await waitFor(() =>
+            expect(mocks.applyVerdictsAction).toHaveBeenCalledWith(
+                'some-game',
+                'verify',
+                [1],
+                'Approved from board curation',
+            ),
+        );
+        await waitFor(() => expect(onMutated).toHaveBeenCalled());
+        expect(mocks.toastSuccess).toHaveBeenCalled();
+        expect(screen.queryByRole('button', { name: 'Move…' })).toBeNull();
+    });
+
+    it('disables Approve and relabels it "Approved" when already verified', () => {
+        renderRowActions({
+            row: rosterRow({ verificationStatus: 'verified' }),
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'Run…' }));
+
+        const approveBtn = screen.getByRole('button', {
+            name: 'Approved',
+        }) as HTMLButtonElement;
+        expect(approveBtn.disabled).toBe(true);
+        expect(screen.queryByRole('button', { name: 'Approve' })).toBeNull();
+
+        fireEvent.click(approveBtn);
+        expect(mocks.applyVerdictsAction).not.toHaveBeenCalled();
+    });
+
+    it('toasts an error and keeps the row usable when Approve fails', async () => {
+        mocks.applyVerdictsAction.mockResolvedValue({ error: 'nope' });
+        const { onMutated } = renderRowActions({
+            row: rosterRow({ verificationStatus: 'pending' }),
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Run…' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Approve' }));
+
+        await waitFor(() =>
+            expect(mocks.toastError).toHaveBeenCalledWith('nope'),
+        );
+        expect(onMutated).not.toHaveBeenCalled();
+    });
+});
+
+describe('RowActions — Runner… dialog', () => {
+    it('mounts RunnerDialog closed, then opens it with the right props on click', () => {
+        renderRowActions({ canSiteBan: true });
+
+        expect(mocks.RunnerDialog).toHaveBeenCalled();
+        const initialProps =
+            mocks.RunnerDialog.mock.calls[
+                mocks.RunnerDialog.mock.calls.length - 1
+            ][0];
+        expect(initialProps.open).toBe(false);
+        expect(initialProps.canSiteBan).toBe(true);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Runner…' }));
+
+        const openedProps =
+            mocks.RunnerDialog.mock.calls[
+                mocks.RunnerDialog.mock.calls.length - 1
+            ][0];
+        expect(openedProps.open).toBe(true);
+        expect(openedProps.canSiteBan).toBe(true);
+        expect(openedProps.row.runId).toBe(1);
+        expect(openedProps.gameSlug).toBe('some-game');
+    });
+
+    it('defaults canSiteBan to false when not supplied', () => {
+        renderRowActions();
+
+        const initialProps =
+            mocks.RunnerDialog.mock.calls[
+                mocks.RunnerDialog.mock.calls.length - 1
+            ][0];
+        expect(initialProps.canSiteBan).toBe(false);
+    });
+});
+
+describe('RowActions — Adjust… dialog', () => {
+    it('mounts AdjustDialog closed, then opens it with the right props via the Run… menu', () => {
+        renderRowActions({ timeMs: 12_345 });
+
+        expect(mocks.AdjustDialog).toHaveBeenCalled();
+        const initialProps =
+            mocks.AdjustDialog.mock.calls[
+                mocks.AdjustDialog.mock.calls.length - 1
+            ][0];
+        expect(initialProps.open).toBe(false);
+        expect(initialProps.timeMs).toBe(12_345);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Run…' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Adjust…' }));
+
+        const openedProps =
+            mocks.AdjustDialog.mock.calls[
+                mocks.AdjustDialog.mock.calls.length - 1
+            ][0];
+        expect(openedProps.open).toBe(true);
+        expect(openedProps.timeMs).toBe(12_345);
+        expect(openedProps.row.runId).toBe(1);
+        expect(screen.queryByRole('button', { name: 'Adjust…' })).toBeNull();
     });
 });
 
 describe('RowActions — Move', () => {
-    it('opens with the current placement selected and Apply disabled (no-op)', () => {
+    it('opens (via Run… → Move…) with the current placement selected and Apply disabled (no-op)', () => {
         renderRowActions({
             categories: [CATEGORY, CATEGORY_ALT],
             variables: [NG_PLUS_VAR],
             subcategoryKey: 'ngplus=no',
         });
 
+        fireEvent.click(screen.getByRole('button', { name: 'Run…' }));
         fireEvent.click(screen.getByRole('button', { name: 'Move…' }));
 
         expect(
@@ -308,6 +363,7 @@ describe('RowActions — Move', () => {
             subcategoryKey: 'ngplus=no',
         });
 
+        fireEvent.click(screen.getByRole('button', { name: 'Run…' }));
         fireEvent.click(screen.getByRole('button', { name: 'Move…' }));
         fireEvent.click(screen.getByRole('button', { name: 'Yes' }));
 
@@ -359,6 +415,7 @@ describe('RowActions — Move', () => {
             subcategoryKey: '',
         });
 
+        fireEvent.click(screen.getByRole('button', { name: 'Run…' }));
         fireEvent.click(screen.getByRole('button', { name: 'Move…' }));
         fireEvent.change(screen.getByLabelText('Category'), {
             target: { value: String(CATEGORY_ALT.id) },
@@ -393,6 +450,7 @@ describe('RowActions — Move', () => {
             subcategoryKey: '',
         });
 
+        fireEvent.click(screen.getByRole('button', { name: 'Run…' }));
         fireEvent.click(screen.getByRole('button', { name: 'Move…' }));
         fireEvent.change(screen.getByLabelText('Category'), {
             target: { value: String(CATEGORY_ALT.id) },
@@ -403,69 +461,6 @@ describe('RowActions — Move', () => {
             expect(screen.getByText('Already placed there.')).toBeTruthy(),
         );
         expect(screen.getByRole('button', { name: 'Apply' })).toBeTruthy();
-    });
-});
-
-describe('RowActions — Fix time', () => {
-    it('submits the parsed ms with a userId runnerRef for a registered runner', async () => {
-        mocks.createManualTimeAction.mockResolvedValue({
-            ok: true,
-            result: { id: 1, affectedLeaderboards: [] },
-        });
-        renderRowActions();
-
-        fireEvent.click(screen.getByRole('button', { name: 'Fix time' }));
-        const input = screen.getByLabelText('Fix time for runner');
-        fireEvent.change(input, { target: { value: '35:48' } });
-        fireEvent.keyDown(input, { key: 'Enter' });
-
-        await waitFor(() =>
-            expect(mocks.createManualTimeAction).toHaveBeenCalledWith(
-                'some-game',
-                {
-                    runnerRef: { userId: 5 },
-                    categoryId: CATEGORY.id,
-                    subcategoryKey: '',
-                    timing: 'realtime',
-                    timeMs: 35 * 60_000 + 48_000,
-                    reason: 'Corrected during board curation',
-                },
-            ),
-        );
-    });
-
-    it('submits a guestName runnerRef for a guest row', async () => {
-        mocks.createManualTimeAction.mockResolvedValue({
-            ok: true,
-            result: { id: 1, affectedLeaderboards: [] },
-        });
-        renderRowActions({
-            row: rosterRow({ userId: null, runnerName: 'guestrunner' }),
-        });
-
-        fireEvent.click(screen.getByRole('button', { name: 'Fix time' }));
-        const input = screen.getByLabelText('Fix time for guestrunner');
-        fireEvent.change(input, { target: { value: '10:00' } });
-        fireEvent.keyDown(input, { key: 'Enter' });
-
-        await waitFor(() =>
-            expect(mocks.createManualTimeAction).toHaveBeenCalledWith(
-                'some-game',
-                expect.objectContaining({
-                    runnerRef: { guestName: 'guestrunner' },
-                }),
-            ),
-        );
-    });
-
-    it('cancels on Escape without submitting', () => {
-        renderRowActions();
-        fireEvent.click(screen.getByRole('button', { name: 'Fix time' }));
-        const input = screen.getByLabelText('Fix time for runner');
-        fireEvent.keyDown(input, { key: 'Escape' });
-
-        expect(screen.queryByLabelText('Fix time for runner')).toBeNull();
-        expect(mocks.createManualTimeAction).not.toHaveBeenCalled();
     });
 });
 

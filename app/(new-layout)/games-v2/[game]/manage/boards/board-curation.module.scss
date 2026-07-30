@@ -315,6 +315,55 @@
     font-size: dt.$font-size-2xs;
 }
 
+// ---- Run… menu (Approve / Move… / Adjust…) -----------------------------
+.menuRoot {
+    position: relative;
+    display: inline-flex;
+}
+
+.menuPanel {
+    @include board.board-surface(dt.$spacing-xs);
+    position: absolute;
+    right: 0;
+    top: calc(100% + #{dt.$spacing-xs});
+    z-index: dt.$z-popover;
+    background: var(--bs-body-bg);
+    box-shadow: dt.$shadow-md;
+    min-width: 10rem;
+    display: flex;
+    flex-direction: column;
+    @include board.board-overlay-enter(rise);
+}
+
+.menuItem {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: 0;
+    border-radius: dt.$radius-sm;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    font-size: dt.$font-size-2xs;
+    font-family: inherit;
+    color: var(--bs-body-color);
+    cursor: pointer;
+    transition: background-color dt.$transition-fast;
+
+    &:hover:not(:disabled) {
+        background: var(--bs-tertiary-bg);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: -2px;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
+}
+
 .removedNote {
     display: inline-flex;
     align-items: center;
