@@ -11,22 +11,17 @@ import type {
     UserEligibleRunRow,
 } from '../../../../../../types/moderation.types';
 import { BoardDialog } from '../../shared/board-dialog';
-import { loadUserEligibleRunsAction } from '../moderation/shared/actions/eligible-runs.action';
 import {
     excludeAction,
     previewExcludeAction,
 } from '../moderation/shared/actions/exclude.action';
 import { createManualTimeAction } from '../moderation/shared/actions/manual-times.action';
 import { markRunsAction } from '../moderation/shared/actions/marks.action';
-import { restoreRunsAction } from '../moderation/shared/actions/restore.action';
 import {
     msToTimeInput,
     parseTimeInput,
 } from '../moderation/shared/time-format';
-import { fireUndoToast } from '../moderation/shared/undo-toast';
 import styles from './board-curation.module.scss';
-
-const REMOVE_REASON = 'Board curation during setup';
 
 export interface RowActionsProps {
     row: LeaderboardRosterRow;
@@ -38,13 +33,28 @@ export interface RowActionsProps {
      * the seed value for the Fix-time editor. */
     timeMs: number | null;
     belowMinimum: boolean;
+    /**
+     * True while `BoardCuration`'s exclude call for this row's Remove is in
+     * flight. Remove itself — the exclude call, the undo toast, the
+     * next-run slip — is owned by `BoardCuration`, not this component:
+     * a removed row has to keep rendering (from a frozen snapshot) even
+     * after a *sibling* row's own action reloads the board and this run
+     * drops out of the live roster data. If Remove lived here instead, a
+     * reload triggered by any other row's Later/Ban/Fix-time would unmount
+     * this component — and the slip with it — mid-flight. See
+     * `PendingRemoval`/`PendingRemovalCells` below, rendered by
+     * `BoardCuration` in this component's place once Remove succeeds.
+     */
+    removing: boolean;
+    onRemove: () => void;
     onMutated: () => void;
 }
 
-/** The value of a candidate run for the category's primary timing —
- * `UserEligibleRunRow` carries both `time` and `gameTime` the same way
- * `LeaderboardRosterRow` does. */
-function primaryValueOf(
+/** The value of a candidate/replacement run for the category's primary
+ * timing — `UserEligibleRunRow` carries both `time` and `gameTime` the same
+ * way `LeaderboardRosterRow` does. Exported so `BoardCuration` can sort
+ * next-run candidates with the same rule used to display them here. */
+export function primaryValueOf(
     row: UserEligibleRunRow,
     timing: 'rt' | 'gt',
 ): number | null {
@@ -65,10 +75,12 @@ export function RowActions({
     gameSlug,
     timeMs,
     belowMinimum,
+    removing,
+    onRemove,
     onMutated,
 }: RowActionsProps) {
-    const timing: 'rt' | 'gt' = category.primaryTiming === 'gt' ? 'gt' : 'rt';
-    const modTiming: ModTiming = timing === 'gt' ? 'gametime' : 'realtime';
+    const modTiming: ModTiming =
+        category.primaryTiming === 'gt' ? 'gametime' : 'realtime';
     const isGuest = row.userId == null;
 
     // ---- Later --------------------------------------------------------
@@ -99,120 +111,6 @@ export function RowActions({
                 toast.error(res.error);
                 return;
             }
-            onMutated();
-        });
-    };
-
-    // ---- Remove (+ next-best reveal, undo) -----------------------------
-    const [isRemoving, startRemove] = useTransition();
-    const [removed, setRemoved] = useState(false);
-    const [nextRun, setNextRun] = useState<UserEligibleRunRow | null>(null);
-    const [isLoadingNext, startLoadNext] = useTransition();
-
-    // IMPORTANT: `onMutated()` (which triggers `useBoardData`'s reload) must
-    // NOT be called the instant the exclude succeeds. `BoardCuration` derives
-    // `boardRows` from the same `rows` state that reload replaces — as soon
-    // as it resolves, this run drops out of `boardRows` and this very
-    // component (including the "next:"/Keep it/Remove too slip below)
-    // unmounts before the eligible-runs fetch even has a chance to resolve.
-    // Reload only fires once there's nothing left worth keeping this row
-    // mounted for: no userId to query, the query failed, there's no
-    // same-board replacement to offer, or the user has explicitly resolved
-    // the slip (Keep it / Remove too) or clicked Undo.
-    const handleRemove = () => {
-        startRemove(async () => {
-            const res = await excludeAction(gameSlug, {
-                runIds: [row.runId],
-                reason: REMOVE_REASON,
-            });
-            if ('error' in res) {
-                toast.error(res.error);
-                return;
-            }
-            setRemoved(true);
-            fireUndoToast(
-                `Removed ${row.runnerName}.`,
-                () =>
-                    restoreRunsAction(gameSlug, [row.runId], 'Undo of remove'),
-                () => {
-                    setRemoved(false);
-                    setNextRun(null);
-                    onMutated();
-                },
-            );
-
-            if (row.userId == null) {
-                // Guests have no userId to query eligible runs for — no slip
-                // to show, so resync now, same as before this fix.
-                onMutated();
-                return;
-            }
-
-            const userId = row.userId;
-            startLoadNext(async () => {
-                const eligible = await loadUserEligibleRunsAction(
-                    gameSlug,
-                    userId,
-                );
-                if (!('ok' in eligible)) {
-                    // Couldn't check for a replacement — nothing left to
-                    // keep this row mounted for.
-                    onMutated();
-                    return;
-                }
-                const candidates = eligible.rows
-                    .filter(
-                        (r) =>
-                            r.categoryId === category.id &&
-                            r.subcategoryKey === subcategoryKey &&
-                            r.runId !== row.runId,
-                    )
-                    .sort((a, b) => {
-                        const at = primaryValueOf(a, timing);
-                        const bt = primaryValueOf(b, timing);
-                        if (at == null && bt == null) return 0;
-                        if (at == null) return 1;
-                        if (bt == null) return -1;
-                        return at - bt;
-                    });
-                const best = candidates[0] ?? null;
-                setNextRun(best);
-                // No same-board replacement to offer — nothing left to show,
-                // safe to resync now. Otherwise, hold off: the slip stays up
-                // until handleKeepIt/handleRemoveToo/Undo above resolves it.
-                if (best == null) onMutated();
-            });
-        });
-    };
-
-    const handleKeepIt = () => {
-        setNextRun(null);
-        onMutated();
-    };
-
-    const handleRemoveToo = () => {
-        if (!nextRun) return;
-        const candidate = nextRun;
-        setNextRun(null);
-        startRemove(async () => {
-            const res = await excludeAction(gameSlug, {
-                runIds: [candidate.runId],
-                reason: REMOVE_REASON,
-            });
-            if ('error' in res) {
-                toast.error(res.error);
-                return;
-            }
-            fireUndoToast(
-                'Removed.',
-                () =>
-                    restoreRunsAction(
-                        gameSlug,
-                        [candidate.runId],
-                        'Undo of remove',
-                    ),
-                onMutated,
-            );
             onMutated();
         });
     };
@@ -319,11 +217,12 @@ export function RowActions({
     };
 
     // Mutual exclusion across the cluster: while any one of these row
-    // mutations is in flight, the other three buttons are disabled too —
-    // e.g. clicking Ban mid-flight on a Later toggle could file a
-    // conflicting mutation for the same run.
+    // mutations is in flight (Remove's exclude call included, tracked by
+    // `BoardCuration` and handed down as `removing`), the other buttons are
+    // disabled too — e.g. clicking Ban mid-flight on a Later toggle could
+    // file a conflicting mutation for the same run.
     const busy =
-        isMarking || isRemoving || isBanPreviewing || isBanning || isSavingTime;
+        isMarking || removing || isBanPreviewing || isBanning || isSavingTime;
 
     return (
         <>
@@ -374,80 +273,43 @@ export function RowActions({
                 )}
             </td>
             <td className={styles.actionsCell}>
-                {removed ? (
-                    <div className={styles.removedNote}>
-                        <span>Removed.</span>
-                        {isLoadingNext && (
-                            <span className={styles.slipLoading}>
-                                Checking for a replacement…
-                            </span>
-                        )}
-                        {nextRun && (
-                            <span className={styles.slip}>
-                                next:{' '}
-                                <DurationToFormatted
-                                    duration={
-                                        primaryValueOf(nextRun, timing) ?? 0
-                                    }
-                                />{' '}
-                                ·{' '}
-                                <button
-                                    type="button"
-                                    className={styles.slipAction}
-                                    onClick={handleKeepIt}
-                                >
-                                    Keep it
-                                </button>{' '}
-                                /{' '}
-                                <button
-                                    type="button"
-                                    className={styles.slipAction}
-                                    onClick={handleRemoveToo}
-                                >
-                                    Remove too
-                                </button>
-                            </span>
-                        )}
-                    </div>
-                ) : (
-                    <div className={styles.actionCluster}>
+                <div className={styles.actionCluster}>
+                    <button
+                        type="button"
+                        className={styles.actionBtn}
+                        aria-pressed={isMarkedForLater}
+                        onClick={handleLater}
+                        disabled={busy}
+                    >
+                        Later
+                    </button>
+                    <button
+                        type="button"
+                        className={styles.actionBtn}
+                        onClick={onRemove}
+                        disabled={busy}
+                    >
+                        Remove
+                    </button>
+                    {!isGuest && (
                         <button
                             type="button"
                             className={styles.actionBtn}
-                            aria-pressed={isMarkedForLater}
-                            onClick={handleLater}
+                            onClick={openBan}
                             disabled={busy}
                         >
-                            Later
+                            Ban
                         </button>
-                        <button
-                            type="button"
-                            className={styles.actionBtn}
-                            onClick={handleRemove}
-                            disabled={busy}
-                        >
-                            Remove
-                        </button>
-                        {!isGuest && (
-                            <button
-                                type="button"
-                                className={styles.actionBtn}
-                                onClick={openBan}
-                                disabled={busy}
-                            >
-                                Ban
-                            </button>
-                        )}
-                        <button
-                            type="button"
-                            className={styles.actionBtn}
-                            onClick={startEditTime}
-                            disabled={busy}
-                        >
-                            Fix time
-                        </button>
-                    </div>
-                )}
+                    )}
+                    <button
+                        type="button"
+                        className={styles.actionBtn}
+                        onClick={startEditTime}
+                        disabled={busy}
+                    >
+                        Fix time
+                    </button>
+                </div>
             </td>
 
             {banOpen && !isGuest && (
@@ -554,6 +416,82 @@ export function RowActions({
                     </div>
                 </BoardDialog>
             )}
+        </>
+    );
+}
+
+/**
+ * A row `BoardCuration` has pinned in place after a successful Remove —
+ * rendered from this frozen snapshot rather than the live roster data,
+ * specifically so a *sibling* row's reload can't unmount it (or discard its
+ * next-run slip) before the user has resolved it. See the `removing` doc on
+ * `RowActionsProps` above for why this can't live inside `RowActions`.
+ */
+export interface PendingRemoval {
+    row: LeaderboardRosterRow;
+    timeMs: number | null;
+    nextRun: UserEligibleRunRow | null;
+    nextRunLoading: boolean;
+}
+
+/** Time cell (frozen) + "Removed." note / next-run slip, in place of
+ * `RowActions`'s time + action-cluster cells for a pending removal. */
+export function PendingRemovalCells({
+    pending,
+    timing,
+    onKeepIt,
+    onRemoveToo,
+}: {
+    pending: PendingRemoval;
+    timing: 'rt' | 'gt';
+    onKeepIt: () => void;
+    onRemoveToo: () => void;
+}) {
+    return (
+        <>
+            <td className={styles.time}>
+                {pending.timeMs != null ? (
+                    <DurationToFormatted duration={pending.timeMs} />
+                ) : (
+                    '—'
+                )}
+            </td>
+            <td className={styles.actionsCell}>
+                <div className={styles.removedNote}>
+                    <span>Removed.</span>
+                    {pending.nextRunLoading && (
+                        <span className={styles.slipLoading}>
+                            Checking for a replacement…
+                        </span>
+                    )}
+                    {pending.nextRun && (
+                        <span className={styles.slip}>
+                            next:{' '}
+                            <DurationToFormatted
+                                duration={
+                                    primaryValueOf(pending.nextRun, timing) ?? 0
+                                }
+                            />{' '}
+                            ·{' '}
+                            <button
+                                type="button"
+                                className={styles.slipAction}
+                                onClick={onKeepIt}
+                            >
+                                Keep it
+                            </button>{' '}
+                            /{' '}
+                            <button
+                                type="button"
+                                className={styles.slipAction}
+                                onClick={onRemoveToo}
+                            >
+                                Remove too
+                            </button>
+                        </span>
+                    )}
+                </div>
+            </td>
         </>
     );
 }

@@ -109,6 +109,18 @@
     }
 }
 
+// A row pinned in place by a pending removal (see PendingRemoval in
+// row-actions.tsx) — visually "gone" without literally being gone, so its
+// next-run slip survives a sibling row's reload.
+.rowRemoved {
+    opacity: 0.6;
+
+    .runner,
+    .time {
+        text-decoration: line-through;
+    }
+}
+
 .actionsHeader {
     width: 1%;
 }
