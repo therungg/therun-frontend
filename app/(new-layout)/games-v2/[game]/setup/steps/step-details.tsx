@@ -49,6 +49,7 @@ export function StepDetails({ data, onAdvance }: StepProps) {
     });
 
     const [formBusy, setFormBusy] = useState(false);
+    const [formError, setFormError] = useState<string | null>(null);
     const [defaultsError, setDefaultsError] = useState<string | null>(null);
     const [isSavingDefaults, startSavingDefaults] = useTransition();
     // Belt-and-suspenders against a double-invoke of handleDetailsSaved (e.g.
@@ -137,8 +138,8 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                 title="Game details"
                 lede={
                     data.categories.length > 0
-                        ? "Runners are already on this board. The details below are pre-filled from IGDB, so fix anything that's wrong and move on. Everything saves as you go."
-                        : "This board has no runs yet. The details below are pre-filled from IGDB, so fix anything that's wrong and move on. Everything saves as you go."
+                        ? 'Runners are already on this board. The details below are pre-filled from IGDB, so fix anything that’s wrong and move on. Everything saves as you go.'
+                        : 'This board has no runs yet. The details below are pre-filled from IGDB, so fix anything that’s wrong and move on. Everything saves as you go.'
                 }
             />
 
@@ -155,6 +156,7 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                     formId="game-details-form"
                     hideAction
                     onBusyChange={setFormBusy}
+                    onErrorChange={setFormError}
                     onSaved={handleDetailsSaved}
                 />
             </div>
@@ -197,7 +199,7 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                             </button>
                         </div>
                         <p className="text-muted small mb-0">
-                            The default timing method for this board's
+                            The default timing method for this board’s
                             categories.
                         </p>
                     </div>
@@ -309,6 +311,7 @@ export function StepDetails({ data, onAdvance }: StepProps) {
             {defaultsError && (
                 <div className={styles.errorNote}>{defaultsError}</div>
             )}
+            {formError && <div className={styles.errorNote}>{formError}</div>}
             <button
                 type="submit"
                 form="game-details-form"

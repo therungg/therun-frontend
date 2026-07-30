@@ -115,6 +115,23 @@ describe('StepDetails', () => {
         expect(screen.getByLabelText('Minimum in-game time')).toBeTruthy();
     });
 
+    it('surfaces a blocked-submit form error near the bottom action', async () => {
+        render(
+            <StepDetails data={data} onAdvance={vi.fn()} onBack={vi.fn()} />,
+        );
+        fireEvent.change(screen.getByPlaceholderText('e.g. super-mario-64'), {
+            target: { value: '!!!' },
+        });
+        fireEvent.submit(document.getElementById('game-details-form')!);
+        await waitFor(() =>
+            expect(
+                screen.getAllByText(
+                    'URL slug must contain at least one alphanumeric character.',
+                ),
+            ).toHaveLength(2),
+        );
+    });
+
     it('saves details, defaults, and the min-time policy in one submit, then advances', async () => {
         const onAdvance = vi.fn();
         render(
