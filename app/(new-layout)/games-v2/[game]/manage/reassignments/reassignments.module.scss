@@ -56,47 +56,21 @@ $rail: 3px;
 }
 
 // ---- Mode toggle (segmented control) -----------------------
+// Converged onto the shared board-segmented/board-segment/board-segment-active
+// mixins in _board.scss (Task 7) so this matches the setup wizard and the
+// console's form kit instead of a hand-rolled clone.
 .modeToggle {
-    display: inline-flex;
-    padding: dt.$spacing-xs;
-    gap: dt.$spacing-xs;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-    border-radius: dt.$radius-md;
-    background: color-mix(
-        in srgb,
-        var(--bs-body-bg) 90%,
-        var(--bs-secondary-bg) 10%
-    );
+    @include board.board-segmented;
+    margin-bottom: 0;
 }
 
 .modeButton {
-    @include btn-reset;
-    padding: dt.$spacing-sm dt.$spacing-lg;
-    border-radius: dt.$radius-sm;
-    font-size: dt.$font-size-sm;
-    font-weight: 500;
-    color: var(--bs-secondary-color);
-    transition: background-color dt.$transition-fast,
-        color dt.$transition-fast;
-
-    &:hover {
-        color: var(--bs-emphasis-color);
-    }
-
-    &:focus-visible {
-        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
-        outline-offset: 1px;
-    }
+    @include board.board-segment;
+    cursor: pointer;
 }
 
 .modeActive {
-    background: var(--bs-primary);
-    color: #fff;
-    font-weight: 600;
-
-    &:hover {
-        color: #fff;
-    }
+    @include board.board-segment-active;
 }
 
 // ---- Stepper ------------------------------------------------
