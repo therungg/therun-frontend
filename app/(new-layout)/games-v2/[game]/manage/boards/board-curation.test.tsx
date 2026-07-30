@@ -18,6 +18,30 @@ vi.mock('./use-board-data', () => ({
     useBoardData: vi.fn(),
 }));
 
+// RowActions (rendered per row) reaches these — mocked here purely to keep
+// this suite's rendering hermetic (avoids pulling in the real 'use server'
+// action modules and their next/headers-touching dependencies). Behavior of
+// the actions themselves is covered by row-actions.test.tsx.
+vi.mock('../moderation/shared/actions/exclude.action', () => ({
+    excludeAction: vi.fn(),
+    previewExcludeAction: vi.fn(),
+}));
+vi.mock('../moderation/shared/actions/restore.action', () => ({
+    restoreRunsAction: vi.fn(),
+}));
+vi.mock('../moderation/shared/actions/manual-times.action', () => ({
+    createManualTimeAction: vi.fn(),
+}));
+vi.mock('../moderation/shared/actions/marks.action', () => ({
+    markRunsAction: vi.fn(),
+}));
+vi.mock('../moderation/shared/actions/eligible-runs.action', () => ({
+    loadUserEligibleRunsAction: vi.fn(),
+}));
+vi.mock('react-toastify', () => ({
+    toast: { success: vi.fn(), error: vi.fn() },
+}));
+
 const mockUseBoardData = vi.mocked(useBoardData);
 
 afterEach(() => {

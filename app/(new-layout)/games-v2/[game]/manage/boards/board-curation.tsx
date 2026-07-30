@@ -3,7 +3,6 @@
 import { useMemo, useState } from 'react';
 import { PinAngleFill } from 'react-bootstrap-icons';
 import { UserLink } from '~src/components/links/links';
-import { DurationToFormatted } from '~src/components/util/datetime';
 import { compareByBoardOrder } from '~src/lib/console/category-order';
 import { formatRunDate } from '~src/lib/format-run-date';
 import {
@@ -25,6 +24,7 @@ import type {
 } from '../../../../../../types/moderation.types';
 import { relativeDate } from '../../leaderboard/relative-date';
 import styles from './board-curation.module.scss';
+import { RowActions } from './row-actions';
 import { useBoardData } from './use-board-data';
 
 export interface BoardCurationProps {
@@ -193,7 +193,7 @@ export function BoardCuration({
         );
     }, [subcatVars, selectedValues]);
 
-    const { rows, loading, error } = useBoardData(
+    const { rows, loading, error, reload } = useBoardData(
         game.name,
         category?.id ?? null,
         subcategoryKey,
@@ -367,12 +367,16 @@ export function BoardCuration({
                                 <tr>
                                     <th className={styles.rank}>#</th>
                                     <th>Runner</th>
+                                    <th className={styles.when}>When</th>
                                     <th>
                                         {timing === 'gt'
                                             ? 'Game time'
                                             : 'Real time'}
                                     </th>
-                                    <th className={styles.when}>When</th>
+                                    <th
+                                        className={styles.actionsHeader}
+                                        aria-label="Actions"
+                                    />
                                 </tr>
                             </thead>
                             <tbody>
@@ -417,28 +421,6 @@ export function BoardCuration({
                                                         />
                                                     )}
                                                 </td>
-                                                <td className={styles.time}>
-                                                    {timeMs != null ? (
-                                                        <DurationToFormatted
-                                                            duration={timeMs}
-                                                            withMillis={
-                                                                category.showMilliseconds ??
-                                                                false
-                                                            }
-                                                        />
-                                                    ) : (
-                                                        '—'
-                                                    )}
-                                                    {belowMinimum && (
-                                                        <span
-                                                            className={
-                                                                styles.belowMinTag
-                                                            }
-                                                        >
-                                                            Below minimum
-                                                        </span>
-                                                    )}
-                                                </td>
                                                 <td
                                                     className={styles.when}
                                                     title={formatRunDate(
@@ -447,6 +429,17 @@ export function BoardCuration({
                                                 >
                                                     {relativeDate(row.endedAt)}
                                                 </td>
+                                                <RowActions
+                                                    row={row}
+                                                    category={category}
+                                                    subcategoryKey={
+                                                        subcategoryKey
+                                                    }
+                                                    gameSlug={game.name}
+                                                    timeMs={timeMs}
+                                                    belowMinimum={belowMinimum}
+                                                    onMutated={reload}
+                                                />
                                             </tr>
                                         );
                                     },
