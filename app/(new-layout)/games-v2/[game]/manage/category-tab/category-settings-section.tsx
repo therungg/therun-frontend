@@ -251,6 +251,17 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
                     >
                         {isSaving ? 'Saving…' : 'Save settings'}
                     </button>
+                    <button
+                        type="button"
+                        className={kit.resetBtn}
+                        onClick={() => {
+                            setState(original);
+                            setFormError(null);
+                        }}
+                        disabled={busy || !dirty}
+                    >
+                        Reset
+                    </button>
                 </SectionFooter>
             </form>
         </FormSection>
