@@ -79,82 +79,86 @@ export function ConsoleChrome({
 
     return (
         <div className={styles.shell}>
-            <header className={styles.header}>
-                <button
-                    type="button"
-                    className={clsx(
-                        styles.menuToggle,
-                        'btn btn-sm btn-outline-secondary',
-                    )}
-                    aria-label="Toggle navigation"
-                    aria-expanded={sidebarOpen}
-                    onClick={() => setSidebarOpen((v) => !v)}
-                >
-                    <List size={18} aria-hidden="true" />
-                </button>
-                {game.image && (
-                    <img
-                        className={styles.cover}
-                        src={game.image}
-                        alt=""
-                        width={44}
-                        height={59}
-                        loading="eager"
-                    />
-                )}
-                <div>
-                    <div className={styles.eyebrow}>Admin</div>
-                    <h1 className={styles.title}>
-                        <Link
-                            href={`/games-v2/${game.name}/manage`}
-                            className={styles.titleLink}
-                        >
-                            {game.display}
-                        </Link>
-                    </h1>
-                </div>
-                <div className={styles.headerActions}>
-                    {moderatedGamesCount > 1 && (
-                        <Link
-                            href="/games-v2/manage"
-                            className={styles.allGamesLink}
-                        >
-                            All your games
-                        </Link>
-                    )}
-                    <BackLink
-                        href={`/games-v2/${game.name}`}
-                        label="Back to leaderboard"
-                    />
-                </div>
-            </header>
-
-            <div className={styles.body}>
-                {sidebarOpen && (
+            <div className={styles.frame}>
+                <header className={styles.header}>
                     <button
                         type="button"
-                        className={styles.scrim}
-                        aria-label="Close navigation"
-                        onClick={closeSidebar}
-                    />
-                )}
-                <aside
-                    ref={sidebarRef}
-                    className={clsx(
-                        styles.sidebar,
-                        !sidebarOpen && styles.sidebarHidden,
+                        className={clsx(
+                            styles.menuToggle,
+                            'btn btn-sm btn-outline-secondary',
+                        )}
+                        aria-label="Toggle navigation"
+                        aria-expanded={sidebarOpen}
+                        onClick={() => setSidebarOpen((v) => !v)}
+                    >
+                        <List size={18} aria-hidden="true" />
+                    </button>
+                    {game.image && (
+                        <img
+                            className={styles.cover}
+                            src={game.image}
+                            alt=""
+                            width={44}
+                            height={59}
+                            loading="eager"
+                        />
                     )}
-                >
-                    <ConsoleSidebar
-                        groups={groups}
-                        activeItem={activeItem}
-                        onSelect={handleSelect}
-                        attentionCount={attentionCount}
-                        badgeDegraded={badgeDegraded}
-                    />
-                </aside>
+                    <div>
+                        <div className={styles.eyebrow}>Admin</div>
+                        <h1 className={styles.title}>
+                            <Link
+                                href={`/games-v2/${game.name}/manage`}
+                                className={styles.titleLink}
+                            >
+                                {game.display}
+                            </Link>
+                        </h1>
+                    </div>
+                    <div className={styles.headerActions}>
+                        {moderatedGamesCount > 1 && (
+                            <Link
+                                href="/games-v2/manage"
+                                className={styles.allGamesLink}
+                            >
+                                All your games
+                            </Link>
+                        )}
+                        <BackLink
+                            href={`/games-v2/${game.name}`}
+                            label="Back to leaderboard"
+                        />
+                    </div>
+                </header>
 
-                <section className={styles.content}>{children}</section>
+                <div className={styles.body}>
+                    {sidebarOpen && (
+                        <button
+                            type="button"
+                            className={styles.scrim}
+                            aria-label="Close navigation"
+                            onClick={closeSidebar}
+                        />
+                    )}
+                    <aside
+                        ref={sidebarRef}
+                        className={clsx(
+                            styles.sidebar,
+                            !sidebarOpen && styles.sidebarHidden,
+                        )}
+                    >
+                        <div className={styles.sidebarInner}>
+                            <ConsoleSidebar
+                                groups={groups}
+                                activeItem={activeItem}
+                                onSelect={handleSelect}
+                                attentionCount={attentionCount}
+                                badgeDegraded={badgeDegraded}
+                            />
+                        </div>
+                    </aside>
+
+                    <section className={styles.content}>{children}</section>
+                </div>
             </div>
         </div>
     );
