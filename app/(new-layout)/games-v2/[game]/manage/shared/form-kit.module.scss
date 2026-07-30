@@ -23,6 +23,18 @@
     max-width: 60ch;
 }
 
+.segGroup {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+}
+
+.segLabel {
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+}
+
 .segmented {
     @include board.board-segmented;
 }

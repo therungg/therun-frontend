@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { type ReactNode, useId } from 'react';
 import styles from './form-kit.module.scss';
 
 export function FormSection({
@@ -34,25 +34,35 @@ export function SegmentedControl({
     onChange: (value: string) => void;
     disabled?: boolean;
 }) {
+    const labelId = useId();
     return (
-        <div className={styles.segmented} role="radiogroup" aria-label={label}>
-            {options.map((opt) => (
-                <button
-                    key={opt.value}
-                    type="button"
-                    role="radio"
-                    aria-checked={opt.value === value}
-                    disabled={disabled}
-                    className={
-                        opt.value === value
-                            ? `${styles.segment} ${styles.segmentActive}`
-                            : styles.segment
-                    }
-                    onClick={() => onChange(opt.value)}
-                >
-                    {opt.label}
-                </button>
-            ))}
+        <div className={styles.segGroup}>
+            <span id={labelId} className={styles.segLabel}>
+                {label}
+            </span>
+            <div
+                className={styles.segmented}
+                role="radiogroup"
+                aria-labelledby={labelId}
+            >
+                {options.map((opt) => (
+                    <button
+                        key={opt.value}
+                        type="button"
+                        role="radio"
+                        aria-checked={opt.value === value}
+                        disabled={disabled}
+                        className={
+                            opt.value === value
+                                ? `${styles.segment} ${styles.segmentActive}`
+                                : styles.segment
+                        }
+                        onClick={() => onChange(opt.value)}
+                    >
+                        {opt.label}
+                    </button>
+                ))}
+            </div>
         </div>
     );
 }
