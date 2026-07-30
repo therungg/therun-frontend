@@ -108,7 +108,28 @@ export function WizardShell({ data, initialStep }: Props) {
             />
 
             <main
-                key={`${step}-${data.renderedAt}`}
+                // 'details' | 'categories' | 'groups' remount on every fresh
+                // server read (key includes renderedAt): those steps seed
+                // their local state straight from `data` props each time and
+                // WANT a clean slate whenever an updateTag/router.refresh()
+                // lands (e.g. after a save), so stale local state can't hide
+                // behind fresher server data.
+                //
+                // 'category-setup' and 'boards' key on `step` alone, with no
+                // renderedAt: they own long-lived interactive state
+                // (BoardCuration's pendingRemovals/selectedRunIds/reorder
+                // mode, the per-category hub editor's open panel) that flows
+                // in via props, not by re-seeding from scratch. Every
+                // updateTag call made in service of read-your-writes (item
+                // 1/2 above) also bumps `data.renderedAt` on the next
+                // router.refresh(), so keying these two on renderedAt too
+                // would remount — and silently wipe — that state on every
+                // single mutation inside them, which is most of what they do.
+                key={
+                    step === 'category-setup' || step === 'boards'
+                        ? step
+                        : `${step}-${data.renderedAt}`
+                }
                 className={styles.stepBody}
             >
                 <CurrentStep
