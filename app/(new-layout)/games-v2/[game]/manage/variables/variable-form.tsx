@@ -8,7 +8,7 @@ import {
     roleConsequence,
 } from '~src/lib/variables/language';
 import type { VariableRow } from '../../../../../../types/leaderboards.types';
-import { InlineError, SwitchField } from '../shared/form-kit';
+import { InlineError, SegmentedControl } from '../shared/form-kit';
 import styles from './variables.module.scss';
 
 export interface VariableFormValues {
@@ -235,46 +235,43 @@ export function VariableForm({
                 </div>
             </div>
 
-            <fieldset className="mt-3" disabled={isBusy || mode === 'edit'}>
-                <legend className="form-label small mb-1">Role</legend>
-                <SwitchField
-                    id="var-role-sub"
-                    label={capitalize(ROLE_LABEL.subcategory)}
-                    hint={
-                        <>
-                            (subcategory) — each answer gets its own board (e.g.{' '}
-                            <code>platform</code> with PC vs N64). Always has a
-                            default; missing values fall back.
-                        </>
-                    }
-                    checked={role === 'subcategory'}
+            <div className="mt-3">
+                <SegmentedControl
+                    label="Role"
+                    value={role}
+                    options={[
+                        {
+                            value: 'subcategory',
+                            label: capitalize(ROLE_LABEL.subcategory),
+                        },
+                        {
+                            value: 'filter',
+                            label: capitalize(ROLE_LABEL.filter),
+                        },
+                    ]}
+                    onChange={(v) => setRole(v as 'subcategory' | 'filter')}
                     disabled={isBusy || mode === 'edit'}
-                    onChange={(checked) => {
-                        if (checked) setRole('subcategory');
-                    }}
                 />
-                <SwitchField
-                    id="var-role-filter"
-                    label={capitalize(ROLE_LABEL.filter)}
-                    hint={
-                        <>
-                            (filter) — refines results within a board (e.g.{' '}
-                            <code>region</code> selectable as US/JP). Optional
-                            per run.
-                        </>
-                    }
-                    checked={role === 'filter'}
-                    disabled={isBusy || mode === 'edit'}
-                    onChange={(checked) => {
-                        if (checked) setRole('filter');
-                    }}
-                />
+                <ul className="list-unstyled small text-muted mt-2 mb-0">
+                    <li>
+                        <strong>{capitalize(ROLE_LABEL.subcategory)}</strong>{' '}
+                        (subcategory) — each answer gets its own board (e.g.{' '}
+                        <code>platform</code> with PC vs N64). Always has a
+                        default; missing values fall back.
+                    </li>
+                    <li className="mt-1">
+                        <strong>{capitalize(ROLE_LABEL.filter)}</strong>{' '}
+                        (filter) — refines results within a board (e.g.{' '}
+                        <code>region</code> selectable as US/JP). Optional per
+                        run.
+                    </li>
+                </ul>
                 <small className="text-muted d-block mt-1">
                     {mode === 'edit'
                         ? 'This can’t be changed. To switch, delete the variable and make a new one.'
                         : 'Choose carefully — this can’t be changed later without deleting the variable and making a new one.'}
                 </small>
-            </fieldset>
+            </div>
 
             <p className={styles.roleConsequence}>
                 {roleConsequence({
