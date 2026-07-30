@@ -416,6 +416,7 @@ export function ConsoleShell({
                     variables={variables}
                     policies={policies}
                     canConfigureBoards={flags.canConfigure}
+                    canSiteBan={flags.canSiteBan ?? false}
                     categoryConfig={categoryConfig}
                     gameDetails={gameDetails}
                     attentionItems={attentionItems}

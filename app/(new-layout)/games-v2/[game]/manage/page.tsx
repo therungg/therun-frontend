@@ -235,6 +235,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
                     canConfigure,
                     canReassign,
                     canEditMods,
+                    canSiteBan: ability.can('moderate', 'admins'),
                 }}
                 attentionItems={attentionItems}
                 degradedSources={degradedSources}
