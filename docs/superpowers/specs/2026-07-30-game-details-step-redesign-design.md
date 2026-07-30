@@ -73,10 +73,15 @@ vocabulary for one-of-N choices on this screen. State shape is unchanged
   - an optional `formId` prop, and
   - a prop to suppress its internal submit button (e.g. `hideAction`).
   - Its `save()` runs on the form's `onSubmit`.
-- The wizard step renders the single **Save & continue** button in the
-  standard `styles.navBar` at the page bottom, using the native
+- The wizard step renders the single **Save & continue** button
+  (`styles.primaryAction`) at the end of the step body — the wizard
+  convention; the shell's `navBar` owns Back/Skip only — using the native
   `<button form="{formId}">` association to submit the form — no refs, no
   imperative handles.
+- With the internal button hidden, the step still needs the form's busy
+  state (identity save / cover upload in flight) to disable and label the
+  bottom button, so `GameDetailsForm` also gets an optional
+  `onBusyChange?: (busy: boolean) => void` callback.
 - The save chain is unchanged: form saves identity via
   `updateIdentifiersAction` + `updateGameMetadataAction` → `onSaved` → step
   saves timing/rules/emulator metadata and the min-time policy → `onAdvance`.
