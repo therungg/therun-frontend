@@ -32,6 +32,46 @@ describe('RulesPanel', () => {
         expect(container.firstChild).toBeNull();
     });
 
+    it('renders nothing when rules/gameRules are empty and emulatorPolicy is null', () => {
+        const { container } = render(
+            <RulesPanel
+                rules={null}
+                gameRules={null}
+                emulatorPolicy={null}
+                open={false}
+                onToggle={vi.fn()}
+            />,
+        );
+        expect(container.firstChild).toBeNull();
+    });
+
+    it('renders with the policy line as the excerpt when emulatorPolicy is the only content', () => {
+        render(
+            <RulesPanel
+                rules={null}
+                gameRules={null}
+                emulatorPolicy="banned"
+                open={false}
+                onToggle={vi.fn()}
+            />,
+        );
+        expect(screen.getByText('Rules')).toBeTruthy();
+        expect(screen.getByText('Emulators are banned.')).toBeTruthy();
+    });
+
+    it('hides the policy-line excerpt while open', () => {
+        render(
+            <RulesPanel
+                rules={null}
+                gameRules={null}
+                emulatorPolicy="allowed"
+                open={true}
+                onToggle={vi.fn()}
+            />,
+        );
+        expect(screen.queryByText('Emulators are allowed.')).toBeNull();
+    });
+
     it('renders with an excerpt when only category rules are present', () => {
         render(
             <RulesPanel
@@ -169,5 +209,14 @@ describe('RulesBody', () => {
     it('shows no emulator line when policy is undefined', () => {
         render(<RulesBody rules="Some rule." gameRules={null} />);
         expect(screen.queryByText(/Emulators are/)).toBeNull();
+    });
+
+    it('renders only the emulator line when neither rules nor game rules are present', () => {
+        const { container } = render(
+            <RulesBody rules={null} gameRules={null} emulatorPolicy="banned" />,
+        );
+        expect(container.textContent).toBe('Emulators are banned.');
+        expect(container.querySelectorAll('p').length).toBe(1);
+        expect(container.querySelector('hr')).toBeNull();
     });
 });

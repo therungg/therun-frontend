@@ -21,7 +21,11 @@ import type {
     ModTiming,
     SelfManualTimeResult,
 } from '../../../../../types/moderation.types';
-import { RulesBody, RulesPanel } from '../rules/rules-panel';
+import {
+    type EmulatorPolicy,
+    RulesBody,
+    RulesPanel,
+} from '../rules/rules-panel';
 import { ClaimFields } from './claim-fields';
 import { loadVariablesAction } from './load-variables.action';
 import { RunFields } from './run-fields';
@@ -42,7 +46,7 @@ interface Props {
     initialSubcategoryValues?: Record<string, string>;
     /** Game-level rules — shown above category rules in the disclosure, same as the public board. */
     gameRules?: string | null;
-    emulatorPolicy?: 'allowed' | 'banned' | null;
+    emulatorPolicy?: EmulatorPolicy;
 }
 
 const SUBMIT_MODE_HINT =
@@ -526,11 +530,14 @@ export function SubmitForm({
                     </select>
                 </div>
 
-                {(category.rules?.trim() || gameRules?.trim()) && (
+                {(category.rules?.trim() ||
+                    gameRules?.trim() ||
+                    emulatorPolicy) && (
                     <div>
                         <RulesPanel
                             rules={category.rules}
                             gameRules={gameRules}
+                            emulatorPolicy={emulatorPolicy}
                             open={rulesOpen}
                             onToggle={() => setRulesOpen((o) => !o)}
                             label="Category rules"
