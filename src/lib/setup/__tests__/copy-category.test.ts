@@ -230,6 +230,7 @@ describe('planCategoryCopy', () => {
                 values: [['PC'], ['Switch']],
                 defaultValueIndex: 0,
                 sortOrder: 0,
+                description: 'Which platform the run was played on.',
             }),
             // Game-wide — must NOT be copied.
             mkVar({ id: 200, categoryId: null, name: 'Region' }),
@@ -254,6 +255,7 @@ describe('planCategoryCopy', () => {
                     values: [['PC'], ['Switch']],
                     defaultValueIndex: 0,
                     sortOrder: 0,
+                    description: 'Which platform the run was played on.',
                 },
             },
         ]);
