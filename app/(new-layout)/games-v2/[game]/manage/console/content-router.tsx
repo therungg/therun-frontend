@@ -56,6 +56,9 @@ export interface ContentRouterProps {
      * pane — a moderator without configure sees the board and row actions,
      * but not that toolbar (BoardCuration gates it internally). */
     canConfigureBoards: boolean;
+    /** Viewer may file site-wide anonymize bans from the Boards pane —
+     * admins only, threaded through to RowActions. */
+    canSiteBan: boolean;
     /** Live item-count reporter from NeedsAttention, forwarded to the sidebar badge. */
     onAttentionCountChange?: (count: number) => void;
     gameDetails?: GameDetailsData | null;
@@ -167,6 +170,7 @@ export function ContentRouter(props: ContentRouterProps) {
                     variables={props.variables}
                     policies={props.policies}
                     canConfigure={props.canConfigureBoards}
+                    canSiteBan={props.canSiteBan}
                     context="console"
                 />
             );

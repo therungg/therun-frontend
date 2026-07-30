@@ -40,6 +40,9 @@ export interface NavFlags {
     canConfigure: boolean; // ability.can('edit','category-settings',{game})
     canReassign: boolean; // ability.can('reassign','reassignment')
     canEditMods: boolean; // ability.can('edit','moderators',{game})
+    /** ability.can('moderate','admins') — global admins only. Rides
+     * NavFlags for transport; buildNav does not read it. */
+    canSiteBan?: boolean;
 }
 
 const ALL_GROUPS: NavGroup[] = [

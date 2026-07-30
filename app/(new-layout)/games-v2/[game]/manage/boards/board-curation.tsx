@@ -71,6 +71,9 @@ export interface BoardCurationProps {
     variables: VariableRow[];
     policies: BoardPolicyRow[];
     canConfigure: boolean;
+    /** Admin-only site-wide anonymize in row actions. Optional so the
+     * setup-wizard mounts (which never pass it) stay admin-feature-free. */
+    canSiteBan?: boolean;
     context: 'wizard' | 'console';
 }
 
@@ -155,6 +158,7 @@ export function BoardCuration({
     variables,
     policies,
     canConfigure,
+    canSiteBan = false,
     context,
 }: BoardCurationProps) {
     const router = useRouter();
@@ -1179,6 +1183,7 @@ export function BoardCuration({
                                                             )
                                                         }
                                                         onMutated={reload}
+                                                        canSiteBan={canSiteBan}
                                                     />
                                                 )}
                                             </tr>
