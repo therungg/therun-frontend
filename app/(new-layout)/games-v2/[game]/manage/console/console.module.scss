@@ -23,7 +23,7 @@ $rail: 3px; // severity spine / active accent width
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
     border-radius: dt.$radius-lg;
     background: var(--bs-body-bg);
-    overflow: hidden; // clips the tinted sidebar column to the radius
+    overflow: clip; // clips to the radius without trapping position:sticky (unlike hidden)
 }
 
 .header {
