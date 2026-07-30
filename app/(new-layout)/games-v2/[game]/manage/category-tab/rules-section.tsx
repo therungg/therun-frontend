@@ -5,6 +5,8 @@ import ReactMarkdown from 'react-markdown';
 import { toast } from 'react-toastify';
 import remarkGfm from 'remark-gfm';
 import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
+import { FormSection, InlineError, SectionFooter } from '../shared/form-kit';
+import kit from '../shared/form-kit.module.scss';
 import { updateCategorySettingsAction } from './actions/update-category-settings.action';
 
 interface Props {
@@ -57,13 +59,10 @@ export function RulesSection({ gameSlug, gameId, category }: Props) {
     };
 
     return (
-        <section className="border rounded p-3 mb-4">
-            <h2 className="h5 mb-1">Rules</h2>
-            <p className="text-muted small mb-3">
-                Markdown is supported. Shown to runners on the public
-                leaderboard page above the table.
-            </p>
-
+        <FormSection
+            title="Rules"
+            lede="Markdown is supported. Shown to runners on the public leaderboard page above the table."
+        >
             <ul className="nav nav-tabs mb-2" role="tablist">
                 <li className="nav-item" role="presentation">
                     <button
@@ -112,33 +111,17 @@ export function RulesSection({ gameSlug, gameId, category }: Props) {
                     </div>
                 )}
 
-                <div className="d-flex gap-2 mt-3">
+                <InlineError>{formError}</InlineError>
+                <SectionFooter>
                     <button
                         type="submit"
-                        className="btn btn-sm btn-primary"
+                        className={kit.saveBtn}
                         disabled={busy || !dirty}
                     >
-                        {isSaving ? 'Saving...' : 'Save'}
+                        {isSaving ? 'Saving…' : 'Save rules'}
                     </button>
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-outline-secondary"
-                        onClick={() => {
-                            setText(original);
-                            setFormError(null);
-                        }}
-                        disabled={busy || !dirty}
-                    >
-                        Reset
-                    </button>
-                </div>
-
-                {formError && (
-                    <div className="alert alert-danger mt-2 mb-0 py-2">
-                        {formError}
-                    </div>
-                )}
+                </SectionFooter>
             </form>
-        </section>
+        </FormSection>
     );
 }

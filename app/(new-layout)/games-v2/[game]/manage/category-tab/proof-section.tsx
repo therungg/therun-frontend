@@ -3,6 +3,12 @@
 import { type FormEvent, useEffect, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
+import {
+    FormSection,
+    SectionFooter,
+    SegmentedControl,
+} from '../shared/form-kit';
+import kit from '../shared/form-kit.module.scss';
 import { updateCategorySettingsAction } from './actions/update-category-settings.action';
 
 interface Props {
@@ -97,51 +103,28 @@ export function ProofSection({ gameSlug, gameId, category }: Props) {
     if (!category) return null;
 
     return (
-        <section>
-            <h2 className="h5 mb-1">Proof &amp; review</h2>
-            <p className="text-muted small mb-3">
-                Whether a run needs a video to stand. Runs missing required
-                proof are held for a moderator instead of going straight to the
-                board.
-            </p>
-
+        <FormSection
+            title="Proof & review"
+            lede="Whether a run needs a video to stand. Runs missing required proof are held for a moderator instead of going straight to the board."
+        >
             <form onSubmit={save}>
-                <div className="form-check">
-                    <input
-                        type="radio"
-                        className="form-check-input"
-                        id="proofNone"
-                        checked={state.videoPolicy === 'none'}
-                        onChange={() =>
-                            setState((s) => ({ ...s, videoPolicy: 'none' }))
-                        }
-                        disabled={busy}
-                    />
-                    <label
-                        htmlFor="proofNone"
-                        className="form-check-label small"
-                    >
-                        No video required
-                    </label>
-                </div>
-
+                <SegmentedControl
+                    label="Video requirement"
+                    value={state.videoPolicy}
+                    options={[
+                        { value: 'none', label: 'No video required' },
+                        { value: 'top-n', label: 'Require for top N' },
+                        { value: 'all', label: 'Require for every run' },
+                    ]}
+                    disabled={busy}
+                    onChange={(v) =>
+                        setState((s) => ({
+                            ...s,
+                            videoPolicy: v as VideoPolicy,
+                        }))
+                    }
+                />
                 <div className="form-check d-flex align-items-center gap-2">
-                    <input
-                        type="radio"
-                        className="form-check-input"
-                        id="proofTopN"
-                        checked={state.videoPolicy === 'top-n'}
-                        onChange={() =>
-                            setState((s) => ({ ...s, videoPolicy: 'top-n' }))
-                        }
-                        disabled={busy}
-                    />
-                    <label
-                        htmlFor="proofTopN"
-                        className="form-check-label small mb-0"
-                    >
-                        Require video for top
-                    </label>
                     <input
                         type="number"
                         min={1}
@@ -158,33 +141,16 @@ export function ProofSection({ gameSlug, gameId, category }: Props) {
                     <span className="form-check-label small mb-0">runs</span>
                 </div>
 
-                <div className="form-check">
-                    <input
-                        type="radio"
-                        className="form-check-input"
-                        id="proofAll"
-                        checked={state.videoPolicy === 'all'}
-                        onChange={() =>
-                            setState((s) => ({ ...s, videoPolicy: 'all' }))
-                        }
-                        disabled={busy}
-                    />
-                    <label
-                        htmlFor="proofAll"
-                        className="form-check-label small"
+                <SectionFooter>
+                    <button
+                        type="submit"
+                        className={kit.saveBtn}
+                        disabled={busy || !dirty}
                     >
-                        Require video for every run
-                    </label>
-                </div>
-
-                <button
-                    type="submit"
-                    className="btn btn-sm btn-primary mt-3"
-                    disabled={busy || !dirty}
-                >
-                    {busy ? 'Saving…' : 'Save proof requirement'}
-                </button>
+                        {busy ? 'Saving…' : 'Save proof requirement'}
+                    </button>
+                </SectionFooter>
             </form>
-        </section>
+        </FormSection>
     );
 }

@@ -4,6 +4,14 @@ import { FormEvent, useEffect, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import type { PrimaryTiming } from '~src/lib/category-mgmt';
 import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
+import {
+    FormSection,
+    InlineError,
+    SectionFooter,
+    SegmentedControl,
+    SwitchField,
+} from '../shared/form-kit';
+import kit from '../shared/form-kit.module.scss';
 import { loadTimingSettingsAction } from './actions/load-timing-settings.action';
 import { updateTimingSettingsAction } from './actions/update-timing-settings.action';
 
@@ -104,119 +112,70 @@ export function TimingSettingsSection({ gameSlug, gameId, category }: Props) {
     };
 
     return (
-        <section className="border rounded p-3 mb-4">
-            <h2 className="h5 mb-1">Timing Settings</h2>
-            <p className="text-muted small mb-3">
-                Defaults for <strong>{category.display}</strong>. Applies to how
-                runs are displayed and which timing method is used to rank the
-                leaderboard.
-            </p>
-
-            {loadError && (
-                <div className="alert alert-danger py-2" role="alert">
-                    {loadError}
-                </div>
-            )}
-
+        <FormSection
+            title="Timing"
+            lede={
+                <>
+                    Defaults for <strong>{category.display}</strong>. Applies to
+                    how runs are displayed and which timing method is used to
+                    rank the leaderboard.
+                </>
+            }
+        >
+            <InlineError>{loadError}</InlineError>
             <form onSubmit={handleSubmit}>
-                <div className="row g-3 align-items-end">
-                    <div className="col-md-4">
-                        <label className="form-label small">
-                            Primary timing
-                        </label>
-                        <select
-                            className="form-select form-select-sm"
-                            value={state.primaryTiming}
-                            onChange={(e) =>
-                                setState((s) => ({
-                                    ...s,
-                                    primaryTiming: e.target
-                                        .value as PrimaryTiming,
-                                }))
-                            }
-                            disabled={busy}
-                        >
-                            <option value="realtime">Real time (RT)</option>
-                            <option value="gametime">Game time (GT)</option>
-                        </select>
-                    </div>
-                    <div className="col-md-4">
-                        <div className="form-check">
-                            <input
-                                type="checkbox"
-                                className="form-check-input"
-                                id="hideRT"
-                                checked={state.hideRealTime}
-                                onChange={(e) =>
-                                    setState((s) => ({
-                                        ...s,
-                                        hideRealTime: e.target.checked,
-                                        hideGameTime: e.target.checked
-                                            ? false
-                                            : s.hideGameTime,
-                                    }))
-                                }
-                                disabled={busy}
-                            />
-                            <label
-                                htmlFor="hideRT"
-                                className="form-check-label small"
-                            >
-                                Hide real time
-                            </label>
-                        </div>
-                        <div className="form-check">
-                            <input
-                                type="checkbox"
-                                className="form-check-input"
-                                id="hideGT"
-                                checked={state.hideGameTime}
-                                onChange={(e) =>
-                                    setState((s) => ({
-                                        ...s,
-                                        hideGameTime: e.target.checked,
-                                        hideRealTime: e.target.checked
-                                            ? false
-                                            : s.hideRealTime,
-                                    }))
-                                }
-                                disabled={busy}
-                            />
-                            <label
-                                htmlFor="hideGT"
-                                className="form-check-label small"
-                            >
-                                Hide game time
-                            </label>
-                        </div>
-                    </div>
-                    <div className="col-md-4 d-flex gap-2">
-                        <button
-                            type="submit"
-                            className="btn btn-sm btn-primary"
-                            disabled={busy || !dirty}
-                        >
-                            {isSaving ? 'Saving...' : 'Save'}
-                        </button>
-                        <button
-                            type="button"
-                            className="btn btn-sm btn-outline-secondary"
-                            onClick={() => {
-                                setState(original);
-                                setFormError(null);
-                            }}
-                            disabled={busy || !dirty}
-                        >
-                            Reset
-                        </button>
-                    </div>
-                </div>
-                {formError && (
-                    <div className="alert alert-danger mt-2 mb-0 py-2">
-                        {formError}
-                    </div>
-                )}
+                <SegmentedControl
+                    label="Primary timing"
+                    value={state.primaryTiming}
+                    options={[
+                        { value: 'realtime', label: 'Real time' },
+                        { value: 'gametime', label: 'Game time' },
+                    ]}
+                    disabled={busy}
+                    onChange={(v) =>
+                        setState((s) => ({
+                            ...s,
+                            primaryTiming: v as PrimaryTiming,
+                        }))
+                    }
+                />
+                <SwitchField
+                    id="hideRT"
+                    label="Hide real time"
+                    checked={state.hideRealTime}
+                    disabled={busy}
+                    onChange={(checked) =>
+                        setState((s) => ({
+                            ...s,
+                            hideRealTime: checked,
+                            hideGameTime: checked ? false : s.hideGameTime,
+                        }))
+                    }
+                />
+                <SwitchField
+                    id="hideGT"
+                    label="Hide game time"
+                    checked={state.hideGameTime}
+                    disabled={busy}
+                    onChange={(checked) =>
+                        setState((s) => ({
+                            ...s,
+                            hideGameTime: checked,
+                            hideRealTime: checked ? false : s.hideRealTime,
+                        }))
+                    }
+                />
+                <InlineError>{formError}</InlineError>
+                <SectionFooter>
+                    <button
+                        type="submit"
+                        className={kit.saveBtn}
+                        disabled={busy || !dirty}
+                    >
+                        {isSaving ? 'Saving…' : 'Save timing'}
+                    </button>
+                </SectionFooter>
             </form>
-        </section>
+        </FormSection>
     );
 }
