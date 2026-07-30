@@ -53,12 +53,15 @@ export async function liftSiteBanAction(
         return { error: 'Only site admins can lift a site-wide ban.' };
     }
 
-    const game = await resolveGame(gameSlug);
-    if (!game) return { error: 'Game not found.' };
-
     try {
+        // The lift is game-agnostic (the ban is site-wide) — `gameSlug` is
+        // only used below for a best-effort cache refresh, so a failed
+        // lookup must not strand the lift itself.
         await liftSiteBan(session.id, banId, 'Undone from board curation');
-        await revalidateAffectedBoards(game.id, game.name, [board]);
+        const game = await resolveGame(gameSlug);
+        if (game) {
+            await revalidateAffectedBoards(game.id, game.name, [board]);
+        }
         return { ok: true };
     } catch (e) {
         if (e instanceof ApiError) return { error: e.message };

@@ -44,7 +44,7 @@ New server action `anonymize.action.ts` in
   `apiFetch('/admin/bans', { method: 'POST', sessionId, body:
   { username, reason, runTreatment: 'anonymize' } })`. Returns the created
   ban `id` (needed for undo) or `{ error }`.
-- `liftBanAction(banId, liftReason)` →
+- `liftSiteBanAction(banId, liftReason)` →
   `DELETE /admin/bans/{banId}` with a `liftReason` body — used only by the
   undo toast, with a canned reason ("Undone from board curation").
 - Both revalidate this game's leaderboard cache tags (same tags the exclude
@@ -63,7 +63,7 @@ It opens a `BoardDialog` (same pattern as Ban):
   name (mod views are deliberately unmasked backend-side).
 - Reason: required textarea.
 - Confirm → action → success: close dialog, `onMutated()` reload, undo
-  toast via `fireUndoToast` that calls `liftBanAction`.
+  toast via `fireUndoToast` that calls `liftSiteBanAction`.
 
 ### Errors
 

@@ -627,7 +627,7 @@ and destructure it in the component signature: `canSiteBan = false,` (between `b
 - [ ] **Step 4: Run the new tests — verify they pass**
 
 Run: `npx vitest run row-actions-anonymize`
-Expected: 5 passed.
+Expected: 6 passed.
 
 - [ ] **Step 5: Run the neighboring suites for regressions**
 
