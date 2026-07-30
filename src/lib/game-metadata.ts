@@ -23,4 +23,6 @@ export const EMPTY_GAME_METADATA: GameMetadata = {
     gameRules: null,
     emulatorPolicy: null,
     primaryTiming: null,
+    hideRealTime: false,
+    hideGameTime: false,
 };
