@@ -415,6 +415,7 @@ describe('BoardCuration — moved-here tag', () => {
                 'some-game',
                 1,
                 null,
+                [{ categoryId: CATEGORY.id, subcategoryKey: '' }],
             ),
         );
         expect(reload).toHaveBeenCalled();

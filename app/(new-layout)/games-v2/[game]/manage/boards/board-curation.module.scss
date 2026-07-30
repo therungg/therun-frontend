@@ -303,6 +303,16 @@
     width: 7rem;
 }
 
+// Reserves its line height whether or not it has text, so the match/guest
+// verdict appearing as the mod types never shifts the row (or the table)
+// underneath it.
+.ghostMatchNote {
+    min-height: 1.2em;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    margin-top: 0.1rem;
+}
+
 // ---- Ban / Move confirm sheets (BoardDialog content) ----
 .dialogHeader {
     @include board.board-dialog-header;

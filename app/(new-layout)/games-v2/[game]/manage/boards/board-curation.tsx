@@ -242,10 +242,22 @@ export function BoardCuration({
 
     const clearSelection = () => setSelectedRunIds(new Set());
 
-    const handleClearMove = (row: LeaderboardRosterRow) => {
+    // `currentPlacement` is the board being viewed (category.id/subcategoryKey)
+    // — guaranteed to be where the row is showing right now, since it's only
+    // ever wired up from inside the `{category && (...)}` block below. The
+    // run's *original* placement (what clearing actually restores it to)
+    // isn't exposed by `boardOverride` or anywhere else client-side, so that
+    // leaderboard's cache tag can't be targeted here — it catches up on its
+    // own TTL instead.
+    const handleClearMove = (
+        row: LeaderboardRosterRow,
+        currentPlacement: { categoryId: number; subcategoryKey: string },
+    ) => {
         setClearingMoveRunIds((prev) => new Set(prev).add(row.runId));
         (async () => {
-            const res = await moveRunAction(game.name, row.runId, null);
+            const res = await moveRunAction(game.name, row.runId, null, [
+                currentPlacement,
+            ]);
             setClearingMoveRunIds((prev) => {
                 const next = new Set(prev);
                 next.delete(row.runId);
@@ -775,6 +787,11 @@ export function BoardCuration({
                                                                     onClick={() =>
                                                                         handleClearMove(
                                                                             row,
+                                                                            {
+                                                                                categoryId:
+                                                                                    category.id,
+                                                                                subcategoryKey,
+                                                                            },
                                                                         )
                                                                     }
                                                                     disabled={clearingMoveRunIds.has(
