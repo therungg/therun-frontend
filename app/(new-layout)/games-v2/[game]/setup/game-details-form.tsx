@@ -48,26 +48,24 @@ export function GameDetailsForm({
     game,
     onSaved,
     saveLabel = 'Save & continue',
-    savingExternally = false,
     formId,
     hideAction = false,
     onBusyChange,
+    onErrorChange,
 }: {
     identifiers: GameIdentifiers;
     metadata: GameMetadata;
     game: { id: number; name: string; image: string | null };
     onSaved: () => void;
     saveLabel?: string;
-    // Set while a caller's own post-onSaved work is still in flight, so the
-    // button stays disabled through that gap instead of re-enabling between
-    // this form's save and the caller's (see step-details.tsx).
-    savingExternally?: boolean;
     /** id on the <form>, so an external `<button form=…>` can submit it. */
     formId?: string;
     /** Suppress the internal submit button (caller renders its own). */
     hideAction?: boolean;
     /** Reports isSaving/isUploading to a caller-rendered external button. */
     onBusyChange?: (busy: boolean) => void;
+    /** Reports the in-place error string to a caller-rendered external note. */
+    onErrorChange?: (error: string | null) => void;
 }) {
     const [slug, setSlug] = useState(identifiers.slug ?? '');
     const [coverUrl, setCoverUrl] = useState(metadata.coverUrl ?? '');
@@ -98,6 +96,10 @@ export function GameDetailsForm({
     useEffect(() => {
         onBusyChange?.(busy);
     }, [busy, onBusyChange]);
+
+    useEffect(() => {
+        onErrorChange?.(error);
+    }, [error, onErrorChange]);
 
     const uploadCover = async (file: File | undefined) => {
         if (!file) return;
@@ -473,9 +475,9 @@ export function GameDetailsForm({
                 <button
                     type="submit"
                     className={`${styles.primaryAction} mt-3`}
-                    disabled={isSaving || isUploading || savingExternally}
+                    disabled={isSaving || isUploading}
                 >
-                    {isSaving || savingExternally ? 'Saving…' : saveLabel}
+                    {isSaving ? 'Saving…' : saveLabel}
                 </button>
             )}
         </form>

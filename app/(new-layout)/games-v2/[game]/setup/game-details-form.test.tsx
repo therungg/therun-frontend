@@ -118,6 +118,31 @@ describe('GameDetailsForm', () => {
         expect(updateIdentifiersAction).not.toHaveBeenCalled();
     });
 
+    it('reports the blocked-submit error via onErrorChange, and null initially', async () => {
+        const onErrorChange = vi.fn();
+        render(
+            <GameDetailsForm
+                identifiers={identifiers}
+                metadata={metadata}
+                game={game}
+                formId="game-details-form"
+                hideAction
+                onSaved={vi.fn()}
+                onErrorChange={onErrorChange}
+            />,
+        );
+        expect(onErrorChange).toHaveBeenCalledWith(null);
+        fireEvent.change(screen.getByPlaceholderText('e.g. super-mario-64'), {
+            target: { value: '!!!' },
+        });
+        fireEvent.submit(document.getElementById('game-details-form')!);
+        await waitFor(() =>
+            expect(onErrorChange).toHaveBeenCalledWith(
+                'URL slug must contain at least one alphanumeric character.',
+            ),
+        );
+    });
+
     it('shows the IGDB provenance line before the field grid', () => {
         render(
             <GameDetailsForm
