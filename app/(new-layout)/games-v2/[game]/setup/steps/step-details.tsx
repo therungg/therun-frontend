@@ -36,6 +36,23 @@ export function StepDetails({ data, onAdvance }: StepProps) {
     const [emulatorPolicy, setEmulatorPolicy] = useState<
         'allowed' | 'banned' | null
     >(data.metadata.emulatorPolicy ?? null);
+    const [hideRealTime, setHideRealTime] = useState(
+        data.metadata.hideRealTime ?? false,
+    );
+    const [hideGameTime, setHideGameTime] = useState(
+        data.metadata.hideGameTime ?? false,
+    );
+
+    // Sibling-forcing: unchecking one shows the other (server rejects both
+    // hidden), and unchecking = hiding.
+    const setShowRt = (show: boolean) => {
+        setHideRealTime(!show);
+        if (!show) setHideGameTime(false);
+    };
+    const setShowGt = (show: boolean) => {
+        setHideGameTime(!show);
+        if (!show) setHideRealTime(false);
+    };
 
     // Game-wide minimum time = the categoryId-null min_time policy (mirrors
     // the retired defaults step). The bound key follows `timing`, never both.
@@ -88,6 +105,8 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                     rulesTemplate: rulesTemplate.trim() || null,
                     gameRules: gameRules.trim() || null,
                     emulatorPolicy,
+                    hideRealTime,
+                    hideGameTime,
                 });
                 if ('error' in metaRes) {
                     setDefaultsError(metaRes.error);
@@ -224,6 +243,44 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                         <p className="text-muted small mt-2 mb-0">
                             Runs under this minimum wait for a mod. Clear the
                             field to remove the limit.
+                        </p>
+                    </div>
+                    <div>
+                        <h4 className="h6">Time columns</h4>
+                        <div className="form-check">
+                            <input
+                                type="checkbox"
+                                className="form-check-input"
+                                id="game-show-rt"
+                                checked={!hideRealTime}
+                                onChange={(e) => setShowRt(e.target.checked)}
+                            />
+                            <label
+                                className="form-check-label"
+                                htmlFor="game-show-rt"
+                            >
+                                Show real time
+                            </label>
+                        </div>
+                        <div className="form-check">
+                            <input
+                                type="checkbox"
+                                className="form-check-input"
+                                id="game-show-gt"
+                                checked={!hideGameTime}
+                                onChange={(e) => setShowGt(e.target.checked)}
+                            />
+                            <label
+                                className="form-check-label"
+                                htmlFor="game-show-gt"
+                            >
+                                Show game time
+                            </label>
+                        </div>
+                        <p className="text-muted small mt-2 mb-0">
+                            Applies to every board. Categories with their own
+                            display setting keep it. A hidden clock also stops
+                            ranking boards by it.
                         </p>
                     </div>
                 </div>

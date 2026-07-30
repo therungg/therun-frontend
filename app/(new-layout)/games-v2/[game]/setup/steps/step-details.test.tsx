@@ -56,6 +56,8 @@ const data = {
         rulesTemplate: null,
         gameRules: null,
         emulatorPolicy: null,
+        hideRealTime: false,
+        hideGameTime: false,
     },
 } as unknown as WizardData;
 
@@ -150,5 +152,39 @@ describe('StepDetails', () => {
             value: { minTimeMs: 600000 },
             categoryId: null,
         });
+    });
+
+    it('renders the Time columns pair checked by default and forces the sibling on', () => {
+        render(
+            <StepDetails data={data} onAdvance={vi.fn()} onBack={vi.fn()} />,
+        );
+        const rt = screen.getByRole('checkbox', { name: 'Show real time' });
+        const gt = screen.getByRole('checkbox', { name: 'Show game time' });
+        expect((rt as HTMLInputElement).checked).toBe(true);
+        expect((gt as HTMLInputElement).checked).toBe(true);
+        fireEvent.click(rt); // uncheck RT
+        expect((rt as HTMLInputElement).checked).toBe(false);
+        expect((gt as HTMLInputElement).checked).toBe(true);
+        fireEvent.click(gt); // uncheck GT while RT hidden -> RT forced back on
+        expect((gt as HTMLInputElement).checked).toBe(false);
+        expect((rt as HTMLInputElement).checked).toBe(true);
+    });
+
+    it('sends the hide flags through the metadata save', async () => {
+        const onAdvance = vi.fn();
+        render(
+            <StepDetails data={data} onAdvance={onAdvance} onBack={vi.fn()} />,
+        );
+        fireEvent.click(
+            screen.getByRole('checkbox', { name: 'Show real time' }),
+        );
+        fireEvent.submit(document.getElementById('game-details-form')!);
+        await waitFor(() => expect(onAdvance).toHaveBeenCalledTimes(1));
+        expect(updateGameMetadataAction).toHaveBeenCalledWith(
+            expect.objectContaining({
+                hideRealTime: true,
+                hideGameTime: false,
+            }),
+        );
     });
 });
