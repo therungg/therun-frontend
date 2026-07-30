@@ -11,5 +11,9 @@ export async function GET(
 
     // Overlays poll this ~1/s per runner. getLiveRunForUser is only 5s-fresh
     // anyway, so a matching CDN maxAge costs no freshness.
-    return apiResponse({ body: result, cache: { maxAge: 5, swr: 30 } });
+    //
+    // `?? null`: getLiveRunForUser returns undefined when the runner has no
+    // live run, and Response.json(undefined) throws "Value is not JSON
+    // serializable" — a 500 for every overlay polling a finished runner.
+    return apiResponse({ body: result ?? null, cache: { maxAge: 5, swr: 30 } });
 }
