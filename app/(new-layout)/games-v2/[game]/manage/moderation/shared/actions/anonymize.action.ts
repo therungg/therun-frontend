@@ -6,22 +6,31 @@ import { createSiteBan, liftSiteBan } from '~src/lib/bans';
 import { resolveGame } from '~src/lib/games-v1';
 import { revalidateAffectedBoards } from '~src/lib/moderation/revalidate-boards';
 import { defineAbilityFor } from '~src/rbac/ability';
+import type { RunTreatment } from '../../../../../../../../types/bans.types';
 import type { AffectedLeaderboard } from '../../../../../../../../types/moderation.types';
 
 /**
- * Site-wide anonymize ban, filed from board curation. Admin-only — a game
+ * Site-wide ban, filed from board curation. Admin-only — a game
  * moderator role is NOT enough (this bans the account everywhere). The
  * backend queues cross-game cache rebuilds itself; `board` is only used to
  * refresh the frontend cache for the board the admin is looking at.
+ * `treatment` decides what happens to the runs: 'exclude' removes them from
+ * all boards, 'anonymize' keeps them under a masked name, 'keep' leaves them
+ * untouched.
  */
-export async function anonymizeRunnerAction(
+export async function siteBanRunnerAction(
     gameSlug: string,
-    input: { username: string; reason: string; board: AffectedLeaderboard },
+    input: {
+        username: string;
+        reason: string;
+        treatment: RunTreatment;
+        board: AffectedLeaderboard;
+    },
 ): Promise<{ ok: true; banId: number } | { error: string }> {
     const session = await getSession();
     if (!session?.username || !session.id) return { error: 'Not signed in.' };
     if (!defineAbilityFor(session).can('moderate', 'admins')) {
-        return { error: 'Only site admins can anonymize a runner.' };
+        return { error: 'Only site admins can ban a runner.' };
     }
 
     const game = await resolveGame(gameSlug);
@@ -31,13 +40,13 @@ export async function anonymizeRunnerAction(
         const ban = await createSiteBan(session.id, {
             username: input.username,
             reason: input.reason,
-            runTreatment: 'anonymize',
+            runTreatment: input.treatment,
         });
         await revalidateAffectedBoards(game.id, game.name, [input.board]);
         return { ok: true, banId: ban.id };
     } catch (e) {
         if (e instanceof ApiError) return { error: e.message };
-        return { error: 'Failed to anonymize.' };
+        return { error: 'Failed to ban.' };
     }
 }
 

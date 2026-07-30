@@ -12,7 +12,7 @@ import type { LeaderboardRosterRow } from '../../../../../../types/moderation.ty
 import { RowActions, type RowActionsProps } from './row-actions';
 
 const mocks = vi.hoisted(() => ({
-    anonymizeRunnerAction: vi.fn(),
+    siteBanRunnerAction: vi.fn(),
     liftSiteBanAction: vi.fn(),
     excludeAction: vi.fn(),
     previewExcludeAction: vi.fn(),
@@ -25,7 +25,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('../moderation/shared/actions/anonymize.action', () => ({
-    anonymizeRunnerAction: mocks.anonymizeRunnerAction,
+    siteBanRunnerAction: mocks.siteBanRunnerAction,
     liftSiteBanAction: mocks.liftSiteBanAction,
 }));
 vi.mock('../moderation/shared/actions/exclude.action', () => ({
@@ -145,7 +145,7 @@ describe('RowActions — Anonymize', () => {
     });
 
     it('confirm calls the action, reloads, and fires the undo toast', async () => {
-        mocks.anonymizeRunnerAction.mockResolvedValue({ ok: true, banId: 77 });
+        mocks.siteBanRunnerAction.mockResolvedValue({ ok: true, banId: 77 });
         mocks.liftSiteBanAction.mockResolvedValue({ ok: true });
         const { onMutated } = renderRowActions();
 
@@ -158,11 +158,12 @@ describe('RowActions — Anonymize', () => {
         );
 
         await waitFor(() =>
-            expect(mocks.anonymizeRunnerAction).toHaveBeenCalledWith(
+            expect(mocks.siteBanRunnerAction).toHaveBeenCalledWith(
                 'some-game',
                 {
                     username: 'runner',
                     reason: 'ToS violation',
+                    treatment: 'anonymize',
                     board: { categoryId: 10, subcategoryKey: '' },
                 },
             ),
@@ -188,7 +189,7 @@ describe('RowActions — Anonymize', () => {
     });
 
     it('shows the backend error and keeps the dialog open on failure', async () => {
-        mocks.anonymizeRunnerAction.mockResolvedValue({
+        mocks.siteBanRunnerAction.mockResolvedValue({
             error: 'You cannot ban an admin',
         });
         renderRowActions();
@@ -213,7 +214,7 @@ describe('RowActions — Anonymize', () => {
     });
 
     it("disables the row's other actions while anonymize is in flight", async () => {
-        mocks.anonymizeRunnerAction.mockReturnValue(new Promise(() => {}));
+        mocks.siteBanRunnerAction.mockReturnValue(new Promise(() => {}));
         renderRowActions();
 
         fireEvent.click(screen.getByRole('button', { name: 'Anonymize' }));
