@@ -41,6 +41,15 @@ const mocks = vi.hoisted(() => ({
     loadUserEligibleRunsAction: vi.fn(),
     toastSuccess: vi.fn(),
     toastError: vi.fn(),
+    createPolicyAction: vi.fn(),
+    updatePolicyAction: vi.fn(),
+    deletePolicyAction: vi.fn(),
+    updateVariableAction: vi.fn(),
+    updateCategorySettingsAction: vi.fn(),
+    updateTimingSettingsAction: vi.fn(),
+    reorderCategoriesAction: vi.fn(),
+    reorderGroupsAction: vi.fn(),
+    routerRefresh: vi.fn(),
 }));
 
 vi.mock('../moderation/shared/actions/exclude.action', () => ({
@@ -64,6 +73,32 @@ vi.mock('../moderation/shared/actions/eligible-runs.action', () => ({
 }));
 vi.mock('react-toastify', () => ({
     toast: { success: mocks.toastSuccess, error: mocks.toastError },
+}));
+// BoardControls (Task 12's toolbar) is mounted by BoardCuration whenever
+// canConfigure is true — mocked here for the same hermeticity reason as the
+// row-action modules above: these are real 'use server' modules.
+vi.mock('../moderation/policies/actions/policies-actions.action', () => ({
+    createPolicyAction: mocks.createPolicyAction,
+    updatePolicyAction: mocks.updatePolicyAction,
+    deletePolicyAction: mocks.deletePolicyAction,
+}));
+vi.mock('../variables/actions/update-variable.action', () => ({
+    updateVariableAction: mocks.updateVariableAction,
+}));
+vi.mock('../category-tab/actions/update-category-settings.action', () => ({
+    updateCategorySettingsAction: mocks.updateCategorySettingsAction,
+}));
+vi.mock('../timing/actions/update-timing-settings.action', () => ({
+    updateTimingSettingsAction: mocks.updateTimingSettingsAction,
+}));
+vi.mock('../game-tab/actions/reorder-categories.action', () => ({
+    reorderCategoriesAction: mocks.reorderCategoriesAction,
+}));
+vi.mock('~src/actions/category-group/reorder-groups.action', () => ({
+    reorderGroupsAction: mocks.reorderGroupsAction,
+}));
+vi.mock('next/navigation', () => ({
+    useRouter: () => ({ refresh: mocks.routerRefresh }),
 }));
 
 const mockUseBoardData = vi.mocked(useBoardData);
@@ -419,5 +454,124 @@ describe('BoardCuration — moved-here tag', () => {
             ),
         );
         expect(reload).toHaveBeenCalled();
+    });
+});
+
+describe('BoardCuration — reorder mode', () => {
+    const CAT1: ResolvedCategory = {
+        id: 10,
+        name: 'any-percent',
+        display: 'Any%',
+        primaryTiming: 'rt',
+        archived: false,
+        isMain: true,
+        sortOrder: 1,
+    };
+    const CAT2: ResolvedCategory = {
+        id: 11,
+        name: '100-percent',
+        display: '100%',
+        primaryTiming: 'rt',
+        archived: false,
+        isMain: true,
+        sortOrder: 2,
+    };
+
+    it('swaps sortOrder values correctly when a category tab is nudged', async () => {
+        mocks.reorderCategoriesAction.mockResolvedValue({
+            result: { reordered: true },
+        });
+        mockUseBoardData.mockReturnValue({
+            rows: [],
+            loading: false,
+            error: null,
+            reload: vi.fn(),
+        });
+
+        render(
+            <BoardCuration
+                game={GAME}
+                categories={[CAT1, CAT2]}
+                groups={GROUPS}
+                variables={[]}
+                policies={[]}
+                canConfigure
+                context="console"
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: /^Reorder$/ }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Move 100% earlier' }),
+        );
+
+        await waitFor(() =>
+            expect(mocks.reorderCategoriesAction).toHaveBeenCalledWith({
+                gameSlug: 'some-game',
+                gameId: 1,
+                changes: [
+                    { categoryId: CAT2.id, sortOrder: 1 },
+                    { categoryId: CAT1.id, sortOrder: 2 },
+                ],
+            }),
+        );
+        await waitFor(() => expect(mocks.routerRefresh).toHaveBeenCalled());
+    });
+
+    it('sends a reordered values array with all other UpsertVariableInput fields intact when a value is nudged', async () => {
+        const VAR: VariableRow = {
+            id: 200,
+            gameId: 1,
+            categoryId: CATEGORY.id,
+            name: 'Console',
+            nameNormalized: 'console',
+            role: 'subcategory',
+            values: [['PC'], ['Xbox']],
+            defaultValueIndex: 0,
+            sortOrder: 1,
+            description: 'Platform played on',
+            version: 3,
+            published: true,
+        };
+        mocks.updateVariableAction.mockResolvedValue({ result: VAR });
+        mockUseBoardData.mockReturnValue({
+            rows: [],
+            loading: false,
+            error: null,
+            reload: vi.fn(),
+        });
+
+        render(
+            <BoardCuration
+                game={GAME}
+                categories={[CATEGORY]}
+                groups={GROUPS}
+                variables={[VAR]}
+                policies={[]}
+                canConfigure
+                context="console"
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: /^Reorder$/ }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Move Xbox earlier' }),
+        );
+
+        await waitFor(() =>
+            expect(mocks.updateVariableAction).toHaveBeenCalledWith({
+                gameSlug: 'some-game',
+                gameId: 1,
+                body: {
+                    categoryId: CATEGORY.id,
+                    name: 'Console',
+                    role: 'subcategory',
+                    values: [['Xbox'], ['PC']],
+                    defaultValueIndex: 0,
+                    sortOrder: 1,
+                    description: 'Platform played on',
+                },
+            }),
+        );
     });
 });

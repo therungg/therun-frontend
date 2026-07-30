@@ -1,8 +1,14 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState, useTransition } from 'react';
-import { PinAngleFill } from 'react-bootstrap-icons';
+import {
+    ArrowLeftShort,
+    ArrowRightShort,
+    PinAngleFill,
+} from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
+import { reorderGroupsAction } from '~src/actions/category-group/reorder-groups.action';
 import { UserLink } from '~src/components/links/links';
 import { compareByBoardOrder } from '~src/lib/console/category-order';
 import { formatRunDate } from '~src/lib/format-run-date';
@@ -11,6 +17,7 @@ import {
     findGameMinPolicy,
     minMsFromPolicy,
 } from '~src/lib/setup/game-minimum';
+import type { EffectiveVariable } from '~src/lib/variables/effective';
 import { buildSubcategoryKey } from '~src/lib/variables/keys';
 import type {
     ResolvedCategory,
@@ -26,6 +33,8 @@ import type {
 } from '../../../../../../types/moderation.types';
 import { relativeDate } from '../../leaderboard/relative-date';
 import { BoardDialog } from '../../shared/board-dialog';
+import { reorderCategoriesAction } from '../game-tab/actions/reorder-categories.action';
+import { computeReorderChanges } from '../game-tab/reorder-changes';
 import { moveRunAction } from '../moderation/shared/actions/board-override.action';
 import { loadUserEligibleRunsAction } from '../moderation/shared/actions/eligible-runs.action';
 import {
@@ -35,7 +44,9 @@ import {
 import { markRunsAction } from '../moderation/shared/actions/marks.action';
 import { restoreRunsAction } from '../moderation/shared/actions/restore.action';
 import { fireUndoToast } from '../moderation/shared/undo-toast';
+import { updateVariableAction } from '../variables/actions/update-variable.action';
 import { AddRunnerRow } from './add-runner-row';
+import { BoardControls } from './board-controls';
 import styles from './board-curation.module.scss';
 import {
     type PendingRemoval,
@@ -47,6 +58,7 @@ import {
     defaultCanonicalOf,
     SubcategoryBands,
     subcategoryVariablesFor,
+    variableUpsertBody,
 } from './subcategory-bands';
 import { useBoardData } from './use-board-data';
 
@@ -145,6 +157,8 @@ export function BoardCuration({
     canConfigure,
     context,
 }: BoardCurationProps) {
+    const router = useRouter();
+
     const featured = useMemo(
         () =>
             categories
@@ -166,6 +180,13 @@ export function BoardCuration({
         [featured, groups],
     );
 
+    // Named groups only (the trailing ungrouped bucket, id null, has no
+    // header and is never itself reorderable relative to a named group).
+    const namedSections = useMemo(
+        () => sections.filter((s) => s.id != null),
+        [sections],
+    );
+
     const subcatVars = useMemo(
         () => (category ? subcategoryVariablesFor(category.id, variables) : []),
         [category, variables],
@@ -174,6 +195,123 @@ export function BoardCuration({
     const [selectedValues, setSelectedValues] = useState<
         Record<string, string>
     >({});
+
+    // ---- Reorder mode (Task 12) -----------------------------------------
+    // A single toggle drives nudge (↑/↓/←/→) controls on category tabs and
+    // group headers (rendered below) and on SubcategoryBands' rows/values
+    // (handlers passed down as onNudgeRow/onNudgeValue) — one busy flag
+    // covers all of them since they're never fired concurrently by a single
+    // moderator.
+    const [reorderMode, setReorderMode] = useState(false);
+    const [isReordering, startReorder] = useTransition();
+
+    const nudgeCategory = (
+        items: ResolvedCategory[],
+        idx: number,
+        dir: -1 | 1,
+    ) => {
+        const targetIdx = idx + dir;
+        if (targetIdx < 0 || targetIdx >= items.length) return;
+        const scopeRows = items.map((c) => ({
+            id: c.id,
+            sortOrder: c.sortOrder,
+        }));
+        const { changes } = computeReorderChanges(scopeRows, idx, targetIdx);
+        if (changes.length === 0) return;
+        startReorder(async () => {
+            const res = await reorderCategoriesAction({
+                gameSlug: game.name,
+                gameId: game.id,
+                changes,
+            });
+            if ('error' in res) {
+                toast.error(res.error);
+                return;
+            }
+            router.refresh();
+        });
+    };
+
+    const nudgeGroup = (idx: number, dir: -1 | 1) => {
+        const targetIdx = idx + dir;
+        if (targetIdx < 0 || targetIdx >= namedSections.length) return;
+        const ids = namedSections.map((s) => s.id as number);
+        const next = ids.slice();
+        const tmp = next[idx];
+        next[idx] = next[targetIdx];
+        next[targetIdx] = tmp;
+        startReorder(async () => {
+            const res = await reorderGroupsAction({
+                gameSlug: game.name,
+                gameId: game.id,
+                groupIds: next,
+            });
+            if ('error' in res) {
+                toast.error(res.error);
+                return;
+            }
+            router.refresh();
+        });
+    };
+
+    const nudgeVariableRow = (
+        _variable: EffectiveVariable,
+        index: number,
+        dir: -1 | 1,
+    ) => {
+        const targetIdx = index + dir;
+        if (targetIdx < 0 || targetIdx >= subcatVars.length) return;
+        const a = subcatVars[index];
+        const b = subcatVars[targetIdx];
+        const aOrder = a.sortOrder;
+        const bOrder = b.sortOrder;
+        startReorder(async () => {
+            const resA = await updateVariableAction({
+                gameSlug: game.name,
+                gameId: game.id,
+                body: variableUpsertBody(a, { sortOrder: bOrder }),
+            });
+            if ('error' in resA) {
+                toast.error(resA.error);
+                return;
+            }
+            const resB = await updateVariableAction({
+                gameSlug: game.name,
+                gameId: game.id,
+                body: variableUpsertBody(b, { sortOrder: aOrder }),
+            });
+            if ('error' in resB) {
+                toast.error(resB.error);
+                return;
+            }
+            router.refresh();
+        });
+    };
+
+    const nudgeVariableValue = (
+        variable: EffectiveVariable,
+        valueIdx: number,
+        dir: -1 | 1,
+    ) => {
+        const targetIdx = valueIdx + dir;
+        if (targetIdx < 0 || targetIdx >= variable.values.length) return;
+        const nextValues = variable.values.slice();
+        const tmp = nextValues[valueIdx];
+        nextValues[valueIdx] = nextValues[targetIdx];
+        nextValues[targetIdx] = tmp;
+        startReorder(async () => {
+            const res = await updateVariableAction({
+                gameSlug: game.name,
+                gameId: game.id,
+                body: variableUpsertBody(variable, { values: nextValues }),
+            });
+            if ('error' in res) {
+                toast.error(res.error);
+                return;
+            }
+            router.refresh();
+        });
+    };
 
     const subcategoryKey = useMemo(() => {
         if (subcatVars.length === 0) return '';
@@ -577,50 +715,171 @@ export function BoardCuration({
                 context === 'wizard' ? 'Board preview' : 'Board curation'
             }
         >
+            {canConfigure && category && (
+                <BoardControls
+                    gameSlug={game.name}
+                    gameId={game.id}
+                    category={category}
+                    timing={timing}
+                    policies={policies}
+                    subcatVars={subcatVars}
+                    selectedValues={selectedValues}
+                    reorderMode={reorderMode}
+                    onToggleReorderMode={() => setReorderMode((v) => !v)}
+                    reload={reload}
+                />
+            )}
+
             <div className={styles.categorySwitch}>
-                {sections.map((section, idx) => (
-                    <div
-                        key={section.id ?? `ungrouped-${idx}`}
-                        className={styles.block}
-                        role={section.name ? 'group' : undefined}
-                        aria-labelledby={
-                            section.name
-                                ? `board-curation-group-${section.id ?? idx}`
-                                : undefined
-                        }
-                    >
-                        {section.name && (
-                            <span
-                                id={`board-curation-group-${section.id ?? idx}`}
-                                className={styles.endcap}
-                            >
-                                {section.name}
-                            </span>
-                        )}
+                {sections.map((section, idx) => {
+                    const namedIdx =
+                        section.id != null
+                            ? namedSections.findIndex(
+                                  (s) => s.id === section.id,
+                              )
+                            : -1;
+                    return (
                         <div
-                            className={`${styles.well} ${section.name ? '' : styles.wellSolo}`}
+                            key={section.id ?? `ungrouped-${idx}`}
+                            className={styles.block}
+                            role={section.name ? 'group' : undefined}
+                            aria-labelledby={
+                                section.name
+                                    ? `board-curation-group-${section.id ?? idx}`
+                                    : undefined
+                            }
                         >
-                            <div className={styles.chips}>
-                                {section.items.map((c) => {
-                                    const active = c.id === category?.id;
-                                    return (
-                                        <button
-                                            key={c.id}
-                                            type="button"
-                                            aria-pressed={active}
-                                            className={`${styles.chip} ${active ? styles.chipActive : ''}`}
-                                            onClick={() =>
-                                                setSelectedCategoryId(c.id)
-                                            }
-                                        >
-                                            {c.display}
-                                        </button>
-                                    );
-                                })}
+                            {section.name && (
+                                <span
+                                    id={`board-curation-group-${section.id ?? idx}`}
+                                    className={styles.endcap}
+                                >
+                                    {section.name}
+                                    {reorderMode && namedIdx !== -1 && (
+                                        <span className={styles.nudgeGroup}>
+                                            <button
+                                                type="button"
+                                                className={styles.nudgeBtn}
+                                                aria-label={`Move ${section.name} group earlier`}
+                                                onClick={() =>
+                                                    nudgeGroup(namedIdx, -1)
+                                                }
+                                                disabled={
+                                                    isReordering ||
+                                                    namedIdx === 0
+                                                }
+                                            >
+                                                <ArrowLeftShort
+                                                    size={14}
+                                                    aria-hidden
+                                                />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className={styles.nudgeBtn}
+                                                aria-label={`Move ${section.name} group later`}
+                                                onClick={() =>
+                                                    nudgeGroup(namedIdx, 1)
+                                                }
+                                                disabled={
+                                                    isReordering ||
+                                                    namedIdx ===
+                                                        namedSections.length - 1
+                                                }
+                                            >
+                                                <ArrowRightShort
+                                                    size={14}
+                                                    aria-hidden
+                                                />
+                                            </button>
+                                        </span>
+                                    )}
+                                </span>
+                            )}
+                            <div
+                                className={`${styles.well} ${section.name ? '' : styles.wellSolo}`}
+                            >
+                                <div className={styles.chips}>
+                                    {section.items.map((c, itemIdx) => {
+                                        const active = c.id === category?.id;
+                                        const chipButton = (
+                                            <button
+                                                type="button"
+                                                aria-pressed={active}
+                                                className={`${styles.chip} ${active ? styles.chipActive : ''}`}
+                                                onClick={() =>
+                                                    setSelectedCategoryId(c.id)
+                                                }
+                                            >
+                                                {c.display}
+                                            </button>
+                                        );
+                                        if (!reorderMode) {
+                                            return (
+                                                <span key={c.id}>
+                                                    {chipButton}
+                                                </span>
+                                            );
+                                        }
+                                        return (
+                                            <span
+                                                key={c.id}
+                                                className={styles.nudgeGroup}
+                                            >
+                                                <button
+                                                    type="button"
+                                                    className={styles.nudgeBtn}
+                                                    aria-label={`Move ${c.display} earlier`}
+                                                    onClick={() =>
+                                                        nudgeCategory(
+                                                            section.items,
+                                                            itemIdx,
+                                                            -1,
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        isReordering ||
+                                                        itemIdx === 0
+                                                    }
+                                                >
+                                                    <ArrowLeftShort
+                                                        size={14}
+                                                        aria-hidden
+                                                    />
+                                                </button>
+                                                {chipButton}
+                                                <button
+                                                    type="button"
+                                                    className={styles.nudgeBtn}
+                                                    aria-label={`Move ${c.display} later`}
+                                                    onClick={() =>
+                                                        nudgeCategory(
+                                                            section.items,
+                                                            itemIdx,
+                                                            1,
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        isReordering ||
+                                                        itemIdx ===
+                                                            section.items
+                                                                .length -
+                                                                1
+                                                    }
+                                                >
+                                                    <ArrowRightShort
+                                                        size={14}
+                                                        aria-hidden
+                                                    />
+                                                </button>
+                                            </span>
+                                        );
+                                    })}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             <SubcategoryBands
@@ -632,6 +891,10 @@ export function BoardCuration({
                         [name]: canonical,
                     }))
                 }
+                reorderMode={reorderMode}
+                onNudgeRow={nudgeVariableRow}
+                onNudgeValue={nudgeVariableValue}
+                reorderBusy={isReordering}
             />
 
             {selectedRunIds.size > 0 && (
