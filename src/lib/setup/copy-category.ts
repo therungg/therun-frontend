@@ -159,6 +159,7 @@ export function planCategoryCopy(input: {
                         values: v.values,
                         defaultValueIndex: v.defaultValueIndex,
                         sortOrder: v.sortOrder,
+                        description: v.description,
                     },
                 });
             }
