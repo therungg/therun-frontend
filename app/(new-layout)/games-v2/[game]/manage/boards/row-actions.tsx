@@ -13,28 +13,16 @@ import type {
 } from '../../../../../../types/leaderboards.types';
 import type {
     LeaderboardRosterRow,
-    ModTiming,
-    PreviewExcludeResult,
     UserEligibleRunRow,
 } from '../../../../../../types/moderation.types';
 import { BoardDialog } from '../../shared/board-dialog';
-import {
-    liftSiteBanAction,
-    siteBanRunnerAction,
-} from '../moderation/shared/actions/anonymize.action';
+import { usePopoverFocus } from '../../shared/use-popover-focus';
 import { moveRunAction } from '../moderation/shared/actions/board-override.action';
-import {
-    excludeAction,
-    previewExcludeAction,
-} from '../moderation/shared/actions/exclude.action';
-import { createManualTimeAction } from '../moderation/shared/actions/manual-times.action';
-import { markRunsAction } from '../moderation/shared/actions/marks.action';
-import {
-    msToTimeInput,
-    parseTimeInput,
-} from '../moderation/shared/time-format';
+import { applyVerdictsAction } from '../moderation/shared/actions/verdicts.action';
 import { fireUndoToast } from '../moderation/shared/undo-toast';
+import { AdjustDialog } from './adjust-dialog';
 import styles from './board-curation.module.scss';
+import { RunnerDialog } from './runner-dialog';
 import {
     defaultCanonicalOf,
     SubcategoryBands,
@@ -51,14 +39,15 @@ export interface RowActionsProps {
     subcategoryKey: string;
     gameSlug: string;
     /** Currently-displayed time for the row (already resolved to the
-     * category's primary timing by BoardCuration) — read-mode display and
-     * the seed value for the Fix-time editor. */
+     * category's primary timing by BoardCuration) — read-mode display, and
+     * the seed value `AdjustDialog` uses for its set-time input. */
     timeMs: number | null;
     belowMinimum: boolean;
     /** Viewer may file a SITE-WIDE anonymize ban — admins only
-     * (`ability.can('moderate', 'admins')`), never game moderators.
-     * Defaults to false so the wizard mounts and older render sites are
-     * unaffected. */
+     * (`ability.can('moderate', 'admins')`), never game moderators. Fed
+     * straight through to `RunnerDialog`, which gates its "Entire site"
+     * scope on it. Defaults to false so the wizard mounts and older render
+     * sites are unaffected. */
     canSiteBan?: boolean;
     /**
      * True while `BoardCuration`'s exclude call for this row's Remove is in
@@ -67,9 +56,9 @@ export interface RowActionsProps {
      * a removed row has to keep rendering (from a frozen snapshot) even
      * after a *sibling* row's own action reloads the board and this run
      * drops out of the live roster data. If Remove lived here instead, a
-     * reload triggered by any other row's Later/Ban/Fix-time would unmount
-     * this component — and the slip with it — mid-flight. See
-     * `PendingRemoval`/`PendingRemovalCells` below, rendered by
+     * reload triggered by any other row's action (Approve, Move, Runner…,
+     * Adjust…) would unmount this component — and the slip with it — mid-
+     * flight. See `PendingRemoval`/`PendingRemovalCells` below, rendered by
      * `BoardCuration` in this component's place once Remove succeeds.
      */
     removing: boolean;
@@ -90,10 +79,8 @@ export function primaryValueOf(
 
 /**
  * Time cell + quiet hover-revealed action cluster for one board-curation row
- * (Later, Remove, Ban, Anonymize, Fix time, Move). Rendered as a fragment of two
- * `<td>`s in place of `BoardCuration`'s old plain time cell — owning both
- * lets "Fix time" turn the time cell itself into an input without a
- * cross-component editing channel.
+ * (Remove, Run… menu: Approve/Move/Adjust, Runner…). Rendered as a fragment
+ * of two `<td>`s in place of `BoardCuration`'s old plain time cell.
  */
 export function RowActions({
     row,
@@ -109,188 +96,47 @@ export function RowActions({
     onRemove,
     onMutated,
 }: RowActionsProps) {
-    const modTiming: ModTiming =
-        category.primaryTiming === 'gt' ? 'gametime' : 'realtime';
     const isGuest = row.userId == null;
 
-    // ---- Later --------------------------------------------------------
-    const [optimisticLater, setOptimisticLater] = useState<boolean | null>(
-        null,
-    );
-    const [isMarking, startMark] = useTransition();
-    const isMarkedForLater = optimisticLater ?? row.markedForLater ?? false;
+    // ---- Run… menu (Approve / Move… / Adjust…) -------------------------
+    const [menuOpen, setMenuOpen] = useState(false);
+    const menuRootRef = useRef<HTMLDivElement>(null);
+    const menuRef = useRef<HTMLDivElement>(null);
+    const [runnerOpen, setRunnerOpen] = useState(false);
+    const [adjustOpen, setAdjustOpen] = useState(false);
+    const [isApproving, startApprove] = useTransition();
 
-    // Once the reloaded row catches up to the optimistic value, drop the
-    // override so future prop updates (e.g. another mod's change) show.
+    usePopoverFocus({
+        open: menuOpen,
+        onClose: () => setMenuOpen(false),
+        panelRef: menuRef,
+    });
+
     useEffect(() => {
-        if (
-            optimisticLater !== null &&
-            row.markedForLater === optimisticLater
-        ) {
-            setOptimisticLater(null);
-        }
-    }, [row.markedForLater, optimisticLater]);
-
-    const handleLater = () => {
-        const next = !isMarkedForLater;
-        setOptimisticLater(next);
-        startMark(async () => {
-            const res = await markRunsAction(gameSlug, [row.runId], next);
-            if ('error' in res) {
-                setOptimisticLater(!next);
-                toast.error(res.error);
-                return;
+        if (!menuOpen) return;
+        const onDown = (e: MouseEvent) => {
+            if (!menuRootRef.current?.contains(e.target as Node)) {
+                setMenuOpen(false);
             }
-            onMutated();
-        });
-    };
+        };
+        document.addEventListener('mousedown', onDown);
+        return () => document.removeEventListener('mousedown', onDown);
+    }, [menuOpen]);
 
-    // ---- Ban ------------------------------------------------------------
-    const [banOpen, setBanOpen] = useState(false);
-    const [banPreview, setBanPreview] = useState<PreviewExcludeResult | null>(
-        null,
-    );
-    const [banPreviewError, setBanPreviewError] = useState<string | null>(null);
-    const [banReason, setBanReason] = useState('');
-    const [isBanPreviewing, startBanPreview] = useTransition();
-    const [isBanning, startBan] = useTransition();
-
-    const openBan = () => {
-        if (row.userId == null) return;
-        const targetId = row.userId;
-        setBanReason('');
-        setBanPreview(null);
-        setBanPreviewError(null);
-        setBanOpen(true);
-        startBanPreview(async () => {
-            const res = await previewExcludeAction(gameSlug, {
-                rule: { type: 'user', targetId },
-            });
-            if ('error' in res) {
-                setBanPreviewError(res.error);
-                return;
-            }
-            setBanPreview(res.preview);
-        });
-    };
-
-    const closeBan = () => {
-        if (isBanning) return;
-        setBanOpen(false);
-    };
-
-    const confirmBan = () => {
-        if (row.userId == null || banReason.trim().length === 0) return;
-        const targetId = row.userId;
-        startBan(async () => {
-            const res = await excludeAction(gameSlug, {
-                rule: { type: 'user', targetId },
-                reason: banReason.trim(),
-            });
-            if ('error' in res) {
-                toast.error(res.error);
-                return;
-            }
-            toast.success(`${row.runnerName} banned.`);
-            setBanOpen(false);
-            onMutated();
-        });
-    };
-
-    // ---- Anonymize (site-wide ban, admins only) -----------------------
-    const [anonOpen, setAnonOpen] = useState(false);
-    const [anonReason, setAnonReason] = useState('');
-    const [isAnonymizing, startAnonymize] = useTransition();
-
-    const openAnonymize = () => {
-        if (row.userId == null) return;
-        setAnonReason('');
-        setAnonOpen(true);
-    };
-
-    const closeAnonymize = () => {
-        if (isAnonymizing) return;
-        setAnonOpen(false);
-    };
-
-    const confirmAnonymize = () => {
-        if (
-            row.userId == null ||
-            anonReason.trim().length === 0 ||
-            isAnonymizing
-        )
-            return;
-        const board = { categoryId: category.id, subcategoryKey };
-        startAnonymize(async () => {
-            const res = await siteBanRunnerAction(gameSlug, {
-                username: row.runnerName,
-                reason: anonReason.trim(),
-                treatment: 'anonymize',
-                board,
-            });
-            if ('error' in res) {
-                toast.error(res.error);
-                return;
-            }
-            setAnonOpen(false);
-            onMutated();
-            // The undo toast is a portal, independent of this row's
-            // lifecycle, so it keeps working even after `onMutated`'s reload
-            // (triggered by this or a sibling row's action) unmounts this
-            // component — same rationale as Move's toast below.
-            fireUndoToast(
-                `${row.runnerName} anonymized site-wide.`,
-                () => liftSiteBanAction(res.banId, gameSlug, board),
-                onMutated,
+    const handleApprove = () => {
+        setMenuOpen(false);
+        startApprove(async () => {
+            const res = await applyVerdictsAction(
+                gameSlug,
+                'verify',
+                [row.runId],
+                'Approved from board curation',
             );
-        });
-    };
-
-    // ---- Fix time ---------------------------------------------------------
-    const [editingTime, setEditingTime] = useState(false);
-    const [timeText, setTimeText] = useState('');
-    const [timeError, setTimeError] = useState<string | null>(null);
-    const [isSavingTime, startSaveTime] = useTransition();
-    const timeInputRef = useRef<HTMLInputElement>(null);
-
-    useEffect(() => {
-        if (editingTime) timeInputRef.current?.focus();
-    }, [editingTime]);
-
-    const startEditTime = () => {
-        setTimeText(msToTimeInput(timeMs));
-        setTimeError(null);
-        setEditingTime(true);
-    };
-
-    const cancelEditTime = () => {
-        setEditingTime(false);
-        setTimeError(null);
-    };
-
-    const submitEditTime = () => {
-        const parsed = parseTimeInput(timeText);
-        if (parsed == null || Number.isNaN(parsed)) {
-            setTimeError('Enter a valid time (h:mm:ss, m:ss, or m:ss.SSS).');
-            return;
-        }
-        startSaveTime(async () => {
-            const res = await createManualTimeAction(gameSlug, {
-                runnerRef: isGuest
-                    ? { guestName: row.runnerName }
-                    : { userId: row.userId as number },
-                categoryId: category.id,
-                subcategoryKey,
-                timing: modTiming,
-                timeMs: parsed,
-                reason: 'Corrected during board curation',
-            });
             if ('error' in res) {
-                setTimeError(res.error);
+                toast.error(res.error);
                 return;
             }
-            setEditingTime(false);
-            toast.success('Time corrected.');
+            toast.success('Run approved.');
             onMutated();
         });
     };
@@ -392,76 +238,27 @@ export function RowActions({
     // Mutual exclusion across the cluster: while any one of these row
     // mutations is in flight (Remove's exclude call included, tracked by
     // `BoardCuration` and handed down as `removing`), the other buttons are
-    // disabled too — e.g. clicking Ban mid-flight on a Later toggle could
-    // file a conflicting mutation for the same run.
-    const busy =
-        isMarking ||
-        removing ||
-        isBanPreviewing ||
-        isBanning ||
-        isAnonymizing ||
-        isSavingTime ||
-        isMoving;
+    // disabled too. Dialogs own their own pending states and block their own
+    // close, so `busy` only needs to cover what it directly protects here.
+    const busy = isApproving || removing || isMoving;
 
     return (
         <>
             <td className={styles.time}>
-                {editingTime ? (
-                    <>
-                        <input
-                            ref={timeInputRef}
-                            type="text"
-                            className={styles.timeInput}
-                            value={timeText}
-                            onChange={(e) => setTimeText(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    e.preventDefault();
-                                    submitEditTime();
-                                } else if (e.key === 'Escape') {
-                                    e.preventDefault();
-                                    cancelEditTime();
-                                }
-                            }}
-                            disabled={isSavingTime}
-                            aria-label={`Fix time for ${row.runnerName}`}
-                            placeholder="e.g. 35:48"
-                        />
-                        {timeError && (
-                            <span className={styles.timeError}>
-                                {timeError}
-                            </span>
-                        )}
-                    </>
+                {timeMs != null ? (
+                    <DurationToFormatted
+                        duration={timeMs}
+                        withMillis={category.showMilliseconds ?? false}
+                    />
                 ) : (
-                    <>
-                        {timeMs != null ? (
-                            <DurationToFormatted
-                                duration={timeMs}
-                                withMillis={category.showMilliseconds ?? false}
-                            />
-                        ) : (
-                            '—'
-                        )}
-                        {belowMinimum && (
-                            <span className={styles.belowMinTag}>
-                                Below minimum
-                            </span>
-                        )}
-                    </>
+                    '—'
+                )}
+                {belowMinimum && (
+                    <span className={styles.belowMinTag}>Below minimum</span>
                 )}
             </td>
             <td className={styles.actionsCell}>
                 <div className={styles.actionCluster}>
-                    <button
-                        type="button"
-                        className={styles.actionBtn}
-                        aria-pressed={isMarkedForLater}
-                        onClick={handleLater}
-                        disabled={busy}
-                    >
-                        Later
-                    </button>
                     <button
                         type="button"
                         className={styles.actionBtn}
@@ -470,224 +267,75 @@ export function RowActions({
                     >
                         Remove
                     </button>
+                    <div className={styles.menuRoot} ref={menuRootRef}>
+                        <button
+                            type="button"
+                            className={styles.actionBtn}
+                            aria-haspopup="dialog"
+                            aria-expanded={menuOpen}
+                            onClick={() => setMenuOpen((v) => !v)}
+                            disabled={busy}
+                        >
+                            Run…
+                        </button>
+                        {menuOpen && (
+                            <div
+                                ref={menuRef}
+                                role="dialog"
+                                aria-modal="true"
+                                aria-label={`Run actions for ${row.runnerName}`}
+                                className={styles.menuPanel}
+                            >
+                                <button
+                                    type="button"
+                                    className={styles.menuItem}
+                                    onClick={handleApprove}
+                                    disabled={
+                                        busy ||
+                                        row.verificationStatus === 'verified'
+                                    }
+                                >
+                                    {row.verificationStatus === 'verified'
+                                        ? 'Approved'
+                                        : 'Approve'}
+                                </button>
+                                <button
+                                    type="button"
+                                    className={styles.menuItem}
+                                    onClick={() => {
+                                        setMenuOpen(false);
+                                        openMove();
+                                    }}
+                                    disabled={busy}
+                                >
+                                    Move…
+                                </button>
+                                <button
+                                    type="button"
+                                    className={styles.menuItem}
+                                    onClick={() => {
+                                        setMenuOpen(false);
+                                        setAdjustOpen(true);
+                                    }}
+                                    disabled={busy}
+                                >
+                                    {isGuest ? 'Set time…' : 'Adjust…'}
+                                </button>
+                            </div>
+                        )}
+                    </div>
                     {!isGuest && (
                         <button
                             type="button"
                             className={styles.actionBtn}
-                            onClick={openBan}
+                            onClick={() => setRunnerOpen(true)}
                             disabled={busy}
                         >
-                            Ban
+                            Runner…
                         </button>
                     )}
-                    {canSiteBan && !isGuest && (
-                        <button
-                            type="button"
-                            className={styles.actionBtn}
-                            onClick={openAnonymize}
-                            disabled={busy}
-                        >
-                            Anonymize
-                        </button>
-                    )}
-                    <button
-                        type="button"
-                        className={styles.actionBtn}
-                        onClick={startEditTime}
-                        disabled={busy}
-                    >
-                        Fix time
-                    </button>
-                    <button
-                        type="button"
-                        className={styles.actionBtn}
-                        onClick={openMove}
-                        disabled={busy}
-                    >
-                        Move…
-                    </button>
                 </div>
             </td>
-
-            {banOpen && !isGuest && (
-                <BoardDialog
-                    open
-                    onClose={closeBan}
-                    labelledBy="ban-sheet-title"
-                    size="sm"
-                    closeOnBackdropClick={!isBanning}
-                >
-                    <div className={styles.dialogHeader}>
-                        <h5 id="ban-sheet-title" className={styles.dialogTitle}>
-                            Ban {row.runnerName}
-                        </h5>
-                        <button
-                            type="button"
-                            className="btn-close"
-                            aria-label="Close"
-                            onClick={closeBan}
-                            disabled={isBanning}
-                        />
-                    </div>
-                    <div className={styles.dialogBody}>
-                        {isBanPreviewing && (
-                            <p className={styles.slipLoading}>
-                                Loading preview…
-                            </p>
-                        )}
-                        {banPreviewError && (
-                            <div className={styles.errorAlert} role="alert">
-                                {banPreviewError}
-                            </div>
-                        )}
-                        {banPreview && (
-                            <>
-                                <p>
-                                    <strong>
-                                        {banPreview.affectedRunCount}
-                                    </strong>{' '}
-                                    run
-                                    {banPreview.affectedRunCount === 1
-                                        ? ''
-                                        : 's'}{' '}
-                                    affected.
-                                </p>
-                                {banPreview.affectedLeaderboards.length > 0 && (
-                                    <ul>
-                                        {banPreview.affectedLeaderboards.map(
-                                            (lb) => (
-                                                <li
-                                                    key={`${lb.categoryId}:${lb.subcategoryKey}`}
-                                                >
-                                                    {lb.categoryName}
-                                                    {lb.subcategoryKey
-                                                        ? ` (${lb.subcategoryKey})`
-                                                        : ''}{' '}
-                                                    —{' '}
-                                                    {
-                                                        lb.affectedInThisLeaderboard
-                                                    }
-                                                </li>
-                                            ),
-                                        )}
-                                    </ul>
-                                )}
-                            </>
-                        )}
-                        <label
-                            htmlFor="ban-reason"
-                            className={styles.fieldLabel}
-                        >
-                            Reason — required
-                        </label>
-                        <textarea
-                            id="ban-reason"
-                            className={styles.dialogTextarea}
-                            rows={3}
-                            value={banReason}
-                            onChange={(e) => setBanReason(e.target.value)}
-                            disabled={isBanning}
-                        />
-                    </div>
-                    <div className={styles.dialogFooter}>
-                        <button
-                            type="button"
-                            className={styles.slipAction}
-                            onClick={closeBan}
-                            disabled={isBanning}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="button"
-                            className={styles.confirmBtn}
-                            onClick={confirmBan}
-                            disabled={
-                                isBanning ||
-                                banReason.trim().length === 0 ||
-                                !!banPreviewError
-                            }
-                        >
-                            {isBanning ? 'Banning…' : 'Confirm ban'}
-                        </button>
-                    </div>
-                </BoardDialog>
-            )}
-
-            {anonOpen && !isGuest && (
-                <BoardDialog
-                    open
-                    onClose={closeAnonymize}
-                    labelledBy="anonymize-sheet-title"
-                    size="sm"
-                    closeOnBackdropClick={!isAnonymizing}
-                >
-                    <div className={styles.dialogHeader}>
-                        <h5
-                            id="anonymize-sheet-title"
-                            className={styles.dialogTitle}
-                        >
-                            Anonymize {row.runnerName}
-                        </h5>
-                        <button
-                            type="button"
-                            className="btn-close"
-                            aria-label="Close"
-                            onClick={closeAnonymize}
-                            disabled={isAnonymizing}
-                        />
-                    </div>
-                    <div className={styles.dialogBody}>
-                        <p>
-                            <strong>Site-wide ban, runs kept.</strong>{' '}
-                            {row.runnerName}’s account is locked out of
-                            therun.gg entirely. Their name shows as “Anonymous
-                            Runner” on public boards across every game; their
-                            runs stay on the boards and still count.
-                        </p>
-                        <p>
-                            Moderation views (including this table) keep showing
-                            the real name.
-                        </p>
-                        <label
-                            htmlFor="anonymize-reason"
-                            className={styles.fieldLabel}
-                        >
-                            Reason — required
-                        </label>
-                        <textarea
-                            id="anonymize-reason"
-                            className={styles.dialogTextarea}
-                            rows={3}
-                            value={anonReason}
-                            onChange={(e) => setAnonReason(e.target.value)}
-                            disabled={isAnonymizing}
-                        />
-                    </div>
-                    <div className={styles.dialogFooter}>
-                        <button
-                            type="button"
-                            className={styles.slipAction}
-                            onClick={closeAnonymize}
-                            disabled={isAnonymizing}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="button"
-                            className={styles.confirmBtn}
-                            onClick={confirmAnonymize}
-                            disabled={
-                                isAnonymizing || anonReason.trim().length === 0
-                            }
-                        >
-                            {isAnonymizing
-                                ? 'Anonymizing…'
-                                : 'Confirm anonymize'}
-                        </button>
-                    </div>
-                </BoardDialog>
-            )}
 
             {moveOpen && (
                 <BoardDialog
@@ -781,6 +429,28 @@ export function RowActions({
                     </div>
                 </BoardDialog>
             )}
+
+            <RunnerDialog
+                open={runnerOpen}
+                onClose={() => setRunnerOpen(false)}
+                row={row}
+                category={category}
+                variables={variables}
+                gameSlug={gameSlug}
+                subcategoryKey={subcategoryKey}
+                canSiteBan={canSiteBan}
+                onMutated={onMutated}
+            />
+            <AdjustDialog
+                open={adjustOpen}
+                onClose={() => setAdjustOpen(false)}
+                row={row}
+                category={category}
+                gameSlug={gameSlug}
+                subcategoryKey={subcategoryKey}
+                timeMs={timeMs}
+                onMutated={onMutated}
+            />
         </>
     );
 }

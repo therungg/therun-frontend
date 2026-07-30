@@ -37,6 +37,7 @@ const mocks = vi.hoisted(() => ({
     createManualTimeAction: vi.fn(),
     markRunsAction: vi.fn(),
     moveRunAction: vi.fn(),
+    applyVerdictsAction: vi.fn(),
     loadUserEligibleRunsAction: vi.fn(),
     toastSuccess: vi.fn(),
     toastError: vi.fn(),
@@ -69,6 +70,9 @@ vi.mock('../moderation/shared/actions/marks.action', () => ({
 }));
 vi.mock('../moderation/shared/actions/board-override.action', () => ({
     moveRunAction: mocks.moveRunAction,
+}));
+vi.mock('../moderation/shared/actions/verdicts.action', () => ({
+    applyVerdictsAction: mocks.applyVerdictsAction,
 }));
 vi.mock('../moderation/shared/actions/eligible-runs.action', () => ({
     loadUserEligibleRunsAction: mocks.loadUserEligibleRunsAction,
@@ -140,11 +144,15 @@ const ROW_A = rosterRow({
     runnerName: 'alice',
     time: 10_000,
 });
+// Left `unverified` (not the fixture default `verified`) so the sibling
+// action used below to trigger bob's own reload — Approve, via the Run…
+// menu — isn't disabled.
 const ROW_B = rosterRow({
     runId: 2,
     userId: 6,
     runnerName: 'bob',
     time: 20_000,
+    verificationStatus: 'unverified',
 });
 const CANDIDATE: UserEligibleRunRow = {
     runId: 3,
@@ -196,7 +204,7 @@ afterEach(() => {
 });
 
 describe("BoardCuration — a sibling row's reload must not kill a pending removal's slip", () => {
-    it("keeps row A's slip pinned (and still resolvable) after row B's Later reloads the board without A", async () => {
+    it("keeps row A's slip pinned (and still resolvable) after row B's Approve reloads the board without A", async () => {
         // Initial load has both rows on board. Every reload afterward
         // reflects A already excluded server-side — this is what a naive
         // "clear the slip whenever `rows` changes" implementation would
@@ -212,7 +220,10 @@ describe("BoardCuration — a sibling row's reload must not kill a pending remov
             ok: true,
             rows: [CANDIDATE],
         });
-        mocks.markRunsAction.mockResolvedValue({ ok: true, updated: 1 });
+        mocks.applyVerdictsAction.mockResolvedValue({
+            ok: true,
+            result: { affectedRunCount: 1, affectedLeaderboards: [] },
+        });
 
         renderBoard();
 
@@ -237,15 +248,22 @@ describe("BoardCuration — a sibling row's reload must not kill a pending remov
         await waitFor(() => expect(screen.getByText(/next:/)).toBeTruthy());
         expect(screen.getByRole('button', { name: 'Keep it' })).toBeTruthy();
 
-        // Now act on the SIBLING row: Later on bob. This goes through a
-        // completely separate RowActions instance and calls the same
-        // `onMutated`/`reload` BoardCuration hands to every row.
+        // Now act on the SIBLING row: Approve bob via the Run… menu. This
+        // goes through a completely separate RowActions instance and calls
+        // the same `onMutated`/`reload` BoardCuration hands to every row.
         fireEvent.click(
             within(rowContaining('bob')).getByRole('button', {
-                name: 'Later',
+                name: 'Run…',
             }),
         );
-        await waitFor(() => expect(mocks.markRunsAction).toHaveBeenCalled());
+        fireEvent.click(
+            within(rowContaining('bob')).getByRole('button', {
+                name: 'Approve',
+            }),
+        );
+        await waitFor(() =>
+            expect(mocks.applyVerdictsAction).toHaveBeenCalled(),
+        );
         await waitFor(() =>
             expect(mocks.loadRosterAction).toHaveBeenCalledTimes(2),
         );
@@ -293,7 +311,10 @@ describe("BoardCuration — a sibling row's reload must not kill a pending remov
             ok: true,
             rows: [CANDIDATE],
         });
-        mocks.markRunsAction.mockResolvedValue({ ok: true, updated: 1 });
+        mocks.applyVerdictsAction.mockResolvedValue({
+            ok: true,
+            result: { affectedRunCount: 1, affectedLeaderboards: [] },
+        });
         mocks.restoreRunsAction.mockResolvedValue({ ok: true });
 
         renderBoard();
@@ -308,7 +329,12 @@ describe("BoardCuration — a sibling row's reload must not kill a pending remov
 
         fireEvent.click(
             within(rowContaining('bob')).getByRole('button', {
-                name: 'Later',
+                name: 'Run…',
+            }),
+        );
+        fireEvent.click(
+            within(rowContaining('bob')).getByRole('button', {
+                name: 'Approve',
             }),
         );
         await waitFor(() =>
