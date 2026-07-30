@@ -24,6 +24,8 @@ interface Input {
     rulesTemplate?: string | null;
     gameRules?: string | null;
     emulatorPolicy?: 'allowed' | 'banned' | null;
+    hideRealTime?: boolean;
+    hideGameTime?: boolean;
 }
 
 export async function updateGameMetadataAction(
@@ -85,6 +87,10 @@ export async function updateGameMetadataAction(
         }
     }
 
+    if (input.hideRealTime === true && input.hideGameTime === true) {
+        return { error: 'Cannot hide both real time and game time.' };
+    }
+
     const body: UpdateGameBody = {};
     if (input.coverUrl !== undefined) body.coverUrl = input.coverUrl;
     if (input.summaryOverride !== undefined)
@@ -105,6 +111,10 @@ export async function updateGameMetadataAction(
     if (input.gameRules !== undefined) body.gameRules = input.gameRules;
     if (input.emulatorPolicy !== undefined)
         body.emulatorPolicy = input.emulatorPolicy;
+    if (input.hideRealTime !== undefined)
+        body.hideRealTime = input.hideRealTime;
+    if (input.hideGameTime !== undefined)
+        body.hideGameTime = input.hideGameTime;
 
     if (Object.keys(body).length === 0) {
         return { result: { updated: false } };

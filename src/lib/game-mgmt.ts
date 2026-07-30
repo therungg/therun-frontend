@@ -42,6 +42,8 @@ export interface UpdateGameBody {
     rulesTemplate?: string | null;
     gameRules?: string | null;
     emulatorPolicy?: 'allowed' | 'banned' | null;
+    hideRealTime?: boolean;
+    hideGameTime?: boolean;
 }
 
 export interface GameCompanyMeta {
@@ -75,6 +77,8 @@ export interface GameMetadata {
     gameRules: string | null;
     emulatorPolicy: 'allowed' | 'banned' | null;
     primaryTiming: 'rt' | 'gt' | null;
+    hideRealTime: boolean;
+    hideGameTime: boolean;
 }
 
 interface GameMetadataPageData {
@@ -94,6 +98,8 @@ interface GameMetadataPageData {
         gameRules?: string | null;
         emulatorPolicy?: string | null;
         primaryTiming?: string | null;
+        hideRealTime?: boolean | null;
+        hideGameTime?: boolean | null;
     };
     metadata?: {
         genres?: string[] | null;
@@ -164,6 +170,8 @@ export async function getGameMetadata(gameId: number): Promise<GameMetadata> {
                 : data?.game?.primaryTiming === 'rt'
                   ? 'rt'
                   : null,
+        hideRealTime: data?.game?.hideRealTime ?? false,
+        hideGameTime: data?.game?.hideGameTime ?? false,
     };
 }
 
