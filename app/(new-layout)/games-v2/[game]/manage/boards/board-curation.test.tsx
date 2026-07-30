@@ -479,7 +479,7 @@ describe('BoardCuration subcategory bands', () => {
         expect(mockUseBoardData).toHaveBeenLastCalledWith(
             GAME.name,
             CATEGORY.id,
-            'ngplus=No',
+            'ngplus=no',
         );
 
         fireEvent.click(screen.getByText('Yes'));
@@ -487,7 +487,7 @@ describe('BoardCuration subcategory bands', () => {
         expect(mockUseBoardData).toHaveBeenLastCalledWith(
             GAME.name,
             CATEGORY.id,
-            'ngplus=Yes',
+            'ngplus=yes',
         );
     });
 
@@ -777,6 +777,88 @@ describe('BoardCuration — reorder mode', () => {
                     description: 'Platform played on',
                 },
             }),
+        );
+    });
+});
+
+describe('BoardCuration subcategory key normalization', () => {
+    // Backend stores subcategory_key values through normalizeVariableString
+    // (lowercase, whitespace and =| stripped): "Nintendo 64" -> "nintendo64".
+    // The pane must request the roster in that normalized space or a
+    // display-cased variable (SM64's Platform) silently empties the board.
+    const PLATFORM_VAR: VariableRow = {
+        id: 200,
+        gameId: 1,
+        categoryId: null,
+        name: 'Platform',
+        nameNormalized: 'platform',
+        role: 'subcategory',
+        values: [
+            ['Nintendo 64', 'n64'],
+            ['Virtual Console', 'VC'],
+            ['Emulator', 'emu'],
+        ],
+        defaultValueIndex: 0,
+        sortOrder: 0,
+        description: null,
+        version: 2,
+        published: true,
+    };
+
+    it('requests the roster with the normalized default subcategory key', () => {
+        mockUseBoardData.mockReturnValue({
+            rows: [],
+            loading: false,
+            error: null,
+            reload: vi.fn(),
+        });
+
+        render(
+            <BoardCuration
+                game={GAME}
+                categories={[CATEGORY]}
+                groups={GROUPS}
+                variables={[PLATFORM_VAR]}
+                policies={[]}
+                canConfigure
+                context="wizard"
+            />,
+        );
+
+        expect(mockUseBoardData).toHaveBeenLastCalledWith(
+            GAME.name,
+            CATEGORY.id,
+            'platform=nintendo64',
+        );
+    });
+
+    it('keeps display labels on the chips while selecting normalized values', () => {
+        mockUseBoardData.mockReturnValue({
+            rows: [],
+            loading: false,
+            error: null,
+            reload: vi.fn(),
+        });
+
+        render(
+            <BoardCuration
+                game={GAME}
+                categories={[CATEGORY]}
+                groups={GROUPS}
+                variables={[PLATFORM_VAR]}
+                policies={[]}
+                canConfigure
+                context="wizard"
+            />,
+        );
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Virtual Console' }),
+        );
+        expect(mockUseBoardData).toHaveBeenLastCalledWith(
+            GAME.name,
+            CATEGORY.id,
+            'platform=virtualconsole',
         );
     });
 });
