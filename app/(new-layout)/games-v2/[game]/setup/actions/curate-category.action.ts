@@ -8,6 +8,7 @@ import {
     updateCategory,
 } from '~src/lib/category-mgmt';
 import { confirmPermission } from '~src/rbac/confirm-permission';
+import { seedUpdateBody } from '../steps/category-seed';
 
 interface Input {
     gameSlug: string;
@@ -66,12 +67,10 @@ export async function curateCategoryAction(
         updateTag(`game-cats:${input.gameId}`);
 
         if (input.isMain === true && input.seed) {
-            const seedBody: UpdateCategoryBody = {
-                primaryTiming: input.seed.primaryTiming,
-                ...(input.currentRulesEmpty && input.seed.rulesTemplate?.trim()
-                    ? { rules: input.seed.rulesTemplate }
-                    : {}),
-            };
+            const seedBody: UpdateCategoryBody = seedUpdateBody(
+                input.seed,
+                input.currentRulesEmpty ?? false,
+            );
             await updateCategory(
                 user.id,
                 input.gameId,

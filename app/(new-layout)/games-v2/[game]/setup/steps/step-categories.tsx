@@ -9,6 +9,7 @@ import { curateCategoryAction } from '../actions/curate-category.action';
 import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
 import { CategoryBandPreview } from './category-band-preview';
+import { buildCategorySeed, computeCategoryChanges } from './category-seed';
 import { StepHeader } from './step-header';
 
 /** Rows rendered before the list is cut and search takes over. */
@@ -178,8 +179,7 @@ export function StepCategories({ data, onAdvance }: StepProps) {
     // that's never been touched doesn't land on the board with no timing
     // and no rules. Re-curation (a category that was already Featured, or
     // one restored from Archived) isn't first setup, so it stays seedless.
-    const defaultTiming: 'realtime' | 'gametime' =
-        data.metadata.primaryTiming === 'gt' ? 'gametime' : 'realtime';
+    const seed = buildCategorySeed(data.metadata);
 
     const save = () => {
         startSaving(async () => {
@@ -199,16 +199,7 @@ export function StepCategories({ data, onAdvance }: StepProps) {
             //
             // Group assignment belongs to the next step, so groupId is omitted
             // from the body, which leaves the column alone.
-            const changed = rows.flatMap((r) => {
-                const orig = data.categories.find((c) => c.id === r.id);
-                if (!orig) return [];
-                const wasMain = orig.isMain ?? false;
-                const restore = r.main && orig.archived;
-                if (wasMain === r.main && !restore) return [];
-                return [
-                    { row: r, restore, becomingMain: r.main && !wasMain, orig },
-                ];
-            });
+            const changed = computeCategoryChanges(rows, data.categories);
 
             if (changed.length === 0) {
                 onAdvance();
@@ -230,29 +221,23 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                     const res = await curateCategoryAction({
                         gameSlug: data.game.name,
                         gameId: data.game.id,
-                        categoryId: next.row.id,
-                        isMain: next.row.main,
+                        categoryId: next.id,
+                        isMain: next.main,
                         ...(next.restore ? { active: true } : {}),
                         ...(next.becomingMain
                             ? {
-                                  seed: {
-                                      primaryTiming: defaultTiming,
-                                      rulesTemplate:
-                                          data.metadata.rulesTemplate,
-                                  },
-                                  currentRulesEmpty: !(
-                                      next.orig.rules ?? ''
-                                  ).trim(),
+                                  seed,
+                                  currentRulesEmpty: next.currentRulesEmpty,
                               }
                             : {}),
                     });
                     done++;
                     setProgress(`Saving ${done} / ${changed.length}…`);
                     if ('error' in res) {
-                        failures.push(next.row.id);
+                        failures.push(next.id);
                         setRows((rs) =>
                             rs.map((row) =>
-                                row.id === next.row.id
+                                row.id === next.id
                                     ? { ...row, error: res.error }
                                     : row,
                             ),
