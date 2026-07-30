@@ -16,6 +16,18 @@
     margin: 0 0 dt.$spacing-md;
 }
 
+.sectionHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    margin-bottom: dt.$spacing-md;
+
+    .sectionTitle {
+        margin-bottom: 0;
+    }
+}
+
 .sectionLede {
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);

@@ -6,15 +6,24 @@ import styles from './form-kit.module.scss';
 export function FormSection({
     title,
     lede,
+    actions,
     children,
 }: {
     title: string;
     lede?: ReactNode;
+    actions?: ReactNode;
     children: ReactNode;
 }) {
     return (
         <section className={styles.section}>
-            <h3 className={styles.sectionTitle}>{title}</h3>
+            {actions ? (
+                <div className={styles.sectionHead}>
+                    <h3 className={styles.sectionTitle}>{title}</h3>
+                    {actions}
+                </div>
+            ) : (
+                <h3 className={styles.sectionTitle}>{title}</h3>
+            )}
             {lede && <p className={styles.sectionLede}>{lede}</p>}
             {children}
         </section>
