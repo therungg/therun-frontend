@@ -128,6 +128,7 @@ export function BoardMasthead({
                 />
                 <RulesPanel
                     rules={category.rules}
+                    gameRules={data.gameMeta.gameRules}
                     open={rulesOpen}
                     onToggle={onToggleRules}
                 />

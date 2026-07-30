@@ -40,6 +40,9 @@ interface Props {
     initialCategorySlug?: string;
     /** Subcategory variable params from the board URL (same param names the board uses). Matched against the resolved category's variables once they load; unmatched keys are ignored silently. */
     initialSubcategoryValues?: Record<string, string>;
+    /** Game-level rules — shown above category rules in the disclosure, same as the public board. */
+    gameRules?: string | null;
+    emulatorPolicy?: 'allowed' | 'banned' | null;
 }
 
 const SUBMIT_MODE_HINT =
@@ -85,6 +88,8 @@ export function SubmitForm({
     initialMode,
     initialCategorySlug,
     initialSubcategoryValues,
+    gameRules,
+    emulatorPolicy,
 }: Props) {
     const [mode, setMode] = useState<SubmitFormMode>(initialMode ?? 'submit');
     const [categoryId, setCategoryId] = useState<number>(() => {
@@ -521,15 +526,22 @@ export function SubmitForm({
                     </select>
                 </div>
 
-                {category.rules && category.rules.trim().length > 0 && (
+                {(category.rules?.trim() || gameRules?.trim()) && (
                     <div>
                         <RulesPanel
                             rules={category.rules}
+                            gameRules={gameRules}
                             open={rulesOpen}
                             onToggle={() => setRulesOpen((o) => !o)}
                             label="Category rules"
                         />
-                        {rulesOpen && <RulesBody rules={category.rules} />}
+                        {rulesOpen && (
+                            <RulesBody
+                                rules={category.rules}
+                                gameRules={gameRules}
+                                emulatorPolicy={emulatorPolicy}
+                            />
+                        )}
                     </div>
                 )}
 

@@ -7,6 +7,17 @@ import styles from '../game-page.module.scss';
 
 const EXCERPT_LIMIT = 80;
 
+export type EmulatorPolicy = 'allowed' | 'banned' | null | undefined;
+
+const EMULATOR_POLICY_TEXT: Record<'allowed' | 'banned', string> = {
+    allowed: 'Emulators are allowed.',
+    banned: 'Emulators are banned.',
+};
+
+function isNonEmpty(text: string | null | undefined): text is string {
+    return !!text && text.trim().length > 0;
+}
+
 function buildExcerpt(text: string): string {
     const oneLine = text.replace(/\s+/g, ' ').trim();
     return oneLine.length > EXCERPT_LIMIT
@@ -16,16 +27,21 @@ function buildExcerpt(text: string): string {
 
 export function RulesPanel({
     rules,
+    gameRules,
     open,
     onToggle,
     label = 'Rules',
 }: {
     rules: string | null | undefined;
+    /** Game-level rules — when present, the panel appears even if `rules` (category rules) is empty. */
+    gameRules?: string | null | undefined;
     open: boolean;
     onToggle: () => void;
     label?: string;
 }) {
-    if (!rules || rules.trim().length === 0) return null;
+    const hasCategoryRules = isNonEmpty(rules);
+    const hasGameRules = isNonEmpty(gameRules);
+    if (!hasCategoryRules && !hasGameRules) return null;
 
     return (
         <button
@@ -40,19 +56,48 @@ export function RulesPanel({
                 <ChevronRight size={12} aria-hidden />
             )}
             <strong>{label}</strong>
-            {!open && (
+            {!open && hasCategoryRules && (
                 <span className="text-muted small text-truncate">
-                    {buildExcerpt(rules)}
+                    {buildExcerpt(rules as string)}
                 </span>
             )}
         </button>
     );
 }
 
-export function RulesBody({ rules }: { rules: string }) {
+export function RulesBody({
+    rules,
+    gameRules,
+    emulatorPolicy,
+}: {
+    rules?: string | null;
+    /** Game-level rules — rendered first, above category rules, separated by a divider. */
+    gameRules?: string | null;
+    emulatorPolicy?: EmulatorPolicy;
+}) {
+    const hasCategoryRules = isNonEmpty(rules);
+    const hasGameRules = isNonEmpty(gameRules);
+
     return (
         <div className={styles.rulesBody}>
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{rules}</ReactMarkdown>
+            {(emulatorPolicy === 'allowed' || emulatorPolicy === 'banned') && (
+                <p className={styles.emulatorPolicyLine}>
+                    {EMULATOR_POLICY_TEXT[emulatorPolicy]}
+                </p>
+            )}
+            {hasGameRules && (
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {gameRules as string}
+                </ReactMarkdown>
+            )}
+            {hasGameRules && hasCategoryRules && (
+                <hr className={styles.rulesDivider} />
+            )}
+            {hasCategoryRules && (
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {rules as string}
+                </ReactMarkdown>
+            )}
         </div>
     );
 }

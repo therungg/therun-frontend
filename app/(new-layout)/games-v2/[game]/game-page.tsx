@@ -131,9 +131,15 @@ export function GamePage({
                     onToggleRules={() => setRulesOpen((o) => !o)}
                     onOpenHistory={() => setHistoryOpen(true)}
                 />
-                {rulesOpen && data.selectedCategory.rules && (
-                    <RulesBody rules={data.selectedCategory.rules} />
-                )}
+                {rulesOpen &&
+                    (data.selectedCategory.rules?.trim() ||
+                        data.gameMeta.gameRules?.trim()) && (
+                        <RulesBody
+                            rules={data.selectedCategory.rules}
+                            gameRules={data.gameMeta.gameRules}
+                            emulatorPolicy={data.gameMeta.emulatorPolicy}
+                        />
+                    )}
                 {historyOpen && (
                     <WrHistoryDrawer
                         show={historyOpen}
