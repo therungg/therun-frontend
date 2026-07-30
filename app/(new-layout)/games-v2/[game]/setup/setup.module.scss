@@ -630,6 +630,12 @@ $rail-collapse: 900px;
     margin-bottom: dt.$spacing-lg;
 }
 
+// Single-column width for the console pane's sectioned GameDetailsForm layout
+// — a form this narrow reads better than stretching to the pane's full width.
+.sectionedCol {
+    max-width: 40rem;
+}
+
 // Zone titles on the details step: a level between the step title and the
 // card eyebrows, so "confirm facts" and "decide rules" read as two jobs.
 .zoneTitle {
