@@ -160,4 +160,37 @@ describe('GameDetailsForm', () => {
                 Node.DOCUMENT_POSITION_FOLLOWING,
         ).toBeTruthy();
     });
+
+    it('sectioned layout groups fields under Identity / About / Web & community', () => {
+        render(
+            <GameDetailsForm
+                identifiers={identifiers}
+                metadata={metadata}
+                game={game}
+                onSaved={vi.fn()}
+                sectioned
+            />,
+        );
+        expect(
+            screen.getByRole('heading', { name: 'Identity' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('heading', { name: 'About' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('heading', { name: 'Web & community' }),
+        ).toBeInTheDocument();
+    });
+
+    it('default layout has no section headings (wizard unchanged)', () => {
+        render(
+            <GameDetailsForm
+                identifiers={identifiers}
+                metadata={metadata}
+                game={game}
+                onSaved={vi.fn()}
+            />,
+        );
+        expect(screen.queryByRole('heading', { name: 'Identity' })).toBeNull();
+    });
 });

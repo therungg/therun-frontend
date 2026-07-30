@@ -9,6 +9,7 @@ import {
     igdbApplyMatchAction,
     igdbSearchAction,
 } from '../identifiers/actions/igdb-match.action';
+import { FormSection } from '../shared/form-kit';
 
 interface Props {
     gameId: number;
@@ -62,8 +63,7 @@ export function IgdbMatchSection({ gameId, igdbUrl, canRematch }: Props) {
     };
 
     return (
-        <section className="mt-4">
-            <h3 className="h6">IGDB match</h3>
+        <FormSection title="Data source">
             <p className="text-muted small mb-2">
                 {igdbUrl ? (
                     <>
@@ -162,6 +162,6 @@ export function IgdbMatchSection({ gameId, igdbUrl, canRematch }: Props) {
                 pending={isBusy}
                 error={null}
             />
-        </section>
+        </FormSection>
     );
 }
