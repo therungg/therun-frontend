@@ -13,6 +13,7 @@ import {
     removeGameModeratorAction,
 } from '../../setup/actions/manage-moderators.action';
 import { ConfirmDialog } from '../../shared/confirm-dialog';
+import kit from '../shared/form-kit.module.scss';
 import styles from './console.module.scss';
 
 interface Props {
@@ -144,7 +145,7 @@ export function ModeratorsPane({
                     </div>
                 )}
             </div>
-            <div className="d-flex gap-2">
+            <div className={`d-flex gap-2 ${styles.inviteRow}`}>
                 <input
                     className="form-control w-auto"
                     value={username}
@@ -161,7 +162,7 @@ export function ModeratorsPane({
                 </select>
                 <button
                     type="button"
-                    className="btn btn-outline-primary"
+                    className={kit.saveBtn}
                     disabled={isPending || !username.trim()}
                     onClick={addMod}
                 >

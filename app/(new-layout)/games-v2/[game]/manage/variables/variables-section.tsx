@@ -8,6 +8,7 @@ import type {
     ResolvedCategory,
     VariableRow as VariableRowData,
 } from '../../../../../../types/leaderboards.types';
+import { FormSection } from '../shared/form-kit';
 import { createVariableAction } from './actions/create-variable.action';
 import { deleteVariableAction } from './actions/delete-variable.action';
 import { loadMergedVariablesAction } from './actions/load-merged-variables.action';
@@ -403,22 +404,31 @@ export function VariablesSection({
     const showEmptyCategoryHint = scope === 'category' && !categorySelected;
 
     return (
-        <section className="border rounded p-3 mb-4">
-            <div className="d-flex align-items-center justify-content-between mb-3">
-                <div>
-                    <h2 className="h5 mb-1">Leaderboard variables</h2>
-                    <p className="text-muted small mb-0">
-                        One kind {ROLE_LABEL.subcategory} (subcategory) — each
-                        answer gets its own leaderboard (e.g.{' '}
-                        <code>platform</code> with N64 / Switch / PC). The other
-                        is {ROLE_LABEL.filter} — answers refine results within
-                        one board (e.g. <code>region</code>). Rows shared by all
-                        categories apply everywhere; rows for one category
-                        override them there.
-                    </p>
-                </div>
-            </div>
-
+        <FormSection
+            title="Leaderboard variables"
+            lede={
+                <>
+                    One kind {ROLE_LABEL.subcategory} (subcategory) — each
+                    answer gets its own leaderboard (e.g. <code>platform</code>{' '}
+                    with N64 / Switch / PC). The other is {ROLE_LABEL.filter} —
+                    answers refine results within one board (e.g.{' '}
+                    <code>region</code>). Rows shared by all categories apply
+                    everywhere; rows for one category override them there.
+                </>
+            }
+            actions={
+                !formState.open && (scope === 'game' || categorySelected) ? (
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-primary"
+                        onClick={openCreate}
+                        disabled={busy}
+                    >
+                        + Add variable
+                    </button>
+                ) : null
+            }
+        >
             {discardNotice && (
                 <div
                     className="alert alert-warning py-2 d-flex justify-content-between align-items-center gap-2"
@@ -488,19 +498,6 @@ export function VariablesSection({
                     Pick a category above to manage its overrides.
                 </p>
             )}
-
-            <div className="d-flex justify-content-end mb-2">
-                {!formState.open && (scope === 'game' || categorySelected) && (
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-primary"
-                        onClick={openCreate}
-                        disabled={busy}
-                    >
-                        + Add variable
-                    </button>
-                )}
-            </div>
 
             {formState.open && (
                 <VariableForm
@@ -578,6 +575,6 @@ export function VariablesSection({
                     setPreviewError(null);
                 }}
             />
-        </section>
+        </FormSection>
     );
 }

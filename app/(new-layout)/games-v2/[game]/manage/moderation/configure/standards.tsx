@@ -10,6 +10,8 @@ import type {
     LeaderboardRosterRow,
     PolicyType,
 } from '../../../../../../../types/moderation.types';
+import { FormSection, InlineError, SectionFooter } from '../../shared/form-kit';
+import kit from '../../shared/form-kit.module.scss';
 import {
     createPolicyAction,
     deletePolicyAction,
@@ -17,6 +19,7 @@ import {
 } from '../policies/actions/policies-actions.action';
 import { loadRosterAction } from '../roster/actions/load-roster.action';
 import { loadStandardsAction } from './actions/standards.action';
+import styles from './standards.module.scss';
 import { msToInput, parseTime } from './time-input';
 
 interface Props {
@@ -217,19 +220,21 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
               );
 
     return (
-        <section className="mb-4">
-            <h2 className="h5 mb-1">Minimum time</h2>
-            <p className="text-muted small mb-3">
-                Set the minimum time for <strong>{category.display}</strong> in{' '}
-                {gameDisplay}. Changes apply once you save.
-            </p>
-
+        <FormSection
+            title="Minimum time"
+            lede={
+                <>
+                    Set the minimum time for <strong>{category.display}</strong>{' '}
+                    in {gameDisplay}. Changes apply once you save.
+                </>
+            }
+        >
             {loading ? (
                 <p className="text-muted">Loading standards…</p>
             ) : (
-                <div className="border rounded p-3 bg-light-subtle">
-                    <div className="row g-3">
-                        <div className="col-md-4">
+                <>
+                    <div className={styles.fieldCol}>
+                        <div>
                             <label
                                 htmlFor="std-min"
                                 className="form-label small mb-1"
@@ -246,7 +251,7 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
                                 disabled={!canEdit || isSaving}
                             />
                         </div>
-                        <div className="col-md-4">
+                        <div>
                             <label
                                 htmlFor="std-min-gt"
                                 className="form-label small mb-1"
@@ -266,7 +271,7 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
                     </div>
 
                     {/* ── Live preview ─────────────────────────────────── */}
-                    <div className="border rounded p-3 mt-3 bg-body">
+                    <div className={styles.preview}>
                         {rosterLoading ? (
                             <span className="text-muted small">
                                 Computing preview…
@@ -341,10 +346,10 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
                     {/* ── Save / read-only note ────────────────────────── */}
                     {canEdit ? (
                         <div className="mt-3">
-                            <div className="d-flex gap-2">
+                            <SectionFooter>
                                 <button
                                     type="button"
-                                    className="btn btn-sm btn-primary"
+                                    className={kit.saveBtn}
                                     onClick={handleSave}
                                     disabled={isSaving || !dirty}
                                 >
@@ -352,26 +357,22 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
                                 </button>
                                 <button
                                     type="button"
-                                    className="btn btn-sm btn-outline-secondary"
+                                    className={kit.resetBtn}
                                     onClick={handleReset}
                                     disabled={isSaving || !dirty}
                                 >
                                     Reset
                                 </button>
-                            </div>
-                            {error && (
-                                <div className="alert alert-danger mt-2 mb-0 py-2">
-                                    {error}
-                                </div>
-                            )}
+                            </SectionFooter>
+                            <InlineError>{error}</InlineError>
                         </div>
                     ) : (
                         <p className="text-muted small mt-3 mb-0">
                             Only board-admins can change the minimum time.
                         </p>
                     )}
-                </div>
+                </>
             )}
-        </section>
+        </FormSection>
     );
 }
