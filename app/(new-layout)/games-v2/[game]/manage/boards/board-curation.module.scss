@@ -11,6 +11,100 @@
     gap: dt.$spacing-lg;
 }
 
+// ---- Board controls toolbar (Task 12: Minimum / Reorder / Set default /
+// Display) — right-aligned, quiet icon+label control-pills so it reads as
+// part of the leaderboard's own control language rather than an admin bar
+// bolted on top.
+.controlsBar {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs;
+}
+
+.toolbarBtn {
+    @include board.control-pill;
+    font-size: dt.$font-size-xs;
+}
+
+.toolbarBtnActive {
+    @include board.control-pill-active;
+}
+
+.popoverRoot {
+    position: relative;
+}
+
+.popoverPanel {
+    @include board.board-surface(dt.$spacing-md);
+    position: absolute;
+    right: 0;
+    top: calc(100% + #{dt.$spacing-xs});
+    z-index: dt.$z-popover;
+    background: var(--bs-body-bg);
+    box-shadow: dt.$shadow-md;
+    min-width: 15rem;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    @include board.board-overlay-enter(rise);
+}
+
+.popoverFieldLabel {
+    @include board.board-dialog-field-label;
+    margin-bottom: 0;
+}
+
+.popoverCheck {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
+}
+
+.popoverError {
+    @include board.board-dialog-field-error;
+}
+
+.popoverActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: dt.$spacing-sm;
+}
+
+// ---- Reorder mode nudge controls -------------------------------------
+// Wraps a chip/endcap-label/value-chip with its ↑/↓/←/→ siblings; the plain
+// (non-reorder-mode) render also wraps in a bare span of the same shape so
+// the two code paths share one layout rule.
+.nudgeGroup {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+}
+
+.nudgeBtn {
+    @include board.board-quiet-link;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.1rem;
+}
+
+// A row/wrapper around one subcategory band + its optional reorder-mode
+// caution note, stacked vertically beneath the band itself.
+.bandWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.gameWideNote {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    font-style: italic;
+    margin: 0;
+}
+
 // ---- Category switcher / subcategory bands (masthead rail vocabulary) ----
 .categorySwitch,
 .subcategoryBands {

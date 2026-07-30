@@ -40,6 +40,15 @@ const mocks = vi.hoisted(() => ({
     loadUserEligibleRunsAction: vi.fn(),
     toastSuccess: vi.fn(),
     toastError: vi.fn(),
+    createPolicyAction: vi.fn(),
+    updatePolicyAction: vi.fn(),
+    deletePolicyAction: vi.fn(),
+    updateVariableAction: vi.fn(),
+    updateCategorySettingsAction: vi.fn(),
+    updateTimingSettingsAction: vi.fn(),
+    reorderCategoriesAction: vi.fn(),
+    reorderGroupsAction: vi.fn(),
+    routerRefresh: vi.fn(),
 }));
 
 vi.mock('../moderation/roster/actions/load-roster.action', () => ({
@@ -66,6 +75,32 @@ vi.mock('../moderation/shared/actions/eligible-runs.action', () => ({
 }));
 vi.mock('react-toastify', () => ({
     toast: { success: mocks.toastSuccess, error: mocks.toastError },
+}));
+// BoardControls (Task 12's toolbar) is mounted by BoardCuration whenever
+// canConfigure is true — mocked here for the same hermeticity reason as the
+// row-action modules above: these are real 'use server' modules.
+vi.mock('../moderation/policies/actions/policies-actions.action', () => ({
+    createPolicyAction: mocks.createPolicyAction,
+    updatePolicyAction: mocks.updatePolicyAction,
+    deletePolicyAction: mocks.deletePolicyAction,
+}));
+vi.mock('../variables/actions/update-variable.action', () => ({
+    updateVariableAction: mocks.updateVariableAction,
+}));
+vi.mock('../category-tab/actions/update-category-settings.action', () => ({
+    updateCategorySettingsAction: mocks.updateCategorySettingsAction,
+}));
+vi.mock('../timing/actions/update-timing-settings.action', () => ({
+    updateTimingSettingsAction: mocks.updateTimingSettingsAction,
+}));
+vi.mock('../game-tab/actions/reorder-categories.action', () => ({
+    reorderCategoriesAction: mocks.reorderCategoriesAction,
+}));
+vi.mock('~src/actions/category-group/reorder-groups.action', () => ({
+    reorderGroupsAction: mocks.reorderGroupsAction,
+}));
+vi.mock('next/navigation', () => ({
+    useRouter: () => ({ refresh: mocks.routerRefresh }),
 }));
 
 const GAME: ResolvedGame = { id: 1, name: 'some-game', display: 'Some Game' };
