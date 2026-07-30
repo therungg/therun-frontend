@@ -131,11 +131,13 @@ export function AdjustDialog({
 
     if (!open) return null;
 
-    const isCurrentSelected = selectedTarget === row.runId;
+    // Disabled whenever there's nothing to remove, regardless of which run
+    // is selected — a tied-time non-current run needs no mutation either
+    // (the board already surfaces whichever eligible run is best), and the
+    // consequence line right above the button already explains why.
     const confirmPickDisabled =
-        isLoadingEligible ||
-        isPending ||
-        (isCurrentSelected && fasterIds.length === 0);
+        isLoadingEligible || isPending || fasterIds.length === 0;
+    const saveTimeDisabled = isPending || reasonText.trim().length === 0;
 
     const handleClose = () => {
         if (isPending) return;
@@ -144,13 +146,6 @@ export function AdjustDialog({
 
     const handleConfirmPick = () => {
         if (confirmPickDisabled) return;
-        if (fasterIds.length === 0) {
-            // Nothing faster to remove — the selection change (e.g. a
-            // tied-time run) needs no mutation; the board already surfaces
-            // whichever eligible run is best.
-            onClose();
-            return;
-        }
         startTransition(async () => {
             const res = await excludeAction(gameSlug, {
                 runIds: fasterIds,
@@ -174,6 +169,7 @@ export function AdjustDialog({
     };
 
     const handleSaveTime = () => {
+        if (saveTimeDisabled) return;
         const parsed = parseTimeInput(timeText);
         if (parsed == null || Number.isNaN(parsed)) {
             setTimeError('Enter a valid time (h:mm:ss, m:ss, or m:ss.SSS).');
@@ -327,7 +323,7 @@ export function AdjustDialog({
                         type="button"
                         className={styles.confirmBtn}
                         onClick={handleSaveTime}
-                        disabled={isPending}
+                        disabled={saveTimeDisabled}
                     >
                         {isPending ? 'Saving…' : 'Save time'}
                     </button>
