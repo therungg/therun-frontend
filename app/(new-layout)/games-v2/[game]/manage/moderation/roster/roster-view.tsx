@@ -15,6 +15,7 @@ import {
     VerificationBadge,
 } from '../../../run-view/run-badges';
 import { BackLink } from '../../../shared/back-link';
+import consoleStyles from '../../console/console.module.scss';
 import type { ModVerb, RunActionTarget } from '../shared/action-model';
 import { ManualTimeDialog } from '../shared/manual-time-dialog';
 import { RunActionDialog } from '../shared/run-action-dialog';
@@ -286,10 +287,14 @@ export function RosterView({
     };
 
     return (
-        <div className="container py-3">
-            <div className="d-flex align-items-center justify-content-between mb-3">
-                <h1 className="h4 mb-0">Browse runs — {gameDisplay}</h1>
-                <BackLink href={consoleHref} label="Back to console" />
+        <div>
+            <div className={consoleStyles.paneHeader}>
+                <h1 className={consoleStyles.paneTitle}>
+                    Browse runs — {gameDisplay}
+                </h1>
+                <div className={consoleStyles.paneActions}>
+                    <BackLink href={consoleHref} label="Back to console" />
+                </div>
             </div>
 
             <div className="border rounded p-3 mb-3">

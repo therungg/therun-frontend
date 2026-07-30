@@ -433,12 +433,6 @@ export function CategoriesTable({
 
     return (
         <section className="mb-4">
-            <h2 className="h5 mb-2">Categories</h2>
-            <p className="text-muted small mb-2">
-                Bulk-manage which categories are visible and which are featured.
-                Use "Edit" to open a category for detailed settings.
-            </p>
-
             <div className="d-flex flex-wrap gap-2 align-items-center mb-3">
                 <input
                     type="search"

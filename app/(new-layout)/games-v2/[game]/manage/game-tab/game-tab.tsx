@@ -1,8 +1,10 @@
 'use client';
 
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
+import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
 import { InvalidateCacheButton } from '../../header/invalidate-cache-button';
+import styles from '../console/console.module.scss';
 import { GroupsSection } from './groups-section';
 
 // Cache has no sidebar item of its own — it rides along under Groups, so it
@@ -29,7 +31,10 @@ export function GameTab({
     onRowGroupChange,
 }: Props) {
     return (
-        <div>
+        <section className={styles.surface}>
+            <div className={styles.paneHeader}>
+                <h2 className={styles.paneTitle}>{CONCEPT_LABEL.groups}</h2>
+            </div>
             <GroupsSection
                 game={game}
                 groups={groups}
@@ -46,6 +51,6 @@ export function GameTab({
                 </p>
                 <InvalidateCacheButton gameSlug={game.name} gameId={game.id} />
             </section>
-        </div>
+        </section>
     );
 }
