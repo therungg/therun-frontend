@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidateTag } from 'next/cache';
+import { updateTag } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
 import { ApiError } from '~src/lib/api-client';
 import { reorderGroups } from '~src/lib/category-mgmt';
@@ -30,7 +30,10 @@ export async function reorderGroupsAction(
             input.gameId,
             input.groupIds,
         );
-        revalidateTag(`game-cats:${input.gameId}`, 'minutes');
+        // updateTag, not revalidateTag — same read-your-writes reasoning as
+        // reorder-categories.action.ts: BoardCuration's group-nudge
+        // router.refresh() re-derives order from this same cache entry.
+        updateTag(`game-cats:${input.gameId}`);
         return { result };
     } catch (e) {
         if (e instanceof ApiError) return { error: e.message };
