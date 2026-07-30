@@ -1,7 +1,7 @@
 # Mod console redesign — framed shell, pane + form cleanup
 
 **Date:** 2026-07-30
-**Status:** Approved design, not yet implemented
+**Status:** Implemented (browser pass pending Joey)
 **Scope:** frontend only, `app/(new-layout)/games-v2/[game]/manage/**` (+ the shared `GameDetailsForm` in `setup/`)
 
 ## Problem
