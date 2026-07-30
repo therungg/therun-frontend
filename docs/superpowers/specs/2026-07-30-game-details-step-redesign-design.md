@@ -1,7 +1,7 @@
 # Game details step redesign — design
 
 **Date:** 2026-07-30
-**Status:** Approved
+**Status:** Implemented
 **Scope:** `app/(new-layout)/games-v2/[game]/setup/steps/step-details.tsx`, `app/(new-layout)/games-v2/[game]/setup/game-details-form.tsx`, `setup.module.scss`
 
 ## Problem

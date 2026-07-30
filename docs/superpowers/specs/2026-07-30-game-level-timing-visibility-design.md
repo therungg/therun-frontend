@@ -1,7 +1,7 @@
 # Game-level Show RTA / Show IGT — design
 
 **Date:** 2026-07-30
-**Status:** Approved (built autonomously on Joey's standing instruction: "set the show IGT / show RTA settings we have for categories for the whole game; adjust backend if needed")
+**Status:** Implemented (built autonomously on Joey's standing instruction: "set the show IGT / show RTA settings we have for categories for the whole game; adjust backend if needed")
 
 ## Goal
 
