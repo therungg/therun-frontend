@@ -392,7 +392,8 @@ $rail-collapse: 900px;
         @include board.board-input-rules;
     }
 
-    :global(h3.h6) {
+    :global(h3.h6),
+    :global(h4.h6) {
         @include board.board-eyebrow;
         font-weight: 700;
         display: flex;
@@ -643,6 +644,23 @@ $rail-collapse: 900px;
 .section {
     @include board.board-surface(dt.$spacing-xl);
     margin-bottom: dt.$spacing-lg;
+}
+
+// Zone titles on the details step: a level between the step title and the
+// card eyebrows, so "confirm facts" and "decide rules" read as two jobs.
+.zoneTitle {
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: dt.$spacing-2xl 0 dt.$spacing-md;
+}
+
+// Timing + minimum share a card: the minimum's label follows the selected
+// timing, and splitting them into separate cards hides that coupling.
+.pairRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-2xl;
 }
 
 .statTile {
