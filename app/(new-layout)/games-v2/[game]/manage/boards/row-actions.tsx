@@ -19,8 +19,8 @@ import type {
 } from '../../../../../../types/moderation.types';
 import { BoardDialog } from '../../shared/board-dialog';
 import {
-    anonymizeRunnerAction,
     liftSiteBanAction,
+    siteBanRunnerAction,
 } from '../moderation/shared/actions/anonymize.action';
 import { moveRunAction } from '../moderation/shared/actions/board-override.action';
 import {
@@ -222,9 +222,10 @@ export function RowActions({
             return;
         const board = { categoryId: category.id, subcategoryKey };
         startAnonymize(async () => {
-            const res = await anonymizeRunnerAction(gameSlug, {
+            const res = await siteBanRunnerAction(gameSlug, {
                 username: row.runnerName,
                 reason: anonReason.trim(),
+                treatment: 'anonymize',
                 board,
             });
             if ('error' in res) {
