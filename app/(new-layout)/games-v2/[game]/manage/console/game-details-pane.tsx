@@ -27,7 +27,7 @@ export function GameDetailsPane({
             <div className={styles.paneHeader}>
                 <h2 className={styles.paneTitle}>Details & metadata</h2>
             </div>
-            <p className="text-muted small mb-3">
+            <p className={styles.paneLede}>
                 Shown on the public game page and in the setup wizard.
             </p>
             <GameDetailsForm

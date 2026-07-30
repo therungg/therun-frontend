@@ -228,8 +228,13 @@ $rail: 3px; // severity spine / active accent width
 }
 
 // ---- Content surfaces --------------------------------------
+// Flat: the frame (Task 1) is the surface. Class kept so panes need no
+// structural edits; it now only guards against nested-card regression.
 .surface {
-    @include board.board-surface;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
 }
 
 // Minimal Suspense fallback for the shell mount in manage/page.tsx — the
@@ -247,7 +252,23 @@ $rail: 3px; // severity spine / active accent width
     align-items: baseline;
     justify-content: space-between;
     gap: dt.$spacing-md;
+    padding-bottom: dt.$spacing-md;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
     margin-bottom: dt.$spacing-xl;
+}
+
+.paneActions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+}
+
+.paneLede {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: calc(#{dt.$spacing-xl} * -1 + #{dt.$spacing-sm}) 0 dt.$spacing-xl;
+    max-width: 60ch;
 }
 
 .paneTitle {
