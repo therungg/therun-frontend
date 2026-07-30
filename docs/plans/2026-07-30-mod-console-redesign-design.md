@@ -98,8 +98,8 @@ dialogs.
 - **Save pattern**: per-section save stays (forms are independent), but
   standardized: `board-btn-primary`, right-aligned in a section footer,
   disabled until dirty.
-- **Errors**: `alert-danger` blocks become the console's quiet inline
-  red-rail note (`.noteInfo` variant with red rail).
+- **Errors**: `alert-danger` blocks become a shared quiet inline error
+  built on the existing `board-error-alert` mixin.
 - The `.content :global(...)` Bootstrap-override shims in
   `console.module.scss` shrink or disappear as forms adopt the real
   vocabulary.
