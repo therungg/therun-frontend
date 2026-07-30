@@ -410,7 +410,7 @@ export function SubmitForm({
                 <p className="mb-3">{statusLine}</p>
                 {runResult.applied !== 'instant' && (
                     <p className="small text-muted mb-3">
-                        You'll get a notification here when a moderator reviews
+                        You’ll get a notification here when a moderator reviews
                         it.
                     </p>
                 )}
@@ -459,7 +459,7 @@ export function SubmitForm({
                 <p className="mb-3">{statusLine}</p>
                 {claimResult.applied !== 'instant' && (
                     <p className="small text-muted mb-3">
-                        You'll get a notification here when a moderator reviews
+                        You’ll get a notification here when a moderator reviews
                         it.
                     </p>
                 )}
@@ -704,7 +704,7 @@ function StandingLine({
             </div>
             {isSlower && (
                 <div>
-                    This is slower than your current best — it won't replace
+                    This is slower than your current best — it won’t replace
                     your board entry.
                 </div>
             )}

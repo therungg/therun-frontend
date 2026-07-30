@@ -207,7 +207,7 @@ export function GameDetailsForm({
                     <FieldLabel
                         htmlFor="cover-upload"
                         label="Cover image"
-                        hint="The box art shown for this game across the site. Prefilled from IGDB — upload your own if it's wrong or missing. Portrait (3:4); anything else gets cropped."
+                        hint="The box art shown for this game across the site. Prefilled from IGDB — upload your own if it’s wrong or missing. Portrait (3:4); anything else gets cropped."
                     />
                     <div className="d-flex gap-3 align-items-start">
                         {preview && (
@@ -362,7 +362,7 @@ export function GameDetailsForm({
                         className="mt-3"
                         htmlFor="discord"
                         label="Discord invite"
-                        hint="Adds a Discord button to the game page. Use an invite that doesn't expire, or the button eventually leads nowhere."
+                        hint="Adds a Discord button to the game page. Use an invite that doesn’t expire, or the button eventually leads nowhere."
                     />
                     <input
                         id="discord"
