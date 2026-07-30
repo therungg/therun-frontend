@@ -14,6 +14,7 @@ export type NavItemId =
     | 'game-details'
     | 'categories'
     | 'groups'
+    | 'boards'
     | 'moderators'
     | 'reassign';
 
@@ -69,6 +70,7 @@ const ALL_GROUPS: NavGroup[] = [
             // Order matches the wizard: details 1, categories 2, groups 3.
             { id: 'categories', label: CONCEPT_LABEL.categories },
             { id: 'groups', label: CONCEPT_LABEL.groups },
+            { id: 'boards', label: CONCEPT_LABEL.boards },
             { id: 'moderators', label: CONCEPT_LABEL.moderators },
             { id: 'reassign', label: CONCEPT_LABEL.reassign },
         ],
@@ -91,6 +93,7 @@ function itemVisible(
     if (itemId === 'moderators') return flags.canEditMods;
     if (groupId === 'moderate') return flags.canModerate;
     if (itemId === 'categories') return flags.canConfigure || flags.canModerate;
+    if (itemId === 'boards') return flags.canModerate || flags.canConfigure;
     return flags.canConfigure;
 }
 

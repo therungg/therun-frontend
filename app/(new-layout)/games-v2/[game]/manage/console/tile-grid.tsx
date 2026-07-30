@@ -79,6 +79,10 @@ export function TileGrid({
                                                         {pendingApplications}
                                                     </span>
                                                 )}
+                                            {/* TODO(boards mark-for-later
+                                             * badge): no cheap whole-game
+                                             * count exists yet — see the same
+                                             * TODO in console-sidebar.tsx. */}
                                         </span>
                                         <span className={styles.tileAction}>
                                             {tile.action}
