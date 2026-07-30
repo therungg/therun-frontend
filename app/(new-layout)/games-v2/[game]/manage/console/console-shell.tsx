@@ -16,7 +16,10 @@ import type {
 import type {
     ResolvedCategory,
     ResolvedGame,
+    ResolvedGroup,
+    VariableRow,
 } from '../../../../../../types/leaderboards.types';
+import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
 import type { ReorderChange } from '../game-tab/reorder-changes';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import { HistoryDrawer } from '../moderation/configure/history-drawer';
@@ -50,6 +53,15 @@ export interface ConsoleShellProps {
     /** Per-category configuration for the index matrix. */
     categoryConfig: CategoryConfigRow[];
     initialGroups: ManageGroup[];
+    /** Board-order groups for the Boards pane (category-grouping sections) —
+     * distinct from `initialGroups`, the ManageGroup shape the index/GameTab
+     * use. Comes free from the same `resolveCategory` call as `categories`. */
+    boardGroups: ResolvedGroup[];
+    /** Variables + policies for the Boards pane — loaded whenever a viewer
+     * can reach it (canModerate || canConfigure), not gated on canConfigure
+     * alone, so a moderator without configure still sees the real board. */
+    variables: VariableRow[];
+    policies: BoardPolicyRow[];
     setupCompleteness?: BoardCompleteness | null;
     boardHealth?: BoardHealth | null;
     gameDetails?: GameDetailsData | null;
@@ -67,6 +79,9 @@ export function ConsoleShell({
     initialRows,
     categoryConfig,
     initialGroups,
+    boardGroups,
+    variables,
+    policies,
     setupCompleteness,
     boardHealth,
     gameDetails,
@@ -396,6 +411,11 @@ export function ConsoleShell({
                         id: c.id,
                         display: c.display,
                     }))}
+                    boardCategories={categories}
+                    boardGroups={boardGroups}
+                    variables={variables}
+                    policies={policies}
+                    canConfigureBoards={flags.canConfigure}
                     categoryConfig={categoryConfig}
                     gameDetails={gameDetails}
                     attentionItems={attentionItems}

@@ -14,6 +14,7 @@ import {
     ListUl,
     PersonX,
     ShieldLock,
+    Trophy,
 } from 'react-bootstrap-icons';
 import type { NavItemId } from './nav-model';
 
@@ -27,6 +28,7 @@ export const NAV_ICON: Record<NavItemId, IconType> = {
     'game-details': Controller,
     categories: ListUl,
     groups: Collection,
+    boards: Trophy,
     moderators: ShieldLock,
     reassign: ArrowLeftRight,
 };

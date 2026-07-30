@@ -73,6 +73,27 @@ describe('buildNav', () => {
             .map((it) => it.id);
         expect(ids).not.toContain('setup');
     });
+
+    it('shows boards to a moderate-only viewer', () => {
+        const ids = buildNav({ ...NO_FLAGS, canModerate: true })
+            .flatMap((g) => g.items)
+            .map((it) => it.id);
+        expect(ids).toContain('boards');
+    });
+
+    it('shows boards to a configure-only viewer', () => {
+        const ids = buildNav({ ...NO_FLAGS, canConfigure: true })
+            .flatMap((g) => g.items)
+            .map((it) => it.id);
+        expect(ids).toContain('boards');
+    });
+
+    it('hides boards from a viewer with neither flag', () => {
+        const ids = buildNav(NO_FLAGS)
+            .flatMap((g) => g.items)
+            .map((it) => it.id);
+        expect(ids).not.toContain('boards');
+    });
 });
 
 describe('showSetupCard', () => {
@@ -191,8 +212,8 @@ describe('nav shape', () => {
         expect(buildNav(ALL).map((g) => g.id)).toEqual(['moderate', 'board']);
     });
 
-    it('shows eleven items to a fully privileged viewer', () => {
-        expect(buildNav(ALL).flatMap((g) => g.items)).toHaveLength(11);
+    it('shows twelve items to a fully privileged viewer', () => {
+        expect(buildNav(ALL).flatMap((g) => g.items)).toHaveLength(12);
     });
 
     it('orders the board group to match the wizard', () => {

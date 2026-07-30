@@ -43,12 +43,14 @@ describe('TileGrid permission filtering', () => {
         expect(screen.queryByText(CONCEPT_TILE.bans.action)).not.toBeNull();
         expect(screen.queryByText(CONCEPT_TILE.history.action)).not.toBeNull();
 
-        // Categories is the one Board item any moderator can reach — see the
-        // itemVisible comment in nav-model.ts. Every other Board tile stays gone.
+        // Categories and Boards are the two Board items any moderator can
+        // reach — see the itemVisible comment in nav-model.ts. Every other
+        // Board tile stays gone.
         expect(screen.queryByText('Board')).not.toBeNull();
         expect(
             screen.queryByText(CONCEPT_TILE.categories.action),
         ).not.toBeNull();
+        expect(screen.queryByText(CONCEPT_TILE.boards.action)).not.toBeNull();
         expect(screen.queryByText(CONCEPT_TILE.setup.action)).toBeNull();
         expect(
             screen.queryByText(CONCEPT_TILE['game-details'].action),
@@ -83,6 +85,7 @@ describe('TileGrid permission filtering', () => {
             screen.queryByText(CONCEPT_TILE.categories.action),
         ).not.toBeNull();
         expect(screen.queryByText(CONCEPT_TILE.groups.action)).not.toBeNull();
+        expect(screen.queryByText(CONCEPT_TILE.boards.action)).not.toBeNull();
         // Neither moderators nor reassign are visible without their own flags.
         expect(screen.queryByText(CONCEPT_TILE.moderators.action)).toBeNull();
         expect(screen.queryByText(CONCEPT_TILE.reassign.action)).toBeNull();
@@ -108,9 +111,10 @@ describe('TileGrid reports filtering', () => {
         );
 
         expect(screen.queryByText('Reports')).toBeNull();
-        // 4 Moderate tiles (attention/roster/bans/history) + 1 Board tile
-        // (categories) — reports is filtered out by `it.id in CONCEPT_TILE`.
-        expect(screen.getAllByRole('button')).toHaveLength(5);
+        // 4 Moderate tiles (attention/roster/bans/history) + 2 Board tiles
+        // (categories, boards) — reports is filtered out by
+        // `it.id in CONCEPT_TILE`.
+        expect(screen.getAllByRole('button')).toHaveLength(6);
     });
 });
 
