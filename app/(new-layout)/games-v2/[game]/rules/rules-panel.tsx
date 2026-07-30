@@ -14,8 +14,15 @@ const EMULATOR_POLICY_TEXT: Record<'allowed' | 'banned', string> = {
     banned: 'Emulators are banned.',
 };
 
-function isNonEmpty(text: string | null | undefined): text is string {
-    return !!text && text.trim().length > 0;
+/** Narrows to a trimmed non-empty string, or null. */
+function nonEmpty(text: string | null | undefined): string | null {
+    return text && text.trim().length > 0 ? text : null;
+}
+
+function emulatorPolicyText(policy: EmulatorPolicy): string | null {
+    return policy === 'allowed' || policy === 'banned'
+        ? EMULATOR_POLICY_TEXT[policy]
+        : null;
 }
 
 function buildExcerpt(text: string): string {
@@ -28,6 +35,7 @@ function buildExcerpt(text: string): string {
 export function RulesPanel({
     rules,
     gameRules,
+    emulatorPolicy,
     open,
     onToggle,
     label = 'Rules',
@@ -35,13 +43,26 @@ export function RulesPanel({
     rules: string | null | undefined;
     /** Game-level rules — when present, the panel appears even if `rules` (category rules) is empty. */
     gameRules?: string | null | undefined;
+    /** When present (and no other rules text exists) the panel still appears and the policy line stands in for the excerpt. */
+    emulatorPolicy?: EmulatorPolicy;
     open: boolean;
     onToggle: () => void;
     label?: string;
 }) {
-    const hasCategoryRules = isNonEmpty(rules);
-    const hasGameRules = isNonEmpty(gameRules);
-    if (!hasCategoryRules && !hasGameRules) return null;
+    const categoryRules = nonEmpty(rules);
+    const gameRulesText = nonEmpty(gameRules);
+    const policyText = emulatorPolicyText(emulatorPolicy);
+    if (!categoryRules && !gameRulesText && !policyText) return null;
+
+    // The excerpt always prefers category rules (unchanged from before this
+    // panel could open for game-rules/policy-only games). When there are no
+    // category rules to excerpt, the emulator policy line stands in — it's
+    // the most useful thing a runner can see collapsed on a policy-only
+    // game. Plain game rules with no category rules and no policy still
+    // show no excerpt (unchanged).
+    const excerptText = categoryRules
+        ? buildExcerpt(categoryRules)
+        : policyText;
 
     return (
         <button
@@ -56,9 +77,9 @@ export function RulesPanel({
                 <ChevronRight size={12} aria-hidden />
             )}
             <strong>{label}</strong>
-            {!open && hasCategoryRules && (
+            {!open && excerptText && (
                 <span className="text-muted small text-truncate">
-                    {buildExcerpt(rules as string)}
+                    {excerptText}
                 </span>
             )}
         </button>
@@ -75,27 +96,26 @@ export function RulesBody({
     gameRules?: string | null;
     emulatorPolicy?: EmulatorPolicy;
 }) {
-    const hasCategoryRules = isNonEmpty(rules);
-    const hasGameRules = isNonEmpty(gameRules);
+    const categoryRules = nonEmpty(rules);
+    const gameRulesText = nonEmpty(gameRules);
+    const policyText = emulatorPolicyText(emulatorPolicy);
 
     return (
         <div className={styles.rulesBody}>
-            {(emulatorPolicy === 'allowed' || emulatorPolicy === 'banned') && (
-                <p className={styles.emulatorPolicyLine}>
-                    {EMULATOR_POLICY_TEXT[emulatorPolicy]}
-                </p>
+            {policyText && (
+                <p className={styles.emulatorPolicyLine}>{policyText}</p>
             )}
-            {hasGameRules && (
+            {gameRulesText && (
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {gameRules as string}
+                    {gameRulesText}
                 </ReactMarkdown>
             )}
-            {hasGameRules && hasCategoryRules && (
+            {gameRulesText && categoryRules && (
                 <hr className={styles.rulesDivider} />
             )}
-            {hasCategoryRules && (
+            {categoryRules && (
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {rules as string}
+                    {categoryRules}
                 </ReactMarkdown>
             )}
         </div>

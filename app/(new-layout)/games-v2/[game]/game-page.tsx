@@ -133,7 +133,8 @@ export function GamePage({
                 />
                 {rulesOpen &&
                     (data.selectedCategory.rules?.trim() ||
-                        data.gameMeta.gameRules?.trim()) && (
+                        data.gameMeta.gameRules?.trim() ||
+                        data.gameMeta.emulatorPolicy) && (
                         <RulesBody
                             rules={data.selectedCategory.rules}
                             gameRules={data.gameMeta.gameRules}
