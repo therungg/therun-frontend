@@ -98,6 +98,132 @@
     @include board.board-pill(dt.$accent-amber);
 }
 
+// ---- Row actions (Later / Remove / Ban / Fix time) ----
+// `.row` is the hover/focus anchor for the quiet action cluster — present
+// but invisible until the row is hovered or a control inside it has focus,
+// so the board still reads as a leaderboard rather than an admin table.
+.row {
+    &:hover .actionCluster,
+    &:focus-within .actionCluster {
+        opacity: 1;
+    }
+}
+
+.actionsHeader {
+    width: 1%;
+}
+
+.actionsCell {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.actionCluster {
+    display: inline-flex;
+    gap: dt.$spacing-xs;
+    opacity: 0;
+    transition: opacity dt.$transition-fast;
+
+    @media (pointer: coarse) {
+        // Touch has no hover — keep the cluster reachable.
+        opacity: 1;
+    }
+}
+
+.actionBtn {
+    @include board.control-pill;
+    font-size: dt.$font-size-2xs;
+}
+
+.removedNote {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.slip {
+    @include board.mono-time;
+    font-size: dt.$font-size-xs;
+}
+
+.slipLoading {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+}
+
+.slipAction {
+    @include board.board-quiet-link;
+    font-family: dt.$font-mono;
+}
+
+.timeInput {
+    @include board.mono-time;
+    font-size: dt.$font-size-sm;
+    padding: 0.15rem 0.4rem;
+    border-radius: dt.$radius-sm;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    background: var(--bs-body-bg);
+    width: 7rem;
+
+    &:focus-visible {
+        outline: 0;
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
+
+.timeError {
+    display: block;
+    font-size: dt.$font-size-2xs;
+    color: dt.$accent-red;
+}
+
+// ---- Ban confirm sheet (BoardDialog content) ----
+.dialogHeader {
+    @include board.board-dialog-header;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dialogTitle {
+    @include board.board-dialog-title;
+}
+
+.dialogBody {
+    @include board.board-dialog-body;
+}
+
+.dialogFooter {
+    @include board.board-dialog-footer;
+}
+
+.dialogTextarea {
+    @include board.board-dialog-textarea;
+}
+
+.fieldLabel {
+    @include board.board-dialog-field-label;
+}
+
+.errorAlert {
+    @include board.board-error-alert;
+}
+
+.confirmBtn {
+    @include board.board-dialog-btn-danger;
+    border-radius: dt.$radius-md;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    font-size: dt.$font-size-sm;
+    cursor: pointer;
+}
+
 // ---- Empty / loading / error ----
 .empty {
     @include board.board-empty;
