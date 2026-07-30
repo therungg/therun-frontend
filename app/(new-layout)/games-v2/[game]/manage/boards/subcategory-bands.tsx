@@ -9,6 +9,7 @@ import {
 import type { UpsertVariableInput } from '~src/lib/leaderboard-variables';
 import {
     type EffectiveVariable,
+    normalizeVariableName,
     toEffective,
 } from '~src/lib/variables/effective';
 import type { VariableRow } from '../../../../../../types/leaderboards.types';
@@ -43,8 +44,13 @@ export function subcategoryVariablesFor(
     );
 }
 
+// Identity value for a bucket, in the same normalized space the backend
+// writes into finished_runs.subcategory_key (normalizeVariableString:
+// lowercase, whitespace/=| stripped — "Nintendo 64" -> "nintendo64").
+// Display stays bucket[0]; only selection/key identity normalizes, or an
+// exact-match roster fetch comes back empty for any display-cased value.
 function canonicalOf(v: VariableRow, idx: number): string {
-    return v.values[idx]?.[0] ?? '';
+    return normalizeVariableName(v.values[idx]?.[0] ?? '');
 }
 
 export function defaultCanonicalOf(v: VariableRow): string {
@@ -185,7 +191,8 @@ export function SubcategoryBands({
                             <div className={styles.well}>
                                 <div className={styles.chips}>
                                     {v.values.map((bucket, i) => {
-                                        const canonical = bucket[0];
+                                        const label = bucket[0];
+                                        const canonical = canonicalOf(v, i);
                                         const isActive = active === canonical;
                                         const chip = (
                                             <button
@@ -199,7 +206,7 @@ export function SubcategoryBands({
                                                     )
                                                 }
                                             >
-                                                {canonical}
+                                                {label}
                                             </button>
                                         );
                                         if (
@@ -219,7 +226,7 @@ export function SubcategoryBands({
                                                 <button
                                                     type="button"
                                                     className={styles.nudgeBtn}
-                                                    aria-label={`Move ${canonical} earlier`}
+                                                    aria-label={`Move ${label} earlier`}
                                                     onClick={() =>
                                                         onNudgeValue(v, i, -1)
                                                     }
@@ -236,7 +243,7 @@ export function SubcategoryBands({
                                                 <button
                                                     type="button"
                                                     className={styles.nudgeBtn}
-                                                    aria-label={`Move ${canonical} later`}
+                                                    aria-label={`Move ${label} later`}
                                                     onClick={() =>
                                                         onNudgeValue(v, i, 1)
                                                     }

@@ -285,7 +285,7 @@ describe('RowActions — Move', () => {
         renderRowActions({
             categories: [CATEGORY, CATEGORY_ALT],
             variables: [NG_PLUS_VAR],
-            subcategoryKey: 'ngplus=No',
+            subcategoryKey: 'ngplus=no',
         });
 
         fireEvent.click(screen.getByRole('button', { name: 'Move…' }));
@@ -305,7 +305,7 @@ describe('RowActions — Move', () => {
         const { onMutated } = renderRowActions({
             categories: [CATEGORY, CATEGORY_ALT],
             variables: [NG_PLUS_VAR],
-            subcategoryKey: 'ngplus=No',
+            subcategoryKey: 'ngplus=no',
         });
 
         fireEvent.click(screen.getByRole('button', { name: 'Move…' }));
@@ -321,10 +321,10 @@ describe('RowActions — Move', () => {
             expect(mocks.moveRunAction).toHaveBeenCalledWith(
                 'some-game',
                 1,
-                { categoryId: CATEGORY.id, subcategoryKey: 'ngplus=Yes' },
+                { categoryId: CATEGORY.id, subcategoryKey: 'ngplus=yes' },
                 [
-                    { categoryId: CATEGORY.id, subcategoryKey: 'ngplus=No' },
-                    { categoryId: CATEGORY.id, subcategoryKey: 'ngplus=Yes' },
+                    { categoryId: CATEGORY.id, subcategoryKey: 'ngplus=no' },
+                    { categoryId: CATEGORY.id, subcategoryKey: 'ngplus=yes' },
                 ],
             ),
         );
@@ -344,8 +344,8 @@ describe('RowActions — Move', () => {
                 1,
                 null,
                 [
-                    { categoryId: CATEGORY.id, subcategoryKey: 'ngplus=Yes' },
-                    { categoryId: CATEGORY.id, subcategoryKey: 'ngplus=No' },
+                    { categoryId: CATEGORY.id, subcategoryKey: 'ngplus=yes' },
+                    { categoryId: CATEGORY.id, subcategoryKey: 'ngplus=no' },
                 ],
             ),
         );
