@@ -186,6 +186,30 @@ describe('AdjustDialog', () => {
         ).toHaveProperty('disabled', true);
     });
 
+    it('ties: selecting a non-current run with an equal time disables confirm', async () => {
+        mocks.loadUserEligibleRunsAction.mockResolvedValue({
+            ok: true,
+            rows: [
+                eligibleRun({ runId: 1, time: 20_000 }),
+                eligibleRun({ runId: 2, time: 20_000 }),
+            ],
+        });
+        renderDialog();
+        const radios = await screen.findAllByRole('radio');
+        expect(radios).toHaveLength(2);
+
+        const nonCurrentRadio = radios.find(
+            (r) => !r.closest('label')?.textContent?.includes('current entry'),
+        );
+        expect(nonCurrentRadio).toBeTruthy();
+        fireEvent.click(nonCurrentRadio as HTMLElement);
+
+        expect(screen.getByText('No faster runs to remove.')).toBeTruthy();
+        expect(
+            screen.getByRole('button', { name: 'Make this the entry' }),
+        ).toHaveProperty('disabled', true);
+    });
+
     it('confirm excludes exactly the faster runs, with undo', async () => {
         mocks.excludeAction.mockResolvedValue({
             ok: true,
@@ -261,6 +285,9 @@ describe('AdjustDialog', () => {
         fireEvent.change(screen.getByLabelText('Time'), {
             target: { value: 'garbage' },
         });
+        fireEvent.change(screen.getByLabelText('Reason — required'), {
+            target: { value: 'manual correction' },
+        });
         fireEvent.click(screen.getByRole('button', { name: 'Save time' }));
 
         expect(
@@ -268,6 +295,20 @@ describe('AdjustDialog', () => {
                 'Enter a valid time (h:mm:ss, m:ss, or m:ss.SSS).',
             ),
         ).toBeTruthy();
+        expect(mocks.createManualTimeAction).not.toHaveBeenCalled();
+    });
+
+    it('blank reason disables Save time', async () => {
+        renderDialog();
+        await screen.findAllByRole('radio');
+
+        fireEvent.change(screen.getByLabelText('Time'), {
+            target: { value: '35:48' },
+        });
+
+        expect(
+            screen.getByRole('button', { name: 'Save time' }),
+        ).toHaveProperty('disabled', true);
         expect(mocks.createManualTimeAction).not.toHaveBeenCalled();
     });
 });
