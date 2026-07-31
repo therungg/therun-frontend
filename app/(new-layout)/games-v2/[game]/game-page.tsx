@@ -27,6 +27,8 @@ interface Props {
     data: GamePageData;
     canManage: boolean;
     canManageRuns: boolean;
+    /** Admins only — RunnerDialog's "Entire site" scope in the row menu. */
+    canSiteBan?: boolean;
     claim?: ClaimCtaState | null;
     moderators?: GameModerator[];
 }
@@ -35,6 +37,7 @@ export function GamePage({
     data,
     canManage,
     canManageRuns,
+    canSiteBan = false,
     claim,
     moderators,
 }: Props) {
@@ -194,6 +197,7 @@ export function GamePage({
                                 }}
                                 sessionUsername={data.sessionUsername}
                                 canManage={canManageRuns}
+                                canSiteBan={canSiteBan}
                                 gameSlug={data.game.name}
                                 variableKeys={variableKeys}
                                 primaryTiming={
