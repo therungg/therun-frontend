@@ -3,7 +3,11 @@
 import type { Game } from '~app/(new-layout)/games/games.types';
 import { getGamesPage } from '~src/components/game/get-tabulated-game-stats';
 import { apiFetch } from './api-client';
-import type { CategoryStats } from './highlights';
+import {
+    type CategoryStats,
+    type CategoryStatsRow,
+    mapCategoryStatsRow,
+} from './category-stats-row';
 
 export type { CategoryStats };
 
@@ -32,7 +36,8 @@ export async function getCategoriesForGame(
 ): Promise<CategoryStats[]> {
     if (!game) return [];
 
-    return apiFetch<CategoryStats[]>(
+    const rows = await apiFetch<CategoryStatsRow[]>(
         `/v1/runs/categories?game=${encodeURIComponent(game)}&sort=-total_run_time&limit=100`,
     );
+    return rows.map(mapCategoryStatsRow);
 }

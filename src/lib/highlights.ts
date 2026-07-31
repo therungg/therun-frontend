@@ -2,6 +2,11 @@
 
 import { cacheLife, cacheTag } from 'next/cache';
 import { apiFetch } from './api-client';
+import {
+    type CategoryStats,
+    type CategoryStatsRow,
+    mapCategoryStatsRow,
+} from './category-stats-row';
 
 // --- Types ---
 
@@ -17,18 +22,7 @@ export interface GlobalStats {
     totalRaces: number;
 }
 
-export interface CategoryStats {
-    gameId: number;
-    categoryId: number;
-    gameDisplay: string;
-    categoryDisplay: string;
-    gameImage: string | null;
-    totalRunTime: number;
-    totalAttemptCount: number;
-    totalFinishedAttemptCount: number;
-    totalPbs: number;
-    uniqueRunners: number;
-}
+export type { CategoryStats } from './category-stats-row';
 
 export interface FinishedRunPB {
     id: number;
@@ -183,9 +177,10 @@ export async function getTopCategoriesForGame(
     cacheLife('hours');
     cacheTag(`top-categories-${gameId}`);
 
-    return apiFetch<CategoryStats[]>(
+    const rows = await apiFetch<CategoryStatsRow[]>(
         `/v1/runs/categories?game_id=${gameId}&sort=-total_run_time&limit=${limit}`,
     );
+    return rows.map(mapCategoryStatsRow);
 }
 
 export async function getGameActivity(
