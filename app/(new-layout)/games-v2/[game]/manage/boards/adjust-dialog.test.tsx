@@ -16,7 +16,7 @@ import { AdjustDialog, type AdjustDialogProps } from './adjust-dialog';
 
 // vi.mock factories are hoisted above these imports, so the mock fns
 // themselves must be created through vi.hoisted rather than referenced as
-// plain outer `const`s — see row-actions-anonymize.test.tsx for the same
+// plain outer `const`s — see row-actions.test.tsx for the same
 // pattern.
 const mocks = vi.hoisted(() => ({
     loadUserEligibleRunsAction: vi.fn(),

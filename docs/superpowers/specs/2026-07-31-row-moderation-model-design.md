@@ -1,6 +1,6 @@
 # Row-level moderation model (runner/run menus) — design
 
-Date: 2026-07-31 · Status: draft, awaiting Joey's review
+Date: 2026-07-31 · Status: approved — Phase A implemented (this branch); Phases B/C pending backend
 Predecessor: `2026-07-31-boards-anonymize-design.md` (shipped)
 
 ## Goal

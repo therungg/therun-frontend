@@ -17,7 +17,7 @@ import { RunnerDialog, type RunnerDialogProps } from './runner-dialog';
 // vi.mock factories are hoisted above these imports, so the mock fns
 // themselves must be created through vi.hoisted rather than referenced as
 // plain outer `const`s (which would still be in their TDZ when the factory
-// runs) — see row-actions-anonymize.test.tsx for the same pattern.
+// runs) — see row-actions.test.tsx for the same pattern.
 const mocks = vi.hoisted(() => ({
     siteBanRunnerAction: vi.fn(),
     liftSiteBanAction: vi.fn(),
