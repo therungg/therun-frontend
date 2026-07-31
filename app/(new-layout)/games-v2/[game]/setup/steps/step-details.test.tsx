@@ -154,32 +154,55 @@ describe('StepDetails', () => {
         });
     });
 
-    it('renders the Time columns pair checked by default and forces the sibling on', () => {
+    it('always shows the primary column and offers only the secondary as a checkbox', () => {
         render(
             <StepDetails data={data} onAdvance={vi.fn()} onBack={vi.fn()} />,
         );
-        const rt = screen.getByRole('checkbox', { name: 'Show real time' });
-        const gt = screen.getByRole('checkbox', { name: 'Show game time' });
-        expect((rt as HTMLInputElement).checked).toBe(true);
-        expect((gt as HTMLInputElement).checked).toBe(true);
-        fireEvent.click(rt); // uncheck RT
-        expect((rt as HTMLInputElement).checked).toBe(false);
-        expect((gt as HTMLInputElement).checked).toBe(true);
-        fireEvent.click(gt); // uncheck GT while RT hidden -> RT forced back on
-        expect((gt as HTMLInputElement).checked).toBe(false);
-        expect((rt as HTMLInputElement).checked).toBe(true);
+        // Primary defaults to RTA, so the only checkbox is the secondary.
+        expect(screen.queryByRole('checkbox', { name: 'Show real time' })).toBe(
+            null,
+        );
+        const secondary = screen.getByRole('checkbox', {
+            name: 'Also show game time',
+        });
+        expect((secondary as HTMLInputElement).checked).toBe(true);
+        // Flipping the primary timing relabels the secondary checkbox.
+        fireEvent.click(screen.getByRole('radio', { name: 'IGT' }));
+        expect(
+            screen.getByRole('checkbox', { name: 'Also show real time' }),
+        ).toBeTruthy();
     });
 
-    it('sends the hide flags through the metadata save', async () => {
+    it('derives the hide flags from the primary timing and the secondary checkbox', async () => {
         const onAdvance = vi.fn();
         render(
             <StepDetails data={data} onAdvance={onAdvance} onBack={vi.fn()} />,
         );
         fireEvent.click(
-            screen.getByRole('checkbox', { name: 'Show real time' }),
+            screen.getByRole('checkbox', { name: 'Also show game time' }),
         );
         fireEvent.submit(document.getElementById('game-details-form')!);
         await waitFor(() => expect(onAdvance).toHaveBeenCalledTimes(1));
+        expect(updateGameMetadataAction).toHaveBeenCalledWith(
+            expect.objectContaining({
+                hideRealTime: false,
+                hideGameTime: true,
+            }),
+        );
+    });
+
+    it('never hides the primary clock, even after a timing flip', async () => {
+        const onAdvance = vi.fn();
+        render(
+            <StepDetails data={data} onAdvance={onAdvance} onBack={vi.fn()} />,
+        );
+        fireEvent.click(
+            screen.getByRole('checkbox', { name: 'Also show game time' }),
+        );
+        fireEvent.click(screen.getByRole('radio', { name: 'IGT' }));
+        fireEvent.submit(document.getElementById('game-details-form')!);
+        await waitFor(() => expect(onAdvance).toHaveBeenCalledTimes(1));
+        // Secondary is now real time; game time is primary and stays shown.
         expect(updateGameMetadataAction).toHaveBeenCalledWith(
             expect.objectContaining({
                 hideRealTime: true,

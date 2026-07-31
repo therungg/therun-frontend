@@ -36,23 +36,17 @@ export function StepDetails({ data, onAdvance }: StepProps) {
     const [emulatorPolicy, setEmulatorPolicy] = useState<
         'allowed' | 'banned' | null
     >(data.metadata.emulatorPolicy ?? null);
-    const [hideRealTime, setHideRealTime] = useState(
-        data.metadata.hideRealTime ?? false,
-    );
-    const [hideGameTime, setHideGameTime] = useState(
-        data.metadata.hideGameTime ?? false,
-    );
-
-    // Sibling-forcing: unchecking one shows the other (server rejects both
-    // hidden), and unchecking = hiding.
-    const setShowRt = (show: boolean) => {
-        setHideRealTime(!show);
-        if (!show) setHideGameTime(false);
-    };
-    const setShowGt = (show: boolean) => {
-        setHideGameTime(!show);
-        if (!show) setHideRealTime(false);
-    };
+    // The primary timing column is always shown — the only question is
+    // whether the other clock shows next to it. One boolean survives a
+    // timing flip ("show the secondary too" keeps meaning that), and the
+    // server's both-hidden guard can never trip because the primary's hide
+    // flag is derived as false at save time.
+    const [showSecondary, setShowSecondary] = useState(() => {
+        const initial: Timing = data.metadata.primaryTiming ?? 'rt';
+        return initial === 'rt'
+            ? !(data.metadata.hideGameTime ?? false)
+            : !(data.metadata.hideRealTime ?? false);
+    });
 
     // Game-wide minimum time = the categoryId-null min_time policy (mirrors
     // the retired defaults step). The bound key follows `timing`, never both.
@@ -105,8 +99,8 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                     rulesTemplate: rulesTemplate.trim() || null,
                     gameRules: gameRules.trim() || null,
                     emulatorPolicy,
-                    hideRealTime,
-                    hideGameTime,
+                    hideRealTime: timing === 'rt' ? false : !showSecondary,
+                    hideGameTime: timing === 'gt' ? false : !showSecondary,
                 });
                 if ('error' in metaRes) {
                     setDefaultsError(metaRes.error);
@@ -247,34 +241,26 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                     </div>
                     <div>
                         <h4 className="h6">Time columns</h4>
+                        <p className="text-muted small mb-2">
+                            {timing === 'rt' ? 'Real time' : 'In-game time'} is
+                            always shown.
+                        </p>
                         <div className="form-check">
                             <input
                                 type="checkbox"
                                 className="form-check-input"
-                                id="game-show-rt"
-                                checked={!hideRealTime}
-                                onChange={(e) => setShowRt(e.target.checked)}
+                                id="game-show-secondary"
+                                checked={showSecondary}
+                                onChange={(e) =>
+                                    setShowSecondary(e.target.checked)
+                                }
                             />
                             <label
                                 className="form-check-label"
-                                htmlFor="game-show-rt"
+                                htmlFor="game-show-secondary"
                             >
-                                Show real time
-                            </label>
-                        </div>
-                        <div className="form-check">
-                            <input
-                                type="checkbox"
-                                className="form-check-input"
-                                id="game-show-gt"
-                                checked={!hideGameTime}
-                                onChange={(e) => setShowGt(e.target.checked)}
-                            />
-                            <label
-                                className="form-check-label"
-                                htmlFor="game-show-gt"
-                            >
-                                Show game time
+                                Also show{' '}
+                                {timing === 'rt' ? 'game time' : 'real time'}
                             </label>
                         </div>
                         <p className="text-muted small mt-2 mb-0">
