@@ -150,15 +150,16 @@ export function WizardShell({ data, initialStep }: Props) {
                         </button>
                     )}
                     <span className={styles.spacer} />
-                    {SETUP_STEPS[stepIndex].skippable && (
-                        <button
-                            type="button"
-                            className={styles.skipAction}
-                            onClick={onAdvance}
-                        >
-                            Skip this step
-                        </button>
-                    )}
+                    {SETUP_STEPS[stepIndex].skippable &&
+                        SETUP_STEPS[stepIndex + 1] && (
+                            <button
+                                type="button"
+                                className={styles.skipAction}
+                                onClick={onAdvance}
+                            >
+                                Go to {SETUP_STEPS[stepIndex + 1].label} →
+                            </button>
+                        )}
                 </div>
             </main>
         </div>
