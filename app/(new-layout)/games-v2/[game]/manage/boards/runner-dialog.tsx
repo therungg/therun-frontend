@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useEffect, useId, useMemo, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import type { RunTreatment } from '../../../../../../types/bans.types';
 import type {
@@ -90,6 +90,7 @@ export function RunnerDialog({
     const [previewError, setPreviewError] = useState<string | null>(null);
     const [isPreviewing, startPreview] = useTransition();
     const [isConfirming, startConfirm] = useTransition();
+    const treatmentDescId = useId();
 
     // Reset transient state whenever the dialog opens for a (possibly new)
     // row — never on scope changes, so switching scopes mid-flow doesn't
@@ -285,10 +286,7 @@ export function RunnerDialog({
                                     affected.
                                 </p>
                                 {preview.affectedLeaderboards.length > 0 && (
-                                    <ul
-                                        className={styles.choiceMeta}
-                                        style={{ margin: 0 }}
-                                    >
+                                    <ul className={styles.choiceMetaList}>
                                         {preview.affectedLeaderboards.map(
                                             (lb) => (
                                                 <li
@@ -318,33 +316,51 @@ export function RunnerDialog({
                             What happens to their runs
                         </p>
                         <ul className={styles.choiceList}>
-                            {TREATMENTS.map((t) => (
-                                <li key={t.value}>
-                                    <label
-                                        className={`${styles.choiceRow} ${treatment === t.value ? styles.choiceRowActive : ''}`}
-                                    >
-                                        <input
-                                            type="radio"
-                                            name="runner-treatment"
-                                            className={styles.hiddenRadio}
-                                            checked={treatment === t.value}
-                                            onChange={() =>
-                                                setTreatment(t.value)
-                                            }
-                                            disabled={isConfirming}
-                                        />
-                                        <span className={styles.choiceTitle}>
-                                            {t.label}
-                                        </span>
-                                        <span
-                                            className={styles.choiceDesc}
-                                            aria-hidden="true"
+                            {TREATMENTS.map((t) => {
+                                // Explicit aria-labelledby/aria-describedby
+                                // instead of relying on the wrapping <label>'s
+                                // implicit name computation — that would
+                                // concatenate the title and description with
+                                // no separator (e.g. "Hide nameRuns stay and
+                                // count…"). aria-describedby keeps the
+                                // description in the accessibility tree
+                                // (unlike aria-hidden, which would silence it
+                                // for screen-reader users entirely).
+                                const titleId = `${treatmentDescId}-title-${t.value}`;
+                                const descId = `${treatmentDescId}-desc-${t.value}`;
+                                return (
+                                    <li key={t.value}>
+                                        <label
+                                            className={`${styles.choiceRow} ${treatment === t.value ? styles.choiceRowActive : ''}`}
                                         >
-                                            {t.description}
-                                        </span>
-                                    </label>
-                                </li>
-                            ))}
+                                            <input
+                                                type="radio"
+                                                name="runner-treatment"
+                                                className={styles.hiddenRadio}
+                                                checked={treatment === t.value}
+                                                aria-labelledby={titleId}
+                                                aria-describedby={descId}
+                                                onChange={() =>
+                                                    setTreatment(t.value)
+                                                }
+                                                disabled={isConfirming}
+                                            />
+                                            <span
+                                                id={titleId}
+                                                className={styles.choiceTitle}
+                                            >
+                                                {t.label}
+                                            </span>
+                                            <span
+                                                id={descId}
+                                                className={styles.choiceDesc}
+                                            >
+                                                {t.description}
+                                            </span>
+                                        </label>
+                                    </li>
+                                );
+                            })}
                         </ul>
                         {treatment === 'anonymize' && (
                             <p className={styles.moveNote}>

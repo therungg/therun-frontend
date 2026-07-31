@@ -324,7 +324,7 @@ export function RowActions({
                                 <input
                                     id={`remove-reason-${row.runId}`}
                                     type="text"
-                                    className={styles.dialogTextarea}
+                                    className={styles.dialogInput}
                                     value={removeReason}
                                     onChange={(e) =>
                                         setRemoveReason(e.target.value)
