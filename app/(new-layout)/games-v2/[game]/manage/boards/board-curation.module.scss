@@ -273,6 +273,23 @@
     color: var(--bs-secondary-color);
 }
 
+// ---- Board pager ----
+// Server-side pages (BOARD_PAGE_SIZE rows each); hidden entirely for the
+// common one-page board.
+.pager {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: dt.$spacing-md;
+    padding-block: dt.$spacing-sm;
+}
+
+.pagerLabel {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    font-variant-numeric: tabular-nums;
+}
+
 .selectionAction {
     @include board.board-quiet-link;
 }

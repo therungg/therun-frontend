@@ -30,7 +30,7 @@ import type {
 import { BoardCuration } from './board-curation';
 
 const mocks = vi.hoisted(() => ({
-    loadRosterAction: vi.fn(),
+    loadBoardPageAction: vi.fn(),
     excludeAction: vi.fn(),
     previewExcludeAction: vi.fn(),
     restoreRunsAction: vi.fn(),
@@ -52,8 +52,8 @@ const mocks = vi.hoisted(() => ({
     routerRefresh: vi.fn(),
 }));
 
-vi.mock('../moderation/roster/actions/load-roster.action', () => ({
-    loadRosterAction: mocks.loadRosterAction,
+vi.mock('./actions/load-board-page.action', () => ({
+    loadBoardPageAction: mocks.loadBoardPageAction,
 }));
 vi.mock('../moderation/shared/actions/exclude.action', () => ({
     excludeAction: mocks.excludeAction,
@@ -222,9 +222,19 @@ describe("BoardCuration — a sibling row's reload must not kill a pending remov
         // reflects A already excluded server-side — this is what a naive
         // "clear the slip whenever `rows` changes" implementation would
         // misread as "A is just gone, drop everything about it."
-        mocks.loadRosterAction
-            .mockResolvedValueOnce({ ok: true, rows: [ROW_A, ROW_B] })
-            .mockResolvedValue({ ok: true, rows: [ROW_B] });
+        mocks.loadBoardPageAction
+            .mockResolvedValueOnce({
+                ok: true,
+                rows: [ROW_A, ROW_B],
+                total: 2,
+                markedTotal: 0,
+            })
+            .mockResolvedValue({
+                ok: true,
+                rows: [ROW_B],
+                total: 1,
+                markedTotal: 0,
+            });
         mocks.excludeAction.mockResolvedValue({
             ok: true,
             result: { affectedRunCount: 1, affectedLeaderboards: [] },
@@ -241,7 +251,7 @@ describe("BoardCuration — a sibling row's reload must not kill a pending remov
         renderBoard();
 
         await waitFor(() =>
-            expect(mocks.loadRosterAction).toHaveBeenCalledTimes(1),
+            expect(mocks.loadBoardPageAction).toHaveBeenCalledTimes(1),
         );
         await waitFor(() => rowContaining('alice'));
         rowContaining('bob');
@@ -274,7 +284,7 @@ describe("BoardCuration — a sibling row's reload must not kill a pending remov
             expect(mocks.applyVerdictsAction).toHaveBeenCalled(),
         );
         await waitFor(() =>
-            expect(mocks.loadRosterAction).toHaveBeenCalledTimes(2),
+            expect(mocks.loadBoardPageAction).toHaveBeenCalledTimes(2),
         );
         // `rows` has now resolved to [ROW_B] only — A is gone from the live
         // data reload just replaced.
@@ -296,7 +306,7 @@ describe("BoardCuration — a sibling row's reload must not kill a pending remov
         // state.
         fireEvent.click(screen.getByRole('button', { name: 'Keep it' }));
         await waitFor(() =>
-            expect(mocks.loadRosterAction).toHaveBeenCalledTimes(3),
+            expect(mocks.loadBoardPageAction).toHaveBeenCalledTimes(3),
         );
         await waitFor(() => {
             expect(
@@ -309,9 +319,19 @@ describe("BoardCuration — a sibling row's reload must not kill a pending remov
     });
 
     it("also keeps row A's undo affordance working after a sibling reload", async () => {
-        mocks.loadRosterAction
-            .mockResolvedValueOnce({ ok: true, rows: [ROW_A, ROW_B] })
-            .mockResolvedValue({ ok: true, rows: [ROW_B] });
+        mocks.loadBoardPageAction
+            .mockResolvedValueOnce({
+                ok: true,
+                rows: [ROW_A, ROW_B],
+                total: 2,
+                markedTotal: 0,
+            })
+            .mockResolvedValue({
+                ok: true,
+                rows: [ROW_B],
+                total: 1,
+                markedTotal: 0,
+            });
         mocks.excludeAction.mockResolvedValue({
             ok: true,
             result: { affectedRunCount: 1, affectedLeaderboards: [] },
@@ -343,7 +363,7 @@ describe("BoardCuration — a sibling row's reload must not kill a pending remov
             }),
         );
         await waitFor(() =>
-            expect(mocks.loadRosterAction).toHaveBeenCalledTimes(2),
+            expect(mocks.loadBoardPageAction).toHaveBeenCalledTimes(2),
         );
         rowContaining('alice');
 
@@ -400,11 +420,11 @@ describe('BoardCuration — stale-closure reload after a category switch', () =>
     });
 
     it("does not let an undo triggered after switching category resolve the OLD category's roster into the new view", async () => {
-        mocks.loadRosterAction.mockImplementation(
+        mocks.loadBoardPageAction.mockImplementation(
             async (_slug: string, categoryId: number) =>
                 categoryId === CAT1.id
-                    ? { ok: true, rows: [GUEST_ROW] }
-                    : { ok: true, rows: [CAT2_ROW] },
+                    ? { ok: true, rows: [GUEST_ROW], total: 1, markedTotal: 0 }
+                    : { ok: true, rows: [CAT2_ROW], total: 1, markedTotal: 0 },
         );
         mocks.excludeAction.mockResolvedValue({
             ok: true,
@@ -437,7 +457,7 @@ describe('BoardCuration — stale-closure reload after a category switch', () =>
 
         // Now resolve the STALE undo — its `onUndone` closure was captured
         // while CAT1 was selected, so without the selection guard in
-        // useBoardData its eventual `loadRosterAction(gameSlug, CAT1.id,
+        // useBoardData its eventual `loadBoardPageAction(gameSlug, CAT1.id,
         // ...)` result would land in the shared `rows` state and silently
         // replace what CAT2's view is showing.
         const undoRenderProp = mocks.toastSuccess.mock.calls[0][0];
@@ -450,17 +470,15 @@ describe('BoardCuration — stale-closure reload after a category switch', () =>
                 'Undo of remove',
             ),
         );
-        // Four loadRosterAction calls total: initial CAT1 mount, the
-        // immediate reload after Remove (CAT1), the switch to CAT2, and
-        // finally this stale undo's reload (CAT1 again) — wait for that
-        // last one to actually land before asserting it didn't stick.
-        await waitFor(() =>
-            expect(mocks.loadRosterAction).toHaveBeenCalledTimes(4),
-        );
+        // Three loadBoardPageAction calls total: initial CAT1 mount, the
+        // immediate reload after Remove (CAT1), and the switch to CAT2. The
+        // stale undo's reload never fires a fourth — its closure was
+        // captured under CAT1's key, and useBoardData's selection guard now
+        // no-ops the whole call instead of fetching-then-discarding.
+        expect(mocks.loadBoardPageAction).toHaveBeenCalledTimes(3);
 
         // CAT2's roster must still be what's on screen — the stale CAT1
-        // result from the undo's reload must have been dropped, not merged
-        // into the shared `rows` state.
+        // reload must not have replaced it.
         await waitFor(() => rowContaining('carol'));
         expect(
             screen

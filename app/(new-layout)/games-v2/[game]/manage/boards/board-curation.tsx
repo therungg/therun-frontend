@@ -60,7 +60,7 @@ import {
     subcategoryVariablesFor,
     variableUpsertBody,
 } from './subcategory-bands';
-import { useBoardData } from './use-board-data';
+import { BOARD_PAGE_SIZE, useBoardData } from './use-board-data';
 
 export interface BoardCurationProps {
     game: ResolvedGame;
@@ -326,13 +326,43 @@ export function BoardCuration({
         );
     }, [subcatVars, selectedValues]);
 
-    const { rows, loading, error, reload } = useBoardData(
+    const timing: 'rt' | 'gt' = category?.primaryTiming === 'gt' ? 'gt' : 'rt';
+
+    // Defaults to ascending (lower time = better), same default the Display
+    // popover uses (board-controls.tsx) and the same fallback categoryMgmt
+    // applies server-side — an inverted (`sortAscending: false`, "higher
+    // time = better") category must rank its longest time #1, or curation
+    // shows the board backwards from what the public leaderboard renders.
+    const ascending = category?.sortAscending ?? true;
+
+    const [showMarkedOnly, setShowMarkedOnly] = useState(false);
+    const [boardPageIndex, setBoardPageIndex] = useState(0);
+
+    const { rows, total, markedTotal, loading, error, reload } = useBoardData(
         game.name,
         category?.id ?? null,
         subcategoryKey,
+        {
+            timing,
+            sortDesc: !ascending,
+            markedOnly: showMarkedOnly,
+            page: boardPageIndex,
+        },
     );
 
-    const timing: 'rt' | 'gt' = category?.primaryTiming === 'gt' ? 'gt' : 'rt';
+    const pagerTotal = showMarkedOnly ? markedTotal : total;
+    const pageCount = Math.max(1, Math.ceil(pagerTotal / BOARD_PAGE_SIZE));
+
+    // A board switch resets paging; a shrinking board (removals, marks
+    // clearing out) can also strand the current page past the end.
+    useEffect(() => {
+        setBoardPageIndex(0);
+    }, [category?.id, subcategoryKey]);
+    useEffect(() => {
+        if (!loading && boardPageIndex >= pageCount) {
+            setBoardPageIndex(pageCount - 1);
+        }
+    }, [loading, boardPageIndex, pageCount]);
 
     // Rows a Remove has already excluded server-side, pinned in place from a
     // frozen snapshot rather than `rows` above. `rows` is shared board-wide —
@@ -366,7 +396,7 @@ export function BoardCuration({
         setPendingRemovals(new Map());
         setRemovingRunIds(new Set());
         setSelectedRunIds(new Set());
-    }, [category?.id, subcategoryKey]);
+    }, [category?.id, subcategoryKey, boardPageIndex, showMarkedOnly]);
 
     const toggleSelected = (runId: number) => {
         setSelectedRunIds((prev) => {
@@ -585,14 +615,12 @@ export function BoardCuration({
         return minMsFromPolicy(policy, timing);
     }, [category, policies, timing]);
 
-    // Defaults to ascending (lower time = better), same default the Display
-    // popover uses (board-controls.tsx) and the same fallback categoryMgmt
-    // applies server-side — an inverted (`sortAscending: false`, "higher
-    // time = better") category must rank its longest time #1, or curation
-    // shows the board backwards from what the public leaderboard renders.
-    const ascending = category?.sortAscending ?? true;
-
+    // The board arrives filtered, ordered, and ranked server-side (see
+    // getBoardPage); the merge here only re-inserts pending-removal overlay
+    // snapshots (rows a Remove already excluded server-side, pinned visible
+    // until their slip is resolved) at their old positions.
     const boardRows: RankedRow[] = useMemo(() => {
+        const pageOffset = boardPageIndex * BOARD_PAGE_SIZE;
         const live = rows
             .filter(
                 (r) => isOnBoard(r, timing) && !pendingRemovals.has(r.runId),
@@ -611,7 +639,7 @@ export function BoardCuration({
         });
         return merged.map((entry, i) => ({
             ...entry,
-            rank: i + 1,
+            rank: entry.row.boardRank ?? pageOffset + i + 1,
             // The minimum-time policy is an absolute suspicious-run floor
             // (guards against implausibly fast completions), not a ranking
             // concept — it stays "below this ms is suspect" regardless of
@@ -620,24 +648,9 @@ export function BoardCuration({
             belowMinimum:
                 minMs != null && entry.timeMs != null && entry.timeMs < minMs,
         }));
-    }, [rows, timing, minMs, pendingRemovals, ascending]);
+    }, [rows, timing, minMs, pendingRemovals, ascending, boardPageIndex]);
 
-    const markedCount = useMemo(
-        () => boardRows.filter((r) => r.row.markedForLater).length,
-        [boardRows],
-    );
-    const [showMarkedOnly, setShowMarkedOnly] = useState(false);
-    const visibleBoardRows = useMemo(
-        () =>
-            showMarkedOnly
-                ? boardRows.filter(
-                      (r) =>
-                          r.row.markedForLater ||
-                          pendingRemovals.has(r.row.runId),
-                  )
-                : boardRows,
-        [boardRows, showMarkedOnly, pendingRemovals],
-    );
+    const visibleBoardRows = boardRows;
 
     // ---- Bulk accept ----------------------------------------------------
     const [isBulkAccepting, startBulkAccept] = useTransition();
@@ -953,16 +966,19 @@ export function BoardCuration({
                 reorderBusy={isReordering}
             />
 
-            {markedCount > 0 && (
+            {(markedTotal > 0 || showMarkedOnly) && (
                 <div className={styles.markedBar}>
                     <button
                         type="button"
                         aria-pressed={showMarkedOnly}
                         className={`${styles.toolbarBtn} ${showMarkedOnly ? styles.toolbarBtnActive : ''}`}
-                        onClick={() => setShowMarkedOnly((v) => !v)}
+                        onClick={() => {
+                            setShowMarkedOnly((v) => !v);
+                            setBoardPageIndex(0);
+                        }}
                     >
                         <PinAngleFill size={11} aria-hidden />
-                        {markedCount} marked
+                        {markedTotal} marked
                     </button>
                 </div>
             )}
@@ -1205,6 +1221,40 @@ export function BoardCuration({
                                 />
                             </tbody>
                         </table>
+                    )}
+                    {!error && pageCount > 1 && (
+                        <nav className={styles.pager} aria-label="Board pages">
+                            <button
+                                type="button"
+                                className={styles.toolbarBtn}
+                                disabled={boardPageIndex === 0 || loading}
+                                onClick={() =>
+                                    setBoardPageIndex((i) => Math.max(0, i - 1))
+                                }
+                            >
+                                Previous
+                            </button>
+                            <span className={styles.pagerLabel}>
+                                Page {boardPageIndex + 1} of {pageCount}
+                                {' · '}
+                                {pagerTotal}{' '}
+                                {showMarkedOnly ? 'marked runs' : 'runs'}
+                            </span>
+                            <button
+                                type="button"
+                                className={styles.toolbarBtn}
+                                disabled={
+                                    boardPageIndex >= pageCount - 1 || loading
+                                }
+                                onClick={() =>
+                                    setBoardPageIndex((i) =>
+                                        Math.min(pageCount - 1, i + 1),
+                                    )
+                                }
+                            >
+                                Next
+                            </button>
+                        </nav>
                     )}
                 </div>
             )}

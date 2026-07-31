@@ -22,6 +22,7 @@ import { BoardCuration } from './board-curation';
 import { useBoardData } from './use-board-data';
 
 vi.mock('./use-board-data', () => ({
+    BOARD_PAGE_SIZE: 100,
     useBoardData: vi.fn(),
 }));
 
@@ -184,6 +185,8 @@ describe('BoardCuration ranking', () => {
                 rosterRow({ runId: 1, runnerName: 'slowrunner', time: 30_000 }),
                 rosterRow({ runId: 2, runnerName: 'fastrunner', time: 5_000 }),
             ],
+            total: 0,
+            markedTotal: 0,
             loading: false,
             error: null,
             reload: vi.fn(),
@@ -228,6 +231,8 @@ describe('BoardCuration ranking', () => {
                     isLeaderboardEntry: false,
                 }),
             ],
+            total: 0,
+            markedTotal: 0,
             loading: false,
             error: null,
             reload: vi.fn(),
@@ -259,6 +264,8 @@ describe('BoardCuration ranking', () => {
                 rosterRow({ runId: 1, runnerName: 'lowscore', time: 5_000 }),
                 rosterRow({ runId: 2, runnerName: 'highscore', time: 30_000 }),
             ],
+            total: 0,
+            markedTotal: 0,
             loading: false,
             error: null,
             reload: vi.fn(),
@@ -288,6 +295,8 @@ describe('BoardCuration ranking', () => {
                 rosterRow({ runId: 1, runnerName: 'slow', time: 30_000 }),
                 rosterRow({ runId: 2, runnerName: 'fast', time: 5_000 }),
             ],
+            total: 0,
+            markedTotal: 0,
             loading: false,
             error: null,
             reload: vi.fn(),
@@ -312,26 +321,36 @@ describe('BoardCuration ranking', () => {
 });
 
 describe('BoardCuration — marked-pile filter chip', () => {
-    it('shows a count chip, filters to marked rows on toggle, and hides at zero', () => {
-        mockUseBoardData.mockReturnValue({
-            rows: [
-                rosterRow({
-                    runId: 1,
-                    runnerName: 'plainrunner',
-                    time: 10_000,
-                    markedForLater: false,
-                }),
-                rosterRow({
-                    runId: 2,
-                    runnerName: 'markedrunner',
-                    time: 20_000,
-                    markedForLater: true,
-                }),
-            ],
-            loading: false,
-            error: null,
-            reload: vi.fn(),
-        });
+    it('shows a count chip and re-queries with markedOnly on toggle', () => {
+        // The marked filter is server-side now (getBoardPage's markedOnly) —
+        // the mock plays the server's part so the toggle round-trips: rows
+        // narrow when the hook is called with markedOnly: true.
+        const allRows = [
+            rosterRow({
+                runId: 1,
+                runnerName: 'plainrunner',
+                time: 10_000,
+                markedForLater: false,
+            }),
+            rosterRow({
+                runId: 2,
+                runnerName: 'markedrunner',
+                time: 20_000,
+                markedForLater: true,
+            }),
+        ];
+        mockUseBoardData.mockImplementation(
+            (_game, _categoryId, _subcategoryKey, query) => ({
+                rows: query.markedOnly
+                    ? allRows.filter((r) => r.markedForLater)
+                    : allRows,
+                total: allRows.length,
+                markedTotal: 1,
+                loading: false,
+                error: null,
+                reload: vi.fn(),
+            }),
+        );
 
         render(
             <BoardCuration
@@ -354,6 +373,12 @@ describe('BoardCuration — marked-pile filter chip', () => {
         fireEvent.click(chip);
 
         expect(chip.getAttribute('aria-pressed')).toBe('true');
+        expect(mockUseBoardData).toHaveBeenLastCalledWith(
+            GAME.name,
+            CATEGORY.id,
+            '',
+            expect.objectContaining({ markedOnly: true, page: 0 }),
+        );
         expect(screen.queryByText('plainrunner')).toBeNull();
         expect(screen.getByText('markedrunner')).toBeTruthy();
 
@@ -371,6 +396,8 @@ describe('BoardCuration — marked-pile filter chip', () => {
                     markedForLater: false,
                 }),
             ],
+            total: 0,
+            markedTotal: 0,
             loading: false,
             error: null,
             reload: vi.fn(),
@@ -414,6 +441,8 @@ describe('BoardCuration — bulk selection', () => {
                     time: 20_000,
                 }),
             ],
+            total: 0,
+            markedTotal: 0,
             loading: false,
             error: null,
             reload,
@@ -469,6 +498,8 @@ describe('BoardCuration subcategory bands', () => {
     it('re-keys the roster query when a subcategory value is picked', () => {
         mockUseBoardData.mockReturnValue({
             rows: [],
+            total: 0,
+            markedTotal: 0,
             loading: false,
             error: null,
             reload: vi.fn(),
@@ -491,6 +522,7 @@ describe('BoardCuration subcategory bands', () => {
             GAME.name,
             CATEGORY.id,
             'ngplus=no',
+            expect.objectContaining({ timing: 'rt', page: 0 }),
         );
 
         fireEvent.click(screen.getByText('Yes'));
@@ -499,12 +531,15 @@ describe('BoardCuration subcategory bands', () => {
             GAME.name,
             CATEGORY.id,
             'ngplus=yes',
+            expect.objectContaining({ timing: 'rt', page: 0 }),
         );
     });
 
     it('renders no bands and an empty key when the category has no subcategory variables', () => {
         mockUseBoardData.mockReturnValue({
             rows: [],
+            total: 0,
+            markedTotal: 0,
             loading: false,
             error: null,
             reload: vi.fn(),
@@ -526,6 +561,7 @@ describe('BoardCuration subcategory bands', () => {
             GAME.name,
             CATEGORY.id,
             '',
+            expect.objectContaining({ timing: 'rt', page: 0 }),
         );
     });
 });
@@ -546,6 +582,8 @@ function renderTwoRunners() {
                 time: 20_000,
             }),
         ],
+        total: 0,
+        markedTotal: 0,
         loading: false,
         error: null,
         reload: vi.fn(),
@@ -641,6 +679,8 @@ describe('BoardCuration — moved-here tag', () => {
                     boardOverride: { categoryId: 10, subcategoryKey: '' },
                 }),
             ],
+            total: 0,
+            markedTotal: 0,
             loading: false,
             error: null,
             reload,
@@ -699,6 +739,8 @@ describe('BoardCuration — reorder mode', () => {
         });
         mockUseBoardData.mockReturnValue({
             rows: [],
+            total: 0,
+            markedTotal: 0,
             loading: false,
             error: null,
             reload: vi.fn(),
@@ -752,6 +794,8 @@ describe('BoardCuration — reorder mode', () => {
         mocks.updateVariableAction.mockResolvedValue({ result: VAR });
         mockUseBoardData.mockReturnValue({
             rows: [],
+            total: 0,
+            markedTotal: 0,
             loading: false,
             error: null,
             reload: vi.fn(),
@@ -819,6 +863,8 @@ describe('BoardCuration subcategory key normalization', () => {
     it('requests the roster with the normalized default subcategory key', () => {
         mockUseBoardData.mockReturnValue({
             rows: [],
+            total: 0,
+            markedTotal: 0,
             loading: false,
             error: null,
             reload: vi.fn(),
@@ -840,12 +886,15 @@ describe('BoardCuration subcategory key normalization', () => {
             GAME.name,
             CATEGORY.id,
             'platform=nintendo64',
+            expect.objectContaining({ timing: 'rt', page: 0 }),
         );
     });
 
     it('keeps display labels on the chips while selecting normalized values', () => {
         mockUseBoardData.mockReturnValue({
             rows: [],
+            total: 0,
+            markedTotal: 0,
             loading: false,
             error: null,
             reload: vi.fn(),
@@ -870,6 +919,7 @@ describe('BoardCuration subcategory key normalization', () => {
             GAME.name,
             CATEGORY.id,
             'platform=virtualconsole',
+            expect.objectContaining({ timing: 'rt', page: 0 }),
         );
     });
 });

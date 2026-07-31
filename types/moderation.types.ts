@@ -312,6 +312,31 @@ export interface RosterFilter {
     offset?: number;
 }
 
+/** One server-side page of the actual board (eligible-runs `onBoard` mode). */
+export interface BoardPageFilter {
+    subcategoryKey?: string;
+    /** Which board: entry flags + sort column for real time or game time. */
+    timing: 'rt' | 'gt';
+    /** Inverted categories (`sortAscending: false`) rank longest time #1. */
+    sortDesc?: boolean;
+    /** Restrict rows to marked-for-later runs; totals stay board-wide. */
+    markedOnly?: boolean;
+    limit?: number;
+    offset?: number;
+}
+
+export type BoardRow = LeaderboardRosterRow & {
+    /** 1-based position on the full board — stable under markedOnly. */
+    boardRank: number;
+};
+
+export interface BoardPage {
+    rows: BoardRow[];
+    /** Board entries for this timing/subcategory, ignoring markedOnly. */
+    total: number;
+    markedTotal: number;
+}
+
 export interface LeaderboardRosterRow {
     runId: number;
     userId: number | null;
@@ -328,6 +353,8 @@ export interface LeaderboardRosterRow {
     markedForLater?: boolean;
     /** Backend item 3: mod-set board assignment override; run data untouched. */
     boardOverride?: { categoryId: number; subcategoryKey: string } | null;
+    /** Only present on board-page reads (`BoardRow`), absent on roster reads. */
+    boardRank?: number;
 }
 
 export interface UserExclusionRuleInput {
