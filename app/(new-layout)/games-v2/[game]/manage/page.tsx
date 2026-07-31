@@ -202,8 +202,6 @@ export default async function GameAdminConsolePage({ params }: Props) {
             });
             boardHealth = computeBoardHealth({
                 completeness: setupCompleteness,
-                attentionCreatedAts: attentionItems.map((a) => a.createdAt),
-                now: Date.now(),
             });
             gameDetails = {
                 identifiers,
