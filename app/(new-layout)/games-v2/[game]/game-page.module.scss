@@ -237,24 +237,11 @@
     @include board.board-btn-primary;
 }
 
-// quiet action chip (Discord / Manage) — outline, no glass
+// quiet action chip (Discord / Manage) — control-pill on an anchor
 .quietChip {
-    display: inline-block;
-    padding: dt.$badge-padding;
-    border: 1px solid var(--bs-border-color);
-    border-radius: dt.$badge-radius;
-    font-size: dt.$font-size-sm;
-    font-weight: dt.$label-font-weight;
-    color: var(--bs-secondary-color);
+    @include board.control-pill;
     text-decoration: none;
     white-space: nowrap;
-    transition: color dt.$transition-fast,
-        border-color dt.$transition-fast;
-
-    &:hover {
-        color: var(--bs-emphasis-color);
-        border-color: var(--bs-secondary-color);
-    }
 }
 
 .quietLink {
