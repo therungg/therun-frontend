@@ -5,9 +5,9 @@ const BOARD_ROWS = Array.from({ length: 10 });
 // Route-level loading UI for the board page (`[game]/page.tsx` and any
 // nested segment without its own `loading.tsx`). Pure static markup — no
 // data, no client hooks. Mirrors the slim masthead in
-// header/masthead.module.scss: a compact game-identity plate, then the
-// standalone selector card — so the real content lands in place instead
-// of shifting the page.
+// header/masthead.module.scss: one plate — compact game-identity hero, then
+// the category-rail section as a hairline-divided row of the same surface
+// — so the real content lands in place instead of shifting the page.
 export default function GameLoading() {
     return (
         <div>
@@ -22,9 +22,9 @@ export default function GameLoading() {
                         <div className={styles.heroActionChip} />
                     </div>
                 </div>
-            </div>
-            <div className={styles.railCard}>
-                <div className={styles.railBlock} />
+                <div className={styles.plateSection}>
+                    <div className={styles.railBlock} />
+                </div>
             </div>
 
             <div className={styles.grid}>
