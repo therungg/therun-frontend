@@ -132,7 +132,7 @@ describe('RunnerDialog', () => {
         renderRunnerDialog();
         await screen.findByText(/3 runs? affected/);
 
-        fireEvent.click(screen.getByRole('button', { name: 'Whole game' }));
+        fireEvent.click(screen.getByRole('radio', { name: 'Whole game' }));
 
         await waitFor(() =>
             expect(mocks.previewExcludeAction).toHaveBeenCalledTimes(2),
@@ -153,9 +153,7 @@ describe('RunnerDialog', () => {
 
     it('Entire site hidden without canSiteBan', () => {
         renderRunnerDialog({ canSiteBan: false });
-        expect(
-            screen.queryByRole('button', { name: 'Entire site' }),
-        ).toBeNull();
+        expect(screen.queryByRole('radio', { name: 'Entire site' })).toBeNull();
     });
 
     it('subcategory note shows only for subcategoried category at board scope', () => {
@@ -242,19 +240,15 @@ describe('RunnerDialog', () => {
         renderRunnerDialog();
         await screen.findByText(/3 runs? affected/);
 
-        const boardBtn = screen.getByRole('button', { name: 'This board' });
-        const gameBtn = screen.getByRole('button', { name: 'Whole game' });
-        expect(boardBtn.getAttribute('aria-pressed')).toBe('true');
-        expect(gameBtn.getAttribute('aria-pressed')).toBe('false');
-        expect(boardBtn.className).toMatch(/toolbarBtnActive/);
-        expect(gameBtn.className).not.toMatch(/toolbarBtnActive/);
+        const boardBtn = screen.getByRole('radio', { name: 'This board' });
+        const gameBtn = screen.getByRole('radio', { name: 'Whole game' });
+        expect(boardBtn.getAttribute('aria-checked')).toBe('true');
+        expect(gameBtn.getAttribute('aria-checked')).toBe('false');
 
         fireEvent.click(gameBtn);
 
-        expect(gameBtn.getAttribute('aria-pressed')).toBe('true');
-        expect(boardBtn.getAttribute('aria-pressed')).toBe('false');
-        expect(gameBtn.className).toMatch(/toolbarBtnActive/);
-        expect(boardBtn.className).not.toMatch(/toolbarBtnActive/);
+        expect(gameBtn.getAttribute('aria-checked')).toBe('true');
+        expect(boardBtn.getAttribute('aria-checked')).toBe('false');
 
         // Let the re-triggered preview settle before the test ends.
         await waitFor(() =>
@@ -294,7 +288,7 @@ describe('RunnerDialog', () => {
         mocks.liftSiteBanAction.mockResolvedValue({ ok: true });
         const { onMutated } = renderRunnerDialog({ canSiteBan: true });
 
-        fireEvent.click(screen.getByRole('button', { name: 'Entire site' }));
+        fireEvent.click(screen.getByRole('radio', { name: 'Entire site' }));
         fireEvent.click(screen.getByRole('radio', { name: 'Hide name' }));
         fireEvent.change(screen.getByLabelText('Reason — required'), {
             target: { value: 'tos' },
@@ -333,7 +327,7 @@ describe('RunnerDialog', () => {
         mocks.siteBanRunnerAction.mockResolvedValue({ ok: true, banId: 1 });
         const { unmount } = renderRunnerDialog({ canSiteBan: true });
 
-        fireEvent.click(screen.getByRole('button', { name: 'Entire site' }));
+        fireEvent.click(screen.getByRole('radio', { name: 'Entire site' }));
         fireEvent.click(
             screen.getByRole('radio', { name: 'Remove from boards' }),
         );
@@ -355,7 +349,7 @@ describe('RunnerDialog', () => {
         mocks.siteBanRunnerAction.mockResolvedValue({ ok: true, banId: 2 });
 
         renderRunnerDialog({ canSiteBan: true });
-        fireEvent.click(screen.getByRole('button', { name: 'Entire site' }));
+        fireEvent.click(screen.getByRole('radio', { name: 'Entire site' }));
         fireEvent.click(screen.getByRole('radio', { name: 'Keep as-is' }));
         fireEvent.change(screen.getByLabelText('Reason — required'), {
             target: { value: 'tos' },

@@ -62,8 +62,6 @@ import {
 } from './subcategory-bands';
 import { useBoardData } from './use-board-data';
 
-const REMOVE_REASON = 'Board curation during setup';
-
 export interface BoardCurationProps {
     game: ResolvedGame;
     categories: ResolvedCategory[];
@@ -425,12 +423,13 @@ export function BoardCuration({
     const startRemoval = (
         row: LeaderboardRosterRow,
         rowTimeMs: number | null,
+        reason: string,
     ) => {
         setRemovingRunIds((prev) => new Set(prev).add(row.runId));
         (async () => {
             const res = await excludeAction(game.name, {
                 runIds: [row.runId],
-                reason: REMOVE_REASON,
+                reason,
             });
             setRemovingRunIds((prev) => {
                 const next = new Set(prev);
@@ -460,6 +459,7 @@ export function BoardCuration({
                 next.set(row.runId, {
                     row,
                     timeMs: rowTimeMs,
+                    reason,
                     nextRun: null,
                     nextRunLoading: row.userId != null,
                 });
@@ -539,11 +539,15 @@ export function BoardCuration({
         reload();
     };
 
-    const handleRemoveToo = (runId: number, candidate: UserEligibleRunRow) => {
+    const handleRemoveToo = (
+        runId: number,
+        candidate: UserEligibleRunRow,
+        reason: string,
+    ) => {
         (async () => {
             const res = await excludeAction(game.name, {
                 runIds: [candidate.runId],
-                reason: REMOVE_REASON,
+                reason,
             });
             if ('error' in res) {
                 // Nothing changed — the original run's overlay entry is
@@ -1156,6 +1160,7 @@ export function BoardCuration({
                                                             handleRemoveToo(
                                                                 row.runId,
                                                                 pending.nextRun,
+                                                                pending.reason,
                                                             )
                                                         }
                                                     />
@@ -1176,10 +1181,11 @@ export function BoardCuration({
                                                         removing={removingRunIds.has(
                                                             row.runId,
                                                         )}
-                                                        onRemove={() =>
+                                                        onRemove={(reason) =>
                                                             startRemoval(
                                                                 row,
                                                                 timeMs,
+                                                                reason,
                                                             )
                                                         }
                                                         onMutated={reload}
