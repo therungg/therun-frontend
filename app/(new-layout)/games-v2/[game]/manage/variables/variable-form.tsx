@@ -8,6 +8,7 @@ import {
     roleConsequence,
 } from '~src/lib/variables/language';
 import type { VariableRow } from '../../../../../../types/leaderboards.types';
+import { InlineError, SegmentedControl } from '../shared/form-kit';
 import styles from './variables.module.scss';
 
 export interface VariableFormValues {
@@ -234,49 +235,43 @@ export function VariableForm({
                 </div>
             </div>
 
-            <fieldset className="mt-3" disabled={isBusy || mode === 'edit'}>
-                <legend className="form-label small mb-1">Role</legend>
-                <div className="form-check">
-                    <input
-                        id="var-role-sub"
-                        type="radio"
-                        className="form-check-input"
-                        name="var-role"
-                        checked={role === 'subcategory'}
-                        onChange={() => setRole('subcategory')}
-                    />
-                    <label className="form-check-label" htmlFor="var-role-sub">
+            <div className="mt-3">
+                <SegmentedControl
+                    label="Role"
+                    value={role}
+                    options={[
+                        {
+                            value: 'subcategory',
+                            label: capitalize(ROLE_LABEL.subcategory),
+                        },
+                        {
+                            value: 'filter',
+                            label: capitalize(ROLE_LABEL.filter),
+                        },
+                    ]}
+                    onChange={(v) => setRole(v as 'subcategory' | 'filter')}
+                    disabled={isBusy || mode === 'edit'}
+                />
+                <ul className="list-unstyled small text-muted mt-2 mb-0">
+                    <li>
                         <strong>{capitalize(ROLE_LABEL.subcategory)}</strong>{' '}
                         (subcategory) — each answer gets its own board (e.g.{' '}
                         <code>platform</code> with PC vs N64). Always has a
                         default; missing values fall back.
-                    </label>
-                </div>
-                <div className="form-check">
-                    <input
-                        id="var-role-filter"
-                        type="radio"
-                        className="form-check-input"
-                        name="var-role"
-                        checked={role === 'filter'}
-                        onChange={() => setRole('filter')}
-                    />
-                    <label
-                        className="form-check-label"
-                        htmlFor="var-role-filter"
-                    >
+                    </li>
+                    <li className="mt-1">
                         <strong>{capitalize(ROLE_LABEL.filter)}</strong>{' '}
                         (filter) — refines results within a board (e.g.{' '}
                         <code>region</code> selectable as US/JP). Optional per
                         run.
-                    </label>
-                </div>
+                    </li>
+                </ul>
                 <small className="text-muted d-block mt-1">
                     {mode === 'edit'
                         ? 'This can’t be changed. To switch, delete the variable and make a new one.'
                         : 'Choose carefully — this can’t be changed later without deleting the variable and making a new one.'}
                 </small>
-            </fieldset>
+            </div>
 
             <p className={styles.roleConsequence}>
                 {roleConsequence({
@@ -449,11 +444,7 @@ export function VariableForm({
                 </div>
             </details>
 
-            {(localError || error) && (
-                <div className="alert alert-danger py-2 mb-2 mt-2" role="alert">
-                    {localError ?? error}
-                </div>
-            )}
+            <InlineError>{localError ?? error}</InlineError>
 
             <div className="d-flex gap-2 justify-content-end mt-3">
                 <button

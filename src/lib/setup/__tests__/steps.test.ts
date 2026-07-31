@@ -5,11 +5,34 @@ import {
     STEP_CONCEPTS,
 } from '../../console/vocabulary';
 import { SETUP_STEP_ORDER, type SetupStepId } from '../completeness';
-import { SETUP_STEP_LABELS, SETUP_STEPS, setupStepIndex } from '../steps';
+import {
+    LEGACY_STEP_MAP,
+    resolveSetupStep,
+    SETUP_STEP_LABELS,
+    SETUP_STEPS,
+    setupStepIndex,
+} from '../steps';
 
 describe('SETUP_STEPS', () => {
     it('declares the same steps as SETUP_STEP_ORDER, in the same order', () => {
         expect(SETUP_STEPS.map((s) => s.id)).toEqual(SETUP_STEP_ORDER);
+    });
+
+    it('is the five-step category-centric wizard', () => {
+        expect(SETUP_STEPS.map((s) => s.id)).toEqual([
+            'details',
+            'categories',
+            'groups',
+            'category-setup',
+            'boards',
+        ]);
+        expect(SETUP_STEPS.map((s) => s.label)).toEqual([
+            'Game details',
+            'Categories',
+            'Groups',
+            'Category setup',
+            'Boards',
+        ]);
     });
 
     it('numbers steps 1..n contiguously', () => {
@@ -27,24 +50,53 @@ describe('SETUP_STEPS', () => {
     it('makes only the final step non-skippable', () => {
         expect(
             SETUP_STEPS.filter((s) => !s.skippable).map((s) => s.id),
-        ).toEqual(['finish']);
+        ).toEqual(['boards']);
     });
 
     it('derives labels and indexes from the same list', () => {
-        expect(SETUP_STEP_LABELS.finish).toBe('Go live');
-        expect(setupStepIndex('defaults')).toBe(4);
+        expect(SETUP_STEP_LABELS.boards).toBe('Boards');
+        expect(setupStepIndex('category-setup')).toBe(3);
         // Unknown ids are impossible via SetupStepId, but the lookup must not
         // silently report position 0 for one.
         expect(setupStepIndex('nope' as never)).toBe(-1);
     });
 });
 
+describe('resolveSetupStep', () => {
+    it('passes a current step id straight through', () => {
+        expect(resolveSetupStep('groups')).toBe('groups');
+        expect(resolveSetupStep('category-setup')).toBe('category-setup');
+    });
+
+    it('maps every retired step id onto its successor', () => {
+        // Bookmarks and links minted by the seven-step wizard must still land
+        // on the screen that now owns that work.
+        expect(resolveSetupStep('variables')).toBe('category-setup');
+        expect(resolveSetupStep('exceptions')).toBe('category-setup');
+        expect(resolveSetupStep('defaults')).toBe('details');
+        expect(resolveSetupStep('finish')).toBe('boards');
+    });
+
+    it('maps no retired id onto another retired id', () => {
+        for (const target of Object.values(LEGACY_STEP_MAP)) {
+            expect(SETUP_STEP_ORDER).toContain(target);
+        }
+    });
+
+    it('returns null for nothing and for junk', () => {
+        expect(resolveSetupStep(null)).toBeNull();
+        expect(resolveSetupStep(undefined)).toBeNull();
+        expect(resolveSetupStep('')).toBeNull();
+        expect(resolveSetupStep('not-a-step')).toBeNull();
+    });
+});
+
 describe('vocabulary alignment', () => {
-    // `defaults` and `exceptions` are the two multi-concept steps: step 5 is
-    // one screen with four headings, and step 6 is per-category overrides
-    // across all of them. They keep their own rail labels; the console
-    // reaches their contents through the category index.
-    const MULTI_CONCEPT: SetupStepId[] = ['defaults', 'exceptions'];
+    // `details` and `category-setup` are the two multi-concept steps: step 1
+    // carries the board's timing/rules defaults alongside the game's details,
+    // and step 4 is every per-category setting on one screen. They keep their
+    // own rail labels; the console reaches their contents by its own routes.
+    const MULTI_CONCEPT: SetupStepId[] = ['details', 'category-setup'];
 
     it('takes every single-concept rail label from the shared vocabulary', () => {
         for (const step of SETUP_STEPS) {
@@ -55,11 +107,9 @@ describe('vocabulary alignment', () => {
         }
     });
 
-    it('names the console destination for every step but the last', () => {
+    it('names a console destination for every step', () => {
         for (const step of SETUP_STEPS) {
-            const location = consoleLocationForStep(step.id);
-            if (step.id === 'finish') expect(location).toBeNull();
-            else expect(location, step.id).not.toBeNull();
+            expect(consoleLocationForStep(step.id), step.id).not.toBeNull();
         }
     });
 });

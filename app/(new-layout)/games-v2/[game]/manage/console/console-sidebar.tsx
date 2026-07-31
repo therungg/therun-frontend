@@ -61,6 +61,15 @@ export function ConsoleSidebar({
                                         degraded={badgeDegraded}
                                     />
                                 )}
+                                {/* TODO(boards mark-for-later badge): a
+                                 * whole-game "marked for later" count needs a
+                                 * backend endpoint — the roster endpoint only
+                                 * supports markedForLater=true scoped to one
+                                 * category, and summing it across every
+                                 * category here would mean N roster calls per
+                                 * render. Skipped rather than faked; wire this
+                                 * up once that count endpoint exists (see
+                                 * task-13-report.md). */}
                             </button>
                         );
                     })}

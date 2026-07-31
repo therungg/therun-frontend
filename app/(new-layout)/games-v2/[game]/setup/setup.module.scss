@@ -375,13 +375,6 @@ $rail-collapse: 900px;
     margin: 0;
 }
 
-.stepLede {
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-    margin: dt.$spacing-sm 0 0;
-    max-width: 38rem;
-}
-
 // ---- Step body ----------------------------------------------
 .stepBody {
     animation: stepIn dt.$transition-base both;
@@ -392,7 +385,8 @@ $rail-collapse: 900px;
         @include board.board-input-rules;
     }
 
-    :global(h3.h6) {
+    :global(h3.h6),
+    :global(h4.h6) {
         @include board.board-eyebrow;
         font-weight: 700;
         display: flex;
@@ -461,38 +455,45 @@ $rail-collapse: 900px;
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-xs;
+    // Recessed stage: the preview is a picture of the board, not more form
+    // chrome. Without it the band rows sit directly on the panel and read
+    // as stacked prose lines instead of one object.
+    background: rgba(var(--bs-body-color-rgb), 0.04);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-md;
+    padding: dt.$spacing-sm dt.$spacing-md;
+}
+
+// The public band's chips are transparent until hover — the active chip and
+// the rail card carry the shape there. Preview chips are inert and nothing
+// is active, so they need the pill surface up front or they read as text.
+// Nested under .previewBand to outrank the board-chip base regardless of
+// which CSS module the bundler emits first.
+.previewBand .previewChip {
+    background: rgba(var(--bs-body-color-rgb), 0.06);
+    border-color: rgba(var(--bs-border-color-rgb), 0.6);
+    cursor: default;
+
+    &:hover {
+        background: rgba(var(--bs-body-color-rgb), 0.06);
+        color: var(--bs-secondary-color);
+    }
 }
 
 // ---- Group builder (categories step) ------------------------
+// Rules promoted to board-segmented/board-segment/board-segment-active
+// in _board.scss — consumed here (and by the console's form kit) so the
+// two surfaces can't drift.
 .segmented {
-    display: inline-flex;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
-    border-radius: dt.$radius-md;
-    overflow: hidden;
-    margin-bottom: dt.$spacing-md;
+    @include board.board-segmented;
 
     button {
-        border: 0;
-        background: none;
-        padding: dt.$spacing-xs dt.$spacing-lg;
-        font-size: dt.$font-size-sm;
-        color: var(--bs-secondary-color);
-        transition: background-color 0.12s ease;
-
-        & + button {
-            border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
-        }
-
-        &:hover {
-            background: rgba(var(--bs-emphasis-color-rgb), 0.05);
-        }
+        @include board.board-segment;
     }
 }
 
 .segmentActive {
-    background: var(--bs-primary) !important;
-    color: var(--bs-body-bg) !important;
-    font-weight: 600;
+    @include board.board-segment-active;
 }
 
 .groupBuilder {
@@ -643,6 +644,29 @@ $rail-collapse: 900px;
 .section {
     @include board.board-surface(dt.$spacing-xl);
     margin-bottom: dt.$spacing-lg;
+}
+
+// Single-column width for the console pane's sectioned GameDetailsForm layout
+// — a form this narrow reads better than stretching to the pane's full width.
+.sectionedCol {
+    max-width: 40rem;
+}
+
+// Zone titles on the details step: a level between the step title and the
+// card eyebrows, so "confirm facts" and "decide rules" read as two jobs.
+.zoneTitle {
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: dt.$spacing-2xl 0 dt.$spacing-md;
+}
+
+// Timing + minimum share a card: the minimum's label follows the selected
+// timing, and splitting them into separate cards hides that coupling.
+.pairRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-2xl;
 }
 
 .statTile {
@@ -822,6 +846,41 @@ $rail-collapse: 900px;
 // `text-success` utility class.
 .textSuccess {
     color: var(--bs-primary);
+}
+
+// ---- Step 4: the category hub + full-screen editor ----------
+// A hub row is a .rowItem with its own two-line middle: the category's name
+// over the muted parts line categorySetupStatus() produces.
+.hubMain {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+}
+
+.hubParts {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.hubAction {
+    margin-left: auto;
+}
+
+// Back-to-hub bar above the mounted CategoryEditor. The editor brings its own
+// section rail, so this only has to name where you are and how to leave.
+.editorHead {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    margin-bottom: dt.$spacing-lg;
+}
+
+.editorTitle {
+    margin: 0;
+    font-size: dt.$font-size-xl;
+    font-weight: 700;
+    min-width: 0;
 }
 
 // Wizard -> console wayfinding line under each step body. Quiet by design:

@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { BoardCompleteness } from '../completeness';
-import { computeBoardHealth, STALE_TRIAGE_MS } from '../health';
-
-const NOW = 1_800_000_000_000;
+import { computeBoardHealth } from '../health';
 
 function completeness(over: Partial<BoardCompleteness>): BoardCompleteness {
     return {
@@ -16,16 +14,10 @@ function completeness(over: Partial<BoardCompleteness>): BoardCompleteness {
     };
 }
 
-function isoAgo(ms: number): string {
-    return new Date(NOW - ms).toISOString();
-}
-
 describe('computeBoardHealth', () => {
     it('grades a clean board healthy with a confirmation line', () => {
         const h = computeBoardHealth({
             completeness: completeness({}),
-            attentionCreatedAts: [],
-            now: NOW,
         });
         expect(h.grade).toBe('healthy');
         expect(h.items).toEqual([
@@ -48,8 +40,6 @@ describe('computeBoardHealth', () => {
                     },
                 ],
             }),
-            attentionCreatedAts: [],
-            now: NOW,
         });
         expect(h.grade).toBe('at-risk');
         expect(h.items[0]).toEqual({
@@ -59,20 +49,18 @@ describe('computeBoardHealth', () => {
         });
     });
 
-    it('sends an exceptions warning to the index, not one arbitrary category', () => {
+    it('sends a category-setup warning to the index, not one arbitrary category', () => {
         const h = computeBoardHealth({
             completeness: completeness({
                 warnings: ['1 of 2 main categories missing rules'],
                 steps: [
                     {
-                        step: 'exceptions',
+                        step: 'category-setup',
                         status: 'warning',
                         summary: '1 of 2 main categories missing rules',
                     },
                 ],
             }),
-            attentionCreatedAts: [],
-            now: NOW,
         });
         expect(h.grade).toBe('needs-attention');
         expect(h.items).toContainEqual({
@@ -82,25 +70,23 @@ describe('computeBoardHealth', () => {
         });
     });
 
-    it('sends a board-wide defaults item to the index', () => {
+    it('maps a groups blocker to the groups pane', () => {
         const h = computeBoardHealth({
             completeness: completeness({
-                warnings: ['Optional bulk settings not reviewed'],
+                blockers: ['3 featured categories are not in a group'],
                 steps: [
                     {
-                        step: 'defaults',
-                        status: 'warning',
-                        summary: 'Optional bulk settings not reviewed',
+                        step: 'groups',
+                        status: 'blocker',
+                        summary: '3 featured categories are not in a group',
                     },
                 ],
             }),
-            attentionCreatedAts: [],
-            now: NOW,
         });
         expect(h.items).toContainEqual({
-            severity: 'warning',
-            label: 'Optional bulk settings not reviewed',
-            pane: 'categories',
+            severity: 'blocker',
+            label: '3 featured categories are not in a group',
+            pane: 'groups',
         });
     });
 
@@ -116,60 +102,11 @@ describe('computeBoardHealth', () => {
                     },
                 ],
             }),
-            attentionCreatedAts: [],
-            now: NOW,
         });
         expect(h.items).toContainEqual({
             severity: 'warning',
             label: 'Slug missing',
             pane: 'game-details',
-        });
-    });
-
-    it('buckets triage items older than 7 days (info ≤2, warning >2)', () => {
-        const two = computeBoardHealth({
-            completeness: completeness({}),
-            attentionCreatedAts: [
-                isoAgo(STALE_TRIAGE_MS + 1000),
-                isoAgo(STALE_TRIAGE_MS + 2000),
-                isoAgo(1000), // fresh — not counted
-            ],
-            now: NOW,
-        });
-        expect(two.items).toContainEqual({
-            severity: 'info',
-            label: '2 triage items waiting more than a week',
-            pane: 'attention',
-        });
-        expect(two.grade).toBe('healthy');
-
-        const many = computeBoardHealth({
-            completeness: completeness({}),
-            attentionCreatedAts: [
-                isoAgo(STALE_TRIAGE_MS + 1000),
-                isoAgo(STALE_TRIAGE_MS + 2000),
-                isoAgo(STALE_TRIAGE_MS + 3000),
-            ],
-            now: NOW,
-        });
-        expect(many.items).toContainEqual({
-            severity: 'warning',
-            label: '3 triage items waiting more than a week',
-            pane: 'attention',
-        });
-        expect(many.grade).toBe('needs-attention');
-    });
-
-    it('uses singular copy for one stale item', () => {
-        const h = computeBoardHealth({
-            completeness: completeness({}),
-            attentionCreatedAts: [isoAgo(STALE_TRIAGE_MS + 1000)],
-            now: NOW,
-        });
-        expect(h.items).toContainEqual({
-            severity: 'info',
-            label: '1 triage item waiting more than a week',
-            pane: 'attention',
         });
     });
 });

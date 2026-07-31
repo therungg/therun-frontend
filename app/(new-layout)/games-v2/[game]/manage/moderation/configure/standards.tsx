@@ -10,6 +10,8 @@ import type {
     LeaderboardRosterRow,
     PolicyType,
 } from '../../../../../../../types/moderation.types';
+import { FormSection, InlineError, SectionFooter } from '../../shared/form-kit';
+import kit from '../../shared/form-kit.module.scss';
 import {
     createPolicyAction,
     deletePolicyAction,
@@ -17,6 +19,7 @@ import {
 } from '../policies/actions/policies-actions.action';
 import { loadRosterAction } from '../roster/actions/load-roster.action';
 import { loadStandardsAction } from './actions/standards.action';
+import styles from './standards.module.scss';
 import { msToInput, parseTime } from './time-input';
 
 interface Props {
@@ -51,26 +54,23 @@ function findPolicy(
 function minInputFromPolicies(
     policies: BoardPolicyRow[],
     categoryId: number,
+    timing: 'rt' | 'gt',
 ): string {
     const min = findPolicy(policies, 'min_time', categoryId);
-    return msToInput(min ? (num(min.value.minTimeMs) ?? null) : null);
-}
-
-function gtInputFromPolicies(
-    policies: BoardPolicyRow[],
-    categoryId: number,
-): string {
-    const min = findPolicy(policies, 'min_time', categoryId);
-    return msToInput(min ? (num(min.value.minGameTimeMs) ?? null) : null);
+    if (!min) return msToInput(null);
+    const bound =
+        timing === 'gt' ? min.value.minGameTimeMs : min.value.minTimeMs;
+    return msToInput(num(bound) ?? null);
 }
 
 export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
     const categoryId = category.id;
+    // One minimum, bound to the category's primary timing — same fallback
+    // rule as the board (board-curation.tsx): anything but 'gt' means 'rt'.
+    const timing: 'rt' | 'gt' = category.primaryTiming === 'gt' ? 'gt' : 'rt';
     const [policies, setPolicies] = useState<BoardPolicyRow[]>([]);
     const [minInput, setMinInput] = useState('');
     const [originalMinInput, setOriginalMinInput] = useState('');
-    const [gtInput, setGtInput] = useState('');
-    const [originalGtInput, setOriginalGtInput] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [isSaving, startSaving] = useTransition();
@@ -90,15 +90,12 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
                 return;
             }
             setPolicies(res.policies);
-            const min = minInputFromPolicies(res.policies, catId);
-            const gt = gtInputFromPolicies(res.policies, catId);
+            const min = minInputFromPolicies(res.policies, catId, timing);
             setMinInput(min);
             setOriginalMinInput(min);
-            setGtInput(gt);
-            setOriginalGtInput(gt);
             setLoading(false);
         },
-        [gameSlug],
+        [gameSlug, timing],
     );
 
     // Load policies + roster whenever the selected category changes.
@@ -110,29 +107,20 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
         });
     }, [categoryId, gameSlug, loadForCategory]);
 
-    const dirty = minInput !== originalMinInput || gtInput !== originalGtInput;
+    const dirty = minInput !== originalMinInput;
 
     const handleReset = () => {
         setMinInput(originalMinInput);
-        setGtInput(originalGtInput);
         setError(null);
     };
 
     const handleSave = () => {
         setError(null);
 
-        const minRt = parseTime(minInput);
-        if (Number.isNaN(minRt)) {
+        const minMsParsed = parseTime(minInput);
+        if (Number.isNaN(minMsParsed)) {
             setError(
                 'Time must be in h:mm:ss, m:ss, or m:ss.SSS format and greater than zero.',
-            );
-            return;
-        }
-
-        const minGt = parseTime(gtInput);
-        if (Number.isNaN(minGt)) {
-            setError(
-                'In-game time must be in h:mm:ss, m:ss, or m:ss.SSS format and greater than zero.',
             );
             return;
         }
@@ -141,7 +129,10 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
 
         startSaving(async () => {
             // The minimum time maps to a single min_time policy: create it,
-            // update it, or delete it depending on the fields and what exists.
+            // update it, or delete it depending on the field and what exists.
+            // The value carries ONLY the primary-timing key — a save
+            // deliberately drops any leftover minimum on the other clock,
+            // since there is no UI showing (or clearing) it any more.
             type ActionResult =
                 | { ok: true }
                 | { ok: true; policy: BoardPolicyRow }
@@ -150,29 +141,23 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
             const existing = findPolicy(policies, 'min_time', cid);
             let op: (() => Promise<ActionResult>) | null = null;
 
-            // Include each key only when its input is set, so an RT-only save
-            // still produces `{ minTimeMs }` exactly as before.
-            const nextValue: { minTimeMs?: number; minGameTimeMs?: number } =
-                {};
-            if (minRt != null) nextValue.minTimeMs = minRt;
-            if (minGt != null) nextValue.minGameTimeMs = minGt;
+            const boundKey = timing === 'gt' ? 'minGameTimeMs' : 'minTimeMs';
 
-            if (minRt == null && minGt == null) {
+            if (minMsParsed == null) {
                 if (existing) {
                     op = () => deletePolicyAction(gameSlug, existing.id);
                 }
             } else if (existing) {
-                if (
-                    num(existing.value.minTimeMs) !== minRt ||
-                    num(existing.value.minGameTimeMs) !== minGt
-                ) {
+                if (num(existing.value[boundKey]) !== minMsParsed) {
                     op = () =>
-                        updatePolicyAction(gameSlug, existing.id, nextValue);
+                        updatePolicyAction(gameSlug, existing.id, {
+                            [boundKey]: minMsParsed,
+                        });
                 }
             } else {
                 const input: CreatePolicyInput = {
                     policyType: 'min_time',
-                    value: nextValue,
+                    value: { [boundKey]: minMsParsed },
                     categoryId: cid,
                 };
                 op = () => createPolicyAction(gameSlug, input);
@@ -196,45 +181,41 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
         });
     };
 
-    // ── Live preview (client-side, reflects the UNSAVED field values) ──────
-    const minRtPreview = parseTime(minInput);
+    // ── Live preview (client-side, reflects the UNSAVED field value) ──────
+    const minPreview = parseTime(minInput);
     const minMs =
-        minRtPreview != null && !Number.isNaN(minRtPreview)
-            ? minRtPreview
-            : null;
-    const minGtPreview = parseTime(gtInput);
-    const gtMs =
-        minGtPreview != null && !Number.isNaN(minGtPreview)
-            ? minGtPreview
-            : null;
+        minPreview != null && !Number.isNaN(minPreview) ? minPreview : null;
     const belowMin =
-        minMs == null && gtMs == null
+        minMs == null
             ? []
-            : roster.filter(
-                  (r) =>
-                      (minMs != null && r.time != null && r.time < minMs) ||
-                      (gtMs != null && r.gameTime != null && r.gameTime < gtMs),
-              );
+            : roster.filter((r) => {
+                  const t = timing === 'gt' ? r.gameTime : r.time;
+                  return t != null && t < minMs;
+              });
 
     return (
-        <section className="mb-4">
-            <h2 className="h5 mb-1">Minimum time</h2>
-            <p className="text-muted small mb-3">
-                Set the minimum time for <strong>{category.display}</strong> in{' '}
-                {gameDisplay}. Changes apply once you save.
-            </p>
-
+        <FormSection
+            title="Minimum time"
+            lede={
+                <>
+                    Set the minimum time for <strong>{category.display}</strong>{' '}
+                    in {gameDisplay}. Changes apply once you save.
+                </>
+            }
+        >
             {loading ? (
                 <p className="text-muted">Loading standards…</p>
             ) : (
-                <div className="border rounded p-3 bg-light-subtle">
-                    <div className="row g-3">
-                        <div className="col-md-4">
+                <>
+                    <div className={styles.fieldCol}>
+                        <div>
                             <label
                                 htmlFor="std-min"
                                 className="form-label small mb-1"
                             >
-                                Reject runs faster than
+                                Reject{' '}
+                                {timing === 'gt' ? 'in-game time' : 'real time'}{' '}
+                                under
                             </label>
                             <input
                                 id="std-min"
@@ -246,27 +227,10 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
                                 disabled={!canEdit || isSaving}
                             />
                         </div>
-                        <div className="col-md-4">
-                            <label
-                                htmlFor="std-min-gt"
-                                className="form-label small mb-1"
-                            >
-                                In-game time minimum
-                            </label>
-                            <input
-                                id="std-min-gt"
-                                type="text"
-                                className="form-control form-control-sm"
-                                value={gtInput}
-                                onChange={(e) => setGtInput(e.target.value)}
-                                placeholder="e.g. 0:30 (none = no minimum)"
-                                disabled={!canEdit || isSaving}
-                            />
-                        </div>
                     </div>
 
                     {/* ── Live preview ─────────────────────────────────── */}
-                    <div className="border rounded p-3 mt-3 bg-body">
+                    <div className={styles.preview}>
                         {rosterLoading ? (
                             <span className="text-muted small">
                                 Computing preview…
@@ -294,39 +258,28 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
                                 )}
                                 {showSamples && belowMin.length > 0 && (
                                     <ul className="list-unstyled small mb-0 mt-1">
-                                        {belowMin.slice(0, 50).map((r) => (
-                                            <li key={r.runId}>
-                                                {r.runnerName} —{' '}
-                                                {r.time != null ? (
-                                                    <DurationToFormatted
-                                                        duration={r.time}
-                                                        withMillis
-                                                    />
-                                                ) : (
-                                                    '—'
-                                                )}
-                                                {gtMs != null && (
-                                                    <>
-                                                        {' '}
-                                                        (IGT{' '}
-                                                        {r.gameTime != null ? (
-                                                            <DurationToFormatted
-                                                                duration={
-                                                                    r.gameTime
-                                                                }
-                                                                withMillis
-                                                            />
-                                                        ) : (
-                                                            '—'
-                                                        )}
-                                                        )
-                                                    </>
-                                                )}{' '}
-                                                <span className="text-muted">
-                                                    (below minimum)
-                                                </span>
-                                            </li>
-                                        ))}
+                                        {belowMin.slice(0, 50).map((r) => {
+                                            const t =
+                                                timing === 'gt'
+                                                    ? r.gameTime
+                                                    : r.time;
+                                            return (
+                                                <li key={r.runId}>
+                                                    {r.runnerName} —{' '}
+                                                    {t != null ? (
+                                                        <DurationToFormatted
+                                                            duration={t}
+                                                            withMillis
+                                                        />
+                                                    ) : (
+                                                        '—'
+                                                    )}{' '}
+                                                    <span className="text-muted">
+                                                        (below minimum)
+                                                    </span>
+                                                </li>
+                                            );
+                                        })}
                                         {belowMin.length > 50 && (
                                             <li className="text-muted">
                                                 …and {belowMin.length - 50} more
@@ -341,10 +294,10 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
                     {/* ── Save / read-only note ────────────────────────── */}
                     {canEdit ? (
                         <div className="mt-3">
-                            <div className="d-flex gap-2">
+                            <SectionFooter>
                                 <button
                                     type="button"
-                                    className="btn btn-sm btn-primary"
+                                    className={kit.saveBtn}
                                     onClick={handleSave}
                                     disabled={isSaving || !dirty}
                                 >
@@ -352,26 +305,22 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
                                 </button>
                                 <button
                                     type="button"
-                                    className="btn btn-sm btn-outline-secondary"
+                                    className={kit.resetBtn}
                                     onClick={handleReset}
                                     disabled={isSaving || !dirty}
                                 >
                                     Reset
                                 </button>
-                            </div>
-                            {error && (
-                                <div className="alert alert-danger mt-2 mb-0 py-2">
-                                    {error}
-                                </div>
-                            )}
+                            </SectionFooter>
+                            <InlineError>{error}</InlineError>
                         </div>
                     ) : (
                         <p className="text-muted small mt-3 mb-0">
                             Only board-admins can change the minimum time.
                         </p>
                     )}
-                </div>
+                </>
             )}
-        </section>
+        </FormSection>
     );
 }

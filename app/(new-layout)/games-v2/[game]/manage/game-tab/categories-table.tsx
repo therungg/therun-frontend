@@ -433,12 +433,6 @@ export function CategoriesTable({
 
     return (
         <section className="mb-4">
-            <h2 className="h5 mb-2">Categories</h2>
-            <p className="text-muted small mb-2">
-                Bulk-manage which categories are visible and which are featured.
-                Use "Edit" to open a category for detailed settings.
-            </p>
-
             <div className="d-flex flex-wrap gap-2 align-items-center mb-3">
                 <input
                     type="search"
@@ -573,7 +567,6 @@ export function CategoriesTable({
                                     <th className="text-center">Timing</th>
                                     <th className="text-end">Minimum</th>
                                     <th className="text-center">Rules</th>
-                                    <th className="text-center">Proof</th>
                                     <th className="text-end">Sub-boards</th>
                                     <th className="text-center">Featured</th>
                                     <th className="text-center">Archived</th>
@@ -868,7 +861,6 @@ function ConfigCells({
                 <td className="text-center text-muted">—</td>
                 <td className="text-end text-muted">—</td>
                 <td className="text-center text-muted">—</td>
-                <td className="text-center text-muted">—</td>
                 <td className="text-end text-muted">—</td>
             </>
         );
@@ -886,10 +878,6 @@ function ConfigCells({
             <td className="text-center">
                 {cfg.hasRules ? '\u2713' : '\u2014'}
                 <Outlier on={differs.rules.has(cfg.id)} />
-            </td>
-            <td className="text-center">
-                {proofLabel(cfg)}
-                <Outlier on={differs.proof.has(cfg.id)} />
             </td>
             <td className="text-end">
                 {cfg.subBoards}
@@ -921,9 +909,4 @@ export function formatMinimum(ms: number | null): string {
     const sec = total % 60;
     const pad = (n: number) => String(n).padStart(2, '0');
     return h > 0 ? `${h}:${pad(m)}:${pad(sec)}` : `${m}:${pad(sec)}`;
-}
-
-function proofLabel(cfg: CategoryConfigRow): string {
-    if (!cfg.requireVideo) return 'none';
-    return cfg.requireVideoTopN == null ? 'all' : `top ${cfg.requireVideoTopN}`;
 }

@@ -19,4 +19,10 @@ export const EMPTY_GAME_METADATA: GameMetadata = {
     igdbPlatforms: [],
     companies: [],
     links: [],
+    rulesTemplate: null,
+    gameRules: null,
+    emulatorPolicy: null,
+    primaryTiming: null,
+    hideRealTime: false,
+    hideGameTime: false,
 };

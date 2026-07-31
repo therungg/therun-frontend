@@ -20,10 +20,10 @@ export type ConceptId =
     | 'variables'
     | 'combinations'
     | 'timing'
-    | 'proof'
     | 'standards'
     | 'rules'
-    | 'category-settings';
+    | 'category-settings'
+    | 'boards';
 
 export const CONCEPT_LABEL: Record<ConceptId, string> = {
     attention: 'Needs attention',
@@ -40,10 +40,10 @@ export const CONCEPT_LABEL: Record<ConceptId, string> = {
     variables: 'Variables',
     combinations: 'Sub-boards',
     timing: 'Timing',
-    proof: 'Proof & review',
     standards: 'Minimum time',
     rules: 'Rules',
     'category-settings': 'Settings',
+    boards: 'Boards',
 };
 
 export function conceptLabel(id: ConceptId): string {
@@ -70,6 +70,7 @@ export const TILE_CONCEPT_IDS = [
     'game-details',
     'categories',
     'groups',
+    'boards',
     'moderators',
     'reassign',
 ] as const;
@@ -90,16 +91,16 @@ export interface ConceptTile {
  */
 export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
     attention: {
-        action: "Review what's waiting",
+        action: 'Review what’s waiting',
         blurb: 'Runs flagged for review, reports from runners, and people asking to moderate this board.',
     },
     roster: {
         action: 'Look up a run or runner',
-        blurb: "Search every submitted run, check a runner's history, and act on anything you find.",
+        blurb: 'Search every submitted run, check a runner’s history, and act on anything you find.',
     },
     bans: {
         action: 'Manage banned runners',
-        blurb: "See who's banned from this board and why, and lift a ban.",
+        blurb: 'See who’s banned from this board and why, and lift a ban.',
     },
     history: {
         action: 'See what mods have done',
@@ -110,8 +111,8 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
         blurb: 'The guided walkthrough for configuring this board from scratch.',
     },
     'game-details': {
-        action: "Edit the game's details",
-        blurb: "Cover art, release info, the board's URL, and how it's matched to IGDB.",
+        action: 'Edit the game’s details',
+        blurb: 'Cover art, release info, the board’s URL, and how it’s matched to IGDB.',
     },
     categories: {
         action: 'Configure categories',
@@ -120,6 +121,10 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
     groups: {
         action: 'Sort categories into groups',
         blurb: 'Bundle related categories so the leaderboard reads in a sensible order.',
+    },
+    boards: {
+        action: 'Curate the boards',
+        blurb: 'See each leaderboard as runners do, and fix what’s wrong — remove, correct, or add runs.',
     },
     moderators: {
         action: 'Manage who moderates',
@@ -132,19 +137,18 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
 };
 
 /**
- * Which console concepts a wizard step covers. Step 5 ("Defaults") is one
- * screen with four headings (step-defaults.tsx:261,335,395,463) and therefore
- * maps to four concepts; the console reaches all four from the category index.
+ * Which console concepts a wizard step covers. Two steps are multi-concept:
+ * step 1 carries the board-wide timing and rules-template defaults alongside
+ * the game's own details, and step 4 is every per-category setting on one
+ * screen. The console reaches the per-category ones from the category index.
  */
 export const STEP_CONCEPTS: Record<SetupStepId, ConceptId[]> = {
     // The URL slug lives inside the Game details pane, not beside it.
-    details: ['game-details'],
+    details: ['game-details', 'timing', 'rules'],
     categories: ['categories'],
     groups: ['groups'],
-    variables: ['variables', 'combinations'],
-    defaults: ['timing', 'proof', 'standards', 'rules'],
-    exceptions: ['categories'],
-    finish: [],
+    'category-setup': ['categories'],
+    boards: ['boards'],
 };
 
 export interface ConsoleLocation {
@@ -158,6 +162,7 @@ const BOARD_PANES: ReadonlySet<ConceptId> = new Set<ConceptId>([
     'game-details',
     'categories',
     'groups',
+    'boards',
     'moderators',
     'reassign',
 ]);

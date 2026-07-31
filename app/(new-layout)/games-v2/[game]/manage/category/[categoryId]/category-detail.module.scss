@@ -1,14 +1,23 @@
+@use '../../../../../styles/design-tokens' as dt;
+
 .wrap {
     display: flex;
     flex-direction: column;
     gap: 1rem;
 }
 
+// Pane-header recipe (Task 7): baseline flex row, bottom hairline, same
+// title weight as the console's .paneTitle. `.title` absorbs the leftover
+// space so `.step` (prev/next) stays pinned to the trailing edge, matching
+// the old grid's `auto 1fr auto` layout.
 .header {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
+    display: flex;
     align-items: baseline;
+    flex-wrap: wrap;
     gap: 0.75rem 1rem;
+    padding-bottom: dt.$spacing-md;
+    margin-bottom: dt.$spacing-xl;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
 }
 
 .back {
@@ -22,15 +31,18 @@
 }
 
 .title {
-    font-size: 1.5rem;
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+    letter-spacing: -0.01em;
     margin: 0;
+    flex: 1;
+    min-width: 0;
 }
 
 .step {
     display: flex;
     gap: 1rem;
     font-size: 0.85rem;
-    justify-self: end;
 
     a {
         display: inline-flex;
@@ -49,88 +61,9 @@
     }
 }
 
-.body {
-    display: grid;
-    grid-template-columns: 12rem 1fr;
-    gap: 2rem;
-    align-items: start;
-}
-
-.rail {
-    position: sticky;
-    // Clears the console header; matches the offset used by the section
-    // observer's rootMargin so the highlight and the scroll stop agree.
-    top: 5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-    border-left: 1px solid var(--bs-border-color);
-
-    a {
-        padding: 0.3rem 0.75rem;
-        font-size: 0.85rem;
-        text-decoration: none;
-        color: var(--bs-secondary-color);
-        border-left: 2px solid transparent;
-        margin-left: -1px;
-
-        &:hover {
-            color: var(--bs-body-color);
-        }
-    }
-}
-
-.railCurrent {
-    color: var(--bs-body-color) !important;
-    border-left-color: var(--bs-primary) !important;
-}
-
-.sections {
-    display: flex;
-    flex-direction: column;
-    gap: 2.5rem;
-    min-width: 0;
-}
-
-.section {
-    // Anchor jumps must not tuck the heading under the sticky console header.
-    scroll-margin-top: 5rem;
-
-    &:focus {
-        outline: none;
-    }
-}
-
 @media (max-width: 900px) {
-    .body {
-        grid-template-columns: 1fr;
-    }
-
-    .rail {
-        position: static;
-        flex-direction: row;
-        flex-wrap: wrap;
-        border-left: none;
-        border-bottom: 1px solid var(--bs-border-color);
-        padding-bottom: 0.5rem;
-
-        a {
-            border-left: none;
-            border-bottom: 2px solid transparent;
-            margin-left: 0;
-        }
-    }
-
-    .railCurrent {
-        border-left-color: transparent !important;
-        border-bottom-color: var(--bs-primary) !important;
-    }
-
     .header {
-        grid-template-columns: 1fr;
-    }
-
-    .step {
-        justify-self: start;
+        flex-direction: column;
+        align-items: flex-start;
     }
 }

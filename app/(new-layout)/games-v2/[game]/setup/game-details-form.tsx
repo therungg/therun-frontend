@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import Link from '~src/components/link';
 import type {
     GameIdentifiers,
@@ -13,6 +13,7 @@ import {
 } from '~src/lib/setup/igdb-prefill';
 import { normalizeDiscordInvite } from '~src/utils/discord-invite';
 import { updateIdentifiersAction } from '../manage/identifiers/actions/update-identifiers.action';
+import { FormSection, InlineError } from '../manage/shared/form-kit';
 import { getCoverUploadUrlAction } from './actions/get-cover-upload-url.action';
 import { updateGameMetadataAction } from './actions/update-game-metadata.action';
 import { FieldLabel } from './field-hint';
@@ -48,12 +49,27 @@ export function GameDetailsForm({
     game,
     onSaved,
     saveLabel = 'Save & continue',
+    formId,
+    hideAction = false,
+    onBusyChange,
+    onErrorChange,
+    sectioned = false,
 }: {
     identifiers: GameIdentifiers;
     metadata: GameMetadata;
     game: { id: number; name: string; image: string | null };
     onSaved: () => void;
     saveLabel?: string;
+    /** id on the <form>, so an external `<button form=…>` can submit it. */
+    formId?: string;
+    /** Suppress the internal submit button (caller renders its own). */
+    hideAction?: boolean;
+    /** Reports isSaving/isUploading to a caller-rendered external button. */
+    onBusyChange?: (busy: boolean) => void;
+    /** Reports the in-place error string to a caller-rendered external note. */
+    onErrorChange?: (error: string | null) => void;
+    /** Single-column, grouped-section layout for the console pane. */
+    sectioned?: boolean;
 }) {
     const [slug, setSlug] = useState(identifiers.slug ?? '');
     const [coverUrl, setCoverUrl] = useState(metadata.coverUrl ?? '');
@@ -79,6 +95,15 @@ export function GameDetailsForm({
     const [isSaving, startSaving] = useTransition();
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const busy = isSaving || isUploading;
+    useEffect(() => {
+        onBusyChange?.(busy);
+    }, [busy, onBusyChange]);
+
+    useEffect(() => {
+        onErrorChange?.(error);
+    }, [error, onErrorChange]);
 
     const uploadCover = async (file: File | undefined) => {
         if (!file) return;
@@ -139,6 +164,7 @@ export function GameDetailsForm({
     const slugPreview = normalizeSlugForStorage(slug);
 
     const save = () => {
+        if (isSaving || isUploading) return;
         setError(null);
         if (slug.trim() !== '' && slugPreview === '') {
             setError(
@@ -195,265 +221,325 @@ export function GameDetailsForm({
 
     const preview = coverUrl.trim() || game.image;
 
-    return (
+    const coverField = (
         <>
-            <div className="row g-4">
-                <div className="col-md-6">
-                    <FieldLabel
-                        htmlFor="cover-upload"
-                        label="Cover image"
-                        hint="The box art shown for this game across the site. Prefilled from IGDB — upload your own if it's wrong or missing. Portrait (3:4); anything else gets cropped."
+            <FieldLabel
+                htmlFor="cover-upload"
+                label="Cover image"
+                hint="The box art shown for this game across the site. Prefilled from IGDB — upload your own if it’s wrong or missing. Portrait (3:4); anything else gets cropped."
+            />
+            <div className="d-flex gap-3 align-items-start">
+                {preview && (
+                    <img
+                        src={preview}
+                        alt="Cover preview"
+                        width={96}
+                        height={128}
+                        className="rounded"
+                        style={{
+                            aspectRatio: '3 / 4',
+                            objectFit: 'cover',
+                        }}
                     />
-                    <div className="d-flex gap-3 align-items-start">
-                        {preview && (
-                            <img
-                                src={preview}
-                                alt="Cover preview"
-                                width={96}
-                                height={128}
-                                className="rounded"
-                                style={{
-                                    aspectRatio: '3 / 4',
-                                    objectFit: 'cover',
-                                }}
-                            />
-                        )}
-                        <div>
-                            <input
-                                ref={fileInputRef}
-                                id="cover-upload"
-                                type="file"
-                                accept={ALLOWED_COVER_TYPES.join(',')}
-                                className="d-none"
-                                onChange={(e) => {
-                                    void uploadCover(e.target.files?.[0]);
-                                    e.target.value = '';
-                                }}
-                            />
-                            <button
-                                type="button"
-                                className="btn btn-sm btn-outline-primary d-block"
-                                disabled={isUploading || isSaving}
-                                onClick={() => fileInputRef.current?.click()}
-                            >
-                                {isUploading
-                                    ? 'Uploading…'
-                                    : coverUrl.trim()
-                                      ? 'Replace image'
-                                      : 'Upload image'}
-                            </button>
-                            {coverUrl.trim() && (
-                                <button
-                                    type="button"
-                                    className="btn btn-sm btn-link px-0 d-block"
-                                    disabled={isUploading || isSaving}
-                                    onClick={() => setCoverUrl('')}
-                                >
-                                    Remove, use IGDB art
-                                </button>
-                            )}
-                            <div className="text-muted small mt-1">
-                                PNG, JPEG, or WEBP, up to 2 MB. Applies when you
-                                save.
-                            </div>
-                        </div>
-                    </div>
-                    <FieldLabel
-                        className="mt-3"
-                        htmlFor="release-year"
-                        label="Release year"
-                        hint="The year the game released, shown on the game page. Prefilled from IGDB — change it if the IGDB date is wrong."
-                    />
+                )}
+                <div>
                     <input
-                        id="release-year"
-                        className="form-control"
-                        inputMode="numeric"
-                        value={releaseYear}
-                        onChange={(e) => setReleaseYear(e.target.value)}
+                        ref={fileInputRef}
+                        id="cover-upload"
+                        type="file"
+                        accept={ALLOWED_COVER_TYPES.join(',')}
+                        className="d-none"
+                        onChange={(e) => {
+                            void uploadCover(e.target.files?.[0]);
+                            e.target.value = '';
+                        }}
                     />
-                    <FieldLabel
-                        className="mt-3"
-                        htmlFor="platforms"
-                        label="Platforms"
-                        hint="The platforms this game is on, shown on the game page. Comma-separated. Prefilled from IGDB — edit it if you want."
-                    />
-                    <input
-                        id="platforms"
-                        className="form-control"
-                        value={platformsText}
-                        onChange={(e) => setPlatformsText(e.target.value)}
-                        placeholder="PC, Switch, PS5"
-                    />
-                    <FieldLabel
-                        className="mt-3"
-                        htmlFor="about"
-                        label="About"
-                        hint="The description shown on the game page. Prefilled from IGDB — once you edit it, later IGDB syncs leave your text alone. Clear it to go back to the IGDB summary."
-                    />
-                    <textarea
-                        id="about"
-                        className="form-control"
-                        rows={4}
-                        maxLength={5000}
-                        value={about}
-                        onChange={(e) => setAbout(e.target.value)}
-                        placeholder="A short description of the game, shown on the game page."
-                    />
-                    {metadata.igdbUrl && (
-                        <p className="text-muted small mt-2 mb-0">
-                            Prefilled data comes from{' '}
-                            <a
-                                href={metadata.igdbUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                            >
-                                this IGDB entry
-                            </a>
-                            . Wrong game?{' '}
-                            <Link
-                                href={`/games-v2/${game.name}/manage?pane=game-details`}
-                            >
-                                Fix the match
-                            </Link>
-                        </p>
-                    )}
-                </div>
-                <div className="col-md-6">
-                    <FieldLabel
-                        htmlFor="slug"
-                        label="URL slug"
-                        hint={
-                            <>
-                                The name in this board&apos;s web address —{' '}
-                                <code>sm64</code> makes the page{' '}
-                                <code>therun.gg/games-v2/sm64</code>. Stored
-                                lowercase with non-alphanumerics turned into
-                                dashes, and must be unique across all games.
-                                Leave it empty to keep the derived name.
-                            </>
-                        }
-                    />
-                    <input
-                        id="slug"
-                        className="form-control"
-                        value={slug}
-                        onChange={(e) => setSlug(e.target.value)}
-                        placeholder="e.g. super-mario-64"
-                    />
-                    <small className="text-muted">
-                        {slug.trim() === '' ? (
-                            <>No slug set — falls back to the derived name.</>
-                        ) : slugPreview !== slug ? (
-                            <>
-                                Will be stored as <code>{slugPreview}</code>
-                            </>
-                        ) : (
-                            <>
-                                {slugPreview.length}/{SLUG_MAX} characters.
-                            </>
-                        )}
-                    </small>
-                    <FieldLabel
-                        className="mt-3"
-                        htmlFor="discord"
-                        label="Discord invite"
-                        hint="Adds a Discord button to the game page. Use an invite that doesn't expire, or the button eventually leads nowhere."
-                    />
-                    <input
-                        id="discord"
-                        className="form-control"
-                        value={discordUrl}
-                        onChange={(e) => setDiscordUrl(e.target.value)}
-                        onBlur={(e) =>
-                            setDiscordUrl(
-                                normalizeDiscordInvite(e.target.value) ??
-                                    e.target.value,
-                            )
-                        }
-                        placeholder="https://discord.gg/… or just the code"
-                    />
-                    <p className="text-muted small mt-1 mb-0">
-                        Paste the full invite link or only the code after
-                        discord.gg/.
-                    </p>
-                    <FieldLabel
-                        className="mt-3"
-                        label="Links"
-                        hint="Extra links shown as chips on the game page — wiki, official site, Twitch. Up to ten."
-                    />
-                    <p className="text-muted small mb-2">
-                        A short label plus an https URL.
-                    </p>
-                    <div className="d-flex gap-2 flex-wrap mb-2">
-                        {LINK_PRESETS.map((preset) => (
-                            <button
-                                key={preset.label}
-                                type="button"
-                                className="btn btn-sm btn-outline-secondary"
-                                disabled={
-                                    links.length >= 10 ||
-                                    links.some((l) => l.label === preset.label)
-                                }
-                                onClick={() =>
-                                    setLinks((ls) => [
-                                        ...ls,
-                                        { label: preset.label, url: '' },
-                                    ])
-                                }
-                            >
-                                + {preset.label}
-                            </button>
-                        ))}
-                    </div>
-                    {links.map((link, index) => (
-                        <div key={index} className="d-flex gap-2 mb-2">
-                            <input
-                                className="form-control"
-                                style={{ maxWidth: '8rem' }}
-                                maxLength={40}
-                                value={link.label}
-                                onChange={(e) =>
-                                    updateLink(index, { label: e.target.value })
-                                }
-                                placeholder="Twitch"
-                            />
-                            <input
-                                type="url"
-                                className="form-control"
-                                value={link.url}
-                                onChange={(e) =>
-                                    updateLink(index, { url: e.target.value })
-                                }
-                                placeholder="https://…"
-                            />
-                            <button
-                                type="button"
-                                className="btn btn-sm btn-outline-danger"
-                                onClick={() => removeLink(index)}
-                            >
-                                Remove
-                            </button>
-                        </div>
-                    ))}
                     <button
                         type="button"
-                        className="btn btn-sm btn-outline-secondary"
-                        disabled={links.length >= 10}
-                        onClick={addLink}
+                        className="btn btn-sm btn-outline-primary d-block"
+                        disabled={isUploading || isSaving}
+                        onClick={() => fileInputRef.current?.click()}
                     >
-                        Add link
+                        {isUploading
+                            ? 'Uploading…'
+                            : coverUrl.trim()
+                              ? 'Replace image'
+                              : 'Upload image'}
                     </button>
+                    {coverUrl.trim() && (
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-link px-0 d-block"
+                            disabled={isUploading || isSaving}
+                            onClick={() => setCoverUrl('')}
+                        >
+                            Remove, use IGDB art
+                        </button>
+                    )}
+                    <div className="text-muted small mt-1">
+                        PNG, JPEG, or WEBP, up to 2 MB. Applies when you save.
+                    </div>
                 </div>
             </div>
-            {error && <div className={`${styles.errorNote} mt-3`}>{error}</div>}
+        </>
+    );
+
+    const yearField = (
+        <>
+            <FieldLabel
+                className="mt-3"
+                htmlFor="release-year"
+                label="Release year"
+                hint="The year the game released, shown on the game page. Prefilled from IGDB — change it if the IGDB date is wrong."
+            />
+            <input
+                id="release-year"
+                className="form-control"
+                inputMode="numeric"
+                value={releaseYear}
+                onChange={(e) => setReleaseYear(e.target.value)}
+            />
+        </>
+    );
+
+    const platformsField = (
+        <>
+            <FieldLabel
+                className="mt-3"
+                htmlFor="platforms"
+                label="Platforms"
+                hint="The platforms this game is on, shown on the game page. Comma-separated. Prefilled from IGDB — edit it if you want."
+            />
+            <input
+                id="platforms"
+                className="form-control"
+                value={platformsText}
+                onChange={(e) => setPlatformsText(e.target.value)}
+                placeholder="PC, Switch, PS5"
+            />
+        </>
+    );
+
+    const aboutField = (
+        <>
+            <FieldLabel
+                className="mt-3"
+                htmlFor="about"
+                label="About"
+                hint="The description shown on the game page. Prefilled from IGDB — once you edit it, later IGDB syncs leave your text alone. Clear it to go back to the IGDB summary."
+            />
+            <textarea
+                id="about"
+                className="form-control"
+                rows={4}
+                maxLength={5000}
+                value={about}
+                onChange={(e) => setAbout(e.target.value)}
+                placeholder="A short description of the game, shown on the game page."
+            />
+        </>
+    );
+
+    const slugField = (
+        <>
+            <FieldLabel
+                htmlFor="slug"
+                label="URL slug"
+                hint={
+                    <>
+                        The name in this board&apos;s web address —{' '}
+                        <code>sm64</code> makes the page{' '}
+                        <code>therun.gg/games-v2/sm64</code>. Stored lowercase
+                        with non-alphanumerics turned into dashes, and must be
+                        unique across all games. Leave it empty to keep the
+                        derived name.
+                    </>
+                }
+            />
+            <input
+                id="slug"
+                className="form-control"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+                placeholder="e.g. super-mario-64"
+            />
+            <small className="text-muted">
+                {slug.trim() === '' ? (
+                    <>No slug set — falls back to the derived name.</>
+                ) : slugPreview !== slug ? (
+                    <>
+                        Will be stored as <code>{slugPreview}</code>
+                    </>
+                ) : (
+                    <>
+                        {slugPreview.length}/{SLUG_MAX} characters.
+                    </>
+                )}
+            </small>
+        </>
+    );
+
+    const discordField = (
+        <>
+            <FieldLabel
+                className="mt-3"
+                htmlFor="discord"
+                label="Discord invite"
+                hint="Adds a Discord button to the game page. Use an invite that doesn’t expire, or the button eventually leads nowhere."
+            />
+            <input
+                id="discord"
+                className="form-control"
+                value={discordUrl}
+                onChange={(e) => setDiscordUrl(e.target.value)}
+                onBlur={(e) =>
+                    setDiscordUrl(
+                        normalizeDiscordInvite(e.target.value) ??
+                            e.target.value,
+                    )
+                }
+                placeholder="https://discord.gg/… or just the code"
+            />
+            <p className="text-muted small mt-1 mb-0">
+                Paste the full invite link or only the code after discord.gg/.
+            </p>
+        </>
+    );
+
+    const linksField = (
+        <>
+            <FieldLabel
+                className="mt-3"
+                label="Links"
+                hint="Extra links shown as chips on the game page — wiki, official site, Twitch. Up to ten."
+            />
+            <p className="text-muted small mb-2">
+                A short label plus an https URL.
+            </p>
+            <div className="d-flex gap-2 flex-wrap mb-2">
+                {LINK_PRESETS.map((preset) => (
+                    <button
+                        key={preset.label}
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        disabled={
+                            links.length >= 10 ||
+                            links.some((l) => l.label === preset.label)
+                        }
+                        onClick={() =>
+                            setLinks((ls) => [
+                                ...ls,
+                                { label: preset.label, url: '' },
+                            ])
+                        }
+                    >
+                        + {preset.label}
+                    </button>
+                ))}
+            </div>
+            {links.map((link, index) => (
+                <div key={index} className="d-flex gap-2 mb-2">
+                    <input
+                        className="form-control"
+                        style={{ maxWidth: '8rem' }}
+                        maxLength={40}
+                        value={link.label}
+                        onChange={(e) =>
+                            updateLink(index, { label: e.target.value })
+                        }
+                        placeholder="Twitch"
+                    />
+                    <input
+                        type="url"
+                        className="form-control"
+                        value={link.url}
+                        onChange={(e) =>
+                            updateLink(index, { url: e.target.value })
+                        }
+                        placeholder="https://…"
+                    />
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline-danger"
+                        onClick={() => removeLink(index)}
+                    >
+                        Remove
+                    </button>
+                </div>
+            ))}
             <button
                 type="button"
-                className={`${styles.primaryAction} mt-3`}
-                disabled={isSaving || isUploading}
-                onClick={save}
+                className="btn btn-sm btn-outline-secondary"
+                disabled={links.length >= 10}
+                onClick={addLink}
             >
-                {isSaving ? 'Saving…' : saveLabel}
+                Add link
             </button>
         </>
+    );
+
+    return (
+        <form
+            id={formId}
+            noValidate
+            onSubmit={(e) => {
+                e.preventDefault();
+                save();
+            }}
+        >
+            {metadata.igdbUrl && (
+                <p className="text-muted small mb-3">
+                    Prefilled data comes from{' '}
+                    <a href={metadata.igdbUrl} target="_blank" rel="noreferrer">
+                        this IGDB entry
+                    </a>
+                    . Wrong game?{' '}
+                    <Link
+                        href={`/games-v2/${game.name}/manage?pane=game-details`}
+                    >
+                        Fix the match
+                    </Link>
+                </p>
+            )}
+            {sectioned ? (
+                <div className={styles.sectionedCol}>
+                    <FormSection title="Identity">
+                        {coverField}
+                        {yearField}
+                        {platformsField}
+                    </FormSection>
+                    <FormSection title="About">{aboutField}</FormSection>
+                    <FormSection title="Web & community">
+                        {slugField}
+                        {discordField}
+                        {linksField}
+                    </FormSection>
+                </div>
+            ) : (
+                <div className="row g-4">
+                    <div className="col-md-6">
+                        {coverField}
+                        {yearField}
+                        {platformsField}
+                        {aboutField}
+                    </div>
+                    <div className="col-md-6">
+                        {slugField}
+                        {discordField}
+                        {linksField}
+                    </div>
+                </div>
+            )}
+            <InlineError>{error}</InlineError>
+            {!hideAction && (
+                <button
+                    type="submit"
+                    className={`${styles.primaryAction} mt-3`}
+                    disabled={isSaving || isUploading}
+                >
+                    {isSaving ? 'Saving…' : saveLabel}
+                </button>
+            )}
+        </form>
     );
 }

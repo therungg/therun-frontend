@@ -9,6 +9,7 @@ import {
     VerificationBadge,
 } from '../../../../run-view/run-badges';
 import { BackLink } from '../../../../shared/back-link';
+import consoleStyles from '../../../console/console.module.scss';
 import type { ModVerb, RunActionTarget } from '../../shared/action-model';
 import { ManualTimeDialog } from '../../shared/manual-time-dialog';
 import { RunActionDialog } from '../../shared/run-action-dialog';
@@ -163,13 +164,13 @@ export function RunnerView({
     const showBanNudge = selected.size >= 3;
 
     return (
-        <div className="container py-3">
-            <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-                <h1 className="h4 mb-0">
+        <div>
+            <div className={consoleStyles.paneHeader}>
+                <h1 className={consoleStyles.paneTitle}>
                     {runnerName}{' '}
                     <span className="text-muted fs-6">in {gameDisplay}</span>
                 </h1>
-                <div className="d-flex flex-wrap gap-2">
+                <div className={`${consoleStyles.paneActions} flex-wrap`}>
                     {firstVisibleGroup && (
                         <button
                             type="button"

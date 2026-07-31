@@ -1,0 +1,105 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/board' as board;
+
+.section {
+    padding-block: dt.$spacing-xl;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.3);
+
+    &:last-child {
+        border-bottom: 0;
+    }
+}
+
+.sectionTitle {
+    @include board.board-eyebrow;
+    font-weight: 700;
+    margin: 0 0 dt.$spacing-md;
+}
+
+.sectionHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    margin-bottom: dt.$spacing-md;
+
+    .sectionTitle {
+        margin-bottom: 0;
+    }
+}
+
+.sectionLede {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: calc(#{dt.$spacing-md} * -1 + #{dt.$spacing-xs}) 0 dt.$spacing-lg;
+    max-width: 60ch;
+}
+
+.segGroup {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+}
+
+.segLabel {
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+}
+
+.segmented {
+    @include board.board-segmented;
+}
+
+.segment {
+    @include board.board-segment;
+}
+
+.segmentActive {
+    @include board.board-segment-active;
+}
+
+.switchRow {
+    display: flex;
+    align-items: flex-start;
+    gap: dt.$spacing-md;
+    padding-block: dt.$spacing-xs;
+}
+
+.switch {
+    @include board.board-switch;
+    margin-top: 2px;
+}
+
+.switchLabel {
+    font-size: dt.$font-size-sm;
+    cursor: pointer;
+}
+
+.switchHint {
+    display: block;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+}
+
+.footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: dt.$spacing-md;
+    padding-top: dt.$spacing-lg;
+}
+
+.error {
+    @include board.board-error-alert;
+    margin-bottom: dt.$spacing-md;
+}
+
+.saveBtn {
+    @include board.board-btn-primary;
+}
+
+.resetBtn {
+    @include board.board-quiet-link;
+    font-size: dt.$font-size-sm;
+}

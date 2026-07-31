@@ -34,6 +34,7 @@ interface Props {
     query: Omit<LeaderboardQuery, 'page'>;
     sessionUsername: string | null;
     canManage: boolean;
+    canSiteBan?: boolean;
     gameSlug: string;
     variableKeys: string[];
     primaryTiming: TimingKey;
@@ -73,6 +74,7 @@ export function LeaderboardPager({
     query,
     sessionUsername,
     canManage,
+    canSiteBan = false,
     gameSlug,
     variableKeys,
     primaryTiming,
@@ -378,6 +380,7 @@ export function LeaderboardPager({
                 leaderboard={{ ...initial, entries: merged }}
                 sessionUsername={sessionUsername}
                 canManage={canManage}
+                canSiteBan={canSiteBan}
                 gameSlug={gameSlug}
                 variableKeys={variableKeys}
                 primaryTiming={primaryTiming}

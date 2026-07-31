@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidateTag } from 'next/cache';
+import { updateTag } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
 import { ApiError } from '~src/lib/api-client';
 import { updateCategory } from '~src/lib/category-mgmt';
@@ -51,13 +51,18 @@ export async function reorderCategoriesAction(
             });
             applied.push(change);
         }
-        revalidateTag(`game-cats:${input.gameId}`, 'minutes');
+        // updateTag, not revalidateTag: BoardCuration's reorder nudges call
+        // router.refresh() right after this resolves, and re-derive display
+        // order from the same cached read. revalidateTag's
+        // stale-while-revalidate would hand that refresh the pre-write
+        // order, making the first nudge look like a no-op.
+        updateTag(`game-cats:${input.gameId}`);
         return { result: { reordered: true } };
     } catch (e) {
         // Writes that landed before the failure are real — report them so
         // the caller can reconcile local state instead of blind-reverting.
         if (applied.length > 0) {
-            revalidateTag(`game-cats:${input.gameId}`, 'minutes');
+            updateTag(`game-cats:${input.gameId}`);
         }
         const message =
             e instanceof ApiError ? e.message : 'Failed to reorder categories.';

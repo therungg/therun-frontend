@@ -9,6 +9,7 @@ import { curateCategoryAction } from '../actions/curate-category.action';
 import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
 import { CategoryBandPreview } from './category-band-preview';
+import { buildCategorySeed, computeCategoryChanges } from './category-seed';
 import { StepHeader } from './step-header';
 
 /** Rows rendered before the list is cut and search takes over. */
@@ -129,11 +130,7 @@ export function StepCategories({ data, onAdvance }: StepProps) {
     if (data.categories.length === 0) {
         return (
             <section>
-                <StepHeader
-                    step="categories"
-                    title="No categories yet"
-                    lede="Categories show up on their own when runs are submitted or ingested from timers, so there’s nothing to pick yet. Once runs come in, choose what shows on the board here or from the console."
-                />
+                <StepHeader step="categories" title="No categories yet" />
                 <Link href={`/games-v2/${data.game.name}/submit`}>
                     Point runners at the submission form →
                 </Link>
@@ -174,6 +171,12 @@ export function StepCategories({ data, onAdvance }: StepProps) {
     const setMain = (id: number, main: boolean) =>
         setRows((rs) => rs.map((r) => (r.id === id ? { ...r, main } : r)));
 
+    // Newly-featured categories seed from the game's defaults so a category
+    // that's never been touched doesn't land on the board with no timing
+    // and no rules. Re-curation (a category that was already Featured, or
+    // one restored from Archived) isn't first setup, so it stays seedless.
+    const seed = buildCategorySeed(data.metadata);
+
     const save = () => {
         startSaving(async () => {
             // The tickbox means Featured, and nothing else.
@@ -192,14 +195,7 @@ export function StepCategories({ data, onAdvance }: StepProps) {
             //
             // Group assignment belongs to the next step, so groupId is omitted
             // from the body, which leaves the column alone.
-            const changed = rows.flatMap((r) => {
-                const orig = data.categories.find((c) => c.id === r.id);
-                if (!orig) return [];
-                const wasMain = orig.isMain ?? false;
-                const restore = r.main && orig.archived;
-                if (wasMain === r.main && !restore) return [];
-                return [{ row: r, restore }];
-            });
+            const changed = computeCategoryChanges(rows, data.categories);
 
             if (changed.length === 0) {
                 onAdvance();
@@ -221,17 +217,23 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                     const res = await curateCategoryAction({
                         gameSlug: data.game.name,
                         gameId: data.game.id,
-                        categoryId: next.row.id,
-                        isMain: next.row.main,
+                        categoryId: next.id,
+                        isMain: next.main,
                         ...(next.restore ? { active: true } : {}),
+                        ...(next.becomingMain
+                            ? {
+                                  seed,
+                                  currentRulesEmpty: next.currentRulesEmpty,
+                              }
+                            : {}),
                     });
                     done++;
                     setProgress(`Saving ${done} / ${changed.length}…`);
                     if ('error' in res) {
-                        failures.push(next.row.id);
+                        failures.push(next.id);
                         setRows((rs) =>
                             rs.map((row) =>
-                                row.id === next.row.id
+                                row.id === next.id
                                     ? { ...row, error: res.error }
                                     : row,
                             ),
@@ -256,9 +258,6 @@ export function StepCategories({ data, onAdvance }: StepProps) {
             <StepHeader
                 step="categories"
                 title="Which categories belong on the board?"
-                lede={`Runners have submitted runs in ${rows.length} categor${
-                    rows.length === 1 ? 'y' : 'ies'
-                }. These come from timers and submissions, not from you, so many of them probably don’t belong on a leaderboard. Pick the ones that do — the rest are hidden, not deleted, and you can bring them back from the console.`}
             />
 
             <CategoryBandPreview

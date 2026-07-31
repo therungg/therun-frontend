@@ -128,6 +128,8 @@ export function BoardMasthead({
                 />
                 <RulesPanel
                     rules={category.rules}
+                    gameRules={data.gameMeta.gameRules}
+                    emulatorPolicy={data.gameMeta.emulatorPolicy}
                     open={rulesOpen}
                     onToggle={onToggleRules}
                 />

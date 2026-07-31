@@ -1,4 +1,6 @@
 import type {
+    BoardPage,
+    BoardPageFilter,
     BulkExcludeResult,
     BulkIncludeResult,
     CreateRuleResult,
@@ -50,6 +52,25 @@ export function getCategoryRoster(
             endedBefore: filter?.endedBefore,
             limit: filter?.limit,
             offset: filter?.offset,
+        },
+    });
+}
+
+export function getBoardPage(
+    sessionId: string,
+    gameId: number,
+    categoryId: number,
+    filter: BoardPageFilter,
+): Promise<BoardPage> {
+    return modFetch(`${base(gameId)}/categories/${categoryId}/eligible-runs`, {
+        sessionId,
+        query: {
+            onBoard: filter.timing,
+            subcategoryKey: filter.subcategoryKey,
+            sortDesc: filter.sortDesc ? 'true' : undefined,
+            markedOnly: filter.markedOnly ? 'true' : undefined,
+            limit: filter.limit,
+            offset: filter.offset,
         },
     });
 }

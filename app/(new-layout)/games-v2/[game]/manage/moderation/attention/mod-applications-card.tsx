@@ -42,7 +42,7 @@ export function ModApplicationsCard({ gameSlug, applications }: Props) {
     };
 
     return (
-        <div className={`${styles.surface} mb-3`}>
+        <section className="mb-4">
             <div className={styles.paneHeader}>
                 <h2 className={styles.paneTitle}>Moderator applications</h2>
                 <span className={styles.paneCount}>
@@ -81,7 +81,7 @@ export function ModApplicationsCard({ gameSlug, applications }: Props) {
                     />
                 ))}
             </div>
-        </div>
+        </section>
     );
 }
 

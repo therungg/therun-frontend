@@ -38,6 +38,12 @@ export interface UpdateGameBody {
     discordUrl?: string | null;
     configured?: boolean;
     links?: GameLink[];
+    primaryTiming?: 'rt' | 'gt';
+    rulesTemplate?: string | null;
+    gameRules?: string | null;
+    emulatorPolicy?: 'allowed' | 'banned' | null;
+    hideRealTime?: boolean;
+    hideGameTime?: boolean;
 }
 
 export interface GameCompanyMeta {
@@ -67,6 +73,12 @@ export interface GameMetadata {
     igdbPlatforms: GameIgdbPlatformMeta[];
     companies: GameCompanyMeta[];
     links: GameLink[];
+    rulesTemplate: string | null;
+    gameRules: string | null;
+    emulatorPolicy: 'allowed' | 'banned' | null;
+    primaryTiming: 'rt' | 'gt' | null;
+    hideRealTime: boolean;
+    hideGameTime: boolean;
 }
 
 interface GameMetadataPageData {
@@ -82,6 +94,12 @@ interface GameMetadataPageData {
         firstReleaseDate?: string | null;
         seriesDisplay?: string | null;
         links?: GameLink[] | null;
+        rulesTemplate?: string | null;
+        gameRules?: string | null;
+        emulatorPolicy?: string | null;
+        primaryTiming?: string | null;
+        hideRealTime?: boolean | null;
+        hideGameTime?: boolean | null;
     };
     metadata?: {
         genres?: string[] | null;
@@ -138,6 +156,22 @@ export async function getGameMetadata(gameId: number): Promise<GameMetadata> {
                 : [],
         ),
         links: data?.game?.links ?? [],
+        rulesTemplate: data?.game?.rulesTemplate ?? null,
+        gameRules: data?.game?.gameRules ?? null,
+        emulatorPolicy:
+            (data?.game?.emulatorPolicy as
+                | 'allowed'
+                | 'banned'
+                | null
+                | undefined) ?? null,
+        primaryTiming:
+            data?.game?.primaryTiming === 'gt'
+                ? 'gt'
+                : data?.game?.primaryTiming === 'rt'
+                  ? 'rt'
+                  : null,
+        hideRealTime: data?.game?.hideRealTime ?? false,
+        hideGameTime: data?.game?.hideGameTime ?? false,
     };
 }
 

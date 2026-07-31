@@ -14,6 +14,7 @@ export type NavItemId =
     | 'game-details'
     | 'categories'
     | 'groups'
+    | 'boards'
     | 'moderators'
     | 'reassign';
 
@@ -39,6 +40,9 @@ export interface NavFlags {
     canConfigure: boolean; // ability.can('edit','category-settings',{game})
     canReassign: boolean; // ability.can('reassign','reassignment')
     canEditMods: boolean; // ability.can('edit','moderators',{game})
+    /** ability.can('moderate','admins') — global admins only. Rides
+     * NavFlags for transport; buildNav does not read it. */
+    canSiteBan?: boolean;
 }
 
 const ALL_GROUPS: NavGroup[] = [
@@ -46,9 +50,11 @@ const ALL_GROUPS: NavGroup[] = [
         id: 'moderate',
         label: 'Moderate',
         items: [
-            { id: 'attention', label: CONCEPT_LABEL.attention },
-            { id: 'roster', label: CONCEPT_LABEL.roster },
-            { id: 'reports', label: CONCEPT_LABEL.reports },
+            // Needs attention, Browse runs (roster) and Reports (a
+            // pre-filtered view of the attention pane) are pulled from the
+            // console for now. Their panes/routes still exist — only these
+            // entry points are gone, so restoring them is re-adding the
+            // items here.
             { id: 'bans', label: CONCEPT_LABEL.bans },
             { id: 'history', label: CONCEPT_LABEL.history },
         ],
@@ -69,6 +75,7 @@ const ALL_GROUPS: NavGroup[] = [
             // Order matches the wizard: details 1, categories 2, groups 3.
             { id: 'categories', label: CONCEPT_LABEL.categories },
             { id: 'groups', label: CONCEPT_LABEL.groups },
+            { id: 'boards', label: CONCEPT_LABEL.boards },
             { id: 'moderators', label: CONCEPT_LABEL.moderators },
             { id: 'reassign', label: CONCEPT_LABEL.reassign },
         ],
@@ -91,6 +98,7 @@ function itemVisible(
     if (itemId === 'moderators') return flags.canEditMods;
     if (groupId === 'moderate') return flags.canModerate;
     if (itemId === 'categories') return flags.canConfigure || flags.canModerate;
+    if (itemId === 'boards') return flags.canModerate || flags.canConfigure;
     return flags.canConfigure;
 }
 

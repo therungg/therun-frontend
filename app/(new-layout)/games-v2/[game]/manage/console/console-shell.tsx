@@ -2,8 +2,6 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowClockwise } from 'react-bootstrap-icons';
-import { countAttentionAction } from '~src/actions/count-attention.action';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type { CategoryConfigRow } from '~src/lib/console/category-rows';
 import { legacyPaneRedirect } from '~src/lib/console/legacy-panes';
@@ -16,7 +14,10 @@ import type {
 import type {
     ResolvedCategory,
     ResolvedGame,
+    ResolvedGroup,
+    VariableRow,
 } from '../../../../../../types/leaderboards.types';
+import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
 import type { ReorderChange } from '../game-tab/reorder-changes';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import { HistoryDrawer } from '../moderation/configure/history-drawer';
@@ -50,6 +51,15 @@ export interface ConsoleShellProps {
     /** Per-category configuration for the index matrix. */
     categoryConfig: CategoryConfigRow[];
     initialGroups: ManageGroup[];
+    /** Board-order groups for the Boards pane (category-grouping sections) —
+     * distinct from `initialGroups`, the ManageGroup shape the index/GameTab
+     * use. Comes free from the same `resolveCategory` call as `categories`. */
+    boardGroups: ResolvedGroup[];
+    /** Variables + policies for the Boards pane — loaded whenever a viewer
+     * can reach it (canModerate || canConfigure), not gated on canConfigure
+     * alone, so a moderator without configure still sees the real board. */
+    variables: VariableRow[];
+    policies: BoardPolicyRow[];
     setupCompleteness?: BoardCompleteness | null;
     boardHealth?: BoardHealth | null;
     gameDetails?: GameDetailsData | null;
@@ -67,6 +77,9 @@ export function ConsoleShell({
     initialRows,
     categoryConfig,
     initialGroups,
+    boardGroups,
+    variables,
+    policies,
     setupCompleteness,
     boardHealth,
     gameDetails,
@@ -79,9 +92,8 @@ export function ConsoleShell({
 
     // A `?pane=` deep link (used by sub-route pages navigating back) decides
     // the pane. Anything else — a bare /manage — resolves to `null`, the tile
-    // grid. `history` is an overlay, `roster` and `setup` leave the console,
-    // and `reports` normalizes into the attention pane, so none of the four is
-    // ever a landing pane.
+    // grid. `history` is an overlay and `setup` leaves the console, so
+    // neither is ever a landing pane.
     const initialActive = useMemo<NavItemId | null>(
         () => resolveInitialPane(searchParams.get('pane'), groups),
         [searchParams, groups],
@@ -138,95 +150,22 @@ export function ConsoleShell({
         }
     }, [activeItem, game.id]);
 
-    // Deep links that never land as content: `?pane=roster` sends the viewer
-    // straight to the roster route (the placeholder pane is gone); `?pane=
-    // reports` normalizes to the attention pane pre-filtered to reports.
-    useEffect(() => {
-        const pane = searchParams.get('pane');
-        if (pane === 'roster') {
-            router.replace(`/games-v2/${game.name}/manage/moderation/roster`);
-        } else if (pane === 'reports') {
-            router.replace('?pane=attention&kind=report', { scroll: false });
-        }
-    }, [searchParams, router, game.name]);
-
     const [rows, setRows] = useState<ManageCategoryRow[]>(initialRows);
     const [manageGroups, setManageGroups] =
         useState<ManageGroup[]>(initialGroups);
     const [historyOpen, setHistoryOpen] = useState(false);
-    const [liveAttentionCount, setLiveAttentionCount] = useState(
-        attentionItems.length,
-    );
 
-    // A full page reload (e.g. router.refresh() after a degraded-source
-    // retry) re-sends a fresh server-computed total through this prop —
-    // resync so the badge doesn't stay pinned to a stale, already-triaged
-    // count from before the reload. Also clears any stale "new items"
-    // banner — the refresh it just served IS the fresh load.
-    useEffect(() => {
-        setLiveAttentionCount(attentionItems.length);
-        setHasNewAttention(false);
-    }, [attentionItems]);
-
-    // Live poll: notice new flags/reports/self-claims without a manual
-    // reload. Mirrors NotificationsBell's visibility-aware interval
-    // (src/components/Topbar/NotificationsBell.tsx) plus a focus-triggered
-    // refresh, since coming back to the tab is the moment staleness is
-    // most likely to be visible.
-    //
-    // A HIGHER fetched count never mutates `rows`/`attentionItems`
-    // mid-triage — it only flips a banner so the moderator finishes what
-    // they're doing before pulling in new cards. A LOWER count (their own
-    // triage already landing server-side, or another mod acting
-    // concurrently) just updates the badge silently — nothing to warn
-    // about, the console already reflects reality.
-    const [hasNewAttention, setHasNewAttention] = useState(false);
-    const liveAttentionCountRef = useRef(liveAttentionCount);
-    useEffect(() => {
-        liveAttentionCountRef.current = liveAttentionCount;
-    }, [liveAttentionCount]);
-
-    useEffect(() => {
-        let cancelled = false;
-        const poll = async () => {
-            if (document.hidden) return;
-            // A failed count poll is invisible — network blips shouldn't
-            // surface as an unhandled rejection in a long-lived tab.
-            let result: Awaited<ReturnType<typeof countAttentionAction>>;
-            try {
-                result = await countAttentionAction(game.name);
-            } catch {
-                return;
-            }
-            if (cancelled) return;
-            if (result.count > liveAttentionCountRef.current) {
-                setHasNewAttention(true);
-            } else {
-                setLiveAttentionCount(result.count);
-            }
-        };
-        const interval = setInterval(poll, 90_000);
-        window.addEventListener('focus', poll);
-        return () => {
-            cancelled = true;
-            clearInterval(interval);
-            window.removeEventListener('focus', poll);
-        };
-    }, [game.name]);
-
-    // Tab title mirrors the live count while the console is mounted, e.g.
-    // "(3) Manage — Celeste" — no "(0)" prefix when clear. Restores
-    // whatever the browser tab's title was before this component mounted.
+    // Needs attention is out of the console for now, so there is no live
+    // count to poll or badge — the tab title is just the plain page name.
+    // Restores whatever the browser tab's title was before this component
+    // mounted.
     const originalTitleRef = useRef<string | null>(null);
     useEffect(() => {
         if (originalTitleRef.current === null) {
             originalTitleRef.current = document.title;
         }
-        document.title =
-            liveAttentionCount > 0
-                ? `(${liveAttentionCount}) Manage — ${game.display}`
-                : `Manage — ${game.display}`;
-    }, [liveAttentionCount, game.display]);
+        document.title = `Manage — ${game.display}`;
+    }, [game.display]);
 
     useEffect(() => {
         return () => {
@@ -265,23 +204,13 @@ export function ConsoleShell({
         );
     }, []);
 
-    // History is a quick-reference overlay, not a destination pane. Roster and
-    // Setup always leave the console for their dedicated routes. Reports is a
-    // pre-filtered view of the attention pane, not a pane of its own.
+    // History is a quick-reference overlay, not a destination pane. Setup
+    // always leaves the console for its dedicated route.
     const handleNavigate = (id: NavItemId) => {
-        if (id === 'roster') {
-            router.push(`/games-v2/${game.name}/manage/moderation/roster`);
-            return;
-        }
         // The wizard is a full-focus page with its own "Back to console"
         // link — it must not write `?pane=` or become activeItem here.
         if (id === 'setup') {
             router.push(`/games-v2/${game.name}/setup`);
-            return;
-        }
-        if (id === 'reports') {
-            router.replace('?pane=attention&kind=report', { scroll: false });
-            setActiveItem('attention');
             return;
         }
         // Opening History from the sidebar is an overlay, not a navigation —
@@ -348,26 +277,13 @@ export function ConsoleShell({
                 groups={groups}
                 activeItem={activeSidebarItem}
                 onNavigate={handleNavigate}
-                attentionCount={liveAttentionCount}
+                attentionCount={attentionItems.length}
                 badgeDegraded={degradedSources.length > 0}
                 moderatedGamesCount={moderatedGamesCount}
             >
-                {hasNewAttention && (
-                    <div className={styles.liveBanner} role="status">
-                        <span>New items — refresh to load</span>
-                        <button
-                            type="button"
-                            className={styles.liveBannerRefresh}
-                            onClick={() => router.refresh()}
-                        >
-                            <ArrowClockwise size={14} aria-hidden="true" />
-                            Refresh
-                        </button>
-                    </div>
-                )}
                 {showSetupCard(groups, activeItem) &&
                     (setupCompleteness &&
-                    setupCompleteness.steps.find((s) => s.step === 'finish')
+                    setupCompleteness.steps.find((s) => s.step === 'boards')
                         ?.status !== 'done' ? (
                         <SetupChecklistCard
                             gameSlug={game.name}
@@ -396,18 +312,23 @@ export function ConsoleShell({
                         id: c.id,
                         display: c.display,
                     }))}
+                    boardCategories={categories}
+                    boardGroups={boardGroups}
+                    variables={variables}
+                    policies={policies}
+                    canConfigureBoards={flags.canConfigure}
+                    canSiteBan={flags.canSiteBan ?? false}
                     categoryConfig={categoryConfig}
                     gameDetails={gameDetails}
                     attentionItems={attentionItems}
                     degradedSources={degradedSources}
                     modApplications={modApplications}
                     moderators={moderators}
-                    onAttentionCountChange={setLiveAttentionCount}
                     rows={rows}
                     groups={manageGroups}
                     navGroups={groups}
                     onNavigate={handleNavigate}
-                    attentionCount={liveAttentionCount}
+                    attentionCount={attentionItems.length}
                     onGroupsChange={setManageGroups}
                     onRowChange={applyRowPatch}
                     onRowsReorder={applyRowsReorder}

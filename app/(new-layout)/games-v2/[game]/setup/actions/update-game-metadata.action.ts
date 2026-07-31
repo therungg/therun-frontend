@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidateTag } from 'next/cache';
+import { updateTag } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
 import { ApiError } from '~src/lib/api-client';
 import {
@@ -20,6 +20,12 @@ interface Input {
     releaseYear?: number | null;
     discordUrl?: string | null;
     links?: GameLink[];
+    primaryTiming?: 'rt' | 'gt';
+    rulesTemplate?: string | null;
+    gameRules?: string | null;
+    emulatorPolicy?: 'allowed' | 'banned' | null;
+    hideRealTime?: boolean;
+    hideGameTime?: boolean;
 }
 
 export async function updateGameMetadataAction(
@@ -81,6 +87,10 @@ export async function updateGameMetadataAction(
         }
     }
 
+    if (input.hideRealTime === true && input.hideGameTime === true) {
+        return { error: 'Cannot hide both real time and game time.' };
+    }
+
     const body: UpdateGameBody = {};
     if (input.coverUrl !== undefined) body.coverUrl = input.coverUrl;
     if (input.summaryOverride !== undefined)
@@ -94,6 +104,17 @@ export async function updateGameMetadataAction(
             url: link.url,
         }));
     }
+    if (input.primaryTiming !== undefined)
+        body.primaryTiming = input.primaryTiming;
+    if (input.rulesTemplate !== undefined)
+        body.rulesTemplate = input.rulesTemplate;
+    if (input.gameRules !== undefined) body.gameRules = input.gameRules;
+    if (input.emulatorPolicy !== undefined)
+        body.emulatorPolicy = input.emulatorPolicy;
+    if (input.hideRealTime !== undefined)
+        body.hideRealTime = input.hideRealTime;
+    if (input.hideGameTime !== undefined)
+        body.hideGameTime = input.hideGameTime;
 
     if (Object.keys(body).length === 0) {
         return { result: { updated: false } };
@@ -101,7 +122,13 @@ export async function updateGameMetadataAction(
 
     try {
         const result = await updateGame(user.id, input.gameId, body);
-        revalidateTag(`game-meta:${input.gameId}`, 'minutes');
+        // Read-your-writes: step 2 reads getGameMetadata on the very next
+        // navigation to seed its default timing/rules template off what step
+        // 1 just wrote. `revalidateTag`'s stale-while-revalidate would still
+        // hand back the pre-write value on that immediate re-read — see
+        // set-configured.action.ts, which updateTag's the same tag for the
+        // same reason.
+        updateTag(`game-meta:${input.gameId}`);
         return { result };
     } catch (e) {
         if (e instanceof ApiError) return { error: e.message };
