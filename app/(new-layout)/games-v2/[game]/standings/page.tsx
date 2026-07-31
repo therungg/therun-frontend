@@ -2,8 +2,10 @@ import { subject as caslSubject } from '@casl/ability';
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
+import { getMyBoardClaim } from '~src/lib/board-claims';
 import { EMPTY_GAME_METADATA } from '~src/lib/game-metadata';
 import { getGameMetadata } from '~src/lib/game-mgmt';
+import { listGameModerators } from '~src/lib/game-moderators';
 import {
     getQuickStats,
     getRecentPbs,
@@ -15,6 +17,7 @@ import { getGameStandings } from '~src/lib/standings';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
+import type { ClaimCtaState } from '../claim/claim-cta';
 import gamePageStyles from '../game-page.module.scss';
 import { GameHero } from '../header/game-hero';
 import { ViewTabs } from '../header/view-tabs';
@@ -71,6 +74,20 @@ export default async function GameStandingsPage({ params }: PageProps) {
         caslSubject('leaderboard', { game: resolvedGame.name }),
     );
 
+    // Same claim computation as the root page.tsx, mirrored so the
+    // sidebar's claim CTA and GameHero's claim state agree with the
+    // overview/board views for this game.
+    const moderators = await listGameModerators(resolvedGame.id);
+    let claim: ClaimCtaState | null = null;
+    if (sessionUsername && !canManage && !canModerate) {
+        const myClaim = await getMyBoardClaim(session.id, resolvedGame.id);
+        claim = {
+            gameId: resolvedGame.id,
+            hasModerators: moderators.length > 0,
+            myClaimPending: myClaim?.status === 'pending',
+        };
+    }
+
     const [standings, quickStats, gameMeta, recentPbs, rawYourRuns] =
         await Promise.all([
             getGameStandings(resolvedGame.id),
@@ -102,7 +119,7 @@ export default async function GameStandingsPage({ params }: PageProps) {
                 subcategoryKey=""
                 canManage={canManage}
                 canModerate={canModerate}
-                claim={null}
+                claim={claim}
             />
             <div className={gamePageStyles.grid}>
                 <div className={gamePageStyles.colMain}>
@@ -141,7 +158,7 @@ export default async function GameStandingsPage({ params }: PageProps) {
                             (r) => r.gameSlug === resolvedGame.name,
                         )}
                         recentPbs={filterPbsToFeatured(recentPbs, featured)}
-                        claim={null}
+                        claim={claim}
                         about={gameMeta.summaryOverride ?? gameMeta.summary}
                     />
                 </aside>
