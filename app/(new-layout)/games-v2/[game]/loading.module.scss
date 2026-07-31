@@ -14,7 +14,7 @@
 .plate {
     @include board.board-surface(0);
     overflow: hidden;
-    margin-bottom: dt.$spacing-lg;
+    margin-bottom: dt.$spacing-sm;
 }
 
 .plateTop {
@@ -73,7 +73,7 @@
 // ---- Category-rail section (inside the plate) -----------------
 // Same treatment as .plateSection in header/masthead.module.scss.
 .plateSection {
-    padding: dt.$spacing-sm dt.$spacing-xl;
+    padding: dt.$spacing-xs dt.$spacing-xl;
     border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
 }
 
@@ -103,7 +103,7 @@
     display: flex;
     align-items: center;
     gap: dt.$spacing-lg;
-    padding: dt.$spacing-md dt.$spacing-lg;
+    padding: dt.$spacing-sm dt.$spacing-lg;
     border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
 
     &:last-child {
