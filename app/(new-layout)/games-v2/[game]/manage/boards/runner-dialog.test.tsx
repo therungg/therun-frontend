@@ -195,10 +195,71 @@ describe('RunnerDialog', () => {
         }) as HTMLButtonElement;
         expect(confirm.disabled).toBe(true);
 
+        await screen.findByText(/3 runs? affected/);
+        expect(confirm.disabled).toBe(true);
+
         fireEvent.change(screen.getByLabelText('Reason — required'), {
             target: { value: 'spam' },
         });
         expect(confirm.disabled).toBe(false);
+    });
+
+    it('confirm disabled while preview is unresolved', async () => {
+        // Hold the preview pending — Confirm must stay disabled even once
+        // a reason is entered, since board/game scope removal without a
+        // landed preview is exactly the plan defect this gate closes. The
+        // promise is resolved before the test ends (rather than left
+        // hanging forever) so its transition settles cleanly instead of
+        // leaving a pending scheduler task behind for later tests.
+        let resolvePreview: (value: unknown) => void = () => undefined;
+        mocks.previewExcludeAction.mockReturnValue(
+            new Promise((resolve) => {
+                resolvePreview = resolve;
+            }),
+        );
+        renderRunnerDialog();
+
+        fireEvent.change(screen.getByLabelText('Reason — required'), {
+            target: { value: 'spam' },
+        });
+
+        expect(
+            screen.getByRole('button', { name: 'Confirm removal' }),
+        ).toHaveProperty('disabled', true);
+
+        resolvePreview({
+            ok: true,
+            preview: { affectedRunCount: 0, affectedLeaderboards: [] },
+        });
+        await waitFor(() =>
+            expect(
+                screen.getByRole('button', { name: 'Confirm removal' }),
+            ).toHaveProperty('disabled', false),
+        );
+    });
+
+    it('scope buttons expose selected state', async () => {
+        renderRunnerDialog();
+        await screen.findByText(/3 runs? affected/);
+
+        const boardBtn = screen.getByRole('button', { name: 'This board' });
+        const gameBtn = screen.getByRole('button', { name: 'Whole game' });
+        expect(boardBtn.getAttribute('aria-pressed')).toBe('true');
+        expect(gameBtn.getAttribute('aria-pressed')).toBe('false');
+        expect(boardBtn.className).toMatch(/toolbarBtnActive/);
+        expect(gameBtn.className).not.toMatch(/toolbarBtnActive/);
+
+        fireEvent.click(gameBtn);
+
+        expect(gameBtn.getAttribute('aria-pressed')).toBe('true');
+        expect(boardBtn.getAttribute('aria-pressed')).toBe('false');
+        expect(gameBtn.className).toMatch(/toolbarBtnActive/);
+        expect(boardBtn.className).not.toMatch(/toolbarBtnActive/);
+
+        // Let the re-triggered preview settle before the test ends.
+        await waitFor(() =>
+            expect(mocks.previewExcludeAction).toHaveBeenCalledTimes(2),
+        );
     });
 
     it('board confirm files the scoped rule', async () => {
@@ -207,6 +268,7 @@ describe('RunnerDialog', () => {
             result: { ruleId: 1, alreadyExists: false },
         });
         const { onMutated } = renderRunnerDialog();
+        await screen.findByText(/3 runs? affected/);
 
         fireEvent.change(screen.getByLabelText('Reason — required'), {
             target: { value: 'spam' },
@@ -313,6 +375,7 @@ describe('RunnerDialog', () => {
     it('error keeps the dialog open', async () => {
         mocks.excludeAction.mockResolvedValue({ error: 'nope' });
         renderRunnerDialog();
+        await screen.findByText(/3 runs? affected/);
 
         fireEvent.change(screen.getByLabelText('Reason — required'), {
             target: { value: 'spam' },
@@ -324,8 +387,10 @@ describe('RunnerDialog', () => {
         await waitFor(() =>
             expect(mocks.toastError).toHaveBeenCalledWith('nope'),
         );
-        expect(
-            screen.getByRole('button', { name: 'Confirm removal' }),
-        ).toBeTruthy();
+        await waitFor(() =>
+            expect(
+                screen.getByRole('button', { name: 'Confirm removal' }),
+            ).toBeTruthy(),
+        );
     });
 });

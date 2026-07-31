@@ -209,7 +209,9 @@ export function AdjustDialog({
         >
             <div className={styles.dialogHeader}>
                 <h5 id="adjust-dialog-title" className={styles.dialogTitle}>
-                    Adjust {row.runnerName}’s entry
+                    {isGuest
+                        ? `Set a time for ${row.runnerName}`
+                        : `Adjust ${row.runnerName}’s entry`}
                 </h5>
                 <button
                     type="button"

@@ -105,9 +105,15 @@ export function RunnerDialog({
 
     // Board/game scope: preview the exclude rule on open and whenever the
     // scope flips between them. Site scope has no exclude preview.
+    //
+    // `cancelled` guards against an out-of-order resolution: switching scope
+    // quickly (or the open-reset effect above settling `scope` back to
+    // 'board' right after a reopen) can fire two previews back to back —
+    // only the one from the run that's still current is allowed to land.
     useEffect(() => {
         const targetId = row.userId;
         if (!open || scope === 'site' || targetId == null) return;
+        let cancelled = false;
         setPreview(null);
         setPreviewError(null);
         startPreview(async () => {
@@ -118,12 +124,16 @@ export function RunnerDialog({
                     categoryId: scope === 'board' ? category.id : undefined,
                 },
             });
+            if (cancelled) return;
             if ('error' in res) {
                 setPreviewError(res.error);
                 return;
             }
             setPreview(res.preview);
         });
+        return () => {
+            cancelled = true;
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, scope]);
 
@@ -191,7 +201,8 @@ export function RunnerDialog({
     const confirmDisabled =
         isConfirming ||
         reason.trim().length === 0 ||
-        (scope !== 'site' && previewError != null);
+        (scope !== 'site' && previewError != null) ||
+        (scope !== 'site' && preview == null);
 
     const confirmLabel =
         scope === 'site'
@@ -226,6 +237,7 @@ export function RunnerDialog({
                 <div>
                     <button
                         type="button"
+                        className={`${styles.toolbarBtn} ${scope === 'board' ? styles.toolbarBtnActive : ''}`}
                         aria-pressed={scope === 'board'}
                         onClick={() => setScope('board')}
                         disabled={isConfirming}
@@ -234,6 +246,7 @@ export function RunnerDialog({
                     </button>
                     <button
                         type="button"
+                        className={`${styles.toolbarBtn} ${scope === 'game' ? styles.toolbarBtnActive : ''}`}
                         aria-pressed={scope === 'game'}
                         onClick={() => setScope('game')}
                         disabled={isConfirming}
@@ -243,6 +256,7 @@ export function RunnerDialog({
                     {canSiteBan && (
                         <button
                             type="button"
+                            className={`${styles.toolbarBtn} ${scope === 'site' ? styles.toolbarBtnActive : ''}`}
                             aria-pressed={scope === 'site'}
                             onClick={() => setScope('site')}
                             disabled={isConfirming}
@@ -253,7 +267,7 @@ export function RunnerDialog({
                 </div>
 
                 {showSubcategoryNote && (
-                    <p>
+                    <p className={styles.moveNote}>
                         Covers every subcategory board of {category.display} —
                         exact single-board scope is coming later.
                     </p>
@@ -261,7 +275,7 @@ export function RunnerDialog({
 
                 {scope !== 'site' && (
                     <>
-                        <p>
+                        <p className={styles.moveNote}>
                             Effect: remove runs from boards. The account is
                             unaffected.
                         </p>
@@ -327,7 +341,13 @@ export function RunnerDialog({
                                 <small>{t.description}</small>
                             </div>
                         ))}
-                        <p>
+                        {treatment === 'anonymize' && (
+                            <p className={styles.moveNote}>
+                                Moderation views (including this table) keep
+                                showing the real name.
+                            </p>
+                        )}
+                        <p className={styles.moveNote}>
                             Site-wide ban: the account is locked out of
                             therun.gg entirely.
                         </p>
