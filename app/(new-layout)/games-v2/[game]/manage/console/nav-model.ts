@@ -50,9 +50,11 @@ const ALL_GROUPS: NavGroup[] = [
         id: 'moderate',
         label: 'Moderate',
         items: [
-            { id: 'attention', label: CONCEPT_LABEL.attention },
-            { id: 'roster', label: CONCEPT_LABEL.roster },
-            { id: 'reports', label: CONCEPT_LABEL.reports },
+            // Needs attention, Browse runs (roster) and Reports (a
+            // pre-filtered view of the attention pane) are pulled from the
+            // console for now. Their panes/routes still exist — only these
+            // entry points are gone, so restoring them is re-adding the
+            // items here.
             { id: 'bans', label: CONCEPT_LABEL.bans },
             { id: 'history', label: CONCEPT_LABEL.history },
         ],

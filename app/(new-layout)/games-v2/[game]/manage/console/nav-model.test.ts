@@ -138,8 +138,11 @@ describe('isLandingPaneId', () => {
         expect(isLandingPaneId('bans', visible)).toBe(true);
     });
 
-    it('rejects history, roster, and reports even though they are visible items', () => {
+    it('rejects history even though it is a visible item', () => {
         expect(isLandingPaneId('history', visible)).toBe(false);
+    });
+
+    it('rejects roster and reports — removed from the nav for now, and never landing panes anyway', () => {
         expect(isLandingPaneId('roster', visible)).toBe(false);
         expect(isLandingPaneId('reports', visible)).toBe(false);
     });
@@ -212,8 +215,19 @@ describe('nav shape', () => {
         expect(buildNav(ALL).map((g) => g.id)).toEqual(['moderate', 'board']);
     });
 
-    it('shows twelve items to a fully privileged viewer', () => {
-        expect(buildNav(ALL).flatMap((g) => g.items)).toHaveLength(12);
+    it('shows nine items to a fully privileged viewer', () => {
+        // Was twelve — attention, roster and reports are out of the nav
+        // for now (see ALL_GROUPS in nav-model.ts).
+        expect(buildNav(ALL).flatMap((g) => g.items)).toHaveLength(9);
+    });
+
+    it('no longer exposes the pulled triage entries', () => {
+        const ids = buildNav(ALL)
+            .flatMap((g) => g.items)
+            .map((it) => it.id as string);
+        for (const pulled of ['attention', 'roster', 'reports']) {
+            expect(ids, pulled).not.toContain(pulled);
+        }
     });
 
     it('orders the board group to match the wizard', () => {
