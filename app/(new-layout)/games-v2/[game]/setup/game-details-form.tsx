@@ -574,14 +574,6 @@ function GameDetailsFormInner({
                 save();
             }}
         >
-            <IgdbSourceCard
-                gameId={game.id}
-                igdbUrl={metadata.igdbUrl}
-                canRematch={canRematch}
-                resetRows={resetRows}
-                onReset={resetToIgdb}
-                disabled={busy}
-            />
             {sectioned ? (
                 <div className={styles.sectionedCol}>
                     <FormSection title="Identity">
@@ -611,6 +603,14 @@ function GameDetailsFormInner({
                     </div>
                 </div>
             )}
+            <IgdbSourceCard
+                gameId={game.id}
+                igdbUrl={metadata.igdbUrl}
+                canRematch={canRematch}
+                resetRows={resetRows}
+                onReset={resetToIgdb}
+                disabled={busy}
+            />
             <InlineError>{error}</InlineError>
             {!hideAction && (
                 <button

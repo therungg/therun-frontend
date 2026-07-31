@@ -148,7 +148,7 @@ describe('GameDetailsForm', () => {
         );
     });
 
-    it('shows the IGDB source card, linking the entry, before the field grid', () => {
+    it('shows the IGDB source card, linking the entry, under the field grid', () => {
         render(
             <GameDetailsForm
                 identifiers={identifiers}
@@ -163,9 +163,9 @@ describe('GameDetailsForm', () => {
         );
         const card = screen.getByText('IGDB').closest('div')!;
         const grid = document.querySelector('.row.g-4')!;
-        // The source card must precede the grid in document order.
+        // The source card must follow the grid in document order.
         expect(
-            card.compareDocumentPosition(grid) &
+            grid.compareDocumentPosition(card) &
                 Node.DOCUMENT_POSITION_FOLLOWING,
         ).toBeTruthy();
     });
