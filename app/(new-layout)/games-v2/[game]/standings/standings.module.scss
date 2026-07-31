@@ -11,17 +11,18 @@
     max-width: 46rem;
 }
 
-.title {
-    font-size: dt.$font-size-xl;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    margin: 0 0 dt.$spacing-sm;
+.head {
+    @include board.board-section-head;
+}
+
+.eyebrow {
+    @include board.board-eyebrow;
 }
 
 // The scoring rule is unusual enough that it has to be stated, or the table
 // reads as broken when a world-record holder sits below an all-rounder.
 .explainer {
-    margin: 0;
+    margin: dt.$spacing-sm 0 0;
     font-size: dt.$font-size-sm;
     line-height: 1.6;
     color: var(--bs-secondary-color);

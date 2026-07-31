@@ -8,10 +8,7 @@
 }
 
 .panelHead {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: dt.$spacing-sm;
+    @include board.board-section-head;
 }
 
 .eyebrow {
