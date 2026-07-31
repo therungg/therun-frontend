@@ -108,20 +108,13 @@
         color: var(--bs-tertiary-color);
     }
 
-    .chip {
+    .pill {
+        @include board.control-pill;
         font-size: dt.$font-size-xs;
-        border-radius: dt.$radius-md;
-        border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-        padding: 2px dt.$spacing-sm;
-        background: transparent;
-        color: var(--bs-secondary-color);
     }
 
-    .chipActive {
-        background: rgba(var(--bs-primary-rgb), 0.1);
-        border-color: rgba(var(--bs-primary-rgb), 0.55);
-        color: var(--bs-emphasis-color);
-        font-weight: 600;
+    .pillActive {
+        @include board.control-pill-active;
     }
 }
 

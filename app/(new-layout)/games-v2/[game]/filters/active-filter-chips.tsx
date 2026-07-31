@@ -51,7 +51,7 @@ export function ActiveFilterChips({ defs, selected }: Props) {
                                     removeFilterValue(values, value),
                                 )
                             }
-                            className={`${styles.chip} ${styles.chipActive}`}
+                            className={`${styles.pill} ${styles.pillActive}`}
                             aria-label={`Remove ${def.name}: ${value} filter`}
                         >
                             {def.name}: {value}
