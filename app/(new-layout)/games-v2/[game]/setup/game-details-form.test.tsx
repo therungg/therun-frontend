@@ -5,6 +5,7 @@ import {
     render,
     screen,
     waitFor,
+    within,
 } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { GameIdentifiers, GameMetadata } from '~src/lib/game-mgmt';
@@ -18,10 +19,14 @@ vi.mock('./actions/update-game-metadata.action', () => ({
 vi.mock('./actions/get-cover-upload-url.action', () => ({
     getCoverUploadUrlAction: vi.fn(),
 }));
-vi.mock('~src/components/link', () => ({
-    default: ({ children, ...props }: Record<string, unknown>) => (
-        <a {...props}>{children as never}</a>
-    ),
+vi.mock('../manage/identifiers/actions/igdb-match.action', () => ({
+    igdbSearchAction: vi.fn(async () => ({ result: [] })),
+    igdbApplyMatchAction: vi.fn(async () => ({
+        result: { igdbName: 'Example' },
+    })),
+}));
+vi.mock('next/navigation', () => ({
+    useRouter: () => ({ refresh: vi.fn() }),
 }));
 
 import { updateIdentifiersAction } from '../manage/identifiers/actions/update-identifiers.action';
@@ -143,7 +148,7 @@ describe('GameDetailsForm', () => {
         );
     });
 
-    it('shows the IGDB provenance line before the field grid', () => {
+    it('shows the IGDB source card, linking the entry, before the field grid', () => {
         render(
             <GameDetailsForm
                 identifiers={identifiers}
@@ -152,13 +157,95 @@ describe('GameDetailsForm', () => {
                 onSaved={vi.fn()}
             />,
         );
-        const provenance = screen.getByText(/this IGDB entry/).closest('p')!;
+        const link = screen.getByRole('link', { name: 'example' });
+        expect(link.getAttribute('href')).toBe(
+            'https://www.igdb.com/games/example',
+        );
+        const card = screen.getByText('IGDB').closest('div')!;
         const grid = document.querySelector('.row.g-4')!;
-        // Provenance must precede the grid in document order.
+        // The source card must precede the grid in document order.
         expect(
-            provenance.compareDocumentPosition(grid) &
+            card.compareDocumentPosition(grid) &
                 Node.DOCUMENT_POSITION_FOLLOWING,
         ).toBeTruthy();
+    });
+
+    it('gates the re-match control on canRematch', () => {
+        const { unmount } = render(
+            <GameDetailsForm
+                identifiers={identifiers}
+                metadata={metadata}
+                game={game}
+                onSaved={vi.fn()}
+            />,
+        );
+        expect(
+            screen.getByText('Only site admins can change the IGDB match.'),
+        ).toBeInTheDocument();
+        unmount();
+        render(
+            <GameDetailsForm
+                identifiers={identifiers}
+                metadata={metadata}
+                game={game}
+                onSaved={vi.fn()}
+                canRematch
+            />,
+        );
+        expect(
+            screen.getByRole('button', { name: 'Change IGDB match' }),
+        ).toBeInTheDocument();
+    });
+
+    it('says all fields match IGDB when nothing diverges', () => {
+        render(
+            <GameDetailsForm
+                identifiers={identifiers}
+                metadata={metadata}
+                game={game}
+                onSaved={vi.fn()}
+            />,
+        );
+        expect(screen.getByText('All fields match IGDB.')).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Reset fields to IGDB…' }),
+        ).toBeNull();
+    });
+
+    it('previews and applies a reset of diverged fields to the IGDB values', () => {
+        render(
+            <GameDetailsForm
+                identifiers={identifiers}
+                metadata={
+                    {
+                        ...(metadata as object),
+                        releaseYear: 2001,
+                        firstReleaseDate: '1996-06-23',
+                        summary: 'From IGDB.',
+                        summaryOverride: 'Custom text',
+                    } as unknown as GameMetadata
+                }
+                game={game}
+                onSaved={vi.fn()}
+            />,
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Reset fields to IGDB…' }),
+        );
+        // Preview names the diverging fields with current → IGDB values.
+        const dialog = within(
+            document.querySelector('[role="dialog"]') as HTMLElement,
+        );
+        expect(dialog.getByText('Release year')).toBeInTheDocument();
+        expect(dialog.getByText('1996')).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Reset fields' }));
+        expect(
+            (document.getElementById('release-year') as HTMLInputElement).value,
+        ).toBe('1996');
+        expect(
+            (document.getElementById('about') as HTMLTextAreaElement).value,
+        ).toBe('From IGDB.');
+        expect(screen.getByText('All fields match IGDB.')).toBeInTheDocument();
     });
 
     it('sectioned layout groups fields under Identity / About / Web & community', () => {

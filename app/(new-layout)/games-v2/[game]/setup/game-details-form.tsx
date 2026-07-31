@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState, useTransition } from 'react';
-import Link from '~src/components/link';
 import type {
     GameIdentifiers,
     GameLink,
@@ -17,6 +16,7 @@ import { FormSection, InlineError } from '../manage/shared/form-kit';
 import { getCoverUploadUrlAction } from './actions/get-cover-upload-url.action';
 import { updateGameMetadataAction } from './actions/update-game-metadata.action';
 import { FieldLabel } from './field-hint';
+import { type IgdbResetRow, IgdbSourceCard } from './igdb-source-card';
 import styles from './setup.module.scss';
 
 const ALLOWED_COVER_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
@@ -43,18 +43,7 @@ const LINK_PRESETS = [
     { label: 'Twitch' },
 ];
 
-export function GameDetailsForm({
-    identifiers,
-    metadata,
-    game,
-    onSaved,
-    saveLabel = 'Save & continue',
-    formId,
-    hideAction = false,
-    onBusyChange,
-    onErrorChange,
-    sectioned = false,
-}: {
+interface GameDetailsFormProps {
     identifiers: GameIdentifiers;
     metadata: GameMetadata;
     game: { id: number; name: string; image: string | null };
@@ -70,7 +59,38 @@ export function GameDetailsForm({
     onErrorChange?: (error: string | null) => void;
     /** Single-column, grouped-section layout for the console pane. */
     sectioned?: boolean;
-}) {
+    /** ability.can('edit','game') — shows the IGDB re-match controls. */
+    canRematch?: boolean;
+}
+
+/**
+ * Keyed on the IGDB match so a successful re-match (router.refresh with a new
+ * igdbUrl) remounts the form and every field re-seeds from the new entry's
+ * data. The wizard's details step already remounts on refresh; this covers
+ * the console pane, where the form stays mounted.
+ */
+export function GameDetailsForm(props: GameDetailsFormProps) {
+    return (
+        <GameDetailsFormInner
+            key={props.metadata.igdbUrl ?? 'no-igdb'}
+            {...props}
+        />
+    );
+}
+
+function GameDetailsFormInner({
+    identifiers,
+    metadata,
+    game,
+    onSaved,
+    saveLabel = 'Save & continue',
+    formId,
+    hideAction = false,
+    onBusyChange,
+    onErrorChange,
+    sectioned = false,
+    canRematch = false,
+}: GameDetailsFormProps) {
     const [slug, setSlug] = useState(identifiers.slug ?? '');
     const [coverUrl, setCoverUrl] = useState(metadata.coverUrl ?? '');
     // Seed from IGDB when the mod-editable columns are still empty — sync
@@ -220,6 +240,73 @@ export function GameDetailsForm({
     };
 
     const preview = coverUrl.trim() || game.image;
+
+    // What the IGDB-fed fields would hold with every mod override cleared.
+    // Reset only rewrites form state — the normal save persists it (an About
+    // equal to the IGDB summary saves as a null override, see save()).
+    const igdbYearText =
+        igdbPrefillYear(metadata.firstReleaseDate)?.toString() ?? '';
+    const igdbPlatformsText = igdbPrefillPlatforms(metadata.igdbPlatforms).join(
+        ', ',
+    );
+    const igdbAbout = (metadata.summary ?? '').trim();
+
+    const clip = (s: string) => (s.length > 90 ? `${s.slice(0, 90)}…` : s);
+    const coverThumb = (src: string, alt: string) => (
+        <img
+            src={src}
+            alt={alt}
+            width={36}
+            height={48}
+            className="rounded"
+            style={{ objectFit: 'cover' }}
+        />
+    );
+    const resetRows: IgdbResetRow[] = [];
+    if (metadata.igdbUrl) {
+        if (coverUrl.trim()) {
+            resetRows.push({
+                field: 'Cover',
+                current: coverThumb(coverUrl.trim(), 'Current cover'),
+                igdb: game.image
+                    ? coverThumb(game.image, 'IGDB cover')
+                    : 'IGDB art',
+            });
+        }
+        if (releaseYear.trim() !== igdbYearText) {
+            resetRows.push({
+                field: 'Release year',
+                current: releaseYear.trim() || '—',
+                igdb: igdbYearText || '—',
+            });
+        }
+        const platformsNow = platformsText
+            .split(',')
+            .map((p) => p.trim())
+            .filter(Boolean)
+            .join(', ');
+        if (platformsNow !== igdbPlatformsText) {
+            resetRows.push({
+                field: 'Platforms',
+                current: platformsNow || '—',
+                igdb: igdbPlatformsText || '—',
+            });
+        }
+        if (about.trim() !== igdbAbout) {
+            resetRows.push({
+                field: 'About',
+                current: clip(about.trim()) || '—',
+                igdb: clip(igdbAbout) || '—',
+            });
+        }
+    }
+
+    const resetToIgdb = () => {
+        setCoverUrl('');
+        setReleaseYear(igdbYearText);
+        setPlatformsText(igdbPlatformsText);
+        setAbout(igdbAbout);
+    };
 
     const coverField = (
         <>
@@ -487,20 +574,14 @@ export function GameDetailsForm({
                 save();
             }}
         >
-            {metadata.igdbUrl && (
-                <p className="text-muted small mb-3">
-                    Prefilled data comes from{' '}
-                    <a href={metadata.igdbUrl} target="_blank" rel="noreferrer">
-                        this IGDB entry
-                    </a>
-                    . Wrong game?{' '}
-                    <Link
-                        href={`/games-v2/${game.name}/manage?pane=game-details`}
-                    >
-                        Fix the match
-                    </Link>
-                </p>
-            )}
+            <IgdbSourceCard
+                gameId={game.id}
+                igdbUrl={metadata.igdbUrl}
+                canRematch={canRematch}
+                resetRows={resetRows}
+                onReset={resetToIgdb}
+                disabled={busy}
+            />
             {sectioned ? (
                 <div className={styles.sectionedCol}>
                     <FormSection title="Identity">
