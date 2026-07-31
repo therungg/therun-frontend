@@ -34,6 +34,28 @@
     color: var(--bs-emphasis-color);
 }
 
+// ---- Section head -------------------------------------------
+// The one heading anatomy for every content section on the public
+// board pages: overview groups, sidebar panels, standings. Eyebrow
+// (board-eyebrow) left, optional mono count / quiet action right,
+// hairline under. Nothing else may invent a section heading.
+@mixin board-section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    padding-bottom: dt.$spacing-xs;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    margin-bottom: dt.$spacing-sm;
+}
+
+@mixin board-section-count {
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+}
+
 // ---- Dense data table (apply to <table>) -------------------
 @mixin board-table {
     width: 100%;
