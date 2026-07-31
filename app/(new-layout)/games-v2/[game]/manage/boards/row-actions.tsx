@@ -62,7 +62,7 @@ export interface RowActionsProps {
      * `BoardCuration` in this component's place once Remove succeeds.
      */
     removing: boolean;
-    onRemove: () => void;
+    onRemove: (reason: string) => void;
     onMutated: () => void;
 }
 
@@ -139,6 +139,36 @@ export function RowActions({
             toast.success('Run approved.');
             onMutated();
         });
+    };
+
+    // ---- Remove (reason popover) ---------------------------------------
+    const [removeOpen, setRemoveOpen] = useState(false);
+    const [removeReason, setRemoveReason] = useState('');
+    const removeRootRef = useRef<HTMLDivElement>(null);
+    const removePanelRef = useRef<HTMLDivElement>(null);
+
+    usePopoverFocus({
+        open: removeOpen,
+        onClose: () => setRemoveOpen(false),
+        panelRef: removePanelRef,
+    });
+
+    useEffect(() => {
+        if (!removeOpen) return;
+        const onDown = (e: MouseEvent) => {
+            if (!removeRootRef.current?.contains(e.target as Node)) {
+                setRemoveOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', onDown);
+        return () => document.removeEventListener('mousedown', onDown);
+    }, [removeOpen]);
+
+    const confirmRemove = () => {
+        const trimmed = removeReason.trim();
+        if (trimmed.length === 0) return;
+        setRemoveOpen(false);
+        onRemove(trimmed);
     };
 
     // ---- Move ---------------------------------------------------------
@@ -259,14 +289,75 @@ export function RowActions({
             </td>
             <td className={styles.actionsCell}>
                 <div className={styles.actionCluster}>
-                    <button
-                        type="button"
-                        className={styles.actionBtn}
-                        onClick={onRemove}
-                        disabled={busy}
-                    >
-                        Remove
-                    </button>
+                    <div className={styles.menuRoot} ref={removeRootRef}>
+                        <button
+                            type="button"
+                            className={styles.actionBtn}
+                            aria-haspopup="dialog"
+                            aria-expanded={removeOpen}
+                            onClick={() => {
+                                if (removeOpen) {
+                                    setRemoveOpen(false);
+                                } else {
+                                    setRemoveReason('');
+                                    setRemoveOpen(true);
+                                }
+                            }}
+                            disabled={busy}
+                        >
+                            Remove
+                        </button>
+                        {removeOpen && (
+                            <div
+                                ref={removePanelRef}
+                                role="dialog"
+                                aria-modal="true"
+                                aria-label={`Remove ${row.runnerName}`}
+                                className={`${styles.menuPanel} ${styles.removePanel}`}
+                            >
+                                <label
+                                    htmlFor={`remove-reason-${row.runId}`}
+                                    className={styles.fieldLabel}
+                                >
+                                    Reason — required
+                                </label>
+                                <input
+                                    id={`remove-reason-${row.runId}`}
+                                    type="text"
+                                    className={styles.dialogTextarea}
+                                    value={removeReason}
+                                    onChange={(e) =>
+                                        setRemoveReason(e.target.value)
+                                    }
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            confirmRemove();
+                                        }
+                                    }}
+                                />
+                                <div className={styles.popoverActions}>
+                                    <button
+                                        type="button"
+                                        className={styles.slipAction}
+                                        onClick={() => setRemoveOpen(false)}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={styles.confirmBtn}
+                                        onClick={confirmRemove}
+                                        disabled={
+                                            removeReason.trim().length === 0
+                                        }
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                     <div className={styles.menuRoot} ref={menuRootRef}>
                         <button
                             type="button"
@@ -465,6 +556,9 @@ export function RowActions({
 export interface PendingRemoval {
     row: LeaderboardRosterRow;
     timeMs: number | null;
+    /** The reason typed into the Remove popover for this row — reused
+     * as-is if the next-run slip's "Remove too" is taken. */
+    reason: string;
     nextRun: UserEligibleRunRow | null;
     nextRunLoading: boolean;
 }

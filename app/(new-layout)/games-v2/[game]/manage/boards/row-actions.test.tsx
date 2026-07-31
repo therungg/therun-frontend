@@ -5,6 +5,7 @@ import {
     render,
     screen,
     waitFor,
+    within,
 } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type {
@@ -182,14 +183,56 @@ describe('RowActions — cluster surface', () => {
 });
 
 describe('RowActions — Remove', () => {
-    it('calls onRemove and does not talk to any mutation action itself', () => {
+    it('opens a reason popover, keeps confirm disabled until a reason is entered, and calls onRemove with the trimmed reason', () => {
         const { onRemove } = renderRowActions();
 
         fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
 
-        expect(onRemove).toHaveBeenCalledTimes(1);
+        const panel = screen.getByRole('dialog', { name: 'Remove runner' });
+        const confirmBtn = within(panel).getByRole('button', {
+            name: 'Remove',
+        }) as HTMLButtonElement;
+        expect(confirmBtn.disabled).toBe(true);
+
+        fireEvent.change(screen.getByLabelText('Reason — required'), {
+            target: { value: '  spam  ' },
+        });
+        expect(confirmBtn.disabled).toBe(false);
+
+        fireEvent.click(confirmBtn);
+
+        expect(onRemove).toHaveBeenCalledWith('spam');
         expect(mocks.applyVerdictsAction).not.toHaveBeenCalled();
         expect(mocks.moveRunAction).not.toHaveBeenCalled();
+        expect(
+            screen.queryByRole('dialog', { name: 'Remove runner' }),
+        ).toBeNull();
+    });
+
+    it('confirms on Enter in the reason input', () => {
+        const { onRemove } = renderRowActions();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
+        const input = screen.getByLabelText('Reason — required');
+        fireEvent.change(input, { target: { value: 'spam' } });
+        fireEvent.keyDown(input, { key: 'Enter' });
+
+        expect(onRemove).toHaveBeenCalledWith('spam');
+    });
+
+    it('Escape closes the popover without calling onRemove', () => {
+        const { onRemove } = renderRowActions();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
+        fireEvent.change(screen.getByLabelText('Reason — required'), {
+            target: { value: 'spam' },
+        });
+        fireEvent.keyDown(document, { key: 'Escape' });
+
+        expect(
+            screen.queryByRole('dialog', { name: 'Remove runner' }),
+        ).toBeNull();
+        expect(onRemove).not.toHaveBeenCalled();
     });
 });
 
@@ -485,6 +528,7 @@ function pendingRemoval(overrides: Partial<PendingRemoval>): PendingRemoval {
     return {
         row: rosterRow({}),
         timeMs: 20_000,
+        reason: 'Board curation during setup',
         nextRun: null,
         nextRunLoading: false,
         ...overrides,

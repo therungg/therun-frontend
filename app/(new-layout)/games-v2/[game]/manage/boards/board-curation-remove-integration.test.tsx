@@ -181,6 +181,19 @@ function rowContaining(name: string): HTMLElement {
     return found;
 }
 
+/** Drives the Remove reason popover for the row containing `runnerName`:
+ * opens it, types `reason`, and confirms — Remove now requires a typed
+ * reason instead of firing immediately. */
+function removeRow(runnerName: string, reason: string) {
+    const row = rowContaining(runnerName);
+    fireEvent.click(within(row).getByRole('button', { name: 'Remove' }));
+    fireEvent.change(within(row).getByLabelText('Reason — required'), {
+        target: { value: reason },
+    });
+    const buttons = within(row).getAllByRole('button', { name: 'Remove' });
+    fireEvent.click(buttons[buttons.length - 1]);
+}
+
 function renderBoard() {
     return render(
         <BoardCuration
@@ -234,15 +247,11 @@ describe("BoardCuration — a sibling row's reload must not kill a pending remov
         rowContaining('bob');
 
         // Remove row A — exclude succeeds, then the next-run slip appears.
-        fireEvent.click(
-            within(rowContaining('alice')).getByRole('button', {
-                name: 'Remove',
-            }),
-        );
+        removeRow('alice', 'Cheating.');
         await waitFor(() =>
             expect(mocks.excludeAction).toHaveBeenCalledWith('some-game', {
                 runIds: [1],
-                reason: 'Board curation during setup',
+                reason: 'Cheating.',
             }),
         );
         await waitFor(() => expect(screen.getByText(/next:/)).toBeTruthy());
@@ -320,11 +329,7 @@ describe("BoardCuration — a sibling row's reload must not kill a pending remov
         renderBoard();
 
         await waitFor(() => rowContaining('alice'));
-        fireEvent.click(
-            within(rowContaining('alice')).getByRole('button', {
-                name: 'Remove',
-            }),
-        );
+        removeRow('alice', 'Cheating.');
         await waitFor(() => expect(mocks.toastSuccess).toHaveBeenCalled());
 
         fireEvent.click(
@@ -423,11 +428,7 @@ describe('BoardCuration — stale-closure reload after a category switch', () =>
 
         // Remove the guest — no candidate flow, so this fires the undo toast
         // (capturing `reload` bound to CAT1) and reloads CAT1 immediately.
-        fireEvent.click(
-            within(rowContaining('guestannie')).getByRole('button', {
-                name: 'Remove',
-            }),
-        );
+        removeRow('guestannie', 'Cheating.');
         await waitFor(() => expect(mocks.toastSuccess).toHaveBeenCalled());
 
         // Switch to CAT2 before touching the undo toast.

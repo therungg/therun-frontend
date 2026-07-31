@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import type { RunTreatment } from '../../../../../../types/bans.types';
 import type {
@@ -22,6 +22,7 @@ import {
     previewExcludeAction,
 } from '../moderation/shared/actions/exclude.action';
 import { fireUndoToast } from '../moderation/shared/undo-toast';
+import { SegmentedControl } from '../shared/form-kit';
 import styles from './board-curation.module.scss';
 import { subcategoryVariablesFor } from './subcategory-bands';
 
@@ -137,6 +138,15 @@ export function RunnerDialog({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, scope]);
 
+    const scopeOptions = useMemo(() => {
+        const opts: Array<{ value: Scope; label: string }> = [
+            { value: 'board', label: 'This board' },
+            { value: 'game', label: 'Whole game' },
+        ];
+        if (canSiteBan) opts.push({ value: 'site', label: 'Entire site' });
+        return opts;
+    }, [canSiteBan]);
+
     if (!open || row.userId == null) return null;
 
     const targetId = row.userId;
@@ -234,37 +244,13 @@ export function RunnerDialog({
                 />
             </div>
             <div className={styles.dialogBody}>
-                <div>
-                    <button
-                        type="button"
-                        className={`${styles.toolbarBtn} ${scope === 'board' ? styles.toolbarBtnActive : ''}`}
-                        aria-pressed={scope === 'board'}
-                        onClick={() => setScope('board')}
-                        disabled={isConfirming}
-                    >
-                        This board
-                    </button>
-                    <button
-                        type="button"
-                        className={`${styles.toolbarBtn} ${scope === 'game' ? styles.toolbarBtnActive : ''}`}
-                        aria-pressed={scope === 'game'}
-                        onClick={() => setScope('game')}
-                        disabled={isConfirming}
-                    >
-                        Whole game
-                    </button>
-                    {canSiteBan && (
-                        <button
-                            type="button"
-                            className={`${styles.toolbarBtn} ${scope === 'site' ? styles.toolbarBtnActive : ''}`}
-                            aria-pressed={scope === 'site'}
-                            onClick={() => setScope('site')}
-                            disabled={isConfirming}
-                        >
-                            Entire site
-                        </button>
-                    )}
-                </div>
+                <SegmentedControl
+                    label="Scope"
+                    value={scope}
+                    options={scopeOptions}
+                    onChange={(value) => setScope(value as Scope)}
+                    disabled={isConfirming}
+                />
 
                 {showSubcategoryNote && (
                     <p className={styles.moveNote}>
@@ -291,13 +277,18 @@ export function RunnerDialog({
                         )}
                         {preview && (
                             <>
-                                <p>
+                                <p
+                                    className={`${styles.consequence} ${preview.affectedRunCount > 0 ? styles.consequenceWarn : ''}`}
+                                >
                                     {preview.affectedRunCount} run
                                     {preview.affectedRunCount === 1 ? '' : 's'}{' '}
                                     affected.
                                 </p>
                                 {preview.affectedLeaderboards.length > 0 && (
-                                    <ul>
+                                    <ul
+                                        className={styles.choiceMeta}
+                                        style={{ margin: 0 }}
+                                    >
                                         {preview.affectedLeaderboards.map(
                                             (lb) => (
                                                 <li
@@ -326,28 +317,44 @@ export function RunnerDialog({
                         <p className={styles.fieldLabel}>
                             What happens to their runs
                         </p>
-                        {TREATMENTS.map((t) => (
-                            <div key={t.value}>
-                                <label>
-                                    <input
-                                        type="radio"
-                                        name="runner-treatment"
-                                        checked={treatment === t.value}
-                                        onChange={() => setTreatment(t.value)}
-                                        disabled={isConfirming}
-                                    />{' '}
-                                    {t.label}
-                                </label>
-                                <small>{t.description}</small>
-                            </div>
-                        ))}
+                        <ul className={styles.choiceList}>
+                            {TREATMENTS.map((t) => (
+                                <li key={t.value}>
+                                    <label
+                                        className={`${styles.choiceRow} ${treatment === t.value ? styles.choiceRowActive : ''}`}
+                                    >
+                                        <input
+                                            type="radio"
+                                            name="runner-treatment"
+                                            className={styles.hiddenRadio}
+                                            checked={treatment === t.value}
+                                            onChange={() =>
+                                                setTreatment(t.value)
+                                            }
+                                            disabled={isConfirming}
+                                        />
+                                        <span className={styles.choiceTitle}>
+                                            {t.label}
+                                        </span>
+                                        <span
+                                            className={styles.choiceDesc}
+                                            aria-hidden="true"
+                                        >
+                                            {t.description}
+                                        </span>
+                                    </label>
+                                </li>
+                            ))}
+                        </ul>
                         {treatment === 'anonymize' && (
                             <p className={styles.moveNote}>
                                 Moderation views (including this table) keep
                                 showing the real name.
                             </p>
                         )}
-                        <p className={styles.moveNote}>
+                        <p
+                            className={`${styles.consequence} ${styles.consequenceWarn}`}
+                        >
                             Site-wide ban: the account is locked out of
                             therun.gg entirely.
                         </p>

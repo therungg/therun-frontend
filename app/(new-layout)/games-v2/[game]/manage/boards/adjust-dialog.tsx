@@ -236,38 +236,71 @@ export function AdjustDialog({
                         )}
                         {eligibleRuns && (
                             <>
-                                <div>
+                                <ul className={styles.choiceList}>
                                     {boardRuns.map((r) => (
-                                        <label key={r.runId}>
-                                            <input
-                                                type="radio"
-                                                name="adjust-target"
-                                                checked={
-                                                    selectedTarget === r.runId
-                                                }
-                                                onChange={() =>
-                                                    setSelectedTarget(r.runId)
-                                                }
-                                                disabled={isPending}
-                                            />{' '}
-                                            <DurationToFormatted
-                                                duration={
-                                                    primaryValueOf(r, timing) ??
-                                                    0
-                                                }
-                                                withMillis={
-                                                    category.showMilliseconds ??
-                                                    false
-                                                }
-                                            />{' '}
-                                            {r.verificationStatus}
-                                            {r.runId === row.runId
-                                                ? ' — current entry'
-                                                : ''}
-                                        </label>
+                                        <li key={r.runId}>
+                                            <label
+                                                className={`${styles.choiceRow} ${selectedTarget === r.runId ? styles.choiceRowActive : ''}`}
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="adjust-target"
+                                                    className={
+                                                        styles.hiddenRadio
+                                                    }
+                                                    checked={
+                                                        selectedTarget ===
+                                                        r.runId
+                                                    }
+                                                    onChange={() =>
+                                                        setSelectedTarget(
+                                                            r.runId,
+                                                        )
+                                                    }
+                                                    disabled={isPending}
+                                                />
+                                                <span
+                                                    className={
+                                                        styles.choiceTitle
+                                                    }
+                                                >
+                                                    <DurationToFormatted
+                                                        duration={
+                                                            primaryValueOf(
+                                                                r,
+                                                                timing,
+                                                            ) ?? 0
+                                                        }
+                                                        withMillis={
+                                                            category.showMilliseconds ??
+                                                            false
+                                                        }
+                                                    />
+                                                    {r.runId === row.runId && (
+                                                        <span
+                                                            className={
+                                                                styles.currentTag
+                                                            }
+                                                        >
+                                                            Current entry
+                                                        </span>
+                                                    )}
+                                                </span>
+                                                <span
+                                                    className={
+                                                        styles.choiceMeta
+                                                    }
+                                                    aria-hidden="true"
+                                                >
+                                                    {r.verificationStatus}
+                                                </span>
+                                            </label>
+                                        </li>
                                     ))}
-                                </div>
-                                <p>
+                                </ul>
+                                <p
+                                    className={`${styles.consequence} ${fasterIds.length > 0 ? styles.consequenceWarn : ''}`}
+                                >
                                     {fasterIds.length > 0
                                         ? `This removes ${fasterIds.length} faster run${
                                               fasterIds.length === 1 ? '' : 's'
@@ -289,9 +322,13 @@ export function AdjustDialog({
                     </div>
                 )}
 
-                <div>
-                    <p className={styles.fieldLabel}>Set a time instead</p>
-                    <p>Files a moderator manual time for this board.</p>
+                <div className={styles.dialogSection}>
+                    <p className={styles.dialogSectionTitle}>
+                        Set a time instead
+                    </p>
+                    <p className={styles.moveNote}>
+                        Files a moderator manual time for this board.
+                    </p>
                     <label htmlFor="adjust-time" className={styles.fieldLabel}>
                         Time
                     </label>

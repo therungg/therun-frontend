@@ -143,10 +143,13 @@ describe('AdjustDialog', () => {
         expect(radios).toHaveLength(3);
 
         const currentRadio = screen.getByRole('radio', {
-            name: /current entry/,
+            name: /Current entry/,
         });
         expect(currentRadio).toHaveProperty('checked', true);
         expect(currentRadio.closest('label')?.textContent).toMatch(/0:20/);
+        expect(currentRadio.closest('label')?.textContent).toMatch(
+            /Current entry/,
+        );
     });
 
     it('filters other boards out', async () => {
@@ -202,7 +205,7 @@ describe('AdjustDialog', () => {
         expect(radios).toHaveLength(2);
 
         const nonCurrentRadio = radios.find(
-            (r) => !r.closest('label')?.textContent?.includes('current entry'),
+            (r) => !r.closest('label')?.textContent?.includes('Current entry'),
         );
         expect(nonCurrentRadio).toBeTruthy();
         fireEvent.click(nonCurrentRadio as HTMLElement);

@@ -435,11 +435,7 @@ describe('BoardCuration — bulk selection', () => {
         fireEvent.click(screen.getByLabelText('Select bob'));
         expect(screen.getByText('2 selected')).toBeTruthy();
 
-        fireEvent.click(
-            within(rowContaining('alice')).getByRole('button', {
-                name: 'Remove',
-            }),
-        );
+        removeRow('alice', 'Cheating.');
 
         await waitFor(() =>
             expect(screen.getByText('1 selected')).toBeTruthy(),
@@ -452,6 +448,21 @@ function rowContaining(name: string): HTMLElement {
     const found = rows.find((r) => r.textContent?.includes(name));
     if (!found) throw new Error(`No row found containing "${name}"`);
     return found;
+}
+
+/** Drives the Remove reason popover for the row containing `runnerName`:
+ * opens it, types `reason`, and confirms. Remove now requires a typed
+ * reason (Joey's feedback: "when removing, a reason should be given"),
+ * so every Remove click in these suites goes through this popover instead
+ * of firing immediately. */
+function removeRow(runnerName: string, reason: string) {
+    const row = rowContaining(runnerName);
+    fireEvent.click(within(row).getByRole('button', { name: 'Remove' }));
+    fireEvent.change(within(row).getByLabelText('Reason — required'), {
+        target: { value: reason },
+    });
+    const buttons = within(row).getAllByRole('button', { name: 'Remove' });
+    fireEvent.click(buttons[buttons.length - 1]);
 }
 
 describe('BoardCuration subcategory bands', () => {
