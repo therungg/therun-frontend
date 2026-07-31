@@ -7,7 +7,6 @@ import type { GameIdentifiers, GameMetadata } from '~src/lib/game-mgmt';
 import { GameDetailsForm } from '../../setup/game-details-form';
 import kit from '../shared/form-kit.module.scss';
 import styles from './console.module.scss';
-import { IgdbMatchSection } from './igdb-match-section';
 
 export interface GameDetailsData {
     identifiers: GameIdentifiers;
@@ -50,16 +49,12 @@ export function GameDetailsPane({
                 sectioned
                 formId="game-details-form"
                 hideAction
+                canRematch={canRematch}
                 onBusyChange={setBusy}
                 onSaved={() => {
                     toast.success('Details saved');
                     router.refresh();
                 }}
-            />
-            <IgdbMatchSection
-                gameId={game.id}
-                igdbUrl={metadata.igdbUrl}
-                canRematch={canRematch}
             />
         </div>
     );
