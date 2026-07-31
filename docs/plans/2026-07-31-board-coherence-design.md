@@ -1,7 +1,7 @@
 # Board coherence redesign — design
 
 Date: 2026-07-31
-Status: approved (Joey), pending spec review
+Status: implemented 2026-07-31, pending browser pass
 Scope: everything under `/games-v2/[game]` public views — overview, board, standings. Not `/manage`, `/setup`, `/submit`.
 
 ## Problem
