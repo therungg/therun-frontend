@@ -218,6 +218,9 @@ describe('RowActions — Remove', () => {
         fireEvent.keyDown(input, { key: 'Enter' });
 
         expect(onRemove).toHaveBeenCalledWith('spam');
+        expect(
+            screen.queryByRole('dialog', { name: 'Remove runner' }),
+        ).toBeNull();
     });
 
     it('Escape closes the popover without calling onRemove', () => {

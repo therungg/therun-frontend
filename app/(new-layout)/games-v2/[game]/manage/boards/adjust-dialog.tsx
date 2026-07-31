@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useEffect, useId, useMemo, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
@@ -68,6 +68,7 @@ export function AdjustDialog({
     const [timeError, setTimeError] = useState<string | null>(null);
 
     const [isPending, startTransition] = useTransition();
+    const metaDescId = useId();
 
     // Reset on open (and on every re-open for a possibly different row) —
     // never on `row`/`timeMs` alone, so an in-progress edit isn't wiped by
@@ -237,66 +238,88 @@ export function AdjustDialog({
                         {eligibleRuns && (
                             <>
                                 <ul className={styles.choiceList}>
-                                    {boardRuns.map((r) => (
-                                        <li key={r.runId}>
-                                            <label
-                                                className={`${styles.choiceRow} ${selectedTarget === r.runId ? styles.choiceRowActive : ''}`}
-                                            >
-                                                <input
-                                                    type="radio"
-                                                    name="adjust-target"
-                                                    className={
-                                                        styles.hiddenRadio
-                                                    }
-                                                    checked={
-                                                        selectedTarget ===
-                                                        r.runId
-                                                    }
-                                                    onChange={() =>
-                                                        setSelectedTarget(
-                                                            r.runId,
-                                                        )
-                                                    }
-                                                    disabled={isPending}
-                                                />
-                                                <span
-                                                    className={
-                                                        styles.choiceTitle
-                                                    }
+                                    {boardRuns.map((r) => {
+                                        // Explicit aria-labelledby/
+                                        // aria-describedby instead of relying
+                                        // on the wrapping <label>'s implicit
+                                        // name computation — that would
+                                        // concatenate the time + tag + status
+                                        // with no separator. aria-describedby
+                                        // keeps verificationStatus in the
+                                        // accessibility tree (unlike
+                                        // aria-hidden, which would silence it
+                                        // for screen-reader users entirely).
+                                        const titleId = `${metaDescId}-title-${r.runId}`;
+                                        const descId = `${metaDescId}-desc-${r.runId}`;
+                                        return (
+                                            <li key={r.runId}>
+                                                <label
+                                                    className={`${styles.choiceRow} ${selectedTarget === r.runId ? styles.choiceRowActive : ''}`}
                                                 >
-                                                    <DurationToFormatted
-                                                        duration={
-                                                            primaryValueOf(
-                                                                r,
-                                                                timing,
-                                                            ) ?? 0
+                                                    <input
+                                                        type="radio"
+                                                        name="adjust-target"
+                                                        className={
+                                                            styles.hiddenRadio
                                                         }
-                                                        withMillis={
-                                                            category.showMilliseconds ??
-                                                            false
+                                                        checked={
+                                                            selectedTarget ===
+                                                            r.runId
                                                         }
+                                                        aria-labelledby={
+                                                            titleId
+                                                        }
+                                                        aria-describedby={
+                                                            descId
+                                                        }
+                                                        onChange={() =>
+                                                            setSelectedTarget(
+                                                                r.runId,
+                                                            )
+                                                        }
+                                                        disabled={isPending}
                                                     />
-                                                    {r.runId === row.runId && (
-                                                        <span
-                                                            className={
-                                                                styles.currentTag
+                                                    <span
+                                                        id={titleId}
+                                                        className={
+                                                            styles.choiceTitle
+                                                        }
+                                                    >
+                                                        <DurationToFormatted
+                                                            duration={
+                                                                primaryValueOf(
+                                                                    r,
+                                                                    timing,
+                                                                ) ?? 0
                                                             }
-                                                        >
-                                                            Current entry
-                                                        </span>
-                                                    )}
-                                                </span>
-                                                <span
-                                                    className={
-                                                        styles.choiceMeta
-                                                    }
-                                                    aria-hidden="true"
-                                                >
-                                                    {r.verificationStatus}
-                                                </span>
-                                            </label>
-                                        </li>
-                                    ))}
+                                                            withMillis={
+                                                                category.showMilliseconds ??
+                                                                false
+                                                            }
+                                                        />
+                                                        {r.runId ===
+                                                            row.runId && (
+                                                            <span
+                                                                className={
+                                                                    styles.currentTag
+                                                                }
+                                                            >
+                                                                Current entry
+                                                            </span>
+                                                        )}
+                                                    </span>
+                                                    <span
+                                                        id={descId}
+                                                        className={
+                                                            styles.choiceMeta
+                                                        }
+                                                    >
+                                                        {r.verificationStatus}
+                                                    </span>
+                                                </label>
+                                            </li>
+                                        );
+                                    })}
                                 </ul>
                                 <p
                                     className={`${styles.consequence} ${fasterIds.length > 0 ? styles.consequenceWarn : ''}`}

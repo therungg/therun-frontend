@@ -494,6 +494,36 @@
     @include board.board-dialog-textarea;
 }
 
+// Single-line sibling of .dialogTextarea — same recipe (dt tokens for
+// font-size/padding/border/radius/width, same focus ring) minus `resize`,
+// which only makes sense on a multi-line control. Used by the Remove
+// popover's reason input (row-actions.tsx), which is a plain text input,
+// not a textarea.
+.dialogInput {
+    font-size: dt.$font-size-sm;
+    border-radius: dt.$radius-sm;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    background: color-mix(
+        in srgb,
+        var(--bs-body-bg) 90%,
+        var(--bs-secondary-bg) 10%
+    );
+    color: var(--bs-body-color);
+    padding: dt.$spacing-sm;
+    width: 100%;
+    transition: border-color dt.$transition-fast;
+
+    &:focus-visible {
+        outline: 0;
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
+
 .moveNote {
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
@@ -557,6 +587,16 @@
 .choiceMeta {
     font-size: dt.$font-size-2xs;
     color: var(--bs-secondary-color);
+}
+
+// The affected-leaderboards preview list (RunnerDialog) — same text
+// treatment as .choiceMeta, but it's a real list of distinct leaderboards
+// rather than a single row's secondary line, so it keeps its own margin/
+// indent instead of inheriting .choiceMeta's (nonexistent) layout rules.
+.choiceMetaList {
+    composes: choiceMeta;
+    margin: 0;
+    padding-left: dt.$spacing-lg;
 }
 
 .currentTag {
