@@ -136,6 +136,9 @@ describe('AdjustDialog', () => {
     it('lists this board’s eligible runs sorted, current entry marked', async () => {
         renderDialog();
 
+        expect(
+            screen.getByRole('heading', { name: 'Adjust runner’s entry' }),
+        ).toBeTruthy();
         const radios = await screen.findAllByRole('radio');
         expect(radios).toHaveLength(3);
 
@@ -252,6 +255,9 @@ describe('AdjustDialog', () => {
         });
         renderDialog({ row: rosterRow({ userId: null }) });
 
+        expect(
+            screen.getByRole('heading', { name: 'Set a time for runner' }),
+        ).toBeTruthy();
         expect(screen.queryByRole('radio')).toBeNull();
         expect(
             screen.queryByRole('button', { name: 'Make this the entry' }),
