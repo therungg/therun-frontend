@@ -16,8 +16,6 @@ export interface BoardHealth {
     items: HealthItem[];
 }
 
-export const STALE_TRIAGE_MS = 7 * 24 * 60 * 60 * 1000;
-
 // Board-wide steps point at the category index, not at one arbitrary
 // category. `timing` and `rules` used to be per-category panes, so a
 // board-wide warning deep-linked to whichever category happened to be
@@ -32,10 +30,11 @@ const STEP_PANE: Partial<Record<SetupStepId, string>> = {
     'category-setup': 'categories',
 };
 
+// The stale-triage line ("N triage items waiting more than a week") is gone
+// with the Needs attention pane it deep-linked into — health is currently
+// setup-completeness only.
 export function computeBoardHealth(input: {
     completeness: BoardCompleteness;
-    attentionCreatedAts: string[];
-    now: number;
 }): BoardHealth {
     const items: HealthItem[] = [];
 
@@ -53,18 +52,6 @@ export function computeBoardHealth(input: {
                 pane: STEP_PANE[step.step] ?? null,
             });
         }
-    }
-
-    const stale = input.attentionCreatedAts.filter((iso) => {
-        const t = new Date(iso).getTime();
-        return Number.isFinite(t) && input.now - t > STALE_TRIAGE_MS;
-    }).length;
-    if (stale > 0) {
-        items.push({
-            severity: stale > 2 ? 'warning' : 'info',
-            label: `${stale} triage item${stale === 1 ? '' : 's'} waiting more than a week`,
-            pane: 'attention',
-        });
     }
 
     const grade: HealthGrade = items.some((i) => i.severity === 'blocker')
