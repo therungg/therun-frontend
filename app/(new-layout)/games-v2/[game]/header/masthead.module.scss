@@ -77,7 +77,7 @@
 .chipEmblem {
     width: 17px;
     height: 17px;
-    border-radius: dt.$radius-sm;
+    border-radius: dt.$radius-md;
     object-fit: cover;
     flex-shrink: 0;
 }
@@ -110,8 +110,8 @@
 
     .chip {
         font-size: dt.$font-size-xs;
-        border-radius: dt.$radius-sm;
-        border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+        border-radius: dt.$radius-md;
+        border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
         padding: 2px dt.$spacing-sm;
         background: transparent;
         color: var(--bs-secondary-color);
@@ -200,7 +200,7 @@
 .stickyArt {
     width: 20px;
     height: 27px;
-    border-radius: dt.$radius-sm;
+    border-radius: dt.$radius-md;
     object-fit: cover;
     flex-shrink: 0;
 }

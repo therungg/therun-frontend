@@ -40,7 +40,7 @@
     justify-content: space-between;
     gap: dt.$spacing-md;
     padding-bottom: dt.$spacing-md;
-    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
 }
 
 .togglePills {
@@ -52,7 +52,7 @@
 .pill,
 .pillOn {
     @include board.control-pill;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.7);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
     // control-pill sets its own padding, so the coarse-pointer rule inside the
     // mixin is overridden by that shorthand — restate it here (see the note in
     // _board.scss on control-pill).
