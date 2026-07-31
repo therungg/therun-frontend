@@ -7,7 +7,7 @@
     gap: dt.$spacing-sm;
 }
 
-// Flat rail rows: the railCard is the only surface. A group is one row —
+// Flat rail rows: the plate is the only surface. A group is one row —
 // eyebrow label + chips — separated by hairlines, no recessed boxes
 // (the engraved-well treatment read as a stack of disabled inputs and
 // cost ~60px of chrome; the audit's "grey on grey on grey").
@@ -77,7 +77,7 @@
 .chipEmblem {
     width: 17px;
     height: 17px;
-    border-radius: dt.$radius-sm;
+    border-radius: dt.$radius-md;
     object-fit: cover;
     flex-shrink: 0;
 }
@@ -100,39 +100,34 @@
     border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
 
     .endcap {
-        // Lowercase, lighter than the category group labels: a filter
-        // name, not a section heading.
-        text-transform: none;
-        letter-spacing: 0.02em;
-        font-weight: 600;
         color: var(--bs-tertiary-color);
     }
 
-    .chip {
+    .pill {
+        @include board.control-pill;
         font-size: dt.$font-size-xs;
-        border-radius: dt.$radius-sm;
-        border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
-        padding: 2px dt.$spacing-sm;
-        background: transparent;
-        color: var(--bs-secondary-color);
     }
 
-    .chipActive {
-        background: rgba(var(--bs-primary-rgb), 0.1);
-        border-color: rgba(var(--bs-primary-rgb), 0.55);
-        color: var(--bs-emphasis-color);
-        font-weight: 600;
+    .pillActive {
+        @include board.control-pill-active;
     }
 }
 
 // ---- The plate ------------------------------------------------------
-// Game identity only: back row + condensed game line + actions. The
-// category selector lives in its own card below (.railCard). Deliberately
-// NOT sticky — the slim bar takes that job.
+// Game identity + category selector: ONE surface. Hero up top (`.plateTop`),
+// then the category rail / filter tier / rules toggle each as their own
+// hairline-divided `.plateSection` below it. Deliberately NOT sticky — the
+// slim bar takes that job.
 .plate {
     @include board.board-surface(0);
     overflow: hidden;
-    margin-bottom: dt.$spacing-md;
+    // Density pass (Task 6 fix): one step down from the old selector
+    // card's spacing-lg gap — this margin is the whole visible seam
+    // between the plate and the table on the board view, and the
+    // per-section wrapping below (`.plateSection`) added enough of its
+    // own chrome that the board-view rows-above-fold target needed this
+    // extra sliver back.
+    margin-bottom: dt.$spacing-sm;
 }
 
 .plateTop {
@@ -142,19 +137,34 @@
     background: var(--board-accent-soft, transparent);
 }
 
+// One section of the plate below the hero: category rail, filter tier, or
+// the rules toggle row. Each gets its own hairline above it — the plate
+// reads as one surface with divided rows, not stacked cards.
+.plateSection {
+    // Density pass (Task 6 fix): block padding one step down. Three of
+    // these can stack on one board (category rail / filter tier / rules
+    // toggle) — each one's own border-top + padding-block is a real
+    // rows-above-fold cost on the actual board view, which never renders
+    // the (much larger) full-hero stat band this task otherwise removed.
+    padding: dt.$spacing-xs dt.$spacing-xl;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+
+    // `.tier` (filter-bar.tsx) carries its own top hairline for the
+    // stand-alone setup-preview context (category-band-preview.tsx, which
+    // doesn't wrap it in a `.plateSection`). Inside the plate that hairline
+    // would double up with this section's own — neutralize it here.
+    > .tier {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: none;
+    }
+}
+
 // Small uppercase group label — used by the switch-board popover's
 // section headings.
 .groupEyebrow {
     @include board.board-eyebrow;
     display: block;
-}
-
-// ---- Selector card ---------------------------------------------------
-// Categories choose the board; the subcategory tier below them narrows it
-// (filter vocabulary — see `.tier`). Its own surface, not the header's.
-.railCard {
-    @include board.board-surface(dt.$spacing-sm dt.$spacing-xl);
-    margin-bottom: dt.$spacing-lg;
 }
 
 // ---- Sticky slim bar -------------------------------------------------
@@ -200,7 +210,7 @@
 .stickyArt {
     width: 20px;
     height: 27px;
-    border-radius: dt.$radius-sm;
+    border-radius: dt.$radius-md;
     object-fit: cover;
     flex-shrink: 0;
 }

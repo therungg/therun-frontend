@@ -4,6 +4,7 @@ import { Discord } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import { buildSubmitHref } from '~src/lib/board-url';
 import type { GameMetadata } from '~src/lib/game-mgmt';
+import { formatCount, formatHours } from '~src/utils/format-stats';
 import type {
     QuickStats,
     ResolvedGame,
@@ -94,17 +95,29 @@ export function GameHero({
         gameMeta.seriesDisplay
             ? `Part of the ${gameMeta.seriesDisplay} series`
             : null,
-        variant === 'condensed'
-            ? `${stats.uniqueRunners.toLocaleString()} runners`
+        variant === 'condensed' && stats.uniqueRunners > 0
+            ? `${formatCount(stats.uniqueRunners)} runners`
             : null,
         variant === 'condensed' && stats.totalAttemptCount > 0
-            ? `${stats.totalAttemptCount.toLocaleString()} attempts`
+            ? `${formatCount(stats.totalAttemptCount)} attempts`
+            : null,
+        // Full hero: the former stat band's numbers, folded into the facts
+        // line instead of their own row (density pass) — same "omit if
+        // missing" rule the band used (hours already guarded on > 0; runners
+        // and runs guarded the same way so a stat-less game never renders
+        // "0 runners").
+        variant === 'full' && stats.uniqueRunners > 0
+            ? `${formatCount(stats.uniqueRunners)} runners`
+            : null,
+        variant === 'full' && stats.totalAttemptCount > 0
+            ? `${formatCount(stats.totalAttemptCount)} runs`
+            : null,
+        variant === 'full' && stats.totalRunTime > 0
+            ? `${formatHours(stats.totalRunTime)} h played`
             : null,
     ]
         .filter(Boolean)
         .join(' · ');
-
-    const hoursPlayed = Math.round(stats.totalRunTime / 3_600_000);
 
     return (
         <header
@@ -152,36 +165,6 @@ export function GameHero({
                     )}
                     {factsLine && (
                         <p className={styles.heroFactsLine}>{factsLine}</p>
-                    )}
-                    {variant === 'full' && (
-                        <div className={styles.heroStatBand}>
-                            <div className={styles.heroStat}>
-                                <span className={styles.heroStatValue}>
-                                    {stats.uniqueRunners.toLocaleString()}
-                                </span>
-                                <span className={styles.heroStatLabel}>
-                                    runners
-                                </span>
-                            </div>
-                            <div className={styles.heroStat}>
-                                <span className={styles.heroStatValue}>
-                                    {stats.totalAttemptCount.toLocaleString()}
-                                </span>
-                                <span className={styles.heroStatLabel}>
-                                    attempts
-                                </span>
-                            </div>
-                            {hoursPlayed > 0 && (
-                                <div className={styles.heroStat}>
-                                    <span className={styles.heroStatValue}>
-                                        {hoursPlayed.toLocaleString()}
-                                    </span>
-                                    <span className={styles.heroStatLabel}>
-                                        hours played
-                                    </span>
-                                </div>
-                            )}
-                        </div>
                     )}
                 </div>
                 <div className={styles.heroActions}>

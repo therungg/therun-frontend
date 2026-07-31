@@ -83,7 +83,7 @@ export function SubcategoryPills({ defs, selected }: Props) {
                                                 onPick(def, canonical)
                                             }
                                             aria-pressed={isActive}
-                                            className={`${styles.chip} ${isActive ? styles.chipActive : ''}`}
+                                            className={`${styles.pill} ${isActive ? styles.pillActive : ''}`}
                                             title={
                                                 bucket.length > 1
                                                     ? `Aliases: ${bucket.slice(1).join(', ')}`

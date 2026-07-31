@@ -31,7 +31,7 @@
     flex-wrap: wrap;
     gap: dt.$spacing-sm;
     padding-bottom: dt.$spacing-md;
-    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
 }
 
 .pill {
@@ -48,4 +48,14 @@
 
 .row {
     height: 2.25rem;
+}
+
+// ---- Rail (aside panels) -----------------------------------------
+// Same treatment as .railPanel in [game]/loading.module.scss — the real
+// page now renders a Sidebar in gamePageStyles.rail beside this column.
+.railPanel {
+    @include board.board-skeleton;
+    height: 10rem;
+    border-radius: dt.$radius-lg;
+    margin-bottom: dt.$spacing-lg;
 }

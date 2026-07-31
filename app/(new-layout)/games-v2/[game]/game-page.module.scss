@@ -80,7 +80,7 @@
 .hero {
     border-bottom: 1px solid var(--bs-border-color);
     margin-bottom: dt.$spacing-lg;
-    padding: dt.$spacing-xl 0 dt.$spacing-lg;
+    padding: dt.$spacing-lg 0 dt.$spacing-md;
 }
 
 // Board-page hero: the game is context here, the category below it is the
@@ -124,7 +124,7 @@
 .heroCover {
     width: 132px;
     height: 176px;
-    border-radius: dt.$radius-lg;
+    border-radius: dt.$radius-md;
     box-shadow: dt.$shadow-lg;
     object-fit: cover;
     flex-shrink: 0;
@@ -158,8 +158,8 @@
 // Board pages: the game is context, not the subject — one visual rank
 // above body text, well under the category h1's 2xl.
 .heroTitleCondensed {
-    font-size: dt.$font-size-lg;
-    font-weight: 650;
+    font-size: dt.$font-size-xl;
+    font-weight: 700;
     letter-spacing: -0.01em;
     line-height: 1.2;
     margin: 0;
@@ -169,51 +169,6 @@
     margin: 0;
     font-size: dt.$font-size-xs;
     color: var(--bs-tertiary-color);
-}
-
-// Stat band — the game's scale carried by type size, not decoration.
-.heroStatBand {
-    display: flex;
-    align-items: baseline;
-    gap: dt.$spacing-xl;
-    margin-top: dt.$spacing-xs;
-
-    @media (max-width: 991.98px) {
-        gap: dt.$spacing-lg;
-        flex-wrap: wrap;
-    }
-}
-
-.heroStat {
-    display: flex;
-    align-items: baseline;
-    gap: dt.$spacing-sm;
-
-    & + & {
-        border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
-        padding-left: dt.$spacing-xl;
-
-        @media (max-width: 991.98px) {
-            padding-left: dt.$spacing-lg;
-        }
-    }
-}
-
-.heroStatValue {
-    font-size: dt.$font-size-2xl;
-    font-weight: 750;
-    letter-spacing: -0.02em;
-    line-height: 1;
-    color: var(--bs-emphasis-color);
-    font-variant-numeric: tabular-nums;
-
-    @media (max-width: 991.98px) {
-        font-size: dt.$font-size-xl;
-    }
-}
-
-.heroStatLabel {
-    @include board.board-eyebrow;
 }
 
 .heroActions {
@@ -237,24 +192,11 @@
     @include board.board-btn-primary;
 }
 
-// quiet action chip (Discord / Manage) — outline, no glass
+// quiet action chip (Discord / Manage) — control-pill on an anchor
 .quietChip {
-    display: inline-block;
-    padding: dt.$badge-padding;
-    border: 1px solid var(--bs-border-color);
-    border-radius: dt.$badge-radius;
-    font-size: dt.$font-size-sm;
-    font-weight: dt.$label-font-weight;
-    color: var(--bs-secondary-color);
+    @include board.control-pill;
     text-decoration: none;
     white-space: nowrap;
-    transition: color dt.$transition-fast,
-        border-color dt.$transition-fast;
-
-    &:hover {
-        color: var(--bs-emphasis-color);
-        border-color: var(--bs-secondary-color);
-    }
 }
 
 .quietLink {

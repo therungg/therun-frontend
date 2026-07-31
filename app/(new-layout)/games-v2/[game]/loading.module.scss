@@ -3,17 +3,18 @@
 
 // ============================================================
 // Route-level loading skeleton for the board page. Mirrors the slim
-// masthead in header/masthead.module.scss: the compact game-identity
-// plate (`.heroRow`: 40px cover + title/facts) and, on its own surface,
-// the selector card (`.railCard`). See those files for the real
-// dimensions this predicts. grid/table mirror this file's own board.
+// masthead in header/masthead.module.scss: one plate — the compact
+// game-identity hero (`.heroRow`: 40px cover + title/facts) plus the
+// category-rail section (`.plateSection`) as a hairline-divided row of
+// the same surface. See those files for the real dimensions this
+// predicts. grid/table mirror this file's own board.
 // ============================================================
 
 // ---- Masthead plate --------------------------------------------
 .plate {
     @include board.board-surface(0);
     overflow: hidden;
-    margin-bottom: dt.$spacing-md;
+    margin-bottom: dt.$spacing-sm;
 }
 
 .plateTop {
@@ -69,11 +70,11 @@
     flex-shrink: 0;
 }
 
-// ---- Selector card (standalone, below the plate) -----------------
-// Same treatment as .railCard in header/masthead.module.scss.
-.railCard {
-    @include board.board-surface(dt.$spacing-sm dt.$spacing-xl);
-    margin-bottom: dt.$spacing-lg;
+// ---- Category-rail section (inside the plate) -----------------
+// Same treatment as .plateSection in header/masthead.module.scss.
+.plateSection {
+    padding: dt.$spacing-xs dt.$spacing-xl;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
 }
 
 .railBlock {
@@ -102,7 +103,7 @@
     display: flex;
     align-items: center;
     gap: dt.$spacing-lg;
-    padding: dt.$spacing-md dt.$spacing-lg;
+    padding: dt.$spacing-sm dt.$spacing-lg;
     border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
 
     &:last-child {

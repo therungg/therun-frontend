@@ -2,21 +2,13 @@
 @use '../../../styles/board' as board;
 @use '../../../styles/frontpage-utilities' as fp;
 
-// Same surface as the record-wall plaques — the rail must read as
-// structured panels, not loose text next to a carded main column.
 .panel {
-    padding: dt.$spacing-lg;
-    background: var(--bs-tertiary-bg);
-    border: 1px solid var(--bs-border-color);
-    border-radius: dt.$radius-lg;
+    @include board.board-surface(dt.$spacing-md dt.$spacing-lg);
     margin-bottom: dt.$spacing-lg;
 }
 
 .panelHead {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: dt.$spacing-sm;
+    @include board.board-section-head;
 }
 
 .eyebrow {
