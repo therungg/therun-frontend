@@ -97,6 +97,7 @@ export function BoardControls({
                 gameSlug={gameSlug}
                 gameId={gameId}
                 category={category}
+                timing={timing}
                 reload={reload}
             />
         </div>
@@ -368,20 +369,25 @@ interface DisplayControlProps {
     gameSlug: string;
     gameId: number;
     category: ResolvedCategory;
+    /** The board's primary timing — that clock is always shown; the popover
+     * only offers the secondary. */
+    timing: 'rt' | 'gt';
     reload: () => void;
 }
 
 /**
- * Milliseconds / Show RTA / Show IGT / Lower is better, each applied
+ * Milliseconds / secondary-clock visibility / Lower is better, each applied
  * immediately on toggle (no separate Save) — settings edits, not a
- * confirm-and-undo flow. The RTA/IGT pair guards the same both-hidden case
- * `TimingSettingsSection` does, blocking with an inline note instead of
- * round-tripping to the server's own guard.
+ * confirm-and-undo flow. The primary clock is always shown, so only the
+ * secondary gets a checkbox; the both-hidden case is unreachable from here
+ * unless stored data already hides the primary, which the server guard
+ * still catches.
  */
 function DisplayControl({
     gameSlug,
     gameId,
     category,
+    timing,
     reload,
 }: DisplayControlProps) {
     const router = useRouter();
@@ -389,7 +395,6 @@ function DisplayControl({
     const [state, setState] = useState<DisplayState>(() =>
         displayStateOf(category),
     );
-    const [guardError, setGuardError] = useState<string | null>(null);
     const [busyField, setBusyField] = useState<keyof DisplayState | null>(null);
     const rootRef = useRef<HTMLDivElement>(null);
     const panelRef = useRef<HTMLDivElement>(null);
@@ -457,51 +462,25 @@ function DisplayControl({
         })();
     };
 
-    const handleHideRealTime = (hide: boolean) => {
-        if (hide && state.hideGameTime) {
-            setGuardError('Cannot hide both real time and game time.');
-            return;
-        }
-        setGuardError(null);
-        setBusyField('hideRealTime');
+    // Only the secondary clock's hide flag is ever written from here — the
+    // primary is always shown, so its flag stays whatever it is (a legacy
+    // hidden-primary row surfaces as the server's own both-hidden error).
+    const secondaryField = timing === 'rt' ? 'hideGameTime' : 'hideRealTime';
+    const handleShowSecondary = (show: boolean) => {
+        setBusyField(secondaryField);
         (async () => {
             const res = await updateTimingSettingsAction({
                 gameSlug,
                 gameId,
                 categoryId: category.id,
-                hideRealTime: hide,
+                [secondaryField]: !show,
             });
             setBusyField(null);
             if ('error' in res) {
                 toast.error(res.error);
                 return;
             }
-            setState((prev) => ({ ...prev, hideRealTime: hide }));
-            reload();
-            router.refresh();
-        })();
-    };
-
-    const handleHideGameTime = (hide: boolean) => {
-        if (hide && state.hideRealTime) {
-            setGuardError('Cannot hide both real time and game time.');
-            return;
-        }
-        setGuardError(null);
-        setBusyField('hideGameTime');
-        (async () => {
-            const res = await updateTimingSettingsAction({
-                gameSlug,
-                gameId,
-                categoryId: category.id,
-                hideGameTime: hide,
-            });
-            setBusyField(null);
-            if ('error' in res) {
-                toast.error(res.error);
-                return;
-            }
-            setState((prev) => ({ ...prev, hideGameTime: hide }));
+            setState((prev) => ({ ...prev, [secondaryField]: !show }));
             reload();
             router.refresh();
         })();
@@ -541,24 +520,13 @@ function DisplayControl({
                     <label className={styles.popoverCheck}>
                         <input
                             type="checkbox"
-                            checked={!state.hideRealTime}
+                            checked={!state[secondaryField]}
                             onChange={(e) =>
-                                handleHideRealTime(!e.target.checked)
+                                handleShowSecondary(e.target.checked)
                             }
                             disabled={busy}
                         />
-                        Show real time
-                    </label>
-                    <label className={styles.popoverCheck}>
-                        <input
-                            type="checkbox"
-                            checked={!state.hideGameTime}
-                            onChange={(e) =>
-                                handleHideGameTime(!e.target.checked)
-                            }
-                            disabled={busy}
-                        />
-                        Show game time
+                        Also show {timing === 'rt' ? 'game time' : 'real time'}
                     </label>
                     <label className={styles.popoverCheck}>
                         <input
@@ -571,9 +539,6 @@ function DisplayControl({
                         />
                         Lower is better
                     </label>
-                    {guardError && (
-                        <div className={styles.popoverError}>{guardError}</div>
-                    )}
                 </div>
             )}
         </div>

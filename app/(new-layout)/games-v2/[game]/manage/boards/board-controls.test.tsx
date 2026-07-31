@@ -243,22 +243,31 @@ describe('BoardControls — Set as default view', () => {
     });
 });
 
-describe('BoardControls — Display, both-hidden guard', () => {
-    it('blocks hiding real time when game time is already hidden', () => {
-        render(
-            <BoardControls
-                {...baseProps({
-                    category: { ...CATEGORY, hideGameTime: true },
-                })}
-            />,
-        );
+describe('BoardControls — Display, secondary clock only', () => {
+    it('offers no checkbox for the primary clock and writes only the secondary hide flag', async () => {
+        mocks.updateTimingSettingsAction.mockResolvedValue({ ok: true });
+        render(<BoardControls {...baseProps()} />);
 
         fireEvent.click(screen.getByRole('button', { name: /Display/ }));
-        fireEvent.click(screen.getByLabelText('Show real time'));
 
-        expect(
-            screen.getByText('Cannot hide both real time and game time.'),
-        ).toBeTruthy();
-        expect(mocks.updateTimingSettingsAction).not.toHaveBeenCalled();
+        // Primary is rt — always shown, so there is nothing to toggle for it.
+        expect(screen.queryByLabelText('Show real time')).toBeNull();
+        expect(screen.queryByLabelText('Show game time')).toBeNull();
+
+        fireEvent.click(screen.getByLabelText('Also show game time'));
+        await vi.waitFor(() =>
+            expect(mocks.updateTimingSettingsAction).toHaveBeenCalledWith(
+                expect.objectContaining({ hideGameTime: true }),
+            ),
+        );
+        expect(mocks.updateTimingSettingsAction).not.toHaveBeenCalledWith(
+            expect.objectContaining({ hideRealTime: expect.anything() }),
+        );
+    });
+
+    it('offers the real-time checkbox when the primary is game time', () => {
+        render(<BoardControls {...baseProps({ timing: 'gt' })} />);
+        fireEvent.click(screen.getByRole('button', { name: /Display/ }));
+        expect(screen.getByLabelText('Also show real time')).toBeTruthy();
     });
 });

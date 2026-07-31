@@ -21,21 +21,53 @@ interface Props {
     category: ResolvedCategory | null;
 }
 
+// The primary clock is always shown — the form only asks whether the
+// secondary shows next to it. The hide pair is derived at save time
+// (primary always false), so the server's both-hidden guard can't trip.
 interface State {
+    primaryTiming: PrimaryTiming;
+    showSecondary: boolean;
+}
+
+/** Server truth, kept verbatim so saves can send only the fields that
+ * actually changed — the update action treats undefined as untouched. */
+interface StoredFlags {
     primaryTiming: PrimaryTiming;
     hideRealTime: boolean;
     hideGameTime: boolean;
 }
 
-const DEFAULT_STATE: State = {
+const DEFAULT_STORED: StoredFlags = {
     primaryTiming: 'realtime',
     hideRealTime: false,
     hideGameTime: false,
 };
 
+function stateOf(stored: StoredFlags): State {
+    return {
+        primaryTiming: stored.primaryTiming,
+        showSecondary:
+            stored.primaryTiming === 'realtime'
+                ? !stored.hideGameTime
+                : !stored.hideRealTime,
+    };
+}
+
+function hidePairOf(state: State): {
+    hideRealTime: boolean;
+    hideGameTime: boolean;
+} {
+    return {
+        hideRealTime:
+            state.primaryTiming === 'realtime' ? false : !state.showSecondary,
+        hideGameTime:
+            state.primaryTiming === 'gametime' ? false : !state.showSecondary,
+    };
+}
+
 export function TimingSettingsSection({ gameSlug, gameId, category }: Props) {
-    const [state, setState] = useState<State>(DEFAULT_STATE);
-    const [original, setOriginal] = useState<State>(DEFAULT_STATE);
+    const [state, setState] = useState<State>(stateOf(DEFAULT_STORED));
+    const [original, setOriginal] = useState<StoredFlags>(DEFAULT_STORED);
     const [loadError, setLoadError] = useState<string | null>(null);
     const [formError, setFormError] = useState<string | null>(null);
     const [isLoading, startLoad] = useTransition();
@@ -52,37 +84,33 @@ export function TimingSettingsSection({ gameSlug, gameId, category }: Props) {
             });
             if ('error' in res) {
                 setLoadError(res.error);
-                setState(DEFAULT_STATE);
-                setOriginal(DEFAULT_STATE);
+                setState(stateOf(DEFAULT_STORED));
+                setOriginal(DEFAULT_STORED);
                 return;
             }
             setLoadError(null);
-            const next: State = {
+            const stored: StoredFlags = {
                 primaryTiming: res.result.primaryTiming,
                 hideRealTime: res.result.hideRealTime,
                 hideGameTime: res.result.hideGameTime,
             };
-            setState(next);
-            setOriginal(next);
+            setState(stateOf(stored));
+            setOriginal(stored);
         });
     }, [category, gameSlug, gameId]);
 
     if (!category) return null;
 
+    const desired = hidePairOf(state);
     const dirty =
         state.primaryTiming !== original.primaryTiming ||
-        state.hideRealTime !== original.hideRealTime ||
-        state.hideGameTime !== original.hideGameTime;
+        desired.hideRealTime !== original.hideRealTime ||
+        desired.hideGameTime !== original.hideGameTime;
     const busy = isLoading || isSaving;
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
         setFormError(null);
-
-        if (state.hideRealTime && state.hideGameTime) {
-            setFormError('Cannot hide both real time and game time.');
-            return;
-        }
 
         startSave(async () => {
             const res = await updateTimingSettingsAction({
@@ -94,12 +122,12 @@ export function TimingSettingsSection({ gameSlug, gameId, category }: Props) {
                         ? state.primaryTiming
                         : undefined,
                 hideRealTime:
-                    state.hideRealTime !== original.hideRealTime
-                        ? state.hideRealTime
+                    desired.hideRealTime !== original.hideRealTime
+                        ? desired.hideRealTime
                         : undefined,
                 hideGameTime:
-                    state.hideGameTime !== original.hideGameTime
-                        ? state.hideGameTime
+                    desired.hideGameTime !== original.hideGameTime
+                        ? desired.hideGameTime
                         : undefined,
             });
             if ('error' in res) {
@@ -107,7 +135,7 @@ export function TimingSettingsSection({ gameSlug, gameId, category }: Props) {
                 return;
             }
             toast.success('Timing settings saved');
-            setOriginal(state);
+            setOriginal({ primaryTiming: state.primaryTiming, ...desired });
         });
     };
 
@@ -140,29 +168,16 @@ export function TimingSettingsSection({ gameSlug, gameId, category }: Props) {
                     }
                 />
                 <SwitchField
-                    id="hideRT"
-                    label="Hide real time"
-                    checked={state.hideRealTime}
-                    disabled={busy}
-                    onChange={(checked) =>
-                        setState((s) => ({
-                            ...s,
-                            hideRealTime: checked,
-                            hideGameTime: checked ? false : s.hideGameTime,
-                        }))
+                    id="showSecondary"
+                    label={
+                        state.primaryTiming === 'realtime'
+                            ? 'Also show game time'
+                            : 'Also show real time'
                     }
-                />
-                <SwitchField
-                    id="hideGT"
-                    label="Hide game time"
-                    checked={state.hideGameTime}
+                    checked={state.showSecondary}
                     disabled={busy}
                     onChange={(checked) =>
-                        setState((s) => ({
-                            ...s,
-                            hideGameTime: checked,
-                            hideRealTime: checked ? false : s.hideRealTime,
-                        }))
+                        setState((s) => ({ ...s, showSecondary: checked }))
                     }
                 />
                 <InlineError>{formError}</InlineError>
@@ -178,7 +193,7 @@ export function TimingSettingsSection({ gameSlug, gameId, category }: Props) {
                         type="button"
                         className={kit.resetBtn}
                         onClick={() => {
-                            setState(original);
+                            setState(stateOf(original));
                             setFormError(null);
                         }}
                         disabled={busy || !dirty}
