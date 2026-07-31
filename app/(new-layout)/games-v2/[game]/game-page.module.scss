@@ -80,7 +80,7 @@
 .hero {
     border-bottom: 1px solid var(--bs-border-color);
     margin-bottom: dt.$spacing-lg;
-    padding: dt.$spacing-xl 0 dt.$spacing-lg;
+    padding: dt.$spacing-lg 0 dt.$spacing-md;
 }
 
 // Board-page hero: the game is context here, the category below it is the
@@ -169,51 +169,6 @@
     margin: 0;
     font-size: dt.$font-size-xs;
     color: var(--bs-tertiary-color);
-}
-
-// Stat band — the game's scale carried by type size, not decoration.
-.heroStatBand {
-    display: flex;
-    align-items: baseline;
-    gap: dt.$spacing-xl;
-    margin-top: dt.$spacing-xs;
-
-    @media (max-width: 991.98px) {
-        gap: dt.$spacing-lg;
-        flex-wrap: wrap;
-    }
-}
-
-.heroStat {
-    display: flex;
-    align-items: baseline;
-    gap: dt.$spacing-sm;
-
-    & + & {
-        border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
-        padding-left: dt.$spacing-xl;
-
-        @media (max-width: 991.98px) {
-            padding-left: dt.$spacing-lg;
-        }
-    }
-}
-
-.heroStatValue {
-    font-size: dt.$font-size-2xl;
-    font-weight: 750;
-    letter-spacing: -0.02em;
-    line-height: 1;
-    color: var(--bs-emphasis-color);
-    font-variant-numeric: tabular-nums;
-
-    @media (max-width: 991.98px) {
-        font-size: dt.$font-size-xl;
-    }
-}
-
-.heroStatLabel {
-    @include board.board-eyebrow;
 }
 
 .heroActions {

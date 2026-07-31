@@ -3,7 +3,7 @@
 @use '../../../styles/frontpage-utilities' as fp;
 
 .panel {
-    @include board.board-surface(dt.$spacing-lg);
+    @include board.board-surface(dt.$spacing-md dt.$spacing-lg);
     margin-bottom: dt.$spacing-lg;
 }
 

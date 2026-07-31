@@ -93,7 +93,7 @@
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-lg;
-    padding: dt.$spacing-lg;
+    padding: dt.$spacing-md;
 }
 
 // Verified world record: the plate's top edge in gold — the engraved
@@ -256,7 +256,7 @@
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-sm;
-    padding: dt.$spacing-md dt.$spacing-lg dt.$spacing-lg;
+    padding: dt.$spacing-sm dt.$spacing-md dt.$spacing-md;
     border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
     font-size: dt.$font-size-xs;
     color: var(--bs-tertiary-color);

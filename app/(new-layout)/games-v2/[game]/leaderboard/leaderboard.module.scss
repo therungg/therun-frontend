@@ -11,7 +11,7 @@
     @include board.board-table;
 
     tbody td {
-        padding: dt.$spacing-md dt.$spacing-lg;
+        padding: dt.$spacing-sm dt.$spacing-lg;
 
         // Mobile: horizontal padding is the other thing eating the time
         // column's room.
@@ -65,6 +65,7 @@
 
 .when {
     white-space: nowrap;
+    width: 1%;
 
     // Mobile column priority: rank, runner and the time always fit; the
     // date is the sacrifice (it stays in the row title attr and on the run
