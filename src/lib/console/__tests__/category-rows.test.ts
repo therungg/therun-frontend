@@ -6,7 +6,6 @@ import type {
 import type { BoardPolicyRow } from '../../../../types/moderation.types';
 import {
     buildCategoryRows,
-    columnValue,
     disagreementsByColumn,
     subBoardCount,
     toPrimaryTiming,
@@ -145,24 +144,6 @@ describe('buildCategoryRows', () => {
         });
         expect(rows[0].hasRules).toBe(false);
         expect(rows[1].hasRules).toBe(true);
-    });
-});
-
-describe('columnValue', () => {
-    const base = buildCategoryRows({
-        categories: [cat({ id: 1, requireVideo: true, requireVideoTopN: 10 })],
-        policies: [],
-        variables: [],
-    })[0];
-
-    it('collapses proof into one comparable key', () => {
-        expect(columnValue(base, 'proof')).toBe('top10');
-        expect(columnValue({ ...base, requireVideoTopN: null }, 'proof')).toBe(
-            'all',
-        );
-        expect(columnValue({ ...base, requireVideo: false }, 'proof')).toBe(
-            'none',
-        );
     });
 });
 

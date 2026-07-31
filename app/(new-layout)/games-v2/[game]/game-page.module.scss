@@ -43,6 +43,20 @@
     }
 }
 
+.emulatorPolicyLine {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: dt.$spacing-md;
+}
+
+.rulesDivider {
+    border: none;
+    border-top: 1px solid var(--bs-border-color);
+    margin: dt.$spacing-lg 0;
+}
+
 // variable-pill dropdown panel
 .dropdownPanel {
     @include board.board-surface(dt.$spacing-sm dt.$spacing-md);

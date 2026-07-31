@@ -27,6 +27,8 @@ interface Props {
     data: GamePageData;
     canManage: boolean;
     canManageRuns: boolean;
+    /** Admins only — RunnerDialog's "Entire site" scope in the row menu. */
+    canSiteBan?: boolean;
     claim?: ClaimCtaState | null;
     moderators?: GameModerator[];
 }
@@ -35,6 +37,7 @@ export function GamePage({
     data,
     canManage,
     canManageRuns,
+    canSiteBan = false,
     claim,
     moderators,
 }: Props) {
@@ -131,9 +134,16 @@ export function GamePage({
                     onToggleRules={() => setRulesOpen((o) => !o)}
                     onOpenHistory={() => setHistoryOpen(true)}
                 />
-                {rulesOpen && data.selectedCategory.rules && (
-                    <RulesBody rules={data.selectedCategory.rules} />
-                )}
+                {rulesOpen &&
+                    (data.selectedCategory.rules?.trim() ||
+                        data.gameMeta.gameRules?.trim() ||
+                        data.gameMeta.emulatorPolicy) && (
+                        <RulesBody
+                            rules={data.selectedCategory.rules}
+                            gameRules={data.gameMeta.gameRules}
+                            emulatorPolicy={data.gameMeta.emulatorPolicy}
+                        />
+                    )}
                 {historyOpen && (
                     <WrHistoryDrawer
                         show={historyOpen}
@@ -187,6 +197,7 @@ export function GamePage({
                                 }}
                                 sessionUsername={data.sessionUsername}
                                 canManage={canManageRuns}
+                                canSiteBan={canSiteBan}
                                 gameSlug={data.game.name}
                                 variableKeys={variableKeys}
                                 primaryTiming={
@@ -238,7 +249,7 @@ function InvalidCombinationNotice({
         <div className={styles.notice}>
             <h3 className="h5 mb-2">No leaderboard for this combination</h3>
             <p className="text-muted small">
-                The variable combination you picked isn't an active board for
+                The variable combination you picked isn’t an active board for
                 this category. Try one of these instead:
             </p>
             <div className="d-flex flex-wrap gap-2 justify-content-center mt-3">

@@ -9,6 +9,14 @@ import {
 } from 'react';
 import { toast } from 'react-toastify';
 import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
+import {
+    FormSection,
+    InlineError,
+    SectionFooter,
+    SegmentedControl,
+    SwitchField,
+} from '../shared/form-kit';
+import kit from '../shared/form-kit.module.scss';
 import { getEmblemUploadUrlAction } from './actions/get-emblem-upload-url.action';
 import { updateCategorySettingsAction } from './actions/update-category-settings.action';
 
@@ -149,87 +157,43 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
     };
 
     return (
-        <section className="border rounded p-3 mb-4">
-            <h2 className="h5 mb-1">Settings</h2>
-            <p className="text-muted small mb-3">
-                Ranking direction, display precision, and video requirement for{' '}
-                <strong>{category.display}</strong>.
-            </p>
-
+        <FormSection
+            title="Settings"
+            lede={
+                <>
+                    Ranking direction, display precision, and video requirement
+                    for <strong>{category.display}</strong>.
+                </>
+            }
+        >
             <form onSubmit={handleSubmit}>
-                <div className="row g-3 mb-3">
-                    <div className="col-md-6">
-                        <label className="form-label small">
-                            Ranking direction
-                        </label>
-                        <div className="form-check">
-                            <input
-                                type="radio"
-                                className="form-check-input"
-                                id="sortAsc"
-                                checked={state.sortAscending}
-                                onChange={() =>
-                                    setState((s) => ({
-                                        ...s,
-                                        sortAscending: true,
-                                    }))
-                                }
-                                disabled={busy}
-                            />
-                            <label
-                                htmlFor="sortAsc"
-                                className="form-check-label small"
-                            >
-                                Lower time = better (default)
-                            </label>
-                        </div>
-                        <div className="form-check">
-                            <input
-                                type="radio"
-                                className="form-check-input"
-                                id="sortDesc"
-                                checked={!state.sortAscending}
-                                onChange={() =>
-                                    setState((s) => ({
-                                        ...s,
-                                        sortAscending: false,
-                                    }))
-                                }
-                                disabled={busy}
-                            />
-                            <label
-                                htmlFor="sortDesc"
-                                className="form-check-label small"
-                            >
-                                Higher value = better
-                            </label>
-                        </div>
-                    </div>
-                    <div className="col-md-6">
-                        <label className="form-label small">Display</label>
-                        <div className="form-check">
-                            <input
-                                type="checkbox"
-                                className="form-check-input"
-                                id="showMs"
-                                checked={state.showMilliseconds}
-                                onChange={(e) =>
-                                    setState((s) => ({
-                                        ...s,
-                                        showMilliseconds: e.target.checked,
-                                    }))
-                                }
-                                disabled={busy}
-                            />
-                            <label
-                                htmlFor="showMs"
-                                className="form-check-label small"
-                            >
-                                Show milliseconds
-                            </label>
-                        </div>
-                    </div>
-                </div>
+                <SegmentedControl
+                    label="Ranking direction"
+                    value={state.sortAscending ? 'asc' : 'desc'}
+                    options={[
+                        { value: 'asc', label: 'Lower time = better' },
+                        { value: 'desc', label: 'Higher value = better' },
+                    ]}
+                    disabled={busy}
+                    onChange={(v) =>
+                        setState((s) => ({
+                            ...s,
+                            sortAscending: v === 'asc',
+                        }))
+                    }
+                />
+                <SwitchField
+                    id="showMs"
+                    label="Show milliseconds"
+                    checked={state.showMilliseconds}
+                    disabled={busy}
+                    onChange={(checked) =>
+                        setState((s) => ({
+                            ...s,
+                            showMilliseconds: checked,
+                        }))
+                    }
+                />
 
                 <div className="mb-3">
                     <label
@@ -278,17 +242,18 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
                     </div>
                 </div>
 
-                <div className="d-flex gap-2">
+                <InlineError>{formError}</InlineError>
+                <SectionFooter>
                     <button
                         type="submit"
-                        className="btn btn-sm btn-primary"
+                        className={kit.saveBtn}
                         disabled={busy || !dirty}
                     >
-                        {isSaving ? 'Saving...' : 'Save'}
+                        {isSaving ? 'Saving…' : 'Save settings'}
                     </button>
                     <button
                         type="button"
-                        className="btn btn-sm btn-outline-secondary"
+                        className={kit.resetBtn}
                         onClick={() => {
                             setState(original);
                             setFormError(null);
@@ -297,14 +262,8 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
                     >
                         Reset
                     </button>
-                </div>
-
-                {formError && (
-                    <div className="alert alert-danger mt-2 mb-0 py-2">
-                        {formError}
-                    </div>
-                )}
+                </SectionFooter>
             </form>
-        </section>
+        </FormSection>
     );
 }

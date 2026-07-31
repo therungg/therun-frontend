@@ -2,9 +2,11 @@
 
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type { CategoryConfigRow } from '~src/lib/console/category-rows';
+import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
 import { CategoriesTable } from '../game-tab/categories-table';
 import type { ReorderChange } from '../game-tab/reorder-changes';
+import styles from './console.module.scss';
 
 interface Props {
     game: ResolvedGame;
@@ -47,16 +49,25 @@ export function CategoriesPane({
     onEditCategory,
 }: Props) {
     return (
-        <CategoriesTable
-            game={game}
-            rows={rows}
-            config={config}
-            groups={groups}
-            onRowChange={onRowChange}
-            onRowGroupChange={onRowGroupChange}
-            onRowsReorder={onRowsReorder}
-            onGroupCreated={(g) => onGroupsChange([...groups, g])}
-            onEdit={onEditCategory}
-        />
+        <section className={styles.surface}>
+            <div className={styles.paneHeader}>
+                <h2 className={styles.paneTitle}>{CONCEPT_LABEL.categories}</h2>
+            </div>
+            <p className={styles.paneLede}>
+                Bulk-manage which categories are visible and which are featured.
+                Use "Edit" to open a category for detailed settings.
+            </p>
+            <CategoriesTable
+                game={game}
+                rows={rows}
+                config={config}
+                groups={groups}
+                onRowChange={onRowChange}
+                onRowGroupChange={onRowGroupChange}
+                onRowsReorder={onRowsReorder}
+                onGroupCreated={(g) => onGroupsChange([...groups, g])}
+                onEdit={onEditCategory}
+            />
+        </section>
     );
 }

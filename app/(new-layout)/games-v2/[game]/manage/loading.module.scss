@@ -10,18 +10,36 @@
 $sidebar-width: 16rem;
 
 .shell {
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-2xl;
     padding: dt.$spacing-2xl;
     max-width: 1600px;
     margin-inline: auto;
+
+    @media (max-width: 768px) {
+        padding: 0;
+    }
+}
+
+// Mirrors console.module.scss's .frame — the console is one contained
+// panel, so the loading skeleton needs the same border to avoid a
+// layout jump when the real shell mounts.
+.frame {
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-lg;
+    background: var(--bs-body-bg);
+    overflow: clip;
+
+    @media (max-width: 768px) {
+        border: 0;
+        border-radius: 0;
+    }
 }
 
 .header {
     display: flex;
     align-items: center;
     gap: dt.$spacing-lg;
+    padding: dt.$spacing-lg dt.$spacing-xl;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
 }
 
 .cover {
@@ -42,8 +60,7 @@ $sidebar-width: 16rem;
 .body {
     display: grid;
     grid-template-columns: $sidebar-width minmax(0, 1fr);
-    gap: dt.$spacing-3xl;
-    align-items: start;
+    align-items: stretch;
 
     @media (max-width: 768px) {
         grid-template-columns: minmax(0, 1fr);
@@ -54,8 +71,13 @@ $sidebar-width: 16rem;
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-sm;
-    padding-right: dt.$spacing-lg;
-    border-right: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    background: color-mix(
+        in srgb,
+        var(--bs-body-bg) 92%,
+        var(--bs-secondary-bg) 8%
+    );
+    border-right: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    padding: dt.$spacing-xl dt.$spacing-lg;
 
     @media (max-width: 768px) {
         display: none;
@@ -70,6 +92,11 @@ $sidebar-width: 16rem;
 
 .content {
     @include board.board-skeleton;
+    margin: dt.$spacing-2xl;
     min-height: 28rem;
     border-radius: dt.$radius-lg;
+
+    @media (max-width: 768px) {
+        margin: dt.$spacing-lg;
+    }
 }

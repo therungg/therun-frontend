@@ -10,7 +10,11 @@ import type {
 import type {
     ResolvedCategory,
     ResolvedGame,
+    ResolvedGroup,
+    VariableRow,
 } from '../../../../../../types/leaderboards.types';
+import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
+import { BoardCuration } from '../boards/board-curation';
 import { CategorySettingsSection } from '../category-tab/category-settings-section';
 import { RulesSection } from '../category-tab/rules-section';
 import { GameTab } from '../game-tab/game-tab';
@@ -42,6 +46,19 @@ export interface ContentRouterProps {
     degradedSources: string[];
     modApplications?: BoardClaimRequest[];
     moderators?: GameModerator[];
+    /** Full category/group rows for the Boards pane — `categories` above is
+     * stripped down to {id, display} for panes that don't need the rest. */
+    boardCategories: ResolvedCategory[];
+    boardGroups: ResolvedGroup[];
+    variables: VariableRow[];
+    policies: BoardPolicyRow[];
+    /** Whether this viewer can see the board-controls toolbar in the Boards
+     * pane — a moderator without configure sees the board and row actions,
+     * but not that toolbar (BoardCuration gates it internally). */
+    canConfigureBoards: boolean;
+    /** Viewer may file site-wide anonymize bans from the Boards pane —
+     * admins only, threaded through to RowActions. */
+    canSiteBan: boolean;
     /** Live item-count reporter from NeedsAttention, forwarded to the sidebar badge. */
     onAttentionCountChange?: (count: number) => void;
     gameDetails?: GameDetailsData | null;
@@ -144,6 +161,19 @@ export function ContentRouter(props: ContentRouterProps) {
                     onRowGroupChange={props.onRowGroupChange}
                 />
             );
+        case 'boards':
+            return (
+                <BoardCuration
+                    game={game}
+                    categories={props.boardCategories}
+                    groups={props.boardGroups}
+                    variables={props.variables}
+                    policies={props.policies}
+                    canConfigure={props.canConfigureBoards}
+                    canSiteBan={props.canSiteBan}
+                    context="console"
+                />
+            );
         case 'game-details':
             return props.gameDetails ? (
                 <GameDetailsPane
@@ -154,7 +184,7 @@ export function ContentRouter(props: ContentRouterProps) {
                 />
             ) : (
                 <Placeholder title="Details & metadata">
-                    Couldn't load game details — reload the page.
+                    Couldn’t load game details — reload the page.
                 </Placeholder>
             );
         case 'moderators':

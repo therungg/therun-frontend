@@ -1,0 +1,713 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/board' as board;
+
+// Same visual vocabulary as the public leaderboard (leaderboard.module.scss)
+// and the masthead's category rail (masthead.module.scss) — board curation
+// reads as the board itself, not an admin table bolted onto it.
+
+.root {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-lg;
+}
+
+// ---- Board controls toolbar (Task 12: Minimum / Reorder / Set default /
+// Display) — right-aligned, quiet icon+label control-pills so it reads as
+// part of the leaderboard's own control language rather than an admin bar
+// bolted on top.
+.controlsBar {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs;
+}
+
+.toolbarBtn {
+    @include board.control-pill;
+    font-size: dt.$font-size-xs;
+}
+
+.toolbarBtnActive {
+    @include board.control-pill-active;
+}
+
+.popoverRoot {
+    position: relative;
+}
+
+.popoverPanel {
+    @include board.board-surface(dt.$spacing-md);
+    position: absolute;
+    right: 0;
+    top: calc(100% + #{dt.$spacing-xs});
+    z-index: dt.$z-popover;
+    background: var(--bs-body-bg);
+    box-shadow: dt.$shadow-md;
+    min-width: 15rem;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    @include board.board-overlay-enter(rise);
+}
+
+.popoverFieldLabel {
+    @include board.board-dialog-field-label;
+    margin-bottom: 0;
+}
+
+.popoverCheck {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
+}
+
+.popoverError {
+    @include board.board-dialog-field-error;
+}
+
+.popoverActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: dt.$spacing-sm;
+}
+
+// ---- Reorder mode nudge controls -------------------------------------
+// Wraps a chip/endcap-label/value-chip with its ↑/↓/←/→ siblings; the plain
+// (non-reorder-mode) render also wraps in a bare span of the same shape so
+// the two code paths share one layout rule.
+.nudgeGroup {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+}
+
+.nudgeBtn {
+    @include board.board-quiet-link;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.1rem;
+}
+
+// A row/wrapper around one subcategory band + its optional reorder-mode
+// caution note, stacked vertically beneath the band itself.
+.bandWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.gameWideNote {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    font-style: italic;
+    margin: 0;
+}
+
+// ---- Category switcher / subcategory bands (masthead rail vocabulary) ----
+.categorySwitch,
+.subcategoryBands {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+}
+
+.block {
+    @include board.board-rail-block;
+}
+
+.endcap {
+    @include board.board-rail-endcap;
+}
+
+.well {
+    @include board.board-rail-well;
+}
+
+.wellSolo {
+    @include board.board-rail-well-solo;
+}
+
+.chips {
+    @include board.board-rail-chips;
+}
+
+.chip {
+    @include board.board-chip;
+}
+
+.chipActive {
+    @include board.board-chip-active;
+}
+
+// ---- Table (leaderboard vocabulary) ----
+.wrapper {
+    @include board.board-surface(0);
+    overflow: hidden;
+    overflow-x: auto;
+}
+
+.table {
+    @include board.board-table;
+}
+
+.rank {
+    @include board.board-rank;
+}
+
+.runner {
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.time {
+    @include board.mono-time;
+    white-space: nowrap;
+
+    > * + * {
+        margin-left: dt.$spacing-sm;
+    }
+}
+
+.when {
+    white-space: nowrap;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+}
+
+// Present but quiet — informational, not an action, so it doesn't compete
+// with the runner name for attention.
+.pin {
+    color: var(--bs-tertiary-color);
+    margin-right: dt.$spacing-xs;
+    vertical-align: -1px;
+}
+
+.guestTag {
+    @include board.board-pill;
+}
+
+.belowMinTag {
+    @include board.board-pill(dt.$accent-amber);
+}
+
+// A run currently showing here because of a mod-set board-override rather
+// than its natural placement (see `boardOverride` on `LeaderboardRosterRow`).
+.movedTag {
+    @include board.board-pill;
+    margin-left: dt.$spacing-xs;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.movedClear {
+    background: none;
+    border: 0;
+    padding: 0 0 0 0.15rem;
+    margin: 0;
+    line-height: 1;
+    color: inherit;
+    cursor: pointer;
+
+    &:hover {
+        color: var(--bs-emphasis-color);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
+}
+
+// ---- Row actions (Later / Remove / Ban / Fix time / Move) ----
+// `.row` is the hover/focus anchor for the quiet action cluster — present
+// but invisible until the row is hovered or a control inside it has focus,
+// so the board still reads as a leaderboard rather than an admin table.
+.row {
+    &:hover .actionCluster,
+    &:focus-within .actionCluster {
+        opacity: 1;
+    }
+}
+
+// ---- Multi-select (bulk Accept/Ban) ----
+.selectHeader,
+.selectCell {
+    width: 1%;
+}
+
+.selectCell input {
+    opacity: 0;
+    transition: opacity dt.$transition-fast;
+}
+
+.row:hover .selectCell input,
+.row:focus-within .selectCell input {
+    opacity: 1;
+}
+
+.tableSelecting .selectCell input {
+    opacity: 1;
+}
+
+@media (pointer: coarse) {
+    .selectCell input {
+        opacity: 1;
+    }
+}
+
+// ---- Marked-pile filter chip ----
+// Quiet, left-aligned (unlike .controlsBar's right-aligned Task 12 toolbar)
+// since it sits with the bands/switcher, not the config controls.
+.markedBar {
+    display: flex;
+}
+
+.selectionBar {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+// ---- Board pager ----
+// Server-side pages (BOARD_PAGE_SIZE rows each); hidden entirely for the
+// common one-page board.
+.pager {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: dt.$spacing-md;
+    padding-block: dt.$spacing-sm;
+}
+
+.pagerLabel {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    font-variant-numeric: tabular-nums;
+}
+
+.selectionAction {
+    @include board.board-quiet-link;
+}
+
+// A row pinned in place by a pending removal (see PendingRemoval in
+// row-actions.tsx) — visually "gone" without literally being gone, so its
+// next-run slip survives a sibling row's reload.
+.rowRemoved {
+    opacity: 0.6;
+
+    .runner,
+    .time {
+        text-decoration: line-through;
+    }
+}
+
+.actionsHeader {
+    width: 1%;
+}
+
+.actionsCell {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.actionCluster {
+    display: inline-flex;
+    gap: dt.$spacing-xs;
+    opacity: 0;
+    transition: opacity dt.$transition-fast;
+
+    @media (pointer: coarse) {
+        // Touch has no hover — keep the cluster reachable.
+        opacity: 1;
+    }
+}
+
+.actionBtn {
+    @include board.control-pill;
+    font-size: dt.$font-size-2xs;
+}
+
+// ---- Run… menu (Approve / Move… / Adjust…) -----------------------------
+.menuRoot {
+    position: relative;
+    display: inline-flex;
+}
+
+.menuPanel {
+    @include board.board-surface(dt.$spacing-xs);
+    position: absolute;
+    right: 0;
+    top: calc(100% + #{dt.$spacing-xs});
+    z-index: dt.$z-popover;
+    background: var(--bs-body-bg);
+    box-shadow: dt.$shadow-md;
+    min-width: 10rem;
+    display: flex;
+    flex-direction: column;
+    @include board.board-overlay-enter(rise);
+}
+
+// Composes .menuPanel — the Remove reason popover needs more room for its
+// label + input + footer than the Run… menu's list of menu items.
+.removePanel {
+    min-width: 16rem;
+    gap: dt.$spacing-sm;
+}
+
+.menuItem {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: 0;
+    border-radius: dt.$radius-sm;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    font-size: dt.$font-size-2xs;
+    font-family: inherit;
+    color: var(--bs-body-color);
+    cursor: pointer;
+    transition: background-color dt.$transition-fast;
+
+    &:hover:not(:disabled) {
+        background: var(--bs-tertiary-bg);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: -2px;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
+}
+
+.removedNote {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.slip {
+    @include board.mono-time;
+    font-size: dt.$font-size-xs;
+}
+
+.slipLoading {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+}
+
+.slipAction {
+    @include board.board-quiet-link;
+    font-family: dt.$font-mono;
+}
+
+.timeInput {
+    @include board.mono-time;
+    font-size: dt.$font-size-sm;
+    padding: 0.15rem 0.4rem;
+    border-radius: dt.$radius-sm;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    background: var(--bs-body-bg);
+    width: 7rem;
+
+    &:focus-visible {
+        outline: 0;
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
+
+.timeError {
+    display: block;
+    font-size: dt.$font-size-2xs;
+    color: dt.$accent-red;
+}
+
+// ---- Add-runner ghost row ----
+// Quiet by default — inputs read as placeholder affordances, not a form
+// bolted onto the board, matching the row actions' at-rest opacity.
+.ghostRow {
+    opacity: 0.7;
+
+    &:focus-within,
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.ghostInput {
+    background: none;
+    border: 0;
+    border-bottom: 1px dashed rgba(var(--bs-border-color-rgb), 0.6);
+    padding: 0.15rem 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
+    width: 100%;
+
+    &::placeholder {
+        color: var(--bs-tertiary-color);
+    }
+
+    &:focus-visible {
+        outline: 0;
+        border-bottom-color: var(--bs-primary);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
+
+.ghostTimeInput {
+    @include board.mono-time;
+    width: 7rem;
+}
+
+// Reserves its line height whether or not it has text, so the match/guest
+// verdict appearing as the mod types never shifts the row (or the table)
+// underneath it.
+.ghostMatchNote {
+    min-height: 1.2em;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    margin-top: 0.1rem;
+}
+
+// ---- Ban / Move confirm sheets (BoardDialog content) ----
+.dialogHeader {
+    @include board.board-dialog-header;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dialogTitle {
+    @include board.board-dialog-title;
+}
+
+.dialogBody {
+    @include board.board-dialog-body;
+}
+
+.dialogFooter {
+    @include board.board-dialog-footer;
+}
+
+.dialogTextarea {
+    @include board.board-dialog-textarea;
+}
+
+// Single-line sibling of .dialogTextarea — same recipe (dt tokens for
+// font-size/padding/border/radius/width, same focus ring) minus `resize`,
+// which only makes sense on a multi-line control. Used by the Remove
+// popover's reason input (row-actions.tsx), which is a plain text input,
+// not a textarea.
+.dialogInput {
+    font-size: dt.$font-size-sm;
+    border-radius: dt.$radius-sm;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    background: color-mix(
+        in srgb,
+        var(--bs-body-bg) 90%,
+        var(--bs-secondary-bg) 10%
+    );
+    color: var(--bs-body-color);
+    padding: dt.$spacing-sm;
+    width: 100%;
+    transition: border-color dt.$transition-fast;
+
+    &:focus-visible {
+        outline: 0;
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
+
+.moveNote {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: dt.$spacing-sm 0 0;
+}
+
+.applyBtn {
+    @include board.board-btn-primary;
+}
+
+.fieldLabel {
+    @include board.board-dialog-field-label;
+}
+
+// ---- Choice rows (site treatments / adjust eligible-run picks) ----------
+// A vertical stack of radio-backed "cards" — replaces naked native radios
+// + unstyled <p> description stacks in RunnerDialog/AdjustDialog.
+.choiceList {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    margin: dt.$spacing-sm 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.choiceRow {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    border: 1px solid var(--bs-border-color);
+    border-radius: dt.$radius-md;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+
+    &:hover {
+        background: var(--bs-tertiary-bg);
+    }
+
+    &:has(.hiddenRadio:focus-visible) {
+        outline: 2px solid var(--bs-primary);
+        outline-offset: 2px;
+    }
+}
+
+.choiceRowActive {
+    border-color: var(--bs-primary);
+    background: var(--bs-primary-bg-subtle);
+}
+
+.choiceTitle {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+}
+
+.choiceDesc,
+.choiceMeta {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+}
+
+// The affected-leaderboards preview list (RunnerDialog) — same text
+// treatment as .choiceMeta, but it's a real list of distinct leaderboards
+// rather than a single row's secondary line, so it keeps its own margin/
+// indent instead of inheriting .choiceMeta's (nonexistent) layout rules.
+.choiceMetaList {
+    composes: choiceMeta;
+    margin: 0;
+    padding-left: dt.$spacing-lg;
+}
+
+.currentTag {
+    display: inline-block;
+    font-size: dt.$font-size-2xs;
+    padding: 0 dt.$spacing-xs;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 999px;
+    color: var(--bs-secondary-color);
+}
+
+// Visually hidden but focusable — the parent `.choiceRow` renders the
+// selected/focus states; the input itself stays a real radio for a11y.
+.hiddenRadio {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+// ---- Consequence callouts + dialog sub-sections --------------------------
+.consequence {
+    font-size: dt.$font-size-sm;
+    margin-top: dt.$spacing-sm;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border-radius: dt.$radius-md;
+    color: var(--bs-secondary-color);
+}
+
+.consequenceWarn {
+    background: var(--bs-warning-bg-subtle);
+    color: var(--bs-warning-text-emphasis);
+}
+
+.dialogSection {
+    margin-top: dt.$spacing-lg;
+    padding-top: dt.$spacing-md;
+    border-top: 1px solid var(--bs-border-color);
+}
+
+.dialogSectionTitle {
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    margin: 0 0 dt.$spacing-xs;
+}
+
+.errorAlert {
+    @include board.board-error-alert;
+}
+
+.confirmBtn {
+    @include board.board-dialog-btn-danger;
+    border-radius: dt.$radius-md;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    font-size: dt.$font-size-sm;
+    cursor: pointer;
+}
+
+// ---- Empty / loading / error ----
+.empty {
+    @include board.board-empty;
+}
+
+.emptyTitle {
+    @include board.board-empty-title;
+}
+
+.emptyHint {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: 0;
+}
+
+.loadingNote {
+    padding: dt.$spacing-lg;
+    text-align: center;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+// In-table empty state (the ghost row always renders below it, so an empty
+// board is never a dead end without its own empty-state div).
+.emptyCell {
+    padding: dt.$spacing-lg;
+    text-align: center;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.errorNote {
+    @include board.board-error-alert;
+}

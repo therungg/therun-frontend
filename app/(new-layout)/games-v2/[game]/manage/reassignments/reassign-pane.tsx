@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
+import consoleStyles from '../console/console.module.scss';
 import { CategoryWizard } from './category-wizard';
 import { GameWizard } from './game-wizard';
 import styles from './reassignments.module.scss';
@@ -43,86 +45,93 @@ export function ReassignPane({
         categories.find((c) => c.id === sourceCategoryId) ?? null;
 
     return (
-        <div className={styles.wizard}>
-            <div className={styles.modeToggle}>
-                <button
-                    type="button"
-                    className={`${styles.modeButton} ${
-                        mode === 'game' ? styles.modeActive : ''
-                    }`}
-                    onClick={() => setMode('game')}
-                >
-                    Merge whole game
-                </button>
-                <button
-                    type="button"
-                    className={`${styles.modeButton} ${
-                        mode === 'category' ? styles.modeActive : ''
-                    }`}
-                    onClick={() => setMode('category')}
-                >
-                    Merge a category
-                </button>
+        <div className={consoleStyles.surface}>
+            <div className={consoleStyles.paneHeader}>
+                <h2 className={consoleStyles.paneTitle}>
+                    {CONCEPT_LABEL.reassign}
+                </h2>
             </div>
+            <div className={styles.wizard}>
+                <div className={styles.modeToggle}>
+                    <button
+                        type="button"
+                        className={`${styles.modeButton} ${
+                            mode === 'game' ? styles.modeActive : ''
+                        }`}
+                        onClick={() => setMode('game')}
+                    >
+                        Merge whole game
+                    </button>
+                    <button
+                        type="button"
+                        className={`${styles.modeButton} ${
+                            mode === 'category' ? styles.modeActive : ''
+                        }`}
+                        onClick={() => setMode('category')}
+                    >
+                        Merge a category
+                    </button>
+                </div>
 
-            {mode === 'game' ? (
-                <GameWizard
-                    sourceGameId={gameId}
-                    sourceGameDisplay={gameDisplay}
-                    sourceCategoryNames={Object.fromEntries(
-                        categories.map((c) => [c.id, c.display]),
-                    )}
-                />
-            ) : (
-                <>
-                    <div className={styles.surface}>
-                        <div className={styles.header}>
-                            <p className={styles.eyebrow}>Category merge</p>
-                            <h3 className={styles.title}>
-                                Pick a source category
-                            </h3>
-                            <p className={styles.subtitle}>
-                                Choose which category to merge into another.
-                            </p>
+                {mode === 'game' ? (
+                    <GameWizard
+                        sourceGameId={gameId}
+                        sourceGameDisplay={gameDisplay}
+                        sourceCategoryNames={Object.fromEntries(
+                            categories.map((c) => [c.id, c.display]),
+                        )}
+                    />
+                ) : (
+                    <>
+                        <div className={styles.surface}>
+                            <div className={styles.header}>
+                                <p className={styles.eyebrow}>Category merge</p>
+                                <h3 className={styles.title}>
+                                    Pick a source category
+                                </h3>
+                                <p className={styles.subtitle}>
+                                    Choose which category to merge into another.
+                                </p>
+                            </div>
+                            <div className={styles.step}>
+                                <label
+                                    htmlFor="source-cat"
+                                    className={styles.label}
+                                >
+                                    Source category
+                                </label>
+                                <select
+                                    id="source-cat"
+                                    className={styles.select}
+                                    value={sourceCategoryId ?? ''}
+                                    onChange={(e) =>
+                                        setSourceCategoryId(
+                                            e.target.value
+                                                ? Number(e.target.value)
+                                                : null,
+                                        )
+                                    }
+                                >
+                                    <option value="">Select a category…</option>
+                                    {categories.map((c) => (
+                                        <option key={c.id} value={c.id}>
+                                            {c.display}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
-                        <div className={styles.step}>
-                            <label
-                                htmlFor="source-cat"
-                                className={styles.label}
-                            >
-                                Source category
-                            </label>
-                            <select
-                                id="source-cat"
-                                className={styles.select}
-                                value={sourceCategoryId ?? ''}
-                                onChange={(e) =>
-                                    setSourceCategoryId(
-                                        e.target.value
-                                            ? Number(e.target.value)
-                                            : null,
-                                    )
-                                }
-                            >
-                                <option value="">Select a category…</option>
-                                {categories.map((c) => (
-                                    <option key={c.id} value={c.id}>
-                                        {c.display}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-                    {sourceCategory && (
-                        <CategoryWizard
-                            key={sourceCategory.id}
-                            sourceCategory={sourceCategory}
-                            categories={categories}
-                            targetGameSlug={gameSlug}
-                        />
-                    )}
-                </>
-            )}
+                        {sourceCategory && (
+                            <CategoryWizard
+                                key={sourceCategory.id}
+                                sourceCategory={sourceCategory}
+                                categories={categories}
+                                targetGameSlug={gameSlug}
+                            />
+                        )}
+                    </>
+                )}
+            </div>
         </div>
     );
 }

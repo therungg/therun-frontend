@@ -10,9 +10,9 @@ import { listPolicies } from '~src/lib/moderation/policies';
 import {
     categoryFactsFromResolved,
     computeCompleteness,
-    SETUP_STEP_ORDER,
     type SetupStepId,
 } from '~src/lib/setup/completeness';
+import { resolveSetupStep } from '~src/lib/setup/steps';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
@@ -53,6 +53,9 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         caslSubject('category-settings', { game: game.name }),
     );
     if (!canConfigure) notFound();
+    // Same check the console uses (load-chrome.ts) — the per-category editor
+    // gates its Minimum time section on it, and the wizard mounts that editor.
+    const canEditStandards = ability.can('edit', 'moderators');
 
     const [
         stats,
@@ -99,13 +102,15 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         identifiers,
         metadata,
         completeness,
+        canEditStandards,
         renderedAt: Date.now(),
     };
 
+    // Retired step ids resolve to their successor here too, so a cold load of
+    // an old bookmark server-renders the right step instead of flashing
+    // firstIncomplete before the client shell corrects it.
     const initialStep: SetupStepId =
-        step && SETUP_STEP_ORDER.includes(step as SetupStepId)
-            ? (step as SetupStepId)
-            : (completeness.firstIncomplete ?? 'details');
+        resolveSetupStep(step) ?? completeness.firstIncomplete ?? 'details';
 
     return <WizardShell data={data} initialStep={initialStep} />;
 }

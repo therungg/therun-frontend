@@ -36,19 +36,20 @@ describe('TileGrid permission filtering', () => {
         );
 
         expect(screen.queryByText('Moderate')).not.toBeNull();
-        expect(
-            screen.queryByText(CONCEPT_TILE.attention.action),
-        ).not.toBeNull();
-        expect(screen.queryByText(CONCEPT_TILE.roster.action)).not.toBeNull();
+        // Needs attention and Browse runs are out of the nav for now.
+        expect(screen.queryByText(CONCEPT_TILE.attention.action)).toBeNull();
+        expect(screen.queryByText(CONCEPT_TILE.roster.action)).toBeNull();
         expect(screen.queryByText(CONCEPT_TILE.bans.action)).not.toBeNull();
         expect(screen.queryByText(CONCEPT_TILE.history.action)).not.toBeNull();
 
-        // Categories is the one Board item any moderator can reach — see the
-        // itemVisible comment in nav-model.ts. Every other Board tile stays gone.
+        // Categories and Boards are the two Board items any moderator can
+        // reach — see the itemVisible comment in nav-model.ts. Every other
+        // Board tile stays gone.
         expect(screen.queryByText('Board')).not.toBeNull();
         expect(
             screen.queryByText(CONCEPT_TILE.categories.action),
         ).not.toBeNull();
+        expect(screen.queryByText(CONCEPT_TILE.boards.action)).not.toBeNull();
         expect(screen.queryByText(CONCEPT_TILE.setup.action)).toBeNull();
         expect(
             screen.queryByText(CONCEPT_TILE['game-details'].action),
@@ -83,22 +84,16 @@ describe('TileGrid permission filtering', () => {
             screen.queryByText(CONCEPT_TILE.categories.action),
         ).not.toBeNull();
         expect(screen.queryByText(CONCEPT_TILE.groups.action)).not.toBeNull();
+        expect(screen.queryByText(CONCEPT_TILE.boards.action)).not.toBeNull();
         // Neither moderators nor reassign are visible without their own flags.
         expect(screen.queryByText(CONCEPT_TILE.moderators.action)).toBeNull();
         expect(screen.queryByText(CONCEPT_TILE.reassign.action)).toBeNull();
     });
 });
 
-describe('TileGrid reports filtering', () => {
-    it('never renders a tile for reports even though buildNav includes it for a moderator', () => {
+describe('TileGrid pulled triage entries', () => {
+    it('renders no tile for the entries removed from the nav for now', () => {
         const groups = buildNav({ ...NO_FLAGS, canModerate: true });
-        const moderateGroup = groups.find((g) => g.id === 'moderate');
-        // Sanity check: reports really is in the permission-filtered nav —
-        // otherwise this test would pass for the wrong reason.
-        expect(moderateGroup?.items.some((it) => it.id === 'reports')).toBe(
-            true,
-        );
-
         render(
             <TileGrid
                 groups={groups}
@@ -108,9 +103,9 @@ describe('TileGrid reports filtering', () => {
         );
 
         expect(screen.queryByText('Reports')).toBeNull();
-        // 4 Moderate tiles (attention/roster/bans/history) + 1 Board tile
-        // (categories) — reports is filtered out by `it.id in CONCEPT_TILE`.
-        expect(screen.getAllByRole('button')).toHaveLength(5);
+        // 2 Moderate tiles (bans/history) + 2 Board tiles (categories,
+        // boards) — attention/roster/reports are out of buildNav for now.
+        expect(screen.getAllByRole('button')).toHaveLength(4);
     });
 });
 
@@ -137,7 +132,7 @@ describe('TileGrid empty groups', () => {
 });
 
 describe('TileGrid attention badge', () => {
-    it('shows the attention count when there is something to show', () => {
+    it('renders no badge while the attention tile is out of the nav, whatever the count', () => {
         const groups = buildNav({ ...NO_FLAGS, canModerate: true });
         render(
             <TileGrid
@@ -146,9 +141,7 @@ describe('TileGrid attention badge', () => {
                 attentionCount={5}
             />,
         );
-        expect(
-            screen.queryByLabelText('5 items need attention'),
-        ).not.toBeNull();
+        expect(screen.queryByLabelText('5 items need attention')).toBeNull();
     });
 
     it('renders no badge on a confirmed zero', () => {

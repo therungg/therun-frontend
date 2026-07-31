@@ -1,0 +1,12 @@
+@use '../../../../../styles/design-tokens' as dt;
+
+.fieldCol {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+    max-width: 40rem;
+}
+
+.preview {
+    margin-top: dt.$spacing-lg;
+}

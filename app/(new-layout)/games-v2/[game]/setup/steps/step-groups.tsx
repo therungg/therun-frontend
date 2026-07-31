@@ -91,11 +91,7 @@ export function StepGroups({ data, onAdvance }: StepProps) {
     if (mains.length === 0) {
         return (
             <section>
-                <StepHeader
-                    step="groups"
-                    title="Nothing to group yet"
-                    lede="Groups organise the categories you show on the board. Pick some in the previous step and this one has something to work with."
-                />
+                <StepHeader step="groups" title="Nothing to group yet" />
                 <button
                     type="button"
                     className={styles.primaryAction}
@@ -136,9 +132,6 @@ export function StepGroups({ data, onAdvance }: StepProps) {
             <StepHeader
                 step="groups"
                 title="Do these categories belong in groups?"
-                lede={`You're showing ${mains.length} categor${
-                    mains.length === 1 ? 'y' : 'ies'
-                }. Groups split them into labeled sections on the game page — Category Extensions as its own block, or one section per version of the game. Most boards don't need any.`}
             />
 
             <div

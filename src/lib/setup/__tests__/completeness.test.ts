@@ -50,7 +50,7 @@ describe('computeCompleteness', () => {
         expect(c.steps.map((s) => s.step)).toEqual(SETUP_STEP_ORDER);
     });
 
-    it('warns on exceptions when featured categories lack rules', () => {
+    it('warns on category setup when featured categories lack rules', () => {
         const c = computeCompleteness(
             input({
                 categories: [
@@ -65,11 +65,11 @@ describe('computeCompleteness', () => {
                 ],
             }),
         );
-        const exceptions = c.steps.find((s) => s.step === 'exceptions');
-        expect(exceptions?.status).toBe('warning');
+        const categorySetup = c.steps.find((s) => s.step === 'category-setup');
+        expect(categorySetup?.status).toBe('warning');
     });
 
-    it('flags no-main as a blocker on categories, todo on exceptions', () => {
+    it('flags no-main as a blocker on categories, todo on category setup', () => {
         const c = computeCompleteness(
             input({
                 categories: [
@@ -102,10 +102,10 @@ describe('computeCompleteness', () => {
         );
         expect(c.firstIncomplete).toBe('categories');
 
-        const exceptions = c.steps.find((s) => s.step === 'exceptions');
-        expect(exceptions?.status).toBe('todo');
-        expect(exceptions?.summary).toBe(
-            'Review exceptions after choosing featured categories',
+        const categorySetup = c.steps.find((s) => s.step === 'category-setup');
+        expect(categorySetup?.status).toBe('todo');
+        expect(categorySetup?.summary).toBe(
+            'Set up each category after choosing featured ones',
         );
     });
 
@@ -127,12 +127,12 @@ describe('computeCompleteness', () => {
         expect(c.steps.find((s) => s.step === 'categories')?.status).toBe(
             'blocker',
         );
-        expect(c.steps.find((s) => s.step === 'exceptions')?.status).toBe(
+        expect(c.steps.find((s) => s.step === 'category-setup')?.status).toBe(
             'todo',
         );
     });
 
-    it('treats an ingestion-empty board as completable (categories and exceptions not blocking)', () => {
+    it('treats an ingestion-empty board as completable (categories and category setup not blocking)', () => {
         const c = computeCompleteness(input({ categories: [] }));
         const cats = c.steps.find((s) => s.step === 'categories');
         expect(cats?.status).toBe('done');
@@ -140,8 +140,8 @@ describe('computeCompleteness', () => {
             'No ingested categories yet — they appear as runs arrive',
         );
 
-        const exceptions = c.steps.find((s) => s.step === 'exceptions');
-        expect(exceptions?.status).toBe('todo');
+        const categorySetup = c.steps.find((s) => s.step === 'category-setup');
+        expect(categorySetup?.status).toBe('todo');
         expect(c.blockers).toEqual([]);
     });
 
@@ -181,7 +181,7 @@ describe('computeCompleteness', () => {
         );
     });
 
-    it('warns on exceptions counting only mains without rules (a hidden category without rules is ignored)', () => {
+    it('warns on category setup counting only mains without rules (a hidden category without rules is ignored)', () => {
         const c = computeCompleteness(
             input({
                 categories: [
@@ -212,9 +212,9 @@ describe('computeCompleteness', () => {
                 ],
             }),
         );
-        const exceptions = c.steps.find((s) => s.step === 'exceptions');
-        expect(exceptions?.status).toBe('warning');
-        expect(exceptions?.summary).toBe(
+        const categorySetup = c.steps.find((s) => s.step === 'category-setup');
+        expect(categorySetup?.status).toBe('warning');
+        expect(categorySetup?.summary).toBe(
             '1 of 2 featured categories missing rules',
         );
         expect(c.warnings).toContain(
@@ -222,7 +222,7 @@ describe('computeCompleteness', () => {
         );
     });
 
-    it('marks exceptions done when all mains have rules', () => {
+    it('marks category setup done when all mains have rules', () => {
         const c = computeCompleteness(
             input({
                 categories: [
@@ -245,50 +245,42 @@ describe('computeCompleteness', () => {
                 ],
             }),
         );
-        const exceptions = c.steps.find((s) => s.step === 'exceptions');
-        expect(exceptions?.status).toBe('done');
-        expect(exceptions?.summary).toBe(
+        const categorySetup = c.steps.find((s) => s.step === 'category-setup');
+        expect(categorySetup?.status).toBe('done');
+        expect(categorySetup?.summary).toBe(
             'All 2 featured categories have rules',
         );
     });
 
-    it('always marks defaults done, with a summary reflecting standards state', () => {
+    // The board-wide defaults that used to be their own step (timing, proof,
+    // minimum time, rules template) now live on step 1, so their state is
+    // reported in the details summary rather than as a step of its own.
+    it('reports board-wide standards in the details summary', () => {
+        const details = (c: ReturnType<typeof computeCompleteness>) =>
+            c.steps.find((s) => s.step === 'details');
+
         const optional = computeCompleteness(
-            input({
-                policyCount: 0,
-                requireVideoAnywhere: false,
-            }),
+            input({ policyCount: 0, requireVideoAnywhere: false }),
         );
-        const defaultsOptional = optional.steps.find(
-            (s) => s.step === 'defaults',
-        );
-        expect(defaultsOptional?.status).toBe('done');
-        expect(defaultsOptional?.summary).toBe('Optional — game-wide defaults');
+        expect(details(optional)?.status).toBe('done');
+        expect(details(optional)?.summary).toBe('Slug mygame');
 
         const viaPolicy = computeCompleteness(input({ policyCount: 2 }));
-        const defaultsViaPolicy = viaPolicy.steps.find(
-            (s) => s.step === 'defaults',
-        );
-        expect(defaultsViaPolicy?.status).toBe('done');
-        expect(defaultsViaPolicy?.summary).toBe('Standards set');
+        expect(details(viaPolicy)?.summary).toBe('Slug mygame · standards set');
 
         const viaVideo = computeCompleteness(
-            input({
-                policyCount: 0,
-                requireVideoAnywhere: true,
-            }),
+            input({ policyCount: 0, requireVideoAnywhere: true }),
         );
-        const defaultsViaVideo = viaVideo.steps.find(
-            (s) => s.step === 'defaults',
-        );
-        expect(defaultsViaVideo?.status).toBe('done');
-        expect(defaultsViaVideo?.summary).toBe('Standards set');
+        expect(details(viaVideo)?.summary).toBe('Slug mygame · standards set');
     });
 
-    it('marks details todo when slug missing, and finish todo when unconfigured', () => {
+    it('marks details todo when slug missing, and boards todo when unconfigured', () => {
         const c = computeCompleteness(input({ slug: null, configured: false }));
-        expect(c.steps.find((s) => s.step === 'details')?.status).toBe('todo');
-        expect(c.steps.find((s) => s.step === 'finish')?.status).toBe('todo');
+        const details = c.steps.find((s) => s.step === 'details');
+        expect(details?.status).toBe('todo');
+        // A missing slug is the whole story — standards state doesn't dilute it.
+        expect(details?.summary).toBe('Slug missing');
+        expect(c.steps.find((s) => s.step === 'boards')?.status).toBe('todo');
         expect(c.firstIncomplete).toBe('details');
     });
 
@@ -379,25 +371,59 @@ describe('computeCompleteness', () => {
         });
     });
 
-    describe('variables step', () => {
+    // Variables stopped being a step of their own — they are one section of
+    // the per-category editor now — so the count rides on the category-setup
+    // summary instead of carrying a status.
+    describe('variable count on the category-setup summary', () => {
         const step = (c: ReturnType<typeof computeCompleteness>) =>
-            c.steps.find((s) => s.step === 'variables');
+            c.steps.find((s) => s.step === 'category-setup');
 
-        it('stays done with no variables — splitting is optional', () => {
-            const c = computeCompleteness(input({ variableCount: 0 }));
-            expect(step(c)).toMatchObject({
+        it('says nothing about variables when the board has none', () => {
+            expect(
+                step(computeCompleteness(input({ variableCount: 0 }))),
+            ).toMatchObject({
                 status: 'done',
-                summary: 'Optional — no splits or filters',
+                summary: 'All 1 featured categories have rules',
             });
         });
 
-        it('counts the variables a board does have', () => {
+        it('appends the count a board does have', () => {
             expect(
                 step(computeCompleteness(input({ variableCount: 1 })))?.summary,
-            ).toBe('1 variable');
+            ).toBe('All 1 featured categories have rules · 1 variable');
             expect(
                 step(computeCompleteness(input({ variableCount: 4 })))?.summary,
-            ).toBe('4 variables');
+            ).toBe('All 1 featured categories have rules · 4 variables');
+        });
+
+        it('appends the count to a warning summary too', () => {
+            const c = computeCompleteness(
+                input({
+                    variableCount: 3,
+                    categories: [
+                        {
+                            id: 1,
+                            display: 'Any%',
+                            active: true,
+                            isMain: true,
+                            hasRules: false,
+                            groupId: null,
+                        },
+                    ],
+                }),
+            );
+            expect(step(c)?.summary).toBe(
+                '1 of 1 featured categories missing rules · 3 variables',
+            );
+        });
+
+        it('says nothing about variables before there are categories to set up', () => {
+            const c = computeCompleteness(
+                input({ variableCount: 2, categories: [] }),
+            );
+            expect(step(c)?.summary).toBe(
+                'Set up each category after choosing featured ones',
+            );
         });
     });
 });

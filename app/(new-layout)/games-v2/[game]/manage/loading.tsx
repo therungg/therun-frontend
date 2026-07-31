@@ -8,17 +8,19 @@ const NAV_ITEMS = Array.from({ length: 5 });
 export default function ManageLoading() {
     return (
         <div className={styles.shell}>
-            <div className={styles.header}>
-                <div className={styles.cover} />
-                <div className={styles.titleBar} />
-            </div>
-            <div className={styles.body}>
-                <div className={styles.sidebar}>
-                    {NAV_ITEMS.map((_, i) => (
-                        <div className={styles.navItem} key={`nav-${i}`} />
-                    ))}
+            <div className={styles.frame}>
+                <div className={styles.header}>
+                    <div className={styles.cover} />
+                    <div className={styles.titleBar} />
                 </div>
-                <div className={styles.content} />
+                <div className={styles.body}>
+                    <div className={styles.sidebar}>
+                        {NAV_ITEMS.map((_, i) => (
+                            <div className={styles.navItem} key={`nav-${i}`} />
+                        ))}
+                    </div>
+                    <div className={styles.content} />
+                </div>
             </div>
         </div>
     );

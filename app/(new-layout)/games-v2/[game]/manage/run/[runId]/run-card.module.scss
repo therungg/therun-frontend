@@ -7,8 +7,13 @@
 // console's own vocabulary. See .interface-design/system.md.
 // ============================================================
 
+// Item card, not a pane wrapper — kept bordered on the flat frame, but
+// transparent so it doesn't read as card-on-card (Task 7).
 .card {
-    @include board.board-surface(dt.$spacing-xl);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-lg;
+    padding: dt.$spacing-xl;
+    background: transparent;
 }
 
 .metaRow {

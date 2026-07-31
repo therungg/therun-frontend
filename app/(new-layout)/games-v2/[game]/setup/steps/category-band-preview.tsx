@@ -98,7 +98,7 @@ export function CategoryBandPreview({ categories, groups, variables }: Props) {
                                         section.pills.map((c) => (
                                             <span
                                                 key={c.id}
-                                                className={band.chip}
+                                                className={`${band.chip} ${styles.previewChip}`}
                                             >
                                                 {c.display}
                                             </span>

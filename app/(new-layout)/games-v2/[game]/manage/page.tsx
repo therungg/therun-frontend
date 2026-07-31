@@ -34,6 +34,8 @@ import type {
     BoardClaimRequest,
     GameModerator,
 } from '../../../../../types/board-claims.types';
+import type { VariableRow } from '../../../../../types/leaderboards.types';
+import type { BoardPolicyRow } from '../../../../../types/moderation.types';
 import styles from './console/console.module.scss';
 import { ConsoleShell } from './console/console-shell';
 import type { GameDetailsData } from './console/game-details-pane';
@@ -88,7 +90,10 @@ export default async function GameAdminConsolePage({ params }: Props) {
     }
 
     const sessionId = session.id;
-    const { categories } = await resolveCategory(game.id);
+    // `boardGroups` is the same ResolvedGroup[] the wizard's BoardCuration
+    // uses — comes free from this call, distinct from `groups` below
+    // (ManageGroup[], fetched separately for the index/GameTab).
+    const { categories, groups: boardGroups } = await resolveCategory(game.id);
     const categoryById = new Map(categories.map((c) => [c.id, c.display]));
     const categoryName = (id: number) =>
         categoryById.get(id) ?? `Category ${id}`;
@@ -153,21 +158,26 @@ export default async function GameAdminConsolePage({ params }: Props) {
     let boardHealth: BoardHealth | null = null;
     let gameDetails: GameDetailsData | null = null;
     let moderators: GameModerator[] = [];
-    // Moderators load under canConfigure but the pane gates on canEditMods.
-    // Safe because every edit-moderators holder also has category-settings:
-    // backend deriveGameLists guarantees adminedGames ⊆ moderatedGames, and
-    // the board-admin role grants both (src/rbac/ability.ts).
+    // Variables + policies feed the index matrix (configure-only) AND the
+    // Boards pane (canModerate || canConfigure) — fetched here, once, so a
+    // moderator without configure still gets the real board, not an empty one.
+    let variables: VariableRow[] = [];
+    let policies: BoardPolicyRow[] = [];
+    if (canModerate || canConfigure) {
+        [variables, policies] = await Promise.all([
+            listGameVariables(sessionId, game.id).catch(() => []),
+            listPolicies(sessionId, game.id).catch(() => []),
+        ]);
+    }
     // The index matrix needs variables + policies whether or not metadata
-    // loads, so they are fetched here rather than inside the metadata branch.
+    // loads, so they are fetched above rather than inside the metadata branch.
     let categoryConfig: CategoryConfigRow[] = buildCategoryRows({
         categories,
         policies: [],
         variables: [],
     });
     if (canConfigure) {
-        const [variables, policies, gameMods, metadata] = await Promise.all([
-            listGameVariables(sessionId, game.id).catch(() => []),
-            listPolicies(sessionId, game.id).catch(() => []),
+        const [gameMods, metadata] = await Promise.all([
             listGameModerators(game.id).catch(() => []),
             getGameMetadata(game.id).catch(() => null),
         ]);
@@ -192,8 +202,6 @@ export default async function GameAdminConsolePage({ params }: Props) {
             });
             boardHealth = computeBoardHealth({
                 completeness: setupCompleteness,
-                attentionCreatedAts: attentionItems.map((a) => a.createdAt),
-                now: Date.now(),
             });
             gameDetails = {
                 identifiers,
@@ -225,6 +233,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
                     canConfigure,
                     canReassign,
                     canEditMods,
+                    canSiteBan: ability.can('moderate', 'admins'),
                 }}
                 attentionItems={attentionItems}
                 degradedSources={degradedSources}
@@ -233,6 +242,9 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 initialRows={rows}
                 categoryConfig={categoryConfig}
                 initialGroups={groups}
+                boardGroups={boardGroups}
+                variables={variables}
+                policies={policies}
                 setupCompleteness={setupCompleteness}
                 boardHealth={boardHealth}
                 gameDetails={gameDetails}

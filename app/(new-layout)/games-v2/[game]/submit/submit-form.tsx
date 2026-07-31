@@ -21,7 +21,11 @@ import type {
     ModTiming,
     SelfManualTimeResult,
 } from '../../../../../types/moderation.types';
-import { RulesBody, RulesPanel } from '../rules/rules-panel';
+import {
+    type EmulatorPolicy,
+    RulesBody,
+    RulesPanel,
+} from '../rules/rules-panel';
 import { ClaimFields } from './claim-fields';
 import { loadVariablesAction } from './load-variables.action';
 import { RunFields } from './run-fields';
@@ -40,6 +44,9 @@ interface Props {
     initialCategorySlug?: string;
     /** Subcategory variable params from the board URL (same param names the board uses). Matched against the resolved category's variables once they load; unmatched keys are ignored silently. */
     initialSubcategoryValues?: Record<string, string>;
+    /** Game-level rules — shown above category rules in the disclosure, same as the public board. */
+    gameRules?: string | null;
+    emulatorPolicy?: EmulatorPolicy;
 }
 
 const SUBMIT_MODE_HINT =
@@ -85,6 +92,8 @@ export function SubmitForm({
     initialMode,
     initialCategorySlug,
     initialSubcategoryValues,
+    gameRules,
+    emulatorPolicy,
 }: Props) {
     const [mode, setMode] = useState<SubmitFormMode>(initialMode ?? 'submit');
     const [categoryId, setCategoryId] = useState<number>(() => {
@@ -401,7 +410,7 @@ export function SubmitForm({
                 <p className="mb-3">{statusLine}</p>
                 {runResult.applied !== 'instant' && (
                     <p className="small text-muted mb-3">
-                        You'll get a notification here when a moderator reviews
+                        You’ll get a notification here when a moderator reviews
                         it.
                     </p>
                 )}
@@ -450,7 +459,7 @@ export function SubmitForm({
                 <p className="mb-3">{statusLine}</p>
                 {claimResult.applied !== 'instant' && (
                     <p className="small text-muted mb-3">
-                        You'll get a notification here when a moderator reviews
+                        You’ll get a notification here when a moderator reviews
                         it.
                     </p>
                 )}
@@ -521,15 +530,25 @@ export function SubmitForm({
                     </select>
                 </div>
 
-                {category.rules && category.rules.trim().length > 0 && (
+                {(category.rules?.trim() ||
+                    gameRules?.trim() ||
+                    emulatorPolicy) && (
                     <div>
                         <RulesPanel
                             rules={category.rules}
+                            gameRules={gameRules}
+                            emulatorPolicy={emulatorPolicy}
                             open={rulesOpen}
                             onToggle={() => setRulesOpen((o) => !o)}
                             label="Category rules"
                         />
-                        {rulesOpen && <RulesBody rules={category.rules} />}
+                        {rulesOpen && (
+                            <RulesBody
+                                rules={category.rules}
+                                gameRules={gameRules}
+                                emulatorPolicy={emulatorPolicy}
+                            />
+                        )}
                     </div>
                 )}
 
@@ -685,7 +704,7 @@ function StandingLine({
             </div>
             {isSlower && (
                 <div>
-                    This is slower than your current best — it won't replace
+                    This is slower than your current best — it won’t replace
                     your board entry.
                 </div>
             )}
