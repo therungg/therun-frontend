@@ -169,8 +169,7 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                         </div>
                         <p className="text-muted small mt-2 mb-0">
                             Applies to every board. Categories with their own
-                            display setting keep it. A hidden clock also stops
-                            ranking boards by it.
+                            display setting keep it.
                         </p>
                     </div>
                 </div>
