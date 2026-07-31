@@ -61,6 +61,16 @@ export function useBoardData(
         categoryId == null
             ? null
             : `${categoryId}|${subcategoryKey}|${timing}|${sortDesc}|${markedOnly}|${page}`;
+    // Totals are board-wide (the server counts them ignoring markedOnly and
+    // paging), so they're remembered per board rather than per page-key:
+    // without this, navigating to a not-yet-cached page would report total 0
+    // for a render, the pager's pageCount would collapse to 1, and the page
+    // clamp in BoardCuration would snap the mod straight back to page 0 —
+    // "Next does nothing".
+    const boardKey =
+        categoryId == null
+            ? null
+            : `${categoryId}|${subcategoryKey}|${timing}|${sortDesc}`;
 
     const [state, setState] = useState<BoardState>({
         key: '',
@@ -69,6 +79,9 @@ export function useBoardData(
     });
     const [isPending, startTransition] = useTransition();
     const cacheRef = useRef(new Map<string, BoardPage>());
+    const totalsRef = useRef(
+        new Map<string, { total: number; markedTotal: number }>(),
+    );
 
     // What this render is actually showing — checked before an in-flight
     // fetch's result gets applied, and before a stale closure's `load` even
@@ -103,6 +116,10 @@ export function useBoardData(
                 markedTotal: res.markedTotal,
             };
             cacheRef.current.set(key, data);
+            totalsRef.current.set(
+                `${categoryId}|${subcategoryKey}|${timing}|${sortDesc}`,
+                { total: res.total, markedTotal: res.markedTotal },
+            );
             setState({ key, ...data, error: null });
         });
     }, [
@@ -122,14 +139,20 @@ export function useBoardData(
 
     // Derived at render time so a selection switch never shows the previous
     // board: fresh state if it matches this key, else the cached page for
-    // this key (instant back-switching), else empty while loading.
+    // this key (instant back-switching), else empty rows — but with the
+    // board's last-known totals, so the pager stays put while a new page of
+    // the same board loads.
+    const knownTotals =
+        (boardKey != null ? totalsRef.current.get(boardKey) : undefined) ??
+        EMPTY;
     const display: BoardState =
         key != null && state.key === key
             ? state
             : {
                   key: key ?? '',
-                  ...((key != null ? cacheRef.current.get(key) : undefined) ??
-                      EMPTY),
+                  ...EMPTY,
+                  ...knownTotals,
+                  ...(key != null ? cacheRef.current.get(key) : undefined),
                   error: null,
               };
 

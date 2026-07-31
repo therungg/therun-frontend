@@ -201,6 +201,47 @@ describe('useBoardData', () => {
         await waitFor(() => expect(result.current.rows).toHaveLength(6));
     });
 
+    it('keeps board totals while an uncached page of the same board loads', async () => {
+        // Regression: totals fell to 0 for the render after clicking Next
+        // (uncached page key), which collapsed pageCount to 1 and let the
+        // page clamp snap back to page 0 — Next appeared to do nothing.
+        const page2 = deferred<object>();
+        mocks.loadBoardPageAction.mockImplementation(
+            (_game: string, _cat: number, filter: { offset: number }) =>
+                filter.offset === 0
+                    ? Promise.resolve({
+                          ok: true,
+                          rows: makeRows(3),
+                          total: 250,
+                          markedTotal: 4,
+                      })
+                    : page2.promise,
+        );
+
+        const { result, rerender } = renderHook(
+            ({ page }: { page: number }) =>
+                useBoardData('my-game', 7, '', { ...QUERY, page }),
+            { initialProps: { page: 0 } },
+        );
+        await waitFor(() => expect(result.current.rows).toHaveLength(3));
+
+        rerender({ page: 1 });
+        // Rows are unknown for the new page, but the board's totals are not.
+        expect(result.current.rows).toHaveLength(0);
+        expect(result.current.total).toBe(250);
+        expect(result.current.markedTotal).toBe(4);
+
+        await act(async () => {
+            page2.resolve({
+                ok: true,
+                rows: makeRows(5, 101),
+                total: 250,
+                markedTotal: 4,
+            });
+        });
+        await waitFor(() => expect(result.current.rows).toHaveLength(5));
+    });
+
     it('surfaces errors and clears rows', async () => {
         mocks.loadBoardPageAction.mockResolvedValue({ error: 'nope' });
 
