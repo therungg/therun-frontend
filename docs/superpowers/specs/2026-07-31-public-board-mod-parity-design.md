@@ -1,7 +1,7 @@
 # Public board mod parity — design
 
 **Date:** 2026-07-31
-**Status:** Approved (approach A picked by Joey: extend the existing kebab, reuse console dialogs)
+**Status:** Implemented 2026-07-31 (approach A picked by Joey: extend the existing kebab, reuse console dialogs)
 
 ## Goal
 
