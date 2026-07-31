@@ -27,18 +27,15 @@ export interface CategoryConfigRow {
     showMilliseconds: boolean;
     minTimeMs: number | null;
     hasRules: boolean;
-    requireVideo: boolean;
-    requireVideoTopN: number | null;
     subBoards: number;
 }
 
-export type ColumnId = 'timing' | 'minimum' | 'rules' | 'proof' | 'subBoards';
+export type ColumnId = 'timing' | 'minimum' | 'rules' | 'subBoards';
 
 export const COLUMN_IDS: readonly ColumnId[] = [
     'timing',
     'minimum',
     'rules',
-    'proof',
     'subBoards',
 ];
 
@@ -109,8 +106,6 @@ export function buildCategoryRows(input: {
         showMilliseconds: c.showMilliseconds ?? false,
         minTimeMs: minTimeFor(input.policies, c.id),
         hasRules: (c.rules ?? '').trim().length > 0,
-        requireVideo: c.requireVideo ?? false,
-        requireVideoTopN: c.requireVideoTopN ?? null,
         subBoards: subBoardCount(input.variables, c.id),
     }));
 }
@@ -127,11 +122,6 @@ export function columnValue(
             return row.minTimeMs;
         case 'rules':
             return row.hasRules;
-        case 'proof':
-            if (!row.requireVideo) return 'none';
-            return row.requireVideoTopN == null
-                ? 'all'
-                : `top${row.requireVideoTopN}`;
         case 'subBoards':
             return row.subBoards;
     }

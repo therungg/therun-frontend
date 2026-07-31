@@ -9,7 +9,6 @@ import type {
 } from '../../../../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
 import { CategorySettingsSection } from '../category-tab/category-settings-section';
-import { ProofSection } from '../category-tab/proof-section';
 import { RulesSection } from '../category-tab/rules-section';
 import { Standards } from '../moderation/configure/standards';
 import { TimingSettingsSection } from '../timing/timing-settings-section';
@@ -46,7 +45,6 @@ const SECTIONS = [
     { id: 'variables', requires: 'configure' },
     { id: 'combinations', requires: 'configure' },
     { id: 'timing', requires: 'configure' },
-    { id: 'proof', requires: 'configure' },
     // Minimum time is visible to ANY moderator — this is the carve-out that
     // used to live in nav-model's itemVisible for the `standards` nav item.
     { id: 'standards', requires: 'moderate' },
@@ -120,13 +118,6 @@ export function CategoryEditor({
         ),
         timing: (
             <TimingSettingsSection
-                gameSlug={game.name}
-                gameId={game.id}
-                category={category}
-            />
-        ),
-        proof: (
-            <ProofSection
                 gameSlug={game.name}
                 gameId={game.id}
                 category={category}

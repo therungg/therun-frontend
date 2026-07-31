@@ -375,13 +375,6 @@ $rail-collapse: 900px;
     margin: 0;
 }
 
-.stepLede {
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-    margin: dt.$spacing-sm 0 0;
-    max-width: 38rem;
-}
-
 // ---- Step body ----------------------------------------------
 .stepBody {
     animation: stepIn dt.$transition-base both;
@@ -462,6 +455,29 @@ $rail-collapse: 900px;
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-xs;
+    // Recessed stage: the preview is a picture of the board, not more form
+    // chrome. Without it the band rows sit directly on the panel and read
+    // as stacked prose lines instead of one object.
+    background: rgba(var(--bs-body-color-rgb), 0.04);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-md;
+    padding: dt.$spacing-sm dt.$spacing-md;
+}
+
+// The public band's chips are transparent until hover — the active chip and
+// the rail card carry the shape there. Preview chips are inert and nothing
+// is active, so they need the pill surface up front or they read as text.
+// Nested under .previewBand to outrank the board-chip base regardless of
+// which CSS module the bundler emits first.
+.previewBand .previewChip {
+    background: rgba(var(--bs-body-color-rgb), 0.06);
+    border-color: rgba(var(--bs-border-color-rgb), 0.6);
+    cursor: default;
+
+    &:hover {
+        background: rgba(var(--bs-body-color-rgb), 0.06);
+        color: var(--bs-secondary-color);
+    }
 }
 
 // ---- Group builder (categories step) ------------------------

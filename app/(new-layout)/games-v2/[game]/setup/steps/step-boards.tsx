@@ -30,11 +30,7 @@ import { StepHeader } from './step-header';
 export function StepBoards({ data }: StepProps) {
     return (
         <section>
-            <StepHeader
-                step="boards"
-                title="Check the boards, then go live"
-                lede="This is what runners will see. Read each board top-down; anything wrong on it is worth fixing before you put it live."
-            />
+            <StepHeader step="boards" title="Check the boards, then go live" />
             <BoardCuration
                 game={data.game}
                 categories={data.categories}
