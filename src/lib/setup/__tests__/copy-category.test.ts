@@ -58,7 +58,6 @@ function mkPolicy(overrides: Partial<BoardPolicyRow> = {}): BoardPolicyRow {
 const NO_CHOICES: CopyChoices = {
     rules: false,
     timing: false,
-    proof: false,
     minimum: false,
     variables: false,
 };

@@ -130,11 +130,7 @@ export function StepCategories({ data, onAdvance }: StepProps) {
     if (data.categories.length === 0) {
         return (
             <section>
-                <StepHeader
-                    step="categories"
-                    title="No categories yet"
-                    lede="Categories show up on their own when runs are submitted or ingested from timers, so there’s nothing to pick yet. Once runs come in, choose what shows on the board here or from the console."
-                />
+                <StepHeader step="categories" title="No categories yet" />
                 <Link href={`/games-v2/${data.game.name}/submit`}>
                     Point runners at the submission form →
                 </Link>
@@ -262,9 +258,6 @@ export function StepCategories({ data, onAdvance }: StepProps) {
             <StepHeader
                 step="categories"
                 title="Which categories belong on the board?"
-                lede={`Runners have submitted runs in ${rows.length} categor${
-                    rows.length === 1 ? 'y' : 'ies'
-                }. These come from timers and submissions, not from you, so many of them probably don’t belong on a leaderboard. Pick the ones that do — the rest are hidden, not deleted, and you can bring them back from the console.`}
             />
 
             <CategoryBandPreview

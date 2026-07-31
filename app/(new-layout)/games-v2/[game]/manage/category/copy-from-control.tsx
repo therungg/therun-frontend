@@ -41,7 +41,6 @@ interface Props {
 const ALL_CHOICES: CopyChoices = {
     rules: true,
     timing: true,
-    proof: true,
     minimum: true,
     variables: true,
 };
@@ -52,8 +51,6 @@ function stepLabel(step: CopyStep): string {
             return CONCEPT_LABEL.rules;
         case 'timing':
             return CONCEPT_LABEL.timing;
-        case 'proof':
-            return CONCEPT_LABEL.proof;
         case 'minimum':
             return CONCEPT_LABEL.standards;
         case 'variable':
@@ -147,17 +144,6 @@ export function CopyFromControl({
                     primaryTiming: step.primaryTiming,
                     hideRealTime: step.hideRealTime,
                     hideGameTime: step.hideGameTime,
-                });
-                return 'error' in res ? { error: res.error } : { ok: true };
-            }
-            case 'proof': {
-                const res = await updateCategorySettingsAction({
-                    gameSlug,
-                    gameId,
-                    categoryId: target.id,
-                    requireVideo: step.requireVideo,
-                    requireVideoTopN: step.requireVideoTopN,
-                    showMilliseconds: step.showMilliseconds,
                 });
                 return 'error' in res ? { error: res.error } : { ok: true };
             }
@@ -304,15 +290,6 @@ export function CopyFromControl({
                                 disabled={applying}
                             />{' '}
                             {CONCEPT_LABEL.timing}
-                        </label>
-                        <label>
-                            <input
-                                type="checkbox"
-                                checked={choices.proof}
-                                onChange={() => toggle('proof')}
-                                disabled={applying}
-                            />{' '}
-                            {CONCEPT_LABEL.proof}
                         </label>
                         <label>
                             <input

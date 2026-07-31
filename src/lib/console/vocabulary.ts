@@ -20,7 +20,6 @@ export type ConceptId =
     | 'variables'
     | 'combinations'
     | 'timing'
-    | 'proof'
     | 'standards'
     | 'rules'
     | 'category-settings'
@@ -41,7 +40,6 @@ export const CONCEPT_LABEL: Record<ConceptId, string> = {
     variables: 'Variables',
     combinations: 'Sub-boards',
     timing: 'Timing',
-    proof: 'Proof & review',
     standards: 'Minimum time',
     rules: 'Rules',
     'category-settings': 'Settings',

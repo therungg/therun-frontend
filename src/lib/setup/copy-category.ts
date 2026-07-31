@@ -8,7 +8,6 @@ import type { BoardPolicyRow } from '../../../types/moderation.types';
 export interface CopyChoices {
     rules: boolean;
     timing: boolean;
-    proof: boolean;
     minimum: boolean;
     variables: boolean;
 }
@@ -20,12 +19,6 @@ export type CopyStep =
           primaryTiming: 'realtime' | 'gametime';
           hideRealTime: boolean;
           hideGameTime: boolean;
-      }
-    | {
-          kind: 'proof';
-          requireVideo: boolean;
-          requireVideoTopN: number | null;
-          showMilliseconds: boolean;
       }
     | {
           kind: 'minimum';
@@ -114,20 +107,6 @@ export function planCategoryCopy(input: {
         // (primaryTiming is required), so applying this step always
         // replaces something real.
         overwrites.push('Timing');
-    }
-
-    if (choices.proof) {
-        steps.push({
-            kind: 'proof',
-            requireVideo: source.requireVideo ?? false,
-            requireVideoTopN: source.requireVideoTopN ?? null,
-            showMilliseconds: source.showMilliseconds ?? false,
-        });
-        const targetHasProof =
-            (target.requireVideo ?? false) ||
-            target.requireVideoTopN != null ||
-            (target.showMilliseconds ?? false);
-        if (targetHasProof) overwrites.push('Proof');
     }
 
     if (choices.minimum) {

@@ -146,15 +146,7 @@ export function StepDetails({ data, onAdvance }: StepProps) {
 
     return (
         <section>
-            <StepHeader
-                step="details"
-                title="Game details"
-                lede={
-                    data.categories.length > 0
-                        ? 'Runners are already on this board. The details below are pre-filled from IGDB, so fix anything that’s wrong and move on. Everything saves as you go.'
-                        : 'This board has no runs yet. The details below are pre-filled from IGDB, so fix anything that’s wrong and move on. Everything saves as you go.'
-                }
-            />
+            <StepHeader step="details" title="Game details" />
 
             <h3 className={styles.zoneTitle}>Check the facts</h3>
             <div className={styles.section}>

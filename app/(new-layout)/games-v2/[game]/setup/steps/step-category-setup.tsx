@@ -79,11 +79,7 @@ export function StepCategorySetup({ data, onAdvance }: StepProps) {
 
     return (
         <section>
-            <StepHeader
-                step="category-setup"
-                title="Set up each category"
-                lede="Rules, timing, variables — everything one category needs, in one place. Copy from a finished category to go faster."
-            />
+            <StepHeader step="category-setup" title="Set up each category" />
 
             {mains.length === 0 ? (
                 <div className={styles.infoNote}>

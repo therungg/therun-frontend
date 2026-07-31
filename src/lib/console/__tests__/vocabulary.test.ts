@@ -32,7 +32,6 @@ describe('vocabulary', () => {
             'timing',
             'rules',
         ]);
-        expect(conceptLabel('proof')).toBe('Proof & review');
         expect(conceptLabel('standards')).toBe('Minimum time');
     });
 
