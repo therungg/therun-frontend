@@ -124,7 +124,7 @@
 .heroCover {
     width: 132px;
     height: 176px;
-    border-radius: dt.$radius-lg;
+    border-radius: dt.$radius-md;
     box-shadow: dt.$shadow-lg;
     object-fit: cover;
     flex-shrink: 0;
@@ -190,7 +190,7 @@
     gap: dt.$spacing-sm;
 
     & + & {
-        border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+        border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
         padding-left: dt.$spacing-xl;
 
         @media (max-width: 991.98px) {

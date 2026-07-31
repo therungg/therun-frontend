@@ -37,7 +37,7 @@
 .sectionRule {
     flex: 1;
     height: 1px;
-    background: rgba(var(--bs-border-color-rgb), 0.6);
+    background: rgba(var(--bs-border-color-rgb), 0.35);
 }
 
 .sectionCount {
@@ -68,10 +68,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    padding: 0;
-    background: var(--bs-tertiary-bg);
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.7);
-    border-radius: dt.$radius-lg;
+    @include board.board-surface(0);
     transition: border-color dt.$transition-fast,
         transform dt.$transition-fast,
         box-shadow dt.$transition-fast;
@@ -81,7 +78,7 @@
     // flicker, not response.
     &:hover,
     &:focus-within {
-        border-color: rgba(var(--bs-border-color-rgb), 1);
+        border-color: var(--bs-border-color);
         transform: translateY(dt.$hover-lift);
         box-shadow: dt.$shadow-md;
     }
@@ -270,7 +267,7 @@
     flex-direction: column;
     gap: dt.$spacing-sm;
     padding: dt.$spacing-md dt.$spacing-lg dt.$spacing-lg;
-    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
     font-size: dt.$font-size-xs;
     color: var(--bs-tertiary-color);
     // Runner-up links clickable above the stretched link.
@@ -345,11 +342,8 @@
     flex-direction: column;
     align-items: center;
     gap: dt.$spacing-sm;
-    padding: dt.$spacing-3xl dt.$spacing-lg;
     text-align: center;
-    background: var(--bs-tertiary-bg);
-    border: 1px solid var(--bs-border-color);
-    border-radius: dt.$radius-lg;
+    @include board.board-surface(dt.$spacing-3xl dt.$spacing-lg);
 }
 
 .emptyTitle {
