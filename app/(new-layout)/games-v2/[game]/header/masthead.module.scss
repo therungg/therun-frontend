@@ -121,10 +121,13 @@
 .plate {
     @include board.board-surface(0);
     overflow: hidden;
-    // The old (now-deleted) selector card's own spacing-lg gap to the table
-    // below — unchanged now that the rail lives inside this plate instead
-    // of a second card.
-    margin-bottom: dt.$spacing-lg;
+    // Density pass (Task 6 fix): one step down from the old selector
+    // card's spacing-lg gap — this margin is the whole visible seam
+    // between the plate and the table on the board view, and the
+    // per-section wrapping below (`.plateSection`) added enough of its
+    // own chrome that the board-view rows-above-fold target needed this
+    // extra sliver back.
+    margin-bottom: dt.$spacing-sm;
 }
 
 .plateTop {
@@ -138,7 +141,12 @@
 // the rules toggle row. Each gets its own hairline above it — the plate
 // reads as one surface with divided rows, not stacked cards.
 .plateSection {
-    padding: dt.$spacing-sm dt.$spacing-xl;
+    // Density pass (Task 6 fix): block padding one step down. Three of
+    // these can stack on one board (category rail / filter tier / rules
+    // toggle) — each one's own border-top + padding-block is a real
+    // rows-above-fold cost on the actual board view, which never renders
+    // the (much larger) full-hero stat band this task otherwise removed.
+    padding: dt.$spacing-xs dt.$spacing-xl;
     border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
 
     // `.tier` (filter-bar.tsx) carries its own top hairline for the

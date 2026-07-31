@@ -450,7 +450,9 @@ tr:focus-within .reveal {
     justify-content: space-between;
     flex-wrap: wrap;
     gap: dt.$spacing-sm;
-    margin-block-end: dt.$spacing-sm;
+    // Density pass (Task 6 fix): one step down — the last sliver of fixed
+    // chrome between the masthead and the table on the board view.
+    margin-block-end: dt.$spacing-xs;
 }
 
 .metaLead {
