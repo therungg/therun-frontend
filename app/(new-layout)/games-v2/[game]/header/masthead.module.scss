@@ -100,11 +100,6 @@
     border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
 
     .endcap {
-        // Lowercase, lighter than the category group labels: a filter
-        // name, not a section heading.
-        text-transform: none;
-        letter-spacing: 0.02em;
-        font-weight: 600;
         color: var(--bs-tertiary-color);
     }
 

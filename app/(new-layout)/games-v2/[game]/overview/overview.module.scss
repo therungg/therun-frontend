@@ -5,28 +5,26 @@
     margin-bottom: dt.$spacing-2xl;
 }
 
-// Section header: eyebrow label, hairline running to the row's edge,
-// board count at the far end.
-.sectionTitle {
+// Section header: shared board anatomy — eyebrow label left, mono
+// count right, hairline under.
+.sectionHead {
+    @include board.board-section-head;
+    margin-top: 0;
+}
+
+.sectionLabel {
     @include board.board-eyebrow;
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-md;
-    margin: 0 0 dt.$spacing-md;
 }
 
 // Disclosure form of the section label, for hidden-by-default groups.
 .sectionToggle {
+    @include board.board-eyebrow;
     display: inline-flex;
     align-items: center;
     gap: dt.$spacing-xs;
     padding: 0;
     border: 0;
     background: none;
-    color: inherit;
-    font: inherit;
-    letter-spacing: inherit;
-    text-transform: inherit;
     cursor: pointer;
 
     &:hover {
@@ -34,16 +32,8 @@
     }
 }
 
-.sectionRule {
-    flex: 1;
-    height: 1px;
-    background: rgba(var(--bs-border-color-rgb), 0.35);
-}
-
 .sectionCount {
-    @include board.mono-time;
-    font-size: dt.$font-size-2xs;
-    color: var(--bs-tertiary-color);
+    @include board.board-section-count;
 }
 
 .cardGrid {

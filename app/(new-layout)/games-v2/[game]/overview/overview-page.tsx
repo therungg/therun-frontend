@@ -160,12 +160,12 @@ export function GameOverviewPage({
                             return (
                                 <section key={s.key} className={styles.section}>
                                     {s.name && (
-                                        <h2 className={styles.sectionTitle}>
-                                            {s.name}
+                                        <h2 className={styles.sectionHead}>
                                             <span
-                                                className={styles.sectionRule}
-                                                aria-hidden
-                                            />
+                                                className={styles.sectionLabel}
+                                            >
+                                                {s.name}
+                                            </span>
                                             <span
                                                 className={styles.sectionCount}
                                             >

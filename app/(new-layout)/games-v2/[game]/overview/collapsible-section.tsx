@@ -23,7 +23,7 @@ export function CollapsibleSection({ name, count, children }: Props) {
 
     return (
         <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>
+            <h2 className={styles.sectionHead}>
                 <button
                     type="button"
                     className={styles.sectionToggle}
@@ -37,7 +37,6 @@ export function CollapsibleSection({ name, count, children }: Props) {
                     )}
                     {name}
                 </button>
-                <span className={styles.sectionRule} aria-hidden />
                 <span className={styles.sectionCount}>{count}</span>
             </h2>
             {open && children}
