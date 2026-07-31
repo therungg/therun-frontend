@@ -43,10 +43,10 @@ export interface MoveDialogProps {
 export function MoveDialog(props: MoveDialogProps): JSX.Element | null;
 ```
 
-- [ ] **Step 1:** Move the `// ---- Move ----` state block (`moveOpen` excluded — open/close become props), `openMove`'s seeding logic (runs in an effect keyed on `open`), `moveTargetCategoryId/moveSelectedValues/moveError/isMoving`, `confirmMove`, and the `{moveOpen && <BoardDialog…>}` JSX into `move-dialog.tsx`. Keep `fireUndoToast` usage and the source/target revalidation pair exactly as-is. Import `styles` from `./board-curation.module.scss` same as `row-actions.tsx` does.
-- [ ] **Step 2:** In `row-actions.tsx`: keep only `const [moveOpen, setMoveOpen] = useState(false)`; Run…-menu Move… item does `setMoveOpen(true)`; render `<MoveDialog open={moveOpen} onClose={() => setMoveOpen(false)} …/>`. `busy` no longer includes `isMoving` (the dialog owns its pending state and blocks its own close, same contract as AdjustDialog/RunnerDialog).
-- [ ] **Step 3:** Run: `npx vitest run "app/(new-layout)/games-v2/[game]/manage/boards/"` — expect all pass.
-- [ ] **Step 4:** Commit: `refactor(console): extract MoveDialog so the public board can reuse it`
+- [x] **Step 1:** Move the `// ---- Move ----` state block (`moveOpen` excluded — open/close become props), `openMove`'s seeding logic (runs in an effect keyed on `open`), `moveTargetCategoryId/moveSelectedValues/moveError/isMoving`, `confirmMove`, and the `{moveOpen && <BoardDialog…>}` JSX into `move-dialog.tsx`. Keep `fireUndoToast` usage and the source/target revalidation pair exactly as-is. Import `styles` from `./board-curation.module.scss` same as `row-actions.tsx` does.
+- [x] **Step 2:** In `row-actions.tsx`: keep only `const [moveOpen, setMoveOpen] = useState(false)`; Run…-menu Move… item does `setMoveOpen(true)`; render `<MoveDialog open={moveOpen} onClose={() => setMoveOpen(false)} …/>`. `busy` no longer includes `isMoving` (the dialog owns its pending state and blocks its own close, same contract as AdjustDialog/RunnerDialog).
+- [x] **Step 3:** Run: `npx vitest run "app/(new-layout)/games-v2/[game]/manage/boards/"` — expect all pass.
+- [x] **Step 4:** Commit: `refactor(console): extract MoveDialog so the public board can reuse it`
 
 ### Task 2: Entry→roster-row adapter
 
@@ -64,9 +64,9 @@ export function entryToRosterRow(
 ): LeaderboardRosterRow | null;
 ```
 
-- [ ] **Step 1:** Write failing tests: maps a full entry (runId/userId/runnerName/realTime→time/gameTime/verificationStatus/vodUrl/runDate→endedAt, entry flags true, `markedForLater` undefined); guest (`userId: null`) maps with null userId; `runId: null`/`undefined` → null; null `runDate` → `endedAt: ''`.
-- [ ] **Step 2:** Run: `npx vitest run "app/(new-layout)/games-v2/[game]/leaderboard/mod-row.test.ts"` — FAIL (module missing).
-- [ ] **Step 3:** Implement:
+- [x] **Step 1:** Write failing tests: maps a full entry (runId/userId/runnerName/realTime→time/gameTime/verificationStatus/vodUrl/runDate→endedAt, entry flags true, `markedForLater` undefined); guest (`userId: null`) maps with null userId; `runId: null`/`undefined` → null; null `runDate` → `endedAt: ''`.
+- [x] **Step 2:** Run: `npx vitest run "app/(new-layout)/games-v2/[game]/leaderboard/mod-row.test.ts"` — FAIL (module missing).
+- [x] **Step 3:** Implement:
 ```ts
 export function entryToRosterRow(
     entry: LeaderboardEntry,
@@ -88,7 +88,7 @@ export function entryToRosterRow(
     };
 }
 ```
-- [ ] **Step 4:** Run test — PASS. Commit: `feat(board): entry→roster-row adapter for public mod actions`
+- [x] **Step 4:** Run test — PASS. Commit: `feat(board): entry→roster-row adapter for public mod actions`
 
 ### Task 3: Lazy mod board context action
 
@@ -105,8 +105,8 @@ export async function loadModBoardContextAction(gameSlug: string): Promise<
 >;
 ```
 
-- [ ] **Step 1:** Implement mirroring `load-board-page.action.ts`'s auth shape: `getSession()` → not signed in; `resolveGame` → not found; `canModerateGame` → not authorized; then `Promise.all([resolveCategory(game.id), listGameVariables(game.id)])`, return featured + archived categories as loaded (the console passes the same list). Catch → `{ error: 'Failed to load board data.' }`.
-- [ ] **Step 2:** `npx tsc --noEmit` filtered to the new file — no errors. Commit: `feat(board): mod board-context action for public row menu`
+- [x] **Step 1:** Implement mirroring `load-board-page.action.ts`'s auth shape: `getSession()` → not signed in; `resolveGame` → not found; `canModerateGame` → not authorized; then `Promise.all([resolveCategory(game.id), listGameVariables(game.id)])`, return featured + archived categories as loaded (the console passes the same list). Catch → `{ error: 'Failed to load board data.' }`.
+- [x] **Step 2:** `npx tsc --noEmit` filtered to the new file — no errors. Commit: `feat(board): mod board-context action for public row menu`
 
 ### Task 4: RowActionsMenu — the four new items + dialogs
 
@@ -118,17 +118,17 @@ export async function loadModBoardContextAction(gameSlug: string): Promise<
 - Consumes: `MoveDialog` (Task 1), `entryToRosterRow` (Task 2), `loadModBoardContextAction` (Task 3), `AdjustDialog`, `RunnerDialog`, `markRunsAction` (`../manage/moderation/shared/actions/marks.action`), `subcategoryVariablesFor` (`../manage/shared/subcategory-bands` re-export — same import `row-actions.tsx` uses).
 - Produces: `RowActionsMenu` gains optional prop `canSiteBan?: boolean` (default false).
 
-- [ ] **Step 1:** Write failing component tests (jsdom, mock the three actions + dialogs' server actions like `board-curation.test.tsx` does): (a) Moderator items Move…/Adjust time…/Runner…/Mark for later render only with `canManage`; (b) Runner… absent for guest entries; (c) Mark for later calls `markRunsAction(gameSlug, [runId], true)` and toasts; (d) opening Move… calls `loadModBoardContextAction` once, and a second open doesn't re-call; (e) context error → `toast.error`, no dialog.
-- [ ] **Step 2:** Run — FAIL.
-- [ ] **Step 3:** Implement in `row-actions-menu.tsx`:
+- [x] **Step 1:** Write failing component tests (jsdom, mock the three actions + dialogs' server actions like `board-curation.test.tsx` does): (a) Moderator items Move…/Adjust time…/Runner…/Mark for later render only with `canManage`; (b) Runner… absent for guest entries; (c) Mark for later calls `markRunsAction(gameSlug, [runId], true)` and toasts; (d) opening Move… calls `loadModBoardContextAction` once, and a second open doesn't re-call; (e) context error → `toast.error`, no dialog.
+- [x] **Step 2:** Run — FAIL.
+- [x] **Step 3:** Implement in `row-actions-menu.tsx`:
   - State: `const [modCtx, setModCtx] = useState<{categories: ResolvedCategory[]; variables: VariableRow[]} | null>(null);` plus `pendingDialog: 'move' | 'adjust' | 'runner' | null` and a `useTransition`.
   - `openModDialog(kind)`: if `modCtx` present → open immediately; else fetch via `loadModBoardContextAction(gameSlug)`, on `{error}` toast + reset, else `setModCtx` and open.
   - Derive on open: `row = entryToRosterRow(entry, entrySubcategoryKey)` (menu already computes `entrySubcategoryKey`); `category = modCtx.categories.find(c => c.name === categorySlug)` — when not found, toast `'Could not resolve this board's category.'` and bail; `timeMs = category.primaryTiming === 'gt' ? row.gameTime : row.time`.
   - Menu items after the existing Remove/Restore block: `Move…`, `Adjust time…` (`Set time…` when `entry.userId == null`), `Runner…` (only `entry.userId != null`), `Mark for later`.
   - Mark for later handler: `markRunsAction(gameSlug, [runId], true)` → error toast or `toast.success('Marked for later — it's in the console's marked pile.')`. No refresh needed (public board doesn't render the flag).
   - Render `<MoveDialog>`, `<AdjustDialog>`, `<RunnerDialog>` gated on `pendingDialog` + `modCtx` + `row` + `category`, with `variables={modCtx.variables}`, `subcategoryKey={entrySubcategoryKey}`, `canSiteBan={canSiteBan}` (Runner only), `onMutated={() => { setPendingDialog(null); router.refresh(); }}`.
-- [ ] **Step 4:** Run the new test file + `npx vitest run "app/(new-layout)/games-v2/[game]/leaderboard/"` — PASS.
-- [ ] **Step 5:** Commit: `feat(board): console-parity mod actions in the public row menu`
+- [x] **Step 4:** Run the new test file + `npx vitest run "app/(new-layout)/games-v2/[game]/leaderboard/"` — PASS.
+- [x] **Step 5:** Commit: `feat(board): console-parity mod actions in the public row menu`
 
 ### Task 5: Thread canSiteBan to the menu
 
@@ -137,12 +137,12 @@ export async function loadModBoardContextAction(gameSlug: string): Promise<
 - Modify: `app/(new-layout)/games-v2/[game]/game-page.tsx` (prop through to `LeaderboardPager`)
 - Modify: `app/(new-layout)/games-v2/[game]/leaderboard/leaderboard-pager.tsx`, `leaderboard-table.tsx` (if it sits between), `leaderboard-row.tsx` (prop through to `RowActionsMenu`)
 
-- [ ] **Step 1:** Add `canSiteBan?: boolean` (default false) at each hop; find the ability import already used for `canManage` on the page and reuse it.
-- [ ] **Step 2:** `npx tsc --noEmit` — no new errors vs touched files; `npx vitest run "app/(new-layout)/games-v2/[game]/leaderboard/"` — PASS.
-- [ ] **Step 3:** Commit: `feat(board): thread admin site-ban gate to the public row menu`
+- [x] **Step 1:** Add `canSiteBan?: boolean` (default false) at each hop; find the ability import already used for `canManage` on the page and reuse it.
+- [x] **Step 2:** `npx tsc --noEmit` — no new errors vs touched files; `npx vitest run "app/(new-layout)/games-v2/[game]/leaderboard/"` — PASS.
+- [x] **Step 3:** Commit: `feat(board): thread admin site-ban gate to the public row menu`
 
 ### Task 6: Verify + push
 
-- [ ] **Step 1:** `npx vitest run` — only pre-existing failures (variables-section) allowed.
-- [ ] **Step 2:** `npx tsc --noEmit` — zero errors in touched files; `npx biome check --write` on touched dirs.
-- [ ] **Step 3:** Push `mod-console-redesign`.
+- [x] **Step 1:** `npx vitest run` — only pre-existing failures (variables-section) allowed.
+- [x] **Step 2:** `npx tsc --noEmit` — zero errors in touched files; `npx biome check --write` on touched dirs.
+- [x] **Step 3:** Push `mod-console-redesign`.
