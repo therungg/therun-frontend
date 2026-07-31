@@ -31,6 +31,15 @@ vi.mock('~src/components/link', () => ({
         <a {...props}>{children as never}</a>
     ),
 }));
+vi.mock('../../manage/identifiers/actions/igdb-match.action', () => ({
+    igdbSearchAction: vi.fn(async () => ({ result: [] })),
+    igdbApplyMatchAction: vi.fn(async () => ({
+        result: { igdbName: 'Example' },
+    })),
+}));
+vi.mock('next/navigation', () => ({
+    useRouter: () => ({ refresh: vi.fn() }),
+}));
 
 import { createPolicyAction } from '../../manage/moderation/policies/actions/policies-actions.action';
 import { updateGameMetadataAction } from '../actions/update-game-metadata.action';

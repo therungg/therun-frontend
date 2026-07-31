@@ -103,6 +103,7 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         metadata,
         completeness,
         canEditStandards,
+        canRematch: ability.can('edit', 'game'),
         renderedAt: Date.now(),
     };
 

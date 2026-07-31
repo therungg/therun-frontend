@@ -891,3 +891,69 @@ $rail-collapse: 900px;
     font-size: 0.8rem;
     color: var(--bs-secondary-color);
 }
+
+// ---- IGDB source card ---------------------------------------
+// IGDB is the source of record for board identity data; this card names it
+// up front and holds the source-level actions (re-match, reset to IGDB).
+.igdbCard {
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-md;
+    padding: dt.$spacing-md dt.$spacing-lg;
+    margin-bottom: dt.$spacing-xl;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+.igdbHeader {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+    margin: 0;
+}
+
+.igdbBadge {
+    font-size: dt.$font-size-2xs;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    padding: 1px dt.$spacing-sm;
+    border-radius: dt.$radius-sm;
+    background: var(--bs-body-color);
+    color: var(--bs-body-bg);
+    flex-shrink: 0;
+}
+
+.igdbActions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+}
+
+// Reset-preview rows inside the confirm dialog. Span-only markup because the
+// dialog wraps its message in a <p>; grid gives it table-like alignment.
+.igdbDiff {
+    display: block;
+    margin-top: dt.$spacing-md;
+    font-size: dt.$font-size-sm;
+}
+
+.igdbDiffRow {
+    display: grid;
+    grid-template-columns: 6.5rem minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: dt.$spacing-sm;
+    align-items: center;
+    padding: dt.$spacing-xs 0;
+
+    & + & {
+        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    }
+}
+
+.igdbDiffField {
+    font-weight: 600;
+}
+
+.igdbDiffCurrent {
+    color: var(--bs-secondary-color);
+}
