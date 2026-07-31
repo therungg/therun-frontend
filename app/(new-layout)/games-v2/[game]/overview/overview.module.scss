@@ -5,28 +5,26 @@
     margin-bottom: dt.$spacing-2xl;
 }
 
-// Section header: eyebrow label, hairline running to the row's edge,
-// board count at the far end.
-.sectionTitle {
+// Section header: shared board anatomy — eyebrow label left, mono
+// count right, hairline under.
+.sectionHead {
+    @include board.board-section-head;
+    margin-top: 0;
+}
+
+.sectionLabel {
     @include board.board-eyebrow;
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-md;
-    margin: 0 0 dt.$spacing-md;
 }
 
 // Disclosure form of the section label, for hidden-by-default groups.
 .sectionToggle {
+    @include board.board-eyebrow;
     display: inline-flex;
     align-items: center;
     gap: dt.$spacing-xs;
     padding: 0;
     border: 0;
     background: none;
-    color: inherit;
-    font: inherit;
-    letter-spacing: inherit;
-    text-transform: inherit;
     cursor: pointer;
 
     &:hover {
@@ -34,16 +32,8 @@
     }
 }
 
-.sectionRule {
-    flex: 1;
-    height: 1px;
-    background: rgba(var(--bs-border-color-rgb), 0.6);
-}
-
 .sectionCount {
-    @include board.mono-time;
-    font-size: dt.$font-size-2xs;
-    color: var(--bs-tertiary-color);
+    @include board.board-section-count;
 }
 
 .cardGrid {
@@ -68,10 +58,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    padding: 0;
-    background: var(--bs-tertiary-bg);
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.7);
-    border-radius: dt.$radius-lg;
+    @include board.board-surface(0);
     transition: border-color dt.$transition-fast,
         transform dt.$transition-fast,
         box-shadow dt.$transition-fast;
@@ -81,7 +68,7 @@
     // flicker, not response.
     &:hover,
     &:focus-within {
-        border-color: rgba(var(--bs-border-color-rgb), 1);
+        border-color: var(--bs-border-color);
         transform: translateY(dt.$hover-lift);
         box-shadow: dt.$shadow-md;
     }
@@ -106,7 +93,7 @@
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-lg;
-    padding: dt.$spacing-lg;
+    padding: dt.$spacing-md;
 }
 
 // Verified world record: the plate's top edge in gold — the engraved
@@ -269,8 +256,8 @@
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-sm;
-    padding: dt.$spacing-md dt.$spacing-lg dt.$spacing-lg;
-    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    padding: dt.$spacing-sm dt.$spacing-md dt.$spacing-md;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
     font-size: dt.$font-size-xs;
     color: var(--bs-tertiary-color);
     // Runner-up links clickable above the stretched link.
@@ -345,11 +332,8 @@
     flex-direction: column;
     align-items: center;
     gap: dt.$spacing-sm;
-    padding: dt.$spacing-3xl dt.$spacing-lg;
     text-align: center;
-    background: var(--bs-tertiary-bg);
-    border: 1px solid var(--bs-border-color);
-    border-radius: dt.$radius-lg;
+    @include board.board-surface(dt.$spacing-3xl dt.$spacing-lg);
 }
 
 .emptyTitle {
