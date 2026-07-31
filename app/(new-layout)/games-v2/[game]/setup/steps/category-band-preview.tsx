@@ -154,10 +154,10 @@ export function CategoryBandPreview({ categories, groups, variables }: Props) {
                                                 {v.values.map((bucket) => (
                                                     <span
                                                         key={bucket[0]}
-                                                        className={`${band.chip} ${
+                                                        className={`${band.pill} ${
                                                             bucket[0] ===
                                                             defaultValue
-                                                                ? band.chipActive
+                                                                ? band.pillActive
                                                                 : ''
                                                         }`}
                                                     >
