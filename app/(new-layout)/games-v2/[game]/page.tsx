@@ -59,6 +59,7 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
         'edit',
         caslSubject('leaderboard', { game: resolvedGame.name }),
     );
+    const canSiteBan = ability.can('moderate', 'admins');
 
     // Fetched unconditionally now: the sidebar's Moderators panel needs it
     // on every board view, not just the claim-CTA path.
@@ -106,6 +107,7 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
             data={data}
             canManage={canManage}
             canManageRuns={canManageRuns}
+            canSiteBan={canSiteBan}
             claim={claim}
             moderators={moderators}
         />

@@ -14,14 +14,24 @@ import {
 } from '~src/actions/run-user-actions.action';
 import Link from '~src/components/link';
 import { buildSubmitHref } from '~src/lib/board-url';
-import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
+import type {
+    LeaderboardEntry,
+    ResolvedCategory,
+    VariableRow,
+} from '../../../../../types/leaderboards.types';
 import type { HistoryEvent } from '../../../../../types/moderation.types';
+import { AdjustDialog } from '../manage/boards/adjust-dialog';
+import { MoveDialog } from '../manage/boards/move-dialog';
+import { RunnerDialog } from '../manage/boards/runner-dialog';
+import { markRunsAction } from '../manage/moderation/shared/actions/marks.action';
 import { isSameRunner } from '../shared/is-same-runner';
 import {
     SelfRunVerdictDialog,
     useSelfRunVerdict,
 } from '../shared/self-run-verdict';
 import { buildSubcategoryKey } from '../submit/subcategory-key';
+import { loadModBoardContextAction } from './actions/load-mod-board-context.action';
+import { entryToRosterRow } from './mod-row';
 import { HistoryDialog, ReasonDialog } from './row-action-dialogs';
 import styles from './row-actions-menu.module.scss';
 
@@ -29,6 +39,8 @@ interface Props {
     entry: LeaderboardEntry;
     sessionUsername: string | null;
     canManage?: boolean;
+    /** Admins only — shows RunnerDialog's "Entire site" scope. */
+    canSiteBan?: boolean;
     gameSlug: string;
     /** This row's own category (a board is single-category). */
     categorySlug: string;
@@ -37,11 +49,18 @@ interface Props {
 }
 
 type ModalKind = 'report' | 'appeal' | 'history' | null;
+type ModDialogKind = 'move' | 'adjust' | 'runner';
+
+interface ModBoardContext {
+    categories: ResolvedCategory[];
+    variables: VariableRow[];
+}
 
 export function RowActionsMenu({
     entry,
     sessionUsername,
     canManage,
+    canSiteBan = false,
     gameSlug,
     categorySlug,
     subcategoryDefKeys,
@@ -73,8 +92,72 @@ export function RowActionsMenu({
     const [pending, startTransition] = useTransition();
     const selfVerdict = useSelfRunVerdict();
 
+    // Console-parity mod dialogs (Move/Adjust/Runner) — their board context
+    // (categories + variable defs) loads lazily on first open and is cached
+    // for the page's lifetime, so the public payload stays visitor-sized.
+    const [modCtx, setModCtx] = useState<ModBoardContext | null>(null);
+    const [modDialog, setModDialog] = useState<ModDialogKind | null>(null);
+    const [_ctxPending, startCtxLoad] = useTransition();
+    const [_markPending, startMark] = useTransition();
+
     // Manual-time entries have no finished_run to act on.
     if (runId == null) return null;
+
+    const rosterRow = entryToRosterRow(entry, entrySubcategoryKey);
+    const modCategory =
+        modCtx?.categories.find((c) => c.name === categorySlug) ?? null;
+
+    const openModDialog = (kind: ModDialogKind) => {
+        if (modCtx != null) {
+            if (modCategory == null) {
+                toast.error("Could not resolve this board's category.");
+                return;
+            }
+            setModDialog(kind);
+            return;
+        }
+        startCtxLoad(async () => {
+            const res = await loadModBoardContextAction(gameSlug);
+            if ('error' in res) {
+                toast.error(res.error);
+                return;
+            }
+            const ctx = {
+                categories: res.categories,
+                variables: res.variables,
+            };
+            if (!ctx.categories.some((c) => c.name === categorySlug)) {
+                setModCtx(ctx);
+                toast.error("Could not resolve this board's category.");
+                return;
+            }
+            setModCtx(ctx);
+            setModDialog(kind);
+        });
+    };
+
+    const markForLater = () => {
+        startMark(async () => {
+            const res = await markRunsAction(gameSlug, [runId], true);
+            if ('error' in res) {
+                toast.error(res.error);
+                return;
+            }
+            toast.success(
+                "Marked for later — it's in the console's marked pile.",
+            );
+        });
+    };
+
+    const modTimeMs =
+        modCategory?.primaryTiming === 'gt'
+            ? (rosterRow?.gameTime ?? null)
+            : (rosterRow?.time ?? null);
+
+    const onModMutated = () => {
+        setModDialog(null);
+        router.refresh();
+    };
 
     const close = () => {
         setModal(null);
@@ -259,10 +342,85 @@ export function RowActionsMenu({
                                     Restore run
                                 </Dropdown.Item>
                             )}
+                            <Dropdown.Item
+                                as="button"
+                                type="button"
+                                className={styles.item}
+                                onClick={() => openModDialog('move')}
+                            >
+                                Move…
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                                as="button"
+                                type="button"
+                                className={styles.item}
+                                onClick={() => openModDialog('adjust')}
+                            >
+                                {entry.userId == null
+                                    ? 'Set time…'
+                                    : 'Adjust time…'}
+                            </Dropdown.Item>
+                            {entry.userId != null && (
+                                <Dropdown.Item
+                                    as="button"
+                                    type="button"
+                                    className={styles.item}
+                                    onClick={() => openModDialog('runner')}
+                                >
+                                    Runner…
+                                </Dropdown.Item>
+                            )}
+                            <Dropdown.Item
+                                as="button"
+                                type="button"
+                                className={styles.item}
+                                onClick={markForLater}
+                            >
+                                Mark for later
+                            </Dropdown.Item>
                         </>
                     )}
                 </Dropdown.Menu>
             </Dropdown>
+
+            {modCtx != null && modCategory != null && rosterRow != null && (
+                <>
+                    <MoveDialog
+                        open={modDialog === 'move'}
+                        onClose={() => setModDialog(null)}
+                        row={rosterRow}
+                        category={modCategory}
+                        categories={modCtx.categories}
+                        variables={modCtx.variables}
+                        subcategoryKey={entrySubcategoryKey}
+                        gameSlug={gameSlug}
+                        onMutated={onModMutated}
+                    />
+                    <AdjustDialog
+                        open={modDialog === 'adjust'}
+                        onClose={() => setModDialog(null)}
+                        row={rosterRow}
+                        category={modCategory}
+                        gameSlug={gameSlug}
+                        subcategoryKey={entrySubcategoryKey}
+                        timeMs={modTimeMs}
+                        onMutated={onModMutated}
+                    />
+                    {rosterRow.userId != null && (
+                        <RunnerDialog
+                            open={modDialog === 'runner'}
+                            onClose={() => setModDialog(null)}
+                            row={rosterRow}
+                            category={modCategory}
+                            variables={modCtx.variables}
+                            gameSlug={gameSlug}
+                            subcategoryKey={entrySubcategoryKey}
+                            canSiteBan={canSiteBan}
+                            onMutated={onModMutated}
+                        />
+                    )}
+                </>
+            )}
 
             {modVerb && (
                 <RunActionDialog

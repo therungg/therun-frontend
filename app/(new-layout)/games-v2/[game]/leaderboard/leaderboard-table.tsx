@@ -18,6 +18,7 @@ interface Props {
     leaderboard: LeaderboardResponse;
     sessionUsername: string | null;
     canManage: boolean;
+    canSiteBan?: boolean;
     gameSlug: string;
     variableKeys: string[];
     primaryTiming: TimingKey;
@@ -37,6 +38,7 @@ export function LeaderboardTable({
     leaderboard,
     sessionUsername,
     canManage,
+    canSiteBan = false,
     gameSlug,
     variableKeys,
     primaryTiming,
@@ -160,6 +162,7 @@ export function LeaderboardTable({
                                 sessionUsername,
                             )}
                             canManage={canManage}
+                            canSiteBan={canSiteBan}
                             gameSlug={gameSlug}
                             hideRealTime={rowHideRealTime}
                             hideGameTime={rowHideGameTime}
