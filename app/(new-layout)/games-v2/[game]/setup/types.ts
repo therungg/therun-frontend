@@ -23,6 +23,8 @@ export interface WizardData {
     completeness: BoardCompleteness;
     /** ability.can('edit','moderators') — gates Minimum time in the editor. */
     canEditStandards: boolean;
+    /** ability.can('edit','game') — shows the IGDB re-match controls. */
+    canRematch: boolean;
     /** Server-render stamp used to remount steps when fresh data lands. */
     renderedAt: number;
 }

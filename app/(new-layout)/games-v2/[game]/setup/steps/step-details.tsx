@@ -160,6 +160,7 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                     }}
                     formId="game-details-form"
                     hideAction
+                    canRematch={data.canRematch}
                     onBusyChange={setFormBusy}
                     onErrorChange={setFormError}
                     onSaved={handleDetailsSaved}
