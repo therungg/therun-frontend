@@ -1,18 +1,7 @@
 'use client';
 
 import { useRef, useState, useTransition } from 'react';
-import {
-    findGameMinPolicy,
-    minMsFromPolicy,
-    minValueForTiming,
-} from '~src/lib/setup/game-minimum';
 import { RULES_STARTER_TEMPLATE } from '~src/lib/setup/rules-template';
-import { formatTimeInput, parseTimeInput } from '~src/lib/time-input';
-import {
-    createPolicyAction,
-    deletePolicyAction,
-    updatePolicyAction,
-} from '../../manage/moderation/policies/actions/policies-actions.action';
 import { updateGameMetadataAction } from '../actions/update-game-metadata.action';
 import { GameDetailsForm } from '../game-details-form';
 import styles from '../setup.module.scss';
@@ -48,17 +37,6 @@ export function StepDetails({ data, onAdvance }: StepProps) {
             : !(data.metadata.hideRealTime ?? false);
     });
 
-    // Game-wide minimum time = the categoryId-null min_time policy (mirrors
-    // the retired defaults step). The bound key follows `timing`, never both.
-    const gameMinPolicy = findGameMinPolicy(data.policies);
-    const [minPolicyId, setMinPolicyId] = useState<number | null>(
-        gameMinPolicy?.id ?? null,
-    );
-    const [minText, setMinText] = useState(() => {
-        const ms = minMsFromPolicy(gameMinPolicy, timing);
-        return ms ? formatTimeInput(ms) : '';
-    });
-
     const [formBusy, setFormBusy] = useState(false);
     const [formError, setFormError] = useState<string | null>(null);
     const [defaultsError, setDefaultsError] = useState<string | null>(null);
@@ -70,24 +48,10 @@ export function StepDetails({ data, onAdvance }: StepProps) {
     // synchronous call in the same tick.
     const isSavingDefaultsRef = useRef(false);
 
-    // Switching timing relabels the field and re-reads the value bound to
-    // that timing — a value typed for one binding never leaks into the other.
-    const selectTiming = (next: Timing) => {
-        setTiming(next);
-        const ms = minMsFromPolicy(gameMinPolicy, next);
-        setMinText(ms ? formatTimeInput(ms) : '');
-    };
-
     const handleDetailsSaved = () => {
         if (isSavingDefaultsRef.current) return;
 
         setDefaultsError(null);
-
-        const minMsValue = minText.trim() ? parseTimeInput(minText) : undefined;
-        if (minText.trim() && (!minMsValue || minMsValue <= 0)) {
-            setDefaultsError('Enter the minimum time as h:mm:ss or m:ss.');
-            return;
-        }
 
         isSavingDefaultsRef.current = true;
         startSavingDefaults(async () => {
@@ -105,36 +69,6 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                 if ('error' in metaRes) {
                     setDefaultsError(metaRes.error);
                     return;
-                }
-
-                if (minMsValue) {
-                    const value = minValueForTiming(timing, minMsValue);
-                    const policyRes = minPolicyId
-                        ? await updatePolicyAction(
-                              data.game.name,
-                              minPolicyId,
-                              value,
-                          )
-                        : await createPolicyAction(data.game.name, {
-                              policyType: 'min_time',
-                              value,
-                              categoryId: null,
-                          });
-                    if ('error' in policyRes) {
-                        setDefaultsError(policyRes.error);
-                        return;
-                    }
-                    setMinPolicyId(policyRes.policy.id);
-                } else if (minPolicyId) {
-                    const deleteRes = await deletePolicyAction(
-                        data.game.name,
-                        minPolicyId,
-                    );
-                    if ('error' in deleteRes) {
-                        setDefaultsError(deleteRes.error);
-                        return;
-                    }
-                    setMinPolicyId(null);
                 }
 
                 onAdvance();
@@ -186,7 +120,7 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                                         ? styles.segmentActive
                                         : undefined
                                 }
-                                onClick={() => selectTiming('rt')}
+                                onClick={() => setTiming('rt')}
                             >
                                 RTA
                             </button>
@@ -199,7 +133,7 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                                         ? styles.segmentActive
                                         : undefined
                                 }
-                                onClick={() => selectTiming('gt')}
+                                onClick={() => setTiming('gt')}
                             >
                                 IGT
                             </button>
@@ -207,29 +141,6 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                         <p className="text-muted small mb-0">
                             The default timing method for this board’s
                             categories.
-                        </p>
-                    </div>
-                    <div>
-                        <h4 className="h6">Minimum time</h4>
-                        <label
-                            className="form-label small mb-1"
-                            htmlFor="board-min-time"
-                        >
-                            {timing === 'rt'
-                                ? 'Minimum real time'
-                                : 'Minimum in-game time'}
-                        </label>
-                        <input
-                            id="board-min-time"
-                            className="form-control form-control-sm"
-                            style={{ width: '7rem' }}
-                            value={minText}
-                            onChange={(e) => setMinText(e.target.value)}
-                            placeholder="e.g. 10:00"
-                        />
-                        <p className="text-muted small mt-2 mb-0">
-                            Runs under this minimum wait for a mod. Clear the
-                            field to remove the limit.
                         </p>
                     </div>
                     <div>

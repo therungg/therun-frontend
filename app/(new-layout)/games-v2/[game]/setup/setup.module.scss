@@ -661,8 +661,8 @@ $rail-collapse: 900px;
     margin: dt.$spacing-2xl 0 dt.$spacing-md;
 }
 
-// Timing + minimum share a card: the minimum's label follows the selected
-// timing, and splitting them into separate cards hides that coupling.
+// Timing + time columns share a card: the column checkbox's label follows
+// the selected timing, and separate cards would hide that coupling.
 .pairRow {
     display: flex;
     flex-wrap: wrap;

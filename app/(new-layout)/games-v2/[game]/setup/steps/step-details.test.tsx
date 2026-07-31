@@ -117,13 +117,12 @@ describe('StepDetails', () => {
         expect(banned.getAttribute('aria-checked')).toBe('true');
     });
 
-    it('relabels the minimum-time field when timing flips to IGT', () => {
+    it('has no game-level minimum-time field (minimums are category-level)', () => {
         render(
             <StepDetails data={data} onAdvance={vi.fn()} onBack={vi.fn()} />,
         );
-        expect(screen.getByLabelText('Minimum real time')).toBeTruthy();
-        fireEvent.click(screen.getByRole('radio', { name: 'IGT' }));
-        expect(screen.getByLabelText('Minimum in-game time')).toBeTruthy();
+        expect(screen.queryByLabelText('Minimum real time')).toBeNull();
+        expect(screen.queryByText('Minimum time')).toBeNull();
     });
 
     it('surfaces a blocked-submit form error near the bottom action', async () => {
@@ -143,24 +142,17 @@ describe('StepDetails', () => {
         );
     });
 
-    it('saves details, defaults, and the min-time policy in one submit, then advances', async () => {
+    it('saves details and defaults in one submit without touching policies, then advances', async () => {
         const onAdvance = vi.fn();
         render(
             <StepDetails data={data} onAdvance={onAdvance} onBack={vi.fn()} />,
         );
-        fireEvent.change(screen.getByLabelText('Minimum real time'), {
-            target: { value: '10:00' },
-        });
         fireEvent.submit(document.getElementById('game-details-form')!);
         await waitFor(() => expect(onAdvance).toHaveBeenCalledTimes(1));
         expect(updateGameMetadataAction).toHaveBeenCalledWith(
             expect.objectContaining({ primaryTiming: 'rt' }),
         );
-        expect(createPolicyAction).toHaveBeenCalledWith('example-game', {
-            policyType: 'min_time',
-            value: { minTimeMs: 600000 },
-            categoryId: null,
-        });
+        expect(createPolicyAction).not.toHaveBeenCalled();
     });
 
     it('always shows the primary column and offers only the secondary as a checkbox', () => {
