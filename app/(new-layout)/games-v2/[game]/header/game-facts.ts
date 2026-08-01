@@ -5,6 +5,10 @@ import type { GameCompanyMeta, GameIgdbPlatformMeta } from '~src/lib/game-mgmt';
 
 const PLATFORM_CAP = 4;
 const GENRE_CAP = 3;
+// IGDB developer names run long ("Nintendo Entertainment Analysis &
+// Development" eats half the facts line) — cap with an ellipsis; the full
+// list stays one click away on the run/manage surfaces.
+const DEVELOPER_CAP = 28;
 
 export function deriveReleaseYear(
     modYear: number | null,
@@ -30,10 +34,14 @@ export function derivePlatforms(
 
 export function deriveDeveloper(companies: GameCompanyMeta[]): string | null {
     const developers = companies.filter((c) => c.isDeveloper);
-    if (developers.length > 0) {
-        return developers.map((c) => c.name).join(', ');
-    }
-    return companies[0]?.name ?? null;
+    const joined =
+        developers.length > 0
+            ? developers.map((c) => c.name).join(', ')
+            : (companies[0]?.name ?? null);
+    if (joined == null) return null;
+    return joined.length > DEVELOPER_CAP
+        ? `${joined.slice(0, DEVELOPER_CAP - 1).trimEnd()}…`
+        : joined;
 }
 
 export function deriveGenres(genres: string[]): string | null {

@@ -44,7 +44,11 @@ export function LivePanel({ gameDisplay }: Props) {
                 )}
             </div>
             {loading ? (
-                <p className="text-muted mb-0">Loading…</p>
+                <div aria-hidden>
+                    <div className={styles.skeletonRow} />
+                    <div className={styles.skeletonRow} />
+                    <div className={styles.skeletonRow} />
+                </div>
             ) : runners.length === 0 ? (
                 <p className="text-muted mb-0">
                     No one is live for this game right now.

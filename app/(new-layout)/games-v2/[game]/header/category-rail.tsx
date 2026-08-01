@@ -78,6 +78,32 @@ export function CategoryRail({
     const open = sections.filter(isOpen);
     const collapsed = sections.filter((s) => !isOpen(s));
 
+    // Collapsed groups render as ghost chips appended to the LAST open row
+    // (density: one dashed chip must not own a whole plate row). They sit in
+    // their own well, outside the row's labeled group semantics.
+    const ghostWell =
+        collapsed.length > 0 ? (
+            <div className={styles.ghostWell}>
+                <div className={styles.chips}>
+                    {collapsed.map((section) => (
+                        <button
+                            key={`collapsed-${section.id}`}
+                            type="button"
+                            aria-expanded={false}
+                            onClick={() => toggle(section.id as number)}
+                            className={`${styles.chip} ${styles.chipGhost}`}
+                        >
+                            <CaretRightFill size={9} aria-hidden />
+                            {section.name}
+                            <span aria-hidden className={styles.chipCount}>
+                                {section.pills.length}
+                            </span>
+                        </button>
+                    ))}
+                </div>
+            </div>
+        ) : null;
+
     return (
         <nav
             aria-label="Category"
@@ -88,12 +114,7 @@ export function CategoryRail({
                 const capId = `rail-group-${section.id ?? `ungrouped-${idx}`}`;
                 const withEmblems = groupShowsEmblems(section.pills);
                 return (
-                    <div
-                        key={capId}
-                        className={styles.block}
-                        role={section.name ? 'group' : undefined}
-                        aria-labelledby={section.name ? capId : undefined}
-                    >
+                    <div key={capId} className={styles.block}>
                         {section.name && (
                             <span className={styles.endcap} id={capId}>
                                 {section.name}
@@ -101,6 +122,8 @@ export function CategoryRail({
                         )}
                         <div
                             className={`${styles.well} ${section.name ? '' : styles.wellSolo}`}
+                            role={section.name ? 'group' : undefined}
+                            aria-labelledby={section.name ? capId : undefined}
                         >
                             <div className={styles.chips}>
                                 {section.pills.length === 0 ? (
@@ -164,37 +187,15 @@ export function CategoryRail({
                                 )}
                             </div>
                         </div>
+                        {idx === open.length - 1 && ghostWell}
                     </div>
                 );
             })}
 
-            {/* Every still-collapsed group shares one trailing well — a
-                collapsed group must not own a whole block row for one chip. */}
-            {collapsed.length > 0 && (
-                <div className={styles.block}>
-                    <div className={`${styles.well} ${styles.wellSolo}`}>
-                        <div className={styles.chips}>
-                            {collapsed.map((section) => (
-                                <button
-                                    key={`collapsed-${section.id}`}
-                                    type="button"
-                                    aria-expanded={false}
-                                    onClick={() => toggle(section.id as number)}
-                                    className={`${styles.chip} ${styles.chipGhost}`}
-                                >
-                                    <CaretRightFill size={9} aria-hidden />
-                                    {section.name}
-                                    <span
-                                        aria-hidden
-                                        className={styles.chipCount}
-                                    >
-                                        {section.pills.length}
-                                    </span>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </div>
+            {/* No open rows at all (every group collapsed): the ghosts still
+                need somewhere to live. */}
+            {open.length === 0 && collapsed.length > 0 && (
+                <div className={styles.block}>{ghostWell}</div>
             )}
         </nav>
     );
