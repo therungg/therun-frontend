@@ -92,6 +92,17 @@ describe('deriveDeveloper', () => {
     it('returns null for no companies', () => {
         expect(deriveDeveloper([])).toBeNull();
     });
+    it('caps a long developer string with an ellipsis', () => {
+        expect(
+            deriveDeveloper([
+                {
+                    name: 'Nintendo Entertainment Analysis & Development',
+                    isDeveloper: true,
+                    isPublisher: false,
+                },
+            ]),
+        ).toBe('Nintendo Entertainment Anal…');
+    });
 });
 
 describe('deriveGenres', () => {

@@ -138,3 +138,20 @@
     text-align: center;
     margin-top: dt.$spacing-sm;
 }
+
+// Panel-shaped loading placeholder (LivePanel) — row-sized shimmer bars
+// instead of a raw "Loading…" line.
+.skeletonRow {
+    @include board.board-skeleton;
+    height: 14px;
+    border-radius: dt.$radius-sm;
+    margin-block: dt.$spacing-sm;
+
+    &:nth-child(2) {
+        width: 82%;
+    }
+
+    &:nth-child(3) {
+        width: 64%;
+    }
+}

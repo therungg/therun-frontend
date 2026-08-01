@@ -103,12 +103,14 @@
 
 // Up-navigation row. Lives inside the hero's own padding so it aligns with
 // the cover's left edge rather than floating loose at the top of the page.
+// Both links cluster left — a lone quiet link stranded at the far right
+// read as scatter, not structure.
 .heroBack {
     margin-bottom: dt.$spacing-md;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: dt.$spacing-md;
+    justify-content: flex-start;
+    gap: dt.$spacing-2xl;
 }
 
 .heroRow {
@@ -171,17 +173,19 @@
     color: var(--bs-tertiary-color);
 }
 
+// One horizontal action cluster, vertically centred on the hero row —
+// quiet chips lead into the primary CTA on the right. Stacking these
+// (button, then chips at other heights) read as three unrelated floaters.
 .heroActions {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
+    align-items: center;
+    justify-content: flex-end;
     gap: dt.$spacing-sm;
     flex-wrap: wrap;
     flex-shrink: 0;
 
     @media (max-width: 991.98px) {
-        flex-direction: row;
-        align-items: center;
+        justify-content: flex-start;
         width: 100%;
     }
 }

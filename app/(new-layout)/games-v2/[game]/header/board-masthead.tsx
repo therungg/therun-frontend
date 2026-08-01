@@ -142,26 +142,43 @@ export function BoardMasthead({
                         />
                     </div>
                 )}
-                {showFilterTier && (
-                    <div className={styles.plateSection} inert={stuck}>
-                        <FilterBar
-                            defs={data.variables}
-                            selectedSubcategoryValues={
-                                data.activeFilters.subcategoryValues
-                            }
-                            selectedVarFilters={data.activeFilters.varFilters}
-                        />
-                    </div>
-                )}
-                {showRules && (
-                    <div className={styles.plateSection} inert={stuck}>
-                        <RulesPanel
-                            rules={category.rules}
-                            gameRules={data.gameMeta.gameRules}
-                            emulatorPolicy={data.gameMeta.emulatorPolicy}
-                            open={rulesOpen}
-                            onToggle={onToggleRules}
-                        />
+                {/* Filter tier and Rules share one plate row (density: each
+                    used to own a full-width row whose content ended before
+                    the halfway point). Rules only falls back to its own row
+                    when there's no tier to share with. */}
+                {(showFilterTier || showRules) && (
+                    <div
+                        className={`${styles.plateSection} ${
+                            showFilterTier && showRules
+                                ? styles.plateSectionSplit
+                                : ''
+                        }`}
+                        inert={stuck}
+                    >
+                        {showFilterTier && (
+                            <FilterBar
+                                defs={data.variables}
+                                selectedSubcategoryValues={
+                                    data.activeFilters.subcategoryValues
+                                }
+                                selectedVarFilters={
+                                    data.activeFilters.varFilters
+                                }
+                            />
+                        )}
+                        {showRules && (
+                            <div className={styles.plateRulesSlot}>
+                                <RulesPanel
+                                    rules={category.rules}
+                                    gameRules={data.gameMeta.gameRules}
+                                    emulatorPolicy={
+                                        data.gameMeta.emulatorPolicy
+                                    }
+                                    open={rulesOpen}
+                                    onToggle={onToggleRules}
+                                />
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

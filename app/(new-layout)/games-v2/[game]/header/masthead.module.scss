@@ -52,6 +52,18 @@
     // No label column — chips span the full row.
 }
 
+// Collapsed-group ghost chips, appended to the end of the last open rail
+// row (a lone dashed chip must not own a whole plate row). The open well's
+// flex: 1 pushes this to the row's right edge.
+.ghostWell {
+    flex: 0 0 auto;
+    min-width: 0;
+
+    @media (max-width: 767.98px) {
+        width: 100%;
+    }
+}
+
 .chips {
     display: flex;
     flex-wrap: wrap;
@@ -158,6 +170,28 @@
         padding-top: 0;
         border-top: none;
     }
+}
+
+// Filter tier + Rules toggle sharing one plate row: tier takes the slack,
+// Rules sits against the right edge.
+.plateSectionSplit {
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs dt.$spacing-lg;
+
+    > .tier {
+        flex: 1;
+        min-width: 0;
+    }
+}
+
+.plateRulesSlot {
+    flex: 0 1 auto;
+    // The collapsed excerpt inside the toggle truncates instead of forcing
+    // the row to wrap.
+    min-width: 0;
+    max-width: 100%;
 }
 
 // Small uppercase group label — used by the switch-board popover's

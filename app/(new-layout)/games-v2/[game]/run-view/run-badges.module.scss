@@ -7,8 +7,15 @@
     @include board.board-pill(var(--bs-primary));
 }
 
+// Pending is a waiting state, not a warning — a filled amber pill (×2 in
+// the sidebar) outshouted the WR chip. Neutral pill; the hourglass alone
+// keeps the amber signal.
 .pending {
-    @include board.board-pill(dt.$accent-amber);
+    @include board.board-pill;
+
+    svg {
+        color: dt.$accent-amber;
+    }
 }
 
 .rejected {

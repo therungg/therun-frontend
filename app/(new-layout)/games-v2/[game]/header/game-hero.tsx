@@ -171,9 +171,6 @@ export function GameHero({
                     {claim && !claim.hasModerators && (
                         <ClaimCta claim={claim} gameDisplay={game.display} />
                     )}
-                    <Link href={submitHref} className={styles.primaryAction}>
-                        Submit a run
-                    </Link>
                     {gameMeta.discordUrl && (
                         <a
                             href={gameMeta.discordUrl}
@@ -206,6 +203,11 @@ export function GameHero({
                             {canModerate ? 'Moderate' : 'Manage'}
                         </Link>
                     )}
+                    {/* Primary action last — the rightmost slot in the
+                        cluster, so quiet chips lead into it. */}
+                    <Link href={submitHref} className={styles.primaryAction}>
+                        Submit a run
+                    </Link>
                 </div>
             </div>
         </header>
