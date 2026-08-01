@@ -42,7 +42,9 @@ export function StandingsTable({ gameSlug, rows, columns }: Props) {
                         <th className={styles.thRank} scope="col">
                             #
                         </th>
-                        <th scope="col">Runner</th>
+                        <th className={styles.thRunner} scope="col">
+                            Runner
+                        </th>
                         <th className={styles.thScore} scope="col">
                             Points
                         </th>

@@ -4,7 +4,11 @@ import type {
     ResolvedCategory,
     ResolvedGroup,
 } from '../../../../../types/leaderboards.types';
-import { boardDisplayOrder, orderStandingsForDisplay } from './order';
+import {
+    boardDisplayOrder,
+    orderStandingsForDisplay,
+    standingsSections,
+} from './order';
 
 const resolved = (
     name: string,
@@ -47,6 +51,28 @@ describe('boardDisplayOrder', () => {
             [group(2, 20), group(1, 10)],
         );
         expect(order).toEqual(['main1', 'main2', 'ext1', 'loose']);
+    });
+});
+
+describe('standingsSections', () => {
+    it('one row per non-empty group in order, hidden groups default off', () => {
+        const sections = standingsSections(
+            [
+                resolved('ext1', 1, 2),
+                resolved('main1', 1, 1),
+                resolved('loose', 1, null),
+            ],
+            [
+                { ...group(1, 10) },
+                { ...group(2, 20), hiddenByDefault: true },
+                group(3, 30), // empty — no row
+            ],
+        );
+        expect(sections).toEqual([
+            { label: 'g1', names: ['main1'], defaultCounted: true },
+            { label: 'g2', names: ['ext1'], defaultCounted: false },
+            { label: null, names: ['loose'], defaultCounted: true },
+        ]);
     });
 });
 

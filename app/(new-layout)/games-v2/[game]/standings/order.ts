@@ -36,6 +36,53 @@ export function boardDisplayOrder(
 }
 
 /**
+ * One toggle-band row: a group of categories (or the ungrouped tail,
+ * label null). `defaultCounted` mirrors the wall: a hidden-by-default
+ * group (category extensions and the like) starts out of the competition
+ * — the headline standings shouldn't move because a meme category exists.
+ */
+export interface StandingsSection {
+    label: string | null;
+    names: string[];
+    defaultCounted: boolean;
+}
+
+export function standingsSections(
+    categories: ResolvedCategory[],
+    groups: ResolvedGroup[],
+): StandingsSection[] {
+    const byGroup = new Map<number, ResolvedCategory[]>();
+    const ungrouped: ResolvedCategory[] = [];
+    for (const c of categories) {
+        if (c.groupId == null) ungrouped.push(c);
+        else {
+            const arr = byGroup.get(c.groupId) ?? [];
+            arr.push(c);
+            byGroup.set(c.groupId, arr);
+        }
+    }
+
+    const sections: StandingsSection[] = [];
+    for (const g of [...groups].sort((a, b) => a.sortOrder - b.sortOrder)) {
+        const members = byGroup.get(g.id);
+        if (!members?.length) continue;
+        sections.push({
+            label: g.name,
+            names: sortCategoriesForDisplay(members).map((c) => c.name),
+            defaultCounted: !g.hiddenByDefault,
+        });
+    }
+    if (ungrouped.length > 0) {
+        sections.push({
+            label: null,
+            names: sortCategoriesForDisplay(ungrouped).map((c) => c.name),
+            defaultCounted: true,
+        });
+    }
+    return sections;
+}
+
+/**
  * Reorder a standings payload's category columns to the board display order.
  * The wire order is whatever the backend emitted — without this, the matrix
  * opened with extension categories first while every other view leads with
