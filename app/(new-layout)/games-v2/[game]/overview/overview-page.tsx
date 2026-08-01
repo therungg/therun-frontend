@@ -3,7 +3,6 @@ import type { ResolvedGroup } from '../../../../../types/leaderboards.types';
 import { sortCategoriesForDisplay } from '../category-sort';
 import type { ClaimCtaState } from '../claim/claim-cta';
 import gamePageStyles from '../game-page.module.scss';
-import { BoardAmbience } from '../header/board-ambience';
 import { GameHero } from '../header/game-hero';
 import { ViewTabs } from '../header/view-tabs';
 import { Sidebar } from '../sidebar/sidebar';
@@ -96,9 +95,7 @@ export function GameOverviewPage({
     const sections = sectionize(data.cards, data.groups);
 
     return (
-        <BoardAmbience
-            coverUrl={data.gameMeta.coverUrl ?? data.game.image ?? null}
-        >
+        <div>
             <GameHero
                 game={data.game}
                 stats={data.quickStats}
@@ -195,6 +192,6 @@ export function GameOverviewPage({
                     />
                 </aside>
             </div>
-        </BoardAmbience>
+        </div>
     );
 }

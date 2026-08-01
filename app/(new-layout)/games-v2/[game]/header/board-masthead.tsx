@@ -5,6 +5,7 @@ import type { ClaimCtaState } from '../claim/claim-cta';
 import { FilterBar } from '../filters/filter-bar';
 import { RulesPanel } from '../rules/rules-panel';
 import type { GamePageData } from '../types';
+import { AccentFromCover } from './accent-from-cover';
 import { effectiveSubcategoryLabel } from './board-identity';
 import { CategoryRail } from './category-rail';
 import { computeCategoryVisibility } from './category-visibility';
@@ -75,6 +76,8 @@ export function BoardMasthead({
     // the `inert` on the `.plateSection`s below.
     const [stuck, setStuck] = useState(false);
     const sentinel = useRef<HTMLDivElement>(null);
+    // Accent target: AccentFromCover writes --board-accent(-soft) here.
+    const plateRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const el = sentinel.current;
@@ -90,7 +93,11 @@ export function BoardMasthead({
 
     return (
         <>
-            <div className={styles.plate}>
+            <div className={styles.plate} ref={plateRef}>
+                <AccentFromCover
+                    coverUrl={data.gameMeta.coverUrl ?? data.game.image ?? null}
+                    targetRef={plateRef}
+                />
                 <div className={styles.plateTop}>
                     <GameHero
                         variant="condensed"

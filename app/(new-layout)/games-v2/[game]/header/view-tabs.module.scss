@@ -51,9 +51,7 @@
 .tabActive {
     color: var(--bs-emphasis-color);
 
-    // Underline carries the game's accent (BoardAmbience scope) where one
-    // exists — same per-game identity as the active category chip.
     &::after {
-        background: var(--board-accent, var(--bs-primary));
+        background: var(--bs-primary);
     }
 }
