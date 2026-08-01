@@ -98,56 +98,6 @@
     padding: dt.$spacing-md;
 }
 
-// ---- Marquee (the wall's focal card) --------------------------
-// The first card of the first visible section spans the full grid width:
-// identity left, record centre-right at hero scale, podium as a right rail
-// behind a vertical hairline. Same anatomy, one rank up — nothing here
-// introduces new vocabulary.
-.plaqueMarquee {
-    grid-column: 1 / -1;
-    flex-direction: row;
-    align-items: stretch;
-
-    .plaqueBody {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: dt.$spacing-lg dt.$spacing-3xl;
-        padding: dt.$spacing-lg dt.$spacing-xl;
-    }
-
-    .recordTime,
-    .recordTimeGold,
-    .recordTimeEmpty {
-        font-size: dt.$font-size-hero-time;
-    }
-
-    .podium {
-        flex: 0 0 17rem;
-        justify-content: center;
-        border-top: 0;
-        border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
-        padding: dt.$spacing-md dt.$spacing-xl;
-    }
-
-    @media (max-width: 767.98px) {
-        flex-direction: column;
-
-        .recordTime,
-        .recordTimeGold,
-        .recordTimeEmpty {
-            font-size: dt.$font-size-3xl;
-        }
-
-        .podium {
-            flex: initial;
-            border-left: 0;
-            border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
-            padding: dt.$spacing-sm dt.$spacing-md dt.$spacing-md;
-        }
-    }
-}
 
 // Verified world record: the plate's top edge in gold — the engraved
 // accent. It recolours the existing 1px border rather than thickening it,
@@ -252,6 +202,22 @@
     min-width: 0;
 }
 
+// Engraved label over the numeral — what makes the card read as a record
+// plaque rather than a stray time. Gold whisper when the record's verified
+// (the numeral is gold's loud carrier; this stays quiet).
+.recordEyebrow,
+.recordEyebrowGold {
+    font-size: dt.$font-size-2xs;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    font-weight: 600;
+    color: var(--bs-tertiary-color);
+}
+
+.recordEyebrowGold {
+    color: color-mix(in srgb, #{dt.$accent-gold} 75%, var(--bs-secondary-color));
+}
+
 .recordTime,
 .recordTimeGold,
 .recordTimeEmpty {
@@ -311,6 +277,12 @@
     gap: dt.$spacing-sm;
     padding: dt.$spacing-sm dt.$spacing-md dt.$spacing-md;
     border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    // Banded footer — the same neutral band as the leaderboard's header
+    // row, so the runner-up zone reads as the plaque's engraved base
+    // rather than more body copy. The plaque doesn't clip overflow, so the
+    // band rounds itself to stay inside the card's bottom corners.
+    background: rgba(var(--bs-body-color-rgb), 0.04);
+    border-radius: 0 0 calc(#{dt.$radius-lg} - 1px) calc(#{dt.$radius-lg} - 1px);
     font-size: dt.$font-size-xs;
     color: var(--bs-tertiary-color);
     // Runner-up links clickable above the stretched link.
