@@ -2,6 +2,7 @@
 
 import { cacheLife, cacheTag } from 'next/cache';
 import type {
+    LeaderboardExportResponse,
     LeaderboardResponse,
     ManualTimeDetail,
     RunDetail,
@@ -124,6 +125,27 @@ export async function getLeaderboard(
                 };
             }
         }
+        throw e;
+    }
+}
+
+/**
+ * Full-board export: unpaginated, with the per-run enrichment fields the
+ * paginated endpoint omits. Deliberately uncached — an export should reflect
+ * the board as it is right now. Rides the `/mod` base-path mapping like
+ * getUserRankingsByName (the main gateway is at its 500-resource cap, so
+ * the export route only exists via the proxy API).
+ */
+export async function getLeaderboardExport(
+    q: Omit<LeaderboardQuery, 'page' | 'pageSize'>,
+): Promise<LeaderboardExportResponse | null> {
+    const game = encodeURIComponent(q.gameSlug);
+    const category = encodeURIComponent(q.categorySlug);
+    const path = `/mod/v1/leaderboards/${game}/${category}/export?${buildLeaderboardQS(q)}`;
+    try {
+        return await v1Fetch<LeaderboardExportResponse>(path);
+    } catch (e) {
+        if (e instanceof V1FetchError && e.status === 404) return null;
         throw e;
     }
 }

@@ -493,6 +493,20 @@ tr:focus-within .reveal {
     }
 }
 
+.exportMenu {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: dt.$spacing-sm;
+    min-width: 11rem;
+}
+
+.exportNote {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    max-width: 14rem;
+}
+
 .pendingNote {
     font-size: dt.$font-size-xs;
     color: var(--bs-tertiary-color);
