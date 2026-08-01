@@ -21,6 +21,14 @@ const RANK_CLASS: Record<number, string> = {
     3: styles.rankBronze,
 };
 
+// Podium rows carry the leaderboard's signature: medal spine on the left
+// edge, heavier numeral, faint gold wash under #1.
+const ROW_CLASS: Record<number, string> = {
+    1: styles.podiumRow1,
+    2: styles.podiumRow2,
+    3: styles.podiumRow3,
+};
+
 const ptsText = (pts: number) => Math.round(pts).toLocaleString();
 
 export function StandingsTable({ gameSlug, rows, columns }: Props) {
@@ -65,7 +73,10 @@ export function StandingsTable({ gameSlug, rows, columns }: Props) {
                     {rows.map((row, i) => {
                         const position = i + 1;
                         return (
-                            <tr key={row.runner.name}>
+                            <tr
+                                key={row.runner.name}
+                                className={ROW_CLASS[position] ?? ''}
+                            >
                                 <td
                                     className={`${styles.tdRank} ${
                                         RANK_CLASS[position] ?? ''
@@ -74,23 +85,31 @@ export function StandingsTable({ gameSlug, rows, columns }: Props) {
                                     {position}
                                 </td>
                                 <td className={styles.tdRunner}>
-                                    <RunnerAvatar
-                                        name={row.runner.name}
-                                        picture={row.runner.picture}
-                                        size="xs"
-                                    />
-                                    <span className={styles.runnerName}>
-                                        {/* Guests hold real entries but have
-                                            no profile to link to. */}
-                                        {row.runner.isGuest ? (
-                                            row.runner.name
-                                        ) : (
-                                            <UserLink
-                                                username={row.runner.name}
-                                            />
-                                        )}
+                                    {/* Flex lives on an inner span, never on
+                                        the td — a flex table-cell slips out
+                                        of its row's geometry (same trap the
+                                        leaderboard's .runnerCell avoids). */}
+                                    <span className={styles.runnerCell}>
+                                        <RunnerAvatar
+                                            name={row.runner.name}
+                                            picture={row.runner.picture}
+                                            size="xs"
+                                        />
+                                        <span className={styles.runnerName}>
+                                            {/* Guests hold real entries but
+                                                have no profile to link to. */}
+                                            {row.runner.isGuest ? (
+                                                row.runner.name
+                                            ) : (
+                                                <UserLink
+                                                    username={row.runner.name}
+                                                />
+                                            )}
+                                        </span>
+                                        <CountryFlag
+                                            country={row.runner.country}
+                                        />
                                     </span>
-                                    <CountryFlag country={row.runner.country} />
                                 </td>
                                 <td className={styles.tdScore}>
                                     <span className={styles.scoreValue}>
