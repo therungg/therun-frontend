@@ -93,9 +93,6 @@ export function GameOverviewPage({
     claim,
 }: Props) {
     const sections = sectionize(data.cards, data.groups);
-    // The wall's focal card: the first card of the first section whose cards
-    // are visible on load (a collapsed section can't carry the focal point).
-    const marqueeKey = sections.find((s) => !s.collapsed)?.key;
 
     return (
         <div>
@@ -145,9 +142,6 @@ export function GameOverviewPage({
                                             gameSlug={data.game.name}
                                             card={card}
                                             index={i}
-                                            marquee={
-                                                s.key === marqueeKey && i === 0
-                                            }
                                         />
                                     ))}
                                 </div>

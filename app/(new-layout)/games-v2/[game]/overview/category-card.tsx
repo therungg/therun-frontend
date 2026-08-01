@@ -38,12 +38,6 @@ interface Props {
     card: OverviewCardData;
     /** Grid position — drives the entrance stagger without a CSS nth-child ceiling. */
     index: number;
-    /**
-     * The wall's focal card — the first card of the first visible section
-     * (the moderator's #1 by sort order). Spans the full grid width with a
-     * larger numeral and the podium as a right-hand rail.
-     */
-    marquee?: boolean;
 }
 
 // Ranks 2 and 3 carry the board's rank-accent signature (silver/bronze);
@@ -53,24 +47,21 @@ const PODIUM_RANK_CLASS: Record<number, string> = {
     3: styles.rankBronze,
 };
 
-export function CategoryCard({ gameSlug, card, index, marquee }: Props) {
+export function CategoryCard({ gameSlug, card, index }: Props) {
     const { category, entries } = card;
     const { wr, podium } = splitCardEntries(entries);
     const boardHref = buildBoardHref(gameSlug, {
         categorySlug: category.name,
     });
     const verified = wr?.verificationStatus === 'verified';
-    const plaqueClass = [
-        styles.plaque,
-        verified ? styles.plaqueGold : '',
-        marquee ? styles.plaqueMarquee : '',
-    ]
-        .filter(Boolean)
-        .join(' ');
 
     return (
         <article
-            className={plaqueClass}
+            className={
+                verified
+                    ? `${styles.plaque} ${styles.plaqueGold}`
+                    : styles.plaque
+            }
             style={{ '--i': index } as CSSProperties}
         >
             <div className={styles.plaqueBody}>
@@ -92,6 +83,15 @@ export function CategoryCard({ gameSlug, card, index, marquee }: Props) {
                 </div>
                 {wr ? (
                     <div className={styles.record}>
+                        <span
+                            className={
+                                verified
+                                    ? styles.recordEyebrowGold
+                                    : styles.recordEyebrow
+                            }
+                        >
+                            World record
+                        </span>
                         <span
                             className={
                                 verified
@@ -129,6 +129,9 @@ export function CategoryCard({ gameSlug, card, index, marquee }: Props) {
                     // numeral goes — so an empty slot keeps the wall's rhythm
                     // instead of collapsing into a paragraph.
                     <div className={styles.record}>
+                        <span className={styles.recordEyebrow}>
+                            Record unclaimed
+                        </span>
                         <span className={styles.recordTimeEmpty}>—</span>
                         <span className={styles.plaqueEmpty}>
                             No runs yet ·{' '}
