@@ -1,10 +1,13 @@
+import type { BoardWeeklyActivity } from '~src/lib/board-activity';
 import type { GameModerator } from '../../../../../types/board-claims.types';
 import type {
     RecentPb,
+    ResolvedCategory,
     UserRanking,
 } from '../../../../../types/leaderboards.types';
 import { ClaimCta, type ClaimCtaState } from '../claim/claim-cta';
 import { AboutPanel } from './about-panel';
+import { BoardStatsPanel } from './board-stats-panel';
 import { LivePanel } from './live-panel';
 import { ModeratorsPanel } from './moderators-panel';
 import { RecentPbsPanel } from './recent-pbs-panel';
@@ -18,6 +21,9 @@ interface Props {
     claim?: ClaimCtaState | null;
     about?: string | null;
     moderators?: GameModerator[];
+    /** The active board — board view only; the overview has none. */
+    board?: ResolvedCategory | null;
+    boardActivity?: BoardWeeklyActivity[] | null;
 }
 
 export function Sidebar({
@@ -27,10 +33,18 @@ export function Sidebar({
     claim,
     about,
     moderators,
+    board,
+    boardActivity,
 }: Props) {
     return (
         <>
             <LivePanel gameDisplay={game.display} />
+            {board && (
+                <BoardStatsPanel
+                    category={board}
+                    activity={boardActivity ?? null}
+                />
+            )}
             <YourRunsPanel rankings={yourRuns} gameSlug={game.name} />
             <RecentPbsPanel pbs={recentPbs} gameSlug={game.name} />
             <ModeratorsPanel moderators={moderators ?? []} />
