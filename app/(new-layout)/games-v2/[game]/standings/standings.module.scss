@@ -122,12 +122,55 @@
 }
 
 // ---- Table ---------------------------------------------------
+// Anchors the overflow affordances (fade + "+N more" chip) over the
+// scrolling panel.
+.tableShell {
+    position: relative;
+}
+
 // A real board panel, like the leaderboard's wrapper — the matrix floating
 // bare on the canvas was the page's biggest "unstyled" tell.
 .tableScroll {
     @include board.board-surface(0);
     overflow: hidden;
     overflow-x: auto;
+}
+
+// Right-edge fade while columns hide past the viewport — the table must
+// not pretend it ends where the panel does.
+.scrollFade {
+    position: absolute;
+    top: 1px;
+    bottom: 1px;
+    right: 1px;
+    width: 3.5rem;
+    pointer-events: none;
+    border-radius: 0 calc(#{dt.$radius-lg} - 1px) calc(#{dt.$radius-lg} - 1px)
+        0;
+    background: linear-gradient(
+        to right,
+        transparent,
+        var(--board-surface-bg, var(--bs-body-bg))
+    );
+}
+
+// The count of what's hiding, and the gesture to reach it.
+.moreColsChip {
+    @include board.control-pill;
+    position: absolute;
+    top: dt.$spacing-sm;
+    right: dt.$spacing-sm;
+    z-index: 3;
+    border: 1px solid
+        var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
+    background: var(--board-surface-bg, var(--bs-body-bg));
+    box-shadow: dt.$shadow-sm;
+    font-size: dt.$font-size-xs;
+    padding: dt.$spacing-xs dt.$spacing-md;
+
+    &:hover {
+        background: var(--bs-tertiary-bg);
+    }
 }
 
 // Lead-column widths, shared by the cells and their sticky left offsets —
@@ -244,6 +287,17 @@ $col-score: 7.5rem;
 .thCategory {
     min-width: 6.5rem;
     white-space: normal;
+}
+
+// Compact matrix (> COMPACT_THRESHOLD counted columns): cells are
+// rank-only, so columns tighten to numeral width. Declared after `.table`
+// so the equal-specificity nested selectors win.
+.tableCompact {
+    tbody td.tdCell,
+    thead th.thCategory {
+        min-width: 3.25rem;
+        padding-inline: dt.$spacing-xs;
+    }
 }
 
 .thLink {
