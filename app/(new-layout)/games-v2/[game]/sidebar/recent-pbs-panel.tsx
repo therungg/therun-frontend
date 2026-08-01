@@ -5,6 +5,7 @@ import { formatRunDate } from '~src/lib/format-run-date';
 import type { RecentPb } from '../../../../../types/leaderboards.types';
 import { relativeDate } from '../leaderboard/relative-date';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
+import { formatImprovement } from './format-improvement';
 import styles from './sidebar.module.scss';
 
 interface Props {
@@ -74,10 +75,40 @@ export function RecentPbsPanel({ pbs, gameSlug }: Props) {
                             <span title={formatRunDate(p.endedAt)}>
                                 {relativeDate(p.endedAt)}
                             </span>
+                            <PbImprovement
+                                time={p.time}
+                                previousPb={p.previousPb}
+                            />
                         </div>
                     </li>
                 ))}
             </ul>
         </section>
+    );
+}
+
+/**
+ * How much the PB improved on the runner's previous one. `previousPb` comes
+ * straight off the /v1/finished-runs row (null for a first-ever PB, absent
+ * when the backend omits it) — render nothing unless it shows a genuine
+ * improvement.
+ */
+function PbImprovement({
+    time,
+    previousPb,
+}: {
+    time: number;
+    previousPb?: number | null;
+}) {
+    if (typeof previousPb !== 'number' || previousPb <= time) return null;
+    const diff = previousPb - time;
+    return (
+        <span
+            className={styles.pbDelta}
+            title={`Improved their previous PB by ${formatImprovement(diff)}`}
+        >
+            {' '}
+            −{formatImprovement(diff)}
+        </span>
     );
 }

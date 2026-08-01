@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import useSWR from 'swr';
 import type { LiveRun } from '~app/(new-layout)/live/live.types';
+import { getFormattedString } from '~src/components/util/datetime';
 import { fetcher } from '~src/utils/fetcher';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
 import styles from './sidebar.module.scss';
@@ -56,27 +57,30 @@ export function LivePanel({ gameDisplay }: Props) {
             ) : (
                 <ul className="list-unstyled mb-0">
                     {runners.slice(0, 5).map((r) => (
-                        <li key={r.login} className={styles.row}>
-                            <span className={styles.rowUser}>
-                                <RunnerAvatar
-                                    name={r.user}
-                                    picture={r.picture}
-                                    size="xs"
-                                />
-                                <a
-                                    href={r.url}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="text-decoration-none"
-                                >
-                                    {r.user}
-                                </a>
-                            </span>
-                            {r.category && (
-                                <span className={styles.rowMeta}>
-                                    {r.category}
+                        <li key={r.login} className={styles.pbRow}>
+                            <div className={styles.pbTop}>
+                                <span className={styles.rowUser}>
+                                    <RunnerAvatar
+                                        name={r.user}
+                                        picture={r.picture}
+                                        size="xs"
+                                    />
+                                    <a
+                                        href={r.url}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="text-decoration-none"
+                                    >
+                                        {r.user}
+                                    </a>
                                 </span>
-                            )}
+                                {r.category && (
+                                    <span className={styles.rowMeta}>
+                                        {r.category}
+                                    </span>
+                                )}
+                            </div>
+                            <PaceLine run={r} />
                         </li>
                     ))}
                 </ul>
@@ -89,5 +93,43 @@ export function LivePanel({ gameDisplay }: Props) {
                 />
             )}
         </section>
+    );
+}
+
+/**
+ * Where the run is and how it's pacing — the payload already carries the
+ * current split and the delta vs the runner's comparison; the old panel
+ * showed none of it. Nothing renders between attempts (reset / not started).
+ */
+function PaceLine({ run }: { run: LiveRun }) {
+    if (run.hasReset || run.currentSplitIndex < 0 || !run.currentSplitName) {
+        return null;
+    }
+    const delta = run.delta;
+    const showDelta = typeof delta === 'number' && delta !== 0;
+    return (
+        <div className={styles.pbMeta}>
+            {run.currentSplitName}
+            {showDelta && (
+                <>
+                    {' · '}
+                    <span
+                        className={
+                            delta <= 0 ? styles.paceAhead : styles.paceBehind
+                        }
+                        title={`vs ${run.currentComparison || 'Personal Best'}`}
+                    >
+                        {delta <= 0 ? '−' : '+'}
+                        {getFormattedString(
+                            String(Math.abs(delta)),
+                            Math.abs(delta) < 60000,
+                            false,
+                            true,
+                            true,
+                        )}
+                    </span>
+                </>
+            )}
+        </div>
     );
 }
