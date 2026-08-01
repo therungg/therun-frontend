@@ -41,6 +41,19 @@
     --board-recess-shadow: rgba(0, 0, 0, 0.35);
     --board-recess-highlight: rgba(255, 255, 255, 0.035);
     --board-engrave-shadow: rgba(0, 0, 0, 0.7);
+
+    // Board panel surface. A theme-agnostic color-mix() of --bs-body-bg kept
+    // panels within ~2% of the canvas — the audit's "same background as the
+    // background". Panels now sit a full step above the #0D0F0D canvas, with
+    // a top hairline highlight (light catches the panel's upper edge) and an
+    // ambient drop so they read as objects on the page, not regions of it.
+    --board-surface-bg: #161c18;
+    --board-surface-border: rgba(255, 255, 255, 0.08);
+    --board-surface-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        0 8px 24px rgba(0, 0, 0, 0.35);
+    // Cover-art ambient banner (BoardAmbience): dark canvas can carry more
+    // of the art before panels lose legibility.
+    --board-backdrop-opacity: 0.5;
 }
 
 [data-bs-theme="light"] {
@@ -55,4 +68,13 @@
     // Engraving inverts: light catches the top edge of the groove, so the
     // shadow under the text goes light on a light surface.
     --board-engrave-shadow: rgba(255, 255, 255, 0.85);
+
+    // Light counterpart of the dark block's panel surface: white cards on
+    // the #fbfbfb canvas, separation carried by the shadow rather than the
+    // (tiny) bg delta.
+    --board-surface-bg: #ffffff;
+    --board-surface-border: rgba(15, 25, 15, 0.09);
+    --board-surface-shadow: 0 1px 2px rgba(15, 25, 15, 0.04),
+        0 8px 24px rgba(15, 25, 15, 0.06);
+    --board-backdrop-opacity: 0.22;
 }

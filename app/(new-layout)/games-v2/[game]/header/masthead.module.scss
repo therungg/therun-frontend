@@ -64,6 +64,19 @@
 
 .chipActive {
     @include board.board-chip-active;
+    // The board you're on carries the game's own color (AccentFromCover),
+    // not the one site green on every game — per-game identity in the fill,
+    // speedrun.com register. Accentless games keep the brand-green fallback.
+    background: var(--board-accent, var(--bs-primary));
+    border-color: color-mix(
+        in srgb,
+        var(--board-accent, var(--bs-primary)) 70%,
+        white
+    );
+
+    &:hover {
+        background: var(--board-accent, var(--bs-primary));
+    }
 }
 
 .chipGhost {
@@ -132,8 +145,9 @@
 
 .plateTop {
     padding: 0 dt.$spacing-xl;
-    // Per-game identity: a flat 5%-alpha cover-art tint (AccentFromCover).
-    // Unset custom prop → transparent. No border, no gradient.
+    // Per-game identity: a flat 9%-alpha cover-art tint (AccentFromCover,
+    // inherited from the BoardAmbience page scope). Unset custom prop →
+    // transparent. No border, no gradient.
     background: var(--board-accent-soft, transparent);
 }
 
@@ -260,7 +274,9 @@
     right: 0;
     top: calc(100% + #{dt.$spacing-xs});
     z-index: dt.$z-popover;
-    background: var(--bs-body-bg);
+    // Popovers ride the panel surface now that it's a distinct opaque color
+    // — body-bg would float a darker panel over lighter ones.
+    background: var(--board-surface-bg, var(--bs-body-bg));
     box-shadow: dt.$shadow-md;
     min-width: 18rem;
     max-height: min(70vh, 26rem);
