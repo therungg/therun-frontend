@@ -93,6 +93,9 @@ export function GameOverviewPage({
     claim,
 }: Props) {
     const sections = sectionize(data.cards, data.groups);
+    // The wall's focal card: the first card of the first section whose cards
+    // are visible on load (a collapsed section can't carry the focal point).
+    const marqueeKey = sections.find((s) => !s.collapsed)?.key;
 
     return (
         <div>
@@ -142,6 +145,9 @@ export function GameOverviewPage({
                                             gameSlug={data.game.name}
                                             card={card}
                                             index={i}
+                                            marquee={
+                                                s.key === marqueeKey && i === 0
+                                            }
                                         />
                                     ))}
                                 </div>
@@ -165,11 +171,17 @@ export function GameOverviewPage({
                                                 className={styles.sectionLabel}
                                             >
                                                 {s.name}
-                                            </span>
-                                            <span
-                                                className={styles.sectionCount}
-                                            >
-                                                {s.cards.length}
+                                                {/* Count rides the label —
+                                                    stranded at the far end
+                                                    of the hairline it read
+                                                    as an orphan. */}
+                                                <span
+                                                    className={
+                                                        styles.sectionCount
+                                                    }
+                                                >
+                                                    {s.cards.length}
+                                                </span>
                                             </span>
                                         </h2>
                                     )}

@@ -1,9 +1,9 @@
 import type { CSSProperties } from 'react';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
-import { DurationToFormatted } from '~src/components/util/datetime';
 import { buildBoardHref, buildSubmitHref } from '~src/lib/board-url';
 import { formatRunDate } from '~src/lib/format-run-date';
+import { formatCount } from '~src/utils/format-stats';
 import { CountryFlag } from '../leaderboard/country-flag';
 import { relativeDate } from '../leaderboard/relative-date';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
@@ -12,11 +12,38 @@ import { CategoryEmblem } from './category-emblem';
 import type { OverviewCardData } from './data';
 import styles from './overview.module.scss';
 
+// Local, server-safe record formatter (datetime.tsx's getFormattedString is
+// a 'use client' export — calling it from this server component throws).
+// Unlike it, the leading unit is never zero-padded: sub-hour records used to
+// render "06:56.070" next to "46:11.185"; a record reads "6:56.070", with
+// interior components still padded.
+function formatRecord(duration: number | string, withMillis: boolean): string {
+    const ms = Math.abs(Math.round(Number(duration)));
+    if (!Number.isFinite(ms)) return '-';
+    const totalSeconds = Math.floor(ms / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    const pad = (n: number) => String(n).padStart(2, '0');
+    let out =
+        hours > 0
+            ? `${hours}:${pad(minutes)}:${pad(seconds)}`
+            : `${minutes}:${pad(seconds)}`;
+    if (withMillis) out += `.${String(ms % 1000).padStart(3, '0')}`;
+    return out;
+}
+
 interface Props {
     gameSlug: string;
     card: OverviewCardData;
     /** Grid position — drives the entrance stagger without a CSS nth-child ceiling. */
     index: number;
+    /**
+     * The wall's focal card — the first card of the first visible section
+     * (the moderator's #1 by sort order). Spans the full grid width with a
+     * larger numeral and the podium as a right-hand rail.
+     */
+    marquee?: boolean;
 }
 
 // Ranks 2 and 3 carry the board's rank-accent signature (silver/bronze);
@@ -26,21 +53,24 @@ const PODIUM_RANK_CLASS: Record<number, string> = {
     3: styles.rankBronze,
 };
 
-export function CategoryCard({ gameSlug, card, index }: Props) {
+export function CategoryCard({ gameSlug, card, index, marquee }: Props) {
     const { category, entries } = card;
     const { wr, podium } = splitCardEntries(entries);
     const boardHref = buildBoardHref(gameSlug, {
         categorySlug: category.name,
     });
     const verified = wr?.verificationStatus === 'verified';
+    const plaqueClass = [
+        styles.plaque,
+        verified ? styles.plaqueGold : '',
+        marquee ? styles.plaqueMarquee : '',
+    ]
+        .filter(Boolean)
+        .join(' ');
 
     return (
         <article
-            className={
-                verified
-                    ? `${styles.plaque} ${styles.plaqueGold}`
-                    : styles.plaque
-            }
+            className={plaqueClass}
             style={{ '--i': index } as CSSProperties}
         >
             <div className={styles.plaqueBody}>
@@ -56,9 +86,8 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
                     {/* Full plate width, not tucked beside the emblem — the
                         spec line needs the run to stay on one line. */}
                     <span className={styles.plaqueStats}>
-                        {(category.uniqueRunners ?? 0).toLocaleString()} runners
-                        · {(category.totalAttemptCount ?? 0).toLocaleString()}{' '}
-                        attempts
+                        {formatCount(category.uniqueRunners ?? 0)} runners ·{' '}
+                        {formatCount(category.totalAttemptCount ?? 0)} attempts
                     </span>
                 </div>
                 {wr ? (
@@ -70,10 +99,10 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
                                     : styles.recordTime
                             }
                         >
-                            <DurationToFormatted
-                                duration={wr.time as number}
-                                withMillis={category.showMilliseconds ?? true}
-                            />
+                            {formatRecord(
+                                wr.time as number,
+                                category.showMilliseconds ?? true,
+                            )}
                         </span>
                         <span className={styles.recordHolder}>
                             <RunnerAvatar
@@ -140,10 +169,7 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
                                 <UserLink username={p.runnerName} />
                             </span>
                             <span className={styles.podiumTime}>
-                                <DurationToFormatted
-                                    duration={p.time as number}
-                                    withMillis={false}
-                                />
+                                {formatRecord(p.time as number, false)}
                             </span>
                         </div>
                     ))}

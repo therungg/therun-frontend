@@ -23,7 +23,10 @@ export function CollapsibleSection({ name, count, children }: Props) {
 
     return (
         <section className={styles.section}>
-            <h2 className={styles.sectionHead}>
+            {/* A compact dashed chip (the plate's collapsed-group vocabulary),
+                not a full-width hairline row — a disclosure plus a count must
+                not own the same anatomy as a real section heading. */}
+            <h2 className={styles.collapsibleHead}>
                 <button
                     type="button"
                     className={styles.sectionToggle}
@@ -36,8 +39,10 @@ export function CollapsibleSection({ name, count, children }: Props) {
                         <CaretRightFill size={9} aria-hidden />
                     )}
                     {name}
+                    <span className={styles.sectionCount} aria-hidden>
+                        {count}
+                    </span>
                 </button>
-                <span className={styles.sectionCount}>{count}</span>
             </h2>
             {open && children}
         </section>
