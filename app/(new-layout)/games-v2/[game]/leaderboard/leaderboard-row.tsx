@@ -249,11 +249,9 @@ export function LeaderboardRow({
                     />
                     <UserLink username={entry.runnerName} url={undefined} />
                     <CountryFlag country={entry.country} />
-                    {entry.rank === 1 && (
-                        // "Record", not "WR" — this is the board's best
-                        // known time, not a verified world record claim.
-                        <span className={styles.wrChip}>Record</span>
-                    )}
+                    {/* No rank-1 chip: the gold spine and gold rank numeral
+                        already mark the row, and any label here overclaims —
+                        we only know the board's best submitted time. */}
                 </span>
             </td>
             {primaryVisible && time(timingValue(primary.key), false, true)}

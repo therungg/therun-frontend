@@ -146,13 +146,6 @@ tr:focus-within .reveal {
     margin-right: 1px;
 }
 
-// "WR" chip on the rank-1 row. Verification caveats are carried by the
-// board-level note in the meta bar, not per-row.
-.wrChip {
-    @include board.board-pill(dt.$accent-gold);
-    flex-shrink: 0;
-}
-
 .rank1 {
     color: dt.$accent-gold;
 }
