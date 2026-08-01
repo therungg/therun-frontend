@@ -170,11 +170,42 @@
     color: dt.$accent-bronze;
 }
 
+// ---- Podium rows ---------------------------------------------
+// The leaderboard's signature, verbatim: medal spine on the row's left
+// edge, heavier rank numeral, and a faint gold wash under the leader.
+.podiumRow1 td {
+    background: rgba(dt.$accent-gold, 0.05);
+
+    &:first-child {
+        box-shadow: inset 3px 0 0 dt.$accent-gold;
+    }
+}
+
+.podiumRow2 td:first-child {
+    box-shadow: inset 3px 0 0 dt.$accent-silver;
+}
+
+.podiumRow3 td:first-child {
+    box-shadow: inset 3px 0 0 dt.$accent-bronze;
+}
+
+.podiumRow1 .tdRank,
+.podiumRow2 .tdRank,
+.podiumRow3 .tdRank {
+    font-size: dt.$font-size-md;
+    font-weight: 700;
+}
+
 .tdRunner {
-    display: flex;
+    min-width: 0;
+}
+
+.runnerCell {
+    display: inline-flex;
     align-items: center;
     gap: dt.$spacing-sm;
     min-width: 0;
+    max-width: 100%;
 }
 
 .runnerName {
