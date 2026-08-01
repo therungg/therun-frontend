@@ -183,6 +183,13 @@ $col-score: 7.5rem;
             var(--board-surface-bg, var(--bs-body-bg))
         );
     }
+
+    // Category columns run dense — the difference between eight categories
+    // fitting a 1440 viewport and the last one hiding behind the scroll.
+    tbody td.tdCell,
+    thead th.thCategory {
+        padding-inline: dt.$spacing-sm;
+    }
 }
 
 // ---- Sticky lead columns -------------------------------------
@@ -235,7 +242,7 @@ $col-score: 7.5rem;
 }
 
 .thCategory {
-    min-width: 7.5rem;
+    min-width: 6.5rem;
     white-space: normal;
 }
 

@@ -6,26 +6,14 @@ import { getMyBoardClaim } from '~src/lib/board-claims';
 import { EMPTY_GAME_METADATA } from '~src/lib/game-metadata';
 import { getGameMetadata } from '~src/lib/game-mgmt';
 import { listGameModerators } from '~src/lib/game-moderators';
-import {
-    getQuickStats,
-    getRecentPbs,
-    resolveCategory,
-    resolveGame,
-} from '~src/lib/games-v1';
-import { getUserRankingsByName } from '~src/lib/leaderboards-v1';
+import { getQuickStats, resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { getGameStandings } from '~src/lib/standings';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 import type { ClaimCtaState } from '../claim/claim-cta';
-import gamePageStyles from '../game-page.module.scss';
 import { GameHero } from '../header/game-hero';
 import { ViewTabs } from '../header/view-tabs';
-import {
-    filterPbsToFeatured,
-    RECENT_PB_FETCH_LIMIT,
-} from '../sidebar/featured-pbs';
-import { Sidebar } from '../sidebar/sidebar';
 import { orderStandingsForDisplay, standingsSections } from './order';
 import styles from './standings.module.scss';
 import { StandingsView } from './standings-view';
@@ -89,26 +77,16 @@ export default async function GameStandingsPage({ params }: PageProps) {
         };
     }
 
-    const [standings, quickStats, gameMeta, recentPbs, rawYourRuns] =
-        await Promise.all([
-            getGameStandings(resolvedGame.id),
-            getQuickStats(resolvedGame.id).catch(() => ({
-                totalRunTime: 0,
-                totalAttemptCount: 0,
-                totalFinishedAttemptCount: 0,
-                uniqueRunners: 0,
-            })),
-            getGameMetadata(resolvedGame.id).catch(() => EMPTY_GAME_METADATA),
-            // Same fetch shape as the overview sidebar (loadGameOverviewData):
-            // featured-only recent PBs, and the session's own rankings
-            // narrowed to this game.
-            getRecentPbs(resolvedGame.id, RECENT_PB_FETCH_LIMIT, {
-                featuredOnly: true,
-            }).catch(() => []),
-            sessionUsername
-                ? getUserRankingsByName(sessionUsername).catch(() => [])
-                : Promise.resolve([]),
-        ]);
+    const [standings, quickStats, gameMeta] = await Promise.all([
+        getGameStandings(resolvedGame.id),
+        getQuickStats(resolvedGame.id).catch(() => ({
+            totalRunTime: 0,
+            totalAttemptCount: 0,
+            totalFinishedAttemptCount: 0,
+            uniqueRunners: 0,
+        })),
+        getGameMetadata(resolvedGame.id).catch(() => EMPTY_GAME_METADATA),
+    ]);
 
     return (
         <div>
@@ -122,8 +100,11 @@ export default async function GameStandingsPage({ params }: PageProps) {
                 canModerate={canModerate}
                 claim={claim}
             />
-            <div className={gamePageStyles.grid}>
-                <div className={gamePageStyles.colMain}>
+            {/* No sidebar rail here: the matrix is the page, and the rail's
+                340px is exactly the difference between a game's categories
+                fitting and their tail hiding behind a scroll. */}
+            <div>
+                <div>
                     <ViewTabs gameSlug={resolvedGame.name} />
                     {standings.status === 'ok' ? (
                         <StandingsView
@@ -157,17 +138,6 @@ export default async function GameStandingsPage({ params }: PageProps) {
                         </div>
                     )}
                 </div>
-                <aside className={gamePageStyles.rail}>
-                    <Sidebar
-                        game={resolvedGame}
-                        yourRuns={rawYourRuns.filter(
-                            (r) => r.gameSlug === resolvedGame.name,
-                        )}
-                        recentPbs={filterPbsToFeatured(recentPbs, featured)}
-                        claim={claim}
-                        about={gameMeta.summaryOverride ?? gameMeta.summary}
-                    />
-                </aside>
             </div>
         </div>
     );
