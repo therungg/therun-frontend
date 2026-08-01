@@ -9,7 +9,6 @@
 }
 
 .title,
-.explainer,
 .pill,
 .row {
     @include board.board-skeleton;
@@ -19,11 +18,6 @@
 .title {
     width: 16rem;
     height: 1.6rem;
-}
-
-.explainer {
-    width: min(100%, 40rem);
-    height: 2.5rem;
 }
 
 .band {

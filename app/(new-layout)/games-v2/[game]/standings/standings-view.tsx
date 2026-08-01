@@ -80,16 +80,6 @@ export function StandingsView({ gameSlug, data }: Props) {
                 <h2 className={styles.head}>
                     <span className={styles.eyebrow}>Standings</span>
                 </h2>
-                <p className={styles.explainer}>
-                    Top 20 across categories. Every board pays points by
-                    placement and field size:{' '}
-                    <strong>
-                        #1 earns the whole field, #4 half of it, #100 a tenth
-                    </strong>
-                    . Your total is the sum over the counted categories — deep
-                    fields are worth more, and running more boards adds up. Turn
-                    categories off to ask a different question.
-                </p>
             </header>
 
             <CategoryToggles
