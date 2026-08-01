@@ -38,12 +38,3 @@
     height: 2.25rem;
 }
 
-// ---- Rail (aside panels) -----------------------------------------
-// Same treatment as .railPanel in [game]/loading.module.scss — the real
-// page now renders a Sidebar in gamePageStyles.rail beside this column.
-.railPanel {
-    @include board.board-skeleton;
-    height: 10rem;
-    border-radius: dt.$radius-lg;
-    margin-bottom: dt.$spacing-lg;
-}
