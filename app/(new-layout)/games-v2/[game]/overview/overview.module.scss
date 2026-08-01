@@ -202,22 +202,6 @@
     min-width: 0;
 }
 
-// Engraved label over the numeral — what makes the card read as a record
-// plaque rather than a stray time. Gold whisper when the record's verified
-// (the numeral is gold's loud carrier; this stays quiet).
-.recordEyebrow,
-.recordEyebrowGold {
-    font-size: dt.$font-size-2xs;
-    text-transform: uppercase;
-    letter-spacing: 0.09em;
-    font-weight: 600;
-    color: var(--bs-tertiary-color);
-}
-
-.recordEyebrowGold {
-    color: color-mix(in srgb, #{dt.$accent-gold} 75%, var(--bs-secondary-color));
-}
-
 .recordTime,
 .recordTimeGold,
 .recordTimeEmpty {

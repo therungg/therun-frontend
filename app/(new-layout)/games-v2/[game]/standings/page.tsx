@@ -177,7 +177,7 @@ export async function generateMetadata({
 
     return buildMetadata({
         title: `${display} — Standings`,
-        description: `The top runners across every ${display} category, ranked by how close they get to each category's record.`,
+        description: `The top runners across every ${display} category, ranked by how close they get to each category's best time.`,
         images: await getGameImage(display),
     });
 }

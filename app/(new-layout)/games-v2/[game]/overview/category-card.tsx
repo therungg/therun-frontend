@@ -86,15 +86,6 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
                         <span
                             className={
                                 verified
-                                    ? styles.recordEyebrowGold
-                                    : styles.recordEyebrow
-                            }
-                        >
-                            Record
-                        </span>
-                        <span
-                            className={
-                                verified
                                     ? styles.recordTimeGold
                                     : styles.recordTime
                             }
@@ -137,9 +128,6 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
                     // numeral goes — so an empty slot keeps the wall's rhythm
                     // instead of collapsing into a paragraph.
                     <div className={styles.record}>
-                        <span className={styles.recordEyebrow}>
-                            Record unclaimed
-                        </span>
                         <span className={styles.recordTimeEmpty}>—</span>
                         <span className={styles.plaqueEmpty}>
                             No runs yet ·{' '}
@@ -149,7 +137,7 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
                                 })}
                                 className={styles.plaqueEmptyLink}
                             >
-                                set the first record
+                                submit the first run
                             </Link>
                         </span>
                     </div>

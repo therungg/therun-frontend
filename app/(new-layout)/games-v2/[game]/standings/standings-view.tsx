@@ -82,8 +82,8 @@ export function StandingsView({ gameSlug, data }: Props) {
                 </h2>
                 <p className={styles.explainer}>
                     Top 20 across categories. Each category scores you against
-                    its record. Your score is the average across every counted
-                    category —
+                    its best time. Your score is the average across every
+                    counted category —
                     <strong>
                         {' '}
                         a category you haven&apos;t run counts as zero

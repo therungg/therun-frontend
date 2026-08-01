@@ -75,7 +75,7 @@ export function WrHistoryDrawer({
         >
             <div className={styles.header}>
                 <h5 className={styles.title} id="wr-history-title">
-                    Record history — {categoryDisplay}
+                    History — {categoryDisplay}
                 </h5>
                 <button
                     type="button"
@@ -87,7 +87,7 @@ export function WrHistoryDrawer({
             <div className={styles.body}>
                 {error && (
                     <div className={styles.errorAlert} role="alert">
-                        Failed to load record history: {error}
+                        Failed to load history: {error}
                     </div>
                 )}
                 {!error && rows === null && (
@@ -114,9 +114,7 @@ export function WrHistoryDrawer({
                             className={styles.emptyIcon}
                             aria-hidden
                         />
-                        <p className={styles.emptyTitle}>
-                            No record history yet.
-                        </p>
+                        <p className={styles.emptyTitle}>No history yet.</p>
                     </div>
                 )}
                 {!error && rows !== null && rows.length > 0 && (
