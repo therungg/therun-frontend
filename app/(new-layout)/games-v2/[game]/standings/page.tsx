@@ -26,6 +26,7 @@ import {
     RECENT_PB_FETCH_LIMIT,
 } from '../sidebar/featured-pbs';
 import { Sidebar } from '../sidebar/sidebar';
+import { orderStandingsForDisplay } from './order';
 import styles from './standings.module.scss';
 import { StandingsView } from './standings-view';
 
@@ -57,7 +58,7 @@ export default async function GameStandingsPage({ params }: PageProps) {
         );
     }
 
-    const { categories } = await resolveCategory(resolvedGame.id);
+    const { categories, groups } = await resolveCategory(resolvedGame.id);
     const featured = categories.filter((c) => !c.archived && c.isMain);
     // Standings across a single category is just that category's board. Same
     // threshold decideGameRootView applies to the overview, so the tab band and
@@ -127,7 +128,11 @@ export default async function GameStandingsPage({ params }: PageProps) {
                     {standings.status === 'ok' ? (
                         <StandingsView
                             gameSlug={resolvedGame.name}
-                            data={standings.standings}
+                            data={orderStandingsForDisplay(
+                                standings.standings,
+                                categories,
+                                groups,
+                            )}
                         />
                     ) : standings.status === 'empty' ? (
                         <div className={styles.empty}>
