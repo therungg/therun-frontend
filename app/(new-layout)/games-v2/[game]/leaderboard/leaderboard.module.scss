@@ -10,11 +10,10 @@
 .table {
     @include board.board-table;
 
-    // The game's accent as a whisper across the header row — the board's
-    // one structural line carries the game's color (speedrun.com register).
-    // Accentless games: transparent, exactly the old look.
+    // A slightly distinct header band gives the table structure now that
+    // the whole surface is lifted off the canvas. Neutral, both themes.
     thead th {
-        background: var(--board-accent-soft, transparent);
+        background: rgba(var(--bs-body-color-rgb), 0.04);
     }
 
     tbody td {
