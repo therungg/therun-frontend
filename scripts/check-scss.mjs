@@ -30,7 +30,11 @@ const files = findScssModules(ROOT);
 let failed = 0;
 for (const f of files) {
     try {
-        execFileSync('npx', ['sass', '--no-source-map', '--style=compressed', f, '/dev/null'], { stdio: 'pipe' });
+        execFileSync(
+            'npx',
+            ['sass', '--no-source-map', '--style=compressed', f, '/dev/null'],
+            { stdio: 'pipe' },
+        );
     } catch (e) {
         failed++;
         console.error(`FAIL ${f}\n${e.stderr}`);
