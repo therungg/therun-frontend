@@ -26,7 +26,7 @@ import {
     RECENT_PB_FETCH_LIMIT,
 } from '../sidebar/featured-pbs';
 import { Sidebar } from '../sidebar/sidebar';
-import { orderStandingsForDisplay } from './order';
+import { orderStandingsForDisplay, standingsSections } from './order';
 import styles from './standings.module.scss';
 import { StandingsView } from './standings-view';
 
@@ -133,6 +133,7 @@ export default async function GameStandingsPage({ params }: PageProps) {
                                 categories,
                                 groups,
                             )}
+                            sections={standingsSections(categories, groups)}
                         />
                     ) : standings.status === 'empty' ? (
                         <div className={styles.empty}>

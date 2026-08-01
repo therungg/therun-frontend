@@ -11,17 +11,54 @@
 .toggleBand {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: flex-end;
     justify-content: space-between;
     gap: dt.$spacing-md;
     padding-bottom: dt.$spacing-md;
     border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
 }
 
+.toggleSections {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    min-width: 0;
+}
+
+// A group of toggles is one labeled row — the plate rail's anatomy, one
+// rank down: eyebrow label gutter, pills beside it.
+.toggleGroup {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-lg;
+
+    @media (max-width: 767.98px) {
+        flex-direction: column;
+        gap: dt.$spacing-xs;
+    }
+}
+
+.toggleGroupLabel {
+    @include board.board-eyebrow;
+    flex-shrink: 0;
+    min-width: 7.5rem;
+
+    @media (max-width: 767.98px) {
+        min-width: 0;
+    }
+}
+
 .togglePills {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: dt.$spacing-sm;
+}
+
+// Per-group all/none shortcut, quiet so the pills stay the row's subject.
+.groupAction {
+    @include board.board-quiet-link;
+    white-space: nowrap;
 }
 
 .pill,
@@ -93,9 +130,20 @@
     overflow-x: auto;
 }
 
+// Lead-column widths, shared by the cells and their sticky left offsets —
+// the offsets only line up because every cell is border-box at these exact
+// widths.
+$col-rank: 3.5rem;
+$col-runner: 13rem;
+$col-runner-narrow: 9.5rem;
+$col-score: 7.5rem;
+
 .table {
     @include board.board-table;
     min-width: 100%;
+    // Opaque paint for the sticky lead columns (a translucent bg would show
+    // category cells scrolling underneath). Rows override it below.
+    --sticky-bg: var(--board-surface-bg, var(--bs-body-bg));
 
     // Same neutral header band as the leaderboard.
     thead th {
@@ -111,6 +159,10 @@
         border-bottom: 0;
     }
 
+    tbody tr:hover {
+        --sticky-bg: var(--bs-tertiary-bg);
+    }
+
     // Nested for specificity: board-table's `thead th` sets text-align left
     // at 0,1,2 — a bare class can't win, which is why the category headers
     // used to sit left over their right-aligned cells.
@@ -119,14 +171,67 @@
     thead th.thCategory {
         text-align: right;
     }
+
+    // Sticky header cells need the band color precomposed over the surface
+    // — the rgba band above would let scrolled content bleed through.
+    thead th.thRank,
+    thead th.thRunner,
+    thead th.thScore {
+        background: color-mix(
+            in srgb,
+            var(--bs-body-color) 4%,
+            var(--board-surface-bg, var(--bs-body-bg))
+        );
+    }
 }
 
-.thRank {
-    width: 2.5rem;
+// ---- Sticky lead columns -------------------------------------
+// Rank, runner and points pin to the left edge while the category matrix
+// scrolls under them — a wide game stays a readable leaderboard.
+%stickyLead {
+    position: sticky;
+    z-index: 2;
+    box-sizing: border-box;
+    background: var(--sticky-bg);
 }
 
-.thScore {
-    width: 8rem;
+.thRank,
+.tdRank {
+    @extend %stickyLead;
+    left: 0;
+    width: $col-rank;
+    min-width: $col-rank;
+    max-width: $col-rank;
+}
+
+.thRunner,
+.tdRunner {
+    @extend %stickyLead;
+    left: $col-rank;
+    width: $col-runner;
+    min-width: $col-runner;
+    max-width: $col-runner;
+
+    @media (max-width: 767.98px) {
+        width: $col-runner-narrow;
+        min-width: $col-runner-narrow;
+        max-width: $col-runner-narrow;
+    }
+}
+
+.thScore,
+.tdScore {
+    @extend %stickyLead;
+    left: calc(#{$col-rank} + #{$col-runner});
+    width: $col-score;
+    min-width: $col-score;
+    max-width: $col-score;
+    // The seam where the matrix disappears under the pinned block.
+    border-right: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+
+    @media (max-width: 767.98px) {
+        left: calc(#{$col-rank} + #{$col-runner-narrow});
+    }
 }
 
 .thCategory {
@@ -178,6 +283,25 @@
 
     &:first-child {
         box-shadow: inset 3px 0 0 dt.$accent-gold;
+    }
+}
+
+// Sticky lead cells can't use the translucent wash (scrolled content would
+// bleed through) — precompose the same 5% gold over the surface, and restate
+// the opaque background at td level: `.podiumRow1 td`'s wash outranks the
+// bare cell classes, so without this the leader's pinned cells went
+// see-through (0,2,1 beats 0,1,1).
+.podiumRow1 {
+    --sticky-bg: color-mix(
+        in srgb,
+        #{dt.$accent-gold} 5%,
+        var(--board-surface-bg, var(--bs-body-bg))
+    );
+
+    td.tdRank,
+    td.tdRunner,
+    td.tdScore {
+        background: var(--sticky-bg);
     }
 }
 

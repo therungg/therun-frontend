@@ -3,7 +3,8 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
 import type { GameStandings } from '../../../../../types/leaderboards.types';
-import { CategoryToggles } from './category-toggles';
+import { CategoryToggles, type ToggleSection } from './category-toggles';
+import type { StandingsSection } from './order';
 import { computeStandings, decodeStandings } from './scoring';
 import styles from './standings.module.scss';
 import { StandingsTable } from './standings-table';
@@ -14,15 +15,21 @@ const ROW_LIMIT = 20;
 interface Props {
     gameSlug: string;
     data: GameStandings;
+    /** Toggle-band structure + per-group default, from the resolver (order.ts). */
+    sections: StandingsSection[];
 }
 
+const sameSet = (a: number[], b: number[]) =>
+    a.length === b.length && a.every((v, i) => v === b[i]);
+
 /**
- * Selection lives in the URL (`?categories=any,120star`, omitted = all) so a
+ * Selection lives in the URL (`?categories=any,120star`, omitted = the
+ * DEFAULT set — main groups counted, hidden-by-default groups out) so a
  * filtered standings is shareable and back-button correct. Written with
  * `replace`, not `push` — toggling four pills shouldn't bury the back button
  * under four history entries.
  */
-export function StandingsView({ gameSlug, data }: Props) {
+export function StandingsView({ gameSlug, data, sections }: Props) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -32,17 +39,65 @@ export function StandingsView({ gameSlug, data }: Props) {
     // pre-decoded columns, not a re-parse of the payload.
     const matrix = useMemo(() => decodeStandings(data), [data]);
 
+    // Resolver sections mapped onto payload indices. Payload categories the
+    // resolver doesn't know join the trailing unlabeled section — present
+    // and counted, never silently dropped.
+    const { uiSections, defaultSelected } = useMemo(() => {
+        const nameToIdx = new Map(data.categories.map((c, i) => [c.name, i]));
+        const used = new Set<number>();
+        const mapped = sections.map((s, si) => ({
+            key: `s${si}`,
+            label: s.label,
+            defaultCounted: s.defaultCounted,
+            indices: s.names
+                .map((n) => nameToIdx.get(n))
+                .filter((i): i is number => {
+                    // First section wins: the resolver can hold duplicate
+                    // category names (unmerged dupes), and without this
+                    // guard the same payload column lands in two rows.
+                    if (i == null || used.has(i)) return false;
+                    used.add(i);
+                    return true;
+                }),
+        }));
+        const leftovers = data.categories
+            .map((_, i) => i)
+            .filter((i) => !used.has(i));
+        if (leftovers.length > 0) {
+            const tail = mapped.find((s) => s.label === null);
+            if (tail) tail.indices.push(...leftovers);
+            else
+                mapped.push({
+                    key: 'tail',
+                    label: null,
+                    defaultCounted: true,
+                    indices: leftovers,
+                });
+        }
+        const ui: ToggleSection[] = mapped
+            .filter((s) => s.indices.length > 0)
+            .map(({ key, label, indices }) => ({ key, label, indices }));
+        let def = mapped
+            .filter((s) => s.defaultCounted)
+            .flatMap((s) => s.indices)
+            .sort((a, b) => a - b);
+        // A game whose every group is hidden-by-default still needs a
+        // competition: fall back to everything.
+        if (def.length === 0) def = data.categories.map((_, i) => i);
+        return { uiSections: ui, defaultSelected: def };
+    }, [data.categories, sections]);
+
     const param = searchParams.get('categories');
     const selected = useMemo(() => {
-        if (param === null) return data.categories.map((_, i) => i);
+        if (param === null) return defaultSelected;
         // An explicit empty value is a real state (everything deselected),
-        // distinct from the param being absent (everything selected).
+        // distinct from the param being absent (the default set).
         if (param === '') return [];
         const names = new Set(param.split(',').filter(Boolean));
         return data.categories
             .map((c, i) => (names.has(c.name) ? i : -1))
             .filter((i) => i >= 0);
-    }, [param, data.categories]);
+    }, [param, data.categories, defaultSelected]);
 
     const rows = useMemo(
         () => computeStandings(matrix, selected, ROW_LIMIT),
@@ -56,7 +111,10 @@ export function StandingsView({ gameSlug, data }: Props) {
 
     const commit = (next: number[]) => {
         const sp = new URLSearchParams(searchParams.toString());
-        if (next.length === data.categories.length) sp.delete('categories');
+        // The clean URL means "the default set" now, not "everything" — an
+        // explicit select-all on a game with hidden groups must be written
+        // out, or a reload would quietly drop the extensions again.
+        if (sameSet(next, defaultSelected)) sp.delete('categories');
         else
             sp.set(
                 'categories',
@@ -74,6 +132,16 @@ export function StandingsView({ gameSlug, data }: Props) {
         );
     };
 
+    /** Turn a whole section on or off in one commit. */
+    const setMany = (indices: number[], on: boolean) => {
+        const next = new Set(selected);
+        for (const i of indices) {
+            if (on) next.add(i);
+            else next.delete(i);
+        }
+        commit([...next].sort((a, b) => a - b));
+    };
+
     return (
         <div className={styles.page}>
             {/* The active view tab already says "Standings" — a second
@@ -82,8 +150,10 @@ export function StandingsView({ gameSlug, data }: Props) {
 
             <CategoryToggles
                 categories={data.categories}
+                sections={uiSections}
                 selected={selected}
                 onToggle={toggle}
+                onSetMany={setMany}
                 onAll={() => commit(data.categories.map((_, i) => i))}
                 onNone={() => commit([])}
             />
