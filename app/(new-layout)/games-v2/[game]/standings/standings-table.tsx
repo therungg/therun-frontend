@@ -21,7 +21,7 @@ const RANK_CLASS: Record<number, string> = {
     3: styles.rankBronze,
 };
 
-const pctText = (pct: number) => (pct * 100).toFixed(1);
+const ptsText = (pts: number) => Math.round(pts).toLocaleString();
 
 export function StandingsTable({ gameSlug, rows, columns }: Props) {
     return (
@@ -36,7 +36,7 @@ export function StandingsTable({ gameSlug, rows, columns }: Props) {
                         </th>
                         <th scope="col">Runner</th>
                         <th className={styles.thScore} scope="col">
-                            Score
+                            Points
                         </th>
                         {columns.map((category) => (
                             <th
@@ -94,7 +94,7 @@ export function StandingsTable({ gameSlug, rows, columns }: Props) {
                                 </td>
                                 <td className={styles.tdScore}>
                                     <span className={styles.scoreValue}>
-                                        {pctText(row.score)}
+                                        {ptsText(row.score)}
                                     </span>
                                     <span
                                         className={styles.scoreBar}
@@ -122,15 +122,28 @@ export function StandingsTable({ gameSlug, rows, columns }: Props) {
                                         {cell ? (
                                             <>
                                                 <span
-                                                    className={styles.cellPct}
+                                                    className={`${styles.cellRank} ${
+                                                        RANK_CLASS[cell.rank] ??
+                                                        ''
+                                                    }`}
+                                                    title={`${ptsText(cell.pts)} points`}
                                                 >
-                                                    {pctText(cell.pct)}%
+                                                    #{cell.rank}
+                                                    <span
+                                                        className={
+                                                            styles.cellField
+                                                        }
+                                                    >
+                                                        {' '}
+                                                        of{' '}
+                                                        {columns[
+                                                            c
+                                                        ].entryCount.toLocaleString()}
+                                                    </span>
                                                 </span>
                                                 <span
                                                     className={styles.cellMeta}
-                                                    title={`Rank ${cell.rank}`}
                                                 >
-                                                    #{cell.rank}
                                                     <span
                                                         className={
                                                             styles.cellTime
@@ -148,7 +161,7 @@ export function StandingsTable({ gameSlug, rows, columns }: Props) {
                                         ) : (
                                             <span
                                                 className={styles.cellAbsent}
-                                                title="No run on this board — counts as zero"
+                                                title="No run on this board"
                                             >
                                                 —
                                             </span>

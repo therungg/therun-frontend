@@ -81,15 +81,14 @@ export function StandingsView({ gameSlug, data }: Props) {
                     <span className={styles.eyebrow}>Standings</span>
                 </h2>
                 <p className={styles.explainer}>
-                    Top 20 across categories. Each category scores you against
-                    its best time. Your score is the average across every
-                    counted category —
+                    Top 20 across categories. Every board pays points by
+                    placement and field size:{' '}
                     <strong>
-                        {' '}
-                        a category you haven&apos;t run counts as zero
+                        #1 earns the whole field, #4 half of it, #100 a tenth
                     </strong>
-                    , so breadth wins. Turn categories off to ask a different
-                    question.
+                    . Your total is the sum over the counted categories — deep
+                    fields are worth more, and running more boards adds up. Turn
+                    categories off to ask a different question.
                 </p>
             </header>
 
