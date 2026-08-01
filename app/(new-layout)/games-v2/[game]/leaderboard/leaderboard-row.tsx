@@ -250,12 +250,9 @@ export function LeaderboardRow({
                     <UserLink username={entry.runnerName} url={undefined} />
                     <CountryFlag country={entry.country} />
                     {entry.rank === 1 && (
-                        <span className={styles.wrChip}>
-                            <span className="visually-hidden">
-                                World record
-                            </span>
-                            <span aria-hidden="true">WR</span>
-                        </span>
+                        // "Record", not "WR" — this is the board's best
+                        // known time, not a verified world record claim.
+                        <span className={styles.wrChip}>Record</span>
                     )}
                 </span>
             </td>

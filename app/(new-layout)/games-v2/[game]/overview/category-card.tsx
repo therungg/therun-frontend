@@ -90,7 +90,7 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
                                     : styles.recordEyebrow
                             }
                         >
-                            World record
+                            Record
                         </span>
                         <span
                             className={
@@ -105,6 +105,14 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
                             )}
                         </span>
                         <span className={styles.recordHolder}>
+                            {/* Rank-1 gutter: gold numeral on the same axis
+                                as the podium's silver/bronze gutter, so the
+                                card reads 1-2-3 down one column. */}
+                            <span
+                                className={`${styles.podiumRank} ${styles.rankGoldNum}`}
+                            >
+                                1
+                            </span>
                             <RunnerAvatar
                                 name={wr.runnerName}
                                 picture={wr.picture}

@@ -250,12 +250,20 @@
     z-index: 2;
 }
 
+// The record holder is the card's #1 — one visual rank above the podium
+// rows: heavier name, emphasis tone (podium names stay tertiary-quiet).
 .recordHolderName {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-weight: 600;
+
+    a {
+        color: var(--bs-emphasis-color);
+    }
 }
+
 
 .recordWhen {
     color: var(--bs-tertiary-color);
@@ -314,6 +322,14 @@
 
 .rankBronze {
     color: dt.$accent-bronze;
+}
+
+// Gold rank-1 numeral in the record holder's gutter — completes the
+// podium's 1-2-3 column. Declared after `.podiumRank` (which it composes
+// with) so the gold wins the same-specificity cascade.
+.rankGoldNum {
+    color: dt.$accent-gold;
+    font-weight: 700;
 }
 
 // Fixed slot centres the 20px runner-up avatars under the 28px record
