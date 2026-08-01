@@ -76,7 +76,7 @@ export function StickyBoardBar({
                     className={gamePageStyles.quietLink}
                     onClick={onOpenHistory}
                 >
-                    WR history
+                    Record history
                 </button>
             </span>
         </div>

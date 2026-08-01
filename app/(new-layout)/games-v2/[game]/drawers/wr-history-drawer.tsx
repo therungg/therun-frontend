@@ -75,7 +75,7 @@ export function WrHistoryDrawer({
         >
             <div className={styles.header}>
                 <h5 className={styles.title} id="wr-history-title">
-                    World record history — {categoryDisplay}
+                    Record history — {categoryDisplay}
                 </h5>
                 <button
                     type="button"
@@ -87,7 +87,7 @@ export function WrHistoryDrawer({
             <div className={styles.body}>
                 {error && (
                     <div className={styles.errorAlert} role="alert">
-                        Failed to load WR history: {error}
+                        Failed to load record history: {error}
                     </div>
                 )}
                 {!error && rows === null && (
@@ -115,7 +115,7 @@ export function WrHistoryDrawer({
                             aria-hidden
                         />
                         <p className={styles.emptyTitle}>
-                            No world record history yet.
+                            No record history yet.
                         </p>
                     </div>
                 )}
