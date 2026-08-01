@@ -33,6 +33,7 @@ interface CategoriesEndpointRow {
     total_run_time: number;
     total_attempt_count: number;
     total_finished_attempt_count: number;
+    total_pbs?: number;
     unique_runners: number;
     primary_timing?: string; // "realtime" | "gametime" | "rt" | "gt"
     hide_real_time?: boolean;
@@ -266,6 +267,7 @@ export async function resolveCategory(
             totalRunTime: r.total_run_time,
             totalAttemptCount: r.total_attempt_count,
             totalFinishedAttemptCount: r.total_finished_attempt_count,
+            totalPbs: r.total_pbs ?? 0,
             uniqueRunners: r.unique_runners,
             rules: r.rules ?? null,
             showMilliseconds: r.show_milliseconds ?? true,

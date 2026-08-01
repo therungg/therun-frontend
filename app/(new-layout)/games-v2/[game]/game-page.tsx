@@ -222,6 +222,8 @@ export function GamePage({
                             recentPbs={data.recentPbs}
                             claim={claim}
                             moderators={moderators}
+                            board={data.selectedCategory}
+                            boardActivity={data.boardActivity}
                             about={
                                 data.gameMeta.summaryOverride ??
                                 data.gameMeta.summary

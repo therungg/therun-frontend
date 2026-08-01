@@ -39,6 +39,8 @@ export interface ResolvedCategory {
     totalRunTime?: number;
     totalAttemptCount?: number;
     totalFinishedAttemptCount?: number;
+    /** Count of runs that were a PB when finished — category_stats.total_pbs. */
+    totalPbs?: number;
     uniqueRunners?: number;
     rules?: string | null;
     showMilliseconds?: boolean;
@@ -71,6 +73,13 @@ export interface RecentPb {
     gameTime?: number | null;
     endedAt: string;
     isPb: boolean;
+    /**
+     * The runner's previous PB on this board (RT / GT), straight from
+     * `FINISHED_RUN_SELECT.previousPb` — null for a first-ever PB. Optional
+     * for the same cast-without-mapping reason as `runId` below.
+     */
+    previousPb?: number | null;
+    previousPbGameTime?: number | null;
     // Optional: the same /v1/finished-runs endpoint's parallel shape
     // (FinishedRunPB, src/lib/highlights.ts) always carries `runId`, but
     // getRecentPbs casts the raw response straight to RecentPb[] with no
