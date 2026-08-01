@@ -4,15 +4,15 @@ import type {
     StandingsCategory,
     StandingsRunner,
 } from '../../../../../types/leaderboards.types';
-import { computeStandings, decodeStandings } from './scoring';
+import { computeStandings, decodeStandings, placementPoints } from './scoring';
 
-const cat = (id: number, wrTimeMs: number): StandingsCategory => ({
+const cat = (id: number, entryCount: number): StandingsCategory => ({
     id,
     name: `c${id}`,
     display: `Category ${id}`,
     timing: 'rt',
-    wrTimeMs,
-    entryCount: 0,
+    wrTimeMs: 100,
+    entryCount,
 });
 
 const runner = (name: string): StandingsRunner => ({
@@ -23,7 +23,7 @@ const runner = (name: string): StandingsRunner => ({
     country: null,
 });
 
-/** Two categories, WR 100ms each, so pct is trivially readable in tests. */
+/** Two categories, 100 entries each, so points are trivially readable. */
 function build(
     runners: string[],
     cells: GameStandings['cells'],
@@ -37,73 +37,98 @@ function build(
     };
 }
 
+describe('placementPoints', () => {
+    it('pays #1 the whole field, #4 half, #100 a tenth', () => {
+        expect(placementPoints(100, 1)).toBe(100);
+        expect(placementPoints(100, 4)).toBe(50);
+        expect(placementPoints(100, 100)).toBe(10);
+    });
+
+    it('is steep at the top: #1 clearly outweighs #10 on a big board', () => {
+        const first = placementPoints(1000, 1);
+        const tenth = placementPoints(1000, 10);
+        expect(first / tenth).toBeGreaterThan(3);
+    });
+});
+
 describe('decodeStandings', () => {
-    it('turns wr/time into pct, with the WR holder at exactly 1', () => {
+    it('turns rank + field into points', () => {
         const m = decodeStandings(
             build(
-                ['wr', 'half'],
+                ['first', 'fourth'],
                 [
                     [0, 0, 1, 100],
-                    [0, 1, 2, 200],
+                    [0, 1, 4, 200],
                 ],
             ),
         );
-        expect(m.pct[0][0]).toBe(1);
-        expect(m.pct[0][1]).toBe(0.5);
+        expect(m.pts[0][0]).toBe(100);
+        expect(m.pts[0][1]).toBe(50);
     });
 
     it('leaves absent cells at 0 rather than filling them', () => {
         const m = decodeStandings(build(['a'], [[0, 0, 1, 100]]));
-        expect(m.pct[1][0]).toBe(0);
+        expect(m.pts[1][0]).toBe(0);
         expect(m.rank[1][0]).toBe(0);
     });
 
-    it('drops non-positive times instead of producing Infinity', () => {
-        // Boards carry auto-imported 0ms runs; a 0 denominator must never
-        // reach the matrix.
+    it('drops non-positive times (auto-imported 0ms runs)', () => {
         const m = decodeStandings(build(['zero'], [[0, 0, 1, 0]]));
-        expect(m.pct[0][0]).toBe(0);
-        expect(Number.isFinite(m.pct[0][0])).toBe(true);
+        expect(m.pts[0][0]).toBe(0);
     });
 
-    it('drops cells whose category has a non-positive WR', () => {
+    it('drops non-positive ranks instead of producing Infinity/NaN', () => {
+        const m = decodeStandings(build(['bad'], [[0, 0, 0, 100]]));
+        expect(m.pts[0][0]).toBe(0);
+        expect(Number.isFinite(m.pts[0][0])).toBe(true);
+    });
+
+    it('drops cells whose category reports no entryCount', () => {
         const m = decodeStandings(
             build(['a'], [[0, 0, 1, 500]], [cat(1, 0), cat(2, 100)]),
         );
-        expect(m.pct[0][0]).toBe(0);
-    });
-
-    it('clamps pct at 1 so a stale WR cannot print over 100%', () => {
-        const m = decodeStandings(build(['fast'], [[0, 0, 1, 50]]));
-        expect(m.pct[0][0]).toBe(1);
+        expect(m.pts[0][0]).toBe(0);
     });
 });
 
 describe('computeStandings', () => {
-    it('averages over ALL selected categories, counting absent as zero', () => {
-        // Present on one of two selected boards at full pct -> 0.5, not 1.0.
-        const m = decodeStandings(build(['solo'], [[0, 0, 1, 100]]));
-        const [row] = computeStandings(m, [0, 1], 20);
-        expect(row.score).toBe(0.5);
-        expect(row.coverage).toBe(1);
-    });
-
-    it('ranks coverage above peak — the property most likely to be "fixed" into a bug', () => {
-        // broad: 85% on both boards. peak: the WR of one, absent on the other.
+    it('sums points over the selected categories', () => {
+        // #1 of 100 on one board + #4 of 100 on the other -> 150.
         const m = decodeStandings(
             build(
-                ['broad', 'peak'],
+                ['both'],
                 [
-                    [0, 0, 12, 118],
-                    [1, 0, 9, 118],
-                    [0, 1, 1, 100],
+                    [0, 0, 1, 100],
+                    [1, 0, 4, 200],
                 ],
             ),
         );
+        const [row] = computeStandings(m, [0, 1], 20);
+        expect(row.score).toBe(150);
+        expect(row.coverage).toBe(2);
+    });
+
+    it('pays nothing for a board not run — no absent-counts-as-zero average', () => {
+        const m = decodeStandings(build(['solo'], [[0, 0, 1, 100]]));
+        const [row] = computeStandings(m, [0, 1], 20);
+        expect(row.score).toBe(100);
+        expect(row.cells[1]).toBeNull();
+    });
+
+    it('a deep field outweighs a shallow one at the same rank', () => {
+        // #1 of 1000 beats #1 of 50 + #10 of 50.
+        const m = decodeStandings(
+            build(
+                ['deep', 'shallow'],
+                [
+                    [0, 0, 1, 100],
+                    [1, 1, 1, 100],
+                ],
+                [cat(1, 1000), cat(2, 50)],
+            ),
+        );
         const rows = computeStandings(m, [0, 1], 20);
-        expect(rows.map((r) => r.runner.name)).toEqual(['broad', 'peak']);
-        expect(rows[0].score).toBeGreaterThan(rows[1].score);
-        expect(rows[1].score).toBe(0.5);
+        expect(rows.map((r) => r.runner.name)).toEqual(['deep', 'shallow']);
     });
 
     it('reduces to that board when a single category is selected', () => {
@@ -144,13 +169,13 @@ describe('computeStandings', () => {
     });
 
     it('breaks a score tie on coverage first', () => {
-        // Both average 0.5 across two categories: one via 2x0.5, one via 1x1.0.
+        // Both total 100: one via 2 x #4 (50+50), one via a single #1.
         const m = decodeStandings(
             build(
                 ['spread', 'single'],
                 [
-                    [0, 0, 5, 200],
-                    [1, 0, 5, 200],
+                    [0, 0, 4, 200],
+                    [1, 0, 4, 200],
                     [0, 1, 1, 100],
                 ],
             ),
@@ -161,20 +186,23 @@ describe('computeStandings', () => {
         expect(rows[0].coverage).toBe(2);
     });
 
-    it('breaks a score+coverage tie on the best single pct', () => {
-        // Both: coverage 2, sum 1.2 -> score 0.6. Different peaks.
+    it('breaks a score+coverage tie on the best single cell', () => {
+        // Both total 105 over 2 boards (fields 90 and 120):
+        // peaky = #1 of 90 (90) + #64 of 120 (15); even = #4 of both (45+60).
         const m = decodeStandings(
             build(
                 ['peaky', 'even'],
                 [
-                    [0, 0, 1, 125], // 0.8
-                    [1, 0, 9, 250], // 0.4
-                    [0, 1, 3, 167], // ~0.6
-                    [1, 1, 3, 167], // ~0.6
+                    [0, 0, 1, 100],
+                    [1, 0, 64, 400],
+                    [0, 1, 4, 167],
+                    [1, 1, 4, 167],
                 ],
+                [cat(1, 90), cat(2, 120)],
             ),
         );
         const rows = computeStandings(m, [0, 1], 20);
+        expect(rows[0].score).toBeCloseTo(rows[1].score);
         expect(rows[0].coverage).toBe(rows[1].coverage);
         expect(rows[0].runner.name).toBe('peaky');
     });

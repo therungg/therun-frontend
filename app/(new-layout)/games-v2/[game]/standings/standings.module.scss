@@ -205,11 +205,19 @@
     white-space: nowrap;
 }
 
-.cellPct {
+// The runner's own language leads the cell: their rank. Field size trails
+// quietly on the same line ("#4 of 769"), the time beneath.
+.cellRank {
     @include board.mono-time;
     display: block;
     font-size: dt.$font-size-sm;
     font-weight: 600;
+}
+
+.cellField {
+    font-weight: 400;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
 }
 
 .cellMeta {
@@ -220,7 +228,7 @@
 }
 
 .cellTime {
-    margin-left: dt.$spacing-xs;
+    margin-left: 0;
 }
 
 // An em dash, not a 0.0% — the runner has no run here, and printing a score

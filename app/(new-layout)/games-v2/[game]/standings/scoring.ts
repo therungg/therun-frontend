@@ -5,39 +5,38 @@ import type {
 } from '../../../../../types/leaderboards.types';
 
 /**
- * A runner's result on one category. `null` where they haven't run it — the
- * distinction between "absent" and "scored zero" matters for display even
- * though both contribute 0 to the score.
+ * A runner's result on one category. `null` where they haven't run it — an
+ * absent board simply pays no points.
  */
 export interface ScoredCell {
-    /** wrTimeMs / timeMs, in (0, 1]. 1 for the WR holder. */
-    pct: number;
+    /** Placement points: entryCount / sqrt(rank). */
+    pts: number;
     rank: number;
     timeMs: number;
 }
 
 export interface ScoredRunner {
     runner: StandingsRunner;
-    /** Mean pct over the selected categories, absent = 0. In [0, 1]. */
+    /** Total placement points over the selected categories. */
     score: number;
     /** Selected categories this runner has actually run. */
     coverage: number;
-    /** Highest pct across the selected categories; the first tie-break. */
+    /** Highest single-cell points across the selected categories; the second tie-break. */
     best: number;
     /** Indexed by position in the SELECTED category list, not the full one. */
     cells: (ScoredCell | null)[];
 }
 
 /**
- * The decoded matrix. Columns are `Float64Array` of pct indexed by runner, with
- * 0 meaning "no run" — decoded once at load so a toggle is a pass over typed
+ * The decoded matrix. Columns are typed arrays indexed by runner, with 0
+ * meaning "no run" — decoded once at load so a toggle is a pass over typed
  * arrays rather than a walk over the sparse wire format.
  */
 export interface StandingsMatrix {
     categories: StandingsCategory[];
     runners: StandingsRunner[];
-    /** pct[categoryIndex][runnerIndex]; 0 = absent. */
-    pct: Float64Array[];
+    /** pts[categoryIndex][runnerIndex]; 0 = absent. */
+    pts: Float64Array[];
     /** rank[categoryIndex][runnerIndex]; 0 = absent. */
     rank: Int32Array[];
     /** timeMs[categoryIndex][runnerIndex]; 0 = absent. */
@@ -46,19 +45,31 @@ export interface StandingsMatrix {
 }
 
 /**
+ * Placement points for one board: the whole field for #1, decaying with the
+ * square root of rank — #4 pays half the field, #100 a tenth. Steep enough
+ * that podium places clearly outweigh mid-pack ones (the linear
+ * "runners-outranked" count made #1 and #10 near-identical on a big board),
+ * but not so steep that one lucky podium on a tiny board beats deep
+ * excellence everywhere (the harmonic curve's failure mode).
+ */
+export function placementPoints(entryCount: number, rank: number): number {
+    return entryCount / Math.sqrt(rank);
+}
+
+/**
  * Decode the columnar payload into typed columns.
  *
- * Cells whose time is non-positive are dropped. Boards platform-wide carry
- * auto-imported runs with 0ms times sitting at rank 1; a 0 denominator would
- * yield Infinity and a 0 numerator would zero out an entire column, so neither
- * is allowed to enter the matrix. The backend applies the same rule, this is
- * defence in depth against a payload from an older deploy.
+ * Cells whose time or rank is non-positive are dropped, as are cells whose
+ * category reports no entryCount. Boards platform-wide carry auto-imported
+ * runs with 0ms times sitting at rank 1; none of these may enter the matrix
+ * as points. The backend applies the same rule, this is defence in depth
+ * against a payload from an older deploy.
  */
 export function decodeStandings(data: GameStandings): StandingsMatrix {
     const nCats = data.categories.length;
     const nRunners = data.runners.length;
 
-    const pct = Array.from({ length: nCats }, () => new Float64Array(nRunners));
+    const pts = Array.from({ length: nCats }, () => new Float64Array(nRunners));
     const rank = Array.from({ length: nCats }, () => new Int32Array(nRunners));
     const timeMs = Array.from(
         { length: nCats },
@@ -66,12 +77,10 @@ export function decodeStandings(data: GameStandings): StandingsMatrix {
     );
 
     for (const [categoryIdx, runnerIdx, cellRank, cellTime] of data.cells) {
-        if (cellTime <= 0) continue;
-        const wr = data.categories[categoryIdx]?.wrTimeMs;
-        if (!wr || wr <= 0) continue;
-        // Clamp: a runner can't be faster than the fastest time on their own
-        // board, but a stale cached wrTimeMs shouldn't be able to print 104%.
-        pct[categoryIdx][runnerIdx] = Math.min(1, wr / cellTime);
+        if (cellTime <= 0 || cellRank <= 0) continue;
+        const field = data.categories[categoryIdx]?.entryCount;
+        if (!field || field <= 0) continue;
+        pts[categoryIdx][runnerIdx] = placementPoints(field, cellRank);
         rank[categoryIdx][runnerIdx] = cellRank;
         timeMs[categoryIdx][runnerIdx] = cellTime;
     }
@@ -79,7 +88,7 @@ export function decodeStandings(data: GameStandings): StandingsMatrix {
     return {
         categories: data.categories,
         runners: data.runners,
-        pct,
+        pts,
         rank,
         timeMs,
         truncated: data.truncated,
@@ -89,19 +98,19 @@ export function decodeStandings(data: GameStandings): StandingsMatrix {
 /**
  * Rank runners across the selected categories.
  *
- *     score = mean(pct over ALL selected categories, absent = 0)
+ *     score = sum(placementPoints over the selected categories they've run)
  *
- * Absent-counts-as-zero is the point of the toggles: they change the question
- * being asked, not merely which rows are visible. A consequence worth stating
- * because it looks like a bug and isn't — **coverage beats peak**. A runner
- * 60th on two selected boards scores (0.85 + 0.85) / 2 = 0.85 and outranks the
- * world-record holder of one who never ran the other, at (1.0 + 0) / 2 = 0.50.
+ * Every number is grounded: a board pays points by placement and field size,
+ * a board you haven't run pays nothing. Deep fields are worth more than
+ * shallow ones by construction, and coverage adds — but the sqrt curve keeps
+ * podium places on big boards decisive.
  *
  * `selected` holds indices into `matrix.categories`. Order is preserved into
  * each row's `cells`, so the caller's column order drives the row layout.
  *
- * Tie-break: coverage, then best single pct, then name — fully deterministic,
- * so the table never reshuffles between renders of identical input.
+ * Tie-break: coverage, then best single-cell points, then name — fully
+ * deterministic, so the table never reshuffles between renders of identical
+ * input.
  */
 export function computeStandings(
     matrix: StandingsMatrix,
@@ -111,7 +120,6 @@ export function computeStandings(
     if (selected.length === 0 || limit <= 0) return [];
 
     const n = matrix.runners.length;
-    const divisor = selected.length;
     const rows: ScoredRunner[] = [];
 
     for (let r = 0; r < n; r++) {
@@ -121,13 +129,13 @@ export function computeStandings(
         const cells: (ScoredCell | null)[] = [];
 
         for (const c of selected) {
-            const p = matrix.pct[c][r];
+            const p = matrix.pts[c][r];
             if (p > 0) {
                 sum += p;
                 coverage += 1;
                 if (p > best) best = p;
                 cells.push({
-                    pct: p,
+                    pts: p,
                     rank: matrix.rank[c][r],
                     timeMs: matrix.timeMs[c][r],
                 });
@@ -142,7 +150,7 @@ export function computeStandings(
 
         rows.push({
             runner: matrix.runners[r],
-            score: sum / divisor,
+            score: sum,
             coverage,
             best,
             cells,
