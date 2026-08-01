@@ -16,7 +16,6 @@ export default function StandingsLoading() {
         <div className={gamePageStyles.grid}>
             <div className={gamePageStyles.colMain}>
                 <div className={styles.page}>
-                    <div className={styles.title} />
                     <div className={styles.band}>
                         {PILLS.map((_, i) => (
                             // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
