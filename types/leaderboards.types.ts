@@ -162,6 +162,36 @@ export interface LeaderboardResponse {
     hideGameTime: boolean;
 }
 
+// Backend: GET /mod/v1/leaderboards/{game}/{category}/export — the whole
+// board in one response plus per-run fields the paginated endpoint doesn't
+// carry. Rides the /mod base path (main gateway is at its resource cap).
+export interface LeaderboardExportEntry extends LeaderboardEntry {
+    subcategoryKey: string | null;
+    platform: string | null;
+    emulator: boolean | null;
+    /** speedrun.com-linked run reference, when the run was timer-synced. */
+    speedrunRunId: string | null;
+    verifiedAt: string | null;
+    ingestedAt: string | null;
+    /** How the entry got here: timer | guest_submit | submission | manual_mod | manual_self. */
+    origin: string | null;
+}
+
+export interface LeaderboardExportResponse {
+    game: { id: number; slug: string; display: string };
+    category: { id: number; slug: string; display: string };
+    timing: 'rt' | 'gt';
+    defaultTiming: 'rt' | 'gt';
+    forceRealTime: boolean;
+    hideRealTime: boolean;
+    hideGameTime: boolean;
+    totalItems: number;
+    /** True when the backend's row guard fired and entries < totalItems. */
+    truncated: boolean;
+    exportedAt: string;
+    entries: LeaderboardExportEntry[];
+}
+
 export interface WrHistoryEntry {
     runnerName: string;
     time: number;

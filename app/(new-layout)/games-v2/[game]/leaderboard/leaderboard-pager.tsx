@@ -12,6 +12,7 @@ import { FiltersPopover } from '../filters/filters-popover';
 import { VerifiedToggle } from '../filters/verified-toggle';
 import { isSameRunner } from '../shared/is-same-runner';
 import { computeBoardRange } from './board-range';
+import { ExportButton } from './export-button';
 import { planFindMeSearch } from './find-me-plan';
 import styles from './leaderboard.module.scss';
 import { YOU_ROW_ID } from './leaderboard-row';
@@ -369,6 +370,13 @@ export function LeaderboardPager({
                             </button>
                         )}
                         <VerifiedToggle verified={query.verified ?? false} />
+                        <ExportButton
+                            query={query}
+                            gameSlug={gameSlug}
+                            categorySlug={categorySlug}
+                            subcategoryKey={subcategoryKey}
+                            showMilliseconds={showMilliseconds}
+                        />
                         <FiltersPopover
                             defs={variableDefs}
                             selectedVarFilters={selectedVarFilters}
