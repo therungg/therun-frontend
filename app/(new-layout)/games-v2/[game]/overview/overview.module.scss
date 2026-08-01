@@ -5,31 +5,33 @@
     margin-bottom: dt.$spacing-2xl;
 }
 
-// Section header: shared board anatomy — eyebrow label left, mono
-// count right, hairline under.
+// Section header: eyebrow label with its count riding it, hairline under —
+// the count no longer strands at the far end of the hairline.
 .sectionHead {
     @include board.board-section-head;
+    justify-content: flex-start;
     margin-top: 0;
 }
 
 .sectionLabel {
     @include board.board-eyebrow;
+    display: inline-flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
 }
 
-// Disclosure form of the section label, for hidden-by-default groups.
-.sectionToggle {
-    @include board.board-eyebrow;
-    display: inline-flex;
-    align-items: center;
-    gap: dt.$spacing-xs;
-    padding: 0;
-    border: 0;
-    background: none;
-    cursor: pointer;
+// Hidden-by-default group's heading: no hairline — the dashed chip below
+// is the whole affordance.
+.collapsibleHead {
+    margin: 0 0 dt.$spacing-sm;
+}
 
-    &:hover {
-        color: var(--bs-emphasis-color);
-    }
+// Disclosure toggle as a dashed ghost chip (the plate's collapsed-group
+// vocabulary), not a bare text run on a full-width rule.
+.sectionToggle {
+    @include board.board-chip;
+    @include board.board-chip-ghost;
+    gap: dt.$spacing-xs;
 }
 
 .sectionCount {
@@ -94,6 +96,57 @@
     flex-direction: column;
     gap: dt.$spacing-lg;
     padding: dt.$spacing-md;
+}
+
+// ---- Marquee (the wall's focal card) --------------------------
+// The first card of the first visible section spans the full grid width:
+// identity left, record centre-right at hero scale, podium as a right rail
+// behind a vertical hairline. Same anatomy, one rank up — nothing here
+// introduces new vocabulary.
+.plaqueMarquee {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: stretch;
+
+    .plaqueBody {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: dt.$spacing-lg dt.$spacing-3xl;
+        padding: dt.$spacing-lg dt.$spacing-xl;
+    }
+
+    .recordTime,
+    .recordTimeGold,
+    .recordTimeEmpty {
+        font-size: dt.$font-size-hero-time;
+    }
+
+    .podium {
+        flex: 0 0 17rem;
+        justify-content: center;
+        border-top: 0;
+        border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+        padding: dt.$spacing-md dt.$spacing-xl;
+    }
+
+    @media (max-width: 767.98px) {
+        flex-direction: column;
+
+        .recordTime,
+        .recordTimeGold,
+        .recordTimeEmpty {
+            font-size: dt.$font-size-3xl;
+        }
+
+        .podium {
+            flex: initial;
+            border-left: 0;
+            border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+            padding: dt.$spacing-sm dt.$spacing-md dt.$spacing-md;
+        }
+    }
 }
 
 // Verified world record: the plate's top edge in gold — the engraved
