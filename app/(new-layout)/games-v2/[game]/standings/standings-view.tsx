@@ -76,11 +76,9 @@ export function StandingsView({ gameSlug, data }: Props) {
 
     return (
         <div className={styles.page}>
-            <header className={styles.intro}>
-                <h2 className={styles.head}>
-                    <span className={styles.eyebrow}>Standings</span>
-                </h2>
-            </header>
+            {/* The active view tab already says "Standings" — a second
+                visible label directly under it was pure repetition. */}
+            <h2 className="visually-hidden">Standings</h2>
 
             <CategoryToggles
                 categories={data.categories}

@@ -8,16 +8,10 @@
     padding-top: dt.$spacing-xl;
 }
 
-.title,
 .pill,
 .row {
     @include board.board-skeleton;
     border-radius: dt.$radius-sm;
-}
-
-.title {
-    width: 16rem;
-    height: 1.6rem;
 }
 
 .band {

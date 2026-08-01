@@ -4,19 +4,7 @@
 .page {
     display: flex;
     flex-direction: column;
-    gap: dt.$spacing-xl;
-}
-
-.intro {
-    max-width: 46rem;
-}
-
-.head {
-    @include board.board-section-head;
-}
-
-.eyebrow {
-    @include board.board-eyebrow;
+    gap: dt.$spacing-lg;
 }
 
 // ---- Toggle band ---------------------------------------------
@@ -39,7 +27,8 @@
 .pill,
 .pillOn {
     @include board.control-pill;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border: 1px solid
+        var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
     // control-pill sets its own padding, so the coarse-pointer rule inside the
     // mixin is overridden by that shorthand — restate it here (see the note in
     // _board.scss on control-pill).
@@ -48,9 +37,22 @@
     }
 }
 
+// Counted = the plate's solid active-chip key, not a faint tint — which
+// boards are in the competition must be the band's loudest signal.
 .pillOn {
-    @include board.control-pill-active;
-    border-color: rgba(var(--bs-primary-rgb), 0.45);
+    background: var(--bs-primary);
+    border-color: color-mix(in srgb, var(--bs-primary) 70%, white);
+    color: #fff;
+    font-weight: 600;
+
+    &:hover {
+        background: var(--bs-primary);
+        color: #fff;
+    }
+
+    .pillCount {
+        color: rgba(255, 255, 255, 0.75);
+    }
 }
 
 // The board's size, so a toggle carries the weight of what it adds.
@@ -83,24 +85,44 @@
 }
 
 // ---- Table ---------------------------------------------------
+// A real board panel, like the leaderboard's wrapper — the matrix floating
+// bare on the canvas was the page's biggest "unstyled" tell.
 .tableScroll {
+    @include board.board-surface(0);
+    overflow: hidden;
     overflow-x: auto;
-    // Keeps the focus ring on a scrolled-to cell from being clipped.
-    padding-bottom: dt.$spacing-xs;
 }
 
 .table {
     @include board.board-table;
     min-width: 100%;
 
+    // Same neutral header band as the leaderboard.
     thead th {
         vertical-align: bottom;
+        background: rgba(var(--bs-body-color-rgb), 0.04);
+    }
+
+    tbody td {
+        padding-block: dt.$spacing-sm;
+    }
+
+    tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    // Nested for specificity: board-table's `thead th` sets text-align left
+    // at 0,1,2 — a bare class can't win, which is why the category headers
+    // used to sit left over their right-aligned cells.
+    thead th.thRank,
+    thead th.thScore,
+    thead th.thCategory {
+        text-align: right;
     }
 }
 
 .thRank {
     width: 2.5rem;
-    text-align: right;
 }
 
 .thScore {
@@ -109,7 +131,6 @@
 
 .thCategory {
     min-width: 7.5rem;
-    text-align: right;
     white-space: normal;
 }
 
@@ -164,7 +185,7 @@
 }
 
 .tdScore {
-    position: relative;
+    text-align: right;
 }
 
 .scoreValue {
@@ -174,16 +195,22 @@
     letter-spacing: -0.01em;
 }
 
-// Proportional to the leader rather than to 100, so the column still reads as
-// a ranking when every score is low — which is the normal case, because
-// missing categories count as zero.
+// Proportional to the leader rather than to 100, so the column still reads
+// as a ranking however low the pack's totals run. A fixed-width track with
+// the fill painted inside it — the old track-less stub read as a stray
+// underline, not a proportion.
 .scoreBar {
     display: block;
+    width: 4.5rem;
     height: 3px;
-    width: var(--fill, 0%);
-    margin-top: 3px;
+    margin-top: 4px;
+    margin-left: auto;
     border-radius: 999px;
-    background: color-mix(in srgb, var(--bs-primary) 55%, transparent);
+    background: linear-gradient(
+        to right,
+        color-mix(in srgb, var(--bs-primary) 60%, transparent) var(--fill, 0%),
+        rgba(var(--bs-body-color-rgb), 0.1) var(--fill, 0%)
+    );
 }
 
 .tdCell {
