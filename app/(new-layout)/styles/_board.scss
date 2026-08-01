@@ -9,13 +9,16 @@
 
 // ---- Surfaces ----------------------------------------------
 @mixin board-surface($padding: dt.$spacing-2xl) {
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border: 1px solid
+        var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
     border-radius: dt.$radius-lg;
-    background: color-mix(
-        in srgb,
-        var(--bs-body-bg) 92%,
-        var(--bs-secondary-bg) 8%
+    // Theme-tuned panel color (_overrides.scss) — a real step above the
+    // canvas, not the old 92/8 body-bg mix that read as the same background.
+    background: var(
+        --board-surface-bg,
+        color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-secondary-bg) 8%)
     );
+    box-shadow: var(--board-surface-shadow, none);
     padding: $padding;
 }
 

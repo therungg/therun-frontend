@@ -1,0 +1,39 @@
+// Per-game ambient identity zone (BoardAmbience). `isolation` gives the
+// scope its own stacking context so the backdrop's negative z-index lands
+// behind every panel but still above the page canvas.
+.scope {
+    position: relative;
+    isolation: isolate;
+}
+
+// The game's own cover art as a full-bleed atmospheric banner behind the
+// top of the page. Heavily blurred and dimmed — it must read as ambience
+// around the opaque panels, never as an image; the mask fades it out well
+// before the leaderboard rows start. This is game art, not a decorative
+// gradient: with no cover the banner simply doesn't exist.
+.backdrop {
+    position: absolute;
+    top: -1.5rem;
+    left: calc(50% - 50vw);
+    width: 100vw;
+    height: 420px;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+    mask-image: linear-gradient(
+        to bottom,
+        black 0%,
+        rgba(0, 0, 0, 0.55) 55%,
+        transparent 100%
+    );
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        // Scale hides the blur's transparent edge bleed inside the crop.
+        transform: scale(1.25);
+        filter: blur(40px) saturate(1.3);
+        opacity: var(--board-backdrop-opacity, 0.4);
+    }
+}

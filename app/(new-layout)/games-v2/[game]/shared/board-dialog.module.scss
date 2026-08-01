@@ -18,7 +18,7 @@
 .content {
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
     border-radius: dt.$radius-lg;
-    background: var(--bs-body-bg);
+    background: var(--board-surface-bg, var(--bs-body-bg));
     box-shadow: dt.$shadow-xl;
     @include board.board-overlay-enter(scale);
 }

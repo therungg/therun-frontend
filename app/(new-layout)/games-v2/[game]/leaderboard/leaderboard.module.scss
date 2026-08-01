@@ -10,6 +10,13 @@
 .table {
     @include board.board-table;
 
+    // The game's accent as a whisper across the header row — the board's
+    // one structural line carries the game's color (speedrun.com register).
+    // Accentless games: transparent, exactly the old look.
+    thead th {
+        background: var(--board-accent-soft, transparent);
+    }
+
     tbody td {
         padding: dt.$spacing-sm dt.$spacing-lg;
 
@@ -352,7 +359,7 @@ tr:focus-within .reveal {
 
 .infoPopoverPanel {
     @include board.board-surface(dt.$spacing-sm dt.$spacing-md);
-    background: var(--bs-body-bg);
+    background: var(--board-surface-bg, var(--bs-body-bg));
     box-shadow: dt.$shadow-md;
     max-width: 18rem;
     font-size: dt.$font-size-sm;

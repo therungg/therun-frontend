@@ -8,6 +8,7 @@ import type { GameModerator } from '../../../../types/board-claims.types';
 import type { ClaimCtaState } from './claim/claim-cta';
 import { BoardNavProvider, useBoardNavState } from './filters/use-board-nav';
 import styles from './game-page.module.scss';
+import { BoardAmbience } from './header/board-ambience';
 import { BoardMasthead } from './header/board-masthead';
 import { GameHero } from './header/game-hero';
 import mastheadStyles from './header/masthead.module.scss';
@@ -57,7 +58,9 @@ export function GamePage({
 
     if (data.categories.length === 0) {
         return (
-            <div>
+            <BoardAmbience
+                coverUrl={data.gameMeta.coverUrl ?? data.game.image ?? null}
+            >
                 <GameHero
                     game={data.game}
                     stats={data.quickStats}
@@ -79,7 +82,7 @@ export function GamePage({
                         Submit the first run
                     </Link>
                 </div>
-            </div>
+            </BoardAmbience>
         );
     }
 
@@ -122,7 +125,9 @@ export function GamePage({
 
     return (
         <BoardNavProvider value={boardNav}>
-            <div>
+            <BoardAmbience
+                coverUrl={data.gameMeta.coverUrl ?? data.game.image ?? null}
+            >
                 <BoardMasthead
                     data={data}
                     canManage={canManage}
@@ -229,7 +234,7 @@ export function GamePage({
                         />
                     </aside>
                 </div>
-            </div>
+            </BoardAmbience>
         </BoardNavProvider>
     );
 }

@@ -13,10 +13,12 @@ interface Props {
 }
 
 /**
- * Renders nothing; samples the cover into a tiny canvas and sets the plate's
- * accent custom properties. Every failure path (no cover, load error,
- * CORS-tainted canvas, monochrome art) is a silent no-op — the accentless
- * plate is the designed fallback, not an error state.
+ * Renders nothing; samples the cover into a tiny canvas and sets the page
+ * scope's accent custom properties (BoardAmbience owns the target, so the
+ * plate, category chips and table header all inherit them). Every failure
+ * path (no cover, load error, CORS-tainted canvas, monochrome art) is a
+ * silent no-op — the accentless page is the designed fallback, not an
+ * error state.
  */
 export function AccentFromCover({ coverUrl, targetRef }: Props) {
     useEffect(() => {
@@ -46,7 +48,7 @@ export function AccentFromCover({ coverUrl, targetRef }: Props) {
                 );
                 target.style.setProperty(
                     '--board-accent-soft',
-                    `hsl(${accent.h} ${accent.s}% 45% / 0.05)`,
+                    `hsl(${accent.h} ${accent.s}% 45% / 0.09)`,
                 );
             } catch {
                 // Tainted canvas (no CORS on the image host) — keep the
