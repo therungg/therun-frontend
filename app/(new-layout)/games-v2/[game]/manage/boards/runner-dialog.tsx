@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useMemo, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
+import Link from '~src/components/link';
 import type { RunTreatment } from '../../../../../../types/bans.types';
 import type {
     ResolvedCategory,
@@ -245,6 +246,16 @@ export function RunnerDialog({
                 />
             </div>
             <div className={styles.dialogBody}>
+                {/* The runner dossier is only reachable through runner-scoped
+                    surfaces like this one — keep this link even if the dialog
+                    slims down. */}
+                <p className={styles.moveNote}>
+                    <Link
+                        href={`/games-v2/${gameSlug}/manage/moderation/runner/${row.userId}`}
+                    >
+                        View full runner page — runs, bans, history ↗
+                    </Link>
+                </p>
                 <SegmentedControl
                     label="Scope"
                     value={scope}

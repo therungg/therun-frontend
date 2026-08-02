@@ -361,14 +361,23 @@ export function RowActionsMenu({
                                     : 'Adjust time…'}
                             </Dropdown.Item>
                             {entry.userId != null && (
-                                <Dropdown.Item
-                                    as="button"
-                                    type="button"
-                                    className={styles.item}
-                                    onClick={() => openModDialog('runner')}
-                                >
-                                    Runner…
-                                </Dropdown.Item>
+                                <>
+                                    <Dropdown.Item
+                                        as="button"
+                                        type="button"
+                                        className={styles.item}
+                                        onClick={() => openModDialog('runner')}
+                                    >
+                                        Runner…
+                                    </Dropdown.Item>
+                                    <Dropdown.Item
+                                        as={Link}
+                                        className={styles.item}
+                                        href={`/games-v2/${gameSlug}/manage/moderation/runner/${entry.userId}`}
+                                    >
+                                        View runner page
+                                    </Dropdown.Item>
+                                </>
                             )}
                             <Dropdown.Item
                                 as="button"

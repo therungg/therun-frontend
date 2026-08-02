@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
+import Link from '~src/components/link';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type {
     ResolvedCategory,
@@ -314,14 +315,23 @@ export function RowActions({
                         )}
                     </div>
                     {!isGuest && (
-                        <button
-                            type="button"
-                            className={styles.actionBtn}
-                            onClick={() => setRunnerOpen(true)}
-                            disabled={busy}
-                        >
-                            Runner…
-                        </button>
+                        <>
+                            <button
+                                type="button"
+                                className={styles.actionBtn}
+                                onClick={() => setRunnerOpen(true)}
+                                disabled={busy}
+                            >
+                                Runner…
+                            </button>
+                            <Link
+                                className={styles.actionBtn}
+                                href={`/games-v2/${gameSlug}/manage/moderation/runner/${row.userId}`}
+                                title={`Open ${row.runnerName}'s runner page — runs, bans, history`}
+                            >
+                                View
+                            </Link>
+                        </>
                     )}
                 </div>
             </td>

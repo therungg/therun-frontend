@@ -330,6 +330,8 @@
 .actionBtn {
     @include board.control-pill;
     font-size: dt.$font-size-2xs;
+    // Also worn by the View <Link> in the cluster — anchors must not underline.
+    text-decoration: none;
 }
 
 // ---- Run… menu (Approve / Move… / Adjust…) -----------------------------
