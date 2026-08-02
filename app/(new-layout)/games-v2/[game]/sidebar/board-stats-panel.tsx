@@ -1,13 +1,9 @@
-import type { BoardWeeklyActivity } from '~src/lib/board-activity';
 import { formatCount, formatHours } from '~src/utils/format-stats';
 import type { ResolvedCategory } from '../../../../../types/leaderboards.types';
 import styles from './sidebar.module.scss';
-import { Sparkline } from './sparkline';
 
 interface Props {
     category: ResolvedCategory;
-    /** Weekly series for this board; null when the activity fetch failed. */
-    activity: BoardWeeklyActivity[] | null;
 }
 
 /**
@@ -15,7 +11,7 @@ interface Props {
  * game-level, so this is the only place the selected category's stats
  * appear. Board view only; the overview has no single active board.
  */
-export function BoardStatsPanel({ category, activity }: Props) {
+export function BoardStatsPanel({ category }: Props) {
     const attempts = category.totalAttemptCount ?? 0;
     const finished = category.totalFinishedAttemptCount ?? 0;
     const runners = category.uniqueRunners ?? 0;
@@ -23,13 +19,12 @@ export function BoardStatsPanel({ category, activity }: Props) {
 
     const finishedPct =
         attempts > 0 ? Math.round((finished / attempts) * 100) : null;
-    const weekly = activity ?? [];
-    const anyActivity = weekly.some((w) => w.totalAttempts > 0);
-    const recentPbs = weekly.slice(-4).reduce((sum, w) => sum + w.totalPbs, 0);
 
     return (
         <section className={styles.panel}>
-            <span className={`${styles.eyebrow} d-block mb-2`}>This board</span>
+            <span className={`${styles.eyebrow} d-block mb-2`}>
+                Category: {category.display}
+            </span>
             <dl className={styles.statList}>
                 <div className={styles.statRow}>
                     <dt className={styles.statLabel}>Runners</dt>
@@ -63,20 +58,6 @@ export function BoardStatsPanel({ category, activity }: Props) {
                     </dd>
                 </div>
             </dl>
-            {anyActivity && (
-                <div className={styles.sparkBlock}>
-                    <Sparkline
-                        values={weekly.map((w) => w.totalAttempts)}
-                        partialLast={weekly[weekly.length - 1]?.partial}
-                        label={`Attempts per week over the last ${weekly.length} weeks`}
-                    />
-                    <span className={styles.sparkCaption}>
-                        Attempts per week · {weekly.length} wk
-                        {recentPbs > 0 &&
-                            ` · ${formatCount(recentPbs)} PB${recentPbs === 1 ? '' : 's'} in 4 wk`}
-                    </span>
-                </div>
-            )}
         </section>
     );
 }

@@ -1,4 +1,3 @@
-import { getBoardWeeklyActivity } from '~src/lib/board-activity';
 import { EMPTY_GAME_METADATA } from '~src/lib/game-metadata';
 import { getGameMetadata } from '~src/lib/game-mgmt';
 import {
@@ -74,7 +73,6 @@ export async function loadGamePageData(
             quickStats,
             gameMeta,
             recentPbs: [],
-            boardActivity: null,
             yourRuns: [],
             sessionUsername,
             activeFilters: emptyFilters(),
@@ -134,30 +132,23 @@ export async function loadGamePageData(
         varFilters,
     };
 
-    const [
-        boardResult,
-        quickStats,
-        recentPbs,
-        rawYourRuns,
-        gameMeta,
-        boardActivity,
-    ] = await Promise.all([
-        getLeaderboard({ ...baseQuery, timing: selected.primaryTiming }),
-        getQuickStats(game.id).catch(() => ({
-            totalRunTime: 0,
-            totalAttemptCount: 0,
-            totalFinishedAttemptCount: 0,
-            uniqueRunners: 0,
-        })),
-        getRecentPbs(game.id, RECENT_PB_FETCH_LIMIT, {
-            featuredOnly: true,
-        }).catch(() => []),
-        sessionUsername
-            ? getUserRankingsByName(sessionUsername).catch(() => [])
-            : Promise.resolve([]),
-        getGameMetadata(game.id).catch(() => EMPTY_GAME_METADATA),
-        getBoardWeeklyActivity(game.id, selected.id).catch(() => null),
-    ]);
+    const [boardResult, quickStats, recentPbs, rawYourRuns, gameMeta] =
+        await Promise.all([
+            getLeaderboard({ ...baseQuery, timing: selected.primaryTiming }),
+            getQuickStats(game.id).catch(() => ({
+                totalRunTime: 0,
+                totalAttemptCount: 0,
+                totalFinishedAttemptCount: 0,
+                uniqueRunners: 0,
+            })),
+            getRecentPbs(game.id, RECENT_PB_FETCH_LIMIT, {
+                featuredOnly: true,
+            }).catch(() => []),
+            sessionUsername
+                ? getUserRankingsByName(sessionUsername).catch(() => [])
+                : Promise.resolve([]),
+            getGameMetadata(game.id).catch(() => EMPTY_GAME_METADATA),
+        ]);
     // Best-per-board only — see `getUserRankingsByName` and the
     // `yourRuns` field doc on GamePageData for the honest-scope note.
     const yourRuns = rawYourRuns.filter((r) => r.gameSlug === game.name);
@@ -184,7 +175,6 @@ export async function loadGamePageData(
         quickStats,
         gameMeta,
         recentPbs: featuredPbs,
-        boardActivity,
         yourRuns,
         sessionUsername,
         activeFilters: {

@@ -1,4 +1,3 @@
-import type { BoardWeeklyActivity } from '~src/lib/board-activity';
 import type { GameModerator } from '../../../../../types/board-claims.types';
 import type {
     RecentPb,
@@ -23,7 +22,6 @@ interface Props {
     moderators?: GameModerator[];
     /** The active board — board view only; the overview has none. */
     board?: ResolvedCategory | null;
-    boardActivity?: BoardWeeklyActivity[] | null;
 }
 
 export function Sidebar({
@@ -34,17 +32,11 @@ export function Sidebar({
     about,
     moderators,
     board,
-    boardActivity,
 }: Props) {
     return (
         <>
             <LivePanel gameDisplay={game.display} />
-            {board && (
-                <BoardStatsPanel
-                    category={board}
-                    activity={boardActivity ?? null}
-                />
-            )}
+            {board && <BoardStatsPanel category={board} />}
             <YourRunsPanel rankings={yourRuns} gameSlug={game.name} />
             <RecentPbsPanel pbs={recentPbs} gameSlug={game.name} />
             <ModeratorsPanel moderators={moderators ?? []} />
