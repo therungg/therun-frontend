@@ -223,7 +223,6 @@ export function GamePage({
                             claim={claim}
                             moderators={moderators}
                             board={data.selectedCategory}
-                            boardActivity={data.boardActivity}
                             about={
                                 data.gameMeta.summaryOverride ??
                                 data.gameMeta.summary

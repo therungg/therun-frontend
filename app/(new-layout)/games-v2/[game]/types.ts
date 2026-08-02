@@ -1,4 +1,3 @@
-import type { BoardWeeklyActivity } from '~src/lib/board-activity';
 import type { GameMetadata } from '~src/lib/game-mgmt';
 import type {
     LeaderboardEntry,
@@ -36,11 +35,6 @@ export interface GamePageData {
     /** IGDB + moderator game metadata from pageData; EMPTY_GAME_METADATA when the fetch fails. */
     gameMeta: GameMetadata;
     recentPbs: RecentPb[];
-    /**
-     * The selected board's weekly activity series (sidebar sparkline);
-     * null when the fetch failed — the panel simply omits the trend.
-     */
-    boardActivity: BoardWeeklyActivity[] | null;
     /**
      * The signed-in runner's own standing on this game — best entry per
      * board only (see `getUserRankingsByName`). Empty for signed-out
