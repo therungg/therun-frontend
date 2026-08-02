@@ -1,11 +1,260 @@
-@use '../../../../../../styles/design-tokens' as dt;
+// ============================================================================
+// Runner dossier — the mod console's single-runner page. Three tiers:
+// an overview tile strip, the board band (one chip per category+subcategory
+// combo the runner appears on, mirroring the public category rail), and the
+// selected combo's detail (standing, runs, manual times) with the runner's
+// moderation history underneath. Structural styling only — tables, buttons,
+// and badges stay raw Bootstrap like the rest of the moderation views.
+// ============================================================================
 
-// Targeted fix (Task 18 ledger): bridge the bulk-action bar's inline
-// `zIndex` onto the shared z-scale ($z-sticky, _design-tokens.scss) instead
-// of an arbitrary Bootstrap-dropdown-tier magic number (1020). The rest of
-// this view stays raw Bootstrap.
+@use '../../../../../../styles/design-tokens' as dt;
+@use '../../../../../../styles/board' as board;
+
+// ── Overview tiles ──────────────────────────────────────────────────────────
+
+.tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+    gap: dt.$spacing-sm;
+    margin-bottom: dt.$spacing-lg;
+}
+
+.tile {
+    @include board.board-surface(dt.$spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.tileLabel {
+    @include board.board-eyebrow;
+}
+
+.tileValue {
+    @include board.mono-time;
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+}
+
+.tileSub {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+}
+
+.tileDanger .tileValue {
+    color: var(--bs-danger);
+}
+
+// ── The board band ──────────────────────────────────────────────────────────
+
+.band {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+    margin-bottom: dt.$spacing-lg;
+}
+
+.chip {
+    @include board.control-pill;
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    text-align: left;
+}
+
+.chipActive {
+    @include board.control-pill-active;
+}
+
+.chipNames {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.chipCategory {
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.chipSub {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    line-height: 1.2;
+}
+
+.chipStats {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-left: auto;
+}
+
+.chipTime {
+    @include board.mono-time;
+    font-size: dt.$font-size-sm;
+}
+
+.chipRank {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+}
+
+// A ban rule covers this chip's board — the standing shown is what the rule
+// suppresses, so the time reads as struck.
+.chipBanned .chipTime,
+.chipBanned .chipCategory {
+    text-decoration: line-through;
+    text-decoration-color: var(--bs-danger);
+}
+
+.chipBanDot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--bs-danger);
+    flex-shrink: 0;
+}
+
+// ── Selected-combo detail ───────────────────────────────────────────────────
+
+.standing {
+    @include board.board-surface(dt.$spacing-lg);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-lg dt.$spacing-2xl;
+    margin-bottom: dt.$spacing-lg;
+}
+
+.standingRank {
+    @include board.board-rank;
+    font-size: dt.$font-size-2xl;
+}
+
+.standingRankOf {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-tertiary-color);
+}
+
+.standingCell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.standingLabel {
+    @include board.board-eyebrow;
+}
+
+.standingValue {
+    @include board.mono-time;
+    font-size: dt.$font-size-md;
+}
+
+.standingActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+    margin-left: auto;
+}
+
+.banBanner {
+    @include board.board-error-alert;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm dt.$spacing-lg;
+    margin-bottom: dt.$spacing-lg;
+}
+
+.sectionHead {
+    @include board.board-section-head;
+    margin-top: dt.$spacing-xl;
+}
+
+.sectionCount {
+    @include board.board-section-count;
+}
+
+// ── Manual times ────────────────────────────────────────────────────────────
+
+.manualRow {
+    @include board.board-surface(dt.$spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    margin-bottom: dt.$spacing-sm;
+}
+
+.manualTop {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm dt.$spacing-md;
+}
+
+.manualTime {
+    @include board.mono-time;
+    font-weight: 700;
+}
+
+.manualMeta {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+// ── Moderation history ──────────────────────────────────────────────────────
+
+.historyList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.historyItem {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: dt.$spacing-xs dt.$spacing-sm;
+    padding: dt.$spacing-sm 0;
+
+    + .historyItem {
+        border-top: 1px solid var(--bs-border-color-translucent);
+    }
+}
+
+.historyWhen {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+.historyRemark {
+    width: 100%;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    border-left: 2px solid var(--bs-border-color);
+    padding-left: dt.$spacing-sm;
+    margin: 0;
+}
+
+// ── Shared ──────────────────────────────────────────────────────────────────
+
+// Bridges the sticky bulk bar onto the console's stacking scale (was the
+// whole of this file before the dossier rebuild).
 .bulkBar {
     position: sticky;
     bottom: 0;
     z-index: dt.$z-sticky;
+}
+
+.inlineForm {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    margin-top: dt.$spacing-xs;
+    max-width: 32rem;
 }
