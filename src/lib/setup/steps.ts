@@ -2,7 +2,7 @@ import { SETUP_STEP_ORDER, type SetupStepId } from './completeness';
 
 export interface SetupStepMeta {
     id: SetupStepId;
-    /** 1-5, matches the ghost numeral in the wizard's step header. */
+    /** 1-6, matches the ghost numeral in the wizard's step header. */
     num: number;
     label: string;
     skippable: boolean;
@@ -19,8 +19,14 @@ export const SETUP_STEPS: SetupStepMeta[] = [
     { id: 'details', num: 1, label: 'Game details', skippable: true },
     { id: 'categories', num: 2, label: 'Categories', skippable: true },
     { id: 'groups', num: 3, label: 'Groups', skippable: true },
-    { id: 'category-setup', num: 4, label: 'Category setup', skippable: true },
-    { id: 'boards', num: 5, label: 'Boards', skippable: false },
+    {
+        id: 'variables',
+        num: 4,
+        label: 'Subcategories & filters',
+        skippable: true,
+    },
+    { id: 'category-setup', num: 5, label: 'Category setup', skippable: true },
+    { id: 'boards', num: 6, label: 'Boards', skippable: false },
 ];
 
 export const SETUP_STEP_LABELS: Record<SetupStepId, string> =
@@ -47,12 +53,12 @@ export function setupStepIndex(id: SetupStepId): number {
  * ids have to keep resolving rather than silently dumping the moderator on
  * whatever step happens to be incomplete.
  *
- * `variables` and `exceptions` both folded into the per-category editor;
- * `defaults` became the board-defaults half of step 1; `finish` is now the
- * go-live footer under board curation.
+ * `exceptions` folded into the per-category editor; `defaults` became the
+ * board-defaults half of step 1; `finish` is now the go-live footer under
+ * board curation. `variables` left this map when the shared-variables step
+ * returned — the raw id resolves to the real step again.
  */
 export const LEGACY_STEP_MAP: Record<string, SetupStepId> = {
-    variables: 'category-setup',
     defaults: 'details',
     exceptions: 'category-setup',
     finish: 'boards',

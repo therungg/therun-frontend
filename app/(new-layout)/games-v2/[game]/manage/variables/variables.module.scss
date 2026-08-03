@@ -249,3 +249,30 @@
         color: var(--bs-secondary-color);
     }
 }
+
+// ============================================================
+// Band preview — the public masthead's subcategory tier rendered from
+// the effective list, so the section leads with the result (which
+// boards exist) instead of role theory. Replaces the in-effect panel.
+// ============================================================
+
+.bandPreview {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    margin-bottom: dt.$spacing-lg;
+}
+
+.bandHeadline {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: 0;
+    max-width: 60ch;
+}
+
+// Small trailing marker inside a filter row's well: these chips refine a
+// board, they don't split it — say so where the chips are.
+.filterTag {
+    @include board.board-eyebrow;
+    align-self: center;
+}

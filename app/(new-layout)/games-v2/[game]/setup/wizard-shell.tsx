@@ -18,6 +18,7 @@ import { StepCategories } from './steps/step-categories';
 import { StepCategorySetup } from './steps/step-category-setup';
 import { StepDetails } from './steps/step-details';
 import { StepGroups } from './steps/step-groups';
+import { StepVariables } from './steps/step-variables';
 import type { WizardData } from './types';
 
 interface Props {
@@ -115,18 +116,22 @@ export function WizardShell({ data, initialStep }: Props) {
                 // lands (e.g. after a save), so stale local state can't hide
                 // behind fresher server data.
                 //
-                // 'category-setup' and 'boards' key on `step` alone, with no
-                // renderedAt: they own long-lived interactive state
-                // (BoardCuration's pendingRemovals/selectedRunIds/reorder
-                // mode, the per-category hub editor's open panel) that flows
-                // in via props, not by re-seeding from scratch. Every
-                // updateTag call made in service of read-your-writes (item
-                // 1/2 above) also bumps `data.renderedAt` on the next
-                // router.refresh(), so keying these two on renderedAt too
-                // would remount — and silently wipe — that state on every
-                // single mutation inside them, which is most of what they do.
+                // 'variables', 'category-setup' and 'boards' key on `step`
+                // alone, with no renderedAt: they own long-lived interactive
+                // state (an open variable form, BoardCuration's
+                // pendingRemovals/selectedRunIds/reorder mode, the
+                // per-category hub editor's open panel) that flows in via
+                // props or self-refreshes through actions, not by re-seeding
+                // from scratch. Every updateTag call made in service of
+                // read-your-writes (item 1/2 above) also bumps
+                // `data.renderedAt` on the next router.refresh(), so keying
+                // these on renderedAt too would remount — and silently wipe —
+                // that state on every single mutation inside them, which is
+                // most of what they do.
                 key={
-                    step === 'category-setup' || step === 'boards'
+                    step === 'variables' ||
+                    step === 'category-setup' ||
+                    step === 'boards'
                         ? step
                         : `${step}-${data.renderedAt}`
                 }
@@ -197,6 +202,14 @@ function CurrentStep({
         case 'groups':
             return (
                 <StepGroups data={data} onAdvance={onAdvance} onBack={onBack} />
+            );
+        case 'variables':
+            return (
+                <StepVariables
+                    data={data}
+                    onAdvance={onAdvance}
+                    onBack={onBack}
+                />
             );
         case 'category-setup':
             return (

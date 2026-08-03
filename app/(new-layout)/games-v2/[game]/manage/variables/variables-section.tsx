@@ -2,8 +2,10 @@
 
 import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
+import Link from '~src/components/link';
+import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 import type { VariablePreview } from '~src/lib/variables/consequences';
-import { ROLE_LABEL } from '~src/lib/variables/language';
+import { toEffective } from '~src/lib/variables/effective';
 import type {
     ResolvedCategory,
     VariableRow as VariableRowData,
@@ -15,12 +17,11 @@ import { loadMergedVariablesAction } from './actions/load-merged-variables.actio
 import { loadVariablesAction } from './actions/load-variables.action';
 import { previewVariableAction } from './actions/preview-variable.action';
 import { updateVariableAction } from './actions/update-variable.action';
+import { VariableBandPreview } from './band-preview';
+import { CombinationsSection } from './combinations-section';
 import { ConsequenceDialog } from './consequence-dialog';
-import { InEffectPanel } from './in-effect-panel';
 import { VariableForm, type VariableFormValues } from './variable-form';
 import { VariableTable } from './variable-table';
-
-type Scope = 'game' | 'category';
 
 type FormState =
     | { open: false }
@@ -45,20 +46,32 @@ type FormState =
 interface Props {
     gameSlug: string;
     gameId: number;
+    /**
+     * 'game': the shared surface — the wizard's Subcategories & filters step
+     * and the console pane of the same name. Edits game-wide rows only.
+     * 'category': one category's view inside the category editor — shows the
+     * effective board structure (shared rows included, read-only) and edits
+     * category-scoped rows only.
+     */
+    mode: 'game' | 'category';
+    /** Required in category mode; ignored in game mode. */
     selectedCategory: ResolvedCategory | null;
+    /** Category mode: where the shared rows are edited (wizard step or
+     *  console pane), linked from the read-only shared note. */
+    sharedHref?: string;
 }
 
 export function VariablesSection({
     gameSlug,
     gameId,
+    mode,
     selectedCategory,
+    sharedHref,
 }: Props) {
     const [rows, setRows] = useState<VariableRowData[]>([]);
     const [merged, setMerged] = useState<VariableRowData[]>([]);
-    const [highlightId, setHighlightId] = useState<number | null>(null);
     const [reservedParams, setReservedParams] = useState<string[]>([]);
     const [loadError, setLoadError] = useState<string | null>(null);
-    const [scope, setScope] = useState<Scope>('game');
     const [formState, setFormState] = useState<FormState>({ open: false });
     const [formError, setFormError] = useState<string | null>(null);
     const [discardNotice, setDiscardNotice] = useState<string | null>(null);
@@ -74,11 +87,14 @@ export function VariablesSection({
     const [isPreviewing, startPreview] = useTransition();
     const busy = isLoading || isSaving;
 
+    const categorySelected = selectedCategory != null;
+    const categoryMode = mode === 'category';
+
     const refresh = async () => {
         const res = await loadVariablesAction({
             gameSlug,
             gameId,
-            categoryId: selectedCategory?.id ?? null,
+            categoryId: categoryMode ? (selectedCategory?.id ?? null) : null,
         });
         if ('error' in res) {
             setLoadError(res.error);
@@ -92,7 +108,7 @@ export function VariablesSection({
     };
 
     const loadMerged = async () => {
-        if (!selectedCategory) {
+        if (!categoryMode || !selectedCategory) {
             setMerged([]);
             return;
         }
@@ -107,8 +123,8 @@ export function VariablesSection({
         setMerged(res.result);
     };
 
-    // The in-effect panel must reflect what the public board actually shows,
-    // so it is reloaded alongside the admin list on every scope-relevant
+    // The band preview must reflect what the public board actually shows, so
+    // the merged list reloads alongside the admin list on every scope-relevant
     // change and after every write commits.
     const refreshAll = async () => {
         await Promise.all([refresh(), loadMerged()]);
@@ -125,12 +141,9 @@ export function VariablesSection({
     }, [gameId, selectedCategory?.id]);
 
     // A form whose captured scope no longer matches the selected category
-    // (e.g. the moderator navigated to a different category rail entry while
-    // a create form was open) is no longer valid — close it rather than let
-    // it silently retarget. This component doesn't own category selection,
-    // so it can't revert the navigation or prompt-and-cancel from inside an
-    // effect; the best it can do is close the form and say so, rather than
-    // discard it with no word at all.
+    // (e.g. the moderator navigated to a different category while a create
+    // form was open) is no longer valid — close it rather than let it
+    // silently retarget.
     useEffect(() => {
         if (!formState.open) return;
         const stillValid =
@@ -145,13 +158,11 @@ export function VariablesSection({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedCategory?.id]);
 
+    const scopeCategoryId = categoryMode
+        ? (selectedCategory?.id ?? null)
+        : null;
     const visible = (Array.isArray(rows) ? rows : [])
-        .filter((r) =>
-            scope === 'game'
-                ? r.categoryId === null
-                : selectedCategory != null &&
-                  r.categoryId === selectedCategory.id,
-        )
+        .filter((r) => r.categoryId === scopeCategoryId)
         .sort(
             (a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name),
         );
@@ -160,34 +171,27 @@ export function VariablesSection({
     const subcategoryRows = visible.filter((r) => r.role === 'subcategory');
     const filterRows = visible.filter((r) => r.role === 'filter');
 
-    // Returns whether the scope actually changed, so callers that pair the
-    // switch with another effect (e.g. onJump's highlight) can skip that
-    // effect when the moderator declines the discard prompt.
-    const requestScopeChange = (next: Scope): boolean => {
-        if (
-            formState.open &&
-            !window.confirm(
-                'Discard the variable you are editing? Your changes are not saved.',
-            )
-        ) {
-            return false;
-        }
-        setScope(next);
-        closeForm();
-        return true;
-    };
+    // What the board renders: game mode previews the shared rows themselves;
+    // category mode previews the merged (public) list for this category.
+    const effective = categoryMode
+        ? toEffective(merged, gameWideRows)
+        : toEffective(gameWideRows, gameWideRows);
+    const sharedInEffect = effective.filter((v) => v.source === 'shared');
+    const overrides = effective.filter(
+        (v) => v.source === 'category-overrides-shared',
+    );
+
+    const scopeLabel = categoryMode
+        ? `${selectedCategory?.display ?? 'this category'} only`
+        : 'Shared by all categories';
 
     const openCreate = () => {
         setDiscardNotice(null);
         setFormState({
             open: true,
             mode: 'create',
-            scopeCategoryId:
-                scope === 'category' ? (selectedCategory?.id ?? null) : null,
-            scopeLabel:
-                scope === 'category'
-                    ? `${selectedCategory?.display ?? 'this category'} only`
-                    : 'Shared by all categories',
+            scopeCategoryId,
+            scopeLabel,
             scopeCategoryDisplay: selectedCategory?.display ?? 'this category',
         });
     };
@@ -400,24 +404,34 @@ export function VariablesSection({
         startSaveTransition(() => swapSortOrder(row, peers[idx + 1]));
     };
 
-    const categorySelected = selectedCategory != null;
-    const showEmptyCategoryHint = scope === 'category' && !categorySelected;
+    const canAdd = !categoryMode || categorySelected;
 
     return (
         <FormSection
-            title="Leaderboard variables"
+            title={CONCEPT_LABEL.variables}
             lede={
-                <>
-                    One kind {ROLE_LABEL.subcategory} (subcategory) — each
-                    answer gets its own leaderboard (e.g. <code>platform</code>{' '}
-                    with N64 / Switch / PC). The other is {ROLE_LABEL.filter} —
-                    answers refine results within one board (e.g.{' '}
-                    <code>region</code>). Rows shared by all categories apply
-                    everywhere; rows for one category override them there.
-                </>
+                categoryMode ? (
+                    <>
+                        What runners see on{' '}
+                        <strong>
+                            {selectedCategory?.display ?? 'this category'}
+                        </strong>
+                        , shared variables included. Variables created here
+                        apply to this category only — one with a shared
+                        variable's name replaces it here.
+                    </>
+                ) : (
+                    <>
+                        A <strong>subcategory</strong> gives each value its own
+                        leaderboard (Platform: N64 / PC — two boards). A{' '}
+                        <strong>filter</strong> refines results within one board
+                        (Region: US / JP). Defined here, they apply to every
+                        category; a category can override one from its own page.
+                    </>
+                )
             }
             actions={
-                !formState.open && (scope === 'game' || categorySelected) ? (
+                !formState.open && canAdd ? (
                     <button
                         type="button"
                         className="btn btn-sm btn-primary"
@@ -444,58 +458,49 @@ export function VariablesSection({
                 </div>
             )}
 
-            {selectedCategory && (
-                <InEffectPanel
-                    merged={merged}
-                    gameWide={gameWideRows}
-                    categoryDisplay={selectedCategory.display}
-                    onJump={(v) => {
-                        // All-or-nothing: if a dirty form declines the
-                        // discard prompt, the scope doesn't switch and the
-                        // row doesn't highlight either.
-                        const next: Scope =
-                            v.categoryId == null ? 'game' : 'category';
-                        if (requestScopeChange(next)) {
-                            setHighlightId(v.id);
-                        }
-                    }}
-                />
-            )}
-
-            <ul className="nav nav-pills mb-3">
-                <li className="nav-item">
-                    <button
-                        type="button"
-                        className={`nav-link ${scope === 'game' ? 'active' : ''}`}
-                        onClick={() => requestScopeChange('game')}
-                        disabled={busy}
-                    >
-                        Shared by all categories
-                    </button>
-                </li>
-                <li className="nav-item">
-                    <button
-                        type="button"
-                        className={`nav-link ${scope === 'category' ? 'active' : ''}`}
-                        onClick={() => requestScopeChange('category')}
-                        disabled={busy}
-                    >
-                        {categorySelected
-                            ? `${selectedCategory?.display} only`
-                            : 'This category only'}
-                    </button>
-                </li>
-            </ul>
-
             {loadError && (
                 <div className="alert alert-danger py-2" role="alert">
                     {loadError}
                 </div>
             )}
 
-            {showEmptyCategoryHint && (
-                <p className="text-muted">
-                    Pick a category above to manage its overrides.
+            {!isLoading && (
+                <VariableBandPreview
+                    variables={effective}
+                    contextLabel={
+                        categoryMode
+                            ? (selectedCategory?.display ?? 'This category')
+                            : 'Every category'
+                    }
+                />
+            )}
+
+            {categoryMode && sharedInEffect.length > 0 && (
+                <p className="text-muted small">
+                    {sharedInEffect.map((v) => v.name).join(', ')}{' '}
+                    {sharedInEffect.length === 1 ? 'is' : 'are'} shared by all
+                    categories
+                    {sharedHref ? (
+                        <>
+                            {' '}
+                            — edit {sharedInEffect.length === 1 ? 'it' : 'them'}{' '}
+                            in{' '}
+                            <Link href={sharedHref}>
+                                {CONCEPT_LABEL.variables}
+                            </Link>
+                            .
+                        </>
+                    ) : (
+                        '.'
+                    )}
+                    {overrides.length > 0 && (
+                        <>
+                            {' '}
+                            {overrides.map((v) => v.name).join(', ')}{' '}
+                            {overrides.length === 1 ? 'is' : 'are'} overridden
+                            for this category below.
+                        </>
+                    )}
                 </p>
             )}
 
@@ -519,39 +524,54 @@ export function VariablesSection({
                 />
             )}
 
-            {(scope === 'game' || categorySelected) && (
+            {canAdd && (
                 <>
                     <VariableTable
-                        title="Variables that split this board"
+                        title={
+                            categoryMode
+                                ? 'Subcategories for this category only'
+                                : 'Subcategories — one board per value'
+                        }
                         rows={subcategoryRows}
                         emptyLabel={
-                            scope === 'game'
-                                ? 'No board-splitting variables shared by all categories yet.'
-                                : 'No board-splitting variables for this category yet.'
+                            categoryMode
+                                ? 'No category-only subcategories — the shared ones above apply as-is.'
+                                : 'No shared subcategories yet — every category is a single board.'
                         }
                         onEdit={openEdit}
                         onDelete={handleDelete}
                         onMoveUp={handleMoveUp}
                         onMoveDown={handleMoveDown}
                         busy={busy}
-                        highlightId={highlightId}
                     />
                     <VariableTable
-                        title="Filter-only variables"
+                        title={
+                            categoryMode
+                                ? 'Filters for this category only'
+                                : 'Filters — refine within a board'
+                        }
                         rows={filterRows}
                         emptyLabel={
-                            scope === 'game'
-                                ? 'No filter variables shared by all categories yet.'
-                                : 'No filter variables for this category yet.'
+                            categoryMode
+                                ? 'No category-only filters.'
+                                : 'No shared filters yet.'
                         }
                         onEdit={openEdit}
                         onDelete={handleDelete}
                         onMoveUp={handleMoveUp}
                         onMoveDown={handleMoveDown}
                         busy={busy}
-                        highlightId={highlightId}
                     />
                 </>
+            )}
+
+            {categoryMode && selectedCategory && (
+                <CombinationsSection
+                    gameSlug={gameSlug}
+                    gameId={gameId}
+                    selectedCategory={selectedCategory}
+                    variables={merged}
+                />
             )}
 
             <ConsequenceDialog

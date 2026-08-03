@@ -1,10 +1,15 @@
 'use client';
 
-import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
+import { normalizeVariableName } from '~src/lib/variables/effective';
 import { parseSubcategoryKey } from '~src/lib/variables/keys';
-import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
+import type {
+    ResolvedCategory,
+    VariableRow,
+} from '../../../../../../types/leaderboards.types';
+import kit from '../shared/form-kit.module.scss';
 import { loadCombinationsAction } from './actions/load-combinations.action';
 import { saveCombinationsAction } from './actions/save-combinations.action';
 
@@ -12,6 +17,10 @@ interface Props {
     gameSlug: string;
     gameId: number;
     selectedCategory: ResolvedCategory | null;
+    /** The category's merged variable list — maps the normalized values the
+     *  keys are built from back to display names ("nintendo64" → "Nintendo
+     *  64"), so the table reads like the board instead of like keys. */
+    variables?: VariableRow[];
 }
 
 interface Combo {
@@ -20,10 +29,16 @@ interface Combo {
     entryCount: number;
 }
 
+/**
+ * Renders as a SUBSECTION of the variables section (it is the consequence of
+ * the subcategory variables directly above it), not as its own top-level
+ * FormSection — one story: "one board, or several, and which are open".
+ */
 export function CombinationsSection({
     gameSlug,
     gameId,
     selectedCategory,
+    variables = [],
 }: Props) {
     const [combos, setCombos] = useState<Combo[]>([]);
     const [original, setOriginal] = useState<Combo[]>([]);
@@ -102,30 +117,38 @@ export function CombinationsSection({
 
     const validCount = combos.filter((c) => c.valid).length;
 
-    const firstParts = useMemo(
-        () => parseSubcategoryKey(combos[0]?.subcategoryKey ?? ''),
-        [combos],
+    // Keys carry normalized names/values; the board shows display names. Map
+    // back through the variable list so the table reads like the board.
+    const variableByParam = new Map(
+        variables.map((v) => [v.nameNormalized, v]),
     );
+    const displayName = (param: string): string =>
+        variableByParam.get(param)?.name ?? param;
+    const displayValue = (param: string, value: string): string => {
+        const v = variableByParam.get(param);
+        if (!v) return value;
+        const bucket = v.values.find((b) =>
+            b.some((alias) => normalizeVariableName(alias) === value),
+        );
+        return bucket?.[0] ?? value;
+    };
+
+    const firstParts = parseSubcategoryKey(combos[0]?.subcategoryKey ?? '');
+
+    // Nothing to render at all when the category has no subcategory
+    // variables — the band preview above already says "single board", so an
+    // empty table section would just restate it.
+    if (!isLoading && !loadError && combos.length === 0) {
+        return null;
+    }
 
     return (
-        <section className="border rounded p-3 mb-4">
-            <div className="d-flex align-items-center justify-content-between mb-3">
-                <div>
-                    <h2 className="h5 mb-1">{CONCEPT_LABEL.combinations}</h2>
-                    {/* Never assert a mode we failed to load. `mode` defaults
-                        to 'open' and `combos` to [], so on a load error the
-                        old copy read "0 combinations, all live boards" —
-                        stating as fact something the request never told us. */}
-                    <p className="text-muted small mb-0">
-                        {loadError
-                            ? 'Couldn’t load this category’s sub-boards.'
-                            : isLoading
-                              ? 'Loading sub-boards…'
-                              : mode === 'open'
-                                ? `Your variables produce ${combos.length} boards, and runners can currently submit to any of them.`
-                                : `${validCount} of the ${combos.length} boards your variables produce are open to runners. Runs on a closed board keep their spot until the next rebuild, then move to the default board.`}
-                    </p>
-                </div>
+        // id: legacy /manage/category/<id>#combinations deep links (from the
+        // retired pane era) still land here now that Sub-boards is a
+        // subsection of the variables section rather than its own section.
+        <div className="mb-3" id="combinations">
+            <div className="d-flex align-items-center justify-content-between mb-1">
+                <h3 className="h6 mb-0">{CONCEPT_LABEL.combinations}</h3>
                 <div className="d-flex gap-2">
                     {mode === 'managed' && (
                         <button
@@ -134,7 +157,7 @@ export function CombinationsSection({
                             onClick={() => setAll(true)}
                             disabled={busy || combos.length === 0}
                         >
-                            Allow every combination
+                            Open every board
                         </button>
                     )}
                     <button
@@ -147,34 +170,46 @@ export function CombinationsSection({
                     </button>
                 </div>
             </div>
+            {/* Never assert a mode we failed to load. `mode` defaults to
+                'open' and `combos` to [], so on a load error the old copy
+                read "0 combinations, all live boards" — stating as fact
+                something the request never told us. */}
+            <p className="text-muted small mb-2">
+                {loadError
+                    ? 'Couldn’t load this category’s sub-boards.'
+                    : isLoading
+                      ? 'Loading sub-boards…'
+                      : mode === 'open'
+                        ? `The subcategories above produce ${combos.length} boards; runners can submit to any of them. Untick one to close it.`
+                        : `${validCount} of ${combos.length} boards are open to runners. Runs on a closed board keep their spot until the next rebuild, then move to the default board.`}
+            </p>
 
             {loadError && (
                 <div className="alert alert-danger py-2" role="alert">
                     {loadError}
+                    <div className="small mb-0 mt-1">
+                        Sub-boards couldn’t be loaded, so this list is empty for
+                        a reason we don’t know. Retry once the error clears.
+                    </div>
                 </div>
             )}
 
-            {combos.length === 0 ? (
-                <p className="text-muted">
-                    {loadError
-                        ? 'Sub-boards couldn’t be loaded, so this list is empty for a reason we don’t know. Retry once the error above clears.'
-                        : 'No board-splitting variables apply here, so this category is a single board — nothing to manage.'}
-                </p>
-            ) : (
+            {combos.length > 0 && (
                 <>
-                    <div className="d-flex justify-content-between mb-2 small text-muted">
-                        <span>
-                            {validCount} valid of {combos.length}
-                        </span>
-                    </div>
                     <div className="table-responsive">
                         <table className="table table-sm align-middle">
                             <thead>
                                 <tr>
-                                    <th />
+                                    <th>
+                                        <span className="visually-hidden">
+                                            Open
+                                        </span>
+                                    </th>
                                     {showCounts && <th>Runs</th>}
                                     {firstParts.map((p) => (
-                                        <th key={p.name}>{p.name}</th>
+                                        <th key={p.name}>
+                                            {displayName(p.name)}
+                                        </th>
                                     ))}
                                 </tr>
                             </thead>
@@ -195,6 +230,14 @@ export function CombinationsSection({
                                             <td>
                                                 <input
                                                     type="checkbox"
+                                                    aria-label={`Open ${parts
+                                                        .map((p) =>
+                                                            displayValue(
+                                                                p.name,
+                                                                p.value,
+                                                            ),
+                                                        )
+                                                        .join(' · ')}`}
                                                     checked={c.valid}
                                                     onChange={() => toggle(idx)}
                                                     disabled={busy}
@@ -206,7 +249,12 @@ export function CombinationsSection({
                                                 </td>
                                             )}
                                             {parts.map((p) => (
-                                                <td key={p.name}>{p.value}</td>
+                                                <td key={p.name}>
+                                                    {displayValue(
+                                                        p.name,
+                                                        p.value,
+                                                    )}
+                                                </td>
                                             ))}
                                         </tr>
                                     );
@@ -228,23 +276,23 @@ export function CombinationsSection({
                                 <p className="text-warning small mb-2">
                                     {stranded.toLocaleString()} run
                                     {stranded === 1 ? '' : 's'} sit on boards
-                                    you are switching off. They move to the
-                                    default board on the next rebuild.
+                                    you are closing. They move to the default
+                                    board on the next rebuild.
                                 </p>
                             ) : null;
                         })()}
                     <div className="d-flex gap-2">
                         <button
                             type="button"
-                            className="btn btn-sm btn-primary"
+                            className={kit.saveBtn}
                             onClick={handleSave}
                             disabled={busy || pristine}
                         >
-                            {isSaving ? 'Saving...' : 'Save'}
+                            {isSaving ? 'Saving…' : 'Save sub-boards'}
                         </button>
                         <button
                             type="button"
-                            className="btn btn-sm btn-outline-secondary"
+                            className={kit.resetBtn}
                             onClick={handleReset}
                             disabled={busy || pristine}
                         >
@@ -253,6 +301,6 @@ export function CombinationsSection({
                     </div>
                 </>
             )}
-        </section>
+        </div>
     );
 }

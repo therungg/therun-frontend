@@ -1,8 +1,8 @@
 # Category editor (wizard step 4 detail / console category page) — clarity analysis
 
-Status: R1, R3, R5 and R7 implemented on `setup-hub-order-groups` (2026-08-03).
-R2 (visual unification), R4 (variables/sub-boards merge) and R6 (checklist
-glyphs) still open — R4 pending the shared-variables-step decision below.
+Status: FULLY IMPLEMENTED on `setup-hub-order-groups` (2026-08-03) — R1–R7
+plus the Subcategories & filters step and console pane described below. Joey
+approved the step recommendation ("yeah do everything").
 Scope: `manage/category/category-editor.tsx` and the six sections it mounts, as
 experienced inside the setup wizard (`?step=category-setup&cat=<id>`) and on the
 console category detail page. Prompted by Joey: layout off, visuals inconsistent,
