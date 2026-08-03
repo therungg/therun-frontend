@@ -17,6 +17,8 @@ interface Input {
     active?: boolean;
     isMain?: boolean;
     groupId?: number | null;
+    /** Board order within the category's Featured-group scope (1..N). */
+    sortOrder?: number;
     /**
      * Game-default timing + rules template to apply when this call features
      * a category (`isMain: true`). Only the setup wizard's feature-on
@@ -44,6 +46,12 @@ export async function curateCategoryAction(
     if (input.active !== undefined) body.active = input.active;
     if (input.isMain !== undefined) body.isMain = input.isMain;
     if (input.groupId !== undefined) body.groupId = input.groupId;
+    if (input.sortOrder !== undefined) {
+        if (!Number.isInteger(input.sortOrder) || input.sortOrder < 1) {
+            return { error: 'Invalid sort order.' };
+        }
+        body.sortOrder = input.sortOrder;
+    }
 
     if (Object.keys(body).length === 0) {
         return { result: { updated: false } };
