@@ -100,7 +100,8 @@ vi.mock('~src/actions/category-group/reorder-groups.action', () => ({
     reorderGroupsAction: mocks.reorderGroupsAction,
 }));
 vi.mock('next/navigation', () => ({
-    useRouter: () => ({ refresh: mocks.routerRefresh }),
+    useRouter: () => ({ refresh: mocks.routerRefresh, replace: vi.fn() }),
+    useSearchParams: () => new URLSearchParams(),
 }));
 
 const mockUseBoardData = vi.mocked(useBoardData);

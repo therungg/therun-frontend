@@ -1,180 +1,46 @@
 import { describe, expect, it } from 'vitest';
-import {
-    buildBoardHref,
-    buildBoardQuery,
-    buildSubmitHref,
-    rankToPage,
-} from '../board-url';
+import { buildBoardHref, buildCurationHref } from '../board-url';
 
-describe('buildBoardQuery', () => {
-    it('is empty when no category and no subcategory key', () => {
-        expect(buildBoardQuery({}).toString()).toBe('');
-    });
-
-    it('sets only category when there is no subcategory key', () => {
-        expect(buildBoardQuery({ categorySlug: 'any%' }).toString()).toBe(
-            'category=any%25',
-        );
-    });
-
-    it('sets subcategory params without a category', () => {
+describe('buildCurationHref', () => {
+    it('carries the same category + subcategory params as the public board URL, plus pane=boards', () => {
         expect(
-            buildBoardQuery({ subcategoryKey: 'platform=pc' }).toString(),
-        ).toBe('platform=pc');
-    });
-
-    it('sets category plus every subcategory pair', () => {
-        expect(
-            buildBoardQuery({
-                categorySlug: 'any%',
-                subcategoryKey: 'platform=pc|region=ntsc',
-            }).toString(),
-        ).toBe('category=any%25&platform=pc&region=ntsc');
-    });
-
-    it('ignores a blank subcategory key', () => {
-        expect(
-            buildBoardQuery({
-                categorySlug: 'any%',
-                subcategoryKey: '',
-            }).toString(),
-        ).toBe('category=any%25');
-    });
-
-    it('omits page when page is 1 (the board default)', () => {
-        expect(
-            buildBoardQuery({ categorySlug: 'any%', page: 1 }).toString(),
-        ).toBe('category=any%25');
-    });
-
-    it('omits page when page is absent', () => {
-        expect(buildBoardQuery({ categorySlug: 'any%' }).toString()).toBe(
-            'category=any%25',
-        );
-    });
-
-    it('sets page when page is greater than 1', () => {
-        expect(
-            buildBoardQuery({ categorySlug: 'any%', page: 3 }).toString(),
-        ).toBe('category=any%25&page=3');
-    });
-
-    it('sets page alongside subcategory params', () => {
-        expect(
-            buildBoardQuery({
-                subcategoryKey: 'platform=pc',
-                page: 2,
-            }).toString(),
-        ).toBe('platform=pc&page=2');
-    });
-
-    it('percent-encodes an `&` in a subcategory value so it cannot be read as an extra param', () => {
-        const sp = buildBoardQuery({ subcategoryKey: 'notes=a&b' });
-        expect(sp.toString()).toBe('notes=a%26b');
-        expect(sp.get('notes')).toBe('a&b');
-        expect(sp.get('b')).toBeNull();
-    });
-
-    it('percent-encodes a space in a subcategory value (not a literal `+`)', () => {
-        const sp = buildBoardQuery({ subcategoryKey: 'notes=no damage' });
-        expect(sp.toString()).toBe('notes=no+damage');
-        expect(sp.get('notes')).toBe('no damage');
-    });
-
-    it('round-trips a literal `+` and `%` in a subcategory value', () => {
-        const sp = buildBoardQuery({ subcategoryKey: 'notes=100%+' });
-        expect(sp.get('notes')).toBe('100%+');
-    });
-
-    it('round-trips a `#` in a category slug without truncating the query', () => {
-        expect(
-            buildBoardQuery({ categorySlug: 'any%#glitchless' }).toString(),
-        ).toBe('category=any%25%23glitchless');
-    });
-});
-
-describe('rankToPage', () => {
-    it('rank 1 is page 1', () => {
-        expect(rankToPage(1)).toBe(1);
-    });
-
-    it('the last rank on page 1 (25) is still page 1', () => {
-        expect(rankToPage(25)).toBe(1);
-    });
-
-    it('the first rank on page 2 (26) is page 2', () => {
-        expect(rankToPage(26)).toBe(2);
-    });
-
-    it('rank 50 is page 2, rank 51 is page 3', () => {
-        expect(rankToPage(50)).toBe(2);
-        expect(rankToPage(51)).toBe(3);
-    });
-
-    it('respects a custom page size', () => {
-        expect(rankToPage(10, 5)).toBe(2);
-        expect(rankToPage(11, 5)).toBe(3);
-    });
-
-    it('never returns a page below 1, even for a non-positive rank', () => {
-        expect(rankToPage(0)).toBe(1);
-        expect(rankToPage(-5)).toBe(1);
-    });
-});
-
-describe('buildBoardHref', () => {
-    it('is the bare game path with no context', () => {
-        expect(buildBoardHref('celeste')).toBe('/games-v2/celeste');
-    });
-
-    it('appends category and subcategory params', () => {
-        expect(
-            buildBoardHref('celeste', {
-                categorySlug: 'any%',
-                subcategoryKey: 'platform=pc',
-            }),
-        ).toBe('/games-v2/celeste?category=any%25&platform=pc');
-    });
-
-    it('appends the page param when past page 1', () => {
-        expect(
-            buildBoardHref('celeste', {
-                categorySlug: 'any%',
-                page: 2,
-            }),
-        ).toBe('/games-v2/celeste?category=any%25&page=2');
-    });
-});
-
-describe('buildSubmitHref', () => {
-    it('is the bare submit path with no context', () => {
-        expect(buildSubmitHref('celeste')).toBe('/games-v2/celeste/submit');
-    });
-
-    it('carries category and subcategory context into the submit page', () => {
-        expect(
-            buildSubmitHref('celeste', {
-                categorySlug: 'any%',
-                subcategoryKey: 'platform=pc',
-            }),
-        ).toBe('/games-v2/celeste/submit?category=any%25&platform=pc');
-    });
-
-    it('adds mode=claim alongside context', () => {
-        expect(
-            buildSubmitHref('celeste', {
-                categorySlug: 'any%',
-                subcategoryKey: 'platform=pc',
-                mode: 'claim',
+            buildCurationHref('sm64', {
+                categorySlug: '120-star',
+                subcategoryKey: 'platform=n64',
             }),
         ).toBe(
-            '/games-v2/celeste/submit?category=any%25&platform=pc&mode=claim',
+            '/games-v2/sm64/manage?category=120-star&platform=n64&pane=boards',
         );
     });
 
-    it('supports mode=claim alone when there is no category/subcategory context', () => {
-        expect(buildSubmitHref('celeste', { mode: 'claim' })).toBe(
-            '/games-v2/celeste/submit?mode=claim',
+    it('is the mod-side twin of buildBoardHref — identical board params', () => {
+        const ctx = {
+            categorySlug: '16-star',
+            subcategoryKey: 'platform=vc|region=jp',
+        };
+        const board = new URL(buildBoardHref('sm64', ctx), 'https://x.test');
+        const curation = new URL(
+            buildCurationHref('sm64', ctx),
+            'https://x.test',
+        );
+        for (const [name, value] of board.searchParams) {
+            expect(curation.searchParams.get(name)).toBe(value);
+        }
+        expect(curation.searchParams.get('pane')).toBe('boards');
+    });
+
+    it('a variable literally named pane cannot clobber the pane param', () => {
+        expect(
+            buildCurationHref('sm64', {
+                categorySlug: 'any',
+                subcategoryKey: 'pane=weird',
+            }),
+        ).toBe('/games-v2/sm64/manage?category=any&pane=boards');
+    });
+
+    it('bare context still lands on the Boards pane', () => {
+        expect(buildCurationHref('sm64')).toBe(
+            '/games-v2/sm64/manage?pane=boards',
         );
     });
 });

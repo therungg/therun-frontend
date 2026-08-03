@@ -104,7 +104,8 @@ vi.mock('~src/actions/category-group/reorder-groups.action', () => ({
     reorderGroupsAction: mocks.reorderGroupsAction,
 }));
 vi.mock('next/navigation', () => ({
-    useRouter: () => ({ refresh: mocks.routerRefresh }),
+    useRouter: () => ({ refresh: mocks.routerRefresh, replace: vi.fn() }),
+    useSearchParams: () => new URLSearchParams(),
 }));
 
 const GAME: ResolvedGame = { id: 1, name: 'some-game', display: 'Some Game' };

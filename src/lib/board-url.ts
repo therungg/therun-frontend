@@ -66,6 +66,21 @@ export function buildBoardHref(
 }
 
 /**
+ * Console Boards-pane URL scoped to the same board slice — the mod-side
+ * twin of `buildBoardHref`, so board ↔ curation round-trips keep their
+ * category + subcategory context. `pane` is set last so a variable that
+ * happens to be named "pane" can never clobber it.
+ */
+export function buildCurationHref(
+    gameSlug: string,
+    ctx: BoardLinkContext = {},
+): string {
+    const sp = buildBoardQuery(ctx);
+    sp.set('pane', 'boards');
+    return withQuery(`/games-v2/${gameSlug}/manage`, sp);
+}
+
+/**
  * Submit-page URL carrying the same board context, optionally in claim
  * mode. Used by every "Submit a run" / "set the first record" / "Correct
  * this time" entry point so the submit form can preselect category and
