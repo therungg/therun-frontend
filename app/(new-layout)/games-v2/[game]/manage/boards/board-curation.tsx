@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import {
     ArrowLeftShort,
@@ -9,7 +9,9 @@ import {
 } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import { reorderGroupsAction } from '~src/actions/category-group/reorder-groups.action';
+import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
+import { buildBoardHref, buildBoardQuery } from '~src/lib/board-url';
 import { compareByBoardOrder } from '~src/lib/console/category-order';
 import { formatRunDate } from '~src/lib/format-run-date';
 import {
@@ -17,7 +19,10 @@ import {
     findGameMinPolicy,
     minMsFromPolicy,
 } from '~src/lib/setup/game-minimum';
-import type { EffectiveVariable } from '~src/lib/variables/effective';
+import {
+    type EffectiveVariable,
+    normalizeVariableName,
+} from '~src/lib/variables/effective';
 import { buildSubcategoryKey } from '~src/lib/variables/keys';
 import type {
     ResolvedCategory,
@@ -160,6 +165,7 @@ export function BoardCuration({
     context,
 }: BoardCurationProps) {
     const router = useRouter();
+    const searchParams = useSearchParams();
 
     const featured = useMemo(
         () =>
@@ -169,8 +175,22 @@ export function BoardCuration({
         [categories],
     );
 
+    // Console context only: the pane is deep-linkable — `?category=<slug>`
+    // plus one raw param per subcategory variable, the exact query shape the
+    // public board itself uses (board-url.ts), so the board's "Curate" chip
+    // lands on the same slice the moderator was looking at. Read once on
+    // mount; the effect below keeps the URL in sync afterwards.
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
-        featured[0]?.id ?? null,
+        () => {
+            if (context === 'console') {
+                const slug = searchParams.get('category');
+                const fromUrl = slug
+                    ? featured.find((c) => c.name === slug)
+                    : null;
+                if (fromUrl) return fromUrl.id;
+            }
+            return featured[0]?.id ?? null;
+        },
     );
     const category =
         featured.find((c) => c.id === selectedCategoryId) ??
@@ -196,7 +216,24 @@ export function BoardCuration({
 
     const [selectedValues, setSelectedValues] = useState<
         Record<string, string>
-    >({});
+    >(() => {
+        // URL values are held to the variable's real canonical values — a
+        // stale or hand-typed param falls back to the default rather than
+        // producing an empty board.
+        if (context !== 'console') return {};
+        const values: Record<string, string> = {};
+        for (const v of subcatVars) {
+            const raw = searchParams.get(v.nameNormalized);
+            if (!raw) continue;
+            const canonicals = v.values.map((bucket) =>
+                normalizeVariableName(bucket[0] ?? ''),
+            );
+            if (canonicals.includes(raw)) {
+                values[v.nameNormalized] = raw;
+            }
+        }
+        return values;
+    });
 
     // ---- Reorder mode (Task 12) -----------------------------------------
     // A single toggle drives nudge (↑/↓/←/→) controls on category tabs and
@@ -325,6 +362,21 @@ export function BoardCuration({
             })),
         );
     }, [subcatVars, selectedValues]);
+
+    // Reflect the current board slice back into the URL so the pane stays
+    // shareable/bookmarkable as the moderator switches boards. `replace`, not
+    // `push` — switching categories shouldn't stack history entries, and the
+    // pane param survives because buildBoardQuery never emits one.
+    const categorySlug = category?.name ?? null;
+    useEffect(() => {
+        if (context !== 'console' || !categorySlug) return;
+        const sp = buildBoardQuery({ categorySlug, subcategoryKey });
+        sp.set('pane', 'boards');
+        const next = `?${sp.toString()}`;
+        if (window.location.search !== next) {
+            router.replace(next, { scroll: false });
+        }
+    }, [context, categorySlug, subcategoryKey, router]);
 
     const timing: 'rt' | 'gt' = category?.primaryTiming === 'gt' ? 'gt' : 'rt';
 
@@ -784,19 +836,41 @@ export function BoardCuration({
                 context === 'wizard' ? 'Board preview' : 'Board curation'
             }
         >
-            {canConfigure && category && (
-                <BoardControls
-                    gameSlug={game.name}
-                    gameId={game.id}
-                    category={category}
-                    timing={timing}
-                    policies={policies}
-                    subcatVars={subcatVars}
-                    selectedValues={selectedValues}
-                    reorderMode={reorderMode}
-                    onToggleReorderMode={() => setReorderMode((v) => !v)}
-                    reload={reload}
-                />
+            {(canConfigure || context === 'console') && category && (
+                <div className={styles.paneTopRow}>
+                    {/* The door back to the exact public board being curated —
+                        every moderator gets it, not just configurers. The
+                        wizard context has no public board to point at yet. */}
+                    {context === 'console' ? (
+                        <Link
+                            className={styles.boardLink}
+                            href={buildBoardHref(game.name, {
+                                categorySlug: category.name,
+                                subcategoryKey,
+                            })}
+                        >
+                            View public board ↗
+                        </Link>
+                    ) : (
+                        <span />
+                    )}
+                    {canConfigure && (
+                        <BoardControls
+                            gameSlug={game.name}
+                            gameId={game.id}
+                            category={category}
+                            timing={timing}
+                            policies={policies}
+                            subcatVars={subcatVars}
+                            selectedValues={selectedValues}
+                            reorderMode={reorderMode}
+                            onToggleReorderMode={() =>
+                                setReorderMode((v) => !v)
+                            }
+                            reload={reload}
+                        />
+                    )}
+                </div>
             )}
 
             <div className={styles.categorySwitch}>

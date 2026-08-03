@@ -15,6 +15,23 @@
 // Display) — right-aligned, quiet icon+label control-pills so it reads as
 // part of the leaderboard's own control language rather than an admin bar
 // bolted on top.
+// Console-only top row: "View public board" on the left, BoardControls'
+// right-aligned toolbar opposite (a bare span holds the left slot when the
+// viewer can't see one side, so space-between keeps both anchored).
+.paneTopRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs;
+}
+
+.boardLink {
+    @include board.control-pill;
+    font-size: dt.$font-size-xs;
+    text-decoration: none;
+}
+
 .controlsBar {
     display: flex;
     justify-content: flex-end;
