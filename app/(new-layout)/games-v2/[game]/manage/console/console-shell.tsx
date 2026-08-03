@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type { CategoryConfigRow } from '~src/lib/console/category-rows';
 import { legacyPaneRedirect } from '~src/lib/console/legacy-panes';
+import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 import type { BoardCompleteness } from '~src/lib/setup/completeness';
 import type { BoardHealth } from '~src/lib/setup/health';
 import type {
@@ -95,8 +96,8 @@ export function ConsoleShell({
     // grid. `history` is an overlay and `setup` leaves the console, so
     // neither is ever a landing pane.
     const initialActive = useMemo<NavItemId | null>(
-        () => resolveInitialPane(searchParams.get('pane'), groups),
-        [searchParams, groups],
+        () => resolveInitialPane(searchParams.get('pane'), groups, flags),
+        [searchParams, groups, flags],
     );
 
     const [activeItem, setActiveItem] = useState<NavItemId | null>(
@@ -253,7 +254,11 @@ export function ConsoleShell({
         const item = groups
             .flatMap((g) => g.items)
             .find((it) => it.id === activeItem);
-        return item?.label ?? 'Admin console';
+        if (item) return item.label;
+        // Attention is a hidden landing pane (deep-linkable but not in the
+        // nav), so it never appears in `groups` — label it directly.
+        if (activeItem === 'attention') return CONCEPT_LABEL.attention;
+        return 'Admin console';
     }, [groups, activeItem]);
 
     const paneHeadingRef = useRef<HTMLHeadingElement>(null);

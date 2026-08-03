@@ -200,7 +200,7 @@ export function GameHero({
                             href={`/games-v2/${game.name}/manage`}
                             className={styles.quietChip}
                         >
-                            {canModerate ? 'Moderate' : 'Manage'}
+                            Manage
                         </Link>
                     )}
                     {/* Primary action last — the rightmost slot in the

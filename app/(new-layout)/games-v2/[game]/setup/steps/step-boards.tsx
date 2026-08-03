@@ -174,7 +174,7 @@ function GoLiveFooter({ data }: { data: WizardData }) {
                 </p>
                 <div className="d-flex gap-2 justify-content-center">
                     <Link
-                        href={`/games-v2/${data.game.name}/manage?pane=attention`}
+                        href={`/games-v2/${data.game.name}/manage`}
                         className={styles.primaryAction}
                     >
                         Go to your console

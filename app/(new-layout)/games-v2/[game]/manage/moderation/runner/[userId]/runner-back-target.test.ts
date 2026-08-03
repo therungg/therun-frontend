@@ -45,10 +45,28 @@ describe('resolveRunnerBackTarget', () => {
         });
     });
 
-    it('falls back to the console when from is absent', () => {
+    it('returns to the public leaderboard when from=board', () => {
+        expect(
+            resolveRunnerBackTarget('sm64', 'board', null, CATEGORIES),
+        ).toEqual({
+            href: '/games-v2/sm64',
+            label: 'Back to leaderboard',
+        });
+    });
+
+    it('returns to the Boards pane when from=boards', () => {
+        expect(
+            resolveRunnerBackTarget('sm64', 'boards', null, CATEGORIES),
+        ).toEqual({
+            href: '/games-v2/sm64/manage?pane=boards',
+            label: 'Back to Boards',
+        });
+    });
+
+    it('falls back to the console front door when from is absent', () => {
         expect(resolveRunnerBackTarget('sm64', null, '20', CATEGORIES)).toEqual(
             {
-                href: '/games-v2/sm64/manage?pane=attention',
+                href: '/games-v2/sm64/manage',
                 label: 'Back to console',
             },
         );
@@ -63,7 +81,7 @@ describe('resolveRunnerBackTarget', () => {
                 CATEGORIES,
             ),
         ).toEqual({
-            href: '/games-v2/sm64/manage?pane=attention',
+            href: '/games-v2/sm64/manage',
             label: 'Back to console',
         });
     });

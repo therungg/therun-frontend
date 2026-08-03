@@ -38,6 +38,10 @@ export interface RunnerDialogProps {
     subcategoryKey: string;
     /** Admins only — shows the "Entire site" scope. */
     canSiteBan: boolean;
+    /** Which surface opened the dialog — becomes the dossier link's `?from=`
+     * so the runner page's Back returns here. Curation (the default) is
+     * `boards`; the public leaderboard's row menu passes `board`. */
+    dossierFrom?: 'board' | 'boards';
     onMutated: () => void;
 }
 
@@ -82,6 +86,7 @@ export function RunnerDialog({
     gameSlug,
     subcategoryKey,
     canSiteBan,
+    dossierFrom = 'boards',
     onMutated,
 }: RunnerDialogProps) {
     const [scope, setScope] = useState<Scope>('board');
@@ -251,7 +256,7 @@ export function RunnerDialog({
                     slims down. */}
                 <p className={styles.moveNote}>
                     <Link
-                        href={`/games-v2/${gameSlug}/manage/moderation/runner/${row.userId}`}
+                        href={`/games-v2/${gameSlug}/manage/moderation/runner/${row.userId}?from=${dossierFrom}`}
                     >
                         View full runner page — runs, bans, history ↗
                     </Link>

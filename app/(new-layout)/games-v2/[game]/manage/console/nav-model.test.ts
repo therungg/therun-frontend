@@ -167,38 +167,64 @@ describe('isLandingPaneId', () => {
 });
 
 describe('resolveInitialPane', () => {
-    const groups = buildNav({ ...NO_FLAGS, canModerate: true });
+    const modFlags = { ...NO_FLAGS, canModerate: true };
+    const groups = buildNav(modFlags);
 
     it('a valid ?pane= deep link wins outright', () => {
-        expect(resolveInitialPane('bans', groups)).toBe('bans');
+        expect(resolveInitialPane('bans', groups, modFlags)).toBe('bans');
     });
 
     it('a bare URL lands on the tile grid, not a default pane', () => {
-        expect(resolveInitialPane(null, groups)).toBeNull();
+        expect(resolveInitialPane(null, groups, modFlags)).toBeNull();
     });
 
     it('an unrecognised ?pane= lands on the tile grid', () => {
-        expect(resolveInitialPane('not-a-pane', groups)).toBeNull();
+        expect(resolveInitialPane('not-a-pane', groups, modFlags)).toBeNull();
     });
 
     it('a pane this viewer cannot see lands on the tile grid', () => {
         // 'game-details' needs canConfigure, which this viewer lacks.
-        expect(resolveInitialPane('game-details', groups)).toBeNull();
+        expect(resolveInitialPane('game-details', groups, modFlags)).toBeNull();
     });
 
     it('rejects overlay and redirect ids', () => {
-        expect(resolveInitialPane('history', groups)).toBeNull();
-        expect(resolveInitialPane('roster', groups)).toBeNull();
-        expect(resolveInitialPane('reports', groups)).toBeNull();
+        expect(resolveInitialPane('history', groups, modFlags)).toBeNull();
+        expect(resolveInitialPane('roster', groups, modFlags)).toBeNull();
+        expect(resolveInitialPane('reports', groups, modFlags)).toBeNull();
     });
 
     it('rejects the setup wizard — a hand-typed ?pane=setup must not select it', () => {
-        const configurerGroups = buildNav({ ...NO_FLAGS, canConfigure: true });
-        expect(resolveInitialPane('setup', configurerGroups)).toBeNull();
+        const configurerFlags = { ...NO_FLAGS, canConfigure: true };
+        expect(
+            resolveInitialPane(
+                'setup',
+                buildNav(configurerFlags),
+                configurerFlags,
+            ),
+        ).toBeNull();
     });
 
     it('lands a viewer with no visible items on the tile grid', () => {
-        expect(resolveInitialPane(null, buildNav(NO_FLAGS))).toBeNull();
+        expect(
+            resolveInitialPane(null, buildNav(NO_FLAGS), NO_FLAGS),
+        ).toBeNull();
+    });
+
+    it('accepts attention as a hidden landing pane for a moderator — deep links must keep working while it is out of the nav', () => {
+        expect(resolveInitialPane('attention', groups, modFlags)).toBe(
+            'attention',
+        );
+    });
+
+    it('rejects attention for a viewer who cannot moderate', () => {
+        const configurerFlags = { ...NO_FLAGS, canConfigure: true };
+        expect(
+            resolveInitialPane(
+                'attention',
+                buildNav(configurerFlags),
+                configurerFlags,
+            ),
+        ).toBeNull();
     });
 });
 

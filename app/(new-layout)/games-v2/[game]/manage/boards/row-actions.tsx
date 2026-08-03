@@ -326,7 +326,7 @@ export function RowActions({
                             </button>
                             <Link
                                 className={styles.actionBtn}
-                                href={`/games-v2/${gameSlug}/manage/moderation/runner/${row.userId}`}
+                                href={`/games-v2/${gameSlug}/manage/moderation/runner/${row.userId}?from=boards`}
                                 title={`Open ${row.runnerName}'s runner page — runs, bans, history`}
                             >
                                 View
