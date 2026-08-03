@@ -867,6 +867,43 @@ $rail-collapse: 900px;
     margin-left: auto;
 }
 
+// Group heading over a run of hub rows — same eyebrow register as the
+// public band's endcaps, so the sections read as the board's sections.
+.hubGroupHead {
+    font-size: dt.$font-size-xs;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--bs-secondary-color);
+    margin: dt.$spacing-md 0 dt.$spacing-xs;
+}
+
+// ↑/↓ board-order nudges on a hub row; same vocabulary as BoardCuration's
+// reorder mode (board-curation.module.scss).
+.nudgeGroup {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+}
+
+.nudgeBtn {
+    @include board.board-quiet-link;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.1rem;
+
+    // Edges of a section: the control stays (rows don't jiggle) but reads
+    // inert.
+    &:disabled {
+        opacity: 0.35;
+        cursor: default;
+
+        &:hover {
+            color: var(--bs-secondary-color);
+        }
+    }
+}
+
 // Back-to-hub bar above the mounted CategoryEditor. The editor brings its own
 // section rail, so this only has to name where you are and how to leave.
 .editorHead {
