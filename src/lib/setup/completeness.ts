@@ -4,6 +4,7 @@ export type SetupStepId =
     | 'details'
     | 'categories'
     | 'groups'
+    | 'variables'
     | 'category-setup'
     | 'boards';
 
@@ -27,6 +28,8 @@ export interface CategoryFacts {
 export interface CompletenessInput {
     categories: CategoryFacts[];
     variableCount: number;
+    /** Game-wide (shared) variables only — the Subcategories & filters step. */
+    sharedVariableCount: number;
     policyCount: number;
     requireVideoAnywhere: boolean;
     slug: string | null;
@@ -50,6 +53,7 @@ export const SETUP_STEP_ORDER: SetupStepId[] = [
     'details',
     'categories',
     'groups',
+    'variables',
     'category-setup',
     'boards',
 ];
@@ -158,7 +162,22 @@ export function computeCompleteness(
         });
     }
 
-    // Step 4 is every per-category setting on one screen — rules, timing,
+    // Shared variables are optional structure: most games are one board per
+    // category and never define one. Never a todo — the step exists so the
+    // common case (Platform/Version applying to every category) has a
+    // first-class home, not because every board needs it.
+    steps.push({
+        step: 'variables',
+        status: 'done',
+        summary:
+            input.sharedVariableCount === 0
+                ? 'Optional — no shared subcategories or filters'
+                : `${input.sharedVariableCount} shared ${
+                      input.sharedVariableCount === 1 ? 'variable' : 'variables'
+                  }`,
+    });
+
+    // Category setup is every per-category setting on one screen — rules, timing,
     // minimum time, variables. Rules are the one part that can be genuinely
     // missing, so they drive the status; variables are optional (plenty of
     // games have one board per category and nothing to split) and only ride

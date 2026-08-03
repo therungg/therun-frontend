@@ -15,7 +15,6 @@ import {
     type GameTimingDefaults,
     TimingSettingsSection,
 } from '../timing/timing-settings-section';
-import { CombinationsSection } from '../variables/combinations-section';
 import { VariablesSection } from '../variables/variables-section';
 import styles from './category-editor.module.scss';
 import { CopyFromControl } from './copy-from-control';
@@ -45,7 +44,9 @@ interface Props {
 /**
  * Section order is the reader's job order, basics first: what every category
  * needs to be presentable (timing, rules, minimum, settings), then the
- * advanced structure most categories never touch (variables, sub-boards).
+ * advanced structure most categories never touch. Sub-boards is no longer a
+ * section of its own — it renders inside the variables section, as the
+ * consequence of the subcategory variables it belongs to.
  */
 const SECTIONS = [
     { id: 'timing', requires: 'configure' },
@@ -55,7 +56,6 @@ const SECTIONS = [
     { id: 'standards', requires: 'moderate' },
     { id: 'category-settings', requires: 'configure' },
     { id: 'variables', requires: 'configure' },
-    { id: 'combinations', requires: 'configure' },
 ] as const;
 
 type SectionId = (typeof SECTIONS)[number]['id'];
@@ -113,14 +113,13 @@ export function CategoryEditor({
             <VariablesSection
                 gameSlug={game.name}
                 gameId={game.id}
+                mode="category"
                 selectedCategory={category}
-            />
-        ),
-        combinations: (
-            <CombinationsSection
-                gameSlug={game.name}
-                gameId={game.id}
-                selectedCategory={category}
+                sharedHref={
+                    context === 'wizard'
+                        ? `/games-v2/${game.name}/setup?step=variables`
+                        : `/games-v2/${game.name}/manage?pane=variables`
+                }
             />
         ),
         timing: (

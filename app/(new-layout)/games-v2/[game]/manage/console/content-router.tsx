@@ -15,18 +15,13 @@ import type {
 } from '../../../../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
 import { BoardCuration } from '../boards/board-curation';
-import { CategorySettingsSection } from '../category-tab/category-settings-section';
-import { RulesSection } from '../category-tab/rules-section';
 import { GameTab } from '../game-tab/game-tab';
 import type { ReorderChange } from '../game-tab/reorder-changes';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import { ModApplicationsCard } from '../moderation/attention/mod-applications-card';
 import { NeedsAttention } from '../moderation/attention/needs-attention';
 import { ActiveBans } from '../moderation/configure/active-bans';
-import { Standards } from '../moderation/configure/standards';
 import { ReassignPane } from '../reassignments/reassign-pane';
-import { TimingSettingsSection } from '../timing/timing-settings-section';
-import { CombinationsSection } from '../variables/combinations-section';
 import { VariablesSection } from '../variables/variables-section';
 import { CategoriesPane } from './categories-pane';
 import styles from './console.module.scss';
@@ -160,6 +155,17 @@ export function ContentRouter(props: ContentRouterProps) {
                     onGroupsChange={props.onGroupsChange}
                     onRowGroupChange={props.onRowGroupChange}
                 />
+            );
+        case 'variables':
+            return (
+                <div className={styles.surface}>
+                    <VariablesSection
+                        gameSlug={game.name}
+                        gameId={game.id}
+                        mode="game"
+                        selectedCategory={null}
+                    />
+                </div>
             );
         case 'boards':
             return (

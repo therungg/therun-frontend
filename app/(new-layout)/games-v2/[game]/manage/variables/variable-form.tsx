@@ -9,6 +9,7 @@ import {
 } from '~src/lib/variables/language';
 import type { VariableRow } from '../../../../../../types/leaderboards.types';
 import { InlineError, SegmentedControl } from '../shared/form-kit';
+import kit from '../shared/form-kit.module.scss';
 import styles from './variables.module.scss';
 
 export interface VariableFormValues {
@@ -449,17 +450,13 @@ export function VariableForm({
             <div className="d-flex gap-2 justify-content-end mt-3">
                 <button
                     type="button"
-                    className="btn btn-sm btn-outline-secondary"
+                    className={kit.resetBtn}
                     onClick={onCancel}
                     disabled={isBusy}
                 >
                     Cancel
                 </button>
-                <button
-                    type="submit"
-                    className="btn btn-sm btn-primary"
-                    disabled={isBusy}
-                >
+                <button type="submit" className={kit.saveBtn} disabled={isBusy}>
                     {isBusy
                         ? 'Saving…'
                         : mode === 'create'

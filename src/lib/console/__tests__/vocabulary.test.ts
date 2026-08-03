@@ -77,9 +77,12 @@ describe('CONCEPT_TILE', () => {
         expect(Object.keys(CONCEPT_TILE)).not.toContain('reports');
     });
 
-    it('tiles board curation right after groups', () => {
-        expect(TILE_CONCEPT_IDS.indexOf('boards')).toBe(
+    it('tiles shared variables and board curation right after groups, in wizard order', () => {
+        expect(TILE_CONCEPT_IDS.indexOf('variables')).toBe(
             TILE_CONCEPT_IDS.indexOf('groups') + 1,
+        );
+        expect(TILE_CONCEPT_IDS.indexOf('boards')).toBe(
+            TILE_CONCEPT_IDS.indexOf('variables') + 1,
         );
     });
 

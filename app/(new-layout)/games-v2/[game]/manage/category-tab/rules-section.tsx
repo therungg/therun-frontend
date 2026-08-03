@@ -5,7 +5,12 @@ import ReactMarkdown from 'react-markdown';
 import { toast } from 'react-toastify';
 import remarkGfm from 'remark-gfm';
 import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
-import { FormSection, InlineError, SectionFooter } from '../shared/form-kit';
+import {
+    FormSection,
+    InlineError,
+    SectionFooter,
+    SegmentedControl,
+} from '../shared/form-kit';
 import kit from '../shared/form-kit.module.scss';
 import { updateCategorySettingsAction } from './actions/update-category-settings.action';
 
@@ -61,33 +66,24 @@ export function RulesSection({ gameSlug, gameId, category }: Props) {
     return (
         <FormSection
             title="Rules"
+            // Saved state, not draft state — the glyph mirrors the wizard
+            // hub's "no rules" warning and must not flip while typing.
+            status={original.trim() ? 'done' : 'attention'}
             lede="Markdown is supported. Shown to runners on the public leaderboard page above the table."
         >
-            <ul className="nav nav-tabs mb-2" role="tablist">
-                <li className="nav-item" role="presentation">
-                    <button
-                        type="button"
-                        className={`nav-link${tab === 'edit' ? ' active' : ''}`}
-                        onClick={() => setTab('edit')}
-                    >
-                        Edit
-                    </button>
-                </li>
-                <li className="nav-item" role="presentation">
-                    <button
-                        type="button"
-                        className={`nav-link${tab === 'preview' ? ' active' : ''}`}
-                        onClick={() => setTab('preview')}
-                    >
-                        Preview
-                    </button>
-                </li>
-            </ul>
-
             <form onSubmit={handleSubmit}>
+                <SegmentedControl
+                    label="View"
+                    value={tab}
+                    options={[
+                        { value: 'edit', label: 'Edit' },
+                        { value: 'preview', label: 'Preview' },
+                    ]}
+                    onChange={(v) => setTab(v as Tab)}
+                />
                 {tab === 'edit' ? (
                     <textarea
-                        className="form-control"
+                        className="form-control mt-2"
                         rows={10}
                         value={text}
                         onChange={(e) => setText(e.target.value)}
@@ -96,7 +92,7 @@ export function RulesSection({ gameSlug, gameId, category }: Props) {
                     />
                 ) : (
                     <div
-                        className="border rounded p-3"
+                        className="border rounded p-3 mt-2"
                         style={{ minHeight: '12rem' }}
                     >
                         {text.length > 0 ? (

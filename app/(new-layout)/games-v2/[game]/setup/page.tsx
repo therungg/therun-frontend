@@ -78,6 +78,8 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
     const completeness = computeCompleteness({
         categories: categoryFactsFromResolved(catData.categories),
         variableCount: variables.length,
+        sharedVariableCount: variables.filter((v) => v.categoryId === null)
+            .length,
         policyCount: policies.length,
         requireVideoAnywhere: catData.categories.some(
             (c) => !c.archived && c.requireVideo,

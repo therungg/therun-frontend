@@ -196,6 +196,10 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
     return (
         <FormSection
             title="Minimum time"
+            // A minimum is optional — done when one is saved, unmarked (not
+            // "needs attention") otherwise. Saved state, so it can't flip
+            // while typing; absent while the initial load is in flight.
+            status={!loading && originalMinInput.trim() ? 'done' : undefined}
             lede={
                 <>
                     Set the minimum time for <strong>{category.display}</strong>{' '}

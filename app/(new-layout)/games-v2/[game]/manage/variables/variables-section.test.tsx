@@ -53,13 +53,22 @@ function renderSection() {
         <VariablesSection
             gameSlug="celeste"
             gameId={1}
+            mode="game"
             selectedCategory={null}
         />,
     );
 }
 
 async function openCreateFormAndFillIn() {
-    fireEvent.click(screen.getByRole('button', { name: '+ Add variable' }));
+    // The add button is disabled until the initial load transition settles;
+    // clicking a disabled button is a silent no-op, so wait it out.
+    const addBtn = screen.getByRole('button', { name: '+ Add variable' });
+    await waitFor(() => {
+        if ((addBtn as HTMLButtonElement).disabled) {
+            throw new Error('still loading');
+        }
+    });
+    fireEvent.click(addBtn);
     fireEvent.change(screen.getByLabelText('Name'), {
         target: { value: 'Platform' },
     });

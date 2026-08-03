@@ -18,11 +18,12 @@ describe('SETUP_STEPS', () => {
         expect(SETUP_STEPS.map((s) => s.id)).toEqual(SETUP_STEP_ORDER);
     });
 
-    it('is the five-step category-centric wizard', () => {
+    it('is the six-step category-centric wizard', () => {
         expect(SETUP_STEPS.map((s) => s.id)).toEqual([
             'details',
             'categories',
             'groups',
+            'variables',
             'category-setup',
             'boards',
         ]);
@@ -30,6 +31,7 @@ describe('SETUP_STEPS', () => {
             'Game details',
             'Categories',
             'Groups',
+            'Subcategories & filters',
             'Category setup',
             'Boards',
         ]);
@@ -55,7 +57,7 @@ describe('SETUP_STEPS', () => {
 
     it('derives labels and indexes from the same list', () => {
         expect(SETUP_STEP_LABELS.boards).toBe('Boards');
-        expect(setupStepIndex('category-setup')).toBe(3);
+        expect(setupStepIndex('category-setup')).toBe(4);
         // Unknown ids are impossible via SetupStepId, but the lookup must not
         // silently report position 0 for one.
         expect(setupStepIndex('nope' as never)).toBe(-1);
@@ -70,8 +72,9 @@ describe('resolveSetupStep', () => {
 
     it('maps every retired step id onto its successor', () => {
         // Bookmarks and links minted by the seven-step wizard must still land
-        // on the screen that now owns that work.
-        expect(resolveSetupStep('variables')).toBe('category-setup');
+        // on the screen that now owns that work. `variables` is a real step
+        // again, so old ?step=variables links land on it directly.
+        expect(resolveSetupStep('variables')).toBe('variables');
         expect(resolveSetupStep('exceptions')).toBe('category-setup');
         expect(resolveSetupStep('defaults')).toBe('details');
         expect(resolveSetupStep('finish')).toBe('boards');

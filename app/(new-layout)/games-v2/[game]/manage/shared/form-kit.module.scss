@@ -16,6 +16,20 @@
     margin: 0 0 dt.$spacing-md;
 }
 
+// Doneness glyphs beside a section title — same colors as the wizard hub's
+// rail glyphs (single green = --bs-primary, single amber = $accent-amber).
+.statusDone {
+    color: var(--bs-primary);
+    margin-right: 0.3rem;
+    vertical-align: -0.1em;
+}
+
+.statusAttention {
+    color: dt.$accent-amber;
+    margin-right: 0.3rem;
+    vertical-align: -0.1em;
+}
+
 .sectionHead {
     display: flex;
     align-items: center;
