@@ -422,8 +422,12 @@ function DisplayControl({
 
     const busy = busyField != null;
 
+    // Each toggle applies optimistically — a settings checkbox that sits
+    // unchanged for the length of a server round-trip reads as a dead
+    // click — and rolls back on error.
     const handleMilliseconds = (checked: boolean) => {
         setBusyField('showMilliseconds');
+        setState((prev) => ({ ...prev, showMilliseconds: checked }));
         (async () => {
             const res = await updateCategorySettingsAction({
                 gameSlug,
@@ -434,9 +438,9 @@ function DisplayControl({
             setBusyField(null);
             if ('error' in res) {
                 toast.error(res.error);
+                setState((prev) => ({ ...prev, showMilliseconds: !checked }));
                 return;
             }
-            setState((prev) => ({ ...prev, showMilliseconds: checked }));
             reload();
             router.refresh();
         })();
@@ -444,6 +448,7 @@ function DisplayControl({
 
     const handleSortAscending = (checked: boolean) => {
         setBusyField('sortAscending');
+        setState((prev) => ({ ...prev, sortAscending: checked }));
         (async () => {
             const res = await updateCategorySettingsAction({
                 gameSlug,
@@ -454,9 +459,9 @@ function DisplayControl({
             setBusyField(null);
             if ('error' in res) {
                 toast.error(res.error);
+                setState((prev) => ({ ...prev, sortAscending: !checked }));
                 return;
             }
-            setState((prev) => ({ ...prev, sortAscending: checked }));
             reload();
             router.refresh();
         })();
@@ -468,6 +473,7 @@ function DisplayControl({
     const secondaryField = timing === 'rt' ? 'hideGameTime' : 'hideRealTime';
     const handleShowSecondary = (show: boolean) => {
         setBusyField(secondaryField);
+        setState((prev) => ({ ...prev, [secondaryField]: !show }));
         (async () => {
             const res = await updateTimingSettingsAction({
                 gameSlug,
@@ -478,9 +484,9 @@ function DisplayControl({
             setBusyField(null);
             if ('error' in res) {
                 toast.error(res.error);
+                setState((prev) => ({ ...prev, [secondaryField]: show }));
                 return;
             }
-            setState((prev) => ({ ...prev, [secondaryField]: !show }));
             reload();
             router.refresh();
         })();
