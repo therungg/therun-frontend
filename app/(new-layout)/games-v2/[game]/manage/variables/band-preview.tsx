@@ -1,13 +1,13 @@
 'use client';
 
-import type { EffectiveVariable } from '~src/lib/variables/effective';
+import type { VariableRow } from '../../../../../../types/leaderboards.types';
 import band from '../../header/masthead.module.scss';
 import styles from './variables.module.scss';
 
 interface Props {
-    /** Effective (merged, published) rows — what the board actually renders. */
-    variables: EffectiveVariable[];
-    /** "Every category" (game scope) or the category's display name. */
+    /** The category's published rows — what the board actually renders. */
+    variables: VariableRow[];
+    /** The category's display name. */
     contextLabel: string;
 }
 

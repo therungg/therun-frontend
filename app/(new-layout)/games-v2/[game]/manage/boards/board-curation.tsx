@@ -21,10 +21,9 @@ import {
     minMsFromPolicy,
 } from '~src/lib/setup/game-minimum';
 import {
-    type EffectiveVariable,
+    buildSubcategoryKey,
     normalizeVariableName,
-} from '~src/lib/variables/effective';
-import { buildSubcategoryKey } from '~src/lib/variables/keys';
+} from '~src/lib/variables/keys';
 import type {
     ResolvedCategory,
     ResolvedGame,
@@ -248,7 +247,7 @@ export function BoardCuration({
     };
 
     const nudgeVariableRow = (
-        _variable: EffectiveVariable,
+        _variable: VariableRow,
         index: number,
         dir: -1 | 1,
     ) => {
@@ -282,7 +281,7 @@ export function BoardCuration({
     };
 
     const nudgeVariableValue = (
-        variable: EffectiveVariable,
+        variable: VariableRow,
         valueIdx: number,
         dir: -1 | 1,
     ) => {

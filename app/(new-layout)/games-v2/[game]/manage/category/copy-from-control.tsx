@@ -10,7 +10,7 @@ import {
     eligibleCopySources,
     planCategoryCopy,
 } from '~src/lib/setup/copy-category';
-import { normalizeVariableName } from '~src/lib/variables/effective';
+import { normalizeVariableName } from '~src/lib/variables/keys';
 import type {
     ResolvedCategory,
     VariableRow,

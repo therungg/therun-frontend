@@ -3,7 +3,7 @@
 import { getVariables } from '~src/lib/leaderboards-v1';
 import type {
     ValidCombinations,
-    VariableDef,
+    VariableRow,
 } from '../../../../../types/leaderboards.types';
 
 /**
@@ -15,7 +15,7 @@ export async function loadVariablesAction(
     gameName: string,
     categoryName: string,
 ): Promise<{
-    variables: VariableDef[];
+    variables: VariableRow[];
     reservedParams: string[];
     validCombinations: ValidCombinations;
 }> {

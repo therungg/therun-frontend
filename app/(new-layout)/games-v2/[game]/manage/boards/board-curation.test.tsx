@@ -845,7 +845,7 @@ describe('BoardCuration subcategory key normalization', () => {
     const PLATFORM_VAR: VariableRow = {
         id: 200,
         gameId: 1,
-        categoryId: null,
+        categoryId: CATEGORY.id,
         name: 'Platform',
         nameNormalized: 'platform',
         role: 'subcategory',

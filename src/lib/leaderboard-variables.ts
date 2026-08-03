@@ -28,7 +28,7 @@ function unwrapVariableRow(body: unknown): VariableRow | null {
 }
 
 export interface UpsertVariableInput {
-    categoryId?: number | null;
+    categoryId: number;
     name: string;
     role: 'subcategory' | 'filter';
     values: string[][];
@@ -38,7 +38,7 @@ export interface UpsertVariableInput {
 }
 
 export interface DeleteVariableInput {
-    categoryId?: number | null;
+    categoryId: number;
     name?: string;
     nameNormalized?: string;
 }
@@ -46,13 +46,10 @@ export interface DeleteVariableInput {
 export async function listGameVariables(
     sessionId: string,
     gameId: number,
-    categoryId?: number | null,
+    categoryId: number,
 ): Promise<VariableRow[]> {
     const BASE_URL = process.env.NEXT_PUBLIC_DATA_URL;
-    const qs =
-        categoryId != null
-            ? `?categoryId=${encodeURIComponent(categoryId)}`
-            : '';
+    const qs = `?categoryId=${encodeURIComponent(categoryId)}`;
     const url = `${BASE_URL}${basePath(gameId)}${qs}`;
     const res = await fetch(url, {
         headers: { Authorization: `Bearer ${sessionId}` },
@@ -76,6 +73,28 @@ export async function listGameVariables(
         );
     }
     return unwrapVariableArray(parsed);
+}
+
+/**
+ * Every variable row for a set of categories, one list call per category
+ * (the backend has no game-wide listing — variables are category-scoped
+ * only). A category whose fetch fails contributes nothing rather than
+ * failing the whole read; callers use this for overviews (console matrix,
+ * wizard hub, copy sources) where a partial list beats an error page.
+ */
+export async function listCategoryVariables(
+    sessionId: string,
+    gameId: number,
+    categoryIds: number[],
+): Promise<VariableRow[]> {
+    const lists = await Promise.all(
+        categoryIds.map((id) =>
+            listGameVariables(sessionId, gameId, id).catch(
+                () => [] as VariableRow[],
+            ),
+        ),
+    );
+    return lists.flat();
 }
 
 // POST and PUT both call the same upsert handler keyed by
@@ -145,15 +164,14 @@ export interface CombinationsResult {
     mode: 'open' | 'managed';
 }
 
-function combinationsPath(gameId: number, categoryId?: number | null) {
-    const suffix = categoryId != null ? `/${categoryId}` : '';
-    return `/admin/combinations/${gameId}${suffix}`;
+function combinationsPath(gameId: number, categoryId: number) {
+    return `/admin/combinations/${gameId}/${categoryId}`;
 }
 
 export async function listCombinations(
     sessionId: string,
     gameId: number,
-    categoryId?: number | null,
+    categoryId: number,
 ): Promise<CombinationsResult> {
     return apiFetch<CombinationsResult>(combinationsPath(gameId, categoryId), {
         sessionId,
@@ -163,7 +181,7 @@ export async function listCombinations(
 export async function replaceCombinations(
     sessionId: string,
     gameId: number,
-    categoryId: number | null | undefined,
+    categoryId: number,
     subcategoryKeys: string[],
 ): Promise<void> {
     await apiFetch<unknown>(combinationsPath(gameId, categoryId), {

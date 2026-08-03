@@ -5,7 +5,7 @@ import type { LeaderboardQuery } from '~src/lib/leaderboards-v1';
 import type {
     LeaderboardEntry,
     LeaderboardResponse,
-    VariableDef,
+    VariableRow,
 } from '../../../../../types/leaderboards.types';
 import { fetchLeaderboardPage } from '../actions/fetch-page.action';
 import { FiltersPopover } from '../filters/filters-popover';
@@ -49,7 +49,7 @@ interface Props {
     /** Subcategory-role variable names, for building a row's own subcategory key from `entry.variables`. */
     subcategoryDefKeys: string[];
     /** All variable defs — the meta bar's Filters popover needs the filter-role ones. */
-    variableDefs: VariableDef[];
+    variableDefs: VariableRow[];
     /** Active filter-variable selections, keyed by `nameNormalized`. */
     selectedVarFilters: Record<string, string>;
 }

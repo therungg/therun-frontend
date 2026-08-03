@@ -1,17 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import type {
     ResolvedCategory,
-    VariableDef,
+    VariableRow,
 } from '../../../../../types/leaderboards.types';
 import { effectiveSubcategoryLabel, groupShowsEmblems } from './board-identity';
 
 function def(
-    overrides: Partial<VariableDef> & { nameNormalized: string },
-): VariableDef {
+    overrides: Partial<VariableRow> & { nameNormalized: string },
+): VariableRow {
     return {
         id: 1,
         gameId: 1,
-        categoryId: null,
+        categoryId: 1,
         name: overrides.nameNormalized,
         role: 'subcategory',
         values: [['A'], ['B']],
@@ -20,7 +20,6 @@ function def(
         description: null,
         version: 1,
         published: true,
-        scope: 'game',
         ...overrides,
     };
 }

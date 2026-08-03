@@ -113,13 +113,7 @@ export function CategoryEditor({
             <VariablesSection
                 gameSlug={game.name}
                 gameId={game.id}
-                mode="category"
                 selectedCategory={category}
-                sharedHref={
-                    context === 'wizard'
-                        ? `/games-v2/${game.name}/setup?step=variables`
-                        : `/games-v2/${game.name}/manage?pane=variables`
-                }
             />
         ),
         timing: (

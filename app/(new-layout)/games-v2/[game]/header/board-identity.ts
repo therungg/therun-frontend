@@ -1,6 +1,6 @@
 import type {
     ResolvedCategory,
-    VariableDef,
+    VariableRow,
 } from '../../../../../types/leaderboards.types';
 
 /**
@@ -11,7 +11,7 @@ import type {
  * to name that value too or the headline disagrees with the record beside it.
  */
 export function effectiveSubcategoryLabel(
-    defs: VariableDef[],
+    defs: VariableRow[],
     selected: Record<string, string>,
 ): string {
     return defs

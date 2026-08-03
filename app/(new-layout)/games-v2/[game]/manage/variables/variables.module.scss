@@ -37,84 +37,6 @@
     margin: 0;
 }
 
-.inEffectList {
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-sm;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-// Full-width row button — every field in it is decorative text, the row
-// itself is the interactive target (jumps to the source of truth in the
-// console below).
-.inEffectRow {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    column-gap: dt.$spacing-lg;
-    row-gap: dt.$spacing-xs;
-    width: 100%;
-    text-align: left;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-    border-radius: dt.$radius-md;
-    background: var(--bs-body-bg);
-    padding: dt.$spacing-md dt.$spacing-lg;
-    cursor: pointer;
-    transition: border-color dt.$transition-fast,
-        box-shadow dt.$transition-base;
-
-    &:hover {
-        box-shadow: dt.$shadow-md;
-    }
-
-    &:focus-visible {
-        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
-        outline-offset: 1px;
-    }
-}
-
-.inEffectName {
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    color: var(--bs-emphasis-color);
-}
-
-.inEffectRole {
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-}
-
-// Quiet secondary text — this row is a plain shared or category-only
-// variable, nothing for a mod to double-check.
-.source {
-    font-size: dt.$font-size-2xs;
-    color: var(--bs-tertiary-color);
-}
-
-// The state today's UI never surfaces: a category row silently replacing
-// a game-wide one. Warning tone (amber), same language as the console's
-// sevMedium/setupStepWarning pieces — this is the exception a mod needs
-// to notice, not an error.
-.sourceOverride {
-    font-size: dt.$font-size-2xs;
-    font-weight: 600;
-    color: dt.$accent-amber;
-}
-
-.inEffectValues {
-    flex-basis: 100%;
-    font-size: dt.$font-size-sm;
-    color: var(--bs-body-color);
-}
-
-.inEffectDefault {
-    flex-basis: 100%;
-    font-size: dt.$font-size-2xs;
-    color: var(--bs-tertiary-color);
-}
-
 // ============================================================
 // ConsequenceDialog — the review step in front of every variable
 // write. Built on the shared BoardDialog primitive; reuses the same
@@ -222,20 +144,6 @@
     margin: dt.$spacing-xs 0 0 0;
     font-size: dt.$font-size-sm;
     color: var(--bs-emphasis-color);
-}
-
-// The state today's UI never surfaces: a category-scoped create that
-// would shadow a game-wide variable of the same name. Same amber warning
-// vocabulary as .sourceOverride and the console's sevMedium/
-// setupStepWarning pieces above.
-.shadowWarning {
-    margin-top: dt.$spacing-md;
-    padding: dt.$spacing-md dt.$spacing-lg;
-    border: 1px solid color-mix(in srgb, #{dt.$accent-amber} 35%, transparent);
-    border-radius: dt.$radius-md;
-    background: color-mix(in srgb, #{dt.$accent-amber} 12%, transparent);
-    font-size: dt.$font-size-sm;
-    color: color-mix(in srgb, #{dt.$accent-amber} 75%, var(--bs-emphasis-color));
 }
 
 // Sort order + description fold — neither is a first-run concern, so

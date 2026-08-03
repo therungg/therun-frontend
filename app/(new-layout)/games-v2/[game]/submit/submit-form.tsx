@@ -15,7 +15,7 @@ import type {
     SubmitRunResult,
     UserRanking,
     ValidCombinations,
-    VariableDef,
+    VariableRow,
 } from '../../../../../types/leaderboards.types';
 import type {
     ModTiming,
@@ -63,13 +63,13 @@ function todayISODate(): string {
     return `${y}-${m}-${d}`;
 }
 
-function canonicalDefault(def: VariableDef): string {
+function canonicalDefault(def: VariableRow): string {
     const idx = def.defaultValueIndex ?? 0;
     return def.values[idx]?.[0] ?? def.values[0]?.[0] ?? '';
 }
 
 /** Resolves `raw` against a subcategory def's value buckets (case-insensitive), or null if it doesn't match any. */
-function canonicalMatch(def: VariableDef, raw: string): string | null {
+function canonicalMatch(def: VariableRow, raw: string): string | null {
     const bucket = def.values.find((aliases) =>
         aliases.some((alias) => alias.toLowerCase() === raw.toLowerCase()),
     );
@@ -111,7 +111,7 @@ export function SubmitForm({
         [categories, categoryId],
     );
 
-    const [variables, setVariables] = useState<VariableDef[]>([]);
+    const [variables, setVariables] = useState<VariableRow[]>([]);
     const [validCombinations, setValidCombinations] =
         useState<ValidCombinations>({ mode: 'open' });
     const [subcategory, setSubcategory] = useState<Record<string, string>>({});

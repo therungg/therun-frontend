@@ -1,10 +1,10 @@
-import type { VariableDef } from '../../../../../types/leaderboards.types';
+import type { VariableRow } from '../../../../../types/leaderboards.types';
 import styles from '../header/masthead.module.scss';
 import { ActiveFilterChips } from './active-filter-chips';
 import { SubcategoryPills } from './subcategory-pills';
 
 interface Props {
-    defs: VariableDef[];
+    defs: VariableRow[];
     selectedSubcategoryValues: Record<string, string>;
     selectedVarFilters: Record<string, string>;
 }

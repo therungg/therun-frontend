@@ -26,7 +26,7 @@ function mkVar(overrides: Partial<VariableRow> = {}): VariableRow {
     return {
         id: 1,
         gameId: 1,
-        categoryId: null,
+        categoryId: 1,
         name: 'Platform',
         nameNormalized: 'platform',
         role: 'subcategory',
@@ -231,8 +231,8 @@ describe('planCategoryCopy', () => {
                 sortOrder: 0,
                 description: 'Which platform the run was played on.',
             }),
-            // Game-wide — must NOT be copied.
-            mkVar({ id: 200, categoryId: null, name: 'Region' }),
+            // Another category's row — must NOT be copied.
+            mkVar({ id: 200, categoryId: 3, name: 'Region' }),
         ];
 
         const plan = planCategoryCopy({
@@ -284,10 +284,10 @@ describe('planCategoryCopy', () => {
         expect(plan.overwrites).toContain('Variables (2)');
     });
 
-    it('emits no variable or combinations steps when the source has no category-scoped variables', () => {
+    it('emits no variable or combinations steps when the source has no variables', () => {
         const source = mkCat({ id: 1 });
         const target = mkCat({ id: 2 });
-        const variables: VariableRow[] = [mkVar({ id: 200, categoryId: null })];
+        const variables: VariableRow[] = [mkVar({ id: 200, categoryId: 3 })];
 
         const plan = planCategoryCopy({
             source,

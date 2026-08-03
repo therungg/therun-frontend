@@ -11,7 +11,7 @@ import { confirmPermission } from '~src/rbac/confirm-permission';
 interface Input {
     gameSlug: string;
     gameId: number;
-    categoryId: number | null;
+    categoryId: number;
 }
 
 export async function loadCombinationsAction(

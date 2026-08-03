@@ -90,8 +90,9 @@ export interface RecentPb {
 }
 
 // Variable definition shared between the admin CRUD endpoint and the public
-// /variables endpoint. They now return the same shape; the public endpoint
-// just excludes unpublished versions and applies the merge rule.
+// /variables endpoint. They return the same shape; the public endpoint just
+// excludes unpublished versions. Variables are category-scoped only — there
+// is no game-wide scope.
 //
 // `values` is a list of buckets. Each bucket is a list of accepted aliases;
 // index 0 is the canonical display form. `nameNormalized` is the URL filter
@@ -99,7 +100,7 @@ export interface RecentPb {
 export interface VariableRow {
     id: number;
     gameId: number;
-    categoryId: number | null; // null = game-wide
+    categoryId: number;
     name: string;
     nameNormalized: string;
     role: 'subcategory' | 'filter';
@@ -110,13 +111,6 @@ export interface VariableRow {
     version: number;
     published: boolean;
 }
-
-// VariableDef is the merged/public-read flattening. Identical shape to
-// VariableRow plus a derived `scope` for UI labeling (which scope the row
-// came from after the merge).
-export type VariableDef = VariableRow & {
-    scope: 'game' | 'category';
-};
 
 export interface ValidCombinationsOpen {
     mode: 'open';
@@ -129,8 +123,7 @@ export type ValidCombinations =
     | ValidCombinationsOpen
     | ValidCombinationsManaged;
 
-// Wire shape of the public /variables response. `getVariables` in
-// leaderboards-v1.ts enriches each row to `VariableDef` (adds `scope`).
+// Wire shape of the public /variables response.
 export interface VariablesResponse {
     variables: VariableRow[];
     reservedParams: string[];

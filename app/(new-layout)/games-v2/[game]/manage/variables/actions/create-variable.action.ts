@@ -50,12 +50,9 @@ async function invalidateVariableTags(
 ) {
     try {
         const { categories } = await resolveCategory(gameId);
-        const targets =
-            row.categoryId == null
-                ? categories
-                : categories.filter((c) => c.id === row.categoryId);
-        for (const cat of targets) {
-            revalidateTag(`game-vars:${gameSlug}:${cat.name}`, 'hours');
+        const target = categories.find((c) => c.id === row.categoryId);
+        if (target) {
+            revalidateTag(`game-vars:${gameSlug}:${target.name}`, 'hours');
         }
     } catch {
         // Best-effort.

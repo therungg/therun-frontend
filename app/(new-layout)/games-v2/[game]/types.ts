@@ -9,7 +9,7 @@ import type {
     ResolvedGroup,
     UserRanking,
     ValidCombinations,
-    VariableDef,
+    VariableRow,
 } from '../../../../types/leaderboards.types';
 
 export interface GamePageSearchParams {
@@ -26,7 +26,7 @@ export interface GamePageData {
     selectedCategory: ResolvedCategory;
     categories: ResolvedCategory[];
     groups: ResolvedGroup[];
-    variables: VariableDef[];
+    variables: VariableRow[];
     reservedParams: string[];
     validCombinations: ValidCombinations;
     leaderboard: LeaderboardResponse;

@@ -15,6 +15,15 @@ export interface SubcategoryKeyPart {
     value: string;
 }
 
+/**
+ * Same normalization the backend applies to names and values before they
+ * enter a key (see normalizeVariableString): lowercase, whitespace stripped,
+ * `=` and `|` removed.
+ */
+export function normalizeVariableName(raw: string): string {
+    return raw.trim().toLowerCase().replace(/\s+/g, '').replace(/[=|]/g, '');
+}
+
 /** Parses a `name=value|name=value` subcategory key into ordered pairs. */
 export function parseSubcategoryKey(key: string): SubcategoryKeyPart[] {
     if (!key) return [];

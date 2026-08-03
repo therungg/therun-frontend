@@ -44,11 +44,9 @@ export function toPrimaryTiming(t: 'rt' | 'gt'): PrimaryTiming {
 }
 
 /**
- * How many leaderboards this category splits into.
- *
- * Merge rule (same as the public read): a category row wholesale-replaces the
- * game-wide row with the same nameNormalized. Only published subcategory-role
- * variables split a board; filter-role ones don't.
+ * How many leaderboards this category splits into. Variables are
+ * category-scoped only, so this is a product over the category's own
+ * published subcategory-role rows; filter-role ones don't split.
  *
  * Caveat: this is the open-mode maximum. A managed valid-combination set can
  * prune it. The approved variables redesign adds real combination counts; this
@@ -58,16 +56,9 @@ export function subBoardCount(
     variables: VariableRow[],
     categoryId: number,
 ): number {
-    const effective = new Map<string, VariableRow>();
-    for (const v of variables) {
-        if (v.categoryId === null) effective.set(v.nameNormalized, v);
-    }
-    for (const v of variables) {
-        if (v.categoryId === categoryId) effective.set(v.nameNormalized, v);
-    }
-
     let count = 1;
-    for (const v of effective.values()) {
+    for (const v of variables) {
+        if (v.categoryId !== categoryId) continue;
         if (v.role !== 'subcategory' || !v.published) continue;
         if (v.values.length > 0) count *= v.values.length;
     }

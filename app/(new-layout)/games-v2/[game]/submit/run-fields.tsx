@@ -1,4 +1,4 @@
-import type { VariableDef } from '../../../../../types/leaderboards.types';
+import type { VariableRow } from '../../../../../types/leaderboards.types';
 import { type TimeField, TimeInput } from './time-input';
 
 const TIMING_EXPLAINER =
@@ -6,7 +6,7 @@ const TIMING_EXPLAINER =
 
 interface Props {
     // Optional variables — submit-mode only.
-    filterDefs: VariableDef[];
+    filterDefs: VariableRow[];
     filters: Record<string, string>;
     onFilterChange: (nameNormalized: string, value: string) => void;
 

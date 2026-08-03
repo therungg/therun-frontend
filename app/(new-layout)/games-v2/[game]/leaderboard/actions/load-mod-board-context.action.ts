@@ -2,7 +2,7 @@
 
 import { getSession } from '~src/actions/session.action';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
-import { listGameVariables } from '~src/lib/leaderboard-variables';
+import { listCategoryVariables } from '~src/lib/leaderboard-variables';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import type {
     ResolvedCategory,
@@ -30,10 +30,14 @@ export async function loadModBoardContextAction(
     }
 
     try {
-        const [{ categories }, variables] = await Promise.all([
-            resolveCategory(game.id),
-            listGameVariables(session.id, game.id),
-        ]);
+        const { categories } = await resolveCategory(game.id);
+        // Move/Adjust dialogs can target any category, so every category's
+        // variables load here (they are category-scoped only).
+        const variables = await listCategoryVariables(
+            session.id,
+            game.id,
+            categories.map((c) => c.id),
+        );
         return { ok: true, categories, variables };
     } catch {
         return { error: 'Failed to load board data.' };

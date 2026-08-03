@@ -1,8 +1,11 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { EffectiveVariable } from '~src/lib/variables/effective';
-import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
+
+import type {
+    ResolvedCategory,
+    VariableRow,
+} from '../../../../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
 import { BoardControls } from './board-controls';
 
@@ -61,7 +64,7 @@ function baseProps(
         category: CATEGORY,
         timing: 'rt' as const,
         policies: [] as BoardPolicyRow[],
-        subcatVars: [] as EffectiveVariable[],
+        subcatVars: [] as VariableRow[],
         selectedValues: {} as Record<string, string>,
         reorderMode: false,
         onToggleReorderMode: vi.fn(),
@@ -159,7 +162,7 @@ describe('BoardControls — Minimum', () => {
 
 describe('BoardControls — Set as default view', () => {
     it('writes the right defaultValueIndex per variable', async () => {
-        const varA: EffectiveVariable = {
+        const varA: VariableRow = {
             id: 100,
             gameId: 1,
             categoryId: CATEGORY.id,
@@ -172,9 +175,8 @@ describe('BoardControls — Set as default view', () => {
             description: null,
             version: 1,
             published: true,
-            source: 'category',
         };
-        const varB: EffectiveVariable = {
+        const varB: VariableRow = {
             id: 101,
             gameId: 1,
             categoryId: CATEGORY.id,
@@ -187,7 +189,6 @@ describe('BoardControls — Set as default view', () => {
             description: null,
             version: 1,
             published: true,
-            source: 'category',
         };
         mocks.updateVariableAction.mockResolvedValue({
             result: {} as never,

@@ -3,8 +3,10 @@
 import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
-import { normalizeVariableName } from '~src/lib/variables/effective';
-import { parseSubcategoryKey } from '~src/lib/variables/keys';
+import {
+    normalizeVariableName,
+    parseSubcategoryKey,
+} from '~src/lib/variables/keys';
 import type {
     ResolvedCategory,
     VariableRow,
@@ -16,10 +18,10 @@ import { saveCombinationsAction } from './actions/save-combinations.action';
 interface Props {
     gameSlug: string;
     gameId: number;
-    selectedCategory: ResolvedCategory | null;
-    /** The category's merged variable list — maps the normalized values the
-     *  keys are built from back to display names ("nintendo64" → "Nintendo
-     *  64"), so the table reads like the board instead of like keys. */
+    selectedCategory: ResolvedCategory;
+    /** The category's variable list — maps the normalized values the keys
+     *  are built from back to display names ("nintendo64" → "Nintendo 64"),
+     *  so the table reads like the board instead of like keys. */
     variables?: VariableRow[];
 }
 
@@ -47,12 +49,7 @@ export function CombinationsSection({
     const [isLoading, startLoadTransition] = useTransition();
     const [isSaving, startSaveTransition] = useTransition();
     const busy = isLoading || isSaving;
-    const categoryId = selectedCategory?.id ?? null;
-    // A null category means the backend sums entryCount across every
-    // category sharing a subcategory key (and doesn't exclude categories
-    // that override the variable) — not this board's count. Only render
-    // counts when a real category is selected.
-    const showCounts = selectedCategory != null;
+    const categoryId = selectedCategory.id;
 
     const refresh = async () => {
         const res = await loadCombinationsAction({
@@ -205,7 +202,7 @@ export function CombinationsSection({
                                             Open
                                         </span>
                                     </th>
-                                    {showCounts && <th>Runs</th>}
+                                    <th>Runs</th>
                                     {firstParts.map((p) => (
                                         <th key={p.name}>
                                             {displayName(p.name)}
@@ -243,11 +240,9 @@ export function CombinationsSection({
                                                     disabled={busy}
                                                 />
                                             </td>
-                                            {showCounts && (
-                                                <td className="text-muted small">
-                                                    {c.entryCount.toLocaleString()}
-                                                </td>
-                                            )}
+                                            <td className="text-muted small">
+                                                {c.entryCount.toLocaleString()}
+                                            </td>
                                             {parts.map((p) => (
                                                 <td key={p.name}>
                                                     {displayValue(
@@ -262,25 +257,24 @@ export function CombinationsSection({
                             </tbody>
                         </table>
                     </div>
-                    {showCounts &&
-                        (() => {
-                            const stranded = combos
-                                .filter(
-                                    (c, i) =>
-                                        !c.valid &&
-                                        original[i]?.valid &&
-                                        c.entryCount > 0,
-                                )
-                                .reduce((sum, c) => sum + c.entryCount, 0);
-                            return stranded > 0 ? (
-                                <p className="text-warning small mb-2">
-                                    {stranded.toLocaleString()} run
-                                    {stranded === 1 ? '' : 's'} sit on boards
-                                    you are closing. They move to the default
-                                    board on the next rebuild.
-                                </p>
-                            ) : null;
-                        })()}
+                    {(() => {
+                        const stranded = combos
+                            .filter(
+                                (c, i) =>
+                                    !c.valid &&
+                                    original[i]?.valid &&
+                                    c.entryCount > 0,
+                            )
+                            .reduce((sum, c) => sum + c.entryCount, 0);
+                        return stranded > 0 ? (
+                            <p className="text-warning small mb-2">
+                                {stranded.toLocaleString()} run
+                                {stranded === 1 ? '' : 's'} sit on boards you
+                                are closing. They move to the default board on
+                                the next rebuild.
+                            </p>
+                        ) : null;
+                    })()}
                     <div className="d-flex gap-2">
                         <button
                             type="button"
