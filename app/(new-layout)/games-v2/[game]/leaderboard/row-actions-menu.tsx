@@ -373,7 +373,7 @@ export function RowActionsMenu({
                                     <Dropdown.Item
                                         as={Link}
                                         className={styles.item}
-                                        href={`/games-v2/${gameSlug}/manage/moderation/runner/${entry.userId}`}
+                                        href={`/games-v2/${gameSlug}/manage/moderation/runner/${entry.userId}?from=board`}
                                     >
                                         View runner page
                                     </Dropdown.Item>
@@ -425,6 +425,7 @@ export function RowActionsMenu({
                             gameSlug={gameSlug}
                             subcategoryKey={entrySubcategoryKey}
                             canSiteBan={canSiteBan}
+                            dossierFrom="board"
                             onMutated={onModMutated}
                         />
                     )}

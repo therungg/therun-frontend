@@ -177,6 +177,18 @@ export function isLandingPaneId(
 }
 
 /**
+ * Panes that stay out of the sidebar nav but remain valid deep-link
+ * landings. Needs attention was pulled from the nav "for now" (see
+ * ALL_GROUPS), but the cross-game hub rows, the Moderators pane's
+ * pending-applications note, the legacy /manage/moderation/* redirects and
+ * the Reports normalization all still target `?pane=attention` — the deep
+ * link must keep opening the pane even while no sidebar item points at it.
+ */
+function hiddenLandingIds(flags: NavFlags): NavItemId[] {
+    return flags.canModerate ? ['attention'] : [];
+}
+
+/**
  * Resolves which pane the console lands on: a valid `?pane=` deep link wins,
  * and anything else lands on the tile grid (`null`) — the console's front
  * door. There is no default pane and no stored-pane restore any more; see
@@ -185,7 +197,11 @@ export function isLandingPaneId(
 export function resolveInitialPane(
     requestedPane: string | null,
     groups: NavGroup[],
+    flags: NavFlags,
 ): NavItemId | null {
-    const visible = groups.flatMap((g) => g.items).map((it) => it.id);
+    const visible = [
+        ...groups.flatMap((g) => g.items).map((it) => it.id),
+        ...hiddenLandingIds(flags),
+    ];
     return isLandingPaneId(requestedPane, visible) ? requestedPane : null;
 }
