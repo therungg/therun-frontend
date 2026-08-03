@@ -26,7 +26,6 @@ function input(over: Partial<CompletenessInput>): CompletenessInput {
             },
         ],
         variableCount: 0,
-        sharedVariableCount: 0,
         policyCount: 1,
         requireVideoAnywhere: false,
         slug: 'mygame',

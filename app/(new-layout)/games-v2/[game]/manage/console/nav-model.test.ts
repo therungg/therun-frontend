@@ -49,14 +49,13 @@ describe('buildNav', () => {
         })
             .flatMap((g) => g.items)
             .map((it) => it.id as string);
-        // `variables` is absent: it returned as a live game-level nav item
-        // (shared subcategories & filters), no longer a per-category pane.
         for (const retired of [
             'standards',
             'timing',
             'rules',
             'combinations',
             'category-settings',
+            'variables',
         ]) {
             expect(ids, retired).not.toContain(retired);
         }
@@ -242,11 +241,11 @@ describe('nav shape', () => {
         expect(buildNav(ALL).map((g) => g.id)).toEqual(['moderate', 'board']);
     });
 
-    it('shows ten items to a fully privileged viewer', () => {
-        // Was twelve — attention, roster and reports are out of the nav
-        // for now (see ALL_GROUPS in nav-model.ts); variables (shared
-        // subcategories & filters) came back as a game-level item.
-        expect(buildNav(ALL).flatMap((g) => g.items)).toHaveLength(10);
+    it('shows nine items to a fully privileged viewer', () => {
+        // Attention, roster and reports are out of the nav for now (see
+        // ALL_GROUPS in nav-model.ts); variables are category-scoped and
+        // live behind the category index, not in the nav.
+        expect(buildNav(ALL).flatMap((g) => g.items)).toHaveLength(9);
     });
 
     it('no longer exposes the pulled triage entries', () => {
@@ -265,7 +264,7 @@ describe('nav shape', () => {
             'game-details',
             'categories',
             'groups',
-            'variables',
+            'boards',
         ]);
     });
 

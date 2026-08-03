@@ -18,7 +18,6 @@ import { StepCategories } from './steps/step-categories';
 import { StepCategorySetup } from './steps/step-category-setup';
 import { StepDetails } from './steps/step-details';
 import { StepGroups } from './steps/step-groups';
-import { StepVariables } from './steps/step-variables';
 import type { WizardData } from './types';
 
 interface Props {
@@ -116,9 +115,9 @@ export function WizardShell({ data, initialStep }: Props) {
                 // lands (e.g. after a save), so stale local state can't hide
                 // behind fresher server data.
                 //
-                // 'variables', 'category-setup' and 'boards' key on `step`
-                // alone, with no renderedAt: they own long-lived interactive
-                // state (an open variable form, BoardCuration's
+                // 'category-setup' and 'boards' key on `step` alone, with no
+                // renderedAt: they own long-lived interactive state (an open
+                // variable form, BoardCuration's
                 // pendingRemovals/selectedRunIds/reorder mode, the
                 // per-category hub editor's open panel) that flows in via
                 // props or self-refreshes through actions, not by re-seeding
@@ -129,9 +128,7 @@ export function WizardShell({ data, initialStep }: Props) {
                 // that state on every single mutation inside them, which is
                 // most of what they do.
                 key={
-                    step === 'variables' ||
-                    step === 'category-setup' ||
-                    step === 'boards'
+                    step === 'category-setup' || step === 'boards'
                         ? step
                         : `${step}-${data.renderedAt}`
                 }
@@ -202,14 +199,6 @@ function CurrentStep({
         case 'groups':
             return (
                 <StepGroups data={data} onAdvance={onAdvance} onBack={onBack} />
-            );
-        case 'variables':
-            return (
-                <StepVariables
-                    data={data}
-                    onAdvance={onAdvance}
-                    onBack={onBack}
-                />
             );
         case 'category-setup':
             return (

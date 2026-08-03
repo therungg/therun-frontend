@@ -77,12 +77,11 @@ describe('CONCEPT_TILE', () => {
         expect(Object.keys(CONCEPT_TILE)).not.toContain('reports');
     });
 
-    it('tiles shared variables and board curation right after groups, in wizard order', () => {
-        expect(TILE_CONCEPT_IDS.indexOf('variables')).toBe(
-            TILE_CONCEPT_IDS.indexOf('groups') + 1,
-        );
+    it('tiles board curation right after groups, in wizard order', () => {
+        // No variables tile: variables are category-scoped, edited from the
+        // category index.
         expect(TILE_CONCEPT_IDS.indexOf('boards')).toBe(
-            TILE_CONCEPT_IDS.indexOf('variables') + 1,
+            TILE_CONCEPT_IDS.indexOf('groups') + 1,
         );
     });
 

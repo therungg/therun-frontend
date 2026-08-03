@@ -22,7 +22,6 @@ import { ModApplicationsCard } from '../moderation/attention/mod-applications-ca
 import { NeedsAttention } from '../moderation/attention/needs-attention';
 import { ActiveBans } from '../moderation/configure/active-bans';
 import { ReassignPane } from '../reassignments/reassign-pane';
-import { VariablesSection } from '../variables/variables-section';
 import { CategoriesPane } from './categories-pane';
 import styles from './console.module.scss';
 import type { GameDetailsData } from './game-details-pane';
@@ -155,17 +154,6 @@ export function ContentRouter(props: ContentRouterProps) {
                     onGroupsChange={props.onGroupsChange}
                     onRowGroupChange={props.onRowGroupChange}
                 />
-            );
-        case 'variables':
-            return (
-                <div className={styles.surface}>
-                    <VariablesSection
-                        gameSlug={game.name}
-                        gameId={game.id}
-                        mode="game"
-                        selectedCategory={null}
-                    />
-                </div>
             );
         case 'boards':
             return (

@@ -233,7 +233,6 @@ export function StepGroups({ data, onAdvance }: StepProps) {
             <CategoryBandPreview
                 categories={previewCategories}
                 groups={layout === 'grouped' ? groups : []}
-                variables={data.variables}
             />
 
             {layout === 'grouped' && (

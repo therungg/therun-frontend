@@ -12,7 +12,7 @@ import {
 import { getGameIdentifiers, getGameMetadata } from '~src/lib/game-mgmt';
 import { listGameModerators } from '~src/lib/game-moderators';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
-import { listGameVariables } from '~src/lib/leaderboard-variables';
+import { listCategoryVariables } from '~src/lib/leaderboard-variables';
 import {
     canConfigureGame,
     canModerateGame,
@@ -165,7 +165,12 @@ export default async function GameAdminConsolePage({ params }: Props) {
     let policies: BoardPolicyRow[] = [];
     if (canModerate || canConfigure) {
         [variables, policies] = await Promise.all([
-            listGameVariables(sessionId, game.id).catch(() => []),
+            // Category-scoped only: one list call per category, merged flat.
+            listCategoryVariables(
+                sessionId,
+                game.id,
+                categories.map((c) => c.id),
+            ).catch(() => []),
             listPolicies(sessionId, game.id).catch(() => []),
         ]);
     }
@@ -187,9 +192,6 @@ export default async function GameAdminConsolePage({ params }: Props) {
             setupCompleteness = computeCompleteness({
                 categories: categoryFactsFromResolved(categories),
                 variableCount: variables.length,
-                sharedVariableCount: variables.filter(
-                    (v) => v.categoryId === null,
-                ).length,
                 policyCount: policies.length,
                 requireVideoAnywhere: categories.some(
                     (c) => !c.archived && c.requireVideo,
