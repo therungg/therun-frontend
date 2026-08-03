@@ -1,5 +1,15 @@
 # Frontend Integration Guide: Leaderboard Variables
 
+> **SUPERSEDED IN PART (2026-08-04): the game-wide scope no longer exists.** Variables and
+> valid combinations are category-scoped only. `categoryId` is a required number on every
+> admin endpoint (`GET /v1/games/:gameId/variables?categoryId=N`, numeric `body.categoryId`
+> on POST/PUT/DELETE, `/admin/combinations/:gameId/:categoryId` with no bare-game form), and
+> `VariableRow.categoryId` is non-null. Everything below that describes `categoryId = null`,
+> game-wide rows, scope merging, or category-overrides-game shadowing is obsolete — a
+> category's variables are exactly its own rows. The authoritative contract lives in the
+> backend repo: `src/leaderboards/API_ENDPOINTS.md` and
+> `docs/frontend-guide-game-category-management.md`.
+
 ## What changed
 
 The variables system has been refactored. The frontend currently still talks to the **old** API contract (SHA-256 `subcategoryHash`, `var_*` query prefix, `type`/`values: string[]`/`defaultValue`/`required`, separate alias tables). The backend now uses a **plain-text `subcategoryKey`** with inline-aliased value buckets, `role`/`values: string[][]`/`defaultValueIndex`, and admin endpoints that upsert by name. This guide is the new contract.
