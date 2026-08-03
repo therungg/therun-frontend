@@ -1,6 +1,8 @@
 'use client';
 
 import { useMemo, useState, useTransition } from 'react';
+import { ArrowDownShort, ArrowUpShort } from 'react-bootstrap-icons';
+import { compareByBoardOrder } from '~src/lib/console/category-order';
 import type {
     ResolvedCategory,
     ResolvedGroup,
@@ -10,6 +12,7 @@ import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
 import { CategoryBandPreview } from './category-band-preview';
 import { GroupBuilder } from './group-builder';
+import { computeGroupSaveChanges, moveWithinScope } from './group-order';
 import { StepHeader } from './step-header';
 
 type Layout = 'flat' | 'grouped';
@@ -27,6 +30,15 @@ export function StepGroups({ data, onAdvance }: StepProps) {
     const [assignments, setAssignments] = useState<Map<number, number | null>>(
         () => new Map(mains.map((c) => [c.id, c.groupId ?? null])),
     );
+    // Draft board order for every featured category — one global list, each
+    // column reads its members out of it. Nudges edit this locally; the save
+    // pass writes it (only if touched) together with the assignments, so the
+    // step stays a single-save surface.
+    const [orderedIds, setOrderedIds] = useState<number[]>(() =>
+        [...mains].sort(compareByBoardOrder).map((c) => c.id),
+    );
+    const [orderDirty, setOrderDirty] = useState(false);
+    const byId = useMemo(() => new Map(mains.map((c) => [c.id, c])), [mains]);
     const [groups, setGroups] = useState<ResolvedGroup[]>(data.groups);
     const [layout, setLayout] = useState<Layout>(
         data.groups.length > 0 ? 'grouped' : 'flat',
@@ -63,26 +75,48 @@ export function StepGroups({ data, onAdvance }: StepProps) {
         return m;
     }, [mains, assignments]);
 
-    const previewCategories = useMemo<ResolvedCategory[]>(
-        () => mains.map((c) => ({ ...c, groupId: groupIdOf(c.id) })),
-        // groupIdOf closes over both, and both drive the result.
-        [mains, assignments, layout],
-    );
-
-    // Which categories land in which column of the board below.
+    // Which categories land in which column of the board below, in draft
+    // order — orderedIds is the single source of row order.
     const columns = useMemo(() => {
+        const ordered = orderedIds
+            .map((id) => byId.get(id))
+            .filter((c): c is ResolvedCategory => c != null);
         const buckets = groups.map((g) => ({
             group: g as ResolvedGroup | null,
-            categories: mains.filter((c) => assignments.get(c.id) === g.id),
+            categories: ordered.filter((c) => assignments.get(c.id) === g.id),
         }));
         buckets.push({
             group: null,
-            categories: mains.filter(
+            categories: ordered.filter(
                 (c) => (assignments.get(c.id) ?? null) === null,
             ),
         });
         return buckets;
-    }, [groups, mains, assignments]);
+    }, [groups, byId, orderedIds, assignments]);
+
+    // The preview must render the DRAFT order, so each category gets its
+    // draft column position as sortOrder (1..N per column) — the same
+    // numbers the save pass would write.
+    const previewCategories = useMemo<ResolvedCategory[]>(() => {
+        const draftSort = new Map<number, number>();
+        if (layout === 'grouped') {
+            for (const col of columns) {
+                col.categories.forEach((c, i) => draftSort.set(c.id, i + 1));
+            }
+        } else {
+            // Flat layout is one scope: number by global draft position.
+            orderedIds.forEach((id, i) => draftSort.set(id, i + 1));
+        }
+        return orderedIds
+            .map((id) => byId.get(id))
+            .filter((c): c is ResolvedCategory => c != null)
+            .map((c) => ({
+                ...c,
+                groupId: groupIdOf(c.id),
+                sortOrder: draftSort.get(c.id) ?? 0,
+            }));
+        // groupIdOf closes over assignments+layout, and both drive the result.
+    }, [columns, orderedIds, byId, assignments, layout]);
 
     const ungroupedCount = columns[columns.length - 1].categories.length;
     const groupingOk =
@@ -103,23 +137,56 @@ export function StepGroups({ data, onAdvance }: StepProps) {
         );
     }
 
+    const nudge = (columnIds: number[], id: number, dir: -1 | 1) => {
+        setOrderedIds((prev) => {
+            const next = moveWithinScope(prev, new Set(columnIds), id, dir);
+            if (next !== prev) setOrderDirty(true);
+            return next;
+        });
+    };
+
     const save = () => {
         startSaving(async () => {
             setRowErrors(new Map());
-            const changed = mains.filter(
-                (c) => (c.groupId ?? null) !== groupIdOf(c.id),
-            );
+            // Final columns under the chosen layout: flat collapses
+            // everything into the single ungrouped scope.
+            const finalColumns =
+                layout === 'grouped'
+                    ? columns.map((col) => ({
+                          groupId: col.group?.id ?? null,
+                          ids: col.categories.map((c) => c.id),
+                      }))
+                    : [
+                          {
+                              groupId: null,
+                              ids: orderedIds.filter((id) => byId.has(id)),
+                          },
+                      ];
+            const changes = computeGroupSaveChanges({
+                mains: mains.map((c) => ({
+                    id: c.id,
+                    groupId: c.groupId ?? null,
+                    sortOrder: c.sortOrder,
+                })),
+                columns: finalColumns,
+                writeOrder: orderDirty,
+            });
             const failures = new Map<number, string>();
-            for (let i = 0; i < changed.length; i++) {
-                const c = changed[i];
-                setProgress(`Saving ${i + 1} / ${changed.length}…`);
+            for (let i = 0; i < changes.length; i++) {
+                const change = changes[i];
+                setProgress(`Saving ${i + 1} / ${changes.length}…`);
                 const res = await curateCategoryAction({
                     gameSlug: data.game.name,
                     gameId: data.game.id,
-                    categoryId: c.id,
-                    groupId: groupIdOf(c.id),
+                    categoryId: change.id,
+                    ...(change.groupId !== undefined
+                        ? { groupId: change.groupId }
+                        : {}),
+                    ...(change.sortOrder !== undefined
+                        ? { sortOrder: change.sortOrder }
+                        : {}),
                 });
-                if ('error' in res) failures.set(c.id, res.error);
+                if ('error' in res) failures.set(change.id, res.error);
             }
             setProgress(null);
             setRowErrors(failures);
@@ -228,6 +295,81 @@ export function StepGroups({ data, onAdvance }: StepProps) {
                                                             styles.spacer
                                                         }
                                                     />
+                                                    {col.categories.length >
+                                                        1 && (
+                                                        <span
+                                                            className={
+                                                                styles.nudgeGroup
+                                                            }
+                                                        >
+                                                            <button
+                                                                type="button"
+                                                                className={
+                                                                    styles.nudgeBtn
+                                                                }
+                                                                aria-label={`Move ${c.display} up`}
+                                                                disabled={
+                                                                    isSaving ||
+                                                                    col
+                                                                        .categories[0]
+                                                                        .id ===
+                                                                        c.id
+                                                                }
+                                                                onClick={() =>
+                                                                    nudge(
+                                                                        col.categories.map(
+                                                                            (
+                                                                                x,
+                                                                            ) =>
+                                                                                x.id,
+                                                                        ),
+                                                                        c.id,
+                                                                        -1,
+                                                                    )
+                                                                }
+                                                            >
+                                                                <ArrowUpShort
+                                                                    size={18}
+                                                                    aria-hidden
+                                                                />
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                className={
+                                                                    styles.nudgeBtn
+                                                                }
+                                                                aria-label={`Move ${c.display} down`}
+                                                                disabled={
+                                                                    isSaving ||
+                                                                    col
+                                                                        .categories[
+                                                                        col
+                                                                            .categories
+                                                                            .length -
+                                                                            1
+                                                                    ].id ===
+                                                                        c.id
+                                                                }
+                                                                onClick={() =>
+                                                                    nudge(
+                                                                        col.categories.map(
+                                                                            (
+                                                                                x,
+                                                                            ) =>
+                                                                                x.id,
+                                                                        ),
+                                                                        c.id,
+                                                                        1,
+                                                                    )
+                                                                }
+                                                            >
+                                                                <ArrowDownShort
+                                                                    size={18}
+                                                                    aria-hidden
+                                                                />
+                                                            </button>
+                                                        </span>
+                                                    )}
                                                     <select
                                                         className="form-select form-select-sm w-auto"
                                                         aria-label={`Group for ${c.display}`}
