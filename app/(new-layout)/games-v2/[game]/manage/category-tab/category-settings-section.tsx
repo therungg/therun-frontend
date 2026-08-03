@@ -161,8 +161,8 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
             title="Settings"
             lede={
                 <>
-                    Ranking direction, display precision, and video requirement
-                    for <strong>{category.display}</strong>.
+                    Ranking direction, display precision, and the emblem shown
+                    next to <strong>{category.display}</strong>.
                 </>
             }
         >
@@ -172,7 +172,10 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
                     value={state.sortAscending ? 'asc' : 'desc'}
                     options={[
                         { value: 'asc', label: 'Lower time = better' },
-                        { value: 'desc', label: 'Higher value = better' },
+                        {
+                            value: 'desc',
+                            label: 'Higher value = better (score boards)',
+                        },
                     ]}
                     disabled={busy}
                     onChange={(v) =>

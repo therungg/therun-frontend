@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { compareByBoardOrder } from '~src/lib/console/category-order';
+import { getGameMetadata } from '~src/lib/game-mgmt';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { listGameVariables } from '~src/lib/leaderboard-variables';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
@@ -44,7 +45,10 @@ export default async function CategoryDetailPage({ params }: Props) {
     if (!game) notFound();
     if (!canModerateGame(session, game.name)) notFound();
 
-    const { categories } = await resolveCategory(game.id);
+    const [{ categories }, metadata] = await Promise.all([
+        resolveCategory(game.id),
+        getGameMetadata(game.id),
+    ]);
 
     const categoryId = Number.parseInt(rawId, 10);
     if (!Number.isFinite(categoryId)) notFound();
@@ -88,6 +92,11 @@ export default async function CategoryDetailPage({ params }: Props) {
                 canModerate={chrome.flags.canModerate}
                 canEditStandards={chrome.flags.canEditStandards}
                 copySources={copySources}
+                gameTimingDefaults={{
+                    primaryTiming: metadata.primaryTiming,
+                    hideRealTime: metadata.hideRealTime,
+                    hideGameTime: metadata.hideGameTime,
+                }}
                 prev={index > 0 ? ordered[index - 1] : null}
                 next={
                     index >= 0 && index < ordered.length - 1

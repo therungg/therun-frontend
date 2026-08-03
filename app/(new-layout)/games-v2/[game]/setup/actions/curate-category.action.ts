@@ -8,7 +8,7 @@ import {
     updateCategory,
 } from '~src/lib/category-mgmt';
 import { confirmPermission } from '~src/rbac/confirm-permission';
-import { seedUpdateBody } from '../steps/category-seed';
+import { type CategorySeed, seedUpdateBody } from '../steps/category-seed';
 
 interface Input {
     gameSlug: string;
@@ -23,10 +23,7 @@ interface Input {
      * transition passes this — it's first-setup seeding, not curation, so
      * the console categories table always leaves it unset.
      */
-    seed?: {
-        primaryTiming: 'realtime' | 'gametime';
-        rulesTemplate: string | null;
-    };
+    seed?: CategorySeed;
     /** Whether the category's current rules were empty before this call — gates whether `seed.rulesTemplate` gets written. */
     currentRulesEmpty?: boolean;
 }

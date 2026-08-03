@@ -21,31 +21,81 @@ function mkCat(overrides: Partial<ResolvedCategory> = {}): ResolvedCategory {
 describe('buildCategorySeed', () => {
     it("maps the game's realtime-scoped primary timing to 'realtime'", () => {
         expect(
-            buildCategorySeed({ primaryTiming: 'rt', rulesTemplate: null }),
-        ).toEqual({ primaryTiming: 'realtime', rulesTemplate: null });
+            buildCategorySeed({
+                primaryTiming: 'rt',
+                hideRealTime: false,
+                hideGameTime: false,
+                rulesTemplate: null,
+            }),
+        ).toEqual({
+            primaryTiming: 'realtime',
+            hideRealTime: false,
+            hideGameTime: false,
+            rulesTemplate: null,
+        });
     });
 
     it("maps a null primary timing to 'realtime' (same default as the resolver)", () => {
         expect(
-            buildCategorySeed({ primaryTiming: null, rulesTemplate: null }),
-        ).toEqual({ primaryTiming: 'realtime', rulesTemplate: null });
+            buildCategorySeed({
+                primaryTiming: null,
+                hideRealTime: false,
+                hideGameTime: false,
+                rulesTemplate: null,
+            }),
+        ).toEqual({
+            primaryTiming: 'realtime',
+            hideRealTime: false,
+            hideGameTime: false,
+            rulesTemplate: null,
+        });
     });
 
     it("maps the game's gametime-scoped primary timing to 'gametime'", () => {
         expect(
-            buildCategorySeed({ primaryTiming: 'gt', rulesTemplate: null }),
-        ).toEqual({ primaryTiming: 'gametime', rulesTemplate: null });
+            buildCategorySeed({
+                primaryTiming: 'gt',
+                hideRealTime: true,
+                hideGameTime: false,
+                rulesTemplate: null,
+            }),
+        ).toEqual({
+            primaryTiming: 'gametime',
+            hideRealTime: true,
+            hideGameTime: false,
+            rulesTemplate: null,
+        });
     });
 
     it('carries the rules template through verbatim', () => {
         expect(
             buildCategorySeed({
                 primaryTiming: 'rt',
+                hideRealTime: false,
+                hideGameTime: true,
                 rulesTemplate: 'No major skips.',
             }),
         ).toEqual({
             primaryTiming: 'realtime',
+            hideRealTime: false,
+            hideGameTime: true,
             rulesTemplate: 'No major skips.',
+        });
+    });
+
+    it('falls back to showing both clocks when legacy metadata hides both', () => {
+        expect(
+            buildCategorySeed({
+                primaryTiming: 'rt',
+                hideRealTime: true,
+                hideGameTime: true,
+                rulesTemplate: null,
+            }),
+        ).toEqual({
+            primaryTiming: 'realtime',
+            hideRealTime: false,
+            hideGameTime: false,
+            rulesTemplate: null,
         });
     });
 });
@@ -54,37 +104,74 @@ describe('seedUpdateBody', () => {
     it('writes rules when the category currently has none', () => {
         expect(
             seedUpdateBody(
-                { primaryTiming: 'realtime', rulesTemplate: 'No skips.' },
+                {
+                    primaryTiming: 'realtime',
+                    hideRealTime: false,
+                    hideGameTime: true,
+                    rulesTemplate: 'No skips.',
+                },
                 true,
             ),
-        ).toEqual({ primaryTiming: 'realtime', rules: 'No skips.' });
+        ).toEqual({
+            primaryTiming: 'realtime',
+            hideRealTime: false,
+            hideGameTime: true,
+            rules: 'No skips.',
+        });
     });
 
     it('never overwrites a category that already has rules', () => {
         expect(
             seedUpdateBody(
-                { primaryTiming: 'realtime', rulesTemplate: 'No skips.' },
+                {
+                    primaryTiming: 'realtime',
+                    hideRealTime: false,
+                    hideGameTime: false,
+                    rulesTemplate: 'No skips.',
+                },
                 false,
             ),
-        ).toEqual({ primaryTiming: 'realtime' });
+        ).toEqual({
+            primaryTiming: 'realtime',
+            hideRealTime: false,
+            hideGameTime: false,
+        });
     });
 
     it('omits rules when the game has no template to apply, even if the category is empty', () => {
         expect(
             seedUpdateBody(
-                { primaryTiming: 'gametime', rulesTemplate: null },
+                {
+                    primaryTiming: 'gametime',
+                    hideRealTime: true,
+                    hideGameTime: false,
+                    rulesTemplate: null,
+                },
                 true,
             ),
-        ).toEqual({ primaryTiming: 'gametime' });
+        ).toEqual({
+            primaryTiming: 'gametime',
+            hideRealTime: true,
+            hideGameTime: false,
+        });
     });
 
     it('omits rules when the template is blank/whitespace-only', () => {
         expect(
             seedUpdateBody(
-                { primaryTiming: 'realtime', rulesTemplate: '   ' },
+                {
+                    primaryTiming: 'realtime',
+                    hideRealTime: false,
+                    hideGameTime: false,
+                    rulesTemplate: '   ',
+                },
                 true,
             ),
-        ).toEqual({ primaryTiming: 'realtime' });
+        ).toEqual({
+            primaryTiming: 'realtime',
+            hideRealTime: false,
+            hideGameTime: false,
+        });
     });
 });
 

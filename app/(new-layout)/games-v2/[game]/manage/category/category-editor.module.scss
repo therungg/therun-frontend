@@ -40,6 +40,51 @@
     border-left-color: var(--bs-primary) !important;
 }
 
+// Wizard context: single column, no side rail (the wizard has its own).
+.bodyStacked {
+    display: flex;
+    flex-direction: column;
+}
+
+// Horizontal section chips for the stacked layout — same shape the ≤900px
+// breakpoint gives .rail, shared via the placeholder below.
+%rail-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-left: none;
+    border-bottom: 1px solid var(--bs-border-color);
+    padding-bottom: 0.5rem;
+
+    a {
+        border-left: none;
+        border-bottom: 2px solid transparent;
+        margin-left: 0;
+    }
+}
+
+.railRow {
+    @extend %rail-row;
+    gap: 0.15rem;
+    margin-bottom: 1rem;
+
+    a {
+        padding: 0.3rem 0.75rem;
+        font-size: 0.85rem;
+        text-decoration: none;
+        color: var(--bs-secondary-color);
+
+        &:hover {
+            color: var(--bs-body-color);
+        }
+    }
+
+    a.railCurrent {
+        border-left-color: transparent !important;
+        border-bottom-color: var(--bs-primary) !important;
+    }
+}
+
 .sections {
     display: flex;
     flex-direction: column;
