@@ -4,14 +4,6 @@ import { apiFetch } from './api-client';
 
 export type PrimaryTiming = 'realtime' | 'gametime';
 
-export interface CategoryTimingSettings {
-    id: number;
-    display: string;
-    primaryTiming: PrimaryTiming;
-    hideRealTime: boolean;
-    hideGameTime: boolean;
-}
-
 export interface CategoryVisibility {
     id: number;
     display: string;
@@ -60,26 +52,6 @@ async function loadPageData(gameId: number): Promise<GamePageData> {
         `/v1/games/${gameId}`,
     );
     return data ?? {};
-}
-
-export async function getCategoryTimingSettings(
-    gameId: number,
-    categoryId: number,
-): Promise<CategoryTimingSettings | null> {
-    const data = await loadPageData(gameId);
-    const all: GameCategoryRow[] = [
-        ...(data.ungroupedCategories ?? []),
-        ...(data.groups ?? []).flatMap((g) => g.categories ?? []),
-    ];
-    const match = all.find((c) => c.id === categoryId);
-    if (!match) return null;
-    return {
-        id: match.id,
-        display: match.display,
-        primaryTiming: match.primaryTiming,
-        hideRealTime: match.hideRealTime,
-        hideGameTime: match.hideGameTime,
-    };
 }
 
 export async function getCategoryVisibility(

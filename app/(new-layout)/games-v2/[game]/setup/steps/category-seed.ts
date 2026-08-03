@@ -3,22 +3,34 @@ import type { ResolvedCategory } from '../../../../../../types/leaderboards.type
 
 export interface CategorySeed {
     primaryTiming: 'realtime' | 'gametime';
+    hideRealTime: boolean;
+    hideGameTime: boolean;
     rulesTemplate: string | null;
 }
 
 /**
  * What a newly-Featured category should seed from — the game's own default
- * timing and rules template, so a category that's never been touched doesn't
- * land on the board with no timing and no rules. Pure so the `'rt'|'gt'|null`
- * -> `'realtime'|'gametime'` mapping (feature-on transition in
+ * timing (primary clock AND the step-1 time-columns choice) and rules
+ * template, so a category that's never been touched doesn't land on the
+ * board with no timing and no rules. Pure so the `'rt'|'gt'|null` ->
+ * `'realtime'|'gametime'` mapping (feature-on transition in
  * step-categories.tsx) is testable without rendering the step.
  */
 export function buildCategorySeed(
-    metadata: Pick<GameMetadata, 'primaryTiming' | 'rulesTemplate'>,
+    metadata: Pick<
+        GameMetadata,
+        'primaryTiming' | 'hideRealTime' | 'hideGameTime' | 'rulesTemplate'
+    >,
 ): CategorySeed {
+    // Both-hidden is invalid (the update action rejects it); legacy games can
+    // still carry it in metadata, so fall back to showing both rather than
+    // seeding a body the server refuses.
+    const bothHidden = metadata.hideRealTime && metadata.hideGameTime;
     return {
         primaryTiming:
             metadata.primaryTiming === 'gt' ? 'gametime' : 'realtime',
+        hideRealTime: bothHidden ? false : metadata.hideRealTime,
+        hideGameTime: bothHidden ? false : metadata.hideGameTime,
         rulesTemplate: metadata.rulesTemplate,
     };
 }
@@ -32,9 +44,16 @@ export function buildCategorySeed(
 export function seedUpdateBody(
     seed: CategorySeed,
     currentRulesEmpty: boolean,
-): { primaryTiming: 'realtime' | 'gametime'; rules?: string } {
+): {
+    primaryTiming: 'realtime' | 'gametime';
+    hideRealTime: boolean;
+    hideGameTime: boolean;
+    rules?: string;
+} {
     return {
         primaryTiming: seed.primaryTiming,
+        hideRealTime: seed.hideRealTime,
+        hideGameTime: seed.hideGameTime,
         ...(currentRulesEmpty && seed.rulesTemplate?.trim()
             ? { rules: seed.rulesTemplate }
             : {}),

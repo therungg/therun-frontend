@@ -11,7 +11,10 @@ import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
 import { CategorySettingsSection } from '../category-tab/category-settings-section';
 import { RulesSection } from '../category-tab/rules-section';
 import { Standards } from '../moderation/configure/standards';
-import { TimingSettingsSection } from '../timing/timing-settings-section';
+import {
+    type GameTimingDefaults,
+    TimingSettingsSection,
+} from '../timing/timing-settings-section';
 import { CombinationsSection } from '../variables/combinations-section';
 import { VariablesSection } from '../variables/variables-section';
 import styles from './category-editor.module.scss';
@@ -34,22 +37,25 @@ interface Props {
      *  from…" control. Omitted callers simply don't get the control — it
      *  renders only when this is provided AND the moderator can configure. */
     copySources?: CopySources;
+    /** Game-wide timing defaults, for the Timing section's "matches the game
+     *  default?" caption. Optional — mounts without metadata skip the caption. */
+    gameTimingDefaults?: GameTimingDefaults;
 }
 
 /**
- * Section order is the wizard's order — variables (step 4), then step 5's four
- * headings in the order that step presents them. A mod who just finished setup
- * meets the same sequence here, which is the whole point of the reconciliation.
+ * Section order is the reader's job order, basics first: what every category
+ * needs to be presentable (timing, rules, minimum, settings), then the
+ * advanced structure most categories never touch (variables, sub-boards).
  */
 const SECTIONS = [
-    { id: 'variables', requires: 'configure' },
-    { id: 'combinations', requires: 'configure' },
     { id: 'timing', requires: 'configure' },
+    { id: 'rules', requires: 'configure' },
     // Minimum time is visible to ANY moderator — this is the carve-out that
     // used to live in nav-model's itemVisible for the `standards` nav item.
     { id: 'standards', requires: 'moderate' },
-    { id: 'rules', requires: 'configure' },
     { id: 'category-settings', requires: 'configure' },
+    { id: 'variables', requires: 'configure' },
+    { id: 'combinations', requires: 'configure' },
 ] as const;
 
 type SectionId = (typeof SECTIONS)[number]['id'];
@@ -62,6 +68,7 @@ export function CategoryEditor({
     canEditStandards,
     context,
     copySources,
+    gameTimingDefaults,
 }: Props) {
     const visible = useMemo(
         () =>
@@ -121,6 +128,7 @@ export function CategoryEditor({
                 gameSlug={game.name}
                 gameId={game.id}
                 category={category}
+                gameDefaults={gameTimingDefaults}
             />
         ),
         standards: (
@@ -161,8 +169,22 @@ export function CategoryEditor({
                     />
                 </div>
             )}
-            <div className={styles.body}>
-                <nav className={styles.rail} aria-label="Sections">
+            {/* The wizard already draws its own 16rem step rail — a second
+                sticky vertical nav beside it read as a broken layout. In
+                wizard context the section nav is a horizontal chip row above
+                the sections instead (the same shape the narrow-viewport
+                breakpoint produces). */}
+            <div
+                className={
+                    context === 'wizard' ? styles.bodyStacked : styles.body
+                }
+            >
+                <nav
+                    className={
+                        context === 'wizard' ? styles.railRow : styles.rail
+                    }
+                    aria-label="Sections"
+                >
                     {visible.map((s) => (
                         <a
                             key={s.id}

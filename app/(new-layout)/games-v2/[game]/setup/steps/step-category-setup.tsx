@@ -111,6 +111,11 @@ export function StepCategorySetup({ data, onAdvance }: StepProps) {
                     canModerate
                     canEditStandards={data.canEditStandards}
                     context="wizard"
+                    gameTimingDefaults={{
+                        primaryTiming: data.metadata.primaryTiming,
+                        hideRealTime: data.metadata.hideRealTime,
+                        hideGameTime: data.metadata.hideGameTime,
+                    }}
                     copySources={{
                         categories: data.categories,
                         variables: data.variables,

@@ -122,8 +122,8 @@ export function CombinationsSection({
                             : isLoading
                               ? 'Loading sub-boards…'
                               : mode === 'open'
-                                ? `${combos.length} combinations, all live boards. Runners can submit any of them.`
-                                : `${validCount} of ${combos.length} combinations are live boards. Runs in the others keep their current board until the next rebuild.`}
+                                ? `Your variables produce ${combos.length} boards, and runners can currently submit to any of them.`
+                                : `${validCount} of the ${combos.length} boards your variables produce are open to runners. Runs on a closed board keep their spot until the next rebuild, then move to the default board.`}
                     </p>
                 </div>
                 <div className="d-flex gap-2">
@@ -158,7 +158,7 @@ export function CombinationsSection({
                 <p className="text-muted">
                     {loadError
                         ? 'Sub-boards couldn’t be loaded, so this list is empty for a reason we don’t know. Retry once the error above clears.'
-                        : 'No subcategory variables in scope — no combinations to manage.'}
+                        : 'No board-splitting variables apply here, so this category is a single board — nothing to manage.'}
                 </p>
             ) : (
                 <>

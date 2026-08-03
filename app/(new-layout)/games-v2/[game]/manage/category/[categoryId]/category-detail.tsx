@@ -7,6 +7,7 @@ import type {
     ResolvedCategory,
     ResolvedGame,
 } from '../../../../../../../types/leaderboards.types';
+import type { GameTimingDefaults } from '../../timing/timing-settings-section';
 import { CategoryEditor, type CopySources } from '../category-editor';
 import styles from './category-detail.module.scss';
 
@@ -17,6 +18,7 @@ interface Props {
     canModerate: boolean;
     canEditStandards: boolean;
     copySources?: CopySources;
+    gameTimingDefaults?: GameTimingDefaults;
     prev: ResolvedCategory | null;
     next: ResolvedCategory | null;
 }
@@ -28,6 +30,7 @@ export function CategoryDetail({
     canModerate,
     canEditStandards,
     copySources,
+    gameTimingDefaults,
     prev,
     next,
 }: Props) {
@@ -64,6 +67,7 @@ export function CategoryDetail({
                 canModerate={canModerate}
                 canEditStandards={canEditStandards}
                 copySources={copySources}
+                gameTimingDefaults={gameTimingDefaults}
                 context="console"
             />
         </div>

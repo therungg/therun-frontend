@@ -1,6 +1,8 @@
 # Category editor (wizard step 4 detail / console category page) — clarity analysis
 
-Status: analysis, no implementation yet.
+Status: R1, R3, R5 and R7 implemented on `setup-hub-order-groups` (2026-08-03).
+R2 (visual unification), R4 (variables/sub-boards merge) and R6 (checklist
+glyphs) still open — R4 pending the shared-variables-step decision below.
 Scope: `manage/category/category-editor.tsx` and the six sections it mounts, as
 experienced inside the setup wizard (`?step=category-setup&cat=<id>`) and on the
 console category detail page. Prompted by Joey: layout off, visuals inconsistent,
@@ -221,11 +223,31 @@ is visible without reading six forms.
 4. **R4 + R6** — the variables/sub-boards merge is the real redesign; do it
    last, on top of a stable frame.
 
-## Open questions for Joey
+## Decisions (Joey, 2026-08-03)
 
-- R4 changes the console category page too (shared component) — intended, or
-  should console keep the current fuller variables surface?
-- Should game-wide (shared) variables remain editable from inside a category's
-  editor at all, or only from a game-level pane?
-- Emblem upload: stays in Settings, or moves to the hub row (it's the only
-  pure-cosmetic field on the page)?
+- Console gets the same treatment — the component stays shared.
+- Emblem stays in Settings.
+- Shared (game-wide) variables should NOT be editable from inside a category's
+  editor. Joey floated a dedicated step; recommendation below.
+
+## Recommendation: a "Subcategories & filters" wizard step
+
+Shared variables are the *common* case (Platform/Version apply to every
+category), so evicting them from the category editor requires a first-class
+home. Proposal:
+
+- New wizard step between Groups and Category setup: **Subcategories &
+  filters** (wizard becomes 6 steps). It edits game-wide variables only, with
+  the band-chip preview making the consequence concrete ("this splits every
+  board into N64 · Switch · PC").
+- Console reuses the same component as a game-level pane (same trick as
+  CategoryEditor's dual mount).
+- The category editor's variables section shrinks to: effective chips +
+  category-scoped overrides + a "shared variables live here →" link.
+- The step must carry a warning for configured games: adding a game-wide
+  subcategory reshuffles every category's boards — it's a structural act, not
+  a setup-only toy.
+
+This subsumes part of R4; the remaining R4 work (chips-first presentation,
+sub-boards folded in with display values) applies to both the new step and the
+slimmed category section.
