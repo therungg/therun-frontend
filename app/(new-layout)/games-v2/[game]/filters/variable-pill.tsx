@@ -1,14 +1,14 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import type { VariableDef } from '../../../../../types/leaderboards.types';
+import type { VariableRow } from '../../../../../types/leaderboards.types';
 import styles from '../game-page.module.scss';
 import mastheadStyles from '../header/masthead.module.scss';
 import { toggleFilterValue } from './filter-values';
 import { useFilterNav } from './use-filter-nav';
 
 interface Props {
-    def: VariableDef;
+    def: VariableRow;
     selectedValues: string[];
     isOpen: boolean;
     onOpen: () => void;

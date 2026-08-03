@@ -12,13 +12,12 @@ import type { VariableRow } from '../../../../../../../types/leaderboards.types'
 interface Input {
     gameSlug: string;
     gameId: number;
-    categoryId?: number | null;
+    categoryId: number;
 }
 
 interface LoadResult {
     variables: VariableRow[];
     reservedParams: string[];
-    categories: { id: number; display: string; name: string }[];
 }
 
 export async function loadVariablesAction(
@@ -34,15 +33,10 @@ export async function loadVariablesAction(
     }
 
     try {
-        // Backend lists by scope: one call returns game-wide (categoryId IS
-        // NULL) rows, another returns rows for a specific category. Fetch both
-        // in parallel when a category is selected so the section can show
-        // either tab without refetching.
-        const [gameWide, categorySpecific, { categories }] = await Promise.all([
-            listGameVariables(user.id, input.gameId, null),
-            input.categoryId != null
-                ? listGameVariables(user.id, input.gameId, input.categoryId)
-                : Promise.resolve<VariableRow[]>([]),
+        // Variables are category-scoped only: the admin list for this
+        // category is the whole story.
+        const [variables, { categories }] = await Promise.all([
+            listGameVariables(user.id, input.gameId, input.categoryId),
             resolveCategory(input.gameId),
         ]);
 
@@ -56,13 +50,10 @@ export async function loadVariablesAction(
             'timing',
             'view',
         ];
-        const firstCategory = categories[0];
-        if (firstCategory) {
+        const category = categories.find((c) => c.id === input.categoryId);
+        if (category) {
             try {
-                const resp = await getVariables(
-                    input.gameSlug,
-                    firstCategory.name,
-                );
+                const resp = await getVariables(input.gameSlug, category.name);
                 if (resp.reservedParams.length > 0) {
                     reservedParams = resp.reservedParams;
                 }
@@ -71,17 +62,7 @@ export async function loadVariablesAction(
             }
         }
 
-        return {
-            result: {
-                variables: [...gameWide, ...categorySpecific],
-                reservedParams,
-                categories: categories.map((c) => ({
-                    id: c.id,
-                    display: c.display,
-                    name: c.name,
-                })),
-            },
-        };
+        return { result: { variables, reservedParams } };
     } catch (e) {
         if (e instanceof ApiError) return { error: e.message };
         if (e instanceof V1FetchError) {

@@ -7,41 +7,30 @@ import {
     ArrowUpShort,
 } from 'react-bootstrap-icons';
 import type { UpsertVariableInput } from '~src/lib/leaderboard-variables';
-import {
-    type EffectiveVariable,
-    normalizeVariableName,
-    toEffective,
-} from '~src/lib/variables/effective';
+import { normalizeVariableName } from '~src/lib/variables/keys';
 import type { VariableRow } from '../../../../../../types/leaderboards.types';
 import styles from './board-curation.module.scss';
 
-/** Published subcategory-role variables in scope for a category, honoring
- * shadowing so a category-scoped variable that replaces a shared one
- * doesn't render two bands for the same name (see `toEffective`). Mirrors
- * `effectiveVariableCount` in `src/lib/setup/category-status.ts`, but needs
- * the rows themselves rather than just a count.
+/** Published subcategory-role variables for a category — its own rows only
+ * (variables are category-scoped).
  *
  * Shared by `BoardCuration`'s own bands and `RowActions`' Move-to target
  * bands (Task 11) — one place computing "what bands does category X show",
- * so the two can never drift on the shadowing rule. */
+ * so the two can never drift. */
 export function subcategoryVariablesFor(
     categoryId: number,
     variables: VariableRow[],
-): EffectiveVariable[] {
-    const gameWide = variables.filter((v) => v.categoryId === null);
-    const categoryScoped = variables.filter((v) => v.categoryId === categoryId);
-    const tagged = toEffective([...gameWide, ...categoryScoped], gameWide);
-    const shadowedNames = new Set(
-        tagged
-            .filter((v) => v.source === 'category-overrides-shared')
-            .map((v) => v.nameNormalized),
-    );
-    return tagged.filter(
-        (v) =>
-            v.role === 'subcategory' &&
-            v.published &&
-            !(v.source === 'shared' && shadowedNames.has(v.nameNormalized)),
-    );
+): VariableRow[] {
+    return variables
+        .filter(
+            (v) =>
+                v.categoryId === categoryId &&
+                v.role === 'subcategory' &&
+                v.published,
+        )
+        .sort(
+            (a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name),
+        );
 }
 
 // Identity value for a bucket, in the same normalized space the backend
@@ -85,7 +74,7 @@ export function variableUpsertBody(
 }
 
 export interface SubcategoryBandsProps {
-    variables: EffectiveVariable[];
+    variables: VariableRow[];
     selectedValues: Record<string, string>;
     onSelect: (nameNormalized: string, canonical: string) => void;
     /** Distinguishes DOM ids between simultaneous renders of the same
@@ -103,13 +92,9 @@ export interface SubcategoryBandsProps {
      * reorder UI (or its action-module import) just by rendering bands.
      */
     reorderMode?: boolean;
-    onNudgeRow?: (
-        variable: EffectiveVariable,
-        index: number,
-        dir: -1 | 1,
-    ) => void;
+    onNudgeRow?: (variable: VariableRow, index: number, dir: -1 | 1) => void;
     onNudgeValue?: (
-        variable: EffectiveVariable,
+        variable: VariableRow,
         valueIndex: number,
         dir: -1 | 1,
     ) => void;
@@ -264,12 +249,6 @@ export function SubcategoryBands({
                                 </div>
                             </div>
                         </div>
-                        {reorderMode && v.categoryId == null && (
-                            <p className={styles.gameWideNote}>
-                                Shared across every category — reordering here
-                                changes it everywhere.
-                            </p>
-                        )}
                     </div>
                 );
             })}

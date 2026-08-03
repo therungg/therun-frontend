@@ -4,7 +4,7 @@ import { getSession } from '~src/actions/session.action';
 import { compareByBoardOrder } from '~src/lib/console/category-order';
 import { getGameMetadata } from '~src/lib/game-mgmt';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
-import { listGameVariables } from '~src/lib/leaderboard-variables';
+import { listCategoryVariables } from '~src/lib/leaderboard-variables';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { listPolicies } from '~src/lib/moderation/policies';
 import buildMetadata from '~src/utils/metadata';
@@ -63,14 +63,18 @@ export default async function CategoryDetailPage({ params }: Props) {
     const ordered = [...categories].sort(compareByBoardOrder);
     const index = ordered.findIndex((c) => c.id === categoryId);
 
-    // Copy-from-category needs the whole game's variables and policies —
-    // both are single already-existing list calls, so load them here rather
-    // than making CategoryEditor fetch them client-side. Skipped for viewers
-    // who can't configure anyway (the control never renders for them).
+    // Copy-from-category needs every category's variables (any category can
+    // be the copy source) and the board's policies — loaded here rather than
+    // making CategoryEditor fetch them client-side. Skipped for viewers who
+    // can't configure anyway (the control never renders for them).
     let copySources: CopySources | undefined;
     if (chrome.flags.canConfigure) {
         const [variables, policies] = await Promise.all([
-            listGameVariables(session.id, game.id),
+            listCategoryVariables(
+                session.id,
+                game.id,
+                categories.map((c) => c.id),
+            ),
             listPolicies(session.id, game.id),
         ]);
         copySources = { categories, variables, policies };

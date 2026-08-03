@@ -2,14 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Sliders } from 'react-bootstrap-icons';
-import type { VariableDef } from '../../../../../types/leaderboards.types';
+import type { VariableRow } from '../../../../../types/leaderboards.types';
 import styles from '../game-page.module.scss';
 import mastheadStyles from '../header/masthead.module.scss';
 import { usePopoverFocus } from '../shared/use-popover-focus';
 import { VariablePills } from './variable-pills';
 
 interface Props {
-    defs: VariableDef[];
+    defs: VariableRow[];
     selectedVarFilters: Record<string, string>;
 }
 

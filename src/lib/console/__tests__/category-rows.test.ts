@@ -37,7 +37,7 @@ const policy = (categoryId: number, minTimeMs: number): BoardPolicyRow => ({
 const variable = (over: Partial<VariableRow> = {}): VariableRow => ({
     id: 1,
     gameId: 7,
-    categoryId: null,
+    categoryId: 1,
     name: 'Platform',
     nameNormalized: 'platform',
     role: 'subcategory',
@@ -79,20 +79,13 @@ describe('subBoardCount', () => {
         expect(subBoardCount([variable({ published: false })], 1)).toBe(1);
     });
 
-    it('lets a category row wholesale-replace the game-wide row of that name', () => {
-        const vars = [
-            variable(),
-            variable({ id: 9, categoryId: 1, values: [['N64'], ['Emu']] }),
-        ];
-        expect(subBoardCount(vars, 1)).toBe(2);
-    });
-
-    it('does not apply another categorys override', () => {
+    it('only counts the requested categorys own rows', () => {
         const vars = [
             variable(),
             variable({ id: 9, categoryId: 2, values: [['N64'], ['Emu']] }),
         ];
         expect(subBoardCount(vars, 1)).toBe(4);
+        expect(subBoardCount(vars, 2)).toBe(2);
     });
 
     it('is 1 when the game has no variables', () => {

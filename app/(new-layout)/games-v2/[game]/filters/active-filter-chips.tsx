@@ -1,12 +1,12 @@
 'use client';
 
-import type { VariableDef } from '../../../../../types/leaderboards.types';
+import type { VariableRow } from '../../../../../types/leaderboards.types';
 import styles from '../header/masthead.module.scss';
 import { removeFilterValue } from './filter-values';
 import { useFilterNav } from './use-filter-nav';
 
 interface Props {
-    defs: VariableDef[];
+    defs: VariableRow[];
     selected: Record<string, string>;
 }
 

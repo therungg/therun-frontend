@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import type { VariableDef } from '../../../../../types/leaderboards.types';
+import type { VariableRow } from '../../../../../types/leaderboards.types';
 import { VariablePill } from './variable-pill';
 
 interface Props {
-    defs: VariableDef[];
+    defs: VariableRow[];
     selected: Record<string, string>;
 }
 

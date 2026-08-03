@@ -1,7 +1,6 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { findShadowed } from '~src/lib/variables/effective';
 import {
     capitalize,
     ROLE_LABEL,
@@ -34,12 +33,6 @@ interface Props {
     /** Scope captured when the form opened, e.g. "Any% only". Printed in the header. */
     scopeLabel: string;
     categoryDisplay: string;
-    /** Game-wide rows, for shadow detection on a category-scoped create. */
-    gameWide: VariableRow[];
-    /** True when this form saves a category-scoped row. Passed explicitly rather
-     *  than inferred from scopeLabel — the shadow warning must not depend on
-     *  matching a display string. */
-    isCategoryScoped: boolean;
     onSubmit: (values: VariableFormValues) => void;
     onCancel: () => void;
     isBusy: boolean;
@@ -77,8 +70,6 @@ export function VariableForm({
     reservedParams,
     scopeLabel,
     categoryDisplay,
-    gameWide,
-    isCategoryScoped,
     onSubmit,
     onCancel,
     isBusy,
@@ -282,20 +273,6 @@ export function VariableForm({
                     valueCount: bucketsToValues(buckets).length,
                 })}
             </p>
-
-            {mode === 'create' &&
-                isCategoryScoped &&
-                (() => {
-                    const shadowed = findShadowed(name, gameWide);
-                    return shadowed ? (
-                        <div className={styles.shadowWarning}>
-                            This replaces the shared{' '}
-                            <strong>{shadowed.name}</strong> for{' '}
-                            {categoryDisplay} only — its values and its default.
-                            Other categories keep the shared one.
-                        </div>
-                    ) : null;
-                })()}
 
             <div className="mt-3">
                 <label className="form-label small mb-1">Values</label>

@@ -3,11 +3,11 @@
 // timing enums) into copy a user can read. Kept prop-plain so it can be used
 // from server or client components without pulling in page-level types.
 
-import type { VariableDef } from '../../../../types/leaderboards.types';
+import type { VariableRow } from '../../../../types/leaderboards.types';
 
 /** Minimal shape the helpers need from a variable definition. */
 export type LabelVariableDef = Pick<
-    VariableDef,
+    VariableRow,
     'name' | 'nameNormalized' | 'values'
 >;
 

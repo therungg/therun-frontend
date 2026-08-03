@@ -10,7 +10,7 @@ import { confirmPermission } from '~src/rbac/confirm-permission';
 interface Input {
     gameSlug: string;
     gameId: number;
-    categoryId: number | null;
+    categoryId: number;
     subcategoryKeys: string[];
 }
 
@@ -40,12 +40,12 @@ export async function saveCombinationsAction(
 
     try {
         const { categories } = await resolveCategory(input.gameId);
-        const targets =
-            input.categoryId == null
-                ? categories
-                : categories.filter((c) => c.id === input.categoryId);
-        for (const cat of targets) {
-            revalidateTag(`game-vars:${input.gameSlug}:${cat.name}`, 'hours');
+        const target = categories.find((c) => c.id === input.categoryId);
+        if (target) {
+            revalidateTag(
+                `game-vars:${input.gameSlug}:${target.name}`,
+                'hours',
+            );
         }
     } catch {
         // Best-effort.

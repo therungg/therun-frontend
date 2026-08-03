@@ -506,7 +506,11 @@ describe('RowActions — Move', () => {
         await waitFor(() =>
             expect(screen.getByText('Already placed there.')).toBeTruthy(),
         );
-        expect(screen.getByRole('button', { name: 'Apply' })).toBeTruthy();
+        // findByRole, not getByRole: the error alert can render a beat before
+        // the move transition settles, while the button still reads "Moving…".
+        expect(
+            await screen.findByRole('button', { name: 'Apply' }),
+        ).toBeTruthy();
     });
 });
 

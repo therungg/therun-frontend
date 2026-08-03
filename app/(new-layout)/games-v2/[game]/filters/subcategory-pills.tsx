@@ -1,21 +1,21 @@
 'use client';
 
 import { usePathname, useSearchParams } from 'next/navigation';
-import type { VariableDef } from '../../../../../types/leaderboards.types';
+import type { VariableRow } from '../../../../../types/leaderboards.types';
 import styles from '../header/masthead.module.scss';
 import { useBoardNav } from './use-board-nav';
 
 interface Props {
-    defs: VariableDef[];
+    defs: VariableRow[];
     selected: Record<string, string>;
 }
 
-function canonicalOf(def: VariableDef, idx: number): string {
+function canonicalOf(def: VariableRow, idx: number): string {
     const bucket = def.values[idx];
     return bucket?.[0] ?? '';
 }
 
-function pendingKeyFor(def: VariableDef, value: string): string {
+function pendingKeyFor(def: VariableRow, value: string): string {
     return `subcat:${def.nameNormalized}:${value}`;
 }
 
@@ -27,7 +27,7 @@ export function SubcategoryPills({ defs, selected }: Props) {
     const subcatDefs = defs.filter((d) => d.role === 'subcategory');
     if (subcatDefs.length === 0) return null;
 
-    const onPick = (def: VariableDef, value: string) => {
+    const onPick = (def: VariableRow, value: string) => {
         const sp = new URLSearchParams(searchParams.toString());
         sp.set(def.nameNormalized, value);
         sp.delete('page');

@@ -8,7 +8,7 @@ import type {
     RunDetail,
     UserRanking,
     ValidCombinations,
-    VariableDef,
+    VariableRow,
     VariablesResponse,
     WrHistoryEntry,
 } from '../../types/leaderboards.types';
@@ -154,7 +154,7 @@ export async function getVariables(
     gameSlug: string,
     categorySlug: string,
 ): Promise<{
-    variables: VariableDef[];
+    variables: VariableRow[];
     reservedParams: string[];
     validCombinations: ValidCombinations;
 }> {
@@ -165,15 +165,7 @@ export async function getVariables(
     const path = `/v1/leaderboards/${encodeURIComponent(gameSlug)}/${encodeURIComponent(categorySlug)}/variables`;
     const body = await v1Fetch<VariablesResponse>(path);
     return {
-        // Enrich each row with a derived `scope` for UI labeling. Backend
-        // returns plain VariableRow shape per the contract.
-        variables: (body.variables ?? []).map((v) => ({
-            ...v,
-            scope:
-                v.categoryId == null
-                    ? ('game' as const)
-                    : ('category' as const),
-        })),
+        variables: body.variables ?? [],
         reservedParams: body.reservedParams ?? [],
         validCombinations: body.validCombinations ?? { mode: 'open' },
     };

@@ -15,8 +15,11 @@ import {
     minMsFromPolicy,
     minValueForTiming,
 } from '~src/lib/setup/game-minimum';
-import type { EffectiveVariable } from '~src/lib/variables/effective';
-import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
+
+import type {
+    ResolvedCategory,
+    VariableRow,
+} from '../../../../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
 import { usePopoverFocus } from '../../shared/use-popover-focus';
 import { updateCategorySettingsAction } from '../category-tab/actions/update-category-settings.action';
@@ -40,7 +43,7 @@ export interface BoardControlsProps {
     category: ResolvedCategory;
     timing: 'rt' | 'gt';
     policies: BoardPolicyRow[];
-    subcatVars: EffectiveVariable[];
+    subcatVars: VariableRow[];
     selectedValues: Record<string, string>;
     reorderMode: boolean;
     onToggleReorderMode: () => void;
@@ -282,7 +285,7 @@ function MinimumControl({
 interface SetDefaultViewButtonProps {
     gameSlug: string;
     gameId: number;
-    subcatVars: EffectiveVariable[];
+    subcatVars: VariableRow[];
     selectedValues: Record<string, string>;
     reload: () => void;
 }

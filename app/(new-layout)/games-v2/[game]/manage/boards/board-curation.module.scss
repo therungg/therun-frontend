@@ -107,19 +107,11 @@
     padding: 0.1rem;
 }
 
-// A row/wrapper around one subcategory band + its optional reorder-mode
-// caution note, stacked vertically beneath the band itself.
+// A row/wrapper around one subcategory band, stacked vertically.
 .bandWrapper {
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
-}
-
-.gameWideNote {
-    font-size: dt.$font-size-2xs;
-    color: var(--bs-tertiary-color);
-    font-style: italic;
-    margin: 0;
 }
 
 // ---- Category switcher / subcategory bands (masthead rail vocabulary) ----

@@ -19,7 +19,7 @@ const mocks = vi.hoisted(() => ({
     updateVariableAction: vi.fn(),
     deleteVariableAction: vi.fn(),
     loadVariablesAction: vi.fn(),
-    loadMergedVariablesAction: vi.fn(),
+    loadCombinationsAction: vi.fn(),
     rebuildBoardsAction: vi.fn(),
 }));
 
@@ -38,8 +38,8 @@ vi.mock('./actions/delete-variable.action', () => ({
 vi.mock('./actions/load-variables.action', () => ({
     loadVariablesAction: mocks.loadVariablesAction,
 }));
-vi.mock('./actions/load-merged-variables.action', () => ({
-    loadMergedVariablesAction: mocks.loadMergedVariablesAction,
+vi.mock('./actions/load-combinations.action', () => ({
+    loadCombinationsAction: mocks.loadCombinationsAction,
 }));
 vi.mock('./actions/rebuild-boards.action', () => ({
     rebuildBoardsAction: mocks.rebuildBoardsAction,
@@ -48,13 +48,22 @@ vi.mock('react-toastify', () => ({
     toast: { success: vi.fn(), error: vi.fn() },
 }));
 
+const CATEGORY = {
+    id: 12,
+    name: 'any%',
+    display: 'Any%',
+    primaryTiming: 'rt',
+    archived: false,
+    rules: '',
+    sortOrder: 0,
+} as never;
+
 function renderSection() {
     return render(
         <VariablesSection
             gameSlug="celeste"
             gameId={1}
-            mode="game"
-            selectedCategory={null}
+            selectedCategory={CATEGORY}
         />,
     );
 }
@@ -83,6 +92,9 @@ describe('VariablesSection write path', () => {
         vi.clearAllMocks();
         mocks.loadVariablesAction.mockResolvedValue({
             result: { variables: [], reservedParams: [] },
+        });
+        mocks.loadCombinationsAction.mockResolvedValue({
+            result: { combinations: [], mode: 'open' },
         });
     });
 
