@@ -32,6 +32,12 @@ describe('legacyPaneRedirect', () => {
             kind: 'pane',
             pane: 'categories',
         });
+        // The game-level variables pane is gone — variables are
+        // category-scoped, so the bare link lands on the index too.
+        expect(legacyPaneRedirect('variables', null)).toEqual({
+            kind: 'pane',
+            pane: 'categories',
+        });
     });
 
     it('renames the old visibility pane', () => {

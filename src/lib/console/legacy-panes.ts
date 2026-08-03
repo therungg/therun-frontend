@@ -5,17 +5,17 @@
 // lives at /manage/category/12#rules. A retired pane with no category can't
 // name a destination, so it lands on the index.
 
-// `variables` is deliberately absent: it is a live game-level pane again
-// (shared subcategories & filters). Only the category-scoped legacy shape
-// (`?pane=variables&cat=12`) redirects to the category detail — handled as a
-// special case in legacyPaneRedirect below; bare `?pane=variables` opens the
-// real pane.
+// `variables` retired for good when variables became category-scoped only:
+// `?pane=variables&cat=12` lands on the category detail's variables section,
+// and the bare game-level shape has no destination left, so it lands on the
+// category index like every other retired pane.
 const RETIRED_CATEGORY_PANES: ReadonlySet<string> = new Set([
     'standards',
     'timing',
     'rules',
     'combinations',
     'category-settings',
+    'variables',
 ]);
 
 export type LegacyRedirect =
@@ -29,14 +29,6 @@ export function legacyPaneRedirect(
     if (!pane) return null;
     if (pane === 'categories-visibility') {
         return { kind: 'pane', pane: 'categories' };
-    }
-    // Legacy category-scoped variables link — the modern pane never carries
-    // `cat`, so the param's presence is what marks the link as legacy.
-    if (pane === 'variables' && cat) {
-        const categoryId = Number.parseInt(cat, 10);
-        return Number.isFinite(categoryId)
-            ? { kind: 'detail', categoryId, hash: 'variables' }
-            : { kind: 'pane', pane: 'categories' };
     }
     if (!RETIRED_CATEGORY_PANES.has(pane)) return null;
 

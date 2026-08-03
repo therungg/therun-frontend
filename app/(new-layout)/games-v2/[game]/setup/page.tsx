@@ -5,7 +5,7 @@ import { getSession } from '~src/actions/session.action';
 import { getGameIdentifiers, getGameMetadata } from '~src/lib/game-mgmt';
 import { listGameModerators } from '~src/lib/game-moderators';
 import { getQuickStats, resolveCategory, resolveGame } from '~src/lib/games-v1';
-import { listGameVariables } from '~src/lib/leaderboard-variables';
+import { listCategoryVariables } from '~src/lib/leaderboard-variables';
 import { listPolicies } from '~src/lib/moderation/policies';
 import {
     categoryFactsFromResolved,
@@ -57,29 +57,27 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
     // gates its Minimum time section on it, and the wizard mounts that editor.
     const canEditStandards = ability.can('edit', 'moderators');
 
-    const [
-        stats,
-        catData,
-        variables,
-        policies,
-        moderators,
-        identifiers,
-        metadata,
-    ] = await Promise.all([
-        getQuickStats(game.id),
-        resolveCategory(game.id),
-        listGameVariables(session.id, game.id),
-        listPolicies(session.id, game.id),
-        listGameModerators(game.id),
-        getGameIdentifiers(game.id),
-        getGameMetadata(game.id),
-    ]);
+    const [stats, catData, policies, moderators, identifiers, metadata] =
+        await Promise.all([
+            getQuickStats(game.id),
+            resolveCategory(game.id),
+            listPolicies(session.id, game.id),
+            listGameModerators(game.id),
+            getGameIdentifiers(game.id),
+            getGameMetadata(game.id),
+        ]);
+
+    // Variables are category-scoped only — one list call per category. The
+    // hub rows, band previews and BoardCuration all filter this by category.
+    const variables = await listCategoryVariables(
+        session.id,
+        game.id,
+        catData.categories.map((c) => c.id),
+    );
 
     const completeness = computeCompleteness({
         categories: categoryFactsFromResolved(catData.categories),
         variableCount: variables.length,
-        sharedVariableCount: variables.filter((v) => v.categoryId === null)
-            .length,
         policyCount: policies.length,
         requireVideoAnywhere: catData.categories.some(
             (c) => !c.archived && c.requireVideo,

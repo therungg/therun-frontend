@@ -14,7 +14,6 @@ export type NavItemId =
     | 'game-details'
     | 'categories'
     | 'groups'
-    | 'variables'
     | 'boards'
     | 'moderators'
     | 'reassign';
@@ -76,10 +75,6 @@ const ALL_GROUPS: NavGroup[] = [
             // Order matches the wizard: details 1, categories 2, groups 3.
             { id: 'categories', label: CONCEPT_LABEL.categories },
             { id: 'groups', label: CONCEPT_LABEL.groups },
-            // Shared subcategories/filters — the game-level half of what the
-            // per-category editor's variables section shows. Order matches
-            // the wizard: groups 3, variables 4.
-            { id: 'variables', label: CONCEPT_LABEL.variables },
             { id: 'boards', label: CONCEPT_LABEL.boards },
             { id: 'moderators', label: CONCEPT_LABEL.moderators },
             { id: 'reassign', label: CONCEPT_LABEL.reassign },

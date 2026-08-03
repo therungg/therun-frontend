@@ -263,7 +263,6 @@ export function StepCategories({ data, onAdvance }: StepProps) {
             <CategoryBandPreview
                 categories={previewCategories}
                 groups={data.groups}
-                variables={data.variables}
             />
 
             {leavingBoardCount > 0 && (

@@ -4,7 +4,6 @@ import { CaretRightFill } from 'react-bootstrap-icons';
 import type {
     ResolvedCategory,
     ResolvedGroup,
-    VariableRow,
 } from '../../../../../../types/leaderboards.types';
 import { computeCategoryVisibility } from '../../header/category-visibility';
 import band from '../../header/masthead.module.scss';
@@ -14,19 +13,6 @@ interface Props {
     /** Draft categories the mod has ticked — what the public band would list. */
     categories: ResolvedCategory[];
     groups: ResolvedGroup[];
-    variables: VariableRow[];
-}
-
-/** One chip per variable name — a category-scoped row shadows the game-wide one. */
-function dedupeByName(variables: VariableRow[]): VariableRow[] {
-    const seen = new Set<string>();
-    const out: VariableRow[] = [];
-    for (const v of variables) {
-        if (seen.has(v.nameNormalized)) continue;
-        seen.add(v.nameNormalized);
-        out.push(v);
-    }
-    return out;
 }
 
 /**
@@ -39,17 +25,14 @@ function dedupeByName(variables: VariableRow[]): VariableRow[] {
  * unlabeled row, which is exactly the surprise this preview exists to show
  * before someone saves and wonders why nothing changed.
  *
+ * Subcategory bands are per-category (variables are category-scoped), so
+ * this previews the category tier only — the per-category editor's own band
+ * preview shows how one category splits.
+ *
  * Chips are inert spans — this is a picture of the board, not the board.
  */
-export function CategoryBandPreview({ categories, groups, variables }: Props) {
+export function CategoryBandPreview({ categories, groups }: Props) {
     const { sections } = computeCategoryVisibility(categories, groups);
-    // The wizard loads variables from the admin endpoint, which returns every
-    // version including unpublished drafts; the public band only ever sees
-    // published ones, deduped per variable name. Match that, or the preview
-    // promises chips the board won't render.
-    const subcategories = dedupeByName(
-        variables.filter((v) => v.role === 'subcategory' && v.published),
-    ).sort((a, b) => a.sortOrder - b.sortOrder);
     // Read the flatten out of the real output rather than re-deriving the
     // rule — one source of truth for when headings appear.
     const flattened = groups.length > 0 && sections.length === 1;
@@ -133,42 +116,6 @@ export function CategoryBandPreview({ categories, groups, variables }: Props) {
                                     ))}
                                 </div>
                             </div>
-                        </div>
-                    )}
-
-                    {subcategories.length > 0 && (
-                        <div className={band.tier}>
-                            {subcategories.map((v) => {
-                                const defaultValue =
-                                    v.defaultValueIndex != null
-                                        ? (v.values[v.defaultValueIndex]?.[0] ??
-                                          '')
-                                        : '';
-                                return (
-                                    <div key={v.id} className={band.block}>
-                                        <span className={band.endcap}>
-                                            {v.name}
-                                        </span>
-                                        <div className={band.well}>
-                                            <div className={band.chips}>
-                                                {v.values.map((bucket) => (
-                                                    <span
-                                                        key={bucket[0]}
-                                                        className={`${band.pill} ${
-                                                            bucket[0] ===
-                                                            defaultValue
-                                                                ? band.pillActive
-                                                                : ''
-                                                        }`}
-                                                    >
-                                                        {bucket[0]}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
                         </div>
                     )}
                 </div>

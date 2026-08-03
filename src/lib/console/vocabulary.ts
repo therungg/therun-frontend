@@ -70,7 +70,6 @@ export const TILE_CONCEPT_IDS = [
     'game-details',
     'categories',
     'groups',
-    'variables',
     'boards',
     'moderators',
     'reassign',
@@ -123,10 +122,6 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
         action: 'Sort categories into groups',
         blurb: 'Bundle related categories so the leaderboard reads in a sensible order.',
     },
-    variables: {
-        action: 'Split boards or add filters',
-        blurb: 'Shared subcategories (own board per value, like Platform) and filters that apply to every category.',
-    },
     boards: {
         action: 'Curate the boards',
         blurb: 'See each leaderboard as runners do, and fix what’s wrong — remove, correct, or add runs.',
@@ -152,7 +147,6 @@ export const STEP_CONCEPTS: Record<SetupStepId, ConceptId[]> = {
     details: ['game-details', 'timing', 'rules'],
     categories: ['categories'],
     groups: ['groups'],
-    variables: ['variables'],
     'category-setup': ['categories'],
     boards: ['boards'],
 };
@@ -168,7 +162,6 @@ const BOARD_PANES: ReadonlySet<ConceptId> = new Set<ConceptId>([
     'game-details',
     'categories',
     'groups',
-    'variables',
     'boards',
     'moderators',
     'reassign',
