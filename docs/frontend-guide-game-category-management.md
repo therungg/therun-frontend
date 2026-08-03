@@ -1122,19 +1122,19 @@ Call the endpoint without `?timing=` on first load and let the server resolve th
 
 #### Discovering Variables for a Leaderboard
 
-To render filter chips, subcategory pickers, and validity hints, frontends should fetch the **merged effective variable defs** for a leaderboard. This is the read-side companion to the admin endpoints in §8.
+To render filter chips, subcategory pickers, and validity hints, frontends should fetch the variable defs for a leaderboard. This is the read-side companion to the admin endpoints in §8.
 
 ```typescript
 // GET /v1/leaderboards/{game}/{category}/variables
-// Public. Returns the merged view: game-wide defs + category-specific defs,
-// with category-specific entries winning on `nameNormalized` collisions.
+// Public. Returns the category's variable defs. Variables are
+// category-scoped only; there is no game-wide scope.
 
 // Response (flat — NOT wrapped in `result`)
 {
   variables: {
     id: number;
     gameId: number;
-    categoryId: number | null;     // null = game-wide def
+    categoryId: number;
     name: string;                  // display name
     nameNormalized: string;        // use this as the query string key
     role: "subcategory" | "filter";
@@ -1321,7 +1321,7 @@ Move a run to a different category.
 
 ### Variable Definitions
 
-Variables are defined per game, optionally scoped to a category. Game-wide variables (`categoryId: null` in the body) apply to all categories unless overridden by a category-specific definition with the same name.
+Variables are defined per category. There is no game-wide scope — every definition belongs to exactly one category.
 
 Two roles:
 - **`subcategory`**: splits the leaderboard. Each distinct combination of subcategory values produces a different `subcategoryKey` (plain text, e.g. `platform=nintendo64|region=us`). Always effectively required — missing values fall back to the variable's default.
@@ -1348,23 +1348,17 @@ Matching is case- and whitespace-insensitive (and strips `=` / `|`). The *stored
 All admin-only (`edit-customizations` permission for the game).
 
 ```typescript
-// GET /v1/games/{gameId}/variables?categoryId=
-// List published variables in scope. STRICT-SCOPE — does NOT merge.
-// categoryId omitted/empty -> only rows where `categoryId IS NULL` (game-wide defs).
-// categoryId=N            -> only rows where `categoryId = N` (category-N overrides).
-//
-// To render an "effective variables for this category" view, either call this
-// twice (once with no categoryId, once with categoryId=N) and merge client-side
-// with the category row winning on nameNormalized collisions, OR use the
-// public merged endpoint documented in §7:
-//   GET /v1/leaderboards/{game}/{category}/variables
+// GET /v1/games/{gameId}/variables?categoryId=N
+// List the category's published variables. categoryId is REQUIRED —
+// omitting it is a 400. The public endpoint documented in §7
+// (GET /v1/leaderboards/{game}/{category}/variables) reads the same rows.
 //
 // Response
 {
   result: {
     id: number;
     gameId: number;
-    categoryId: number | null;
+    categoryId: number;
     name: string;                  // display name as entered
     nameNormalized: string;        // lowercased, stripped — used in URLs/keys
     role: "subcategory" | "filter";
@@ -1391,7 +1385,7 @@ All admin-only (`edit-customizations` permission for the game).
   defaultValueIndex: number | null;// required for subcategory, optional for filter
   sortOrder?: number;
   description?: string | null;
-  categoryId?: number | null;      // null/omit = game-wide
+  categoryId: number;              // required — variables are category-scoped only
 }
 
 // Response
@@ -1446,15 +1440,14 @@ When a subcategory variable is created, edited, or deleted, the backend asynchro
 
 ### Valid Subcategory Combinations
 
-By default every cartesian combination of subcategory variable values is a legal leaderboard ("open" mode). Site admins can restrict a game (or a single category) to a curated list of legal combinations ("managed" mode) — runs that resolve outside the list get folded onto the default-combination key and the leaderboard read endpoint returns 404 with the legal list when a frontend asks for an illegal combination.
+By default every cartesian combination of subcategory variable values is a legal leaderboard ("open" mode). Site admins can restrict a category to a curated list of legal combinations ("managed" mode) — runs that resolve outside the list get folded onto the default-combination key and the leaderboard read endpoint returns 404 with the legal list when a frontend asks for an illegal combination.
 
 **Auth on all endpoints below:** Required. Site-wide admin (`moderate:admins`) — not game-level `edit-customizations`.
 
 ```typescript
-// GET /admin/combinations/{gameId}
 // GET /admin/combinations/{gameId}/{categoryId}
 //
-// Lists every cartesian combination of the in-scope subcategory variables and
+// Lists every cartesian combination of the category's subcategory variables and
 // marks which ones are legal. When no managed list exists, every combo is
 // reported `valid: true` and `mode` is "open".
 //
@@ -1469,11 +1462,10 @@ By default every cartesian combination of subcategory variable values is a legal
 ```
 
 ```typescript
-// PUT /admin/combinations/{gameId}
 // PUT /admin/combinations/{gameId}/{categoryId}
 //
-// Replaces the entire legal list for the scope. Sending an empty array switches
-// the scope back to "open" mode. Keys are normalized server-side — you can
+// Replaces the entire legal list for the board. Sending an empty array switches
+// it back to "open" mode. Keys are normalized server-side — you can
 // submit display strings (e.g. "Platform=N64|Region=US") and they will be
 // folded to canonical form. Order of `name=value` parts within a key does not
 // matter; parts are sorted by nameNormalized server-side.
@@ -1487,7 +1479,7 @@ By default every cartesian combination of subcategory variable values is a legal
 
 **Note:** Replacing the list does NOT migrate existing runs that now fall on newly-invalid combinations — those runs stay on their current subcategoryKey and remain ineligible-for-leaderboard if their key is no longer legal. Run migration is intentionally not exposed as an API surface; it's handled out-of-band by the rebuild worker when re-projection is triggered (variable edits, manual cache invalidation).
 
-The merged endpoint `GET /v1/leaderboards/{game}/{category}/variables` (§7) reads the same data and surfaces it as `validCombinations: { mode, keys? }` for public consumption.
+The public endpoint `GET /v1/leaderboards/{game}/{category}/variables` (§7) reads the same data and surfaces it as `validCombinations: { mode, keys? }` for public consumption.
 
 ### Minimum Times
 
