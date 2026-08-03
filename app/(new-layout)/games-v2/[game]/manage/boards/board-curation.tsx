@@ -13,6 +13,7 @@ import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { buildBoardHref, buildBoardQuery } from '~src/lib/board-url';
 import { compareByBoardOrder } from '~src/lib/console/category-order';
+import { sectionsFor } from '~src/lib/console/category-sections';
 import { formatRunDate } from '~src/lib/format-run-date';
 import {
     findCategoryMinPolicy,
@@ -78,53 +79,6 @@ export interface BoardCurationProps {
      * setup-wizard mounts (which never pass it) stay admin-feature-free. */
     canSiteBan?: boolean;
     context: 'wizard' | 'console';
-}
-
-interface CategorySection {
-    id: number | null;
-    name: string | null;
-    items: ResolvedCategory[];
-}
-
-/** Groups featured categories into labeled sections, same shape as the
- * public masthead's rail — but ordered by `compareByBoardOrder` (the
- * admin-side comparator) rather than the public read's playtime tiebreak. */
-function sectionsFor(
-    featured: ResolvedCategory[],
-    groups: ResolvedGroup[],
-): CategorySection[] {
-    const usedGroupIds = new Set(
-        featured.map((c) => c.groupId ?? null).filter((id) => id != null),
-    );
-    const trivial =
-        groups.length === 0 || (groups.length <= 1 && usedGroupIds.size <= 1);
-    if (trivial) {
-        return [{ id: null, name: null, items: featured }];
-    }
-
-    const byGroup = new Map<number, ResolvedCategory[]>();
-    const ungrouped: ResolvedCategory[] = [];
-    for (const c of featured) {
-        if (c.groupId == null) {
-            ungrouped.push(c);
-        } else {
-            const arr = byGroup.get(c.groupId) ?? [];
-            arr.push(c);
-            byGroup.set(c.groupId, arr);
-        }
-    }
-
-    const sections: CategorySection[] = [...groups]
-        .sort((a, b) => a.sortOrder - b.sortOrder)
-        .map((g) => ({
-            id: g.id,
-            name: g.name,
-            items: byGroup.get(g.id) ?? [],
-        }));
-    if (ungrouped.length > 0) {
-        sections.push({ id: null, name: null, items: ungrouped });
-    }
-    return sections;
 }
 
 function primaryTimeOf(
