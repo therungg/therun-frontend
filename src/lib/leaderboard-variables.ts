@@ -76,9 +76,11 @@ export async function listGameVariables(
 }
 
 /**
- * Every variable row for a set of categories, one list call per category
- * (the backend has no game-wide listing — variables are category-scoped
- * only). A category whose fetch fails contributes nothing rather than
+ * Every variable row for a set of categories, in one batched call
+ * (`?categoryIds=1,2,3`). Used to be one request per category — for games
+ * with hundreds of categories that fanned out into hundreds of concurrent
+ * Lambda invocations, each opening its own Postgres pool, and blew through
+ * the connection cap. A failed fetch contributes nothing rather than
  * failing the whole read; callers use this for overviews (console matrix,
  * wizard hub, copy sources) where a partial list beats an error page.
  */
@@ -87,14 +89,21 @@ export async function listCategoryVariables(
     gameId: number,
     categoryIds: number[],
 ): Promise<VariableRow[]> {
-    const lists = await Promise.all(
-        categoryIds.map((id) =>
-            listGameVariables(sessionId, gameId, id).catch(
-                () => [] as VariableRow[],
-            ),
-        ),
-    );
-    return lists.flat();
+    if (categoryIds.length === 0) return [];
+    const BASE_URL = process.env.NEXT_PUBLIC_DATA_URL;
+    const qs = `?categoryIds=${categoryIds.map(encodeURIComponent).join(',')}`;
+    const url = `${BASE_URL}${basePath(gameId)}${qs}`;
+    try {
+        const res = await fetch(url, {
+            headers: { Authorization: `Bearer ${sessionId}` },
+        });
+        const text = await res.text();
+        if (!res.ok) return [];
+        if (!text) return [];
+        return unwrapVariableArray(JSON.parse(text));
+    } catch {
+        return [];
+    }
 }
 
 // POST and PUT both call the same upsert handler keyed by
