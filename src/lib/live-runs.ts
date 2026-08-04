@@ -30,11 +30,22 @@ export const getAllLiveRuns = async (
 };
 
 export const getLiveRunsForTournament = async (tournament: Tournament) => {
-    const results = tournament.eligibleRuns.map((run) =>
-        getLiveRunsForGameCategory(run.game, run.category),
-    );
+    'use cache: remote';
+    // Used to be one /live request per eligible game/category pair — for
+    // tournaments with many pairs that fanned out into many concurrent
+    // Lambda invocations, each doing its own full DynamoDB scan. Batch into
+    // one request with all pairs instead.
+    cacheLife({ stale: 5, revalidate: 15, expire: 120 });
+    if (tournament.eligibleRuns.length === 0) return [];
 
-    return (await Promise.all(results)).flat();
+    const pairs = tournament.eligibleRuns.map((run) => ({
+        game: run.game,
+        category: run.category,
+    }));
+    const url = `${LIVE_RUN_URL}?pairs=${encodeURIComponent(JSON.stringify(pairs))}`;
+    const result = await fetch(url);
+
+    return (await result.json()).result as LiveRun[];
 };
 
 export const getLiveRunsForGameCategory = async (
