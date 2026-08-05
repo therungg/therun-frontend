@@ -287,6 +287,26 @@ function sameValues(a: string[][], b: string[][]): boolean {
     });
 }
 
+/**
+ * Categories carrying two or more subcategory groups.
+ *
+ * The only categories where a combination can be impossible to express by
+ * removing an option: with one group, every leaderboard *is* one option, so
+ * unticking the option in the grid says everything there is to say. With two,
+ * "Virtual Console exists, US exists, but not together" has no cell to untick
+ * — and that is the only case where the valid-combinations set earns a UI.
+ */
+export function categoriesNeedingCombinations(
+    categoryIds: number[],
+    rows: VariableRow[],
+): number[] {
+    return categoryIds.filter(
+        (id) =>
+            rows.filter((r) => r.categoryId === id && r.role === 'subcategory')
+                .length >= 2,
+    );
+}
+
 /** One staged cell toggle, before it is applied. */
 export interface PendingToggle {
     categoryId: number;

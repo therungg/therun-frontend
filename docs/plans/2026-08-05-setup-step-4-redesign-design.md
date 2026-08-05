@@ -267,13 +267,23 @@ The rule that decides where a setting lives:
   columns · Emblem.
 - **Never a route.** Losing the list is what made the old step 4 unusable.
 
+**Where the combination list ended up.** It was first built as a Leaderboards
+pane on the category row, then removed: with a single subcategory group every
+leaderboard *is* one option, so "close 100% · Emulator" and "untick Emulator on
+100%" are two ways to say the same thing, and the pane was a second surface
+restating the grid. It only has something of its own to say at two or more
+groups, where "Virtual Console exists, US exists, but not together" has no cell
+to untick. So it now sits at the foot of the Subcategories section — beside its
+cause — and renders only for the categories that qualify
+(`categoriesNeedingCombinations`).
+
 What moved in:
 
 | Was | Now |
 |---|---|
 | `TimingSettingsSection` hide flags | Time columns pane, one field per write (the forceRealTime guard must not see untouched fields) |
 | `CategorySettingsSection` emblem | Emblem pane |
-| `CombinationsSection` | Leaderboards pane — which combinations exist, run counts, open/closed |
+| `CombinationsSection` | Foot of the Subcategories section, and only for categories with **two or more** groups |
 | `VariablesSection` per-option detail | Option editor in zone 2: rename, aliases, order, remove-everywhere; plus a per-category default row |
 | `RulesSection` | already the inline rules pane |
 

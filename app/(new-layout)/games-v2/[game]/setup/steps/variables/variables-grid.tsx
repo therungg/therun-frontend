@@ -7,6 +7,7 @@ import { compareByBoardOrder } from '~src/lib/console/category-order';
 import type { VariableChangeInput } from '~src/lib/leaderboard-variables';
 import type { BoardBucket } from '~src/lib/setup/variable-view';
 import {
+    categoriesNeedingCombinations,
     categoriesToConvert,
     driftSides,
     groupVariables,
@@ -32,6 +33,7 @@ import {
     previewVariableChangesAction,
 } from '../../actions/apply-variable-changes.action';
 import type { WizardData } from '../../types';
+import { CombinationsBlock } from './combinations-block';
 import styles from './variables-grid.module.scss';
 
 /**
@@ -440,6 +442,7 @@ export function VariablesGrid({ data }: { data: WizardData }) {
 
     const sectionProps = (role: VariableRoleId) => ({
         role,
+        game: data.game,
         categories: mains,
         variables: data.variables,
         busyGroup,
@@ -529,6 +532,7 @@ function normalizeName(name: string): string {
 
 interface SectionProps {
     role: VariableRoleId;
+    game: WizardData['game'];
     groups: VariableGroup[];
     categories: ResolvedCategory[];
     variables: WizardData['variables'];
@@ -561,6 +565,7 @@ interface SectionProps {
 
 function VariableSection({
     role,
+    game,
     groups,
     categories,
     variables,
@@ -579,6 +584,16 @@ function VariableSection({
 }: SectionProps) {
     const [adding, setAdding] = useState(false);
     const copy = SECTION[role];
+
+    // Categories where a combination cannot be expressed by removing an
+    // option — the only ones the valid-combinations list has anything to say
+    // about. See categoriesNeedingCombinations.
+    const multiGroup = categories.filter((c) =>
+        categoriesNeedingCombinations(
+            categories.map((x) => x.id),
+            variables,
+        ).includes(c.id),
+    );
 
     // Total boards across the featured categories — the number this section
     // exists to control, and the one that quietly gets out of hand.
@@ -654,6 +669,15 @@ function VariableSection({
                         }
                     />
                 ))
+            )}
+
+            {role === 'subcategory' && (
+                <CombinationsBlock
+                    gameSlug={game.name}
+                    gameId={game.id}
+                    categories={multiGroup}
+                    variables={variables}
+                />
             )}
 
             {adding ? (
