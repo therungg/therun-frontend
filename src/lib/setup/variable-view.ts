@@ -122,6 +122,60 @@ export function groupVariables(rows: VariableRow[]): VariableGroup[] {
     return [...groups.values()].sort((a, b) => a.name.localeCompare(b.name));
 }
 
+/**
+ * Splits the board's variables into the two things a moderator actually deals
+ * with: the ones that create leaderboards and the ones that only filter one.
+ *
+ * A drifting group (subcategory on some categories, filter on others) is
+ * placed by its dominant role and carries its own notice there, rather than
+ * being rendered twice. Two grids for one variable reads as two variables,
+ * which is the confusion this whole split exists to remove — so the drift is
+ * surfaced as an error on the single row instead.
+ */
+export function partitionGroups(groups: VariableGroup[]): {
+    splits: VariableGroup[];
+    details: VariableGroup[];
+} {
+    const splits: VariableGroup[] = [];
+    const details: VariableGroup[] = [];
+    for (const group of groups) {
+        (group.dominantRole === 'subcategory' ? splits : details).push(group);
+    }
+    return { splits, details };
+}
+
+/** Category ids on each side of a role disagreement. */
+export function driftSides(group: VariableGroup): {
+    subcategory: number[];
+    filter: number[];
+} {
+    const subcategory: number[] = [];
+    const filter: number[] = [];
+    for (const state of group.byCategory.values()) {
+        (state.role === 'subcategory' ? subcategory : filter).push(
+            state.categoryId,
+        );
+    }
+    return { subcategory, filter };
+}
+
+/**
+ * The categories a role conversion would actually rewrite — those carrying the
+ * variable under a different role. Categories already on the target role are
+ * left out so a conversion never republishes an unchanged row (each write
+ * bumps `version` and triggers a rebuild).
+ */
+export function categoriesToConvert(
+    group: VariableGroup,
+    to: VariableRow['role'],
+): number[] {
+    const out: number[] = [];
+    for (const state of group.byCategory.values()) {
+        if (state.role !== to) out.push(state.categoryId);
+    }
+    return out;
+}
+
 function pickTop(counts: Map<string, number>): string | undefined {
     let best: string | undefined;
     let bestCount = -1;

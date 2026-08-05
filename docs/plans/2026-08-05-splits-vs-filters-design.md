@@ -2,7 +2,9 @@
 
 Date: 2026-08-05
 Repo: therun-frontend (presentation only; no API or schema change)
-Status: **design**
+Status: **setup step 4 implemented** (`variables-grid.tsx` + `language.ts` +
+`variable-view.ts`, on `main` locally, unpushed). Console, submission and
+public copy still to do — see Propagation. Browser pass outstanding.
 
 ## The problem
 
@@ -95,6 +97,14 @@ question, phrased as an outcome:
 `variable-form.tsx`'s current role radio + explainer block is replaced by this
 single question on create, and disappears entirely on edit (see 3).
 
+In step 4 the question is answered structurally: each section carries its own
+inline add form (name + options, one per line) which creates the variable on
+**every featured category** with the section's role. That is what makes the
+board-level view an editor rather than a viewer — previously nothing could be
+created from here at all, only from a single category's full editor. The form
+checks the name against existing groups, `BUILT_IN_FILTERS` and the reserved
+params before submit.
+
 **2. Different fields per section.** `defaultValueIndex` exists only in the top
 section, labelled as "runs that don't say land here" — it is currently a
 required-but-unexplained field on a form that also renders it for filters,
@@ -110,14 +120,19 @@ catastrophe on a `<select>`.
 
 **4. `roleDrift` becomes an error, not a footnote.** A variable that is
 `subcategory` on three categories and `filter` on one currently renders as a
-`⚠ drift` marker in a summary row of the grid. Under a split surface it
-honestly appears in *both* sections — which is the right picture. Surface it as
-a blocking-ish notice with two resolve buttons:
+`⚠ drift` marker in a summary row of the grid. Surface it instead as a notice
+with two resolve buttons:
 
 > **Platform** splits the board on Any%, 100%, 16 Star but is only a run detail
 > on 70 Star. → *Split 70 Star too* · *Make it a detail everywhere*
 
 `VariableGroup.roleDrift` already computes this; only presentation changes.
+
+*Implementation deviation:* the doc first said a drifting group should appear
+in **both** sections. Built as a single row placed by `dominantRole` carrying
+the notice — two grids for one variable reads as two variables, which is the
+exact confusion this split exists to remove. `partitionGroups` enforces the
+single placement and has a test for it.
 
 **5. Reserved params stop being a write-time 400.** Showing the built-in
 filters as read-only rows in the same list makes the collision visible before
@@ -162,7 +177,7 @@ The vocabulary has to hold everywhere or the confusion just moves.
 |---|---|---|
 | Public board — splits | `filters/subcategory-pills.tsx` | Already separate from the filter bar. Check the heading/copy uses the new words. |
 | Public board — details | `filters/filter-bar.tsx`, `variable-pills.tsx`, `filters-popover.tsx` | Filter bar mixes reserved params + filter variables, which is **correct** under this model — no structural change, copy only. |
-| Setup step 4 | `setup/steps/variables/variables-grid.tsx` | Partition into two sections; asymmetric writes; drift-as-error. Main build. |
+| Setup step 4 | `setup/steps/variables/variables-grid.tsx` | **Done** — two sections, asymmetric writes, drift-as-error, conversion action, per-section add form. |
 | Console | `manage/variables/variables-section.tsx`, `variable-table.tsx`, `variable-row.tsx`, `variable-form.tsx` | Same split; role radio → creation question + conversion action. |
 | Submission | `submit/submit-form.tsx` | Already splits `subcatDefs` / `filterDefs` (l. 223-224). Frame splits as "which board is this?" (required-ish) and details as optional. |
 | Board curation | `manage/boards/subcategory-bands.tsx`, `board-controls.tsx` | Reads splits only; copy check. |

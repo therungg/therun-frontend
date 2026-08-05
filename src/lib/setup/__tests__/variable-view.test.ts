@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { VariableRow } from '../../../../types/leaderboards.types';
 import {
+    categoriesToConvert,
+    driftSides,
     groupVariables,
+    partitionGroups,
     resolveToggles,
     subBoardCount,
 } from '../variable-view';
@@ -222,5 +225,76 @@ describe('resolveToggles', () => {
             { categoryId: 9, bucketKey: 'n64', on: true },
         ]);
         expect(out).toEqual([{ categoryId: 9, buckets: ['n64'] }]);
+    });
+});
+
+describe('partitionGroups', () => {
+    it('sorts groups into the two things a moderator deals with', () => {
+        const groups = groupVariables([
+            makeVariable({ id: 1, categoryId: 1 }),
+            makeVariable({
+                id: 2,
+                categoryId: 1,
+                name: 'Route',
+                nameNormalized: 'route',
+                role: 'filter',
+                defaultValueIndex: null,
+            }),
+        ]);
+        const { splits, details } = partitionGroups(groups);
+        expect(splits.map((g) => g.name)).toEqual(['Platform']);
+        expect(details.map((g) => g.name)).toEqual(['Route']);
+    });
+
+    it('places a drifting group by its dominant role, once', () => {
+        // Two categories split on it, one only filters — it must not appear in
+        // both sections, or one variable reads as two.
+        const groups = groupVariables([
+            makeVariable({ id: 1, categoryId: 1 }),
+            makeVariable({ id: 2, categoryId: 2 }),
+            makeVariable({
+                id: 3,
+                categoryId: 3,
+                role: 'filter',
+                defaultValueIndex: null,
+            }),
+        ]);
+        const { splits, details } = partitionGroups(groups);
+        expect(splits).toHaveLength(1);
+        expect(details).toHaveLength(0);
+        expect(splits[0].roleDrift).toBe(true);
+    });
+});
+
+describe('driftSides', () => {
+    it('names the categories on each side of the disagreement', () => {
+        const [group] = groupVariables([
+            makeVariable({ id: 1, categoryId: 1 }),
+            makeVariable({
+                id: 2,
+                categoryId: 2,
+                role: 'filter',
+                defaultValueIndex: null,
+            }),
+        ]);
+        expect(driftSides(group)).toEqual({ subcategory: [1], filter: [2] });
+    });
+});
+
+describe('categoriesToConvert', () => {
+    it('returns only the categories a conversion would actually rewrite', () => {
+        const [group] = groupVariables([
+            makeVariable({ id: 1, categoryId: 1 }),
+            makeVariable({
+                id: 2,
+                categoryId: 2,
+                role: 'filter',
+                defaultValueIndex: null,
+            }),
+        ]);
+        // Category 1 is already a split — republishing it would bump its
+        // version and trigger a rebuild for no change.
+        expect(categoriesToConvert(group, 'subcategory')).toEqual([2]);
+        expect(categoriesToConvert(group, 'filter')).toEqual([1]);
     });
 });

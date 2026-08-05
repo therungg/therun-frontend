@@ -6,14 +6,24 @@ import { toast } from 'react-toastify';
 import { compareByBoardOrder } from '~src/lib/console/category-order';
 import type { VariableChangeInput } from '~src/lib/leaderboard-variables';
 import {
+    categoriesToConvert,
+    driftSides,
     groupVariables,
     type PendingToggle,
+    partitionGroups,
     resolveToggles,
     subBoardCount,
     type VariableGroup,
 } from '~src/lib/setup/variable-view';
 import type { VariablePreview } from '~src/lib/variables/consequences';
 import { describeConsequences } from '~src/lib/variables/consequences';
+import {
+    BUILT_IN_FILTERS,
+    conversionLabel,
+    driftNotice,
+    SECTION,
+    type VariableRoleId,
+} from '~src/lib/variables/language';
 import type { ResolvedCategory } from '../../../../../../../types/leaderboards.types';
 import {
     applyVariableChangesAction,
@@ -33,12 +43,23 @@ import styles from './variables-grid.module.scss';
  * as a VIEW: rows are grouped by nameNormalized, presented as one object with
  * a bucket x category grid, and every edit fans out as per-category writes.
  *
- * Toggles STAGE rather than write. That is the deliberate asymmetry with the
- * scalar matrix above, which writes immediately: scalar edits are reversible,
- * variable edits relocate runs, so the whole set is previewed once and
- * confirmed once. Staging is client-side only — this never writes an
- * unpublished row, because `published` is supersede history here, not a draft
- * flag.
+ * `role` is not a field here. It is split into two SECTIONS — separate
+ * leaderboards and run details — because those are two concepts for a
+ * moderator and only one column in the database. Which section you are
+ * standing in decides the role; moving between them is a named conversion
+ * with a consequence preview, never a dropdown. See
+ * docs/plans/2026-08-05-splits-vs-filters-design.md.
+ *
+ * The two sections deliberately write differently:
+ *
+ * - **Separate leaderboards** stage. Their edits relocate existing runs, so
+ *   the whole set is previewed once and confirmed once.
+ * - **Run details** write immediately, like the scalar matrix above. They are
+ *   additive and touch no standings; staging them made adding a Route option
+ *   feel as dangerous as re-slicing the board.
+ *
+ * Staging is client-side only — this never writes an unpublished row, because
+ * `published` is supersede history here, not a draft flag.
  */
 export function VariablesGrid({ data }: { data: WizardData }) {
     const router = useRouter();
@@ -46,11 +67,13 @@ export function VariablesGrid({ data }: { data: WizardData }) {
         new Map(),
     );
     const [preview, setPreview] = useState<{
-        group: VariableGroup;
+        name: string;
+        groupKey: string;
         preview: VariablePreview;
         changes: VariableChangeInput[];
         slugs: string[];
     } | null>(null);
+    const [busyGroup, setBusyGroup] = useState<string | null>(null);
     const [isBusy, startBusy] = useTransition();
 
     const mains = useMemo(
@@ -64,46 +87,27 @@ export function VariablesGrid({ data }: { data: WizardData }) {
         () => groupVariables(data.variables),
         [data.variables],
     );
+    const { splits, details } = useMemo(
+        () => partitionGroups(groups),
+        [groups],
+    );
 
-    const toggleCell = (
-        group: VariableGroup,
-        categoryId: number,
-        bucketKey: string,
-        on: boolean,
-    ) => {
-        setPending((prev) => {
-            const next = new Map(prev);
-            const list = [...(next.get(group.nameNormalized) ?? [])];
-            list.push({ categoryId, bucketKey, on });
-            next.set(group.nameNormalized, list);
-            return next;
-        });
-    };
-
-    /** Effective on/off for a cell, staged toggles included. */
-    const cellOn = (
-        group: VariableGroup,
-        categoryId: number,
-        bucketKey: string,
-    ): boolean => {
-        const base =
-            group.byCategory.get(categoryId)?.buckets.has(bucketKey) ?? false;
-        const staged = (pending.get(group.nameNormalized) ?? []).filter(
-            (t) => t.categoryId === categoryId && t.bucketKey === bucketKey,
-        );
-        return staged.length > 0 ? staged[staged.length - 1].on : base;
-    };
-
-    const pendingCount = (group: VariableGroup): number =>
-        resolveToggles(group, pending.get(group.nameNormalized) ?? []).length;
+    /** Names already taken, so a new one collides before it is typed. */
+    const takenNames = useMemo(
+        () =>
+            new Set([
+                ...groups.map((g) => g.nameNormalized),
+                ...BUILT_IN_FILTERS.map(normalizeName),
+                ...RESERVED_NAMES,
+            ]),
+        [groups],
+    );
 
     const buildChanges = (
         group: VariableGroup,
+        toggles: PendingToggle[],
     ): { changes: VariableChangeInput[]; slugs: string[] } => {
-        const resolved = resolveToggles(
-            group,
-            pending.get(group.nameNormalized) ?? [],
-        );
+        const resolved = resolveToggles(group, toggles);
         const labelFor = new Map(group.buckets.map((b) => [b.key, b.label]));
         const slugs: string[] = [];
 
@@ -151,26 +155,172 @@ export function VariablesGrid({ data }: { data: WizardData }) {
         return { changes, slugs };
     };
 
-    const stageApply = (group: VariableGroup) => {
-        const { changes, slugs } = buildChanges(group);
-        if (changes.length === 0) return;
+    /**
+     * A conversion rewrites the role on every category that disagrees, keeping
+     * each one's own buckets and aliases untouched — the point is to change
+     * what the variable *does*, not what it contains.
+     */
+    const buildRoleChanges = (
+        group: VariableGroup,
+        to: VariableRoleId,
+    ): { changes: VariableChangeInput[]; slugs: string[] } => {
+        const slugs: string[] = [];
+        const changes = categoriesToConvert(group, to).map(
+            (categoryId): VariableChangeInput => {
+                const cat = mains.find((c) => c.id === categoryId);
+                if (cat) slugs.push(cat.name);
+                const state = group.byCategory.get(categoryId);
+                const row = state?.row;
+                return {
+                    categoryId,
+                    input: {
+                        name: row?.name ?? group.name,
+                        role: to,
+                        values: row?.values ?? [],
+                        defaultValueIndex:
+                            to === 'subcategory'
+                                ? (row?.defaultValueIndex ?? 0)
+                                : null,
+                        sortOrder: row?.sortOrder ?? 0,
+                        description: row?.description ?? null,
+                    },
+                };
+            },
+        );
+        return { changes, slugs };
+    };
+
+    /** New variable on every featured category, role fixed by its section. */
+    const buildCreateChanges = (
+        name: string,
+        role: VariableRoleId,
+        options: string[],
+    ): { changes: VariableChangeInput[]; slugs: string[] } => ({
+        slugs: mains.map((c) => c.name),
+        changes: mains.map((c) => ({
+            categoryId: c.id,
+            input: {
+                name,
+                role,
+                values: options.map((o) => [o]),
+                defaultValueIndex: role === 'subcategory' ? 0 : null,
+                sortOrder: 0,
+                description: null,
+            },
+        })),
+    });
+
+    const openPreview = (
+        key: string,
+        name: string,
+        built: { changes: VariableChangeInput[]; slugs: string[] },
+    ) => {
+        if (built.changes.length === 0) return;
+        setBusyGroup(key);
         startBusy(async () => {
             const res = await previewVariableChangesAction({
                 gameSlug: data.game.name,
                 gameId: data.game.id,
-                changes,
+                changes: built.changes,
             });
+            setBusyGroup(null);
             if ('error' in res) {
                 toast.error(res.error);
                 return;
             }
-            setPreview({ group, preview: res.preview, changes, slugs });
+            setPreview({
+                name,
+                groupKey: key,
+                preview: res.preview,
+                changes: built.changes,
+                slugs: built.slugs,
+            });
         });
     };
 
+    /**
+     * Run details skip the preview entirely — nothing moves between boards,
+     * so a confirmation would be theatre.
+     */
+    const applyNow = (
+        key: string,
+        name: string,
+        built: { changes: VariableChangeInput[]; slugs: string[] },
+        onFailure?: () => void,
+    ) => {
+        if (built.changes.length === 0) return;
+        setBusyGroup(key);
+        startBusy(async () => {
+            const res = await applyVariableChangesAction({
+                gameSlug: data.game.name,
+                gameId: data.game.id,
+                changes: built.changes,
+                touchedCategorySlugs: built.slugs,
+            });
+            setBusyGroup(null);
+            if ('error' in res) {
+                toast.error(res.error);
+                onFailure?.();
+                return;
+            }
+            toast.success(`${name} updated.`);
+            router.refresh();
+        });
+    };
+
+    const toggleCell = (
+        group: VariableGroup,
+        categoryId: number,
+        bucketKey: string,
+        on: boolean,
+    ) => {
+        const before = pending.get(group.nameNormalized) ?? [];
+        const next = [...before, { categoryId, bucketKey, on }];
+        setPending((prev) => {
+            const map = new Map(prev);
+            map.set(group.nameNormalized, next);
+            return map;
+        });
+
+        // Run details write on the click. The staged toggle stays as the
+        // optimistic state until router.refresh() brings the real row back —
+        // dropping it here would flash the cell back to its old value.
+        if (group.dominantRole === 'filter') {
+            applyNow(
+                group.nameNormalized,
+                group.name,
+                buildChanges(group, next),
+                () =>
+                    setPending((prev) => {
+                        const map = new Map(prev);
+                        map.set(group.nameNormalized, before);
+                        return map;
+                    }),
+            );
+        }
+    };
+
+    /** Effective on/off for a cell, staged toggles included. */
+    const cellOn = (
+        group: VariableGroup,
+        categoryId: number,
+        bucketKey: string,
+    ): boolean => {
+        const base =
+            group.byCategory.get(categoryId)?.buckets.has(bucketKey) ?? false;
+        const staged = (pending.get(group.nameNormalized) ?? []).filter(
+            (t) => t.categoryId === categoryId && t.bucketKey === bucketKey,
+        );
+        return staged.length > 0 ? staged[staged.length - 1].on : base;
+    };
+
+    const pendingCount = (group: VariableGroup): number =>
+        resolveToggles(group, pending.get(group.nameNormalized) ?? []).length;
+
     const confirmApply = () => {
         if (!preview) return;
-        const { group, changes, slugs } = preview;
+        const { name, groupKey, changes, slugs } = preview;
+        setBusyGroup(groupKey);
         startBusy(async () => {
             const res = await applyVariableChangesAction({
                 gameSlug: data.game.name,
@@ -178,6 +328,7 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                 changes,
                 touchedCategorySlugs: slugs,
             });
+            setBusyGroup(null);
             if ('error' in res) {
                 toast.error(res.error);
                 return;
@@ -185,10 +336,10 @@ export function VariablesGrid({ data }: { data: WizardData }) {
             setPreview(null);
             setPending((prev) => {
                 const next = new Map(prev);
-                next.delete(group.nameNormalized);
+                next.delete(groupKey);
                 return next;
             });
-            toast.success(`${group.name} updated.`);
+            toast.success(`${name} updated.`);
             router.refresh();
         });
     };
@@ -203,24 +354,170 @@ export function VariablesGrid({ data }: { data: WizardData }) {
 
     if (mains.length === 0) return null;
 
+    const sectionProps = (role: VariableRoleId) => ({
+        role,
+        categories: mains,
+        variables: data.variables,
+        busyGroup,
+        busy: isBusy,
+        takenNames,
+        cellOn,
+        onToggle: toggleCell,
+        pendingCount,
+        onDiscard: discard,
+        onStage: (group: VariableGroup) =>
+            openPreview(
+                group.nameNormalized,
+                group.name,
+                buildChanges(group, pending.get(group.nameNormalized) ?? []),
+            ),
+        onConvert: (group: VariableGroup, to: VariableRoleId) =>
+            openPreview(
+                group.nameNormalized,
+                group.name,
+                buildRoleChanges(group, to),
+            ),
+        onCreate: (name: string, options: string[]) => {
+            const built = buildCreateChanges(name, role, options);
+            // Creating a split adds boards to every featured category, so it
+            // gets the same preview an edit does. Creating a detail does not.
+            if (role === 'subcategory') openPreview(NEW_KEY, name, built);
+            else applyNow(NEW_KEY, name, built);
+        },
+    });
+
+    return (
+        <>
+            <VariableSection {...sectionProps('subcategory')} groups={splits} />
+            <VariableSection {...sectionProps('filter')} groups={details} />
+
+            {preview && (
+                <ConsequenceDialog
+                    name={preview.name}
+                    preview={preview.preview}
+                    busy={isBusy}
+                    onCancel={() => setPreview(null)}
+                    onConfirm={confirmApply}
+                />
+            )}
+        </>
+    );
+}
+
+/** Key used for the not-yet-existing variable an add form is building. */
+const NEW_KEY = '__new__';
+
+/**
+ * Reserved query params that cannot become variable names. Kept alongside the
+ * built-in filter labels so the collision is caught in the form rather than by
+ * a 400 on save.
+ */
+const RESERVED_NAMES = [
+    'combined',
+    'verified',
+    'country',
+    'year',
+    'page',
+    'pagesize',
+    'timing',
+    'view',
+];
+
+function normalizeName(name: string): string {
+    return name.toLowerCase().replace(/[\s=|]/g, '');
+}
+
+interface SectionProps {
+    role: VariableRoleId;
+    groups: VariableGroup[];
+    categories: ResolvedCategory[];
+    variables: WizardData['variables'];
+    busyGroup: string | null;
+    busy: boolean;
+    takenNames: Set<string>;
+    cellOn: (
+        group: VariableGroup,
+        categoryId: number,
+        bucketKey: string,
+    ) => boolean;
+    onToggle: (
+        group: VariableGroup,
+        categoryId: number,
+        bucketKey: string,
+        on: boolean,
+    ) => void;
+    pendingCount: (group: VariableGroup) => number;
+    onDiscard: (group: VariableGroup) => void;
+    onStage: (group: VariableGroup) => void;
+    onConvert: (group: VariableGroup, to: VariableRoleId) => void;
+    onCreate: (name: string, options: string[]) => void;
+}
+
+function VariableSection({
+    role,
+    groups,
+    categories,
+    variables,
+    busyGroup,
+    busy,
+    takenNames,
+    cellOn,
+    onToggle,
+    pendingCount,
+    onDiscard,
+    onStage,
+    onConvert,
+    onCreate,
+}: SectionProps) {
+    const [adding, setAdding] = useState(false);
+    const copy = SECTION[role];
+
+    // Total boards across the featured categories — the number this section
+    // exists to control, and the one that quietly gets out of hand.
+    const boardTotal = categories.reduce(
+        (total, c) => total + subBoardCount(c.id, variables),
+        0,
+    );
+
     return (
         <section className={styles.zone}>
             <div className={styles.zoneHead}>
-                <span className={styles.zoneTitle}>Variables</span>
+                <span className={styles.zoneTitle}>{copy.title}</span>
                 <span className={styles.zoneCount}>
-                    {groups.length === 0
-                        ? 'none on this board'
-                        : `${groups.length} on this board`}
+                    {role === 'subcategory'
+                        ? `${boardTotal} ${boardTotal === 1 ? 'board' : 'boards'}`
+                        : `${groups.length} added`}
                 </span>
             </div>
+            <p className={styles.zoneBlurb}>{copy.blurb}</p>
+
+            {role === 'filter' && (
+                <div className={styles.builtIns}>
+                    <span className={styles.builtInsLabel}>
+                        Always available
+                    </span>
+                    {BUILT_IN_FILTERS.map((name) => (
+                        <span key={name} className={styles.builtInChip}>
+                            {name}
+                        </span>
+                    ))}
+                    <span className={styles.builtInsNote}>
+                        built in — nothing to configure
+                    </span>
+                </div>
+            )}
 
             {groups.length === 0 ? (
                 <div className={styles.empty}>
-                    <p className={styles.emptyTitle}>No variables yet</p>
+                    <p className={styles.emptyTitle}>
+                        {role === 'subcategory'
+                            ? 'One board per category'
+                            : 'Only the built-in filters'}
+                    </p>
                     <p className={styles.emptyNote}>
-                        Variables split a category into sub-boards (Platform,
-                        Region) or add a filter. Add one from a category&rsquo;s
-                        full editor and it shows up here across the whole board.
+                        {role === 'subcategory'
+                            ? 'Nothing splits these categories yet. Add a split when the same category is really several leaderboards — Platform, Region, Glitches — each with its own record.'
+                            : 'Add a detail when you want runners to be able to narrow the board by something the run carries, without giving it a leaderboard of its own.'}
                     </p>
                 </div>
             ) : (
@@ -228,30 +525,46 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                     <VariablePalette
                         key={group.nameNormalized}
                         group={group}
-                        categories={mains}
-                        variables={data.variables}
-                        busy={isBusy}
+                        role={role}
+                        categories={categories}
+                        variables={variables}
+                        busy={busy}
+                        isTarget={busyGroup === group.nameNormalized}
                         pendingCount={pendingCount(group)}
                         cellOn={(categoryId, bucketKey) =>
                             cellOn(group, categoryId, bucketKey)
                         }
                         onToggle={(categoryId, bucketKey, on) =>
-                            toggleCell(group, categoryId, bucketKey, on)
+                            onToggle(group, categoryId, bucketKey, on)
                         }
-                        onApply={() => stageApply(group)}
-                        onDiscard={() => discard(group)}
+                        onApply={() => onStage(group)}
+                        onDiscard={() => onDiscard(group)}
+                        onConvert={(to) => onConvert(group, to)}
                     />
                 ))
             )}
 
-            {preview && (
-                <ConsequenceDialog
-                    name={preview.group.name}
-                    preview={preview.preview}
-                    busy={isBusy}
-                    onCancel={() => setPreview(null)}
-                    onConfirm={confirmApply}
+            {adding ? (
+                <AddVariableForm
+                    role={role}
+                    busy={busy}
+                    takenNames={takenNames}
+                    categoryCount={categories.length}
+                    onCancel={() => setAdding(false)}
+                    onCreate={(name, options) => {
+                        setAdding(false);
+                        onCreate(name, options);
+                    }}
                 />
+            ) : (
+                <button
+                    type="button"
+                    className={styles.addAction}
+                    disabled={busy}
+                    onClick={() => setAdding(true)}
+                >
+                    + {copy.add}
+                </button>
             )}
         </section>
     );
@@ -259,27 +572,36 @@ export function VariablesGrid({ data }: { data: WizardData }) {
 
 function VariablePalette({
     group,
+    role,
     categories,
     variables,
     busy,
+    isTarget,
     pendingCount,
     cellOn,
     onToggle,
     onApply,
     onDiscard,
+    onConvert,
 }: {
     group: VariableGroup;
+    role: VariableRoleId;
     categories: ResolvedCategory[];
     variables: WizardData['variables'];
     busy: boolean;
+    isTarget: boolean;
     pendingCount: number;
     cellOn: (categoryId: number, bucketKey: string) => boolean;
     onToggle: (categoryId: number, bucketKey: string, on: boolean) => void;
     onApply: () => void;
     onDiscard: () => void;
+    onConvert: (to: VariableRoleId) => void;
 }) {
     const [open, setOpen] = useState(true);
     const onCount = categories.filter((c) => group.byCategory.has(c.id)).length;
+    const displayOf = (id: number) =>
+        categories.find((c) => c.id === id)?.display ?? `#${id}`;
+    const sides = driftSides(group);
 
     return (
         <div className={styles.palette}>
@@ -290,25 +612,49 @@ function VariablePalette({
                 onClick={() => setOpen((v) => !v)}
             >
                 <span className={styles.paletteName}>{group.name}</span>
-                <span className={styles.paletteRole}>
-                    {group.dominantRole === 'subcategory'
-                        ? 'sub-boards'
-                        : 'filter'}
-                </span>
                 <span className={styles.paletteMeta}>
-                    on {onCount} of {categories.length}
+                    on {onCount} of {categories.length} · {group.buckets.length}{' '}
+                    {group.buckets.length === 1 ? 'option' : 'options'}
                 </span>
-                {group.roleDrift && (
-                    <span className={styles.driftBadge}>
-                        roles differ by category
-                    </span>
-                )}
                 {pendingCount > 0 && (
                     <span className={styles.pendingBadge}>
                         {pendingCount} pending
                     </span>
                 )}
             </button>
+
+            {/* A role disagreement means this is a leaderboard split on part
+                of the board and a filter on the rest. Stated, with both ways
+                out — it used to be a badge reading "roles differ". */}
+            {group.roleDrift && (
+                <div className={styles.drift}>
+                    <p className={styles.driftText}>
+                        {driftNotice({
+                            name: group.name,
+                            splitOn: sides.subcategory.map(displayOf),
+                            filterOn: sides.filter.map(displayOf),
+                        })}
+                    </p>
+                    <div className={styles.driftActions}>
+                        <button
+                            type="button"
+                            className={styles.pendingBtn}
+                            disabled={busy}
+                            onClick={() => onConvert('subcategory')}
+                        >
+                            Split everywhere
+                        </button>
+                        <button
+                            type="button"
+                            className={styles.pendingBtn}
+                            disabled={busy}
+                            onClick={() => onConvert('filter')}
+                        >
+                            Detail everywhere
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {open && (
                 <>
@@ -328,10 +674,15 @@ function VariablePalette({
                                         <th>{bucket.label}</th>
                                         {categories.map((c) => {
                                             const on = cellOn(c.id, bucket.key);
+                                            // Only a split has somewhere for
+                                            // an unmatched run to land, so the
+                                            // default marker is meaningless in
+                                            // the run-details section.
                                             const isDefault =
+                                                role === 'subcategory' &&
                                                 group.byCategory.get(c.id)
                                                     ?.defaultBucket ===
-                                                bucket.key;
+                                                    bucket.key;
                                             // Staged, not yet written: drawn
                                             // provisional so a grid mid-edit
                                             // never looks already-applied.
@@ -359,7 +710,7 @@ function VariablePalette({
                                                         aria-label={`${bucket.label} on ${c.display}`}
                                                         title={
                                                             isDefault
-                                                                ? 'Default bucket for this category'
+                                                                ? 'Runs that do not say land here'
                                                                 : undefined
                                                         }
                                                         onClick={() =>
@@ -381,52 +732,52 @@ function VariablePalette({
                                         })}
                                     </tr>
                                 ))}
-                                <tr className={styles.roleRow}>
-                                    <th>role</th>
-                                    {categories.map((c) => {
-                                        const state = group.byCategory.get(
-                                            c.id,
-                                        );
-                                        return (
-                                            <td key={c.id}>
-                                                <span
-                                                    className={
-                                                        state &&
-                                                        state.role !==
-                                                            group.dominantRole
-                                                            ? styles.roleDrift
-                                                            : styles.roleQuiet
-                                                    }
-                                                >
-                                                    {state
-                                                        ? state.role ===
-                                                          'subcategory'
-                                                            ? 'sub'
-                                                            : 'filter'
-                                                        : '—'}
-                                                </span>
-                                            </td>
-                                        );
-                                    })}
-                                </tr>
                             </tbody>
                         </table>
                     </div>
 
                     {/* The consequence, shown where it is caused. */}
                     <p className={styles.consequence}>
-                        {categories
-                            .filter((c) => group.byCategory.has(c.id))
-                            .map((c) => {
-                                const n = subBoardCount(c.id, variables);
-                                return `${c.display} → ${n} ${
-                                    n === 1 ? 'board' : 'sub-boards'
-                                }`;
-                            })
-                            .join(' · ') || 'Not on any category yet.'}
+                        {role === 'subcategory'
+                            ? categories
+                                  .filter((c) => group.byCategory.has(c.id))
+                                  .map((c) => {
+                                      const n = subBoardCount(c.id, variables);
+                                      return `${c.display} → ${n} ${
+                                          n === 1 ? 'board' : 'boards'
+                                      }`;
+                                  })
+                                  .join(' · ') || 'Not on any category yet.'
+                            : 'Filters the board. Records are unaffected.'}
                     </p>
 
-                    {pendingCount > 0 && (
+                    <div className={styles.paletteFoot}>
+                        <button
+                            type="button"
+                            className={styles.convertAction}
+                            disabled={busy}
+                            onClick={() =>
+                                onConvert(
+                                    role === 'subcategory'
+                                        ? 'filter'
+                                        : 'subcategory',
+                                )
+                            }
+                        >
+                            {conversionLabel(
+                                role === 'subcategory'
+                                    ? 'filter'
+                                    : 'subcategory',
+                            )}
+                        </button>
+                        {role === 'filter' && isTarget && (
+                            <span className={styles.savingNote}>Saving…</span>
+                        )}
+                    </div>
+
+                    {/* Only splits stage. Details have already been written by
+                        the time this would render. */}
+                    {role === 'subcategory' && pendingCount > 0 && (
                         <div className={styles.pendingBar}>
                             <span className={styles.pendingLabel}>
                                 {pendingCount}{' '}
@@ -454,6 +805,108 @@ function VariablePalette({
                     )}
                 </>
             )}
+        </div>
+    );
+}
+
+/**
+ * Creating one, without ever asking for a role: the section already answered
+ * that question, so the form only collects a name and the options.
+ */
+function AddVariableForm({
+    role,
+    busy,
+    takenNames,
+    categoryCount,
+    onCancel,
+    onCreate,
+}: {
+    role: VariableRoleId;
+    busy: boolean;
+    takenNames: Set<string>;
+    categoryCount: number;
+    onCancel: () => void;
+    onCreate: (name: string, options: string[]) => void;
+}) {
+    const [name, setName] = useState('');
+    const [raw, setRaw] = useState('');
+
+    const options = raw
+        .split('\n')
+        .map((v) => v.trim())
+        .filter(Boolean);
+
+    const normalized = normalizeName(name);
+    const collision =
+        normalized.length > 0 && takenNames.has(normalized)
+            ? BUILT_IN_FILTERS.some((f) => normalizeName(f) === normalized) ||
+              RESERVED_NAMES.includes(normalized)
+                ? `${name.trim()} is already a built-in filter.`
+                : `${name.trim()} already exists on this board.`
+            : null;
+
+    const ready =
+        name.trim().length > 0 && options.length > 0 && collision === null;
+
+    return (
+        <div className={styles.addForm}>
+            <label className={styles.addField}>
+                <span className={styles.addLabel}>Name</span>
+                <input
+                    className={styles.addInput}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder={
+                        role === 'subcategory' ? 'Platform' : 'Controller'
+                    }
+                />
+            </label>
+
+            <label className={styles.addField}>
+                <span className={styles.addLabel}>Options, one per line</span>
+                <textarea
+                    className={styles.addTextarea}
+                    rows={4}
+                    value={raw}
+                    onChange={(e) => setRaw(e.target.value)}
+                    placeholder={
+                        role === 'subcategory'
+                            ? 'N64\nVirtual Console\nEmulator'
+                            : 'Keyboard\nController'
+                    }
+                />
+            </label>
+
+            {collision && <p className={styles.addError}>{collision}</p>}
+
+            <p className={styles.addNote}>
+                {role === 'subcategory'
+                    ? options.length > 1
+                        ? `Every featured category is multiplied by ${options.length}. Each one becomes ${options.length} boards with their own records; runs that do not say land on ${options[0]}.`
+                        : 'A split needs at least two options to split anything.'
+                    : `Added to all ${categoryCount} featured ${
+                          categoryCount === 1 ? 'category' : 'categories'
+                      }. Records are unaffected.`}
+            </p>
+
+            <div className={styles.addActions}>
+                <button
+                    type="button"
+                    className={styles.pendingBtn}
+                    disabled={busy}
+                    onClick={onCancel}
+                >
+                    Cancel
+                </button>
+                <button
+                    type="button"
+                    className={styles.pendingApply}
+                    disabled={busy || !ready}
+                    onClick={() => onCreate(name.trim(), options)}
+                >
+                    {role === 'subcategory' ? 'Preview & add' : 'Add'}
+                </button>
+            </div>
         </div>
     );
 }
