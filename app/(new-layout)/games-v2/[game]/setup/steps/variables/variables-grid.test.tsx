@@ -25,7 +25,10 @@ vi.mock('react-toastify', () => ({
     toast: { error: vi.fn(), success: vi.fn(), info: vi.fn() },
 }));
 
-import { previewVariableChangesAction } from '../../actions/apply-variable-changes.action';
+import {
+    applyVariableChangesAction,
+    previewVariableChangesAction,
+} from '../../actions/apply-variable-changes.action';
 import { VariablesGrid } from './variables-grid';
 
 function makeData(): WizardData {
@@ -200,6 +203,55 @@ describe('VariablesGrid', () => {
     // renames, `values` is an arbitrary array — so all four were missing
     // buttons rather than missing features.
 
+    it('moves an option left and right, the axis options actually sit on', () => {
+        renderGrid();
+        fireEvent.click(screen.getByRole('button', { name: /Nintendo 64/ }));
+        // Options became columns when the grid was transposed; these said up
+        // and down, pointing at an axis they no longer sit on.
+        expect(
+            screen.getByRole('button', { name: 'Move Nintendo 64 right' }),
+        ).toBeTruthy();
+        expect(screen.queryByRole('button', { name: '↑' })).toBeNull();
+    });
+
+    it('orders the groups on the board, not on their names', () => {
+        const data = makeData();
+        // A second group, alphabetically first, so name order and board order
+        // disagree and only board order can be honoured.
+        data.variables.push({
+            ...data.variables[0],
+            id: 3,
+            categoryId: 10,
+            name: 'Amiibo',
+            nameNormalized: 'amiibo',
+            values: [['Yes'], ['No']],
+            sortOrder: 1,
+        } as WizardData['variables'][number]);
+        render(<VariablesGrid data={data} />);
+
+        const titles = screen
+            .getAllByRole('button', { name: /^(Platform|Amiibo)$/ })
+            .map((b) => b.textContent);
+        // Platform is sortOrder 0, Amiibo is 1 — alphabetical would invert it.
+        expect(titles).toEqual(['Platform', 'Amiibo']);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Move Amiibo up' }));
+        // Order is display only — the backend builds a subcategory key from
+        // names sorted alphabetically — so it writes straight through.
+        expect(applyVariableChangesAction).toHaveBeenCalledWith(
+            expect.objectContaining({
+                changes: expect.arrayContaining([
+                    expect.objectContaining({
+                        input: expect.objectContaining({
+                            name: 'Amiibo',
+                            sortOrder: 0,
+                        }),
+                    }),
+                ]),
+            }),
+        );
+    });
+
     it('renames the group from its own title', () => {
         renderGrid();
         fireEvent.click(screen.getByRole('button', { name: 'Platform' }));
@@ -285,8 +337,10 @@ describe('VariablesGrid', () => {
             target: { value: 'Region' },
         });
         fireEvent.change(
-            screen.getByLabelText('Subcategory options, one per line'),
-            { target: { value: 'NTSC\nPAL' } },
+            screen.getByLabelText(/Subcategory options, one per line/),
+            // Aliases come with the option now, after a comma — a group used
+            // to be created bare and then reopened option by option.
+            { target: { value: 'NTSC, ntsc-u\nPAL, pal-e' } },
         );
 
         const picker = screen.getByLabelText(
@@ -303,6 +357,10 @@ describe('VariablesGrid', () => {
                         input: expect.objectContaining({
                             name: 'Region',
                             defaultValueIndex: 1,
+                            values: [
+                                ['NTSC', 'ntsc-u'],
+                                ['PAL', 'pal-e'],
+                            ],
                         }),
                     }),
                 ]),

@@ -47,6 +47,13 @@ export interface VariableGroup {
     buckets: { key: string; label: string; aliases: string[] }[];
     /** Per-category state, keyed by categoryId. */
     byCategory: Map<number, VariableCategoryState>;
+    /**
+     * Display order across the board — the lowest `sortOrder` any category's
+     * row carries. Order is presentation only: the backend composes a
+     * subcategory key from `nameNormalized` sorted alphabetically
+     * (resolve-run-variables.ts), so moving a group never relocates a run.
+     */
+    sortOrder: number;
     /** The role most categories use — what "apply this shape" would stamp. */
     dominantRole: VariableRow['role'];
     /** True when categories disagree about the role. */
@@ -75,6 +82,7 @@ export function groupVariables(rows: VariableRow[]): VariableGroup[] {
                 name: row.name,
                 buckets: [],
                 byCategory: new Map(),
+                sortOrder: row.sortOrder,
                 dominantRole: row.role,
                 roleDrift: false,
             };
@@ -121,6 +129,9 @@ export function groupVariables(rows: VariableRow[]): VariableGroup[] {
     }
 
     for (const group of groups.values()) {
+        for (const state of group.byCategory.values()) {
+            group.sortOrder = Math.min(group.sortOrder, state.row.sortOrder);
+        }
         const names = nameCounts.get(group.nameNormalized);
         if (names) group.name = pickTop(names) ?? group.name;
         const roles = roleCounts.get(group.nameNormalized);
@@ -131,7 +142,11 @@ export function groupVariables(rows: VariableRow[]): VariableGroup[] {
         }
     }
 
-    return [...groups.values()].sort((a, b) => a.name.localeCompare(b.name));
+    // Board order first, name as the tie-break — every group starts at
+    // sortOrder 0, so an untouched board still reads alphabetically.
+    return [...groups.values()].sort(
+        (a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name),
+    );
 }
 
 /**

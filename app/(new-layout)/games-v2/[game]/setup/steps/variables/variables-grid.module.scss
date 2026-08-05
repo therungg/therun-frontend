@@ -167,8 +167,50 @@
     }
 }
 
+// ---- Board order --------------------------------------------
+// Groups sorted alphabetically and nothing could change it, so the order a
+// runner reads them in was whatever the names happened to be.
+
+.moveGroup {
+    margin-left: auto;
+    display: inline-flex;
+    align-self: center;
+    gap: 2px;
+}
+
+.moveBtn {
+    width: 1.5rem;
+    height: 1.5rem;
+    display: grid;
+    place-items: center;
+    font: inherit;
+    font-size: dt.$font-size-2xs;
+    line-height: 1;
+    color: var(--bs-tertiary-color);
+    background: transparent;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    border-radius: dt.$radius-sm;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+        border-color: rgba(var(--bs-primary-rgb), 0.6);
+        color: var(--bs-emphasis-color);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+
+    &:disabled {
+        opacity: 0.35;
+        cursor: default;
+    }
+}
+
 // Its own control now, rather than the whole head being one big button — that
-// is what kept the name from ever becoming editable.
+// is what kept the name from ever becoming editable. Its auto margin only
+// applies when the order buttons are not there to take it.
 .collapse {
     margin-left: auto;
     align-self: center;
