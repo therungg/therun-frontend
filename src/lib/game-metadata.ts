@@ -25,4 +25,9 @@ export const EMPTY_GAME_METADATA: GameMetadata = {
     primaryTiming: null,
     hideRealTime: false,
     hideGameTime: false,
+    // null, not a value: a failed metadata read must not be mistaken for a
+    // board that has stated its defaults, or the setup matrix would draw every
+    // category as deviating from a default nobody set.
+    sortAscending: null,
+    showMilliseconds: null,
 };
