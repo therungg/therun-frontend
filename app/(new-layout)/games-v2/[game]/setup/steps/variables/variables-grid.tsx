@@ -857,10 +857,20 @@ function VariablePalette({
                                     {/* Where unmatched runs land — per
                                         category by nature, so a column beside
                                         the options rather than a value shared
-                                        across the board. */}
+                                        across the board.
+
+                                        Named with the group's own word. "Runs
+                                        that don't say" left the reader to
+                                        supply the missing half of the sentence
+                                        — don't say WHAT — and the only place
+                                        that ever answered it was a tooltip on
+                                        a marker that no longer exists. */}
                                     {role === 'subcategory' && (
-                                        <th className={styles.defaultHead}>
-                                            Runs that don&rsquo;t say
+                                        <th
+                                            className={styles.defaultHead}
+                                            title={`A run submitted without a ${group.name} goes to the subcategory picked here.`}
+                                        >
+                                            No {group.name} given
                                         </th>
                                     )}
                                 </tr>
@@ -961,7 +971,7 @@ function VariablePalette({
                                                                 ''
                                                             }
                                                             disabled={busy}
-                                                            aria-label={`Default option for ${c.display}`}
+                                                            aria-label={`On ${c.display}, a run with no ${group.name} goes to`}
                                                             onChange={(e) =>
                                                                 onDefault(
                                                                     c.id,
@@ -1019,6 +1029,17 @@ function VariablePalette({
                         not on it · click a column header to rename an option or
                         change its accepted spellings
                     </p>
+
+                    {/* The last column's whole meaning, in one sentence, next
+                        to the column. Not every runner states a Platform, and
+                        a run that doesn't still has to appear somewhere. */}
+                    {role === 'subcategory' && (
+                        <p className={styles.legend}>
+                            Runners don&rsquo;t always say which {group.name}{' '}
+                            they used. Those runs go to the subcategory named in
+                            the last column, per category.
+                        </p>
+                    )}
 
                     <div className={styles.paletteFoot}>
                         <button
@@ -1287,7 +1308,7 @@ function AddVariableForm({
             <p className={styles.addNote}>
                 {role === 'subcategory'
                     ? options.length > 1
-                        ? `Every featured category is multiplied by ${options.length}. Each one splits into ${options.length} subcategories with their own records; runs that do not say land in ${options[0]}.`
+                        ? `Every featured category is multiplied by ${options.length}. Each one splits into ${options.length} subcategories with their own records. A run that doesn't say which ${name.trim() || 'option'} it used goes to ${options[0]}.`
                         : 'A subcategory group needs at least two options to split anything.'
                     : `Added to all ${categoryCount} featured ${
                           categoryCount === 1 ? 'category' : 'categories'
