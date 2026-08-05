@@ -578,16 +578,6 @@ function GameDetailsFormInner({
                 save();
             }}
         >
-            {/* Leads the form: linking IGDB fills the fields below in one move,
-                so the prefill path comes before the fields it fills. */}
-            <IgdbSourceCard
-                gameId={game.id}
-                igdbUrl={metadata.igdbUrl}
-                canRematch={canRematch}
-                resetRows={resetRows}
-                onReset={resetToIgdb}
-                disabled={busy}
-            />
             {sectioned ? (
                 <div className={styles.sectionedCol}>
                     <FormSection
@@ -622,6 +612,17 @@ function GameDetailsFormInner({
                     </div>
                 </div>
             )}
+            {/* The backend usually links the right IGDB entry already, so the
+                source card sits after the fields as a footnote — the place to
+                re-match or reset in the rare case it's wrong. */}
+            <IgdbSourceCard
+                gameId={game.id}
+                igdbUrl={metadata.igdbUrl}
+                canRematch={canRematch}
+                resetRows={resetRows}
+                onReset={resetToIgdb}
+                disabled={busy}
+            />
             <InlineError>{error}</InlineError>
             {!hideAction && (
                 <button
