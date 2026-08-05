@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from '~src/components/link';
 import { buildBoardHref } from '~src/lib/board-url';
 import type { GameModerator } from '../../../../types/board-claims.types';
+import type { PublicModLogPage } from '../../../../types/moderation.types';
 import type { ClaimCtaState } from './claim/claim-cta';
 import { BoardNavProvider, useBoardNavState } from './filters/use-board-nav';
 import styles from './game-page.module.scss';
@@ -14,6 +15,7 @@ import mastheadStyles from './header/masthead.module.scss';
 import { formatSubcategoryKey, type LabelVariableDef } from './labels';
 import { LeaderboardPager } from './leaderboard/leaderboard-pager';
 import { LiveStrip } from './leaderboard/live-strip';
+import { ModerationLogView } from './leaderboard/moderation/moderation-log-view';
 import { RulesBody } from './rules/rules-panel';
 import { Sidebar } from './sidebar/sidebar';
 import type { GamePageData } from './types';
@@ -31,6 +33,10 @@ interface Props {
     canSiteBan?: boolean;
     claim?: ClaimCtaState | null;
     moderators?: GameModerator[];
+    /** 'moderation' -> render the public Moderation tab instead of the board. */
+    view?: 'board' | 'moderation';
+    /** First page of the public mod-log, fetched only when `view === 'moderation'`. */
+    initialModLog?: PublicModLogPage | null;
 }
 
 export function GamePage({
@@ -40,6 +46,8 @@ export function GamePage({
     canSiteBan = false,
     claim,
     moderators,
+    view = 'board',
+    initialModLog,
 }: Props) {
     const variableKeys = useMemo(
         () => data.variables.map((v) => v.nameNormalized),
@@ -133,6 +141,7 @@ export function GamePage({
                     rulesOpen={rulesOpen}
                     onToggleRules={() => setRulesOpen((o) => !o)}
                     onOpenHistory={() => setHistoryOpen(true)}
+                    view={view}
                 />
                 {rulesOpen &&
                     (data.selectedCategory.rules?.trim() ||
@@ -167,52 +176,85 @@ export function GamePage({
                         // regardless, so going inert is harmless.
                         inert={boardNav.isPending}
                     >
-                        <LiveStrip
-                            gameDisplay={data.game.display}
-                            categoryDisplay={data.selectedCategory.display}
-                        />
-                        {data.invalidCombination ? (
-                            <InvalidCombinationNotice
+                        {view === 'moderation' ? (
+                            <ModerationLogView
+                                gameId={data.game.id}
                                 gameSlug={data.game.name}
-                                categorySlug={data.selectedCategory.name}
-                                suggestions={
-                                    data.invalidCombination.validCombinations
+                                categories={data.categories}
+                                initial={
+                                    initialModLog ?? {
+                                        items: [],
+                                        total: 0,
+                                        limit: 25,
+                                        offset: 0,
+                                        hasMore: false,
+                                    }
                                 }
-                                defs={data.variables}
                             />
                         ) : (
-                            <LeaderboardPager
-                                key={`${data.selectedCategory.id}|${subcategoryKey}|${JSON.stringify(data.activeFilters.varFilters)}|${data.activeFilters.combined}|${data.activeFilters.verified}`}
-                                initial={data.leaderboard}
-                                query={{
-                                    gameSlug: data.game.name,
-                                    categorySlug: data.selectedCategory.name,
-                                    timing: data.selectedCategory.primaryTiming,
-                                    subcategoryValues:
-                                        data.activeFilters.subcategoryValues,
-                                    combined: data.activeFilters.combined,
-                                    varFilters: data.activeFilters.varFilters,
-                                    verified: data.activeFilters.verified,
-                                    pageSize: data.activeFilters.pageSize,
-                                }}
-                                sessionUsername={data.sessionUsername}
-                                canManage={canManageRuns}
-                                canSiteBan={canSiteBan}
-                                gameSlug={data.game.name}
-                                variableKeys={variableKeys}
-                                primaryTiming={
-                                    data.selectedCategory.primaryTiming
-                                }
-                                filtersActive={filtersActive}
-                                showMilliseconds={showMilliseconds}
-                                categorySlug={data.selectedCategory.name}
-                                subcategoryKey={subcategoryKey}
-                                subcategoryDefKeys={subcategoryDefKeys}
-                                variableDefs={data.variables}
-                                selectedVarFilters={
-                                    data.activeFilters.varFilters
-                                }
-                            />
+                            <>
+                                <LiveStrip
+                                    gameDisplay={data.game.display}
+                                    categoryDisplay={
+                                        data.selectedCategory.display
+                                    }
+                                />
+                                {data.invalidCombination ? (
+                                    <InvalidCombinationNotice
+                                        gameSlug={data.game.name}
+                                        categorySlug={
+                                            data.selectedCategory.name
+                                        }
+                                        suggestions={
+                                            data.invalidCombination
+                                                .validCombinations
+                                        }
+                                        defs={data.variables}
+                                    />
+                                ) : (
+                                    <LeaderboardPager
+                                        key={`${data.selectedCategory.id}|${subcategoryKey}|${JSON.stringify(data.activeFilters.varFilters)}|${data.activeFilters.combined}|${data.activeFilters.verified}`}
+                                        initial={data.leaderboard}
+                                        query={{
+                                            gameSlug: data.game.name,
+                                            categorySlug:
+                                                data.selectedCategory.name,
+                                            timing: data.selectedCategory
+                                                .primaryTiming,
+                                            subcategoryValues:
+                                                data.activeFilters
+                                                    .subcategoryValues,
+                                            combined:
+                                                data.activeFilters.combined,
+                                            varFilters:
+                                                data.activeFilters.varFilters,
+                                            verified:
+                                                data.activeFilters.verified,
+                                            pageSize:
+                                                data.activeFilters.pageSize,
+                                        }}
+                                        sessionUsername={data.sessionUsername}
+                                        canManage={canManageRuns}
+                                        canSiteBan={canSiteBan}
+                                        gameSlug={data.game.name}
+                                        variableKeys={variableKeys}
+                                        primaryTiming={
+                                            data.selectedCategory.primaryTiming
+                                        }
+                                        filtersActive={filtersActive}
+                                        showMilliseconds={showMilliseconds}
+                                        categorySlug={
+                                            data.selectedCategory.name
+                                        }
+                                        subcategoryKey={subcategoryKey}
+                                        subcategoryDefKeys={subcategoryDefKeys}
+                                        variableDefs={data.variables}
+                                        selectedVarFilters={
+                                            data.activeFilters.varFilters
+                                        }
+                                    />
+                                )}
+                            </>
                         )}
                     </div>
                     <aside className={styles.rail}>

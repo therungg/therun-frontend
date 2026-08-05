@@ -1,6 +1,7 @@
 import { updateTag } from 'next/cache';
 import { resolveCategory } from '~src/lib/games-v1';
 import type { AffectedLeaderboard } from '../../../types/moderation.types';
+import { modLogTag } from './public-mod-log';
 
 /**
  * Invalidate the Next.js `'use cache'` leaderboard tags for the boards a
@@ -43,6 +44,10 @@ export async function revalidateAffectedBoards(
     } catch {
         // Best-effort cache invalidation; the TTL will catch up regardless.
     }
+    // Every mod verb that touches a board also writes a `logs` row, so the
+    // public mod-log view must invalidate alongside the boards it affected —
+    // read-your-writes applies to the log the same as the board itself.
+    updateTag(modLogTag(gameId));
 }
 
 // Run/manual detail pages cache under run:{id} / manual-time:{id} (minutes profile).

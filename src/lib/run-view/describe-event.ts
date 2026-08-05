@@ -4,6 +4,9 @@ export function describeEvent(e: HistoryEvent): string {
     if (e.type === 'verdict') {
         if (e.action.includes('unreject')) return 'Run reinstated';
         if (e.action.includes('reject')) return 'Run rejected';
+        // Checked before the plain 'verif' match below — "unverify" contains
+        // "verif" as a substring, so order matters here.
+        if (e.action.includes('unverif')) return 'Run unverified';
         if (e.action.includes('verif')) return 'Run verified';
         return 'Verdict applied';
     }

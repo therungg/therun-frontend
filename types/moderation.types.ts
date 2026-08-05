@@ -615,3 +615,37 @@ export interface RunProvenance {
 export interface MarkAllReadResult {
     read: number;
 }
+
+// ── §F Public per-game moderation log ────────────────────────────────────────
+// GET /mod/v1/leaderboards/games/{gameId}/mod-log — no auth required. Backend
+// branch board-mod-unified-log. `action` is a growing deny-list feed, not a
+// closed enum — unknown values must render a generic fallback label rather
+// than crash (see src/lib/moderation/describe-log-action.ts).
+export interface PublicModLogEntry {
+    id: number;
+    action: string;
+    entity: string;
+    target: string | null;
+    /** Set when `entity === 'finished_run'`. */
+    runId: number | null;
+    at: string; // ISO-8601 UTC
+    actor: { userId: number; username: string };
+    subject: {
+        userId: number | null;
+        username: string | null;
+        guestName: string | null;
+    } | null;
+    gameId: number | null;
+    categoryId: number | null;
+    reason: string | null;
+    before: Record<string, unknown> | null;
+    after: Record<string, unknown> | null;
+}
+
+export interface PublicModLogPage {
+    items: PublicModLogEntry[];
+    total: number;
+    limit: number;
+    offset: number;
+    hasMore: boolean;
+}

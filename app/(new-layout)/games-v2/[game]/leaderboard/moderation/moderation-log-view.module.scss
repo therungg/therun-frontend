@@ -1,0 +1,171 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/board' as board;
+
+.wrap {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+}
+
+.filters {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+}
+
+.groupPills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs;
+}
+
+.pillBtn {
+    @include board.control-pill;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+}
+
+.pillBtnOn {
+    @include board.control-pill-active;
+}
+
+.select {
+    @include board.board-input-rules;
+    font-size: dt.$font-size-sm;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+}
+
+.total {
+    margin-left: auto;
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.empty {
+    @include board.board-empty;
+}
+
+.log {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.row {
+    display: flex;
+    gap: dt.$spacing-lg;
+    padding: dt.$spacing-md 0;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.25);
+
+    &:first-child {
+        padding-top: 0;
+    }
+}
+
+.when {
+    flex-shrink: 0;
+    width: 8.5rem;
+    display: flex;
+    flex-direction: column;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+
+    b {
+        color: var(--bs-emphasis-color);
+        font-weight: 600;
+    }
+}
+
+.main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+}
+
+.head {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+}
+
+.pill {
+    @include board.board-pill;
+}
+
+.pill-ok {
+    @include board.board-pill(dt.$accent-green);
+}
+
+.pill-danger {
+    @include board.board-pill(dt.$accent-red);
+}
+
+.pill-warn {
+    @include board.board-pill(dt.$accent-amber);
+}
+
+.pill-mute {
+    @include board.board-pill;
+}
+
+.what {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
+
+    a {
+        font-weight: 600;
+        color: inherit;
+
+        &:hover {
+            color: var(--bs-primary);
+        }
+    }
+}
+
+.onBoard {
+    color: var(--bs-secondary-color);
+}
+
+.reason {
+    font-size: dt.$font-size-sm;
+    font-style: italic;
+    color: var(--bs-secondary-color);
+}
+
+.by {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+}
+
+.errorNote {
+    @include board.board-error-alert;
+}
+
+.retry {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.showMoreBar {
+    display: flex;
+    justify-content: center;
+    padding: dt.$spacing-md 0;
+}
+
+.showMoreBtn {
+    @include board.control-pill;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+}

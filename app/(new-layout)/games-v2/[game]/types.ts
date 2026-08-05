@@ -18,6 +18,8 @@ export interface GamePageSearchParams {
     verified?: string;
     page?: string;
     pageSize?: string;
+    /** 'moderation' -> the board's public Moderation tab (see leaderboard/moderation/). */
+    view?: string;
     [key: string]: string | undefined;
 }
 

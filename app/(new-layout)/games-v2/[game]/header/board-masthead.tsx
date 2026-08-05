@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Link from '~src/components/link';
+import { buildBoardHref } from '~src/lib/board-url';
 import type { ClaimCtaState } from '../claim/claim-cta';
 import { FilterBar } from '../filters/filter-bar';
 import { RulesPanel } from '../rules/rules-panel';
@@ -24,6 +26,8 @@ interface Props {
     rulesOpen: boolean;
     onToggleRules: () => void;
     onOpenHistory: () => void;
+    /** 'moderation' -> the Board/Moderation tab reads as on the Moderation side. */
+    view?: 'board' | 'moderation';
 }
 
 export function BoardMasthead({
@@ -36,6 +40,7 @@ export function BoardMasthead({
     rulesOpen,
     onToggleRules,
     onOpenHistory,
+    view = 'board',
 }: Props) {
     const category = data.selectedCategory;
     const suffix = effectiveSubcategoryLabel(
@@ -118,6 +123,46 @@ export function BoardMasthead({
                     />
                 </div>
 
+                {/* Board / Moderation — a view switch, not a route: the
+                    public mod-log tab reuses this same board page (see
+                    game-page.tsx's `view` prop). Always shown once there's a
+                    real board, since the log is public regardless of who's
+                    looking. */}
+                <div className={styles.plateSection} inert={stuck}>
+                    <nav className={styles.viewTabs} aria-label="Board views">
+                        <Link
+                            href={buildBoardHref(data.game.name, {
+                                categorySlug: category.name,
+                                subcategoryKey,
+                            })}
+                            className={
+                                view === 'board'
+                                    ? styles.viewTabOn
+                                    : styles.viewTab
+                            }
+                            aria-current={view === 'board' ? 'page' : undefined}
+                        >
+                            Board
+                        </Link>
+                        <Link
+                            href={buildBoardHref(data.game.name, {
+                                categorySlug: category.name,
+                                subcategoryKey,
+                                view: 'moderation',
+                            })}
+                            className={
+                                view === 'moderation'
+                                    ? styles.viewTabOn
+                                    : styles.viewTab
+                            }
+                            aria-current={
+                                view === 'moderation' ? 'page' : undefined
+                            }
+                        >
+                            Moderation
+                        </Link>
+                    </nav>
+                </div>
                 {/* Category rail / filter tier / rules toggle — each its own
                     hairline-divided section of the same plate, not a second
                     stacked card.

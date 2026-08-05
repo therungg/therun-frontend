@@ -95,3 +95,20 @@
     @include board.board-eyebrow;
     padding: dt.$spacing-xs dt.$spacing-md;
 }
+
+// ============================================================
+// Provenance cue — a quiet marker for rows with public moderation
+// history (mocks fig. 1's "prov" button). Opens the same read-only
+// HistoryDialog the "Run history" menu item does; not gated by
+// `canManage` since the history it opens is public either way.
+// ============================================================
+.provMarker {
+    @include board.control-pill;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    padding: dt.$spacing-xs;
+    color: dt.$accent-amber;
+
+    @media (pointer: coarse) {
+        padding: dt.$spacing-lg;
+    }
+}
