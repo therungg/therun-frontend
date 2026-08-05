@@ -18,7 +18,7 @@ interface Props {
 }
 
 /**
- * The emblem shown next to a category on the board.
+ * The icon shown next to a category on the board.
  *
  * The only per-category field with nothing to inherit and no sensible column —
  * an image cell in a 30-row matrix is noise. It gets a pane instead, so the
@@ -52,8 +52,8 @@ export function EmblemPanel({ gameSlug, gameId, category }: Props) {
             }
             toast.success(
                 next
-                    ? `Emblem set for ${category.display}.`
-                    : `Emblem removed from ${category.display}.`,
+                    ? `Icon set for ${category.display}.`
+                    : `Icon removed from ${category.display}.`,
             );
             router.refresh();
         });

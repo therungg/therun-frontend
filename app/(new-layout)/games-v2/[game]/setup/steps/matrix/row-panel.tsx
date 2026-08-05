@@ -8,7 +8,7 @@ import { RulesPanel } from './rules-panel';
 
 export const PANES = [
     { id: 'rules', label: 'Rules' },
-    { id: 'emblem', label: 'Emblem' },
+    { id: 'emblem', label: 'Icon' },
 ] as const;
 
 export type PaneId = (typeof PANES)[number]['id'];

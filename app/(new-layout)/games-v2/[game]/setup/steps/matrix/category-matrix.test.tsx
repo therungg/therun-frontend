@@ -193,7 +193,7 @@ describe('CategoryMatrix', () => {
             screen.getByRole('button', { name: 'More settings for Any%' }),
         );
         // The panes are tabs, not screens: the matrix is still rendered.
-        fireEvent.click(screen.getByRole('tab', { name: 'Emblem' }));
+        fireEvent.click(screen.getByRole('tab', { name: 'Icon' }));
         expect(screen.getByText('Choose image')).toBeTruthy();
         expect(screen.getByLabelText('Timing for 16 Star')).toBeTruthy();
     });

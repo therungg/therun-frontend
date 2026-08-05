@@ -188,6 +188,7 @@ export function BoardMasthead({
                     coverUrl={data.gameMeta.coverUrl ?? data.game.image ?? null}
                     gameDisplay={data.game.display}
                     boardName={boardName}
+                    categoryIconUrl={category.imageUrl}
                     onOpenHistory={onOpenHistory}
                     categories={data.categories}
                     groups={data.groups}
