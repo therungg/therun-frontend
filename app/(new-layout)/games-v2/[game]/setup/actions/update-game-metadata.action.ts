@@ -26,6 +26,11 @@ interface Input {
     emulatorPolicy?: 'allowed' | 'banned' | null;
     hideRealTime?: boolean;
     hideGameTime?: boolean;
+    /** Board defaults for ranking direction and precision. `null` states no
+     *  default at all, which is why these are nullable and the per-category
+     *  twins are not. */
+    sortAscending?: boolean | null;
+    showMilliseconds?: boolean | null;
 }
 
 export async function updateGameMetadataAction(
@@ -115,6 +120,10 @@ export async function updateGameMetadataAction(
         body.hideRealTime = input.hideRealTime;
     if (input.hideGameTime !== undefined)
         body.hideGameTime = input.hideGameTime;
+    if (input.sortAscending !== undefined)
+        body.sortAscending = input.sortAscending;
+    if (input.showMilliseconds !== undefined)
+        body.showMilliseconds = input.showMilliseconds;
 
     if (Object.keys(body).length === 0) {
         return { result: { updated: false } };

@@ -208,6 +208,22 @@ describe('CategoryMatrix', () => {
         expect(rta.disabled).toBe(true);
     });
 
+    it('puts the board defaults in the same columns the cells are measured against', () => {
+        renderMatrix();
+        // Row zero, not a caption: the default sits in the Timing column, so
+        // the comparison with the cells below is vertical.
+        const boardTiming = screen.getByLabelText(
+            'Board default timing',
+        ) as HTMLSelectElement;
+        expect(boardTiming.value).toBe('rt');
+        expect(
+            screen.getByLabelText('Board default ranking direction'),
+        ).toBeTruthy();
+        expect(
+            screen.getByLabelText('Board default minimum time'),
+        ).toBeTruthy();
+    });
+
     it('previews a bulk apply instead of writing immediately', async () => {
         renderMatrix();
         fireEvent.click(screen.getByLabelText('Select all categories'));

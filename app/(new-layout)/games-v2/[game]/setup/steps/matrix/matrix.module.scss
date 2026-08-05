@@ -28,46 +28,52 @@
     @include board.board-section-count;
 }
 
-// ---- Board defaults caption ---------------------------------
-// The values every cell below is measured against. Owned by step 1, so this is
-// a read-only caption with a link out, not a second edit surface.
+// ---- Board defaults -----------------------------------------
+// Row zero of the grid, not a caption above it: every cell below is a
+// deviation from these values, so they sit in the columns they are compared
+// against and the comparison costs the reader nothing. Editable in place —
+// they used to be read-only with a link back to step 1, which meant spotting a
+// wrong default here cost a round trip and your place in the list.
 
-.defaultsStrip {
-    display: flex;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: dt.$spacing-xs;
-    margin: 0 0 dt.$spacing-lg;
-    padding: dt.$spacing-sm dt.$spacing-md;
-    border-radius: dt.$radius-md;
-    background: rgba(var(--bs-secondary-bg-rgb), 0.4);
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.3);
-    font-size: dt.$font-size-sm;
-}
-
-.defaultsLabel {
-    @include board.board-eyebrow;
-}
-
-.defaultsValue {
-    color: var(--bs-emphasis-color);
-
-    & + &::before {
-        content: '·';
-        margin: 0 dt.$spacing-xs;
-        color: var(--bs-tertiary-color);
-        font-weight: 400;
+.defaultsRow {
+    td {
+        border-bottom: 2px solid rgba(var(--bs-border-color-rgb), 0.5);
+        padding-bottom: dt.$spacing-sm;
+        background: rgba(var(--bs-secondary-bg-rgb), 0.35);
     }
 }
 
-.defaultsUnset {
-    color: var(--bs-secondary-color);
-    font-style: italic;
+.defaultsName {
+    @include board.board-eyebrow;
+    white-space: nowrap;
 }
 
-.defaultsChange {
-    margin-left: auto;
-    @include board.board-quiet-link;
+// Deliberately drawn like the cells below rather than like a form: this is the
+// same kind of control doing the same kind of job, one scope up.
+.defaultsControl {
+    font: inherit;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    background: transparent;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.45);
+    border-radius: dt.$radius-sm;
+    padding: 0.15rem dt.$spacing-xs;
+    max-width: 11rem;
+    transition: border-color dt.$transition-fast;
+
+    &:hover:not(:disabled) {
+        border-color: rgba(var(--bs-border-color-rgb), 0.8);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
 }
 
 // ---- Grid ---------------------------------------------------
