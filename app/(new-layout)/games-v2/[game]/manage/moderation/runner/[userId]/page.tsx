@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { listCategoryVariables } from '~src/lib/leaderboard-variables';
+import { listAnonymizeRules } from '~src/lib/moderation/anonymize';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { listManualTimes } from '~src/lib/moderation/manual-times';
 import {
@@ -14,6 +15,7 @@ import { getPublicModLog } from '~src/lib/moderation/public-mod-log';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata from '~src/utils/metadata';
 import type {
+    AnonymizeRuleWithNames,
     GameExclusionRuleRow,
     ManualTimeRow,
     PublicModLogEntry,
@@ -64,38 +66,53 @@ export default async function RunnerPage({ params, searchParams }: Props) {
     // Every feed degrades to empty rather than failing the page — a runner
     // with zero eligible runs can still be banned, have manual times, or
     // have history worth showing.
-    const [rows, manualTimes, rules, modLog, resolvedCats, chrome] =
-        await Promise.all([
-            getUserEligibleRuns(session.id, game.id, userId).catch(
-                () => [] as UserEligibleRunRow[],
-            ),
-            listManualTimes(session.id, game.id, { userId }).catch(
-                () => [] as ManualTimeRow[],
-            ),
-            listExclusionRules(session.id, game.id).catch(
-                () => [] as GameExclusionRuleRow[],
-            ),
-            // Reuses workstream F's public per-game mod log, filtered to
-            // this runner via targetUserId — this runner's slice of the
-            // same feed the board's public "Moderation" tab reads, not a
-            // mod-only derivation.
-            getPublicModLog({
-                gameId: game.id,
-                targetUserId: userId,
-                limit: RUNNER_LOG_LIMIT,
-            }).catch(
-                () =>
-                    ({
-                        items: [] as PublicModLogEntry[],
-                        total: 0,
-                        limit: RUNNER_LOG_LIMIT,
-                        offset: 0,
-                        hasMore: false,
-                    }) as const,
-            ),
-            resolveCategory(game.id),
-            loadConsoleChrome(session, game),
-        ]);
+    const [
+        rows,
+        manualTimes,
+        rules,
+        anonymizeRules,
+        modLog,
+        resolvedCats,
+        chrome,
+    ] = await Promise.all([
+        getUserEligibleRuns(session.id, game.id, userId).catch(
+            () => [] as UserEligibleRunRow[],
+        ),
+        listManualTimes(session.id, game.id, { userId }).catch(
+            () => [] as ManualTimeRow[],
+        ),
+        listExclusionRules(session.id, game.id).catch(
+            () => [] as GameExclusionRuleRow[],
+        ),
+        // Anonymize rules for this runner — live and lifted, this game's
+        // plus any site-wide one, so the Identity card can show current
+        // state per scope AND the audit trail behind it.
+        listAnonymizeRules(session.id, game.id, {
+            targetUserId: userId,
+            includeGlobal: true,
+            includeLifted: true,
+        }).catch(() => [] as AnonymizeRuleWithNames[]),
+        // Reuses workstream F's public per-game mod log, filtered to
+        // this runner via targetUserId — this runner's slice of the
+        // same feed the board's public "Moderation" tab reads, not a
+        // mod-only derivation.
+        getPublicModLog({
+            gameId: game.id,
+            targetUserId: userId,
+            limit: RUNNER_LOG_LIMIT,
+        }).catch(
+            () =>
+                ({
+                    items: [] as PublicModLogEntry[],
+                    total: 0,
+                    limit: RUNNER_LOG_LIMIT,
+                    offset: 0,
+                    hasMore: false,
+                }) as const,
+        ),
+        resolveCategory(game.id),
+        loadConsoleChrome(session, game),
+    ]);
 
     const combos = buildCombos(rows, manualTimes, resolvedCats.categories);
     const banState = buildBanState(rules, userId);
@@ -158,6 +175,7 @@ export default async function RunnerPage({ params, searchParams }: Props) {
                 canSiteBan={canSiteBan}
                 modLog={modLog.items}
                 modLogTotal={modLog.total}
+                anonymizeRules={anonymizeRules}
                 backHref={backTarget.href}
                 backLabel={backTarget.label}
             />

@@ -466,6 +466,100 @@ export interface ModActionsFilter {
     days?: number;
     limit?: number;
     offset?: number;
+    /** Added alongside the existing contract (board-mod-unified-log). */
+    categoryId?: number;
+    targetUserId?: number;
+}
+
+/**
+ * The structured `data` blob every unified-log writer puts on a `logs` row
+ * (backend `src/services/mod-log.ts`). `ModActionRow.data` is typed `unknown`
+ * because it is free-form per verb; this is the guaranteed subset, and the
+ * mod-feed adapter narrows to it defensively.
+ */
+export interface ModActionLogData {
+    gameId?: number | null;
+    categoryId?: number | null;
+    subject?: {
+        userId?: number | null;
+        username?: string | null;
+        guestName?: string | null;
+    } | null;
+    before?: Record<string, unknown> | null;
+    after?: Record<string, unknown> | null;
+}
+
+// ── Anonymize (workstream C) ─────────────────────────────────────────────────
+// Game-mod surface:  POST   /mod/v1/leaderboards/games/{gameId}/anonymize
+//                    GET    /mod/v1/leaderboards/games/{gameId}/anonymize-rules
+//                    DELETE /mod/v1/leaderboards/games/{gameId}/anonymize-rules/{ruleId}  (ADMIN)
+// Admin surface:     GET|POST|DELETE /mod/admin/anonymize[/{ruleId}]  ({ result } envelope)
+//
+// Anonymize is permanent by design: the runs and ranks stay exactly where
+// they are, only the public identity is replaced by a stable placeholder.
+// Lifting is the admin-only safety valve.
+
+export type AnonymizeType = 'run' | 'user';
+/** Derived server-side from the rule's own gameId/categoryId columns. */
+export type AnonymizeScope = 'global' | 'game' | 'category' | 'run';
+
+export interface AnonymizeRule {
+    ruleId: number;
+    type: AnonymizeType;
+    /** userId for `type: 'user'`, runId for `type: 'run'`. */
+    targetId: number;
+    /** NULL on a `type: 'run'` rule and on a GLOBAL user rule. */
+    gameId: number | null;
+    categoryId: number | null;
+    /** Stable placeholder number — the N in "Anonymous runner #N". */
+    anonId: number;
+    /** The placeholder as rendered publicly. */
+    displayName: string;
+    scope: AnonymizeScope;
+    reason: string;
+    createdBy: number;
+    createdAt: string;
+    liftedAt: string | null;
+    liftedBy: number | null;
+    liftReason: string | null;
+}
+
+/**
+ * What the mod-facing GETs return: the same rule with the REAL identities
+ * resolved. Mods (and admins) must see who is masked — they need it to
+ * enforce. Never render these on a public surface.
+ */
+export interface AnonymizeRuleWithNames extends AnonymizeRule {
+    targetDisplayName: string | null;
+    createdByName: string;
+    liftedByName: string | null;
+}
+
+export interface CreateAnonymizeInput {
+    type: AnonymizeType;
+    targetId: number;
+    /** Only meaningful for `type: 'user'` — narrows the rule to one board. */
+    categoryId?: number | null;
+    /** Min 10 characters, enforced client-side and by the backend. */
+    reason: string;
+}
+
+/** Admin-only extra: `gameId: null` on a user rule is what makes it GLOBAL. */
+export interface CreateAdminAnonymizeInput extends CreateAnonymizeInput {
+    gameId?: number | null;
+}
+
+export interface CreateAnonymizeResult {
+    rule: AnonymizeRule;
+    /** True when an identical live rule already existed — a no-op, not an error. */
+    alreadyExists: boolean;
+}
+
+export interface AnonymizeRuleQuery {
+    includeLifted?: boolean;
+    /** Game GET only — also returns site-wide rules that mask this game. */
+    includeGlobal?: boolean;
+    targetUserId?: number;
 }
 
 // ── §E Self-service ──────────────────────────────────────────────────────────
@@ -632,6 +726,25 @@ export interface MarkAllReadResult {
 // branch board-mod-unified-log. `action` is a growing deny-list feed, not a
 // closed enum — unknown values must render a generic fallback label rather
 // than crash (see src/lib/moderation/describe-log-action.ts).
+/**
+ * The runner an event was about. Identity is confined to this object so the
+ * backend's redaction pass can replace it wholesale.
+ *
+ * On the PUBLIC feed, an anonymized subject arrives already redacted:
+ * `userId`/`guestName` null, `username` = the stable placeholder, plus
+ * `anonymized: true` and `anonId`. On the MODERATOR feed (mod-actions, real
+ * identities) the frontend sets the same two fields itself, from the game's
+ * anonymize-rules, so a mod can see *that* a subject is publicly masked
+ * while still reading the real name — see `src/lib/moderation/mod-feed.ts`.
+ */
+export interface PublicModLogSubject {
+    userId: number | null;
+    username: string | null;
+    guestName: string | null;
+    anonymized?: boolean;
+    anonId?: number;
+}
+
 export interface PublicModLogEntry {
     id: number;
     action: string;
@@ -641,11 +754,7 @@ export interface PublicModLogEntry {
     runId: number | null;
     at: string; // ISO-8601 UTC
     actor: { userId: number; username: string };
-    subject: {
-        userId: number | null;
-        username: string | null;
-        guestName: string | null;
-    } | null;
+    subject: PublicModLogSubject | null;
     gameId: number | null;
     categoryId: number | null;
     reason: string | null;

@@ -42,6 +42,11 @@ const ACTION_LABELS: Record<string, DescribedLogAction> = {
     unban: { label: 'Ban lifted', severity: 'ok' },
     lift_ban: { label: 'Ban lifted', severity: 'ok' },
 
+    // Workstream C. Neutral, not destructive: the runs and ranks are
+    // untouched — only the public name changes.
+    anonymize_apply: { label: 'Identity hidden', severity: 'mute' },
+    anonymize_lift: { label: 'Identity restored', severity: 'ok' },
+
     mark_run: { label: 'Marked for later', severity: 'mute' },
     unmark_run: { label: 'Unmarked', severity: 'mute' },
 
@@ -70,8 +75,12 @@ export function describeLogAction(action: string): DescribedLogAction {
 
 /**
  * The log row's main sentence — "4 runs removed", "sanke_'s run moved", etc.
- * Kept intentionally plain (no redaction pass): the anonymize/redaction work
- * is workstream C; today's public feed shows real names, per design doc §F.
+ *
+ * Deliberately does no redaction of its own: the backend's read-time pass
+ * (workstream C) has already replaced `subject` wholesale with the stable
+ * placeholder before the public feed leaves the API, and the moderator feed is
+ * meant to carry the real name. `target` is the last-resort fallback and the
+ * backend nulls it on user-targeted rows for exactly that reason.
  */
 export function describeLogSubject(entry: PublicModLogEntry): string {
     const who =

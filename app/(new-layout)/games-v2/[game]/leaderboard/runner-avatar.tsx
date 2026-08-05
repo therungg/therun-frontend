@@ -8,6 +8,14 @@ interface Props {
     name: string;
     picture?: string | null;
     size?: 'xs' | 'sm' | 'md';
+    /**
+     * Anonymized runner (`entry.anonymized`). Renders the mock's dashed
+     * placeholder monogram instead of an image or initials, so the runner
+     * column keeps its rhythm rather than going ragged on the left edge.
+     * Never derives from the name — a real runner may be called "Anonymous
+     * runner #3".
+     */
+    anonymous?: boolean;
 }
 
 function initials(name: string): string {
@@ -16,7 +24,12 @@ function initials(name: string): string {
     return name.slice(0, 2);
 }
 
-export function RunnerAvatar({ name, picture, size = 'sm' }: Props) {
+export function RunnerAvatar({
+    name,
+    picture,
+    size = 'sm',
+    anonymous = false,
+}: Props) {
     // Stale Twitch CDN URLs 404; fall back to the monogram instead of a
     // broken-image glyph.
     const [imageFailed, setImageFailed] = useState(false);
@@ -26,6 +39,14 @@ export function RunnerAvatar({ name, picture, size = 'sm' }: Props) {
             : size === 'xs'
               ? styles.avatarXs
               : styles.avatar;
+
+    if (anonymous) {
+        return (
+            <span aria-hidden className={`${sizeClass} ${styles.avatarAnon}`}>
+                ?
+            </span>
+        );
+    }
 
     if (picture && !imageFailed) {
         return (

@@ -1,0 +1,69 @@
+@use '../../../styles/design-tokens' as dt;
+
+.scopes {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    margin: 0 0 dt.$spacing-md;
+    padding: 0;
+    border: 0;
+}
+
+.scope {
+    display: flex;
+    align-items: flex-start;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-sm;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-sm;
+    cursor: pointer;
+
+    &:has(input:checked) {
+        border-color: rgba(var(--bs-primary-rgb), 0.7);
+        background: rgba(var(--bs-primary-rgb), 0.06);
+    }
+
+    &:has(input:focus-visible) {
+        outline: 2px solid var(--bs-primary);
+        outline-offset: 2px;
+    }
+
+    input {
+        margin-top: 0.2rem;
+        flex: none;
+    }
+}
+
+// Disabled-with-reason, never hidden: the row stays, dimmed, and its blurb
+// says what is missing.
+.scopeDisabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.scopeText {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.scopeLabel {
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    color: var(--bs-body-color);
+}
+
+.scopeBlurb {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.permanent {
+    margin: 0 0 dt.$spacing-md;
+    padding: dt.$spacing-sm;
+    border-left: 3px solid rgba(var(--bs-warning-rgb), 0.8);
+    background: rgba(var(--bs-warning-rgb), 0.07);
+    font-size: dt.$font-size-xs;
+    color: var(--bs-body-color);
+}

@@ -152,6 +152,14 @@ export interface LeaderboardEntry {
     // absent on older backend deploys.
     picture?: string | null;
     country?: string | null;
+    // Set by the backend's public redaction pass (workstream C, anonymize)
+    // and ONLY on redacted rows: `runnerName` carries the stable placeholder
+    // ("Anonymous runner #N"), and `userId`/`picture`/`country` are nulled
+    // with `isGuest: false`. `runId` survives, so a mod's kebab still works.
+    //
+    // Style anonymous rows off THIS flag, never off the name string — a real
+    // runner may legitimately be called "Anonymous runner #3".
+    anonymized?: true;
 }
 
 export interface LeaderboardResponse {

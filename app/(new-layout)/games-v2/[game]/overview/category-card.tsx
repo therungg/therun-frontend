@@ -104,15 +104,26 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
                             >
                                 1
                             </span>
+                            {/* Same redaction contract as the board row: the
+                                entry arrives already masked, so the plaque
+                                drops the link and the flag and keeps the
+                                record. Keyed off the flag, never the name. */}
                             <RunnerAvatar
                                 name={wr.runnerName}
                                 picture={wr.picture}
                                 size="sm"
+                                anonymous={wr.anonymized}
                             />
                             <span className={styles.recordHolderName}>
-                                <UserLink username={wr.runnerName} />
+                                {wr.anonymized ? (
+                                    wr.runnerName
+                                ) : (
+                                    <UserLink username={wr.runnerName} />
+                                )}
                             </span>
-                            <CountryFlag country={wr.country} />
+                            {!wr.anonymized && (
+                                <CountryFlag country={wr.country} />
+                            )}
                             {wr.runDate && (
                                 <span
                                     className={styles.recordWhen}
@@ -162,10 +173,15 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
                                     name={p.runnerName}
                                     picture={p.picture}
                                     size="xs"
+                                    anonymous={p.anonymized}
                                 />
                             </span>
                             <span className={styles.podiumName}>
-                                <UserLink username={p.runnerName} />
+                                {p.anonymized ? (
+                                    p.runnerName
+                                ) : (
+                                    <UserLink username={p.runnerName} />
+                                )}
                             </span>
                             <span className={styles.podiumTime}>
                                 {formatRecord(p.time as number, false)}

@@ -31,6 +31,7 @@ import {
 } from '../shared/self-run-verdict';
 import { buildSubcategoryKey } from '../submit/subcategory-key';
 import { loadModBoardContextAction } from './actions/load-mod-board-context.action';
+import { HideIdentityDialog } from './hide-identity-dialog';
 import { entryToRosterRow } from './mod-row';
 import { HistoryDialog, ReasonDialog } from './row-action-dialogs';
 import styles from './row-actions-menu.module.scss';
@@ -51,9 +52,10 @@ interface Props {
 }
 
 type ModalKind = 'report' | 'appeal' | 'history' | null;
-type ModDialogKind = 'move' | 'adjust' | 'runner';
+type ModDialogKind = 'move' | 'adjust' | 'runner' | 'hide-identity';
 
 interface ModBoardContext {
+    gameDisplay: string;
     categories: ResolvedCategory[];
     variables: VariableRow[];
 }
@@ -137,6 +139,7 @@ export function RowActionsMenu({
                 return;
             }
             const ctx = {
+                gameDisplay: res.gameDisplay,
                 categories: res.categories,
                 variables: res.variables,
             };
@@ -404,6 +407,19 @@ export function RowActionsMenu({
                                     </Dropdown.Item>
                                 </>
                             )}
+                            {/* Anonymize (design doc §C). Offered for every
+                                row, including already-anonymized ones — a
+                                run-scoped mask can still be widened to the
+                                whole runner, and the dialog explains which
+                                scopes need an account. */}
+                            <Dropdown.Item
+                                as="button"
+                                type="button"
+                                className={styles.item}
+                                onClick={() => openModDialog('hide-identity')}
+                            >
+                                Hide identity…
+                            </Dropdown.Item>
                             <Dropdown.Item
                                 as="button"
                                 type="button"
@@ -449,6 +465,19 @@ export function RowActionsMenu({
                         subcategoryKey={entrySubcategoryKey}
                         timeMs={modTimeMs}
                         onMutated={onModMutated}
+                    />
+                    <HideIdentityDialog
+                        open={modDialog === 'hide-identity'}
+                        onClose={() => setModDialog(null)}
+                        onDone={onModMutated}
+                        gameSlug={gameSlug}
+                        gameDisplay={modCtx.gameDisplay}
+                        runnerName={entry.runnerName}
+                        runId={runId}
+                        userId={entry.userId ?? null}
+                        categoryId={modCategory.id}
+                        categoryDisplay={modCategory.display}
+                        subcategoryKey={entrySubcategoryKey}
                     />
                     {rosterRow.userId != null && (
                         <RunnerDialog
