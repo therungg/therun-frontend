@@ -189,7 +189,13 @@ export function ModerationLogView({
     );
 }
 
-function LogRow({
+/**
+ * One row of the unified public mod-log. Exported so other surfaces that
+ * show a slice of the same feed (the runner dossier's "this runner in the
+ * log" panel — workstream E) render it identically instead of re-deriving
+ * the verb-pill/subject/reason markup.
+ */
+export function LogRow({
     entry,
     gameSlug,
     categories,

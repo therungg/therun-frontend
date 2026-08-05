@@ -60,15 +60,26 @@ export function resolveRemoveMechanism(notify: boolean): 'reject' | 'exclude' {
 /**
  * Whether a verb has a true backend inverse — a real mutation that reverses
  * it, not a fabricated "undo" that just hides the toast. `approve` (verify)
- * has none: there is no un-verify/back-to-pending endpoint today (flagged in
- * the Backend handoff). `remove` is reversed by restoreRunsAction (include +
+ * is reversed by the `unverify` verdict action (verified → pending, design
+ * doc §D.2) — see UNDO_VERIFY_REASON and run-action-dialog.tsx's dedicated
+ * undo branch for `approve` (it does NOT go through restoreRunsAction; that
+ * would fire `unreject` at an already-verified run, which the backend
+ * silently no-ops). `remove` is reversed by restoreRunsAction (include +
  * unreject, whichever mechanism removal used). `restore` is reversed by
  * exclude. `ban` is reversed by deleting the exclusion rule it created — see
- * isBanUndoable for the extra condition that gates it.
+ * isBanUndoable for the extra condition that gates it. Every ModVerb now has
+ * a true inverse.
  */
-export function hasTrueInverse(verb: ModVerb): boolean {
-    return verb !== 'approve';
+export function hasTrueInverse(_verb: ModVerb): boolean {
+    return true;
 }
+
+/**
+ * Canned, non-editable reason sent when a moderator undoes a Verify from the
+ * undo toast — no reason prompt (the undo toasts never re-open a dialog),
+ * but the backend still requires `reason` (min 10 chars) on every verdict.
+ */
+export const UNDO_VERIFY_REASON = 'Undo of accidental verification';
 
 /**
  * A ban's undo is deleting the exclusion rule it created. If the rule

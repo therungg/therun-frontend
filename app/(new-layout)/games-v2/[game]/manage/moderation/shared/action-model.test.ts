@@ -7,8 +7,8 @@ import {
 } from './action-model';
 
 describe('hasTrueInverse', () => {
-    it('is false for approve — no un-verify/back-to-pending endpoint exists', () => {
-        expect(hasTrueInverse('approve')).toBe(false);
+    it('is true for approve — the unverify verdict action reverses it (design doc §D.2)', () => {
+        expect(hasTrueInverse('approve')).toBe(true);
     });
 
     it('is true for remove — restoreRunsAction (include + unreject) reverses it', () => {

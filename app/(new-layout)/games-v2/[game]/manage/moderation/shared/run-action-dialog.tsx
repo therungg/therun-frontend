@@ -21,6 +21,7 @@ import {
     type RunActionTarget,
     removeReasonMeta,
     resolveRemoveMechanism,
+    UNDO_VERIFY_REASON,
     undoReason,
 } from './action-model';
 import { excludeAction, previewExcludeAction } from './actions/exclude.action';
@@ -279,7 +280,23 @@ export function RunActionDialog({
                 if ('error' in res) return setError(res.error);
                 const n = res.result.affectedRunCount;
                 const message = `${VERB_TITLE[verb]} — ${n} run${n === 1 ? '' : 's'} updated.`;
-                if (hasTrueInverse(verb)) {
+                // Verify's inverse is `unverify` (verified → pending), not
+                // restoreRunsAction's include+unreject — unreject is a no-op
+                // against an already-verified run, so that generic undo path
+                // would silently do nothing here.
+                if (verb === 'approve') {
+                    fireUndoToast(
+                        message,
+                        () =>
+                            applyVerdictsAction(
+                                gameSlug,
+                                'unverify',
+                                runIds,
+                                UNDO_VERIFY_REASON,
+                            ),
+                        refreshAfterUndo,
+                    );
+                } else if (hasTrueInverse(verb)) {
                     fireUndoToast(
                         message,
                         () =>
@@ -454,6 +471,20 @@ export function RunActionDialog({
                         .
                     </p>
                 )}
+
+                {preview?.kind === 'verdict' &&
+                    ((preview.data.skippedRunCount ?? 0) > 0 ||
+                        (preview.data.notFoundRunCount ?? 0) > 0) && (
+                        <p className={styles.previewLoading}>
+                            {(preview.data.skippedRunCount ?? 0) > 0 &&
+                                `${preview.data.skippedRunCount} will be skipped (wrong state).`}
+                            {(preview.data.skippedRunCount ?? 0) > 0 &&
+                                (preview.data.notFoundRunCount ?? 0) > 0 &&
+                                ' '}
+                            {(preview.data.notFoundRunCount ?? 0) > 0 &&
+                                `${preview.data.notFoundRunCount} not found.`}
+                        </p>
+                    )}
 
                 {preview?.kind === 'verdict' &&
                     preview.data.sampleRuns.length > 0 && (
