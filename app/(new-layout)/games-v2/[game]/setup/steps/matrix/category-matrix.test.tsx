@@ -193,27 +193,33 @@ describe('CategoryMatrix', () => {
             screen.getByRole('button', { name: 'More settings for Any%' }),
         );
         // The panes are tabs, not screens: the matrix is still rendered.
-        fireEvent.click(screen.getByRole('tab', { name: 'Time columns' }));
-        expect(screen.getByLabelText('Timing for 16 Star')).toBeTruthy();
-        expect(screen.getByText('Real time (RTA)')).toBeTruthy();
         fireEvent.click(screen.getByRole('tab', { name: 'Emblem' }));
         expect(screen.getByText('Choose image')).toBeTruthy();
         expect(screen.getByLabelText('Timing for 16 Star')).toBeTruthy();
     });
 
-    it('will not let the ranking timing be hidden', () => {
-        // Any% ranks by RTA — hiding it would sort the board by a column
-        // nobody can see.
+    it('offers only the clock the category does not rank by', () => {
+        // Any% ranks by RTA, so its decision is about IGT; 16 Star ranks by
+        // IGT, so its is about RTA. The ranking clock is never offered —
+        // hiding it would sort a board by a column nobody can see.
         renderMatrix();
-        fireEvent.click(
-            screen.getByRole('button', { name: 'More settings for Any%' }),
+        expect(screen.getByLabelText('Show IGT for Any%')).toBeTruthy();
+        expect(screen.getByLabelText('Show RTA for 16 Star')).toBeTruthy();
+    });
+
+    it('writes the hide flag that belongs to the category own clock', async () => {
+        renderMatrix();
+        fireEvent.change(screen.getByLabelText('Show IGT for Any%'), {
+            target: { value: 'off' },
+        });
+        await waitFor(() =>
+            expect(bulkUpdateCategoriesAction).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    categoryIds: [10],
+                    fields: { hideGameTime: true },
+                }),
+            ),
         );
-        fireEvent.click(screen.getByRole('tab', { name: 'Time columns' }));
-        const boxes = screen.getAllByRole('checkbox');
-        const rta = boxes.find(
-            (b) => b.parentElement?.textContent?.includes('Real time') ?? false,
-        ) as HTMLInputElement;
-        expect(rta.disabled).toBe(true);
     });
 
     it('puts the board defaults in the same columns the cells are measured against', () => {

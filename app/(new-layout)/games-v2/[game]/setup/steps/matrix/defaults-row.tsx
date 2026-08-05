@@ -8,6 +8,9 @@ import {
     type BoardDefaults,
     categoriesNotOn,
     categoryMinMs,
+    otherTimeField,
+    otherTiming,
+    TIMING_LABEL,
 } from '~src/lib/setup/board-defaults';
 import { findGameMinPolicy } from '~src/lib/setup/game-minimum';
 import { formatTimeInput, parseTimeInput } from '~src/lib/time-input';
@@ -179,6 +182,10 @@ export function DefaultsRow({
     };
 
     const hasTemplate = (defaults.rulesTemplate ?? '').trim().length > 0;
+    // The clock the board does not rank by — the only one there is a decision
+    // about, since the ranking one can never be hidden.
+    const otherLabel =
+        TIMING_LABEL[otherTiming(defaults.primaryTiming ?? 'rt')];
 
     return (
         <>
@@ -215,6 +222,26 @@ export function DefaultsRow({
                         )}
                         <option value="rt">RTA</option>
                         <option value="gt">IGT</option>
+                    </select>
+                </td>
+
+                <td>
+                    <select
+                        className={styles.defaultsControl}
+                        value={defaults.showOtherTime ? 'on' : 'off'}
+                        disabled={isSaving}
+                        aria-label={`Board default show ${otherLabel}`}
+                        onChange={(e) =>
+                            save(
+                                otherTimeField(
+                                    defaults.primaryTiming ?? 'rt',
+                                    e.target.value === 'on',
+                                ),
+                            )
+                        }
+                    >
+                        <option value="on">Show {otherLabel}</option>
+                        <option value="off">Hide {otherLabel}</option>
                     </select>
                 </td>
 
