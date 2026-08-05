@@ -927,30 +927,38 @@ function VariablePalette({
                                                     ) ?? false);
                                                 return (
                                                     <td key={bucket.key}>
-                                                        <button
-                                                            type="button"
+                                                        {/* A checkbox, because
+                                                            a checkbox needs no
+                                                            key. These were a
+                                                            filled dot and an
+                                                            empty one, which
+                                                            needed a line of
+                                                            prose under the
+                                                            grid to say which
+                                                            was which — and a
+                                                            grid that has to be
+                                                            annotated to be
+                                                            read is a grid that
+                                                            does not read. */}
+                                                        <input
+                                                            type="checkbox"
                                                             className={`${styles.cell} ${
-                                                                on
-                                                                    ? styles.cellOn
-                                                                    : styles.cellOff
-                                                            } ${
                                                                 isPending
                                                                     ? styles.cellPending
                                                                     : ''
                                                             }`}
                                                             disabled={busy}
-                                                            aria-pressed={on}
+                                                            checked={on}
                                                             aria-label={`${bucket.label} on ${c.display}`}
-                                                            onClick={() =>
+                                                            onChange={(e) =>
                                                                 onToggle(
                                                                     c.id,
                                                                     bucket.key,
-                                                                    !on,
+                                                                    e.target
+                                                                        .checked,
                                                                 )
                                                             }
-                                                        >
-                                                            {on ? '●' : '○'}
-                                                        </button>
+                                                        />
                                                     </td>
                                                 );
                                             })}
@@ -1019,22 +1027,13 @@ function VariablePalette({
                         </table>
                     </div>
 
-                    {/* The two marks, named. They were a filled dot, a ringed
-                        dot and an empty dot with nothing anywhere saying which
-                        was which; the ring is gone, because the column beside
-                        the grid states the default in words. */}
-                    <p className={styles.legend}>
-                        <span className={styles.legendOn}>●</span> on this
-                        category · <span className={styles.legendOff}>○</span>{' '}
-                        not on it · click a column header to rename an option or
-                        change its accepted spellings
-                    </p>
-
-                    {/* The last column's whole meaning, in one sentence, next
-                        to the column. Not every runner states a Platform, and
-                        a run that doesn't still has to appear somewhere. */}
+                    {/* The one thing on this grid a reader cannot work out by
+                        looking at it: that runs arrive without a Platform at
+                        all. Everything else says what it is — a checkbox is
+                        checked or it is not, and a column header that edits its
+                        option is drawn as the button it is. */}
                     {role === 'subcategory' && (
-                        <p className={styles.legend}>
+                        <p className={styles.gridNote}>
                             Runners don&rsquo;t always say which {group.name}{' '}
                             they used. Those runs go to the subcategory named in
                             the last column, per category.

@@ -137,20 +137,23 @@ describe('VariablesGrid', () => {
         ).toBeTruthy();
     });
 
-    it('marks a cell on and off with two named marks', () => {
+    it('uses a checkbox, so nothing has to explain what the mark means', () => {
         renderGrid();
         // Emulator is on Any% only.
-        expect(
-            screen
-                .getByLabelText('Emulator on Any%')
-                .getAttribute('aria-pressed'),
-        ).toBe('true');
-        expect(
-            screen
-                .getByLabelText('Emulator on 120 Star')
-                .getAttribute('aria-pressed'),
-        ).toBe('false');
-        expect(screen.getByText(/on this category/)).toBeTruthy();
+        const on = screen.getByLabelText(
+            'Emulator on Any%',
+        ) as HTMLInputElement;
+        const off = screen.getByLabelText(
+            'Emulator on 120 Star',
+        ) as HTMLInputElement;
+        expect(on.type).toBe('checkbox');
+        expect(on.checked).toBe(true);
+        expect(off.checked).toBe(false);
+
+        // No legend: a grid that needs annotating to be read does not read.
+        expect(screen.queryByText(/on this category/)).toBeNull();
+        expect(screen.queryByText('●')).toBeNull();
+        expect(screen.queryByText('○')).toBeNull();
     });
 
     it('says what the conversion costs, not just where it goes', () => {

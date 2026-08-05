@@ -226,45 +226,30 @@
     }
 }
 
-// ---- Legend -------------------------------------------------
-// Two marks, named once. They were three — filled, ringed and empty — with
-// nothing anywhere saying which was which.
-
-.legend {
+// The one fact about this grid that cannot be seen by looking at it: runs
+// arrive with no option stated at all. Not a legend — nothing here explains a
+// mark, because no mark needs explaining.
+.gridNote {
     @include board.board-section-count;
     display: block;
     padding: dt.$spacing-sm dt.$spacing-lg 0;
     margin: 0;
 }
 
-.legendOn {
-    color: var(--bs-primary);
-}
-
-.legendOff {
-    color: var(--bs-tertiary-color);
-}
-
+// A real checkbox. It was a filled dot and an empty dot, which needed a line
+// of prose under the grid to say which was which — and a grid that has to be
+// annotated to be read is a grid that does not read. Nobody has ever needed a
+// legend for a checkbox.
 .cell {
-    font: inherit;
-    font-size: dt.$font-size-md;
-    line-height: 1;
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: dt.$radius-sm;
-    padding: dt.$spacing-xs dt.$spacing-sm;
+    width: 16px;
+    height: 16px;
+    margin: dt.$spacing-xs 0;
+    accent-color: var(--bs-primary);
     cursor: pointer;
-    transition: background-color dt.$transition-fast,
-        border-color dt.$transition-fast;
-
-    &:hover:not(:disabled) {
-        background: rgba(var(--bs-primary-rgb), 0.12);
-        border-color: rgba(var(--bs-primary-rgb), 0.35);
-    }
 
     &:focus-visible {
         outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
-        outline-offset: 1px;
+        outline-offset: 2px;
     }
 
     &:disabled {
@@ -273,19 +258,11 @@
     }
 }
 
-.cellOn {
-    color: var(--bs-primary);
-}
-
-.cellOff {
-    color: var(--bs-tertiary-color);
-}
-
-// Staged but not yet applied — reads as provisional against the solid states.
+// Staged but not yet applied — a ring around the box, so a grid mid-edit never
+// looks already-written.
 .cellPending {
-    border-color: rgba(var(--bs-primary-rgb), 0.55);
-    border-style: dashed;
-    background: rgba(var(--bs-primary-rgb), 0.08);
+    outline: 2px dashed rgba(var(--bs-primary-rgb), 0.7);
+    outline-offset: 2px;
 }
 
 // ---- Conversion ---------------------------------------------
@@ -356,6 +333,10 @@
 // matrix one zone up: the thing is its own affordance, and editing it never
 // costs you the grid.
 
+// Drawn as the button it is, at rest — the dotted underline used to appear
+// only on hover, so the only thing that said these headers were editable was a
+// line of prose under the grid. A header you can click should look like one
+// before you point at it.
 .optionButton {
     background: transparent;
     border: 0;
@@ -367,10 +348,27 @@
     display: inline-flex;
     align-items: center;
     gap: dt.$spacing-xs;
+    text-decoration: underline dotted;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(var(--bs-border-color-rgb), 0.8);
+
+    &::after {
+        content: '✎';
+        font-size: dt.$font-size-2xs;
+        color: var(--bs-tertiary-color);
+        opacity: 0;
+        transition: opacity dt.$transition-fast;
+    }
 
     &:hover {
         color: var(--bs-emphasis-color);
-        text-decoration: underline dotted;
+        text-decoration-color: currentcolor;
+    }
+
+    &:hover::after,
+    &:focus-visible::after,
+    &[aria-expanded='true']::after {
+        opacity: 1;
     }
 
     &:focus-visible {
