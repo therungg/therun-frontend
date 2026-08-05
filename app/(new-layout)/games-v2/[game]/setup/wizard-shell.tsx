@@ -9,6 +9,7 @@ import {
     resolveSetupStep,
     SETUP_STEPS,
     setupStepIndex,
+    setupStepMeta,
 } from '~src/lib/setup/steps';
 import { BackLink } from '../shared/back-link';
 import styles from './setup.module.scss';
@@ -58,7 +59,11 @@ export function WizardShell({ data, initialStep }: Props) {
     };
 
     return (
-        <div className={styles.page}>
+        <div
+            className={`${styles.page} ${
+                setupStepMeta(step).wide ? styles.pageWide : ''
+            }`}
+        >
             <header className={styles.identityStrip}>
                 {data.game.image && (
                     <img
