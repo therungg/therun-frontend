@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { VariableRow } from '../../../../types/leaderboards.types';
 import {
+    categoriesNeedingCombinations,
     categoriesToConvert,
     driftSides,
     groupVariables,
@@ -377,5 +378,43 @@ describe('rebuildValues', () => {
         );
         expect(out.find((r) => r.categoryId === 2)?.values).toEqual([]);
         expect(out.find((r) => r.categoryId === 2)?.defaultIndex).toBeNull();
+    });
+});
+
+describe('categoriesNeedingCombinations', () => {
+    it('ignores a category whose leaderboards are each one option', () => {
+        // One group: every leaderboard IS an option, so unticking the option
+        // in the grid says everything. Nothing left for a combination list.
+        const rows = [makeVariable({ id: 1, categoryId: 1 })];
+        expect(categoriesNeedingCombinations([1], rows)).toEqual([]);
+    });
+
+    it('picks up a category where two groups multiply', () => {
+        const rows = [
+            makeVariable({ id: 1, categoryId: 1 }),
+            makeVariable({
+                id: 2,
+                categoryId: 1,
+                name: 'Version',
+                nameNormalized: 'version',
+                values: [['JP'], ['US']],
+            }),
+        ];
+        expect(categoriesNeedingCombinations([1], rows)).toEqual([1]);
+    });
+
+    it('does not count filters — they never multiply leaderboards', () => {
+        const rows = [
+            makeVariable({ id: 1, categoryId: 1 }),
+            makeVariable({
+                id: 2,
+                categoryId: 1,
+                name: 'Route',
+                nameNormalized: 'route',
+                role: 'filter',
+                defaultValueIndex: null,
+            }),
+        ];
+        expect(categoriesNeedingCombinations([1], rows)).toEqual([]);
     });
 });

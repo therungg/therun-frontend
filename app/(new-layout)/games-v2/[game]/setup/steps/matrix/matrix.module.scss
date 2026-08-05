@@ -340,40 +340,6 @@
     text-align: center;
 }
 
-// ---- Leaderboard list ---------------------------------------
-
-.boardList {
-    list-style: none;
-    padding: 0;
-    margin: dt.$spacing-md 0 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-}
-
-.boardItem {
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-sm;
-    font-size: dt.$font-size-sm;
-    cursor: pointer;
-}
-
-.boardName {
-    color: var(--bs-body-color);
-}
-
-// A closed leaderboard is still listed — you need to see what you turned off.
-.boardClosed {
-    color: var(--bs-tertiary-color);
-    text-decoration: line-through;
-}
-
-.boardCount {
-    @include board.board-section-count;
-    margin-left: auto;
-}
-
 .rulesPanel {
     padding: dt.$spacing-lg;
 }
