@@ -187,7 +187,11 @@ export async function applyVariableChangeSet(
     gameId: number,
     changes: VariableChangeInput[],
 ): Promise<{ applied: number }> {
-    return apiFetch<{ applied: number }>(`${basePath(gameId)}/bulk`, {
+    // Rides POST /variables, not a /bulk route: the backend's `api`
+    // CloudFormation template is at 499 of its hard 500-resource limit. A
+    // `changes` array is the unambiguous signal — no single-variable upsert
+    // sends that field. See the note in aws/lib/api-stack.ts.
+    return apiFetch<{ applied: number }>(basePath(gameId), {
         sessionId,
         method: 'POST',
         body: { changes },
@@ -208,7 +212,7 @@ export async function previewVariableChangeSet(
     changes: VariableChangeInput[],
 ): Promise<VariablePreview> {
     const raw = await apiFetch<{ preview: VariablePreview }>(
-        `${basePath(gameId)}/bulk?dryRun=1`,
+        `${basePath(gameId)}?dryRun=1`,
         { sessionId, method: 'POST', body: { changes } },
     );
     return raw.preview;
