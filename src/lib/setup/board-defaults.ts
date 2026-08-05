@@ -42,6 +42,38 @@ export const MATRIX_COLUMNS: MatrixColumn[] = [
     'milliseconds',
 ];
 
+/**
+ * Columns whose inherited cells render as a dot instead of their value.
+ *
+ * Not every column earns this. A dot trades "what is this set to" for "this is
+ * not an exception", which is the right trade only where the value is one
+ * nobody reads on purpose:
+ *
+ * - `ranking` is Lowest on essentially every board, and `milliseconds` is On.
+ *   A column of the same word repeated is pure cost.
+ * - `otherTime` is a visibility toggle — secondary by construction.
+ *
+ * `timing` is deliberately NOT here. It is not a preference, it is the UNIT the
+ * leaderboard is denominated in: 1:34:00 under RTA and 1:34:00 under IGT are
+ * not the same quantity. "What is this ranked by?" gets asked constantly rather
+ * than only while auditing exceptions, and hiding it behind a hover makes the
+ * most-asked question the most expensive one. It also buys least — "RTA" is
+ * three characters, and the one `IGT` in a column of them already pops without
+ * any help.
+ *
+ * `minimum` is not here either: it is a number, and a number you audit is a
+ * number you show. The board's value renders muted in the cells inheriting it.
+ */
+export const DOTTED_COLUMNS: MatrixColumn[] = [
+    'otherTime',
+    'ranking',
+    'milliseconds',
+];
+
+export function rendersAsDot(column: MatrixColumn): boolean {
+    return DOTTED_COLUMNS.includes(column);
+}
+
 export const MATRIX_COLUMN_LABEL: Record<MatrixColumn, string> = {
     timing: 'Timing',
     otherTime: 'Other timing',

@@ -14,6 +14,7 @@ import {
     otherTimeField,
     otherTiming,
     type RulesState,
+    rendersAsDot,
     rulesState,
     showsOtherTime,
     TIMING_LABEL,
@@ -122,6 +123,14 @@ export function CategoryMatrix({
     const cellClass = (c: ResolvedCategory, column: MatrixColumn) =>
         `${styles.cellControl} ${CELL_CLASS[cellState(c, column)]}`;
 
+    /**
+     * Inherited cells draw muted in every column; only some of them go all the
+     * way to a dot. See DOTTED_COLUMNS — timing and the minimum keep their
+     * values because they are a unit and a number, not preferences.
+     */
+    const dotted = (c: ResolvedCategory, column: MatrixColumn) =>
+        rendersAsDot(column) && cellState(c, column) === 'quiet';
+
     // name (icon included), timing, other time, minimum, rules, ranking, ms
     const columnCount = 7;
 
@@ -134,10 +143,8 @@ export function CategoryMatrix({
                 </span>
             </div>
             <p className={styles.panelBlurb}>
-                What each category shows on the board.{' '}
-                <span className={styles.blurbDot}>·</span> means it follows the
-                board default in the top row; <b>—</b> means nothing is set.
-                Hover a cell to see the value it is following.
+                What each category shows on the board. Anything not set here
+                follows the top row.
             </p>
             <div className={styles.scroller}>
                 <table className={styles.grid}>
@@ -197,12 +204,7 @@ export function CategoryMatrix({
                                             </td>
 
                                             <td>
-                                                <Cell
-                                                    state={cellState(
-                                                        c,
-                                                        'timing',
-                                                    )}
-                                                >
+                                                <Cell dot={dotted(c, 'timing')}>
                                                     <select
                                                         className={cellClass(
                                                             c,
@@ -244,10 +246,7 @@ export function CategoryMatrix({
                                                     as. */}
                                             <td>
                                                 <Cell
-                                                    state={cellState(
-                                                        c,
-                                                        'otherTime',
-                                                    )}
+                                                    dot={dotted(c, 'otherTime')}
                                                 >
                                                     <select
                                                         className={cellClass(
@@ -305,10 +304,7 @@ export function CategoryMatrix({
 
                                             <td>
                                                 <Cell
-                                                    state={cellState(
-                                                        c,
-                                                        'minimum',
-                                                    )}
+                                                    dot={dotted(c, 'minimum')}
                                                 >
                                                     <input
                                                         type="text"
@@ -388,10 +384,7 @@ export function CategoryMatrix({
 
                                             <td>
                                                 <Cell
-                                                    state={cellState(
-                                                        c,
-                                                        'ranking',
-                                                    )}
+                                                    dot={dotted(c, 'ranking')}
                                                 >
                                                     <select
                                                         className={cellClass(
@@ -430,7 +423,7 @@ export function CategoryMatrix({
 
                                             <td>
                                                 <Cell
-                                                    state={cellState(
+                                                    dot={dotted(
                                                         c,
                                                         'milliseconds',
                                                     )}
@@ -541,23 +534,20 @@ const CELL_CLASS: Record<CellState, string> = {
 };
 
 /**
- * A cell that holds the board default renders a dot instead of its value.
+ * A cell that holds the board default, in a column where the value is not
+ * worth reading, renders a dot instead of it.
  *
- * The value is already stated once, directly above, in the same column. Saying
- * it again on every row — "Default (RTA)", eight times, in two columns — is the
- * exact noise a deviation matrix exists to remove, and it drowned the handful
- * of cells that actually differ. So the dot IS the reading: this follows the
- * board. The control underneath is untouched, and hovering or focusing brings
- * the word back in place, in the same box, so nothing shifts.
+ * The value is already stated once, directly above, in the same column, and
+ * repeating "Lowest" down eight rows is the exact noise a deviation matrix
+ * exists to remove. The control underneath is untouched, and hovering or
+ * focusing brings the word back in place, in the same box, so nothing shifts.
+ *
+ * Which columns qualify is DOTTED_COLUMNS' decision, not this component's —
+ * timing and the minimum keep their values, because a unit and a number are
+ * read on purpose rather than only when they are wrong.
  */
-function Cell({
-    state,
-    children,
-}: {
-    state: CellState;
-    children: React.ReactNode;
-}) {
-    if (state !== 'quiet') return <>{children}</>;
+function Cell({ dot, children }: { dot: boolean; children: React.ReactNode }) {
+    if (!dot) return <>{children}</>;
     return (
         <span className={styles.quietWrap}>
             {children}
