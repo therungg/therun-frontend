@@ -256,16 +256,22 @@ Joey: *everything* must be settable from the all-categories view, with no
 category detail. `CategoryEditor` is no longer mounted by the wizard at all;
 `?cat=<id>` deep links now open that category's row expanded.
 
-The rule that decides where a setting lives:
+The rule that decides where a setting lives — settled on its final form after
+two rounds:
 
-- **A column** when it is scannable across the whole board — one glance tells
-  you which categories deviate. Timing, minimum, rules state, ranking,
-  milliseconds, leaderboard count.
-- **A pane** on the expanded row when it is not — a wall of rules text, an
-  image, a pair of switches nobody compares across rows, a list of
-  combinations. Panes are tabs (`row-panel.tsx`): Rules · Leaderboards · Time
-  columns · Emblem.
-- **Never a route.** Losing the list is what made the old step 4 unusable.
+- **A column**, unless it genuinely cannot be one. Timing, other-clock
+  visibility, minimum, rules state, ranking, milliseconds — and the **icon**,
+  whose cell IS the upload control (thumbnail or dashed slot, click either to
+  pick a file). An image was the one thing that looked like it needed a panel;
+  it did not, and that was the last thing keeping expanding rows alive.
+- **A modal** for rules only — the one setting that needs a paragraph rather
+  than a value. Expanding a row to hold it pushed the grid half a screen down
+  and made it jump on every open and close.
+- **Beside its cause** for a consequence of another control (the combination
+  list, at the foot of the Subcategories section).
+- **Never a route, and no expanding rows.** Losing the list is what made the
+  old step 4 unusable; a jumping list is the cheaper version of the same
+  problem.
 
 **Where the combination list ended up.** It was first built as a Leaderboards
 pane on the category row, then removed: with a single subcategory group every
@@ -281,11 +287,11 @@ What moved in:
 
 | Was | Now |
 |---|---|
-| `TimingSettingsSection` hide flags | Time columns pane, one field per write (the forceRealTime guard must not see untouched fields) |
-| `CategorySettingsSection` emblem | Emblem pane |
+| `TimingSettingsSection` hide flags | An **Other time** column — the ranking clock can never be hidden, so the pair of flags is one decision about the *other* clock, and each write touches one field |
+| `CategorySettingsSection` emblem | An **Icon** column that is its own uploader. Renamed emblem → icon in all user-facing copy (Joey, 2026-08-05); stored field and actions keep their names |
 | `CombinationsSection` | Foot of the Subcategories section, and only for categories with **two or more** groups |
 | `VariablesSection` per-option detail | Option editor in zone 2: rename, aliases, order, remove-everywhere; plus a per-category default row |
-| `RulesSection` | already the inline rules pane |
+| `RulesSection` | Rules modal, reached from the Rules chip; the board template uses the same dialog |
 
 Aliases became board-level (`VariableGroup.buckets[].aliases`) and fan out on
 write. A category whose spellings had drifted converges on the next edit —
@@ -298,3 +304,15 @@ deliberately, since that is how two spellings of one option stop existing.
 - The Standards below-minimum sample list. The minimum itself is a column; the
   diagnostic list of runs that would be cut has no home in setup any more.
 - `CategoryEditor` is untouched in its console context.
+
+## Update — selection removed, board defaults are the bulk tool
+
+Category checkboxes, select-all and `BulkBar` are gone (Joey, 2026-08-05),
+along with `planBulkApply`. Changing a board default now asks one question —
+*"N categories do not use it. Apply it to them too?"* / **Don't change** — for
+**timing, minimum and ranking only**. Milliseconds is cosmetic and the rules
+template is a starting point rather than a value a category is "on".
+
+Board defaults themselves became **row zero of the matrix**, editable in place:
+same columns as the cells that are measured against them, so the comparison is
+vertical and free rather than a caption the reader maps by hand.
