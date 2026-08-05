@@ -82,40 +82,70 @@
 
 // ---- One variable -------------------------------------------
 
-// An inner block, not a second surface: the section it sits in is the panel.
+// One subcategory group is an OBJECT — a thing with a name, a set of options
+// and a grid — and a board can carry several. Stacked as faint hairline boxes
+// they ran together into one long striped field and you lost track of which
+// grid belonged to which group.
+//
+// So each one is built like a card: a filled head carrying the name at title
+// scale, a ruled edge under it, and real air between blocks. Scale and spacing
+// only — nothing tinted, nothing washed. The name is the largest type in the
+// section on purpose; the section heading above it is an eyebrow, because the
+// section is a container and the group is the thing.
 .palette {
-    margin-bottom: dt.$spacing-md;
+    margin-bottom: dt.$spacing-2xl;
     overflow: hidden;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
-    border-radius: dt.$radius-md;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-lg;
+
+    &:last-of-type {
+        margin-bottom: 0;
+    }
 }
 
 .paletteHead {
     width: 100%;
     display: flex;
-    align-items: center;
+    align-items: baseline;
     gap: dt.$spacing-sm;
     flex-wrap: wrap;
-    padding: dt.$spacing-md dt.$spacing-lg;
-    background: transparent;
+    padding: dt.$spacing-lg;
+    background: rgba(var(--bs-secondary-bg-rgb), 0.5);
     border: 0;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.45);
     color: inherit;
     text-align: left;
     cursor: pointer;
     transition: background-color dt.$transition-fast;
 
     &:hover {
-        background: rgba(var(--bs-body-color-rgb), 0.04);
+        background: rgba(var(--bs-secondary-bg-rgb), 0.8);
     }
 
     &:focus-visible {
         outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
         outline-offset: -2px;
     }
+
+    // The head collapses the group and said so nowhere. Points down when the
+    // grid is open, right when it is not.
+    &::after {
+        content: '⌄';
+        margin-left: auto;
+        align-self: center;
+        line-height: 1;
+        color: var(--bs-tertiary-color);
+        transition: transform dt.$transition-fast;
+    }
+
+    &[aria-expanded='false']::after {
+        transform: rotate(-90deg);
+    }
 }
 
 .paletteName {
-    font-weight: 600;
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
     color: var(--bs-emphasis-color);
 }
 
@@ -152,16 +182,17 @@
     gap: dt.$spacing-xs;
 }
 
+// Sits with the meta it qualifies rather than flung to the far edge — the
+// right edge belongs to the collapse chevron now.
 .pendingBadge {
     @include board.board-pill(var(--bs-primary));
-    margin-left: auto;
 }
 
 // ---- The grid -----------------------------------------------
 
 .scroller {
     overflow-x: auto;
-    padding: 0 dt.$spacing-lg;
+    padding: dt.$spacing-md dt.$spacing-lg 0;
 }
 
 .grid {
