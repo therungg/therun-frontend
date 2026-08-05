@@ -197,6 +197,53 @@ export interface BulkApplyPlan<T> {
     overwritingDeviations: ResolvedCategory[];
 }
 
+/**
+ * Who should follow a board default that just changed.
+ *
+ * Defaults are a stamp source, not an inheritance tier, so changing one leaves
+ * every existing category exactly where it was. That is the right storage
+ * behaviour and a surprising editing one — a moderator who sets the board to
+ * IGT usually means the board, not "the board and also nothing".
+ *
+ * The offer is only useful if it can tell two groups apart, and it can:
+ *
+ * - **following** — the category matched the OLD default. It was going along
+ *   with the board, so it almost certainly wants the new one too.
+ * - **handSet** — it already differed from the old default. Someone chose that
+ *   deliberately, and sweeping it up is the thing there is no undo for.
+ *
+ * `planBulkApply`'s `overwritingDeviations` cannot make this distinction here:
+ * it measures against the *current* defaults, and right after a default change
+ * every non-matching category deviates by definition.
+ */
+export interface DefaultFollowUp {
+    following: ResolvedCategory[];
+    handSet: ResolvedCategory[];
+}
+
+export function planDefaultFollowUp<T>(
+    categories: ResolvedCategory[],
+    previousDefault: T | null,
+    nextValue: T,
+    readValue: (c: ResolvedCategory) => T,
+): DefaultFollowUp {
+    const following: ResolvedCategory[] = [];
+    const handSet: ResolvedCategory[] = [];
+
+    for (const category of categories) {
+        const value = readValue(category);
+        // Already on the new value: nothing to offer.
+        if (value === nextValue) continue;
+        if (previousDefault !== null && value === previousDefault) {
+            following.push(category);
+        } else {
+            handSet.push(category);
+        }
+    }
+
+    return { following, handSet };
+}
+
 export function planBulkApply<T>(
     categories: ResolvedCategory[],
     column: MatrixColumn,

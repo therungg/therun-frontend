@@ -8,6 +8,7 @@ import {
     deviatingColumns,
     hasDefault,
     planBulkApply,
+    planDefaultFollowUp,
     rulesState,
 } from '../board-defaults';
 
@@ -237,5 +238,43 @@ describe('planBulkApply', () => {
         const plan = planBulkApply(cats, 'timing', 'gt', read, defaults, []);
         expect(plan.changing).toEqual([]);
         expect(plan.unchanged).toHaveLength(2);
+    });
+});
+
+describe('planDefaultFollowUp', () => {
+    const cats = [
+        { id: 1, primaryTiming: 'rt' } as ResolvedCategory,
+        { id: 2, primaryTiming: 'rt' } as ResolvedCategory,
+        { id: 3, primaryTiming: 'gt' } as ResolvedCategory,
+    ];
+    const read = (c: ResolvedCategory) => c.primaryTiming;
+
+    it('separates categories tracking the board from ones set by hand', () => {
+        // Board was RTA and is now IGT. 1 and 2 were going along with it; 3
+        // was already IGT... so it needs nothing.
+        const plan = planDefaultFollowUp(cats, 'rt', 'gt', read);
+        expect(plan.following.map((c) => c.id)).toEqual([1, 2]);
+        expect(plan.handSet).toEqual([]);
+    });
+
+    it('counts a category that matched neither default as hand-set', () => {
+        // Board was IGT, now RTA. 3 is still on IGT but was never following
+        // the old default either way — it is on its own value.
+        const plan = planDefaultFollowUp(
+            [...cats, { id: 4, primaryTiming: 'gt' } as ResolvedCategory],
+            null,
+            'rt',
+            read,
+        );
+        // With no previous default there is nothing to have been following.
+        expect(plan.following).toEqual([]);
+        expect(plan.handSet.map((c) => c.id)).toEqual([3, 4]);
+    });
+
+    it('leaves out categories already on the new value', () => {
+        const plan = planDefaultFollowUp(cats, 'gt', 'rt', read);
+        expect([...plan.following, ...plan.handSet].map((c) => c.id)).toEqual([
+            3,
+        ]);
     });
 });

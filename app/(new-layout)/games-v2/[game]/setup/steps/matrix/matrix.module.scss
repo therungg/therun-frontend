@@ -76,6 +76,44 @@
     }
 }
 
+// ---- Follow-up offer ----------------------------------------
+// Raised after a default is written, not before: declining leaves the board
+// coherent rather than half-applied. Sits directly under the row that caused
+// it, so the thing being talked about is the thing above.
+
+.offerRow td {
+    padding: 0;
+}
+
+.offer {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    flex-wrap: wrap;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.3);
+    background: rgba(var(--bs-primary-rgb), 0.07);
+    white-space: normal;
+}
+
+.offerText {
+    flex: 1;
+    min-width: 18rem;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
+}
+
+.offerAction {
+    @include board.board-chip;
+    font-size: dt.$font-size-2xs;
+    border-color: rgba(var(--bs-border-color-rgb), 0.5);
+}
+
+.offerPrimary {
+    @include board.board-btn-primary;
+    font-size: dt.$font-size-2xs;
+}
+
 // ---- Grid ---------------------------------------------------
 
 .scroller {

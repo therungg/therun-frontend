@@ -20,6 +20,14 @@ vi.mock('../../actions/bulk-update-categories.action', () => ({
 vi.mock('../../actions/set-category-minimum.action', () => ({
     setCategoryMinimumAction: vi.fn(async () => ({ ok: true })),
 }));
+vi.mock('../../actions/update-game-metadata.action', () => ({
+    updateGameMetadataAction: vi.fn(async () => ({
+        result: { updated: true },
+    })),
+}));
+vi.mock('../../actions/set-board-minimum.action', () => ({
+    setBoardMinimumAction: vi.fn(async () => ({ ok: true })),
+}));
 vi.mock('next/navigation', () => ({
     useRouter: () => ({ refresh: vi.fn() }),
 }));
@@ -221,6 +229,21 @@ describe('CategoryMatrix', () => {
         ).toBeTruthy();
         expect(
             screen.getByLabelText('Board default minimum time'),
+        ).toBeTruthy();
+    });
+
+    it('offers to bring the categories along when a board default changes', async () => {
+        renderMatrix();
+        fireEvent.change(screen.getByLabelText('Board default timing'), {
+            target: { value: 'gt' },
+        });
+        // Any% was on RTA, following the old board default; 16 Star was
+        // already IGT by hand, so it is not in the safe group.
+        expect(
+            await screen.findByRole('button', { name: 'Apply to those 1' }),
+        ).toBeTruthy();
+        expect(
+            screen.getByRole('button', { name: 'Apply to all 1' }),
         ).toBeTruthy();
     });
 
