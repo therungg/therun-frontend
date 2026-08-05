@@ -164,6 +164,11 @@ export interface BulkCategoryFields {
  * One transaction backend-side: either every selected category takes the
  * values or none does, and the board's page data rebuilds once rather than
  * once per category.
+ *
+ * Rides POST /categories with an explicit `op` rather than a `/bulk` route of
+ * its own — the backend's `api` CloudFormation template is at 499 of its hard
+ * 500-resource limit, so a dedicated route could not be registered. See the
+ * note in aws/lib/api-stack.ts.
  */
 export async function bulkUpdateCategories(
     sessionId: string,
@@ -171,14 +176,11 @@ export async function bulkUpdateCategories(
     categoryIds: number[],
     fields: BulkCategoryFields,
 ): Promise<{ updated: number }> {
-    return apiFetch<{ updated: number }>(
-        `/v1/games/${gameId}/categories/bulk`,
-        {
-            method: 'PUT',
-            sessionId,
-            body: { categoryIds, fields },
-        },
-    );
+    return apiFetch<{ updated: number }>(`/v1/games/${gameId}/categories`, {
+        method: 'POST',
+        sessionId,
+        body: { op: 'bulk-update', categoryIds, fields },
+    });
 }
 
 export interface ManageGroup {
