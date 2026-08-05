@@ -156,14 +156,18 @@ describe('VariablesGrid', () => {
         expect(screen.queryByText('○')).toBeNull();
     });
 
-    it('says what the conversion costs, not just where it goes', () => {
+    it('does not offer to demote a subcategory group to a filter', () => {
         renderGrid();
+        // The demotion deletes every leaderboard the group created and every
+        // record they held. It was a chip at the foot of each group, one
+        // stray click from the grid. Repairing role drift still offers it;
+        // creating drift-free destruction does not.
         expect(
-            screen.getByRole('button', { name: 'Make this a filter' }),
-        ).toBeTruthy();
+            screen.queryByRole('button', { name: 'Make this a filter' }),
+        ).toBeNull();
         expect(
-            screen.getByText(/Collapses its subcategories back into one/),
-        ).toBeTruthy();
+            screen.queryByText(/Collapses its subcategories back into one/),
+        ).toBeNull();
     });
 
     it('drops the mono provenance list the grid already showed', () => {

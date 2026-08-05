@@ -747,8 +747,6 @@ function VariablePalette({
     const displayOf = (id: number) =>
         categories.find((c) => c.id === id)?.display ?? `#${id}`;
     const sides = driftSides(group);
-    const otherRole: VariableRoleId =
-        role === 'subcategory' ? 'filter' : 'subcategory';
     const editingBucket = group.buckets.find((b) => b.key === editing) ?? null;
     // Category + one per option + the default column, when there is one.
     const columnCount =
@@ -1040,25 +1038,37 @@ function VariablePalette({
                         </p>
                     )}
 
-                    <div className={styles.paletteFoot}>
-                        <button
-                            type="button"
-                            className={styles.convertAction}
-                            disabled={busy}
-                            onClick={() => onConvert(otherRole)}
-                        >
-                            {conversionLabel(otherRole)}
-                        </button>
-                        {/* The label names the destination; this names what
-                            happens to the boards that already exist, which is
-                            the part that cannot be undone by clicking back. */}
-                        <span className={styles.convertNote}>
-                            {conversionNote(otherRole)}
-                        </span>
-                        {role === 'filter' && isTarget && (
-                            <span className={styles.savingNote}>Saving…</span>
-                        )}
-                    </div>
+                    {/* Conversion runs one way only, and only from here.
+                        Promoting a filter is additive — the board gains
+                        leaderboards it did not have. The reverse deletes them,
+                        along with every record they held, and it sat at the
+                        foot of every subcategory group as a chip you could
+                        reach by accident. A demotion that destructive is not a
+                        routine action; the only place it stays offered is the
+                        drift strip above, where it repairs a contradiction
+                        rather than creating one. */}
+                    {role === 'filter' && (
+                        <div className={styles.paletteFoot}>
+                            <button
+                                type="button"
+                                className={styles.convertAction}
+                                disabled={busy}
+                                onClick={() => onConvert('subcategory')}
+                            >
+                                {conversionLabel('subcategory')}
+                            </button>
+                            {/* The label names the destination; this names what
+                                it does to the board. */}
+                            <span className={styles.convertNote}>
+                                {conversionNote('subcategory')}
+                            </span>
+                            {isTarget && (
+                                <span className={styles.savingNote}>
+                                    Saving…
+                                </span>
+                            )}
+                        </div>
+                    )}
 
                     {/* Only splits stage. Details have already been written by
                         the time this would render. */}
