@@ -42,10 +42,18 @@ export interface RunnerDialogProps {
      * so the runner page's Back returns here. Curation (the default) is
      * `boards`; the public leaderboard's row menu passes `board`. */
     dossierFrom?: 'board' | 'boards';
+    /** Scope selected when the dialog opens (default `'board'`). The runner
+     * dossier's per-scope "Ban…" buttons (workstream E) each pass the scope
+     * their row represents so the mod lands directly on it instead of
+     * re-picking it inside. */
+    initialScope?: Scope;
+    /** Suppress the "View full runner page" link — set by the runner
+     * dossier itself (workstream E), which would otherwise link to itself. */
+    hideDossierLink?: boolean;
     onMutated: () => void;
 }
 
-type Scope = 'board' | 'game' | 'site';
+export type Scope = 'board' | 'game' | 'site';
 
 const TREATMENTS: Array<{
     value: RunTreatment;
@@ -87,9 +95,11 @@ export function RunnerDialog({
     subcategoryKey,
     canSiteBan,
     dossierFrom = 'boards',
+    initialScope = 'board',
+    hideDossierLink = false,
     onMutated,
 }: RunnerDialogProps) {
-    const [scope, setScope] = useState<Scope>('board');
+    const [scope, setScope] = useState<Scope>(initialScope);
     const [treatment, setTreatment] = useState<RunTreatment>('exclude');
     const [reason, setReason] = useState('');
     const [preview, setPreview] = useState<PreviewExcludeResult | null>(null);
@@ -103,13 +113,13 @@ export function RunnerDialog({
     // wipe the reason the mod already typed.
     useEffect(() => {
         if (!open) return;
-        setScope('board');
+        setScope(initialScope);
         setTreatment('exclude');
         setReason('');
         setPreview(null);
         setPreviewError(null);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [open]);
+    }, [open, initialScope]);
 
     // Board/game scope: preview the exclude rule on open and whenever the
     // scope flips between them. Site scope has no exclude preview.
@@ -253,14 +263,17 @@ export function RunnerDialog({
             <div className={styles.dialogBody}>
                 {/* The runner dossier is only reachable through runner-scoped
                     surfaces like this one — keep this link even if the dialog
-                    slims down. */}
-                <p className={styles.moveNote}>
-                    <Link
-                        href={`/games-v2/${gameSlug}/manage/moderation/runner/${row.userId}?from=${dossierFrom}`}
-                    >
-                        View full runner page — runs, bans, history ↗
-                    </Link>
-                </p>
+                    slims down. Suppressed when the dossier itself opened this
+                    dialog (hideDossierLink) — it would just link to itself. */}
+                {!hideDossierLink && (
+                    <p className={styles.moveNote}>
+                        <Link
+                            href={`/games-v2/${gameSlug}/manage/moderation/runner/${row.userId}?from=${dossierFrom}`}
+                        >
+                            View full runner page — runs, bans, history ↗
+                        </Link>
+                    </p>
+                )}
                 <SegmentedControl
                     label="Scope"
                     value={scope}

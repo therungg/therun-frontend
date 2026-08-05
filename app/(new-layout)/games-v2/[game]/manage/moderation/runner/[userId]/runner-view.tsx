@@ -1,32 +1,34 @@
 'use client';
 
-import clsx from 'clsx';
-import Link from 'next/link';
+import moment from 'moment';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type {
+    ResolvedCategory,
+    VariableRow,
+} from '../../../../../../../../types/leaderboards.types';
+import type {
     GameExclusionRuleRow,
+    LeaderboardRosterRow,
     ManualTimeRow,
-    ModActionRow,
+    PublicModLogEntry,
 } from '../../../../../../../../types/moderation.types';
 import { formatSubcategoryKey } from '../../../../labels';
+import bulkBarStyles from '../../../../leaderboard/bulk-bar.module.scss';
+import { LogRow } from '../../../../leaderboard/moderation/moderation-log-view';
+import logStyles from '../../../../leaderboard/moderation/moderation-log-view.module.scss';
 import {
     normalizeVerificationStatus,
     VerificationBadge,
 } from '../../../../run-view/run-badges';
 import { BackLink } from '../../../../shared/back-link';
+import { RunnerDialog } from '../../../boards/runner-dialog';
 import consoleStyles from '../../../console/console.module.scss';
 import { ManualTimeVerdictRow } from '../../attention/manual-time-verdict-row';
-import { historyActionLabel } from '../../configure/history-labels';
 import { deleteRuleAction } from '../../rules/actions/delete-rule.action';
-import {
-    type BanScope,
-    defaultBanScopeForCategories,
-    type ModVerb,
-    type RunActionTarget,
-} from '../../shared/action-model';
+import type { ModVerb, RunActionTarget } from '../../shared/action-model';
 import { deleteManualTimeAction } from '../../shared/actions/manual-times.action';
 import { ManualTimeDialog } from '../../shared/manual-time-dialog';
 import { RunActionDialog } from '../../shared/run-action-dialog';
@@ -35,7 +37,6 @@ import {
     type RunnerBanState,
     type RunnerCombo,
     type RunnerSummary,
-    ruleForCombo,
 } from './runner-model';
 import styles from './runner-view.module.scss';
 
@@ -47,22 +48,28 @@ interface Props {
     combos: RunnerCombo[];
     banState: RunnerBanState;
     summary: RunnerSummary;
-    /** This runner's slice of the game's mod-action log, newest first. */
-    actions: ModActionRow[];
+    categories: ResolvedCategory[];
+    variables: VariableRow[];
+    canSiteBan: boolean;
+    /** This runner's slice of the game's public mod log (workstream F's
+     * endpoint, `targetUserId` filter) — reused verbatim via `LogRow`. */
+    modLog: PublicModLogEntry[];
+    modLogTotal: number;
     /** Where "Back" goes — resolved server-side in page.tsx. */
     backHref: string;
     backLabel: string;
 }
 
 type DialogState =
-    | {
-          kind: 'action';
-          verb: ModVerb;
-          target: RunActionTarget;
-          banScope?: BanScope;
-      }
+    | { kind: 'action'; verb: ModVerb; target: RunActionTarget }
     | { kind: 'manual'; combo: RunnerCombo; existing?: ManualTimeRow }
     | null;
+
+type RunnerDialogState = {
+    scope: 'board' | 'game' | 'site';
+    category: ResolvedCategory;
+    subcategoryKey: string;
+} | null;
 
 const MIN_REASON = 10;
 
@@ -71,16 +78,6 @@ function fmtDate(iso: string): string {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
-    });
-}
-
-function fmtDateTime(iso: string): string {
-    return new Date(iso).toLocaleString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
     });
 }
 
@@ -158,22 +155,23 @@ export function RunnerView({
     combos,
     banState,
     summary,
-    actions,
+    categories,
+    variables,
+    canSiteBan,
+    modLog,
+    modLogTotal,
     backHref,
     backLabel,
 }: Props) {
     const router = useRouter();
 
-    const [selectedKey, setSelectedKey] = useState<string | null>(
-        combos[0]?.key ?? null,
-    );
-    // Selected combo falls back to the band's first chip when the stored key
-    // disappears after a refresh (e.g. the last run of a combo was removed).
-    const combo =
-        combos.find((c) => c.key === selectedKey) ?? combos[0] ?? null;
-
+    // A single flat selection spans every board's runs — the runner
+    // dossier's "everything about this runner" list is one bulk-bar
+    // surface, not one per board (mock fig. 7's note: "same checkbox
+    // column as the board, so a selection here feeds the same bulk bar").
     const [selected, setSelected] = useState<Set<number>>(new Set());
     const [dialog, setDialog] = useState<DialogState>(null);
+    const [runnerDialog, setRunnerDialog] = useState<RunnerDialogState>(null);
     const [liftingRuleId, setLiftingRuleId] = useState<number | null>(null);
     const [deletingManualId, setDeletingManualId] = useState<number | null>(
         null,
@@ -184,32 +182,17 @@ export function RunnerView({
         return sub ? `${c.categoryDisplay} · ${sub}` : c.categoryDisplay;
     };
 
-    const bestRankCombo = useMemo(
-        () =>
-            summary.bestRank
-                ? combos.find((c) => c.key === summary.bestRank?.comboKey)
-                : undefined,
-        [combos, summary.bestRank],
-    );
-
-    const activeRule = combo ? ruleForCombo(banState, combo.categoryId) : null;
     const isBanned =
         banState.gameRule != null || banState.categoryRules.length > 0;
 
     const afterMutation = () => {
         setDialog(null);
+        setRunnerDialog(null);
         setSelected(new Set());
         setLiftingRuleId(null);
         setDeletingManualId(null);
         // Everything on this page came from the server loader; refetch.
         router.refresh();
-    };
-
-    const selectCombo = (key: string) => {
-        setSelectedKey(key);
-        setSelected(new Set());
-        setLiftingRuleId(null);
-        setDeletingManualId(null);
     };
 
     const toggleRun = (runId: number) => {
@@ -227,22 +210,6 @@ export function RunnerView({
             kind: 'action',
             verb,
             target: { kind: 'runs', runIds, label },
-        });
-    };
-
-    const openBan = (target: RunnerCombo, scope: BanScope) => {
-        setDialog({
-            kind: 'action',
-            verb: 'ban',
-            target: {
-                kind: 'runner',
-                runnerId: userId,
-                runnerName,
-                categoryId: target.categoryId,
-                categoryDisplay: target.categoryDisplay,
-                gameDisplay,
-            },
-            banScope: scope,
         });
     };
 
@@ -266,42 +233,60 @@ export function RunnerView({
         return null;
     };
 
-    const banBanner = (rule: GameExclusionRuleRow) => (
-        <div className={styles.banBanner} role="alert">
-            <strong>
-                Banned from{' '}
-                {rule.categoryId == null
-                    ? 'the entire game'
-                    : (rule.categoryName ?? 'this category')}
-            </strong>
-            <span>
-                by {rule.excludedByName} on {fmtDate(rule.createdAt)}
-            </span>
-            {rule.reason && <span>“{rule.reason}”</span>}
-            {liftingRuleId === rule.ruleId ? (
-                <InlineReasonForm
-                    id={`lift-ban-${rule.ruleId}`}
-                    label="Lift reason"
-                    cta="Lift ban"
-                    onSubmit={(reason) => liftBan(rule, reason)}
-                    onCancel={() => setLiftingRuleId(null)}
-                />
-            ) : (
-                <button
-                    type="button"
-                    className="btn btn-sm btn-outline-danger ms-auto"
-                    onClick={() => setLiftingRuleId(rule.ruleId)}
-                >
-                    Lift ban…
-                </button>
-            )}
-        </div>
+    const unbanRow = (rule: GameExclusionRuleRow, label: string) =>
+        liftingRuleId === rule.ruleId ? (
+            <InlineReasonForm
+                id={`lift-ban-${rule.ruleId}`}
+                label="Lift reason"
+                cta="Lift ban"
+                onSubmit={(reason) => liftBan(rule, reason)}
+                onCancel={() => setLiftingRuleId(null)}
+            />
+        ) : (
+            <button
+                type="button"
+                className={`${styles.pillBtn} ${styles.pillBtnDanger}`}
+                onClick={() => setLiftingRuleId(rule.ruleId)}
+            >
+                Unban…
+            </button>
+        );
+
+    // One row per distinct category the runner appears on — a combo is
+    // (category, subcategoryKey), but a ban rule is category-scoped, so
+    // subcategories of the same category share one scope row.
+    const categoriesInPlay = Array.from(
+        new Map(
+            combos.map((c) => [
+                c.categoryId,
+                { id: c.categoryId, display: c.categoryDisplay },
+            ]),
+        ).values(),
     );
+    const resolvedCategoryFor = (categoryId: number): ResolvedCategory =>
+        (categories.find((c) => c.id === categoryId) ??
+            categories[0]) as ResolvedCategory;
+    const firstCombo = combos[0] ?? null;
+
+    // RunnerDialog wants a LeaderboardRosterRow; only userId/runnerName are
+    // ever read off it (it acts on the runner, not one specific run), so a
+    // representative run (or zeroed placeholder when the runner has none)
+    // satisfies the shape without a live run backing it.
+    const rosterRow: LeaderboardRosterRow = {
+        runId: firstCombo?.board?.runId ?? 0,
+        userId,
+        runnerName,
+        subcategoryKey: firstCombo?.subcategoryKey ?? '',
+        time: firstCombo?.board?.time ?? null,
+        gameTime: firstCombo?.board?.gameTime ?? null,
+        verificationStatus: firstCombo?.board?.verificationStatus ?? 'verified',
+        vodUrl: null,
+        endedAt: '',
+        isLeaderboardEntry: true,
+        isLeaderboardEntryGt: true,
+    };
 
     const selectedRunIds = Array.from(selected);
-    const comboRunIds = combo ? combo.runs.map((r) => r.runId) : [];
-    const comboAllSelected =
-        comboRunIds.length > 0 && comboRunIds.every((id) => selected.has(id));
 
     return (
         <div>
@@ -323,33 +308,6 @@ export function RunnerView({
                         )}
                 </h1>
                 <div className={`${consoleStyles.paneActions} flex-wrap`}>
-                    {combo && (
-                        <>
-                            <button
-                                type="button"
-                                className="btn btn-sm btn-outline-primary"
-                                onClick={() =>
-                                    setDialog({ kind: 'manual', combo })
-                                }
-                            >
-                                Set a time…
-                            </button>
-                            <button
-                                type="button"
-                                className="btn btn-sm btn-danger"
-                                onClick={() =>
-                                    openBan(
-                                        combo,
-                                        defaultBanScopeForCategories(
-                                            combos.map((c) => c.categoryId),
-                                        ),
-                                    )
-                                }
-                            >
-                                Ban runner…
-                            </button>
-                        </>
-                    )}
                     <BackLink href={backHref} label={backLabel} />
                 </div>
             </div>
@@ -375,11 +333,6 @@ export function RunnerView({
                         <span className={styles.tileValue}>
                             #{summary.bestRank.rank}
                         </span>
-                        {bestRankCombo && (
-                            <span className={styles.tileSub}>
-                                {comboLabel(bestRankCombo)}
-                            </span>
-                        )}
                     </div>
                 )}
                 {summary.manualCount > 0 && (
@@ -399,329 +352,173 @@ export function RunnerView({
                     </div>
                 )}
                 {isBanned && (
-                    <div className={clsx(styles.tile, styles.tileDanger)}>
+                    <div className={`${styles.tile} ${styles.tileDanger}`}>
                         <span className={styles.tileLabel}>Ban status</span>
                         <span className={styles.tileValue}>Banned</span>
-                        <span className={styles.tileSub}>
-                            {banState.gameRule
-                                ? 'entire game'
-                                : banState.categoryRules
-                                      .map((r) => r.categoryName ?? 'category')
-                                      .join(', ')}
-                        </span>
                     </div>
                 )}
             </div>
 
-            {combos.length === 0 ? (
-                <>
-                    {banState.gameRule && banBanner(banState.gameRule)}
-                    <p className="text-muted">
-                        No eligible runs or manual times for this runner in this
-                        game.
-                    </p>
-                </>
-            ) : (
-                <>
-                    <div
-                        className={styles.band}
-                        role="tablist"
-                        aria-label="Boards this runner appears on"
-                    >
-                        {combos.map((c) => {
-                            const rule = ruleForCombo(banState, c.categoryId);
-                            const active = combo?.key === c.key;
-                            const sub = formatSubcategoryKey(c.subcategoryKey);
-                            return (
-                                <button
-                                    key={c.key}
-                                    type="button"
-                                    role="tab"
-                                    aria-selected={active}
-                                    className={clsx(
-                                        styles.chip,
-                                        active && styles.chipActive,
-                                        rule && styles.chipBanned,
-                                    )}
-                                    onClick={() => selectCombo(c.key)}
-                                >
-                                    {rule && (
-                                        <span
-                                            className={styles.chipBanDot}
-                                            title="A ban rule covers this board"
-                                        />
-                                    )}
-                                    <span className={styles.chipNames}>
-                                        <span className={styles.chipCategory}>
-                                            {c.categoryDisplay}
-                                        </span>
-                                        {sub && (
-                                            <span className={styles.chipSub}>
-                                                {sub}
-                                            </span>
-                                        )}
-                                    </span>
-                                    <span className={styles.chipStats}>
-                                        <span className={styles.chipTime}>
-                                            {c.bestTime != null ? (
-                                                <DurationToFormatted
-                                                    duration={c.bestTime}
-                                                />
-                                            ) : (
-                                                '—'
-                                            )}
-                                        </span>
-                                        <span className={styles.chipRank}>
-                                            {c.rank != null
-                                                ? `#${c.rank}${c.totalRunners != null ? ` / ${c.totalRunners}` : ''}`
-                                                : c.runs.length > 0
-                                                  ? `${c.runs.length} run${c.runs.length === 1 ? '' : 's'}`
-                                                  : 'manual only'}
-                                        </span>
-                                    </span>
-                                </button>
-                            );
-                        })}
-                    </div>
-
-                    {combo && (
-                        <>
-                            {activeRule && banBanner(activeRule)}
-
-                            <div className={styles.standing}>
-                                <div>
-                                    <span className={styles.standingRank}>
-                                        {combo.rank != null
-                                            ? `#${combo.rank}`
-                                            : '—'}
-                                    </span>{' '}
-                                    <span className={styles.standingRankOf}>
-                                        {combo.rank != null
-                                            ? combo.totalRunners != null
-                                                ? `of ${combo.totalRunners} on ${comboLabel(combo)}`
-                                                : `on ${comboLabel(combo)}`
-                                            : 'not on this board'}
-                                    </span>
-                                </div>
-                                {combo.board?.time != null && (
-                                    <div className={styles.standingCell}>
-                                        <span className={styles.standingLabel}>
-                                            RT
-                                        </span>
-                                        <span className={styles.standingValue}>
-                                            <DurationToFormatted
-                                                duration={combo.board.time}
-                                            />
-                                        </span>
-                                    </div>
-                                )}
-                                {combo.board?.gameTime != null && (
-                                    <div className={styles.standingCell}>
-                                        <span className={styles.standingLabel}>
-                                            GT
-                                        </span>
-                                        <span className={styles.standingValue}>
-                                            <DurationToFormatted
-                                                duration={combo.board.gameTime}
-                                            />
-                                        </span>
-                                    </div>
-                                )}
-                                {combo.board && (
-                                    <div className={styles.standingCell}>
-                                        <span className={styles.standingLabel}>
-                                            Status
-                                        </span>
-                                        <VerificationBadge
-                                            status={normalizeVerificationStatus(
-                                                combo.board.verificationStatus,
-                                            )}
-                                        />
-                                    </div>
-                                )}
-                                <div className={styles.standingActions}>
-                                    {(() => {
-                                        const href = publicBoardHref(
-                                            gameSlug,
-                                            combo,
-                                        );
-                                        return href ? (
-                                            <a
-                                                className="btn btn-sm btn-outline-secondary"
-                                                href={href}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                            >
-                                                View public board ↗
-                                            </a>
-                                        ) : null;
-                                    })()}
-                                    <button
-                                        type="button"
-                                        className="btn btn-sm btn-outline-primary"
-                                        onClick={() =>
-                                            setDialog({
-                                                kind: 'manual',
-                                                combo,
-                                            })
-                                        }
-                                    >
-                                        Set a time…
-                                    </button>
-                                    {!activeRule && (
+            <div className={styles.layout}>
+                <div className={styles.runsPanel}>
+                    {combos.length === 0 ? (
+                        <p className="text-muted">
+                            No eligible runs or manual times for this runner in
+                            this game.
+                        </p>
+                    ) : (
+                        combos.map((combo) => (
+                            <section
+                                key={combo.key}
+                                className={styles.boardGroup}
+                            >
+                                <div className={styles.boardGroupHead}>
+                                    <h2 className={styles.boardGroupTitle}>
+                                        {comboLabel(combo)}
+                                    </h2>
+                                    <div className="d-flex gap-2">
                                         <button
                                             type="button"
-                                            className="btn btn-sm btn-outline-danger"
+                                            className="btn btn-sm btn-outline-primary"
                                             onClick={() =>
-                                                openBan(combo, 'category')
+                                                setDialog({
+                                                    kind: 'manual',
+                                                    combo,
+                                                })
                                             }
                                         >
-                                            Ban from this board…
+                                            Set a time…
                                         </button>
-                                    )}
+                                        {(() => {
+                                            const href = publicBoardHref(
+                                                gameSlug,
+                                                combo,
+                                            );
+                                            return href ? (
+                                                <a
+                                                    className="btn btn-sm btn-outline-secondary"
+                                                    href={href}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                >
+                                                    View board ↗
+                                                </a>
+                                            ) : null;
+                                        })()}
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className={styles.sectionHead}>
-                                <h2 className="h6 mb-0 d-flex align-items-center gap-2">
-                                    <input
-                                        type="checkbox"
-                                        className="form-check-input"
-                                        aria-label="Select all runs"
-                                        checked={comboAllSelected}
-                                        onChange={() =>
-                                            setSelected(
-                                                comboAllSelected
-                                                    ? new Set()
-                                                    : new Set(comboRunIds),
-                                            )
-                                        }
-                                        disabled={comboRunIds.length === 0}
-                                    />
-                                    Runs
-                                    <span className={styles.sectionCount}>
-                                        {combo.runs.length}
-                                    </span>
-                                </h2>
-                            </div>
-                            {combo.runs.length === 0 ? (
-                                <p className="text-muted">
-                                    No eligible runs on this board — only manual
-                                    times below.
-                                </p>
-                            ) : (
-                                <div className="table-responsive">
-                                    <table className="table table-sm table-hover align-middle mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th style={{ width: '1%' }} />
-                                                <th className="text-end">RT</th>
-                                                <th className="text-end">GT</th>
-                                                <th>Date</th>
-                                                <th className="text-center">
-                                                    Status
-                                                </th>
-                                                <th className="text-center">
-                                                    VOD
-                                                </th>
-                                                <th className="text-center">
-                                                    Board
-                                                </th>
-                                                <th className="text-end">
-                                                    Actions
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {combo.runs.map((r) => {
-                                                const status =
-                                                    normalizeVerificationStatus(
-                                                        r.verificationStatus,
-                                                    );
-                                                return (
-                                                    <tr key={r.runId}>
-                                                        <td>
-                                                            <input
-                                                                type="checkbox"
-                                                                className="form-check-input"
-                                                                aria-label={`Select run ${r.runId}`}
-                                                                checked={selected.has(
-                                                                    r.runId,
-                                                                )}
-                                                                onChange={() =>
-                                                                    toggleRun(
+                                {combo.runs.length === 0 ? (
+                                    <p className="text-muted small">
+                                        No eligible runs on this board — only
+                                        manual times below.
+                                    </p>
+                                ) : (
+                                    <div className="table-responsive">
+                                        <table className="table table-sm table-hover align-middle mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th
+                                                        style={{ width: '1%' }}
+                                                    />
+                                                    <th className="text-end">
+                                                        Rank
+                                                    </th>
+                                                    <th className="text-end">
+                                                        Time
+                                                    </th>
+                                                    <th>Date</th>
+                                                    <th className="text-center">
+                                                        Status
+                                                    </th>
+                                                    <th className="text-end">
+                                                        Actions
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {combo.runs.map((r) => {
+                                                    const status =
+                                                        normalizeVerificationStatus(
+                                                            r.verificationStatus,
+                                                        );
+                                                    const primaryMs =
+                                                        combo.primaryTiming ===
+                                                        'gametime'
+                                                            ? r.gameTime
+                                                            : r.time;
+                                                    return (
+                                                        <tr key={r.runId}>
+                                                            <td>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    className="form-check-input"
+                                                                    aria-label={`Select run ${r.runId}`}
+                                                                    checked={selected.has(
                                                                         r.runId,
-                                                                    )
-                                                                }
-                                                            />
-                                                        </td>
-                                                        <td className="text-end">
-                                                            {r.time != null ? (
-                                                                <DurationToFormatted
-                                                                    duration={
-                                                                        r.time
+                                                                    )}
+                                                                    onChange={() =>
+                                                                        toggleRun(
+                                                                            r.runId,
+                                                                        )
                                                                     }
                                                                 />
-                                                            ) : (
-                                                                '—'
-                                                            )}
-                                                        </td>
-                                                        <td className="text-end">
-                                                            {r.gameTime !=
-                                                            null ? (
-                                                                <DurationToFormatted
-                                                                    duration={
-                                                                        r.gameTime
+                                                            </td>
+                                                            <td className="text-end">
+                                                                {r.rank != null
+                                                                    ? `#${r.rank}`
+                                                                    : '—'}
+                                                            </td>
+                                                            <td className="text-end">
+                                                                {primaryMs !=
+                                                                null ? (
+                                                                    <DurationToFormatted
+                                                                        duration={
+                                                                            primaryMs
+                                                                        }
+                                                                    />
+                                                                ) : (
+                                                                    '—'
+                                                                )}
+                                                            </td>
+                                                            <td className="small">
+                                                                {moment(
+                                                                    r.endedAt,
+                                                                ).fromNow()}
+                                                            </td>
+                                                            <td className="text-center">
+                                                                <VerificationBadge
+                                                                    status={
+                                                                        status
                                                                     }
                                                                 />
-                                                            ) : (
-                                                                '—'
-                                                            )}
-                                                        </td>
-                                                        <td className="small">
-                                                            {fmtDate(r.endedAt)}
-                                                        </td>
-                                                        <td className="text-center">
-                                                            <VerificationBadge
-                                                                status={status}
-                                                            />
-                                                        </td>
-                                                        <td className="text-center">
-                                                            {r.vodUrl ? (
-                                                                <a
-                                                                    href={
-                                                                        r.vodUrl
-                                                                    }
-                                                                    target="_blank"
-                                                                    rel="noreferrer"
-                                                                >
-                                                                    Link
-                                                                </a>
-                                                            ) : (
-                                                                '—'
-                                                            )}
-                                                        </td>
-                                                        <td className="text-center">
-                                                            {(r.isLeaderboardEntry ||
-                                                                r.isLeaderboardEntryGt) && (
-                                                                <span
-                                                                    className="badge text-bg-success"
-                                                                    title={`On board${r.isLeaderboardEntry ? ' RT' : ''}${r.isLeaderboardEntryGt ? ' GT' : ''}`}
-                                                                >
-                                                                    On board
-                                                                </span>
-                                                            )}
-                                                        </td>
-                                                        <td className="text-end">
-                                                            <div className="d-inline-flex gap-1">
-                                                                {status ===
-                                                                    'pending' && (
+                                                            </td>
+                                                            <td className="text-end">
+                                                                <div className="d-inline-flex gap-1">
+                                                                    {status ===
+                                                                        'pending' && (
+                                                                        <button
+                                                                            type="button"
+                                                                            className="btn btn-sm btn-outline-success"
+                                                                            onClick={() =>
+                                                                                openRunsAction(
+                                                                                    'approve',
+                                                                                    [
+                                                                                        r.runId,
+                                                                                    ],
+                                                                                    `this ${comboLabel(combo)} run`,
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            Verify
+                                                                        </button>
+                                                                    )}
                                                                     <button
                                                                         type="button"
-                                                                        className="btn btn-sm btn-outline-success"
+                                                                        className="btn btn-sm btn-outline-danger"
                                                                         onClick={() =>
                                                                             openRunsAction(
-                                                                                'approve',
+                                                                                'remove',
                                                                                 [
                                                                                     r.runId,
                                                                                 ],
@@ -729,224 +526,286 @@ export function RunnerView({
                                                                             )
                                                                         }
                                                                     >
-                                                                        Approve
+                                                                        Remove…
                                                                     </button>
-                                                                )}
-                                                                <button
-                                                                    type="button"
-                                                                    className="btn btn-sm btn-outline-danger"
-                                                                    onClick={() =>
-                                                                        openRunsAction(
-                                                                            'remove',
-                                                                            [
-                                                                                r.runId,
-                                                                            ],
-                                                                            `this ${comboLabel(combo)} run`,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Remove…
-                                                                </button>
-                                                                <Link
-                                                                    className="btn btn-sm btn-outline-secondary"
-                                                                    href={`/games-v2/${gameSlug}/manage/run/${r.runId}`}
-                                                                >
-                                                                    Open
-                                                                </Link>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-
-                            {combo.manualTimes.length > 0 && (
-                                <>
-                                    <div className={styles.sectionHead}>
-                                        <h2 className="h6 mb-0">
-                                            Manual times
-                                            <span
-                                                className={styles.sectionCount}
-                                            >
-                                                {combo.manualTimes.length}
-                                            </span>
-                                        </h2>
+                                                                    <a
+                                                                        className="btn btn-sm btn-outline-secondary"
+                                                                        href={`/games-v2/${gameSlug}/manage/run/${r.runId}`}
+                                                                    >
+                                                                        Open
+                                                                    </a>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
                                     </div>
-                                    {combo.manualTimes.map((m) => (
-                                        <div
-                                            key={m.id}
-                                            className={styles.manualRow}
-                                        >
-                                            <div className={styles.manualTop}>
+                                )}
+
+                                {combo.manualTimes.length > 0 && (
+                                    <div className={styles.manualList}>
+                                        {combo.manualTimes.map((m) => (
+                                            <div
+                                                key={m.id}
+                                                className={styles.manualRow}
+                                            >
+                                                <div
+                                                    className={styles.manualTop}
+                                                >
+                                                    <span
+                                                        className={
+                                                            styles.manualTime
+                                                        }
+                                                    >
+                                                        <DurationToFormatted
+                                                            duration={m.timeMs}
+                                                        />
+                                                    </span>
+                                                    <span className="badge text-bg-secondary">
+                                                        {m.timing === 'gametime'
+                                                            ? 'GT'
+                                                            : 'RT'}
+                                                    </span>
+                                                    <VerificationBadge
+                                                        status={
+                                                            m.verificationStatus
+                                                        }
+                                                    />
+                                                    <div className="ms-auto d-inline-flex gap-1">
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-sm btn-outline-primary"
+                                                            onClick={() =>
+                                                                setDialog({
+                                                                    kind: 'manual',
+                                                                    combo,
+                                                                    existing: m,
+                                                                })
+                                                            }
+                                                        >
+                                                            Edit…
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-sm btn-outline-danger"
+                                                            onClick={() =>
+                                                                setDeletingManualId(
+                                                                    deletingManualId ===
+                                                                        m.id
+                                                                        ? null
+                                                                        : m.id,
+                                                                )
+                                                            }
+                                                        >
+                                                            Delete…
+                                                        </button>
+                                                    </div>
+                                                </div>
                                                 <span
                                                     className={
-                                                        styles.manualTime
+                                                        styles.manualMeta
                                                     }
                                                 >
-                                                    <DurationToFormatted
-                                                        duration={m.timeMs}
+                                                    {m.source === 'mod'
+                                                        ? `Set by moderator ${m.createdByName}`
+                                                        : m.source === 'self'
+                                                          ? 'Self-claimed by the runner'
+                                                          : 'System-generated'}
+                                                    {' · '}
+                                                    {fmtDate(m.createdAt)}
+                                                    {m.reason &&
+                                                        ` · "${m.reason}"`}
+                                                </span>
+                                                {m.verificationStatus ===
+                                                    'pending' && (
+                                                    <ManualTimeVerdictRow
+                                                        gameSlug={gameSlug}
+                                                        manualTimeId={m.id}
+                                                        onDone={afterMutation}
                                                     />
-                                                </span>
-                                                <span className="badge text-bg-secondary">
-                                                    {m.timing === 'gametime'
-                                                        ? 'GT'
-                                                        : 'RT'}
-                                                </span>
-                                                <VerificationBadge
-                                                    status={
-                                                        m.verificationStatus
-                                                    }
-                                                />
-                                                {m.evidenceUrl && (
-                                                    <a
-                                                        href={m.evidenceUrl}
-                                                        target="_blank"
-                                                        rel="noreferrer"
-                                                        className="small"
-                                                    >
-                                                        Evidence
-                                                    </a>
                                                 )}
-                                                <div className="ms-auto d-inline-flex gap-1">
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-sm btn-outline-primary"
-                                                        onClick={() =>
-                                                            setDialog({
-                                                                kind: 'manual',
-                                                                combo,
-                                                                existing: m,
-                                                            })
-                                                        }
-                                                    >
-                                                        Edit…
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-sm btn-outline-danger"
-                                                        onClick={() =>
-                                                            setDeletingManualId(
-                                                                deletingManualId ===
-                                                                    m.id
-                                                                    ? null
-                                                                    : m.id,
+                                                {deletingManualId === m.id && (
+                                                    <InlineReasonForm
+                                                        id={`delete-manual-${m.id}`}
+                                                        label="Delete reason"
+                                                        cta="Delete manual time"
+                                                        onSubmit={(reason) =>
+                                                            deleteManual(
+                                                                m,
+                                                                reason,
                                                             )
                                                         }
-                                                    >
-                                                        Delete…
-                                                    </button>
-                                                </div>
+                                                        onCancel={() =>
+                                                            setDeletingManualId(
+                                                                null,
+                                                            )
+                                                        }
+                                                    />
+                                                )}
                                             </div>
-                                            <span className={styles.manualMeta}>
-                                                {m.source === 'mod'
-                                                    ? `Set by moderator ${m.createdByName}`
-                                                    : m.source === 'self'
-                                                      ? 'Self-claimed by the runner'
-                                                      : 'System-generated'}
-                                                {' · '}
-                                                {fmtDate(m.createdAt)}
-                                                {m.reason && ` · “${m.reason}”`}
-                                            </span>
-                                            {m.verificationStatus ===
-                                                'pending' && (
-                                                <ManualTimeVerdictRow
-                                                    gameSlug={gameSlug}
-                                                    manualTimeId={m.id}
-                                                    onDone={afterMutation}
-                                                />
-                                            )}
-                                            {deletingManualId === m.id && (
-                                                <InlineReasonForm
-                                                    id={`delete-manual-${m.id}`}
-                                                    label="Delete reason"
-                                                    cta="Delete manual time"
-                                                    onSubmit={(reason) =>
-                                                        deleteManual(m, reason)
-                                                    }
-                                                    onCancel={() =>
-                                                        setDeletingManualId(
-                                                            null,
-                                                        )
-                                                    }
-                                                />
-                                            )}
-                                        </div>
-                                    ))}
-                                </>
-                            )}
-                        </>
+                                        ))}
+                                    </div>
+                                )}
+                            </section>
+                        ))
                     )}
-                </>
-            )}
+                </div>
 
-            <div className={styles.sectionHead}>
-                <h2 className="h6 mb-0">
-                    Moderation history
-                    <span className={styles.sectionCount}>
-                        {actions.length}
-                    </span>
-                </h2>
+                <div className={styles.sidePanel}>
+                    <div className={styles.sideCard}>
+                        <div className={styles.sideCardHead}>Ban state</div>
+                        {categoriesInPlay.map((cat) => {
+                            const rule = banState.categoryRules.find(
+                                (r) => r.categoryId === cat.id,
+                            );
+                            return (
+                                <div key={cat.id} className={styles.scopeRow}>
+                                    <div className={styles.scopeLabel}>
+                                        <div className={styles.scopeA}>
+                                            This board · {cat.display}
+                                        </div>
+                                        <div className={styles.scopeB}>
+                                            {rule
+                                                ? `Banned by ${rule.excludedByName} on ${fmtDate(rule.createdAt)}`
+                                                : banState.gameRule
+                                                  ? 'Covered by game-wide ban'
+                                                  : 'Not banned'}
+                                        </div>
+                                    </div>
+                                    {rule ? (
+                                        unbanRow(rule, cat.display)
+                                    ) : banState.gameRule ? null : (
+                                        <button
+                                            type="button"
+                                            className={`${styles.pillBtn} ${styles.pillBtnDanger}`}
+                                            onClick={() =>
+                                                setRunnerDialog({
+                                                    scope: 'board',
+                                                    category:
+                                                        resolvedCategoryFor(
+                                                            cat.id,
+                                                        ),
+                                                    subcategoryKey:
+                                                        combos.find(
+                                                            (c) =>
+                                                                c.categoryId ===
+                                                                cat.id,
+                                                        )?.subcategoryKey ?? '',
+                                                })
+                                            }
+                                        >
+                                            Ban…
+                                        </button>
+                                    )}
+                                </div>
+                            );
+                        })}
+                        <div className={styles.scopeRow}>
+                            <div className={styles.scopeLabel}>
+                                <div className={styles.scopeA}>
+                                    This game · {gameDisplay}
+                                </div>
+                                <div className={styles.scopeB}>
+                                    {banState.gameRule
+                                        ? `Banned by ${banState.gameRule.excludedByName} on ${fmtDate(banState.gameRule.createdAt)}`
+                                        : 'Not banned'}
+                                </div>
+                            </div>
+                            {banState.gameRule ? (
+                                unbanRow(banState.gameRule, gameDisplay)
+                            ) : (
+                                <button
+                                    type="button"
+                                    className={`${styles.pillBtn} ${styles.pillBtnDanger}`}
+                                    disabled={firstCombo == null}
+                                    onClick={() =>
+                                        firstCombo &&
+                                        setRunnerDialog({
+                                            scope: 'game',
+                                            category: resolvedCategoryFor(
+                                                firstCombo.categoryId,
+                                            ),
+                                            subcategoryKey:
+                                                firstCombo.subcategoryKey,
+                                        })
+                                    }
+                                >
+                                    Ban…
+                                </button>
+                            )}
+                        </div>
+                        <div className={styles.scopeRow}>
+                            <div className={styles.scopeLabel}>
+                                <div className={styles.scopeA}>Entire site</div>
+                                <div className={styles.scopeB}>Admins only</div>
+                            </div>
+                            <button
+                                type="button"
+                                className={styles.pillBtn}
+                                disabled={!canSiteBan || firstCombo == null}
+                                onClick={() =>
+                                    firstCombo &&
+                                    setRunnerDialog({
+                                        scope: 'site',
+                                        category: resolvedCategoryFor(
+                                            firstCombo.categoryId,
+                                        ),
+                                        subcategoryKey:
+                                            firstCombo.subcategoryKey,
+                                    })
+                                }
+                            >
+                                Ban…
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className={styles.sideCard}>
+                        <div className={styles.sideCardHead}>
+                            This runner in the log
+                            <span className={styles.sideCardCount}>
+                                {modLogTotal}
+                            </span>
+                        </div>
+                        {modLog.length === 0 ? (
+                            <p className="text-muted small mb-0">
+                                No moderation events involve this runner.
+                            </p>
+                        ) : (
+                            <ul className={logStyles.log}>
+                                {modLog.map((entry) => (
+                                    <LogRow
+                                        key={entry.id}
+                                        entry={entry}
+                                        gameSlug={gameSlug}
+                                        categories={categories}
+                                    />
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                </div>
             </div>
-            {actions.length === 0 ? (
-                <p className="text-muted">
-                    No moderation actions involve this runner (last year).
-                </p>
-            ) : (
-                <ul className={styles.historyList}>
-                    {actions.map((a) => {
-                        const runId =
-                            a.entity === 'finished_run' && a.target != null
-                                ? Number.parseInt(a.target, 10)
-                                : null;
-                        return (
-                            <li key={a.logId} className={styles.historyItem}>
-                                <span title={a.action}>
-                                    {historyActionLabel(a.action)}
-                                </span>
-                                <span className="text-muted small">
-                                    by {a.actorName}
-                                </span>
-                                {runId != null && Number.isFinite(runId) && (
-                                    <Link
-                                        className="small"
-                                        href={`/games-v2/${gameSlug}/manage/run/${runId}`}
-                                    >
-                                        run
-                                    </Link>
-                                )}
-                                <span className={styles.historyWhen}>
-                                    {fmtDateTime(a.timestamp)}
-                                </span>
-                                {a.remark && (
-                                    <p className={styles.historyRemark}>
-                                        “{a.remark}”
-                                    </p>
-                                )}
-                            </li>
-                        );
-                    })}
-                </ul>
-            )}
 
             {selected.size > 0 && (
-                <div
-                    className={`border-top bg-body shadow-lg p-2 d-flex align-items-center gap-2 ${styles.bulkBar}`}
-                >
-                    <span className="fw-bold">{selected.size} selected</span>
-                    <div className="ms-auto d-flex gap-2">
+                <div className={bulkBarStyles.bar}>
+                    <span className={bulkBarStyles.count}>
+                        {selected.size} run{selected.size === 1 ? '' : 's'}
+                    </span>
+                    <span className={bulkBarStyles.sub}>selected</span>
+                    <button
+                        type="button"
+                        className={bulkBarStyles.clear}
+                        onClick={() => setSelected(new Set())}
+                    >
+                        Clear
+                    </button>
+                    <span className={bulkBarStyles.verbs}>
                         <button
                             type="button"
-                            className="btn btn-sm btn-outline-secondary"
-                            onClick={() => setSelected(new Set())}
-                        >
-                            Clear
-                        </button>
-                        <button
-                            type="button"
-                            className="btn btn-sm btn-success"
+                            className={bulkBarStyles.pill}
                             onClick={() =>
                                 openRunsAction(
                                     'approve',
@@ -955,11 +814,11 @@ export function RunnerView({
                                 )
                             }
                         >
-                            Approve
+                            Verify
                         </button>
                         <button
                             type="button"
-                            className="btn btn-sm btn-danger"
+                            className={`${bulkBarStyles.pill} ${bulkBarStyles.pillDanger}`}
                             onClick={() =>
                                 openRunsAction(
                                     'remove',
@@ -972,7 +831,7 @@ export function RunnerView({
                         </button>
                         <button
                             type="button"
-                            className="btn btn-sm btn-outline-secondary"
+                            className={bulkBarStyles.pill}
                             onClick={() =>
                                 openRunsAction(
                                     'restore',
@@ -983,7 +842,7 @@ export function RunnerView({
                         >
                             Restore
                         </button>
-                    </div>
+                    </span>
                 </div>
             )}
 
@@ -992,7 +851,6 @@ export function RunnerView({
                     gameSlug={gameSlug}
                     verb={dialog.verb}
                     target={dialog.target}
-                    defaultBanScope={dialog.banScope}
                     onDone={afterMutation}
                     onClose={() => setDialog(null)}
                 />
@@ -1008,6 +866,21 @@ export function RunnerView({
                     existing={dialog.existing}
                     onDone={afterMutation}
                     onClose={() => setDialog(null)}
+                />
+            )}
+            {runnerDialog && (
+                <RunnerDialog
+                    open
+                    onClose={() => setRunnerDialog(null)}
+                    row={rosterRow}
+                    category={runnerDialog.category}
+                    variables={variables}
+                    gameSlug={gameSlug}
+                    subcategoryKey={runnerDialog.subcategoryKey}
+                    canSiteBan={canSiteBan}
+                    initialScope={runnerDialog.scope}
+                    hideDossierLink
+                    onMutated={afterMutation}
                 />
             )}
         </div>

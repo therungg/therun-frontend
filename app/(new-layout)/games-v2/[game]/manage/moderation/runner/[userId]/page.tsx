@@ -2,30 +2,27 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
+import { listCategoryVariables } from '~src/lib/leaderboard-variables';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { listManualTimes } from '~src/lib/moderation/manual-times';
 import {
     getCategoryRoster,
     getUserEligibleRuns,
     listExclusionRules,
-    listModActions,
 } from '~src/lib/moderation/mass-mgmt';
+import { getPublicModLog } from '~src/lib/moderation/public-mod-log';
+import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata from '~src/utils/metadata';
 import type {
     GameExclusionRuleRow,
     ManualTimeRow,
-    ModActionRow,
+    PublicModLogEntry,
     UserEligibleRunRow,
 } from '../../../../../../../../types/moderation.types';
 import { loadConsoleChrome } from '../../../console/load-chrome';
 import { SubrouteChrome } from '../../../console/subroute-chrome';
 import { resolveRunnerBackTarget } from './runner-back-target';
-import {
-    buildBanState,
-    buildCombos,
-    buildSummary,
-    filterRunnerActions,
-} from './runner-model';
+import { buildBanState, buildCombos, buildSummary } from './runner-model';
 import { RunnerView } from './runner-view';
 
 interface Props {
@@ -33,10 +30,10 @@ interface Props {
     searchParams: Promise<{ from?: string; categoryId?: string }>;
 }
 
-// The audit feed is game-scoped (no runner filter server-side), so pull a
-// generous window and slice it down to this runner in the model.
-const ACTIONS_DAYS = 365;
-const ACTIONS_LIMIT = 500;
+// The runner's slice of the public mod log — E reuses F's endpoint
+// (targetUserId query param) instead of the old game-scoped
+// listModActions()+filterRunnerActions() derivation.
+const RUNNER_LOG_LIMIT = 25;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { game: slug } = await params;
@@ -61,10 +58,13 @@ export default async function RunnerPage({ params, searchParams }: Props) {
     if (!game) notFound();
     if (!canModerateGame(session, game.name)) notFound();
 
+    const ability = defineAbilityFor(session);
+    const canSiteBan = ability.can('moderate', 'admins');
+
     // Every feed degrades to empty rather than failing the page — a runner
     // with zero eligible runs can still be banned, have manual times, or
     // have history worth showing.
-    const [rows, manualTimes, rules, actions, resolvedCats, chrome] =
+    const [rows, manualTimes, rules, modLog, resolvedCats, chrome] =
         await Promise.all([
             getUserEligibleRuns(session.id, game.id, userId).catch(
                 () => [] as UserEligibleRunRow[],
@@ -75,10 +75,24 @@ export default async function RunnerPage({ params, searchParams }: Props) {
             listExclusionRules(session.id, game.id).catch(
                 () => [] as GameExclusionRuleRow[],
             ),
-            listModActions(session.id, game.id, {
-                days: ACTIONS_DAYS,
-                limit: ACTIONS_LIMIT,
-            }).catch(() => [] as ModActionRow[]),
+            // Reuses workstream F's public per-game mod log, filtered to
+            // this runner via targetUserId — this runner's slice of the
+            // same feed the board's public "Moderation" tab reads, not a
+            // mod-only derivation.
+            getPublicModLog({
+                gameId: game.id,
+                targetUserId: userId,
+                limit: RUNNER_LOG_LIMIT,
+            }).catch(
+                () =>
+                    ({
+                        items: [] as PublicModLogEntry[],
+                        total: 0,
+                        limit: RUNNER_LOG_LIMIT,
+                        offset: 0,
+                        hasMore: false,
+                    }) as const,
+            ),
             resolveCategory(game.id),
             loadConsoleChrome(session, game),
         ]);
@@ -86,12 +100,11 @@ export default async function RunnerPage({ params, searchParams }: Props) {
     const combos = buildCombos(rows, manualTimes, resolvedCats.categories);
     const banState = buildBanState(rules, userId);
     const summary = buildSummary(combos);
-    const runnerActions = filterRunnerActions(
-        actions,
-        new Set(rows.map((r) => r.runId)),
-        new Set(manualTimes.map((m) => m.id)),
-        userId,
-    );
+    const variables = await listCategoryVariables(
+        session.id,
+        game.id,
+        resolvedCats.categories.map((c) => c.id),
+    ).catch(() => []);
 
     // No name-by-id resolver exists in src/lib; recover the display name
     // from whichever runner-scoped feed carries one, then fall back to a
@@ -140,7 +153,11 @@ export default async function RunnerPage({ params, searchParams }: Props) {
                 combos={combos}
                 banState={banState}
                 summary={summary}
-                actions={runnerActions}
+                categories={resolvedCats.categories}
+                variables={variables}
+                canSiteBan={canSiteBan}
+                modLog={modLog.items}
+                modLogTotal={modLog.total}
                 backHref={backTarget.href}
                 backLabel={backTarget.label}
             />

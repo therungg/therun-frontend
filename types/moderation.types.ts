@@ -115,7 +115,10 @@ export interface DeleteManualTimeResult {
 
 // ── §B Bulk verdicts ─────────────────────────────────────────────────────────
 
-export type VerdictAction = 'verify' | 'reject' | 'unreject';
+// `unverify` (verified → pending) is the one missing inverse (design doc
+// §D.2) — backend support landed on board-mod-unified-log; see
+// action-model.ts's undo-of-verify wiring in run-action-dialog.tsx.
+export type VerdictAction = 'verify' | 'reject' | 'unreject' | 'unverify';
 
 export interface VerdictPreviewInput {
     action: VerdictAction;
@@ -137,6 +140,14 @@ export interface VerdictPreviewResult {
     affectedRunCount: number;
     affectedLeaderboards: AffectedLeaderboard[];
     sampleRuns: VerdictSampleRun[];
+    /** The status every affected run will move to. */
+    newStatus?: string;
+    /** Current-status histogram of the runs targeted by the request. */
+    statusBreakdown?: Record<string, number>;
+    /** Requested runs whose current status makes the action a no-op (e.g. `unreject` on a verified run). */
+    skippedRunCount?: number;
+    /** Requested run ids that don't resolve to a real run. */
+    notFoundRunCount?: number;
 }
 
 export interface BulkVerdictInput {
