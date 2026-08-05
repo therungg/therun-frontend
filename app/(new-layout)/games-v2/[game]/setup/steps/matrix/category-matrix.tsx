@@ -17,7 +17,6 @@ import {
     showsOtherTime,
     TIMING_LABEL,
 } from '~src/lib/setup/board-defaults';
-import { subBoardCount } from '~src/lib/setup/variable-view';
 import { formatTimeInput, parseTimeInput } from '~src/lib/time-input';
 import type { ResolvedCategory } from '../../../../../../../types/leaderboards.types';
 import { bulkUpdateCategoriesAction } from '../../actions/bulk-update-categories.action';
@@ -143,9 +142,8 @@ export function CategoryMatrix({
         }`;
     };
 
-    // select, name, timing, other time, minimum, rules, ranking, ms, boards,
-    // expander
-    const columnCount = 10;
+    // select, name, timing, other time, minimum, rules, ranking, ms, expander
+    const columnCount = 9;
 
     return (
         <div className={styles.panel}>
@@ -174,7 +172,6 @@ export function CategoryMatrix({
                             <th>Rules</th>
                             <th>Ranking</th>
                             <th>ms</th>
-                            <th>Boards</th>
                             <th>
                                 <span className="visually-hidden">
                                     More settings
@@ -486,19 +483,6 @@ export function CategoryMatrix({
                                                             )}
                                                         </option>
                                                     </select>
-                                                </td>
-
-                                                {/* How many leaderboards this
-                                                    category ends up with once
-                                                    its subcategories are
-                                                    applied — the tie between
-                                                    this zone and the one
-                                                    below. */}
-                                                <td className={styles.varsCell}>
-                                                    {subBoardCount(
-                                                        c.id,
-                                                        data.variables,
-                                                    )}
                                                 </td>
 
                                                 <td>

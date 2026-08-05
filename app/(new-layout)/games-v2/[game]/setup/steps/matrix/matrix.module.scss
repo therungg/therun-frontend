@@ -235,11 +235,6 @@
     background: color-mix(in srgb, dt.$accent-amber 10%, transparent);
 }
 
-.varsCell {
-    @include board.mono-time;
-    color: var(--bs-tertiary-color);
-}
-
 // The row's disclosure. Deliberately the quietest control in the row: it is a
 // way in, not a thing to do.
 .expander {
