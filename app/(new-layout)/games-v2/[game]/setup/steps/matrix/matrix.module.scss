@@ -227,141 +227,130 @@
     background: color-mix(in srgb, dt.$accent-amber 10%, transparent);
 }
 
-// The row's disclosure. Deliberately the quietest control in the row: it is a
-// way in, not a thing to do.
-.expander {
-    background: transparent;
-    border: 0;
-    color: var(--bs-tertiary-color);
-    font-size: dt.$font-size-md;
-    line-height: 1;
-    padding: dt.$spacing-xs;
+// ---- Icon cell ----------------------------------------------
+// The cell IS the control: a thumbnail when there is one, a dashed square when
+// there is not, and either opens the file picker. An image was the one thing
+// that looked like it needed a panel; it does not.
+
+.iconCell {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+}
+
+.iconSlot {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: dt.$radius-sm;
+    border: 1px solid transparent;
     cursor: pointer;
-    transition: color dt.$transition-fast;
+    transition: border-color dt.$transition-fast,
+        background-color dt.$transition-fast;
 
     &:hover {
-        color: var(--bs-body-color);
+        border-color: rgba(var(--bs-primary-rgb), 0.5);
+        background: rgba(var(--bs-primary-rgb), 0.08);
     }
 
-    &:focus-visible {
+    &:focus-within {
         outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
         outline-offset: 1px;
     }
 }
 
-// ---- Expanded row ------------------------------------------
-// Everything a category has that is not worth a column. Expands under its own
-// row so the matrix stays on screen above and below — the whole point of
-// replacing the category detail screen.
-
-.rulesRow td {
-    padding: 0;
-    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+// Empty reads as a slot waiting to be filled, not as a missing image.
+.iconEmpty {
+    border-style: dashed;
+    border-color: rgba(var(--bs-border-color-rgb), 0.6);
+    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-sm;
+    line-height: 1;
 }
 
-.rowPanel {
-    margin: 0 0 dt.$spacing-sm;
-    border-radius: dt.$radius-md;
-    background: rgba(var(--bs-secondary-bg-rgb), 0.4);
-    border-left: 3px solid var(--bs-primary);
-    white-space: normal;
+.iconImage {
+    width: 24px;
+    height: 24px;
+    border-radius: dt.$radius-sm;
+    object-fit: cover;
+    display: block;
+}
+
+.iconClear {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    line-height: 1;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    cursor: pointer;
+
+    &:hover {
+        color: var(--bs-danger);
+    }
+}
+
+// ---- Rules dialog -------------------------------------------
+// The one setting that needs real room, so the one that takes over. Expanding
+// a row to hold a paragraph pushed the rest of the grid half a screen down and
+// made it jump on every open and close.
+
+.dialogBackdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1080;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: dt.$spacing-lg;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(2px);
+}
+
+.dialog {
+    display: flex;
+    flex-direction: column;
+    width: min(44rem, 100%);
+    max-height: 82vh;
+    border-radius: dt.$radius-lg;
+    background: var(--board-surface-bg, var(--bs-body-bg));
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
     overflow: hidden;
 }
 
-.paneHead {
+.dialogHeader {
+    @include board.board-dialog-header;
+}
+
+.dialogTitle {
+    @include board.board-dialog-title;
+}
+
+.dialogLede {
+    margin: 0.15rem 0 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.dialogBody {
+    @include board.board-dialog-body;
+}
+
+.dialogFooter {
+    @include board.board-dialog-footer;
     display: flex;
     align-items: center;
-    gap: dt.$spacing-md;
-    padding: dt.$spacing-sm dt.$spacing-lg;
-    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.25);
-}
-
-.paneTitle {
-    @include board.board-eyebrow;
-}
-
-.paneTabs {
-    display: flex;
     gap: dt.$spacing-xs;
 }
 
-.paneTab {
-    @include board.board-chip;
-    font-size: dt.$font-size-2xs;
-    border-color: transparent;
-    color: var(--bs-secondary-color);
-
-    &:hover {
-        color: var(--bs-body-color);
-    }
+.dialogSpacer {
+    flex: 1;
 }
 
-.paneTabOn {
-    border-color: rgba(var(--bs-primary-rgb), 0.5);
-    background: rgba(var(--bs-primary-rgb), 0.12);
-    color: var(--bs-emphasis-color);
-}
-
-.paneClose {
-    margin-left: auto;
-    background: transparent;
-    border: 0;
-    color: var(--bs-tertiary-color);
-    cursor: pointer;
-    line-height: 1;
-
-    &:hover {
-        color: var(--bs-body-color);
-    }
-}
-
-.panePad {
-    padding: dt.$spacing-lg;
-}
-
-.paneNote {
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-    margin: 0;
-}
-
-.paneError {
-    font-size: dt.$font-size-sm;
-    color: var(--bs-danger);
-    margin: dt.$spacing-sm 0 0;
-}
-
-.emblemRow {
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-md;
-    flex-wrap: wrap;
-}
-
-.emblemImage {
-    border-radius: dt.$radius-sm;
-    object-fit: cover;
-}
-
-.emblemEmpty {
-    @include board.board-section-count;
-    width: 3rem;
-    text-align: center;
-}
-
-.rulesPanel {
-    padding: dt.$spacing-lg;
-}
-
-.rulesFoot {
-    display: flex;
-    margin-top: dt.$spacing-sm;
-}
-
-.rulesActions {
-    margin-left: auto;
-    display: flex;
-    gap: dt.$spacing-xs;
+.dialogSave {
+    @include board.board-btn-primary;
 }
 
 .rulesTextarea {

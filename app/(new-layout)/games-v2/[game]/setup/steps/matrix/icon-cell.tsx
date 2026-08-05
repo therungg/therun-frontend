@@ -18,22 +18,23 @@ interface Props {
 }
 
 /**
- * The icon shown next to a category on the board.
+ * The category's board icon, uploaded from its own matrix cell.
  *
- * The only per-category field with nothing to inherit and no sensible column —
- * an image cell in a 30-row matrix is noise. It gets a pane instead, so the
- * matrix stays the one place everything is set without carrying a picture in
- * every row.
+ * An image was the one thing that looked like it needed a panel, which is what
+ * kept the expanding row alive. It does not: the cell IS the control — a
+ * thumbnail when there is one, a dashed square when there is not, and clicking
+ * either opens the file picker. That reads as an icon slot in a way a tab
+ * labelled "Icon" never did, and it is the only place on the screen where the
+ * value and the editor can be the same object.
  *
- * Picking a file uploads it straight away (presigned PUT) and then saves the
- * resulting URL, so there is no half state where an upload succeeded but the
- * category never got it.
+ * Picking a file uploads it (presigned PUT) and saves the resulting URL in one
+ * go, so there is no half state where the upload succeeded but the category
+ * never got it.
  */
-export function EmblemPanel({ gameSlug, gameId, category }: Props) {
+export function IconCell({ gameSlug, gameId, category }: Props) {
     const router = useRouter();
     const [isSaving, startSave] = useTransition();
     const [uploading, setUploading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
     const imageUrl = category.imageUrl ?? '';
     const busy = isSaving || uploading;
@@ -47,14 +48,9 @@ export function EmblemPanel({ gameSlug, gameId, category }: Props) {
                 imageUrl: next,
             });
             if ('error' in res) {
-                setError(res.error);
+                toast.error(res.error);
                 return;
             }
-            toast.success(
-                next
-                    ? `Icon set for ${category.display}.`
-                    : `Icon removed from ${category.display}.`,
-            );
             router.refresh();
         });
     };
@@ -63,14 +59,13 @@ export function EmblemPanel({ gameSlug, gameId, category }: Props) {
         const file = e.currentTarget.files?.[0];
         e.currentTarget.value = '';
         if (!file) return;
-        setError(null);
 
         if (!ALLOWED_TYPES.includes(file.type)) {
-            setError('Image must be PNG, JPEG, or WEBP.');
+            toast.error('Icon must be PNG, JPEG, or WEBP.');
             return;
         }
         if (file.size > MAX_SIZE) {
-            setError('Image must be 2 MB or smaller.');
+            toast.error('Icon must be 2 MB or smaller.');
             return;
         }
 
@@ -84,7 +79,7 @@ export function EmblemPanel({ gameSlug, gameId, category }: Props) {
                 contentLength: file.size,
             });
             if ('error' in res) {
-                setError(res.error);
+                toast.error(res.error);
                 return;
             }
             const put = await fetch(res.result.uploadUrl, {
@@ -93,61 +88,62 @@ export function EmblemPanel({ gameSlug, gameId, category }: Props) {
                 headers: { 'Content-Type': file.type },
             });
             if (!put.ok) {
-                setError(`Upload failed (${put.status}).`);
+                toast.error(`Upload failed (${put.status}).`);
                 return;
             }
             save(res.result.imageUrl);
         } catch {
-            setError('Upload failed.');
+            toast.error('Upload failed.');
         } finally {
             setUploading(false);
         }
     };
 
     return (
-        <div className={styles.panePad}>
-            <div className={styles.emblemRow}>
+        <span className={styles.iconCell}>
+            <label
+                className={`${styles.iconSlot} ${
+                    imageUrl ? '' : styles.iconEmpty
+                }`}
+                title={
+                    imageUrl
+                        ? `Replace ${category.display}'s icon`
+                        : `Add an icon for ${category.display}`
+                }
+            >
                 {imageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                         src={imageUrl}
                         alt=""
-                        width={48}
-                        height={48}
-                        className={styles.emblemImage}
+                        width={24}
+                        height={24}
+                        className={styles.iconImage}
                     />
                 ) : (
-                    <span className={styles.emblemEmpty}>none</span>
+                    <span aria-hidden>{uploading ? '…' : '+'}</span>
                 )}
+                <input
+                    type="file"
+                    accept={ALLOWED_TYPES.join(',')}
+                    disabled={busy}
+                    onChange={onFile}
+                    className="visually-hidden"
+                    aria-label={`Icon for ${category.display}`}
+                />
+            </label>
 
-                <label className={styles.rulesChip}>
-                    {uploading ? 'Uploading…' : 'Choose image'}
-                    <input
-                        type="file"
-                        accept={ALLOWED_TYPES.join(',')}
-                        disabled={busy}
-                        onChange={onFile}
-                        className="visually-hidden"
-                    />
-                </label>
-
-                {imageUrl && (
-                    <button
-                        type="button"
-                        className={styles.rulesChip}
-                        disabled={busy}
-                        onClick={() => save(null)}
-                    >
-                        Remove
-                    </button>
-                )}
-
-                <span className={styles.paneNote}>
-                    PNG, JPEG or WEBP, up to 2 MB.
-                </span>
-            </div>
-
-            {error && <p className={styles.paneError}>{error}</p>}
-        </div>
+            {imageUrl && (
+                <button
+                    type="button"
+                    className={styles.iconClear}
+                    disabled={busy}
+                    aria-label={`Remove ${category.display}'s icon`}
+                    onClick={() => save(null)}
+                >
+                    ✕
+                </button>
+            )}
+        </span>
     );
 }

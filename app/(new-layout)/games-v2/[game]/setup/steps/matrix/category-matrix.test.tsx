@@ -178,24 +178,24 @@ describe('CategoryMatrix', () => {
         );
     });
 
-    it('opens the rules editor in place, leaving the matrix rendered', () => {
+    it('opens rules in a dialog — the one setting that needs room', () => {
         renderMatrix();
         fireEvent.click(screen.getByRole('button', { name: 'none' }));
-        expect(screen.getByLabelText('Rules for 16 Star')).toBeTruthy();
-        // The other category's row is still on screen — the whole point of
-        // the inline panel over a screen takeover.
-        expect(screen.getByLabelText('Timing for Any%')).toBeTruthy();
+        const dialog = screen.getByRole('dialog', { name: '16 Star rules' });
+        expect(dialog).toBeTruthy();
+        expect(
+            within(dialog).getByRole('button', { name: 'Use board template' }),
+        ).toBeTruthy();
     });
 
-    it('reaches every other category setting from the same row, without leaving the list', () => {
+    it('puts the icon upload in its own cell, with no panel to open', () => {
         renderMatrix();
-        fireEvent.click(
-            screen.getByRole('button', { name: 'More settings for Any%' }),
-        );
-        // The panes are tabs, not screens: the matrix is still rendered.
-        fireEvent.click(screen.getByRole('tab', { name: 'Icon' }));
-        expect(screen.getByText('Choose image')).toBeTruthy();
-        expect(screen.getByLabelText('Timing for 16 Star')).toBeTruthy();
+        // The cell is the control: a file input per row, not a tab.
+        expect(screen.getByLabelText('Icon for Any%')).toBeTruthy();
+        expect(screen.getByLabelText('Icon for 16 Star')).toBeTruthy();
+        expect(
+            screen.queryByRole('button', { name: /More settings/ }),
+        ).toBeNull();
     });
 
     it('offers only the clock the category does not rank by', () => {
