@@ -1,4 +1,4 @@
-# Separate leaderboards vs. run details — splitting one primitive into two concepts
+# Subcategories vs. filters — splitting one primitive into two concepts
 
 Date: 2026-08-05
 Repo: therun-frontend (presentation only; no API or schema change)
@@ -33,51 +33,60 @@ view). A filter variable is **one more control on a bar that already exists**.
 
 ## Vocabulary
 
-Three nested levels, no shared word between them, and the words name the
-consequence rather than the implementation:
+Three nested levels, no shared word between them. **Call each thing by its
+name** (Joey, 2026-08-05) rather than by its consequence:
 
 - **Categories** — what you run. *Any%, 100%, 16 Star*
-- **Separate leaderboards** — which board within a category. *Platform: N64 / VC / Emulator*
-- **Run details** — what you filter by once you are on a board. *Route, Country, Year*
+- **Subcategories** — which leaderboard within a category. A **subcategory
+  group** (*Platform*) holds **subcategory options** (*N64, VC, Emulator*);
+  each option is a subcategory with its own record.
+- **Filters** — what you narrow a leaderboard by once you are on it. A
+  **filter** (*Route*) holds **filter options**, sitting beside the built-in
+  Country / Year / Verified / Timing.
 
-A moderator never reads "variable", "role", "subcategory", "bucket" or
-`nameNormalized`. `src/lib/variables/language.ts` is already the single source
-for this surface's words (`ROLE_LABEL`, `roleConsequence`, `boardCountLabel`)
-and stays that source — it grows section headings, the creation question and
-the conversion copy. Internals (`role`, `'subcategory'`, `bucketKey`, the API
-contract) are **unchanged everywhere**.
+Earlier drafts used "Separate leaderboards" and "Run details" — descriptions of
+the consequence, which read as euphemisms for words the community already uses.
+"Subcategory" is the runner's word and matches SRC, so the risk of it colliding
+with *category* is smaller than the cost of inventing a synonym.
 
-Rejected alternatives: "Sub-boards / Tags" (jargon leak — sub-board is our
-internal word), "Board splits / Filters" ("split" needs a beat of thought, and
-"filter" only reads as an opposite once you already know the first).
+The one word that stays banned is **variable**: it is the word that spans both
+and therefore the word that made them look like the same thing. A moderator
+also never reads "role", "bucket" or `nameNormalized`.
+
+`src/lib/variables/language.ts` is the single source for this surface's words
+(`SECTION`, `BUILT_IN_FILTERS`, `conversionLabel`, `driftNotice`, plus the
+older `ROLE_LABEL` / `roleConsequence`). Internals (`role`, `'subcategory'`,
+`bucketKey`, the API contract) are **unchanged everywhere**.
 
 ## Surface: two sections, not one list with a role column
 
 ```
-─ Separate leaderboards ─────────────────────────── 4 boards ─
-  Each combination below gets its own board and its own record.
+─ Subcategories ──────────────────────────── 9 leaderboards ─
+  Split up a category into different subcategories. Each subcategory
+  is its own leaderboard with its own record.
 
-  ┌ Platform ─────────────────────── on 4 of 4 categories ─ ▾ ┐
+  ┌ Platform ────── on 4 of 4 · 3 subcategory options ───── ▾ ┐
   │                    Any%   100%   16 Star   70 Star        │
   │  N64                ◉      ◉       ◉         ◉  ← runs    │
   │  Virtual Console    ●      ●       ○         ●    that    │
   │  Emulator           ○      ●       ○         ○    don't   │
   │                                                    say    │
-  │  Any% now has 2 boards:  Any% · N64  /  Any% · VC  land   │
-  └──────────────────────────────────────────────── here ─────┘
+  │  Any% → 2 subcategories · 100% → 3 · 16 Star → 1   land   │
+  │  [Make this a filter]                              here   │
+  └───────────────────────────────────────────────────────────┘
 
-  [+ Split the board by…]
+  [+ Add a subcategory group]
 
-─ Run details ───────────────────────────────────────────────
-  Runners filter the board with these. No effect on records.
+─ Filters ────────────────────────────────────────── 1 added ─
+  Runners narrow a leaderboard with these. Filters do not create
+  subcategories and do not affect records.
 
   Always available     Country · Year · Verified · Timing
                        ↑ built in, nothing to configure
 
-  You've added
-  ┌ Route ──────────────── on 2 of 4 · 3 options ──────────  ▸ ┐
+  ┌ Route ────────── on 2 of 4 · 3 filter options ───────── ▸ ┐
 
-  [+ Collect another detail]
+  [+ Add a filter]
 ```
 
 The bucket × category grid from the step-4 redesign
@@ -91,8 +100,8 @@ different field set.
 which section you were standing in. The creation flow asks exactly one
 question, phrased as an outcome:
 
-> Should each option get its own leaderboard and its own world record?
-> **Yes** → separate leaderboards · **No** → a run detail
+> Should each option be its own subcategory with its own record?
+> **Yes** → a subcategory group · **No** → a filter
 
 `variable-form.tsx`'s current role radio + explainer block is replaced by this
 single question on create, and disappears entirely on edit (see 3).
@@ -112,8 +121,8 @@ where it does nothing. Sub-board counts (`subBoardCount`) and the concrete
 resulting board names render only up top. Aliases appear in both, framed as a
 "also known as" detail rather than structure.
 
-**3. Changing your mind is an explicit conversion, not a dropdown.** "Move to
-run details" / "Split the board by this" — a named action with the existing
+**3. Changing your mind is an explicit conversion, not a dropdown.** "Make this
+a filter" / "Make this a subcategory group" — a named action with the existing
 `describeConsequences` / `ConsequenceDialog` preview, because it either
 collapses N boards into 1 or explodes 1 into N. Today it is a two-click silent
 catastrophe on a `<select>`.
@@ -123,8 +132,8 @@ catastrophe on a `<select>`.
 `⚠ drift` marker in a summary row of the grid. Surface it instead as a notice
 with two resolve buttons:
 
-> **Platform** splits the board on Any%, 100%, 16 Star but is only a run detail
-> on 70 Star. → *Split 70 Star too* · *Make it a detail everywhere*
+> **Platform** makes subcategories on Any%, 100% and 16 Star but is only a
+> filter on 70 Star. → *Subcategories everywhere* · *Filter everywhere*
 
 `VariableGroup.roleDrift` already computes this; only presentation changes.
 
@@ -143,10 +152,10 @@ instead of a rejected save.
 stages *every* toggle behind preview → confirm → apply, which makes adding a
 Route option feel as dangerous as re-slicing the board.
 
-- **Separate leaderboards** — keep staging. Edits relocate runs; preview the
-  whole set once, confirm once.
-- **Run details** — write immediately, like the scalar matrix in zone 1.
-  Additive, reversible, touches no standings.
+- **Subcategories** — keep staging. Edits relocate runs; preview the whole set
+  once, confirm once.
+- **Filters** — write immediately, like the scalar matrix in zone 1. Additive,
+  reversible, touches no standings.
 
 This mirrors the scalar-matrix / variables-grid asymmetry already argued in
 `2026-08-05-setup-step-4-redesign-design.md`, one level deeper.
@@ -175,12 +184,12 @@ The vocabulary has to hold everywhere or the confusion just moves.
 
 | Surface | File | State |
 |---|---|---|
-| Public board — splits | `filters/subcategory-pills.tsx` | Already separate from the filter bar. Check the heading/copy uses the new words. |
-| Public board — details | `filters/filter-bar.tsx`, `variable-pills.tsx`, `filters-popover.tsx` | Filter bar mixes reserved params + filter variables, which is **correct** under this model — no structural change, copy only. |
-| Setup step 4 | `setup/steps/variables/variables-grid.tsx` | **Done** — two sections, asymmetric writes, drift-as-error, conversion action, per-section add form. |
-| Console | `manage/variables/variables-section.tsx`, `variable-table.tsx`, `variable-row.tsx`, `variable-form.tsx` | Same split; role radio → creation question + conversion action. |
-| Submission | `submit/submit-form.tsx` | Already splits `subcatDefs` / `filterDefs` (l. 223-224). Frame splits as "which board is this?" (required-ish) and details as optional. |
-| Board curation | `manage/boards/subcategory-bands.tsx`, `board-controls.tsx` | Reads splits only; copy check. |
+| Public board — subcategories | `filters/subcategory-pills.tsx` | Already separate from the filter bar. Check the heading/copy uses the new words. |
+| Public board — filters | `filters/filter-bar.tsx`, `variable-pills.tsx`, `filters-popover.tsx` | Filter bar mixes reserved params + filter variables, which is **correct** under this model — no structural change, copy only. |
+| Setup step 4 | `setup/steps/variables/variables-grid.tsx` | **Done** — Subcategories + Filters sections, asymmetric writes, drift-as-error, conversion action, per-section add form. |
+| Console | `manage/variables/variables-section.tsx`, `variable-table.tsx`, `variable-row.tsx`, `variable-form.tsx` | Same split and same words; role radio → creation question + conversion action. |
+| Submission | `submit/submit-form.tsx` | Already splits `subcatDefs` / `filterDefs` (l. 223-224). Frame subcategories as "which subcategory is this?" (required-ish) and filters as optional. |
+| Board curation | `manage/boards/subcategory-bands.tsx`, `board-controls.tsx` | Reads subcategories only; copy check. |
 | Words | `src/lib/variables/language.ts` | Extend; keep as the only place the copy lives. |
 
 ## Explicitly unchanged
