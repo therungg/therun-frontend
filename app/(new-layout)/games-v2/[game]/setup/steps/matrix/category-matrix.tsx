@@ -142,10 +142,6 @@ export function CategoryMatrix({
                     {mains.length} on the board
                 </span>
             </div>
-            <p className={styles.panelBlurb}>
-                What each category shows on the board. Anything not set here
-                follows the top row.
-            </p>
             <div className={styles.scroller}>
                 <table className={styles.grid}>
                     <thead>
