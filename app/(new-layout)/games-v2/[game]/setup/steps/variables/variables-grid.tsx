@@ -347,6 +347,56 @@ export function VariablesGrid({ data }: { data: WizardData }) {
     };
 
     /**
+     * Moving a group up or down the section.
+     *
+     * Display order only: the backend composes a subcategory key from
+     * `nameNormalized` sorted alphabetically (resolve-run-variables.ts), so
+     * `sortOrder` never participates and no run can change leaderboard because
+     * of this. That is why it writes straight through instead of asking.
+     *
+     * The whole section is renumbered rather than swapping two values, because
+     * every group starts life at 0 and swapping zeros moves nothing.
+     */
+    const buildReorderChanges = (
+        section: VariableGroup[],
+        group: VariableGroup,
+        delta: number,
+    ): { changes: VariableChangeInput[]; slugs: string[] } => {
+        const from = section.findIndex(
+            (g) => g.nameNormalized === group.nameNormalized,
+        );
+        const to = from + delta;
+        if (from < 0 || to < 0 || to >= section.length) {
+            return { changes: [], slugs: [] };
+        }
+        const ordered = [...section];
+        const [moved] = ordered.splice(from, 1);
+        ordered.splice(to, 0, moved);
+
+        const slugs: string[] = [];
+        const changes: VariableChangeInput[] = [];
+        ordered.forEach((g, index) => {
+            for (const state of g.byCategory.values()) {
+                if (state.row.sortOrder === index) continue;
+                const cat = mains.find((c) => c.id === state.categoryId);
+                if (cat) slugs.push(cat.name);
+                changes.push({
+                    categoryId: state.categoryId,
+                    input: {
+                        name: g.name,
+                        role: state.role,
+                        values: state.row.values,
+                        defaultValueIndex: state.row.defaultValueIndex,
+                        sortOrder: index,
+                        description: state.row.description,
+                    },
+                });
+            }
+        });
+        return { changes, slugs };
+    };
+
+    /**
      * Renaming the group, on every category that carries it.
      *
      * A name can only be board-level: letting it drift per category is how a
@@ -406,7 +456,11 @@ export function VariablesGrid({ data }: { data: WizardData }) {
     const buildCreateChanges = (
         name: string,
         role: VariableRoleId,
-        options: string[],
+        // Each option is its canonical label followed by the other spellings
+        // that resolve to it — the same [label, ...aliases] shape a stored row
+        // uses, so a group can be created complete instead of created bare and
+        // then opened option by option to add spellings.
+        options: string[][],
         defaultIndex: number,
     ): { changes: VariableChangeInput[]; slugs: string[] } => ({
         slugs: mains.map((c) => c.name),
@@ -415,7 +469,7 @@ export function VariablesGrid({ data }: { data: WizardData }) {
             input: {
                 name,
                 role,
-                values: options.map((o) => [o]),
+                values: options,
                 defaultValueIndex: role === 'subcategory' ? defaultIndex : null,
                 sortOrder: 0,
                 description: null,
@@ -613,6 +667,16 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                 group.name,
                 buildDefaultChangeAll(group, bucketKey),
             ),
+        onMoveGroup: (
+            section: VariableGroup[],
+            group: VariableGroup,
+            delta: number,
+        ) =>
+            applyNow(
+                group.nameNormalized,
+                group.name,
+                buildReorderChanges(section, group, delta),
+            ),
         onAddOption: (group: VariableGroup, bucket: BoardBucket) =>
             openPreview(
                 group.nameNormalized,
@@ -638,7 +702,7 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                 group.name,
                 buildDeleteChanges(group),
             ),
-        onCreate: (name: string, options: string[], defaultIndex: number) => {
+        onCreate: (name: string, options: string[][], defaultIndex: number) => {
             const built = buildCreateChanges(name, role, options, defaultIndex);
             // Creating a split adds boards to every featured category, so it
             // gets the same preview an edit does. Creating a detail does not.
@@ -719,10 +783,15 @@ interface SectionProps {
         bucketKey: string,
     ) => void;
     onDefaultAll: (group: VariableGroup, bucketKey: string) => void;
+    onMoveGroup: (
+        section: VariableGroup[],
+        group: VariableGroup,
+        delta: number,
+    ) => void;
     onAddOption: (group: VariableGroup, bucket: BoardBucket) => void;
     onRename: (group: VariableGroup, nextName: string) => void;
     onDelete: (group: VariableGroup) => void;
-    onCreate: (name: string, options: string[], defaultIndex: number) => void;
+    onCreate: (name: string, options: string[][], defaultIndex: number) => void;
 }
 
 function VariableSection({
@@ -743,6 +812,7 @@ function VariableSection({
     onBuckets,
     onDefault,
     onDefaultAll,
+    onMoveGroup,
     onAddOption,
     onRename,
     onDelete,
@@ -835,6 +905,9 @@ function VariableSection({
                         onDefaultAll={(bucketKey) =>
                             onDefaultAll(group, bucketKey)
                         }
+                        onMove={(delta) => onMoveGroup(groups, group, delta)}
+                        position={groups.indexOf(group)}
+                        total={groups.length}
                         onAddOption={(bucket) => onAddOption(group, bucket)}
                         onRename={(next) => onRename(group, next)}
                         onDelete={() => onDelete(group)}
@@ -893,6 +966,9 @@ function VariablePalette({
     onBuckets,
     onDefault,
     onDefaultAll,
+    onMove,
+    position,
+    total: groupTotal,
     onAddOption,
     onRename,
     onDelete,
@@ -912,6 +988,9 @@ function VariablePalette({
     onBuckets: (boardBuckets: BoardBucket[]) => void;
     onDefault: (categoryId: number, bucketKey: string) => void;
     onDefaultAll: (bucketKey: string) => void;
+    onMove: (delta: number) => void;
+    position: number;
+    total: number;
     onAddOption: (bucket: BoardBucket) => void;
     onRename: (nextName: string) => void;
     onDelete: () => void;
@@ -997,6 +1076,36 @@ function VariablePalette({
                         {pendingCount > 0 && (
                             <span className={styles.pendingBadge}>
                                 {pendingCount} pending
+                            </span>
+                        )}
+                        {/* Board order, where the board order is visible.
+                            Groups sorted alphabetically and nothing could
+                            change that, so the order runners read them in was
+                            whatever the names happened to be. Writes straight
+                            through — order is display only, the subcategory
+                            key is built from names sorted alphabetically. */}
+                        {groupTotal > 1 && (
+                            <span className={styles.moveGroup}>
+                                <button
+                                    type="button"
+                                    className={styles.moveBtn}
+                                    disabled={busy || position === 0}
+                                    aria-label={`Move ${group.name} up`}
+                                    onClick={() => onMove(-1)}
+                                >
+                                    ↑
+                                </button>
+                                <button
+                                    type="button"
+                                    className={styles.moveBtn}
+                                    disabled={
+                                        busy || position === groupTotal - 1
+                                    }
+                                    aria-label={`Move ${group.name} down`}
+                                    onClick={() => onMove(1)}
+                                >
+                                    ↓
+                                </button>
                             </span>
                         )}
                         <button
@@ -1653,21 +1762,26 @@ function OptionEditor({
             <div className={styles.optionActions}>
                 {!isNew && (
                     <>
+                        {/* Options became COLUMNS when this grid was
+                            transposed; these still said up and down, which
+                            pointed at an axis the options no longer sit on. */}
                         <button
                             type="button"
                             className={styles.pendingBtn}
                             disabled={busy || index === 0}
+                            aria-label={`Move ${bucket.label} left`}
                             onClick={() => move(-1)}
                         >
-                            ↑
+                            ←
                         </button>
                         <button
                             type="button"
                             className={styles.pendingBtn}
                             disabled={busy || index === total - 1}
+                            aria-label={`Move ${bucket.label} right`}
                             onClick={() => move(1)}
                         >
-                            ↓
+                            →
                         </button>
                         <button
                             type="button"
@@ -1706,7 +1820,7 @@ function OptionEditor({
 
             <p className={styles.optionNote}>
                 {role === 'subcategory'
-                    ? 'Renaming moves every run in this subcategory. Order is the order runners see.'
+                    ? 'Renaming moves every run in this subcategory. Left to right is the order runners see.'
                     : 'Spellings runners have used are matched against this list, so old runs keep resolving.'}
             </p>
         </div>
@@ -1730,21 +1844,35 @@ function AddVariableForm({
     takenNames: Set<string>;
     categoryCount: number;
     onCancel: () => void;
-    onCreate: (name: string, options: string[], defaultIndex: number) => void;
+    onCreate: (name: string, options: string[][], defaultIndex: number) => void;
 }) {
     const [name, setName] = useState('');
     const [raw, setRaw] = useState('');
     const [defaultOption, setDefaultOption] = useState('');
 
+    // One option per line, its accepted spellings after a comma:
+    //
+    //     Nintendo 64, n64, nin64
+    //
+    // Same convention the option editor already uses for aliases. Options used
+    // to be created bare, so every board with spelling variants — which is
+    // most of them — meant creating the group and then reopening each option
+    // one at a time to add them.
     const options = raw
         .split('\n')
-        .map((v) => v.trim())
-        .filter(Boolean);
+        .map((line) =>
+            line
+                .split(',')
+                .map((v) => v.trim())
+                .filter(Boolean),
+        )
+        .filter((bucket) => bucket.length > 0);
+    const labels = options.map((o) => o[0]);
 
     // Where unmatched runs land was silently the first option typed, stated in
     // the note under the form and choosable nowhere. It falls back to the first
     // if the chosen one is edited away, which is the same rule the grid uses.
-    const defaultIndex = Math.max(0, options.indexOf(defaultOption));
+    const defaultIndex = Math.max(0, labels.indexOf(defaultOption));
 
     const normalized = normalizeName(name);
     const collision =
@@ -1778,7 +1906,8 @@ function AddVariableForm({
 
             <label className={styles.addField}>
                 <span className={styles.addLabel}>
-                    {SECTION[role].options}, one per line
+                    {SECTION[role].options}, one per line — add other accepted
+                    spellings after a comma
                 </span>
                 <textarea
                     className={styles.addTextarea}
@@ -1787,8 +1916,8 @@ function AddVariableForm({
                     onChange={(e) => setRaw(e.target.value)}
                     placeholder={
                         role === 'subcategory'
-                            ? 'N64\nVirtual Console\nEmulator'
-                            : 'Keyboard\nController'
+                            ? 'Nintendo 64, n64, nin64\nVirtual Console, vc\nEmulator, emu'
+                            : 'Keyboard, kb\nController, pad'
                     }
                 />
             </label>
@@ -1804,11 +1933,11 @@ function AddVariableForm({
                     </span>
                     <select
                         className={styles.addInput}
-                        value={options[defaultIndex]}
+                        value={labels[defaultIndex]}
                         disabled={busy}
                         onChange={(e) => setDefaultOption(e.target.value)}
                     >
-                        {options.map((o) => (
+                        {labels.map((o) => (
                             <option key={o} value={o}>
                                 {o}
                             </option>
