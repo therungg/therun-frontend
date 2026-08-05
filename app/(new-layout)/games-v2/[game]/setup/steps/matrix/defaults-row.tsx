@@ -20,6 +20,7 @@ import { setBoardMinimumAction } from '../../actions/set-board-minimum.action';
 import { setCategoryMinimumAction } from '../../actions/set-category-minimum.action';
 import { updateGameMetadataAction } from '../../actions/update-game-metadata.action';
 import styles from './matrix.module.scss';
+import { RulesDialog } from './rules-dialog';
 
 interface Props {
     gameSlug: string;
@@ -191,6 +192,9 @@ export function DefaultsRow({
         <>
             <tr className={styles.defaultsRow}>
                 <td className={styles.defaultsName}>Board default</td>
+                {/* Icon: per category only — a board-wide one would be the
+                    game cover, which already exists. */}
+                <td />
 
                 <td>
                     <select
@@ -276,7 +280,7 @@ export function DefaultsRow({
                                 ? styles.rulesCustom
                                 : styles.rulesDefault
                         }`}
-                        aria-expanded={openTemplate}
+                        aria-haspopup="dialog"
                         onClick={() => setOpenTemplate((v) => !v)}
                     >
                         {hasTemplate ? 'template' : 'none'}
@@ -343,9 +347,6 @@ export function DefaultsRow({
                         <option value="off">Off</option>
                     </select>
                 </td>
-
-                <td />
-                <td />
             </tr>
 
             {offer && (
@@ -387,80 +388,23 @@ export function DefaultsRow({
             )}
 
             {openTemplate && (
-                <tr className={styles.rulesRow}>
+                <tr>
                     <td colSpan={columnCount}>
-                        <TemplateEditor
-                            template={defaults.rulesTemplate ?? ''}
+                        <RulesDialog
+                            title="Board rules template"
+                            lede="Starting text for categories with no rules of their own. Changing it does not rewrite the ones already using it."
+                            initial={defaults.rulesTemplate ?? ''}
                             busy={isSaving}
+                            placeholder="No template — every category writes its own rules."
+                            onClose={() => setOpenTemplate(false)}
                             onSave={(text) => {
                                 save({ rulesTemplate: text || null });
                                 setOpenTemplate(false);
                             }}
-                            onClose={() => setOpenTemplate(false)}
                         />
                     </td>
                 </tr>
             )}
         </>
-    );
-}
-
-/**
- * The board's starter rules text. Not the same thing as a category's rules:
- * this is what "default" means in the Rules column below, and what a category's
- * "Use board template" button fills in.
- */
-function TemplateEditor({
-    template,
-    busy,
-    onSave,
-    onClose,
-}: {
-    template: string;
-    busy: boolean;
-    onSave: (text: string) => void;
-    onClose: () => void;
-}) {
-    const [text, setText] = useState(template);
-
-    return (
-        <div className={styles.rowPanel}>
-            <div className={styles.paneHead}>
-                <span className={styles.paneTitle}>Board rules template</span>
-                <span className={styles.paneNote}>
-                    Starting text for categories with no rules of their own.
-                </span>
-                <button
-                    type="button"
-                    className={styles.paneClose}
-                    onClick={onClose}
-                    aria-label="Close rules template"
-                >
-                    ✕
-                </button>
-            </div>
-            <div className={styles.rulesPanel}>
-                <textarea
-                    className={styles.rulesTextarea}
-                    value={text}
-                    disabled={busy}
-                    aria-label="Board rules template"
-                    placeholder="No template — every category writes its own rules."
-                    onChange={(e) => setText(e.target.value)}
-                />
-                <div className={styles.rulesFoot}>
-                    <span className={styles.rulesActions}>
-                        <button
-                            type="button"
-                            className={styles.rulesChip}
-                            disabled={busy || text === template}
-                            onClick={() => onSave(text.trim())}
-                        >
-                            {busy ? 'Saving…' : 'Save'}
-                        </button>
-                    </span>
-                </div>
-            </div>
-        </div>
     );
 }
