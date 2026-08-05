@@ -12,6 +12,7 @@ import { FiltersPopover } from '../filters/filters-popover';
 import { VerifiedToggle } from '../filters/verified-toggle';
 import { isSameRunner } from '../shared/is-same-runner';
 import { computeBoardRange } from './board-range';
+import { BoardBulkBar } from './bulk-bar';
 import { ExportButton } from './export-button';
 import { planFindMeSearch } from './find-me-plan';
 import styles from './leaderboard.module.scss';
@@ -19,6 +20,11 @@ import { YOU_ROW_ID } from './leaderboard-row';
 import { LeaderboardTable } from './leaderboard-table';
 import { mergeEntries } from './merge-entries';
 import type { TimingKey } from './timing-columns';
+
+/** Same runner-grouping key leaderboard-row.tsx uses for "select all runs by …". */
+function runnerKeyOf(entry: LeaderboardEntry): string {
+    return entry.userId != null ? `u:${entry.userId}` : `g:${entry.runnerName}`;
+}
 
 // "Find me" fallback: the board API has no rank/user lookup that accounts
 // for the current filter state (subcategory, varFilters, verified,
@@ -120,6 +126,18 @@ export function LeaderboardPager({
     // mutating the flag during SSR would desync from a fresh client);
     // a fresh client computes stagger on hydration too (match). Only
     // client-side remounts (filter swaps) get the fade.
+    // Bulk selection (mods only — the checkbox column itself only renders
+    // when `canManage`, so a non-mod never populates this). Lives here
+    // (not in the table) because it must survive "Show more"/"Show
+    // previous" appending pages, and the bulk bar sits below the table,
+    // outside LeaderboardTable's own render tree.
+    const [selectedRunIds, setSelectedRunIds] = useState<Set<number>>(
+        new Set(),
+    );
+    // Shift-click range-select anchor — the last row clicked without
+    // shift, or the most recent shift-click's endpoint.
+    const lastClickedRef = useRef<number | null>(null);
+
     const [entryClass] = useState(() => {
         if (typeof window === 'undefined') return styles.boardStagger;
         const cls = hasAnimatedFirstBoard
@@ -162,7 +180,86 @@ export function LeaderboardPager({
         });
     };
 
+    // Read-your-writes for the bulk bar's own mutations: the backend's cache
+    // tags now invalidate immediately (updateTag — see revalidate-boards.ts),
+    // but this component's `pages` client state was seeded once from
+    // `initial` and won't pick up a re-render's fresh server props on its
+    // own. Re-fetching every currently-loaded page and swapping them in is
+    // the client-side half of "the mod sees the result immediately".
+    const [isRefetching, startRefetch] = useTransition();
+    const refetchLoadedPages = async () => {
+        const pageNumbers = Array.from(
+            { length: maxPage - minPage + 1 },
+            (_, i) => minPage + i,
+        );
+        const results = await Promise.all(
+            pageNumbers.map((page) => fetchLeaderboardPage({ ...query, page })),
+        );
+        const next = results.map((r, i) => r?.entries ?? pages[i] ?? []);
+        setPages(next);
+    };
+
     const merged = mergeEntries(pages);
+
+    // ---- Bulk selection (mods only) --------------------------------------
+    const selectableRunIds = merged
+        .map((e) => e.runId)
+        .filter((id): id is number => id != null);
+
+    const toggleSelect = (runId: number, shiftKey: boolean) => {
+        setSelectedRunIds((prev) => {
+            const next = new Set(prev);
+            if (shiftKey && lastClickedRef.current != null) {
+                const anchor = selectableRunIds.indexOf(lastClickedRef.current);
+                const target = selectableRunIds.indexOf(runId);
+                if (anchor !== -1 && target !== -1) {
+                    const [start, end] =
+                        anchor < target ? [anchor, target] : [target, anchor];
+                    const shouldSelect = !prev.has(runId);
+                    for (const id of selectableRunIds.slice(start, end + 1)) {
+                        if (shouldSelect) next.add(id);
+                        else next.delete(id);
+                    }
+                    lastClickedRef.current = runId;
+                    return next;
+                }
+            }
+            if (next.has(runId)) next.delete(runId);
+            else next.add(runId);
+            lastClickedRef.current = runId;
+            return next;
+        });
+    };
+
+    const toggleAllVisible = () => {
+        setSelectedRunIds((prev) => {
+            const allSelected =
+                selectableRunIds.length > 0 &&
+                selectableRunIds.every((id) => prev.has(id));
+            if (allSelected) return new Set();
+            return new Set(selectableRunIds);
+        });
+    };
+
+    const selectRunner = (runnerKey: string) => {
+        setSelectedRunIds((prev) => {
+            const next = new Set(prev);
+            for (const e of merged) {
+                if (e.runId != null && runnerKeyOf(e) === runnerKey) {
+                    next.add(e.runId);
+                }
+            }
+            return next;
+        });
+    };
+
+    const clearSelection = () => setSelectedRunIds(new Set());
+
+    const handleBulkMutated = () => {
+        clearSelection();
+        startRefetch(refetchLoadedPages);
+    };
+
     // No verified/pending counts exist on LeaderboardResponse, so this is
     // derived from the loaded window: honest ("includes"), never a count.
     const hasPendingLoaded =
@@ -397,7 +494,24 @@ export function LeaderboardPager({
                 categorySlug={categorySlug}
                 subcategoryKey={subcategoryKey}
                 subcategoryDefKeys={subcategoryDefKeys}
+                selectedRunIds={selectedRunIds}
+                onToggleSelect={toggleSelect}
+                onSelectRunner={selectRunner}
+                onToggleAllVisible={toggleAllVisible}
             />
+            {canManage && selectedRunIds.size > 0 && (
+                <BoardBulkBar
+                    gameSlug={gameSlug}
+                    categorySlug={categorySlug}
+                    canSiteBan={canSiteBan}
+                    subcategoryDefKeys={subcategoryDefKeys}
+                    entries={merged}
+                    selectedRunIds={selectedRunIds}
+                    onClear={clearSelection}
+                    onMutated={handleBulkMutated}
+                    busy={isRefetching}
+                />
+            )}
             {maxPage < initial.totalPages && (
                 <div className={styles.showMoreBar}>
                     <button

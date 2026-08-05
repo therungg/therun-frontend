@@ -1,4 +1,4 @@
-import { revalidateTag } from 'next/cache';
+import { updateTag } from 'next/cache';
 import { resolveCategory } from '~src/lib/games-v1';
 import type { AffectedLeaderboard } from '../../../types/moderation.types';
 
@@ -7,6 +7,15 @@ import type { AffectedLeaderboard } from '../../../types/moderation.types';
  * moderation action touched. Mirrors the tag scheme in `getLeaderboard`
  * (`lb:{gameSlug}:{categorySlug}:{subcategoryKey}:{rt|gt}:{v|a}`) and the
  * invalidation pattern in the shared verdict/exclude actions.
+ *
+ * Uses `updateTag` (immediate expiration), not `revalidateTag` — every
+ * caller of this helper is a mod/self-serve mutation (verdicts, exclude,
+ * restore, board-override, manual-time, marks, report/appeal, submit-run),
+ * always invoked from inside a Server Action, and the whole point of the
+ * design's "read-your-writes" requirement is that a moderator must see
+ * their own action land immediately. `revalidateTag` is stale-while-
+ * revalidate — it does NOT guarantee that (see project memory: "server
+ * actions do NOT read their own writes" with plain revalidateTag).
  *
  * The backend enqueues its own Redis rebuild; this only clears the frontend's
  * cached reads so the board reflects the change on next load. Best-effort.
@@ -25,9 +34,8 @@ export async function revalidateAffectedBoards(
             if (!categorySlug) continue;
             for (const timing of ['rt', 'gt'] as const) {
                 for (const v of ['v', 'a'] as const) {
-                    revalidateTag(
+                    updateTag(
                         `lb:${gameSlug}:${categorySlug}:${subcategoryKey}:${timing}:${v}`,
-                        'minutes',
                     );
                 }
             }
@@ -44,7 +52,6 @@ export function revalidateRunDetails(
     runIds: number[],
     manualTimeIds: number[] = [],
 ): void {
-    for (const id of runIds) revalidateTag(`run:${id}`, 'minutes');
-    for (const id of manualTimeIds)
-        revalidateTag(`manual-time:${id}`, 'minutes');
+    for (const id of runIds) updateTag(`run:${id}`);
+    for (const id of manualTimeIds) updateTag(`manual-time:${id}`);
 }

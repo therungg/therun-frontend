@@ -507,6 +507,13 @@ export type HistoryEventType =
     | 'exclusion'
     | 'report'
     | 'appeal'
+    // Board-mod-unified-log [backend, branch board-mod-unified-log]: the
+    // migrated auditLog writers (true edit-run, move/board-override,
+    // mark-for-later) now surface through the same `logs`-backed history
+    // feed under these three event types.
+    | 'edit'
+    | 'move'
+    | 'mark'
     | 'other';
 
 export interface HistoryEvent {

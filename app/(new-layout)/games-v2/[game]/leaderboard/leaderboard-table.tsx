@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Funnel, Trophy } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import { buildSubmitHref } from '~src/lib/board-url';
@@ -32,6 +33,12 @@ interface Props {
     subcategoryKey: string;
     /** Subcategory-role variable names, for building a row's own subcategory key from `entry.variables`. */
     subcategoryDefKeys: string[];
+    /** Bulk selection — checkbox column only renders when `canManage`. */
+    selectedRunIds?: Set<number>;
+    onToggleSelect?: (runId: number, shiftKey: boolean) => void;
+    onSelectRunner?: (runnerKey: string) => void;
+    /** Header checkbox — toggles every currently-rendered selectable row. */
+    onToggleAllVisible?: () => void;
 }
 
 export function LeaderboardTable({
@@ -47,7 +54,28 @@ export function LeaderboardTable({
     categorySlug,
     subcategoryKey,
     subcategoryDefKeys,
+    selectedRunIds,
+    onToggleSelect,
+    onSelectRunner,
+    onToggleAllVisible,
 }: Props) {
+    const selectableRunIds = leaderboard.entries
+        .map((e) => e.runId)
+        .filter((id): id is number => id != null);
+    const selectedCount = selectedRunIds
+        ? selectableRunIds.filter((id) => selectedRunIds.has(id)).length
+        : 0;
+    const allSelected =
+        selectableRunIds.length > 0 &&
+        selectedCount === selectableRunIds.length;
+    const someSelected = selectedCount > 0 && !allSelected;
+    const selectAllRef = useRef<HTMLInputElement>(null);
+    useEffect(() => {
+        if (selectAllRef.current) {
+            selectAllRef.current.indeterminate = someSelected;
+        }
+    }, [someSelected]);
+
     if (leaderboard.entries.length === 0) {
         return (
             <div className={styles.wrapper}>
@@ -118,6 +146,19 @@ export function LeaderboardTable({
             <table className={styles.table}>
                 <thead>
                     <tr>
+                        {canManage && (
+                            <th className={styles.checkCell}>
+                                <input
+                                    ref={selectAllRef}
+                                    type="checkbox"
+                                    className={styles.checkbox}
+                                    checked={allSelected}
+                                    aria-label="Select all runs on this page"
+                                    onChange={onToggleAllVisible}
+                                    disabled={selectableRunIds.length === 0}
+                                />
+                            </th>
+                        )}
                         <th className={styles.rank}>#</th>
                         <th>Runner</th>
                         {!hidden(primary.key) && (
@@ -171,6 +212,12 @@ export function LeaderboardTable({
                             showMilliseconds={showMilliseconds}
                             categorySlug={categorySlug}
                             subcategoryDefKeys={subcategoryDefKeys}
+                            selected={
+                                entry.runId != null &&
+                                (selectedRunIds?.has(entry.runId) ?? false)
+                            }
+                            onToggleSelect={onToggleSelect}
+                            onSelectRunner={onSelectRunner}
                         />
                     ))}
                 </tbody>
