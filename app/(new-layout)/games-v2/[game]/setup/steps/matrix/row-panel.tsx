@@ -1,14 +1,19 @@
 'use client';
 
 import type { BoardDefaults } from '~src/lib/setup/board-defaults';
-import type { ResolvedCategory } from '../../../../../../../types/leaderboards.types';
+import type {
+    ResolvedCategory,
+    VariableRow,
+} from '../../../../../../../types/leaderboards.types';
 import { EmblemPanel } from './emblem-panel';
+import { LeaderboardsPanel } from './leaderboards-panel';
 import styles from './matrix.module.scss';
 import { RulesPanel } from './rules-panel';
 import { TimingPanel } from './timing-panel';
 
 export const PANES = [
     { id: 'rules', label: 'Rules' },
+    { id: 'boards', label: 'Leaderboards' },
     { id: 'timing', label: 'Time columns' },
     { id: 'emblem', label: 'Emblem' },
 ] as const;
@@ -20,6 +25,8 @@ interface Props {
     gameId: number;
     category: ResolvedCategory;
     defaults: BoardDefaults;
+    /** Every variable row on the board; filtered to this category inside. */
+    variables: VariableRow[];
     pane: PaneId;
     onPane: (pane: PaneId) => void;
     onClose: () => void;
@@ -45,6 +52,7 @@ export function RowPanel({
     gameId,
     category,
     defaults,
+    variables,
     pane,
     onPane,
     onClose,
@@ -86,6 +94,16 @@ export function RowPanel({
                     category={category}
                     template={defaults.rulesTemplate}
                     onClose={onClose}
+                />
+            )}
+            {pane === 'boards' && (
+                <LeaderboardsPanel
+                    gameSlug={gameSlug}
+                    gameId={gameId}
+                    category={category}
+                    variables={variables.filter(
+                        (v) => v.categoryId === category.id,
+                    )}
                 />
             )}
             {pane === 'timing' && (

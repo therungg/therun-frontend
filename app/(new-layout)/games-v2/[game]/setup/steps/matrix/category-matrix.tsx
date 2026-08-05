@@ -461,6 +461,9 @@ export function CategoryMatrix({
                                                             }
                                                             category={c}
                                                             defaults={defaults}
+                                                            variables={
+                                                                data.variables
+                                                            }
                                                             pane={open.pane}
                                                             onPane={(pane) =>
                                                                 setOpen({
