@@ -116,18 +116,31 @@ afterEach(() => {
 });
 
 describe('CategoryMatrix', () => {
-    it('draws a cell on the board default as a dot instead of its value', () => {
+    it('draws an inherited preference as a dot instead of its value', () => {
         renderMatrix();
-        // Any% is on the board's RTA. Row zero already says RTA in this
-        // column, so the cell says nothing — repeating it down every row is
-        // the noise a deviation matrix exists to remove.
-        const quiet = screen.getByLabelText('Timing for Any%');
+        // Ranking is Lowest on essentially every board. Row zero says so once;
+        // repeating the word down every row is the noise a deviation matrix
+        // exists to remove.
+        const quiet = screen.getByLabelText('Ranking direction for Any%');
         expect(quiet.parentElement?.className).toMatch(/quietWrap/);
         expect(quiet.parentElement?.textContent).toContain('·');
+    });
 
-        // 16 Star ranks by IGT on an RTA board. It differs, so it says so.
-        const loud = screen.getByLabelText('Timing for 16 Star');
-        expect(loud.parentElement?.className).not.toMatch(/quietWrap/);
+    it('never hides the timing, because it is the unit and not a preference', () => {
+        renderMatrix();
+        // 1:34:00 under RTA and 1:34:00 under IGT are not the same quantity,
+        // and "what is this ranked by?" gets asked constantly rather than only
+        // while auditing exceptions. Any% matches the board and still says RTA.
+        const onDefault = screen.getByLabelText('Timing for Any%');
+        expect(onDefault.parentElement?.className).not.toMatch(/quietWrap/);
+        // Still drawn quiet — muted, just not replaced.
+        expect(onDefault.className).toMatch(/cellQuiet/);
+
+        // Same for the minimum: a number you audit is a number you show.
+        expect(
+            screen.getByLabelText('Minimum time for Any%').parentElement
+                ?.className,
+        ).not.toMatch(/quietWrap/);
     });
 
     it('names every option plainly — no "Default (…)" wrapper', () => {
