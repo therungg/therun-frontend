@@ -707,6 +707,12 @@ $rail-collapse: 900px;
     margin: 0;
 }
 
+// Coverage summary under the category table, inside the picker panel: sits a
+// step down from the rows it summarizes.
+.coverageRow {
+    margin-top: dt.$spacing-lg;
+}
+
 // Timing + time columns share a card: the column checkbox's label follows
 // the selected timing, and separate cards would hide that coupling.
 .pairRow {
