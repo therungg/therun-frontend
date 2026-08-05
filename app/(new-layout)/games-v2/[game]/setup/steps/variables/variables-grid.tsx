@@ -1041,8 +1041,18 @@ function VariablePalette({
                 used to be a single collapse button wrapping everything, which
                 is why the name could never become editable — a button cannot
                 live inside a button, and the group's own name was the one
-                thing on this panel with no way to change it. */}
-            <div className={styles.paletteHead}>
+                thing on this panel with no way to change it.
+
+                Splitting it cost the bar its click, though: an accordion head
+                collapses when you hit the bar, not only when you hit the
+                chevron. So the bar handles the click itself and every real
+                control inside it stops the event, which is the only part a
+                button-in-a-button could not have done. Keyboard users get the
+                chevron, which is a real button. */}
+            <div
+                className={styles.paletteHead}
+                onClick={() => !renaming && setOpen((v) => !v)}
+            >
                 {renaming ? (
                     <RenameGroup
                         role={role}
@@ -1064,7 +1074,10 @@ function VariablePalette({
                             className={styles.paletteName}
                             disabled={busy}
                             title={`Rename ${group.name}`}
-                            onClick={() => setRenaming(true)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setRenaming(true);
+                            }}
                         >
                             {group.name}
                         </button>
@@ -1091,7 +1104,10 @@ function VariablePalette({
                                     className={styles.moveBtn}
                                     disabled={busy || position === 0}
                                     aria-label={`Move ${group.name} up`}
-                                    onClick={() => onMove(-1)}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onMove(-1);
+                                    }}
                                 >
                                     ↑
                                 </button>
@@ -1102,7 +1118,10 @@ function VariablePalette({
                                         busy || position === groupTotal - 1
                                     }
                                     aria-label={`Move ${group.name} down`}
-                                    onClick={() => onMove(1)}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onMove(1);
+                                    }}
                                 >
                                     ↓
                                 </button>
@@ -1113,7 +1132,13 @@ function VariablePalette({
                             className={styles.collapse}
                             aria-expanded={open}
                             aria-label={`${open ? 'Collapse' : 'Expand'} ${group.name}`}
-                            onClick={() => setOpen((v) => !v)}
+                            onClick={(e) => {
+                                // The bar handles this; without stopping it
+                                // here the click would toggle twice and the
+                                // panel would never move.
+                                e.stopPropagation();
+                                setOpen((v) => !v);
+                            }}
                         />
                     </>
                 )}
@@ -1612,7 +1637,9 @@ function RenameGroup({
         trimmed.length > 0 && trimmed !== current && collision === null;
 
     return (
-        <div className={styles.renameRow}>
+        // Stops clicks reaching the bar behind it, which would collapse the
+        // panel mid-rename.
+        <div className={styles.renameRow} onClick={(e) => e.stopPropagation()}>
             <label className={styles.renameField}>
                 <span className="visually-hidden">
                     {role === 'subcategory'
