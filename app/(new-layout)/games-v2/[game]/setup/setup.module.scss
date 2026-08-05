@@ -25,11 +25,26 @@ $rail-collapse: 900px;
     }
 }
 
-// Steps whose work is a grid, not a form. Wide enough that a board with ~8
-// featured categories fits without horizontal scrolling, capped so the rows
-// never become unreadably long on an ultrawide.
+// Steps whose work is a grid, not a form.
+//
+// The real cap was never this file: every (new-layout) route renders inside
+// Bootstrap's `.container`, which stops at 1320px. Widening `.page` past that
+// did nothing. So a wide step releases the container itself — scoped by
+// `:has()` to a page that actually asked for it, so no other route is touched
+// and there is no negative-margin breakout to go wrong.
+//
+// Not done with `transform: translateX(-50%)`, the usual full-bleed trick: a
+// transform on an ancestor makes `position: fixed` resolve against it instead
+// of the viewport, and this step renders fixed dialogs (bulk apply, variable
+// consequences).
+:global(.main-container):has(.pageWide) {
+    max-width: none;
+}
+
 .pageWide {
-    --setup-max: 112rem;
+    // Capped so a row never becomes an unreadable ribbon on an ultrawide;
+    // below that it is the viewport minus the container's gutters.
+    --setup-max: 160rem;
 }
 
 // ---- Identity strip -----------------------------------------
