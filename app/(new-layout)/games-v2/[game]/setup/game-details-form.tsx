@@ -430,6 +430,7 @@ function GameDetailsFormInner({
     const slugField = (
         <>
             <FieldLabel
+                className="mt-3"
                 htmlFor="slug"
                 label="URL slug"
                 hint={
@@ -452,7 +453,10 @@ function GameDetailsFormInner({
             />
             <small className="text-muted">
                 {slug.trim() === '' ? (
-                    <>No slug set — falls back to the derived name.</>
+                    <>
+                        No slug yet — the board is at <code>{game.name}</code>{' '}
+                        until you set one. Setting a slug finishes this step.
+                    </>
                 ) : slugPreview !== slug ? (
                     <>
                         Will be stored as <code>{slugPreview}</code>
@@ -574,35 +578,8 @@ function GameDetailsFormInner({
                 save();
             }}
         >
-            {sectioned ? (
-                <div className={styles.sectionedCol}>
-                    <FormSection title="Identity">
-                        {coverField}
-                        {yearField}
-                        {platformsField}
-                    </FormSection>
-                    <FormSection title="About">{aboutField}</FormSection>
-                    <FormSection title="Web & community">
-                        {slugField}
-                        {discordField}
-                        {linksField}
-                    </FormSection>
-                </div>
-            ) : (
-                <div className="row g-4">
-                    <div className="col-md-6">
-                        {coverField}
-                        {yearField}
-                        {platformsField}
-                        {aboutField}
-                    </div>
-                    <div className="col-md-6">
-                        {slugField}
-                        {discordField}
-                        {linksField}
-                    </div>
-                </div>
-            )}
+            {/* Leads the form: linking IGDB fills the fields below in one move,
+                so the prefill path comes before the fields it fills. */}
             <IgdbSourceCard
                 gameId={game.id}
                 igdbUrl={metadata.igdbUrl}
@@ -611,6 +588,40 @@ function GameDetailsFormInner({
                 onReset={resetToIgdb}
                 disabled={busy}
             />
+            {sectioned ? (
+                <div className={styles.sectionedCol}>
+                    <FormSection
+                        title="Identity"
+                        lede="How the board is found and pictured."
+                    >
+                        {coverField}
+                        {slugField}
+                    </FormSection>
+                    <FormSection title="Details">
+                        {yearField}
+                        {platformsField}
+                        {aboutField}
+                    </FormSection>
+                    <FormSection title="Community">
+                        {discordField}
+                        {linksField}
+                    </FormSection>
+                </div>
+            ) : (
+                <div className="row g-4">
+                    <div className="col-md-6">
+                        {coverField}
+                        {slugField}
+                    </div>
+                    <div className="col-md-6">
+                        {yearField}
+                        {platformsField}
+                        {aboutField}
+                        {discordField}
+                        {linksField}
+                    </div>
+                </div>
+            )}
             <InlineError>{error}</InlineError>
             {!hideAction && (
                 <button

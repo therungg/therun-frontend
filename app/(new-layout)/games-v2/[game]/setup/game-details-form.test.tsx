@@ -148,7 +148,7 @@ describe('GameDetailsForm', () => {
         );
     });
 
-    it('shows the IGDB source card, linking the entry, under the field grid', () => {
+    it('leads with the IGDB source card, linking the entry, above the field grid', () => {
         render(
             <GameDetailsForm
                 identifiers={identifiers}
@@ -163,9 +163,10 @@ describe('GameDetailsForm', () => {
         );
         const card = screen.getByText('IGDB').closest('div')!;
         const grid = document.querySelector('.row.g-4')!;
-        // The source card must follow the grid in document order.
+        // The source card leads: linking IGDB fills the fields below it, so it
+        // comes before the grid in document order.
         expect(
-            grid.compareDocumentPosition(card) &
+            card.compareDocumentPosition(grid) &
                 Node.DOCUMENT_POSITION_FOLLOWING,
         ).toBeTruthy();
     });
@@ -248,7 +249,7 @@ describe('GameDetailsForm', () => {
         expect(screen.getByText('All fields match IGDB.')).toBeInTheDocument();
     });
 
-    it('sectioned layout groups fields under Identity / About / Web & community', () => {
+    it('sectioned layout groups fields under Identity / Details / Community', () => {
         render(
             <GameDetailsForm
                 identifiers={identifiers}
@@ -262,10 +263,10 @@ describe('GameDetailsForm', () => {
             screen.getByRole('heading', { name: 'Identity' }),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole('heading', { name: 'About' }),
+            screen.getByRole('heading', { name: 'Details' }),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole('heading', { name: 'Web & community' }),
+            screen.getByRole('heading', { name: 'Community' }),
         ).toBeInTheDocument();
     });
 

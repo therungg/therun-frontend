@@ -371,22 +371,11 @@ $rail-collapse: 900px;
     color: dt.$accent-red;
 }
 
-// ---- Step header (ghost numeral) ----------------------------
+// ---- Step header --------------------------------------------
+// The rail owns step numbering and progress; the header is just the job
+// statement, so it doesn't restate the number the sidebar already shows.
 .stepHeader {
-    display: flex;
-    align-items: flex-start;
-    gap: dt.$spacing-lg;
     margin-bottom: dt.$spacing-2xl;
-}
-
-.ghostNum {
-    @include board.mono-time;
-    font-size: 3.25rem;
-    font-weight: 700;
-    line-height: 0.9;
-    color: rgba(var(--bs-border-color-rgb), 0.9);
-    user-select: none;
-    flex-shrink: 0;
 }
 
 .stepHeaderText {
@@ -687,6 +676,37 @@ $rail-collapse: 900px;
     margin: dt.$spacing-2xl 0 dt.$spacing-md;
 }
 
+// The details step is a single focused column, not a full-width sprawl: one
+// readable measure for both zones, so identity and rules read as one form.
+.detailsColumn {
+    max-width: 46rem;
+}
+
+// Divider inside the settings panel, between the coupled timing controls and
+// the emulator policy — keeps them one panel instead of two separate boxes.
+.settingsDivider {
+    height: 1px;
+    background: rgba(var(--bs-border-color-rgb), 0.3);
+    margin: dt.$spacing-lg 0;
+}
+
+// Details step footer: the forward action sits right where forward motion
+// lives, a quiet caption fills the left. No top rule — the shell's nav bar
+// directly below already carries one.
+.detailsFooter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    margin-top: dt.$spacing-xl;
+}
+
+.footerHint {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: 0;
+}
+
 // Timing + time columns share a card: the column checkbox's label follows
 // the selected timing, and separate cards would hide that coupling.
 .pairRow {
@@ -958,11 +978,13 @@ $rail-collapse: 900px;
 // ---- IGDB source card ---------------------------------------
 // IGDB is the source of record for board identity data; this card names it
 // up front and holds the source-level actions (re-match, reset to IGDB).
+// Leads the form now — the prefill-it-for-me path comes before the fields it
+// fills, so the margin separates it from the fields below, not above.
 .igdbCard {
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
     border-radius: dt.$radius-md;
     padding: dt.$spacing-md dt.$spacing-lg;
-    margin-top: dt.$spacing-xl;
+    margin-bottom: dt.$spacing-xl;
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-sm;
