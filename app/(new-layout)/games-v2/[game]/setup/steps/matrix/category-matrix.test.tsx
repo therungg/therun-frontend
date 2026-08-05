@@ -237,14 +237,24 @@ describe('CategoryMatrix', () => {
         fireEvent.change(screen.getByLabelText('Board default timing'), {
             target: { value: 'gt' },
         });
-        // Any% was on RTA, following the old board default; 16 Star was
-        // already IGT by hand, so it is not in the safe group.
+        // Any% is still on RTA; 16 Star is already IGT, so exactly one
+        // category is behind and the question counts only it.
         expect(
-            await screen.findByRole('button', { name: 'Apply to those 1' }),
+            await screen.findByRole('button', { name: 'Apply to all 1' }),
         ).toBeTruthy();
         expect(
-            screen.getByRole('button', { name: 'Apply to all 1' }),
+            screen.getByRole('button', { name: 'Don’t change' }),
         ).toBeTruthy();
+    });
+
+    it('does not ask when every category already matches the new default', () => {
+        renderMatrix();
+        // Milliseconds never asks — it is cosmetic, and sweeping it across a
+        // board is not what changing the default means.
+        fireEvent.change(screen.getByLabelText('Board default milliseconds'), {
+            target: { value: 'off' },
+        });
+        expect(screen.queryByText(/Apply to all/)).toBeNull();
     });
 
     it('previews a bulk apply instead of writing immediately', async () => {
