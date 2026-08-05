@@ -104,10 +104,16 @@ export function IgdbSourceCard({
                             </a>
                             .
                         </>
+                    ) : canRematch ? (
+                        <>
+                            Link this board to IGDB to fill in the cover,
+                            description, release year, and platforms
+                            automatically — then tweak anything below.
+                        </>
                     ) : (
                         <>
                             This board isn&apos;t linked to an IGDB entry yet,
-                            so nothing is prefilled.
+                            so the fields below aren&apos;t prefilled.
                         </>
                     )}
                 </span>

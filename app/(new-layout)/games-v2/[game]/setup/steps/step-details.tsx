@@ -79,7 +79,7 @@ export function StepDetails({ data, onAdvance }: StepProps) {
     };
 
     return (
-        <section>
+        <section className={styles.detailsColumn}>
             <StepHeader step="details" title="Game details" />
 
             <h3 className={styles.zoneTitle}>Check the facts</h3>
@@ -94,6 +94,7 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                     }}
                     formId="game-details-form"
                     hideAction
+                    sectioned
                     canRematch={data.canRematch}
                     onBusyChange={setFormBusy}
                     onErrorChange={setFormError}
@@ -173,9 +174,7 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                         </p>
                     </div>
                 </div>
-            </div>
-
-            <div className={styles.section}>
+                <div className={styles.settingsDivider} />
                 <h4 className="h6">Emulator policy</h4>
                 <div
                     className={styles.segmented}
@@ -258,14 +257,21 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                 <div className={styles.errorNote}>{defaultsError}</div>
             )}
             {formError && <div className={styles.errorNote}>{formError}</div>}
-            <button
-                type="submit"
-                form="game-details-form"
-                className={styles.primaryAction}
-                disabled={formBusy || isSavingDefaults}
-            >
-                {formBusy || isSavingDefaults ? 'Saving…' : 'Save & continue'}
-            </button>
+            <div className={styles.detailsFooter}>
+                <p className={styles.footerHint}>
+                    Saves the details and rules, then moves on to Categories.
+                </p>
+                <button
+                    type="submit"
+                    form="game-details-form"
+                    className={styles.primaryAction}
+                    disabled={formBusy || isSavingDefaults}
+                >
+                    {formBusy || isSavingDefaults
+                        ? 'Saving…'
+                        : 'Save & continue'}
+                </button>
+            </div>
         </section>
     );
 }
