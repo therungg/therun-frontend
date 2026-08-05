@@ -249,6 +249,16 @@
     flex-shrink: 0;
 }
 
+// The category's icon, square where the game cover is 3:4 portrait — the two
+// sit side by side and must not read as the same kind of thing.
+.stickyIcon {
+    width: 18px;
+    height: 18px;
+    border-radius: dt.$radius-sm;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
 .stickyTitle {
     // The only shrinkable child of `.stickyBar`'s flex row: a flex item's
     // automatic minimum size is its min-content width, which for `nowrap`

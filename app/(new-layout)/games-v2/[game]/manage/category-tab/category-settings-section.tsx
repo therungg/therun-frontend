@@ -161,7 +161,7 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
             title="Settings"
             lede={
                 <>
-                    Ranking direction, display precision, and the emblem shown
+                    Ranking direction, display precision, and the icon shown
                     next to <strong>{category.display}</strong>.
                 </>
             }
@@ -203,7 +203,7 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
                         className="form-label small"
                         htmlFor="catImageUpload"
                     >
-                        Emblem image
+                        Icon
                     </label>
                     {state.imageUrl && (
                         <div className="d-flex align-items-center gap-2 mb-2">

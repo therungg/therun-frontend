@@ -11,6 +11,8 @@ interface Props {
     gameDisplay: string;
     /** The board's full name, subcategory values included. */
     boardName: string;
+    /** The selected category's icon, if it has one. */
+    categoryIconUrl?: string | null;
     onOpenHistory: () => void;
     /** Passed through to `SwitchBoardPopover` — its own state stays local
      * to that component, not lifted up here. */
@@ -41,6 +43,7 @@ export function StickyBoardBar({
     coverUrl,
     gameDisplay,
     boardName,
+    categoryIconUrl,
     onOpenHistory,
     categories,
     groups,
@@ -58,6 +61,21 @@ export function StickyBoardBar({
                     width={20}
                     height={27}
                     className={styles.stickyArt}
+                />
+            )}
+            {/* The category's own icon, beside the name it belongs to.
+                Ungated, unlike the rail's all-or-nothing rule: there is only
+                one of them here, so there is no ragged row to protect. */}
+            {categoryIconUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                    src={categoryIconUrl}
+                    alt=""
+                    aria-hidden
+                    width={18}
+                    height={18}
+                    loading="lazy"
+                    className={styles.stickyIcon}
                 />
             )}
             <span className={styles.stickyTitle}>
