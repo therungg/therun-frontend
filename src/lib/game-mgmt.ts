@@ -44,6 +44,10 @@ export interface UpdateGameBody {
     emulatorPolicy?: 'allowed' | 'banned' | null;
     hideRealTime?: boolean;
     hideGameTime?: boolean;
+    /** Board defaults for ranking direction / precision. Stamped onto
+     *  categories by the wizard, never resolved through — see GameMetadata. */
+    sortAscending?: boolean | null;
+    showMilliseconds?: boolean | null;
 }
 
 export interface GameCompanyMeta {
@@ -79,6 +83,18 @@ export interface GameMetadata {
     primaryTiming: 'rt' | 'gt' | null;
     hideRealTime: boolean;
     hideGameTime: boolean;
+    /**
+     * Board defaults for ranking direction and time precision, the twins of
+     * the identically-named per-category columns.
+     *
+     * Like `primaryTiming`, these are stamped onto categories by the setup
+     * wizard and are NOT resolved through at read time — a category always
+     * carries its own concrete value. That is deliberate: changing a board
+     * default here must never silently reorder every existing leaderboard.
+     * NULL = the board has no stated default.
+     */
+    sortAscending: boolean | null;
+    showMilliseconds: boolean | null;
 }
 
 interface GameMetadataPageData {
@@ -100,6 +116,8 @@ interface GameMetadataPageData {
         primaryTiming?: string | null;
         hideRealTime?: boolean | null;
         hideGameTime?: boolean | null;
+        sortAscending?: boolean | null;
+        showMilliseconds?: boolean | null;
     };
     metadata?: {
         genres?: string[] | null;
@@ -172,6 +190,10 @@ export async function getGameMetadata(gameId: number): Promise<GameMetadata> {
                   : null,
         hideRealTime: data?.game?.hideRealTime ?? false,
         hideGameTime: data?.game?.hideGameTime ?? false,
+        // ?? null, not ?? a default: "no stated board default" is a real
+        // state the matrix renders differently from "defaults to true".
+        sortAscending: data?.game?.sortAscending ?? null,
+        showMilliseconds: data?.game?.showMilliseconds ?? null,
     };
 }
 

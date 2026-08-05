@@ -164,6 +164,56 @@ export async function previewGameVariable(
     return raw.preview;
 }
 
+/**
+ * One edit in a staged change set: a variable set on, or removed from, one
+ * category. `input: null` removes it, in which case `nameNormalized` says
+ * which one.
+ */
+export interface VariableChangeInput {
+    categoryId: number;
+    input: Omit<UpsertVariableInput, 'categoryId'> | null;
+    nameNormalized?: string;
+}
+
+/**
+ * Applies a whole change set from the setup wizard's variable grid.
+ *
+ * One transaction backend-side, so a grid full of cell toggles either lands
+ * completely or not at all — and fires one cache invalidation plus one
+ * leaderboard rebuild per touched category, rather than one of each per cell.
+ */
+export async function applyVariableChangeSet(
+    sessionId: string,
+    gameId: number,
+    changes: VariableChangeInput[],
+): Promise<{ applied: number }> {
+    return apiFetch<{ applied: number }>(`${basePath(gameId)}/bulk`, {
+        sessionId,
+        method: 'POST',
+        body: { changes },
+    });
+}
+
+/**
+ * Dry run for a whole change set. Rides the same route as the write
+ * (`?dryRun=1`), so it shares its auth and validation.
+ *
+ * Movement is planned once per affected category with all of that category's
+ * changes applied together: subcategory variables compose multiplicatively, so
+ * previewing them one at a time would understate how many runs move.
+ */
+export async function previewVariableChangeSet(
+    sessionId: string,
+    gameId: number,
+    changes: VariableChangeInput[],
+): Promise<VariablePreview> {
+    const raw = await apiFetch<{ preview: VariablePreview }>(
+        `${basePath(gameId)}/bulk?dryRun=1`,
+        { sessionId, method: 'POST', body: { changes } },
+    );
+    return raw.preview;
+}
+
 export interface CombinationsResult {
     combinations: {
         subcategoryKey: string;

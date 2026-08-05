@@ -145,6 +145,42 @@ export async function updateCategory(
     );
 }
 
+/**
+ * The field set the setup matrix can stamp across a selection. Narrower than
+ * UpdateCategoryBody on purpose, mirroring the backend: identity and structure
+ * (display, groupId, sortOrder, isMain, active) each carry a per-category
+ * invariant that is meaningless applied identically to many categories.
+ */
+export interface BulkCategoryFields {
+    primaryTiming?: 'realtime' | 'gametime';
+    hideRealTime?: boolean;
+    hideGameTime?: boolean;
+    rules?: string | null;
+    sortAscending?: boolean;
+    showMilliseconds?: boolean;
+}
+
+/**
+ * One transaction backend-side: either every selected category takes the
+ * values or none does, and the board's page data rebuilds once rather than
+ * once per category.
+ */
+export async function bulkUpdateCategories(
+    sessionId: string,
+    gameId: number,
+    categoryIds: number[],
+    fields: BulkCategoryFields,
+): Promise<{ updated: number }> {
+    return apiFetch<{ updated: number }>(
+        `/v1/games/${gameId}/categories/bulk`,
+        {
+            method: 'PUT',
+            sessionId,
+            body: { categoryIds, fields },
+        },
+    );
+}
+
 export interface ManageGroup {
     id: number;
     name: string;

@@ -1,57 +1,49 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useTransition } from 'react';
-import {
-    ArrowDownShort,
-    ArrowLeft,
-    ArrowUpShort,
-    Check2,
-    Dot,
-} from 'react-bootstrap-icons';
-import { toast } from 'react-toastify';
-import { compareByBoardOrder } from '~src/lib/console/category-order';
-import { sectionsFor } from '~src/lib/console/category-sections';
-import { categorySetupStatus } from '~src/lib/setup/category-status';
-import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
+import { ArrowLeft } from 'react-bootstrap-icons';
+import { boardDefaults } from '~src/lib/setup/board-defaults';
+import { formatTimeInput } from '~src/lib/time-input';
 import { CategoryEditor } from '../../manage/category/category-editor';
-import { reorderCategoriesAction } from '../../manage/game-tab/actions/reorder-categories.action';
-import { computeReorderChanges } from '../../manage/game-tab/reorder-changes';
 import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
+import { CategoryMatrix } from './matrix/category-matrix';
+import matrixStyles from './matrix/matrix.module.scss';
 import { StepHeader } from './step-header';
+import { VariablesGrid } from './variables/variables-grid';
 
 /**
- * Step 4 is a hub, not a form: the featured categories with their setup state,
- * and one row opens the *same* editor the console uses (CategoryEditor,
- * `context="wizard"`) full-screen inside the wizard. That is the whole point of
- * the category-centric wizard — rules, timing, minimum time and variables for
- * one category are configured together, in the screen a moderator will keep
- * using after setup, instead of being smeared across three board-wide steps.
+ * Step 4 configures every featured category on one screen, in two zones,
+ * because the work has two different shapes.
  *
- * The hub doubles as the board-order surface: rows split into the same group
- * sections the public band renders (sectionsFor, flatten-when-trivial), and
- * ↑/↓ nudges write sortOrder through the console's reorder action, scoped to
- * the row's section — the same semantics as the console table and
- * BoardCuration's reorder mode.
+ * Zone 1 is a matrix of scalars — timing, minimum, rules, ranking direction,
+ * milliseconds — rendered as DEVIATIONS from the board defaults set in step 1.
+ * A category on the default draws quiet, so the grid is near-empty on a
+ * healthy board and only the exceptions catch the eye.
  *
- * Which category is open lives in the URL (`?step=category-setup&cat=<id>`) so
- * a deep link — including the retired `?step=exceptions&cat=<id>` shape, which
- * LEGACY_STEP_MAP folds onto this step — lands straight on that category.
+ * Zone 2 is variables, which cannot be a matrix column: a variable is a
+ * structure (name + role + ordered alias buckets + default index), and editing
+ * one moves existing runs between boards. It gets a board-level palette
+ * instead — see variables-grid.tsx.
+ *
+ * What this replaces: a hub whose every row opened the console's five-section
+ * editor full-screen, turning a "step" into N nested visits with two competing
+ * back buttons. That editor is still reachable per row for the deep cases, but
+ * it is no longer the only way through.
+ *
+ * `?cat=<id>` still opens the full editor directly, so old deep links —
+ * including the retired `?step=exceptions&cat=<id>` shape LEGACY_STEP_MAP
+ * folds onto this step — keep landing where they always did.
  */
 export function StepCategorySetup({ data, onAdvance }: StepProps) {
     const router = useRouter();
     const params = useSearchParams();
     const catId = Number(params.get('cat')) || null;
-    const [isReordering, startReorder] = useTransition();
 
-    // Board order, so the hub reads the way the leaderboard does.
-    const mains = data.categories
-        .filter((c) => !c.archived && (c.isMain ?? false))
-        .sort(compareByBoardOrder);
-    const sections = sectionsFor(mains, data.groups);
-    const grouped = sections.length > 1;
-
+    const mains = data.categories.filter(
+        (c) => !c.archived && (c.isMain ?? false),
+    );
     const open = mains.find((c) => c.id === catId) ?? null;
 
     const base = `/games-v2/${data.game.name}/setup`;
@@ -60,34 +52,11 @@ export function StepCategorySetup({ data, onAdvance }: StepProps) {
             scroll: true,
         });
     };
-    const backToHub = () => {
+    const backToMatrix = () => {
         router.replace(`${base}?step=category-setup`, { scroll: true });
-        // Pick up whatever the editor just saved, so the hub row's status is
-        // right the moment the moderator returns to it.
+        // Pick up whatever the editor just saved, so the matrix cells are
+        // right the moment the moderator returns to them.
         router.refresh();
-    };
-
-    const nudge = (items: ResolvedCategory[], idx: number, dir: -1 | 1) => {
-        const targetIdx = idx + dir;
-        if (targetIdx < 0 || targetIdx >= items.length) return;
-        const scopeRows = items.map((c) => ({
-            id: c.id,
-            sortOrder: c.sortOrder,
-        }));
-        const { changes } = computeReorderChanges(scopeRows, idx, targetIdx);
-        if (changes.length === 0) return;
-        startReorder(async () => {
-            const res = await reorderCategoriesAction({
-                gameSlug: data.game.name,
-                gameId: data.game.id,
-                changes,
-            });
-            if ('error' in res) {
-                toast.error(res.error);
-                return;
-            }
-            router.refresh();
-        });
     };
 
     if (open) {
@@ -97,7 +66,7 @@ export function StepCategorySetup({ data, onAdvance }: StepProps) {
                     <button
                         type="button"
                         className={styles.backAction}
-                        onClick={backToHub}
+                        onClick={backToMatrix}
                     >
                         <ArrowLeft size={14} aria-hidden />
                         All categories
@@ -126,6 +95,8 @@ export function StepCategorySetup({ data, onAdvance }: StepProps) {
         );
     }
 
+    const defaults = boardDefaults(data.metadata, data.policies);
+
     return (
         <section>
             <StepHeader step="category-setup" title="Set up each category" />
@@ -137,125 +108,28 @@ export function StepCategorySetup({ data, onAdvance }: StepProps) {
                     here to configure.
                 </div>
             ) : (
-                sections.map((section, sectionIdx) => (
-                    <div key={section.id ?? `ungrouped-${sectionIdx}`}>
-                        {grouped && (
-                            <h3 className={styles.hubGroupHead}>
-                                {section.name ?? 'Ungrouped'}
-                            </h3>
-                        )}
-                        <ul className={styles.rows}>
-                            {section.items.map((c, idx) => {
-                                const s = categorySetupStatus(
-                                    c,
-                                    data.variables,
-                                    data.policies,
-                                );
-                                const Glyph = s.ok ? Check2 : Dot;
-                                return (
-                                    <li key={c.id} className={styles.rowItem}>
-                                        <Glyph
-                                            size={16}
-                                            className={`${styles.railGlyph} ${
-                                                s.ok
-                                                    ? styles.toneDone
-                                                    : styles.toneWarning
-                                            }`}
-                                            aria-hidden
-                                        />
-                                        <span className="visually-hidden">
-                                            {s.ok
-                                                ? 'Set up: '
-                                                : 'Needs attention: '}
-                                        </span>
-                                        <span className={styles.hubMain}>
-                                            <strong>{c.display}</strong>
-                                            <span className={styles.hubParts}>
-                                                {s.parts.join(' · ')}
-                                                {s.missing.length > 0 && (
-                                                    <span
-                                                        className={
-                                                            styles.textWarning
-                                                        }
-                                                    >
-                                                        {` · no ${s.missing.join(', ')}`}
-                                                    </span>
-                                                )}
-                                            </span>
-                                        </span>
-                                        {section.items.length > 1 && (
-                                            <span
-                                                className={`${styles.hubAction} ${styles.nudgeGroup}`}
-                                            >
-                                                <button
-                                                    type="button"
-                                                    className={styles.nudgeBtn}
-                                                    aria-label={`Move ${c.display} up`}
-                                                    disabled={
-                                                        isReordering ||
-                                                        idx === 0
-                                                    }
-                                                    onClick={() =>
-                                                        nudge(
-                                                            section.items,
-                                                            idx,
-                                                            -1,
-                                                        )
-                                                    }
-                                                >
-                                                    <ArrowUpShort
-                                                        size={18}
-                                                        aria-hidden
-                                                    />
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    className={styles.nudgeBtn}
-                                                    aria-label={`Move ${c.display} down`}
-                                                    disabled={
-                                                        isReordering ||
-                                                        idx ===
-                                                            section.items
-                                                                .length -
-                                                                1
-                                                    }
-                                                    onClick={() =>
-                                                        nudge(
-                                                            section.items,
-                                                            idx,
-                                                            1,
-                                                        )
-                                                    }
-                                                >
-                                                    <ArrowDownShort
-                                                        size={18}
-                                                        aria-hidden
-                                                    />
-                                                </button>
-                                            </span>
-                                        )}
-                                        <button
-                                            type="button"
-                                            className={`${
-                                                section.items.length > 1
-                                                    ? ''
-                                                    : styles.hubAction
-                                            } ${styles.backAction}`}
-                                            onClick={() => openCategory(c.id)}
-                                        >
-                                            {s.ok ? 'Edit' : 'Set up'}
-                                        </button>
-                                    </li>
-                                );
-                            })}
-                            {section.items.length === 0 && (
-                                <li className={`${styles.rowItem} text-muted`}>
-                                    No featured categories in this group.
-                                </li>
-                            )}
-                        </ul>
+                <>
+                    <div className={matrixStyles.defaultsStrip}>
+                        <span className={matrixStyles.defaultsLabel}>
+                            Board defaults
+                        </span>
+                        <DefaultsSummary defaults={defaults} />
+                        <Link
+                            href={`${base}?step=details`}
+                            className={matrixStyles.defaultsChange}
+                        >
+                            Change
+                        </Link>
                     </div>
-                ))
+
+                    <CategoryMatrix
+                        data={data}
+                        defaults={defaults}
+                        onOpenEditor={openCategory}
+                    />
+
+                    <VariablesGrid data={data} />
+                </>
             )}
 
             <button
@@ -266,5 +140,48 @@ export function StepCategorySetup({ data, onAdvance }: StepProps) {
                 Continue to boards
             </button>
         </section>
+    );
+}
+
+/**
+ * The board defaults every matrix cell is measured against. Read-only here:
+ * step 1 owns them, so there is exactly one place to edit them and no second
+ * surface to drift.
+ */
+function DefaultsSummary({
+    defaults,
+}: {
+    defaults: ReturnType<typeof boardDefaults>;
+}) {
+    const parts: string[] = [];
+    if (defaults.primaryTiming) {
+        parts.push(defaults.primaryTiming === 'gt' ? 'IGT' : 'RTA');
+    }
+    if (defaults.minMs !== null) {
+        parts.push(`min ${formatTimeInput(defaults.minMs)}`);
+    }
+    if ((defaults.rulesTemplate ?? '').trim()) parts.push('rules template');
+    if (defaults.sortAscending !== null) {
+        parts.push(defaults.sortAscending ? 'lowest wins' : 'highest wins');
+    }
+    if (defaults.showMilliseconds !== null) {
+        parts.push(defaults.showMilliseconds ? 'ms shown' : 'ms hidden');
+    }
+
+    if (parts.length === 0) {
+        return (
+            <span className={matrixStyles.defaultsUnset}>
+                none set — every category keeps its own values
+            </span>
+        );
+    }
+    return (
+        <>
+            {parts.map((p) => (
+                <span key={p} className={matrixStyles.defaultsValue}>
+                    {p}
+                </span>
+            ))}
+        </>
     );
 }

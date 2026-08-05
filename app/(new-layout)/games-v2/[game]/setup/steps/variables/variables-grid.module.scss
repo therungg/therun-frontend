@@ -1,0 +1,243 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/board' as board;
+
+// Zone 2 of step 4. Shape deliberately differs from the scalar matrix above:
+// this is a bucket x category grid per variable, because a variable is a
+// structure rather than a value. Edits stage here and apply as one set.
+
+.zone {
+    margin-top: dt.$spacing-2xl;
+    padding-top: dt.$spacing-lg;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+}
+
+.zoneHead {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-base;
+    font-weight: 700;
+    margin-bottom: dt.$spacing-md;
+}
+
+.zoneCount {
+    font-size: dt.$font-size-xs;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--bs-secondary-color);
+}
+
+.emptyNote {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    max-width: 46rem;
+}
+
+// ---- One variable -------------------------------------------
+
+.palette {
+    @include board.board-surface(0);
+    border-radius: dt.$radius-md;
+    margin-bottom: dt.$spacing-md;
+    overflow: hidden;
+}
+
+.paletteHead {
+    width: 100%;
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+    flex-wrap: wrap;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    background: transparent;
+    border: 0;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+        background: rgba(var(--bs-secondary-bg-rgb), 0.3);
+    }
+}
+
+.paletteName {
+    font-weight: 600;
+}
+
+.paletteMeta {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+// Categories disagree about this variable's role. The old shared scope
+// pretended that could not happen; showing it is the point.
+.driftBadge {
+    @include board.board-pill(dt.$accent-amber);
+    font-size: dt.$font-size-xs;
+}
+
+.pendingBadge {
+    @include board.board-pill;
+    font-size: dt.$font-size-xs;
+    margin-left: auto;
+}
+
+// ---- The grid -----------------------------------------------
+
+.scroller {
+    overflow-x: auto;
+    padding: 0 dt.$spacing-lg;
+}
+
+.grid {
+    border-collapse: collapse;
+    font-size: dt.$font-size-sm;
+
+    th,
+    td {
+        padding: dt.$spacing-xs dt.$spacing-sm;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    thead th {
+        font-size: dt.$font-size-xs;
+        font-weight: 600;
+        color: var(--bs-secondary-color);
+        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    }
+}
+
+.bucketName {
+    text-align: left !important;
+    font-weight: 500;
+    padding-right: dt.$spacing-lg !important;
+}
+
+.cell {
+    font: inherit;
+    font-size: dt.$font-size-base;
+    line-height: 1;
+    background: transparent;
+    border: 0;
+    border-radius: dt.$radius-sm;
+    padding: dt.$spacing-xs;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+        background: rgba(var(--bs-primary-rgb), 0.12);
+    }
+
+    &:disabled {
+        cursor: default;
+        opacity: 0.5;
+    }
+}
+
+.cellOn {
+    color: var(--bs-primary);
+}
+
+.cellOff {
+    color: var(--bs-secondary-color);
+    opacity: 0.55;
+}
+
+.roleRow th,
+.roleRow td {
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    padding-top: dt.$spacing-sm;
+    font-size: dt.$font-size-xs;
+}
+
+.roleQuiet {
+    color: var(--bs-secondary-color);
+}
+
+.roleDrift {
+    color: dt.$accent-amber;
+    font-weight: 600;
+}
+
+.consequence {
+    padding: dt.$spacing-xs dt.$spacing-lg dt.$spacing-sm;
+    margin: 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+// ---- Staged changes -----------------------------------------
+
+.pendingBar {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    flex-wrap: wrap;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    background: rgba(var(--bs-primary-rgb), 0.06);
+    font-size: dt.$font-size-sm;
+}
+
+.pendingSpacer {
+    flex: 1;
+}
+
+.pendingBtn {
+    @include board.control-pill;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    padding: dt.$spacing-xs dt.$spacing-lg;
+    font-size: dt.$font-size-sm;
+}
+
+// ---- Consequence dialog -------------------------------------
+
+.dialogBackdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1080;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: dt.$spacing-lg;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.dialog {
+    width: min(32rem, 100%);
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: dt.$spacing-xl;
+    border-radius: dt.$radius-lg;
+    background: var(--bs-body-bg);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+}
+
+.dialogTitle {
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+    margin-bottom: dt.$spacing-sm;
+}
+
+.dialogNote {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.dialogList {
+    list-style: none;
+    padding: 0;
+    margin: dt.$spacing-sm 0;
+    font-size: dt.$font-size-sm;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.dialogActions {
+    display: flex;
+    gap: dt.$spacing-sm;
+    justify-content: flex-end;
+    margin-top: dt.$spacing-lg;
+}

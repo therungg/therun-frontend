@@ -1,0 +1,315 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/board' as board;
+
+// The step-4 matrix renders DEVIATIONS, not values: a cell holding the board
+// default is drawn quiet (muted, no border) and a cell that differs is drawn
+// solid. On a healthy board almost every cell is quiet, so the eye lands on
+// the handful of exceptions — which is what lets this scale past ~10 rows
+// where a grid of raw values would not.
+
+.defaultsStrip {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+    margin-bottom: dt.$spacing-lg;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    border-radius: dt.$radius-md;
+    background: rgba(var(--bs-secondary-bg-rgb), 0.35);
+    font-size: dt.$font-size-sm;
+}
+
+.defaultsLabel {
+    font-size: dt.$font-size-xs;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--bs-secondary-color);
+}
+
+.defaultsValue + .defaultsValue::before {
+    content: '·';
+    margin: 0 dt.$spacing-xs;
+    color: var(--bs-secondary-color);
+}
+
+.defaultsUnset {
+    color: var(--bs-secondary-color);
+    font-style: italic;
+}
+
+.defaultsChange {
+    margin-left: auto;
+    @include board.board-quiet-link;
+}
+
+// ---- Grid ---------------------------------------------------
+
+.scroller {
+    overflow-x: auto;
+}
+
+.grid {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: dt.$font-size-sm;
+
+    th,
+    td {
+        padding: dt.$spacing-xs dt.$spacing-sm;
+        text-align: left;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    thead th {
+        font-size: dt.$font-size-xs;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--bs-secondary-color);
+        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    }
+
+    tbody tr + tr td {
+        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.25);
+    }
+}
+
+.groupRow th {
+    padding-top: dt.$spacing-lg;
+    font-size: dt.$font-size-xs;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--bs-secondary-color);
+    border-bottom: none;
+}
+
+.selectCell {
+    width: 1.75rem;
+}
+
+.nameCell {
+    font-weight: 600;
+    white-space: normal;
+    min-width: 9rem;
+}
+
+// A row currently selected for a bulk apply.
+.rowSelected td {
+    background: rgba(var(--bs-primary-rgb), 0.07);
+}
+
+// ---- Cells --------------------------------------------------
+// .cellQuiet = holds the board default. .cellDeviates = differs, and is the
+// only thing in the column drawn at full strength.
+
+.cellControl {
+    font: inherit;
+    color: inherit;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: dt.$radius-sm;
+    padding: 0.1rem dt.$spacing-xs;
+    max-width: 11rem;
+
+    &:hover,
+    &:focus-visible {
+        border-color: rgba(var(--bs-border-color-rgb), 0.7);
+    }
+}
+
+.cellQuiet {
+    color: var(--bs-secondary-color);
+}
+
+.cellDeviates {
+    color: var(--bs-body-color);
+    font-weight: 600;
+    border-color: rgba(var(--bs-border-color-rgb), 0.5);
+}
+
+// No board default for this column: nothing to be quiet against, so the raw
+// value is shown plainly rather than pretending it matches something.
+.cellNoDefault {
+    color: var(--bs-body-color);
+}
+
+.minInput {
+    width: 6.5rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.rulesChip {
+    @include board.control-pill;
+    padding: 0.05rem dt.$spacing-sm;
+    font-size: dt.$font-size-xs;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+}
+
+.rulesNone {
+    color: dt.$accent-amber;
+    border-color: rgba(dt.$accent-amber, 0.5);
+}
+
+.varsCell {
+    color: var(--bs-secondary-color);
+    font-variant-numeric: tabular-nums;
+}
+
+.openEditor {
+    @include board.board-quiet-link;
+    font-size: dt.$font-size-xs;
+}
+
+// ---- Inline rules editor ------------------------------------
+// Expands under its own row so the matrix stays on screen above and below —
+// the whole point of replacing the full-screen takeover.
+
+.rulesRow td {
+    padding: 0;
+}
+
+.rulesPanel {
+    margin: dt.$spacing-xs 0 dt.$spacing-sm;
+    padding: dt.$spacing-md;
+    border-radius: dt.$radius-md;
+    background: rgba(var(--bs-secondary-bg-rgb), 0.3);
+    border-left: 3px solid var(--bs-primary);
+    white-space: normal;
+}
+
+.rulesHead {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin-bottom: dt.$spacing-xs;
+}
+
+.rulesTitle {
+    font-weight: 600;
+}
+
+.rulesActions {
+    margin-left: auto;
+    display: flex;
+    gap: dt.$spacing-xs;
+}
+
+.rulesTextarea {
+    width: 100%;
+    min-height: 8rem;
+    font-family: inherit;
+    font-size: dt.$font-size-sm;
+    padding: dt.$spacing-sm;
+    border-radius: dt.$radius-sm;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    background: var(--bs-body-bg);
+    color: inherit;
+    resize: vertical;
+}
+
+// ---- Bulk bar -----------------------------------------------
+
+.bulkBar {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+    margin-top: dt.$spacing-sm;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    border-radius: dt.$radius-md;
+    background: var(--bs-body-bg);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.12);
+    font-size: dt.$font-size-sm;
+}
+
+.bulkCount {
+    font-weight: 600;
+}
+
+.bulkSpacer {
+    flex: 1;
+}
+
+.bulkControl {
+    font: inherit;
+    padding: 0.1rem dt.$spacing-xs;
+    border-radius: dt.$radius-sm;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    background: var(--bs-body-bg);
+    color: inherit;
+}
+
+// ---- Apply preview dialog -----------------------------------
+
+.dialogBackdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1080;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: dt.$spacing-lg;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.dialog {
+    width: min(34rem, 100%);
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: dt.$spacing-xl;
+    border-radius: dt.$radius-lg;
+    background: var(--bs-body-bg);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+}
+
+.dialogTitle {
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+    margin-bottom: dt.$spacing-sm;
+}
+
+.dialogList {
+    list-style: none;
+    padding: 0;
+    margin: dt.$spacing-sm 0;
+    font-size: dt.$font-size-sm;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.dialogFrom {
+    color: var(--bs-secondary-color);
+}
+
+.dialogWarn {
+    color: dt.$accent-amber;
+}
+
+.dialogNote {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: dt.$spacing-sm 0;
+}
+
+.dialogCheck {
+    display: flex;
+    align-items: flex-start;
+    gap: dt.$spacing-sm;
+    margin: dt.$spacing-md 0;
+    font-size: dt.$font-size-sm;
+}
+
+.dialogActions {
+    display: flex;
+    gap: dt.$spacing-sm;
+    justify-content: flex-end;
+    margin-top: dt.$spacing-lg;
+}
