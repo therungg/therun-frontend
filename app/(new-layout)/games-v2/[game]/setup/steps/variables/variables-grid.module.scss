@@ -1,44 +1,48 @@
 @use '../../../../../styles/design-tokens' as dt;
 @use '../../../../../styles/board' as board;
 
-// Zone 2 of step 4. Shape deliberately differs from the scalar matrix above:
-// this is a bucket x category grid per variable, because a variable is a
-// structure rather than a value. Edits stage here and apply as one set.
+// Zone 2 of step 4. The shape deliberately differs from the scalar matrix
+// above — this is a bucket x category grid per variable, because a variable is
+// a structure rather than a value — but the vocabulary is the same one the
+// public board uses, so the two zones read as one screen.
 
 .zone {
-    margin-top: dt.$spacing-2xl;
-    padding-top: dt.$spacing-lg;
-    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    margin-top: dt.$spacing-xl;
 }
 
 .zoneHead {
-    display: flex;
-    align-items: baseline;
-    gap: dt.$spacing-sm;
-    font-size: dt.$font-size-base;
-    font-weight: 700;
+    @include board.board-section-head;
     margin-bottom: dt.$spacing-md;
 }
 
+.zoneTitle {
+    @include board.board-eyebrow;
+}
+
 .zoneCount {
-    font-size: dt.$font-size-xs;
-    font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--bs-secondary-color);
+    @include board.board-section-count;
+}
+
+.empty {
+    @include board.board-surface(dt.$spacing-xl);
+    @include board.board-empty;
+}
+
+.emptyTitle {
+    @include board.board-empty-title;
 }
 
 .emptyNote {
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
-    max-width: 46rem;
+    max-width: 34rem;
+    margin: 0;
 }
 
 // ---- One variable -------------------------------------------
 
 .palette {
     @include board.board-surface(0);
-    border-radius: dt.$radius-md;
     margin-bottom: dt.$spacing-md;
     overflow: hidden;
 }
@@ -46,40 +50,48 @@
 .paletteHead {
     width: 100%;
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: dt.$spacing-sm;
     flex-wrap: wrap;
-    padding: dt.$spacing-sm dt.$spacing-lg;
+    padding: dt.$spacing-md dt.$spacing-lg;
     background: transparent;
     border: 0;
     color: inherit;
     text-align: left;
     cursor: pointer;
+    transition: background-color dt.$transition-fast;
 
     &:hover {
-        background: rgba(var(--bs-secondary-bg-rgb), 0.3);
+        background: rgba(var(--bs-body-color-rgb), 0.04);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: -2px;
     }
 }
 
 .paletteName {
     font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.paletteRole {
+    @include board.board-pill;
 }
 
 .paletteMeta {
-    font-size: dt.$font-size-xs;
-    color: var(--bs-secondary-color);
+    @include board.board-section-count;
 }
 
-// Categories disagree about this variable's role. The old shared scope
-// pretended that could not happen; showing it is the point.
+// Categories disagree about this variable's role. The old shared scope could
+// not represent this; surfacing it is the point.
 .driftBadge {
     @include board.board-pill(dt.$accent-amber);
-    font-size: dt.$font-size-xs;
 }
 
 .pendingBadge {
-    @include board.board-pill;
-    font-size: dt.$font-size-xs;
+    @include board.board-pill(var(--bs-primary));
     margin-left: auto;
 }
 
@@ -91,42 +103,50 @@
 }
 
 .grid {
-    border-collapse: collapse;
-    font-size: dt.$font-size-sm;
+    @include board.board-table;
+    width: auto;
 
-    th,
-    td {
-        padding: dt.$spacing-xs dt.$spacing-sm;
+    thead th {
+        text-align: center;
+    }
+
+    tbody td {
         text-align: center;
         white-space: nowrap;
     }
 
-    thead th {
-        font-size: dt.$font-size-xs;
-        font-weight: 600;
-        color: var(--bs-secondary-color);
-        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    // The bucket-name column is the row header, so it keeps table-left
+    // alignment while the toggle cells centre under their category.
+    tbody th {
+        text-align: left;
+        padding: dt.$spacing-xs dt.$spacing-lg dt.$spacing-xs dt.$spacing-md;
+        font-weight: 500;
+        color: var(--bs-body-color);
+        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+        white-space: nowrap;
     }
-}
-
-.bucketName {
-    text-align: left !important;
-    font-weight: 500;
-    padding-right: dt.$spacing-lg !important;
 }
 
 .cell {
     font: inherit;
-    font-size: dt.$font-size-base;
+    font-size: dt.$font-size-md;
     line-height: 1;
     background: transparent;
-    border: 0;
+    border: 1px solid transparent;
     border-radius: dt.$radius-sm;
-    padding: dt.$spacing-xs;
+    padding: dt.$spacing-xs dt.$spacing-sm;
     cursor: pointer;
+    transition: background-color dt.$transition-fast,
+        border-color dt.$transition-fast;
 
     &:hover:not(:disabled) {
         background: rgba(var(--bs-primary-rgb), 0.12);
+        border-color: rgba(var(--bs-primary-rgb), 0.35);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
     }
 
     &:disabled {
@@ -140,31 +160,42 @@
 }
 
 .cellOff {
-    color: var(--bs-secondary-color);
-    opacity: 0.55;
+    color: var(--bs-tertiary-color);
 }
 
-.roleRow th,
-.roleRow td {
-    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
-    padding-top: dt.$spacing-sm;
-    font-size: dt.$font-size-xs;
+// Staged but not yet applied — reads as provisional against the solid states.
+.cellPending {
+    border-color: rgba(var(--bs-primary-rgb), 0.55);
+    border-style: dashed;
+    background: rgba(var(--bs-primary-rgb), 0.08);
+}
+
+.roleRow {
+    th,
+    td {
+        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+        padding-top: dt.$spacing-sm;
+        font-size: dt.$font-size-2xs;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
 }
 
 .roleQuiet {
-    color: var(--bs-secondary-color);
+    color: var(--bs-tertiary-color);
 }
 
 .roleDrift {
     color: dt.$accent-amber;
-    font-weight: 600;
+    font-weight: 700;
 }
 
+// The consequence of the grid above, shown where it is caused.
 .consequence {
-    padding: dt.$spacing-xs dt.$spacing-lg dt.$spacing-sm;
+    @include board.board-section-count;
+    display: block;
+    padding: dt.$spacing-sm dt.$spacing-lg dt.$spacing-md;
     margin: 0;
-    font-size: dt.$font-size-xs;
-    color: var(--bs-secondary-color);
 }
 
 // ---- Staged changes -----------------------------------------
@@ -175,9 +206,14 @@
     gap: dt.$spacing-sm;
     flex-wrap: wrap;
     padding: dt.$spacing-sm dt.$spacing-lg;
-    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
-    background: rgba(var(--bs-primary-rgb), 0.06);
+    border-top: 1px solid rgba(var(--bs-primary-rgb), 0.3);
+    background: rgba(var(--bs-primary-rgb), 0.07);
     font-size: dt.$font-size-sm;
+}
+
+.pendingLabel {
+    @include board.board-eyebrow;
+    color: var(--bs-primary);
 }
 
 .pendingSpacer {
@@ -185,10 +221,12 @@
 }
 
 .pendingBtn {
-    @include board.control-pill;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-    padding: dt.$spacing-xs dt.$spacing-lg;
-    font-size: dt.$font-size-sm;
+    @include board.board-chip;
+    border-color: rgba(var(--bs-border-color-rgb), 0.5);
+}
+
+.pendingApply {
+    @include board.board-btn-primary;
 }
 
 // ---- Consequence dialog -------------------------------------
@@ -201,43 +239,54 @@
     align-items: center;
     justify-content: center;
     padding: dt.$spacing-lg;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(2px);
 }
 
 .dialog {
+    display: flex;
+    flex-direction: column;
     width: min(32rem, 100%);
     max-height: 80vh;
-    overflow-y: auto;
-    padding: dt.$spacing-xl;
     border-radius: dt.$radius-lg;
-    background: var(--bs-body-bg);
+    background: var(--board-surface-bg, var(--bs-body-bg));
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+    overflow: hidden;
+}
+
+.dialogHeader {
+    @include board.board-dialog-header;
 }
 
 .dialogTitle {
-    font-size: dt.$font-size-lg;
-    font-weight: 700;
-    margin-bottom: dt.$spacing-sm;
+    @include board.board-dialog-title;
+}
+
+.dialogBody {
+    @include board.board-dialog-body;
+}
+
+.dialogFooter {
+    @include board.board-dialog-footer;
 }
 
 .dialogNote {
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
+    margin: 0 0 dt.$spacing-md;
 }
 
 .dialogList {
     list-style: none;
     padding: 0;
-    margin: dt.$spacing-sm 0;
+    margin: 0;
     font-size: dt.$font-size-sm;
     display: flex;
     flex-direction: column;
-    gap: 0.15rem;
+    gap: 0.2rem;
 }
 
-.dialogActions {
-    display: flex;
-    gap: dt.$spacing-sm;
-    justify-content: flex-end;
-    margin-top: dt.$spacing-lg;
+.dialogMoved {
+    @include board.mono-time;
 }
