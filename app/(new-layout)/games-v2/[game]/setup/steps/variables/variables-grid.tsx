@@ -1091,42 +1091,6 @@ function VariablePalette({
                                 {pendingCount} pending
                             </span>
                         )}
-                        {/* Board order, where the board order is visible.
-                            Groups sorted alphabetically and nothing could
-                            change that, so the order runners read them in was
-                            whatever the names happened to be. Writes straight
-                            through — order is display only, the subcategory
-                            key is built from names sorted alphabetically. */}
-                        {groupTotal > 1 && (
-                            <span className={styles.moveGroup}>
-                                <button
-                                    type="button"
-                                    className={styles.moveBtn}
-                                    disabled={busy || position === 0}
-                                    aria-label={`Move ${group.name} up`}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onMove(-1);
-                                    }}
-                                >
-                                    ↑
-                                </button>
-                                <button
-                                    type="button"
-                                    className={styles.moveBtn}
-                                    disabled={
-                                        busy || position === groupTotal - 1
-                                    }
-                                    aria-label={`Move ${group.name} down`}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onMove(1);
-                                    }}
-                                >
-                                    ↓
-                                </button>
-                            </span>
-                        )}
                         <button
                             type="button"
                             className={styles.collapse}
@@ -1510,14 +1474,51 @@ function VariablePalette({
                                 </button>
                             </>
                         ) : (
-                            <button
-                                type="button"
-                                className={styles.deleteAction}
-                                disabled={busy}
-                                onClick={() => setConfirmDelete(true)}
-                            >
-                                Delete this {SECTION[role].noun}
-                            </button>
+                            <>
+                                {/* Board order, in words. It was a pair of
+                                    arrow buttons in the head, next to the
+                                    collapse triangle — and however differently
+                                    the two were drawn, the bar still had two
+                                    marks pointing down and no way to tell at a
+                                    glance which did what. Nothing in the head
+                                    points anywhere now except the triangle.
+
+                                    The footer is the right home anyway:
+                                    reordering is rare, collapsing is not, and
+                                    the head should carry the frequent one. */}
+                                {groupTotal > 1 && (
+                                    <>
+                                        <button
+                                            type="button"
+                                            className={styles.orderAction}
+                                            disabled={busy || position === 0}
+                                            onClick={() => onMove(-1)}
+                                        >
+                                            Move up
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={styles.orderAction}
+                                            disabled={
+                                                busy ||
+                                                position === groupTotal - 1
+                                            }
+                                            onClick={() => onMove(1)}
+                                        >
+                                            Move down
+                                        </button>
+                                    </>
+                                )}
+                                <span className={styles.pendingSpacer} />
+                                <button
+                                    type="button"
+                                    className={styles.deleteAction}
+                                    disabled={busy}
+                                    onClick={() => setConfirmDelete(true)}
+                                >
+                                    Delete this {SECTION[role].noun}
+                                </button>
+                            </>
                         )}
                     </div>
 
