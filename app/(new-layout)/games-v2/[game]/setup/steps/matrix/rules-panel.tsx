@@ -58,10 +58,19 @@ export function RulesPanel({
 
     return (
         <div className={styles.rulesPanel}>
-            <div className={styles.rulesHead}>
-                <span className={styles.rulesTitle}>
-                    {category.display} · rules
-                </span>
+            <textarea
+                className={styles.rulesTextarea}
+                value={text}
+                disabled={isSaving}
+                aria-label={`Rules for ${category.display}`}
+                placeholder={
+                    template
+                        ? 'Empty — the board template is one click away.'
+                        : 'No rules set for this category.'
+                }
+                onChange={(e) => setText(e.target.value)}
+            />
+            <div className={styles.rulesFoot}>
                 <span className={styles.rulesActions}>
                     {template && (
                         <button
@@ -83,27 +92,8 @@ export function RulesPanel({
                     >
                         {isSaving ? 'Saving…' : 'Save'}
                     </button>
-                    <button
-                        type="button"
-                        className={styles.rulesChip}
-                        onClick={onClose}
-                    >
-                        Close
-                    </button>
                 </span>
             </div>
-            <textarea
-                className={styles.rulesTextarea}
-                value={text}
-                disabled={isSaving}
-                aria-label={`Rules for ${category.display}`}
-                placeholder={
-                    template
-                        ? 'Empty — the board template is one click away.'
-                        : 'No rules set for this category.'
-                }
-                onChange={(e) => setText(e.target.value)}
-            />
         </div>
     );
 }

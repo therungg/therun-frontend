@@ -98,7 +98,6 @@ function renderMatrix() {
         <CategoryMatrix
             data={data}
             defaults={boardDefaults(data.metadata, data.policies)}
-            onOpenEditor={vi.fn()}
         />,
     );
 }
@@ -140,7 +139,6 @@ describe('CategoryMatrix', () => {
             <CategoryMatrix
                 data={data}
                 defaults={boardDefaults(data.metadata, data.policies)}
-                onOpenEditor={vi.fn()}
             />,
         );
         const min = screen.getByLabelText(
@@ -179,6 +177,35 @@ describe('CategoryMatrix', () => {
         // The other category's row is still on screen — the whole point of
         // the inline panel over a screen takeover.
         expect(screen.getByLabelText('Timing for Any%')).toBeTruthy();
+    });
+
+    it('reaches every other category setting from the same row, without leaving the list', () => {
+        renderMatrix();
+        fireEvent.click(
+            screen.getByRole('button', { name: 'More settings for Any%' }),
+        );
+        // The panes are tabs, not screens: the matrix is still rendered.
+        fireEvent.click(screen.getByRole('tab', { name: 'Time columns' }));
+        expect(screen.getByLabelText('Timing for 16 Star')).toBeTruthy();
+        expect(screen.getByText('Real time (RTA)')).toBeTruthy();
+        fireEvent.click(screen.getByRole('tab', { name: 'Emblem' }));
+        expect(screen.getByText('Choose image')).toBeTruthy();
+        expect(screen.getByLabelText('Timing for 16 Star')).toBeTruthy();
+    });
+
+    it('will not let the ranking timing be hidden', () => {
+        // Any% ranks by RTA — hiding it would sort the board by a column
+        // nobody can see.
+        renderMatrix();
+        fireEvent.click(
+            screen.getByRole('button', { name: 'More settings for Any%' }),
+        );
+        fireEvent.click(screen.getByRole('tab', { name: 'Time columns' }));
+        const boxes = screen.getAllByRole('checkbox');
+        const rta = boxes.find(
+            (b) => b.parentElement?.textContent?.includes('Real time') ?? false,
+        ) as HTMLInputElement;
+        expect(rta.disabled).toBe(true);
     });
 
     it('previews a bulk apply instead of writing immediately', async () => {

@@ -12,8 +12,8 @@ import {
     hasDefault,
     type MatrixColumn,
     rulesState,
-    variableCount,
 } from '~src/lib/setup/board-defaults';
+import { subBoardCount } from '~src/lib/setup/variable-view';
 import { formatTimeInput, parseTimeInput } from '~src/lib/time-input';
 import type { ResolvedCategory } from '../../../../../../../types/leaderboards.types';
 import { bulkUpdateCategoriesAction } from '../../actions/bulk-update-categories.action';
@@ -21,13 +21,14 @@ import { setCategoryMinimumAction } from '../../actions/set-category-minimum.act
 import type { WizardData } from '../../types';
 import { BulkBar } from './bulk-bar';
 import styles from './matrix.module.scss';
-import { RulesPanel } from './rules-panel';
+import type { PaneId } from './row-panel';
+import { RowPanel } from './row-panel';
 
 interface Props {
     data: WizardData;
     defaults: BoardDefaults;
-    /** Opens the full CategoryEditor for the deep cases the matrix omits. */
-    onOpenEditor: (categoryId: number) => void;
+    /** Row to open on mount, from a `?cat=<id>` deep link. */
+    initialOpenCategoryId?: number | null;
 }
 
 /**
@@ -43,11 +44,27 @@ interface Props {
  * exception: a bulk apply first shows what it would change, because select-all
  * is the natural gesture here and there is no undo.
  */
-export function CategoryMatrix({ data, defaults, onOpenEditor }: Props) {
+export function CategoryMatrix({
+    data,
+    defaults,
+    initialOpenCategoryId,
+}: Props) {
     const router = useRouter();
     const [selected, setSelected] = useState<Set<number>>(new Set());
-    const [openRules, setOpenRules] = useState<number | null>(null);
+    // One row expanded at a time, remembering which pane — reopening a row
+    // lands where the moderator left it rather than resetting to the first tab.
+    const [open, setOpen] = useState<{ id: number; pane: PaneId } | null>(
+        initialOpenCategoryId
+            ? { id: initialOpenCategoryId, pane: 'rules' }
+            : null,
+    );
     const [isSaving, startSave] = useTransition();
+
+    const openPane = (id: number, pane: PaneId) => {
+        setOpen((prev) =>
+            prev?.id === id && prev.pane === pane ? null : { id, pane },
+        );
+    };
 
     const mains = data.categories
         .filter((c) => !c.archived && (c.isMain ?? false))
@@ -121,7 +138,7 @@ export function CategoryMatrix({ data, defaults, onOpenEditor }: Props) {
         }`;
     };
 
-    // select, name, timing, minimum, rules, ranking, ms, vars, open-editor
+    // select, name, timing, minimum, rules, ranking, ms, boards, expander
     const columnCount = 9;
 
     return (
@@ -150,10 +167,10 @@ export function CategoryMatrix({ data, defaults, onOpenEditor }: Props) {
                             <th>Rules</th>
                             <th>Ranking</th>
                             <th>ms</th>
-                            <th>Vars</th>
+                            <th>Boards</th>
                             <th>
                                 <span className="visually-hidden">
-                                    Full editor
+                                    More settings
                                 </span>
                             </th>
                         </tr>
@@ -168,7 +185,7 @@ export function CategoryMatrix({ data, defaults, onOpenEditor }: Props) {
                                 {section.items.map((c) => {
                                     const min = categoryMinMs(c, data.policies);
                                     const rules = rulesState(c, defaults);
-                                    const isOpen = openRules === c.id;
+                                    const isOpen = open?.id === c.id;
                                     return (
                                         <Fragment key={c.id}>
                                             <tr
@@ -295,12 +312,15 @@ export function CategoryMatrix({ data, defaults, onOpenEditor }: Props) {
                                                                   ? styles.rulesCustom
                                                                   : styles.rulesDefault
                                                         }`}
-                                                        aria-expanded={isOpen}
+                                                        aria-expanded={
+                                                            isOpen &&
+                                                            open?.pane ===
+                                                                'rules'
+                                                        }
                                                         onClick={() =>
-                                                            setOpenRules(
-                                                                isOpen
-                                                                    ? null
-                                                                    : c.id,
+                                                            openPane(
+                                                                c.id,
+                                                                'rules',
                                                             )
                                                         }
                                                     >
@@ -394,31 +414,45 @@ export function CategoryMatrix({ data, defaults, onOpenEditor }: Props) {
                                                     </select>
                                                 </td>
 
+                                                {/* How many leaderboards this
+                                                    category ends up with once
+                                                    its subcategories are
+                                                    applied — the tie between
+                                                    this zone and the one
+                                                    below. */}
                                                 <td className={styles.varsCell}>
-                                                    {variableCount(
+                                                    {subBoardCount(
                                                         c.id,
                                                         data.variables,
-                                                    ) || '—'}
+                                                    )}
                                                 </td>
 
                                                 <td>
                                                     <button
                                                         type="button"
                                                         className={
-                                                            styles.openEditor
+                                                            styles.expander
                                                         }
+                                                        aria-expanded={isOpen}
+                                                        aria-label={`More settings for ${c.display}`}
                                                         onClick={() =>
-                                                            onOpenEditor(c.id)
+                                                            openPane(
+                                                                c.id,
+                                                                open?.id ===
+                                                                    c.id
+                                                                    ? open.pane
+                                                                    : 'rules',
+                                                            )
                                                         }
                                                     >
-                                                        Open full editor →
+                                                        {isOpen ? '⌃' : '⌄'}
                                                     </button>
                                                 </td>
                                             </tr>
-                                            {isOpen && (
+                                            {isOpen && open && (
                                                 <tr className={styles.rulesRow}>
                                                     <td colSpan={columnCount}>
-                                                        <RulesPanel
+                                                        <RowPanel
                                                             gameSlug={
                                                                 data.game.name
                                                             }
@@ -426,13 +460,16 @@ export function CategoryMatrix({ data, defaults, onOpenEditor }: Props) {
                                                                 data.game.id
                                                             }
                                                             category={c}
-                                                            template={
-                                                                defaults.rulesTemplate
+                                                            defaults={defaults}
+                                                            pane={open.pane}
+                                                            onPane={(pane) =>
+                                                                setOpen({
+                                                                    id: c.id,
+                                                                    pane,
+                                                                })
                                                             }
                                                             onClose={() =>
-                                                                setOpenRules(
-                                                                    null,
-                                                                )
+                                                                setOpen(null)
                                                             }
                                                         />
                                                     </td>
