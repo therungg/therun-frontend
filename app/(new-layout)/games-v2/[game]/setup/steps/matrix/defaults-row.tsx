@@ -190,7 +190,6 @@ export function DefaultsRow({
     return (
         <>
             <tr className={styles.defaultsRow}>
-                <td />
                 <td className={styles.defaultsName}>Board default</td>
 
                 <td>
