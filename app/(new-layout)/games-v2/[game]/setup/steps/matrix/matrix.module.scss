@@ -28,22 +28,6 @@
     @include board.board-section-count;
 }
 
-// The legend for the whole grid, said once. A cell holding the board default
-// renders as a dot rather than as its value, which only reads if the dot is
-// named — and naming it here is cheaper than repeating "Default (RTA)" in
-// every cell of every column, which is what it replaced.
-.panelBlurb {
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-    max-width: 46rem;
-    margin: 0 0 dt.$spacing-md;
-}
-
-.blurbDot {
-    @include board.mono-time;
-    color: var(--bs-emphasis-color);
-}
-
 // ---- Board defaults -----------------------------------------
 // Row zero of the grid, not a caption above it: every cell below is a
 // deviation from these values, so they sit in the columns they are compared
