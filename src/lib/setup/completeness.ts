@@ -26,8 +26,6 @@ export interface CategoryFacts {
 
 export interface CompletenessInput {
     categories: CategoryFacts[];
-    /** Every category's variables — they are category-scoped only. */
-    variableCount: number;
     policyCount: number;
     requireVideoAnywhere: boolean;
     slug: string | null;
@@ -159,17 +157,10 @@ export function computeCompleteness(
         });
     }
 
-    // Category setup is every per-category setting on one screen — rules, timing,
-    // minimum time, variables. Rules are the one part that can be genuinely
-    // missing, so they drive the status; variables are optional (plenty of
-    // games have one board per category and nothing to split) and only ride
-    // along on the summary as a count.
-    const variableSuffix =
-        input.variableCount > 0
-            ? ` · ${input.variableCount} ${
-                  input.variableCount === 1 ? 'variable' : 'variables'
-              }`
-            : '';
+    // Category setup is every per-category setting on one screen — rules,
+    // timing, minimum time, and the optional splits/filters. Rules are the one
+    // part that can be genuinely missing, so they drive the status and the
+    // summary; the rest ride along inside the step, not on this line.
     if (emptyBoard || mains.length === 0) {
         steps.push({
             step: 'category-setup',
@@ -182,13 +173,13 @@ export function computeCompleteness(
             steps.push({
                 step: 'category-setup',
                 status: 'done',
-                summary: `All ${mains.length} featured categories have rules${variableSuffix}`,
+                summary: `All ${mains.length} featured categories have rules`,
             });
         } else {
             steps.push({
                 step: 'category-setup',
                 status: 'warning',
-                summary: `${mainsWithoutRules.length} of ${mains.length} featured categories missing rules${variableSuffix}`,
+                summary: `${mainsWithoutRules.length} of ${mains.length} featured categories missing rules`,
             });
         }
     }

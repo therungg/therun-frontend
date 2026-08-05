@@ -25,7 +25,6 @@ function input(over: Partial<CompletenessInput>): CompletenessInput {
                 groupId: null,
             },
         ],
-        variableCount: 0,
         policyCount: 1,
         requireVideoAnywhere: false,
         slug: 'mygame',
@@ -371,35 +370,23 @@ describe('computeCompleteness', () => {
         });
     });
 
-    // Variables stopped being a step of their own — they are one section of
-    // the per-category editor now — so the count rides on the category-setup
-    // summary instead of carrying a status.
-    describe('variable count on the category-setup summary', () => {
+    // Variables (now the per-category splits/filters) are one section of the
+    // editor, not something users know by that name — the category-setup
+    // summary is driven by rules only and never mentions them.
+    describe('category-setup summary', () => {
         const step = (c: ReturnType<typeof computeCompleteness>) =>
             c.steps.find((s) => s.step === 'category-setup');
 
-        it('says nothing about variables when the board has none', () => {
-            expect(
-                step(computeCompleteness(input({ variableCount: 0 }))),
-            ).toMatchObject({
+        it('reports rules coverage, with no variable mention', () => {
+            expect(step(computeCompleteness(input({})))).toMatchObject({
                 status: 'done',
                 summary: 'All 1 featured categories have rules',
             });
         });
 
-        it('appends the count a board does have', () => {
-            expect(
-                step(computeCompleteness(input({ variableCount: 1 })))?.summary,
-            ).toBe('All 1 featured categories have rules · 1 variable');
-            expect(
-                step(computeCompleteness(input({ variableCount: 4 })))?.summary,
-            ).toBe('All 1 featured categories have rules · 4 variables');
-        });
-
-        it('appends the count to a warning summary too', () => {
+        it('warns on missing rules, with no variable mention', () => {
             const c = computeCompleteness(
                 input({
-                    variableCount: 3,
                     categories: [
                         {
                             id: 1,
@@ -413,14 +400,12 @@ describe('computeCompleteness', () => {
                 }),
             );
             expect(step(c)?.summary).toBe(
-                '1 of 1 featured categories missing rules · 3 variables',
+                '1 of 1 featured categories missing rules',
             );
         });
 
-        it('says nothing about variables before there are categories to set up', () => {
-            const c = computeCompleteness(
-                input({ variableCount: 2, categories: [] }),
-            );
+        it('prompts to set up categories before there are any', () => {
+            const c = computeCompleteness(input({ categories: [] }));
             expect(step(c)?.summary).toBe(
                 'Set up each category after choosing featured ones',
             );
