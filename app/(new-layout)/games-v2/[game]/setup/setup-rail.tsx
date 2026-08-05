@@ -1,7 +1,7 @@
 'use client';
 
 import { useId, useState } from 'react';
-import { Check2, ChevronDown, Dot } from 'react-bootstrap-icons';
+import { Check2, ChevronDown } from 'react-bootstrap-icons';
 import type {
     SetupStepId,
     SetupStepState,
@@ -94,15 +94,13 @@ export function SetupRail({
                                 aria-current={isActive ? 'step' : undefined}
                                 onClick={() => select(meta.id)}
                             >
-                                <StatusGlyph status={status} />
+                                <StatusNode
+                                    status={status}
+                                    num={meta.num}
+                                    active={isActive}
+                                />
                                 <span className={styles.railItemText}>
                                     <span className={styles.railItemLabel}>
-                                        <span
-                                            className={styles.railItemNum}
-                                            aria-hidden
-                                        >
-                                            {meta.num}
-                                        </span>
                                         {meta.label}
                                     </span>
                                     {state && (
@@ -165,15 +163,15 @@ function RailProgress({
     );
 }
 
-const TONE: Record<SetupStepStatus, string> = {
-    done: styles.toneDone,
-    todo: styles.toneTodo,
-    warning: styles.toneWarning,
-    blocker: styles.toneBlocker,
+const NODE_TONE: Record<SetupStepStatus, string> = {
+    done: styles.nodeDone,
+    todo: '',
+    warning: styles.nodeWarning,
+    blocker: styles.nodeBlocker,
 };
 
-// Status is carried by icon shape and tone for sighted users; spell it out so
-// it isn't colour-only information.
+// Status is carried by the node's shape and tone for sighted users; spell it
+// out so it isn't colour-only information.
 const STATUS_TEXT: Record<SetupStepStatus, string> = {
     done: 'Done',
     todo: 'Not done',
@@ -181,16 +179,34 @@ const STATUS_TEXT: Record<SetupStepStatus, string> = {
     blocker: 'Blocked',
 };
 
-function StatusGlyph({ status }: { status: SetupStepStatus }) {
-    const Icon = status === 'done' ? Check2 : Dot;
+/**
+ * A numbered node on the connector spine: the step number until it's done, a
+ * check once it is. The current step wears a primary halo (`active`) on top of
+ * whatever status tone it carries, so position and progress stay separable.
+ */
+function StatusNode({
+    status,
+    num,
+    active,
+}: {
+    status: SetupStepStatus;
+    num: number;
+    active: boolean;
+}) {
     return (
-        <>
-            <Icon
-                size={16}
-                className={`${styles.railGlyph} ${TONE[status]}`}
-                aria-hidden
-            />
+        <span className={styles.railStep}>
+            <span
+                className={`${styles.railNode} ${NODE_TONE[status]} ${
+                    active ? styles.railNodeActive : ''
+                }`}
+            >
+                {status === 'done' ? (
+                    <Check2 size={12} aria-hidden />
+                ) : (
+                    <span aria-hidden>{num}</span>
+                )}
+            </span>
             <span className="visually-hidden">{STATUS_TEXT[status]}: </span>
-        </>
+        </span>
     );
 }
