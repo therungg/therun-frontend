@@ -43,18 +43,17 @@ import styles from './variables-grid.module.scss';
  * as a VIEW: rows are grouped by nameNormalized, presented as one object with
  * a bucket x category grid, and every edit fans out as per-category writes.
  *
- * `role` is not a field here. It is split into two SECTIONS — separate
- * leaderboards and run details — because those are two concepts for a
- * moderator and only one column in the database. Which section you are
- * standing in decides the role; moving between them is a named conversion
- * with a consequence preview, never a dropdown. See
- * docs/plans/2026-08-05-splits-vs-filters-design.md.
+ * `role` is not a field here. It is split into two SECTIONS — Subcategories
+ * and Filters — because those are two concepts for a moderator and only one
+ * column in the database. Which section you are standing in decides the role;
+ * moving between them is a named conversion with a consequence preview, never
+ * a dropdown. See docs/plans/2026-08-05-splits-vs-filters-design.md.
  *
  * The two sections deliberately write differently:
  *
- * - **Separate leaderboards** stage. Their edits relocate existing runs, so
- *   the whole set is previewed once and confirmed once.
- * - **Run details** write immediately, like the scalar matrix above. They are
+ * - **Subcategories** stage. Their edits relocate existing runs, so the whole
+ *   set is previewed once and confirmed once.
+ * - **Filters** write immediately, like the scalar matrix above. They are
  *   additive and touch no standings; staging them made adding a Route option
  *   feel as dangerous as re-slicing the board.
  *
@@ -485,7 +484,7 @@ function VariableSection({
                 <span className={styles.zoneTitle}>{copy.title}</span>
                 <span className={styles.zoneCount}>
                     {role === 'subcategory'
-                        ? `${boardTotal} ${boardTotal === 1 ? 'board' : 'boards'}`
+                        ? `${boardTotal} ${boardTotal === 1 ? 'leaderboard' : 'leaderboards'}`
                         : `${groups.length} added`}
                 </span>
             </div>
@@ -511,13 +510,13 @@ function VariableSection({
                 <div className={styles.empty}>
                     <p className={styles.emptyTitle}>
                         {role === 'subcategory'
-                            ? 'One board per category'
+                            ? 'No subcategories'
                             : 'Only the built-in filters'}
                     </p>
                     <p className={styles.emptyNote}>
                         {role === 'subcategory'
-                            ? 'Nothing splits these categories yet. Add a split when the same category is really several leaderboards — Platform, Region, Glitches — each with its own record.'
-                            : 'Add a detail when you want runners to be able to narrow the board by something the run carries, without giving it a leaderboard of its own.'}
+                            ? 'Every featured category is a single leaderboard. Add a subcategory group when a category is really several leaderboards — Platform, Region, Glitches — each with its own record.'
+                            : 'Add a filter when runners should be able to narrow a leaderboard by something the run carries, without it becoming a subcategory.'}
                     </p>
                 </div>
             ) : (
@@ -614,7 +613,7 @@ function VariablePalette({
                 <span className={styles.paletteName}>{group.name}</span>
                 <span className={styles.paletteMeta}>
                     on {onCount} of {categories.length} · {group.buckets.length}{' '}
-                    {group.buckets.length === 1 ? 'option' : 'options'}
+                    {SECTION[role].options.toLowerCase()}
                 </span>
                 {pendingCount > 0 && (
                     <span className={styles.pendingBadge}>
@@ -623,8 +622,8 @@ function VariablePalette({
                 )}
             </button>
 
-            {/* A role disagreement means this is a leaderboard split on part
-                of the board and a filter on the rest. Stated, with both ways
+            {/* A role disagreement means this makes subcategories on part of
+                the board and only filters the rest. Stated, with both ways
                 out — it used to be a badge reading "roles differ". */}
             {group.roleDrift && (
                 <div className={styles.drift}>
@@ -642,7 +641,7 @@ function VariablePalette({
                             disabled={busy}
                             onClick={() => onConvert('subcategory')}
                         >
-                            Split everywhere
+                            Subcategories everywhere
                         </button>
                         <button
                             type="button"
@@ -650,7 +649,7 @@ function VariablePalette({
                             disabled={busy}
                             onClick={() => onConvert('filter')}
                         >
-                            Detail everywhere
+                            Filter everywhere
                         </button>
                     </div>
                 </div>
@@ -674,10 +673,10 @@ function VariablePalette({
                                         <th>{bucket.label}</th>
                                         {categories.map((c) => {
                                             const on = cellOn(c.id, bucket.key);
-                                            // Only a split has somewhere for
-                                            // an unmatched run to land, so the
-                                            // default marker is meaningless in
-                                            // the run-details section.
+                                            // Only a subcategory has somewhere
+                                            // for an unmatched run to land, so
+                                            // the default marker is meaningless
+                                            // in the filters section.
                                             const isDefault =
                                                 role === 'subcategory' &&
                                                 group.byCategory.get(c.id)
@@ -710,7 +709,7 @@ function VariablePalette({
                                                         aria-label={`${bucket.label} on ${c.display}`}
                                                         title={
                                                             isDefault
-                                                                ? 'Runs that do not say land here'
+                                                                ? 'Runs that do not say land in this subcategory'
                                                                 : undefined
                                                         }
                                                         onClick={() =>
@@ -744,11 +743,13 @@ function VariablePalette({
                                   .map((c) => {
                                       const n = subBoardCount(c.id, variables);
                                       return `${c.display} → ${n} ${
-                                          n === 1 ? 'board' : 'boards'
+                                          n === 1
+                                              ? 'leaderboard'
+                                              : 'subcategories'
                                       }`;
                                   })
                                   .join(' · ') || 'Not on any category yet.'
-                            : 'Filters the board. Records are unaffected.'}
+                            : 'Narrows the leaderboard. No subcategories, no effect on records.'}
                     </p>
 
                     <div className={styles.paletteFoot}>
@@ -851,7 +852,11 @@ function AddVariableForm({
     return (
         <div className={styles.addForm}>
             <label className={styles.addField}>
-                <span className={styles.addLabel}>Name</span>
+                <span className={styles.addLabel}>
+                    {role === 'subcategory'
+                        ? 'Subcategory group name'
+                        : 'Filter name'}
+                </span>
                 <input
                     className={styles.addInput}
                     value={name}
@@ -863,7 +868,9 @@ function AddVariableForm({
             </label>
 
             <label className={styles.addField}>
-                <span className={styles.addLabel}>Options, one per line</span>
+                <span className={styles.addLabel}>
+                    {SECTION[role].options}, one per line
+                </span>
                 <textarea
                     className={styles.addTextarea}
                     rows={4}
@@ -882,11 +889,11 @@ function AddVariableForm({
             <p className={styles.addNote}>
                 {role === 'subcategory'
                     ? options.length > 1
-                        ? `Every featured category is multiplied by ${options.length}. Each one becomes ${options.length} boards with their own records; runs that do not say land on ${options[0]}.`
-                        : 'A split needs at least two options to split anything.'
+                        ? `Every featured category is multiplied by ${options.length}. Each one splits into ${options.length} subcategories with their own records; runs that do not say land in ${options[0]}.`
+                        : 'A subcategory group needs at least two options to split anything.'
                     : `Added to all ${categoryCount} featured ${
                           categoryCount === 1 ? 'category' : 'categories'
-                      }. Records are unaffected.`}
+                      }. No subcategories, no effect on records.`}
             </p>
 
             <div className={styles.addActions}>

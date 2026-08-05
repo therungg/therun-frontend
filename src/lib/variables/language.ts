@@ -21,35 +21,41 @@ export const ROLE_LABEL: Record<VariableRoleId, string> = {
  * `role` is one field on one row type, which is right for storage and wrong
  * for authoring: it makes a moderator pick the value that establishes a
  * distinction they have to already understand. So the field stops being a
- * picker and becomes a consequence of *which section you were standing in* —
- * and the sections are named after what they do, not after the column.
+ * picker and becomes a consequence of *which section you were standing in*.
  *
- * Nothing below leaks "variable", "role", "subcategory" or "bucket".
+ * Each section calls its own things by their names — a subcategory group holds
+ * subcategory options, a filter holds filter options. The word "variable"
+ * never appears: it is the one word that spans both and therefore the one word
+ * that made them look like the same thing.
  */
 export const SECTION: Record<
     VariableRoleId,
     {
         /** Section heading. */
         title: string;
-        /** One line under the heading — what this section costs you. */
+        /** One line under the heading — what this section does. */
         blurb: string;
         /** Label on the section's add button. */
         add: string;
         /** Singular noun for one entry in this section. */
         noun: string;
+        /** Plural noun for one entry's values. */
+        options: string;
     }
 > = {
     subcategory: {
-        title: 'Separate leaderboards',
-        blurb: 'Each combination below gets its own board and its own record.',
-        add: 'Split the board by…',
-        noun: 'split',
+        title: 'Subcategories',
+        blurb: 'Split up a category into different subcategories. Each subcategory is its own leaderboard with its own record.',
+        add: 'Add a subcategory group',
+        noun: 'subcategory group',
+        options: 'Subcategory options',
     },
     filter: {
-        title: 'Run details',
-        blurb: 'Runners filter the board with these. No effect on records.',
-        add: 'Collect another detail',
-        noun: 'detail',
+        title: 'Filters',
+        blurb: 'Runners narrow a leaderboard with these. Filters do not create subcategories and do not affect records.',
+        add: 'Add a filter',
+        noun: 'filter',
+        options: 'Filter options',
     },
 };
 
@@ -57,32 +63,33 @@ export const SECTION: Record<
  * The filters every board already has, shown read-only beside the ones a
  * moderator adds.
  *
- * A run detail is not a new concept for a runner — the board has a filter bar
+ * A filter is not a new concept for a runner — the board has a filter bar
  * already. Naming the built-ins here is what makes "you are adding one more
- * control to an existing bar" the obvious reading, and it turns a reserved-name
- * collision into something visible before typing rather than a 400 on save.
+ * filter to a bar that exists" the obvious reading, and it turns a
+ * reserved-name collision into something visible before typing rather than a
+ * 400 on save.
  */
 export const BUILT_IN_FILTERS = ['Country', 'Year', 'Verified', 'Timing'];
 
 /** The one question asked when creating, phrased as an outcome. */
 export const CREATE_QUESTION =
-    'Should each option get its own leaderboard and its own world record?';
+    'Should each option be its own subcategory with its own record?';
 
 /**
- * Label for moving a variable between sections. This is a named action with a
- * consequence preview, never a dropdown: it either collapses N boards into one
- * or explodes one into N.
+ * Label for moving something between the two sections. A named action with a
+ * consequence preview, never a dropdown: it either collapses a category's
+ * subcategories back into one leaderboard, or splits one into several.
  */
 export function conversionLabel(to: VariableRoleId): string {
     return to === 'subcategory'
-        ? 'Split the board by this'
-        : 'Move to run details';
+        ? 'Make this a subcategory group'
+        : 'Make this a filter';
 }
 
 /**
- * Categories disagreeing about a variable's role is not a footnote — it means
- * the same thing is a leaderboard split on part of the board and a filter on
- * the rest. Said plainly, with the two ways out.
+ * Categories disagreeing about a role is not a footnote — it means the same
+ * thing creates subcategories on part of the board and only filters the rest.
+ * Said plainly, with the two ways out.
  */
 export function driftNotice(input: {
     name: string;
@@ -90,7 +97,7 @@ export function driftNotice(input: {
     filterOn: string[];
 }): string {
     const { name, splitOn, filterOn } = input;
-    return `${name} splits the board on ${list(splitOn)} but is only a run detail on ${list(filterOn)}.`;
+    return `${name} makes subcategories on ${list(splitOn)} but is only a filter on ${list(filterOn)}.`;
 }
 
 function list(items: string[]): string {
