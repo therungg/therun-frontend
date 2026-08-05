@@ -24,8 +24,9 @@ import { VariablesGrid } from './variables/variables-grid';
  *
  * Zone 2 is variables, which cannot be a matrix column: a variable is a
  * structure (name + role + ordered alias buckets + default index), and editing
- * one moves existing runs between boards. It gets a board-level palette
- * instead — see variables-grid.tsx.
+ * one moves existing runs between boards. It gets board-level palettes
+ * instead, split into the two sections a moderator actually thinks in —
+ * separate leaderboards and run details — see variables-grid.tsx.
  *
  * What this replaces: a hub whose every row opened the console's five-section
  * editor full-screen, turning a "step" into N nested visits with two competing

@@ -23,6 +23,39 @@
     @include board.board-section-count;
 }
 
+// What this section costs you, said once under its heading.
+.zoneBlurb {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    max-width: 42rem;
+    margin: 0 0 dt.$spacing-md;
+}
+
+// ---- Built-in filters ---------------------------------------
+// A run detail is one more control on a bar the board already has. Naming the
+// built-ins is what makes that the obvious reading.
+
+.builtIns {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    flex-wrap: wrap;
+    margin-bottom: dt.$spacing-md;
+}
+
+.builtInsLabel {
+    @include board.board-eyebrow;
+}
+
+.builtInChip {
+    @include board.board-pill;
+    opacity: 0.75;
+}
+
+.builtInsNote {
+    @include board.board-section-count;
+}
+
 .empty {
     @include board.board-surface(dt.$spacing-xl);
     @include board.board-empty;
@@ -76,18 +109,37 @@
     color: var(--bs-emphasis-color);
 }
 
-.paletteRole {
-    @include board.board-pill;
-}
-
 .paletteMeta {
     @include board.board-section-count;
 }
 
-// Categories disagree about this variable's role. The old shared scope could
-// not represent this; surfacing it is the point.
-.driftBadge {
-    @include board.board-pill(dt.$accent-amber);
+// ---- Role drift ---------------------------------------------
+// The same thing is a leaderboard split on part of the board and a filter on
+// the rest. That is a contradiction, not a footnote — it gets a strip and two
+// ways out, not a badge.
+
+.drift {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    flex-wrap: wrap;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    border-top: 1px solid rgba(dt.$accent-amber, 0.35);
+    border-bottom: 1px solid rgba(dt.$accent-amber, 0.35);
+    background: rgba(dt.$accent-amber, 0.08);
+}
+
+.driftText {
+    flex: 1;
+    min-width: 16rem;
+    margin: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
+}
+
+.driftActions {
+    display: flex;
+    gap: dt.$spacing-xs;
 }
 
 .pendingBadge {
@@ -170,32 +222,33 @@
     background: rgba(var(--bs-primary-rgb), 0.08);
 }
 
-.roleRow {
-    th,
-    td {
-        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
-        padding-top: dt.$spacing-sm;
-        font-size: dt.$font-size-2xs;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-    }
-}
-
-.roleQuiet {
-    color: var(--bs-tertiary-color);
-}
-
-.roleDrift {
-    color: dt.$accent-amber;
-    font-weight: 700;
-}
-
 // The consequence of the grid above, shown where it is caused.
 .consequence {
     @include board.board-section-count;
     display: block;
-    padding: dt.$spacing-sm dt.$spacing-lg dt.$spacing-md;
+    padding: dt.$spacing-sm dt.$spacing-lg 0;
     margin: 0;
+}
+
+// ---- Conversion ---------------------------------------------
+// Moving between the two sections is a named action with a preview, never a
+// dropdown: it collapses N boards into one, or explodes one into N.
+
+.paletteFoot {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-sm dt.$spacing-lg dt.$spacing-md;
+}
+
+.convertAction {
+    @include board.board-chip;
+    border-color: rgba(var(--bs-border-color-rgb), 0.5);
+    font-size: dt.$font-size-2xs;
+}
+
+.savingNote {
+    @include board.board-section-count;
 }
 
 // ---- Staged changes -----------------------------------------
@@ -227,6 +280,71 @@
 
 .pendingApply {
     @include board.board-btn-primary;
+}
+
+// ---- Adding one ---------------------------------------------
+// No role picker: the section already answered that question, so the form only
+// collects a name and the options.
+
+.addAction {
+    @include board.board-chip;
+    border-style: dashed;
+    border-color: rgba(var(--bs-border-color-rgb), 0.6);
+}
+
+.addForm {
+    @include board.board-surface(dt.$spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+.addField {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.addLabel {
+    @include board.board-eyebrow;
+}
+
+.addInput,
+.addTextarea {
+    font: inherit;
+    font-size: dt.$font-size-sm;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    border-radius: dt.$radius-sm;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+}
+
+.addTextarea {
+    resize: vertical;
+}
+
+.addError {
+    margin: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-danger);
+}
+
+.addNote {
+    margin: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.addActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: dt.$spacing-sm;
 }
 
 // ---- Consequence dialog -------------------------------------
