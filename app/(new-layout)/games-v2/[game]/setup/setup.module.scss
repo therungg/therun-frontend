@@ -978,13 +978,11 @@ $rail-collapse: 900px;
 // ---- IGDB source card ---------------------------------------
 // IGDB is the source of record for board identity data; this card names it
 // up front and holds the source-level actions (re-match, reset to IGDB).
-// Leads the form now — the prefill-it-for-me path comes before the fields it
-// fills, so the margin separates it from the fields below, not above.
 .igdbCard {
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
     border-radius: dt.$radius-md;
     padding: dt.$spacing-md dt.$spacing-lg;
-    margin-bottom: dt.$spacing-xl;
+    margin-top: dt.$spacing-xl;
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-sm;

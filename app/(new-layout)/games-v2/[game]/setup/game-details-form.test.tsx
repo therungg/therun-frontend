@@ -148,7 +148,7 @@ describe('GameDetailsForm', () => {
         );
     });
 
-    it('leads with the IGDB source card, linking the entry, above the field grid', () => {
+    it('shows the IGDB source card, linking the entry, under the field grid', () => {
         render(
             <GameDetailsForm
                 identifiers={identifiers}
@@ -163,10 +163,10 @@ describe('GameDetailsForm', () => {
         );
         const card = screen.getByText('IGDB').closest('div')!;
         const grid = document.querySelector('.row.g-4')!;
-        // The source card leads: linking IGDB fills the fields below it, so it
-        // comes before the grid in document order.
+        // The backend usually links the right entry already, so the source
+        // card is a footnote: it follows the grid in document order.
         expect(
-            card.compareDocumentPosition(grid) &
+            grid.compareDocumentPosition(card) &
                 Node.DOCUMENT_POSITION_FOLLOWING,
         ).toBeTruthy();
     });
