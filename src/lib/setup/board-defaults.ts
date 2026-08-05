@@ -44,11 +44,11 @@ export const MATRIX_COLUMNS: MatrixColumn[] = [
 
 export const MATRIX_COLUMN_LABEL: Record<MatrixColumn, string> = {
     timing: 'Timing',
-    otherTime: 'Other time',
-    minimum: 'Minimum',
+    otherTime: 'Other timing',
+    minimum: 'Min. Time',
     rules: 'Rules',
     ranking: 'Ranking',
-    milliseconds: 'Milliseconds',
+    milliseconds: 'Show Milliseconds',
 };
 
 /**
