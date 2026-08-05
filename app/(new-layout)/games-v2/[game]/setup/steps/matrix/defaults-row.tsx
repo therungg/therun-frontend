@@ -191,10 +191,10 @@ export function DefaultsRow({
     return (
         <>
             <tr className={styles.defaultsRow}>
+                {/* No icon here: a board-wide one would be the game cover,
+                    which already exists. The per-category slot lives in the
+                    name cell below. */}
                 <td className={styles.defaultsName}>Board default</td>
-                {/* Icon: per category only — a board-wide one would be the
-                    game cover, which already exists. */}
-                <td />
 
                 <td>
                     <select
@@ -221,7 +221,7 @@ export function DefaultsRow({
                             offering one that silently does nothing is worse
                             than not offering it. */}
                         {defaults.primaryTiming === null && (
-                            <option value="">no default</option>
+                            <option value="">Not set</option>
                         )}
                         <option value="rt">RTA</option>
                         <option value="gt">IGT</option>
@@ -258,7 +258,7 @@ export function DefaultsRow({
                                 ? ''
                                 : formatTimeInput(defaults.minMs)
                         }
-                        placeholder="none"
+                        placeholder="Not set"
                         disabled={isSaving}
                         aria-label="Board default minimum time"
                         onBlur={(e) => {
@@ -281,9 +281,12 @@ export function DefaultsRow({
                                 : styles.rulesDefault
                         }`}
                         aria-haspopup="dialog"
+                        aria-label={`Board rules template — ${
+                            hasTemplate ? 'set' : 'not set'
+                        }`}
                         onClick={() => setOpenTemplate((v) => !v)}
                     >
-                        {hasTemplate ? 'template' : 'none'}
+                        {hasTemplate ? 'Template' : '—'}
                     </button>
                 </td>
 
@@ -305,7 +308,7 @@ export function DefaultsRow({
                                     ? null
                                     : e.target.value === 'asc';
                             save({ sortAscending: next });
-                            // "no default" states nothing to follow, so there
+                            // "Not set" states nothing to follow, so there
                             // is nothing to offer.
                             if (next === null) return;
                             offerFollowUp(
@@ -316,7 +319,7 @@ export function DefaultsRow({
                             );
                         }}
                     >
-                        <option value="">no default</option>
+                        <option value="">Not set</option>
                         <option value="asc">Lowest</option>
                         <option value="desc">Highest</option>
                     </select>
@@ -342,7 +345,7 @@ export function DefaultsRow({
                             save({ showMilliseconds: next });
                         }}
                     >
-                        <option value="">no default</option>
+                        <option value="">Not set</option>
                         <option value="on">On</option>
                         <option value="off">Off</option>
                     </select>

@@ -1,13 +1,19 @@
 @use '../../../../../styles/design-tokens' as dt;
 @use '../../../../../styles/board' as board;
 
-// Zone 2 of step 4. The shape deliberately differs from the scalar matrix
-// above — this is a bucket x category grid per variable, because a variable is
-// a structure rather than a value — but the vocabulary is the same one the
-// public board uses, so the two zones read as one screen.
+// Zone 2 of step 4, on the same contract as the scalar matrix above it.
+//
+// It used to be a bare heading with a paragraph under it, sitting beside a
+// framed panel — the same kind of thing at two different levels of the page,
+// which is what made the screen read as two products stacked. It is a panel
+// now, with the same surface, the same head and the same row axis: CATEGORIES
+// ARE ROWS. Above, eight categories ran down the left; here they used to run
+// across the top, so reading the screen meant mentally transposing it halfway
+// down. Options are the columns instead.
 
 .zone {
-    margin-top: dt.$spacing-xl;
+    @include board.board-surface(dt.$spacing-xl);
+    margin-bottom: dt.$spacing-lg;
 }
 
 .zoneHead {
@@ -56,9 +62,11 @@
     @include board.board-section-count;
 }
 
+// Inside a panel now, so it does not bring a surface of its own — a card in a
+// card is how this screen ended up with four nested frames.
 .empty {
-    @include board.board-surface(dt.$spacing-xl);
     @include board.board-empty;
+    padding: dt.$spacing-xl 0;
 }
 
 .emptyTitle {
@@ -74,10 +82,12 @@
 
 // ---- One variable -------------------------------------------
 
+// An inner block, not a second surface: the section it sits in is the panel.
 .palette {
-    @include board.board-surface(0);
     margin-bottom: dt.$spacing-md;
     overflow: hidden;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    border-radius: dt.$radius-md;
 }
 
 .paletteHead {
@@ -158,6 +168,9 @@
     @include board.board-table;
     width: auto;
 
+    // Options are the columns, so the option headers centre over their own
+    // toggles; the category column stays left, lining up with the category
+    // column of the matrix above.
     thead th {
         text-align: center;
     }
@@ -167,8 +180,6 @@
         white-space: nowrap;
     }
 
-    // The bucket-name column is the row header, so it keeps table-left
-    // alignment while the toggle cells centre under their category.
     tbody th {
         text-align: left;
         padding: dt.$spacing-xs dt.$spacing-lg dt.$spacing-xs dt.$spacing-md;
@@ -177,6 +188,61 @@
         border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
         white-space: nowrap;
     }
+}
+
+.corner {
+    text-align: left !important;
+}
+
+// Same weight and colour as the matrix's name cell: it is the same list of
+// categories, read the same way down the same edge of the screen.
+.rowName {
+    font-weight: 600 !important;
+    color: var(--bs-emphasis-color) !important;
+    min-width: 9rem;
+}
+
+// ---- Where unmatched runs land ------------------------------
+// A column, because it is per category — the option that is "normal" on Any%
+// is not the one that is normal on 100%. Ruled off from the toggles so it
+// does not read as one more option.
+
+.defaultHead,
+.defaultCell {
+    border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    padding-left: dt.$spacing-md;
+}
+
+// Editing an option opens under the header row that opened it, above the
+// categories, so the grid below never jumps.
+.editorRow {
+    &:hover {
+        background: transparent;
+    }
+
+    td {
+        padding: 0;
+        text-align: left !important;
+    }
+}
+
+// ---- Legend -------------------------------------------------
+// Two marks, named once. They were three — filled, ringed and empty — with
+// nothing anywhere saying which was which.
+
+.legend {
+    @include board.board-section-count;
+    display: block;
+    padding: dt.$spacing-sm dt.$spacing-lg 0;
+    margin: 0;
+}
+
+.legendOn {
+    color: var(--bs-primary);
+}
+
+.legendOff {
+    color: var(--bs-tertiary-color);
 }
 
 .cell {
@@ -222,14 +288,6 @@
     background: rgba(var(--bs-primary-rgb), 0.08);
 }
 
-// The consequence of the grid above, shown where it is caused.
-.consequence {
-    @include board.board-section-count;
-    display: block;
-    padding: dt.$spacing-sm dt.$spacing-lg 0;
-    margin: 0;
-}
-
 // ---- Conversion ---------------------------------------------
 // Moving between the two sections is a named action with a preview, never a
 // dropdown: it collapses N boards into one, or explodes one into N.
@@ -238,6 +296,7 @@
     display: flex;
     align-items: center;
     gap: dt.$spacing-sm;
+    flex-wrap: wrap;
     padding: dt.$spacing-sm dt.$spacing-lg dt.$spacing-md;
 }
 
@@ -245,6 +304,16 @@
     @include board.board-chip;
     border-color: rgba(var(--bs-border-color-rgb), 0.5);
     font-size: dt.$font-size-2xs;
+    flex: none;
+}
+
+// The button names where it goes; this names what it costs. The most
+// consequential action in the section was a ghost chip in a corner saying
+// only its destination.
+.convertNote {
+    @include board.board-section-count;
+    flex: 1;
+    min-width: 14rem;
 }
 
 .savingNote {
@@ -355,23 +424,6 @@
     color: var(--bs-secondary-color);
 }
 
-// ---- Default option -----------------------------------------
-
-.defaultRow {
-    th,
-    td {
-        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
-        padding-top: dt.$spacing-sm;
-    }
-
-    th {
-        font-size: dt.$font-size-2xs;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--bs-tertiary-color);
-    }
-}
-
 .defaultSelect {
     font: inherit;
     font-size: dt.$font-size-2xs;
@@ -391,9 +443,12 @@
 // on a category row. Only rendered for categories with two or more groups —
 // with one group every leaderboard is one option and the grid already said it.
 
+// Inner block, matching .palette — the section is the panel.
 .combos {
-    @include board.board-surface(dt.$spacing-lg);
     margin-top: dt.$spacing-md;
+    padding: dt.$spacing-lg;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    border-radius: dt.$radius-md;
 }
 
 .combosHead {
@@ -466,10 +521,12 @@
 }
 
 .addForm {
-    @include board.board-surface(dt.$spacing-lg);
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-sm;
+    padding: dt.$spacing-lg;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    border-radius: dt.$radius-md;
 }
 
 .addField {

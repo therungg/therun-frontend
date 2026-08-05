@@ -14,13 +14,19 @@ import { VariablesGrid } from './variables/variables-grid';
  *
  * Zone 1 is a matrix of scalars — timing, minimum, rules, ranking direction,
  * milliseconds — rendered as DEVIATIONS from the board defaults set in step 1.
- * A category on the default draws quiet, so the grid is near-empty on a
- * healthy board and only the exceptions catch the eye.
+ * A cell holding the default renders as a dot rather than as its value, so the
+ * grid is near-empty on a healthy board and only the exceptions catch the eye.
  *
  * Zone 2 is subcategories and filters, which cannot be matrix columns: each is
  * a structure (name + role + ordered alias buckets + default index), and
  * editing one moves existing runs between leaderboards. They get board-level
  * palettes instead — see variables-grid.tsx.
+ *
+ * The two zones are separate panels and will stay separate, because they write
+ * differently (scalars land immediately; a subcategory edit is staged and
+ * previewed because it relocates runs). What they must NOT differ on is the
+ * axis: categories are rows in both. Everything else on this screen is
+ * negotiable; that is the one thing that made it unreadable.
  *
  * There is NO category detail screen. Everything a category has is set from
  * this one list: the scannable settings as columns, the rest as an expanding

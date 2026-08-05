@@ -87,6 +87,19 @@ export function conversionLabel(to: VariableRoleId): string {
 }
 
 /**
+ * What the conversion does, beside the button that does it.
+ *
+ * The label names the destination; it does not say what happens to the boards
+ * that already exist, which is the whole reason this action is dangerous. A
+ * ghost button in a corner reading "Make this a filter" is not consent.
+ */
+export function conversionNote(to: VariableRoleId): string {
+    return to === 'subcategory'
+        ? 'Splits every category that carries it into one leaderboard per option.'
+        : 'Collapses its subcategories back into one leaderboard per category.';
+}
+
+/**
  * Categories disagreeing about a role is not a footnote — it means the same
  * thing creates subcategories on part of the board and only filters the rest.
  * Said plainly, with the two ways out.
