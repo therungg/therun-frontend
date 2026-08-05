@@ -8,7 +8,11 @@ $rail-collapse: 900px;
 // Full-focus wizard: one job per screen. Identity strip across the top, a
 // persistent step rail on the left, one step's work in the content column.
 .page {
-    max-width: 76rem;
+    // 76rem keeps a form step at a readable measure. The table steps override
+    // it — see .pageWide — because a matrix with a column per category has
+    // nothing to gain from a reading width and everything to lose.
+    --setup-max: 76rem;
+    max-width: var(--setup-max);
     margin: 0 auto;
     padding: dt.$spacing-2xl dt.$spacing-lg dt.$spacing-3xl;
     display: grid;
@@ -19,6 +23,13 @@ $rail-collapse: 900px;
     @media (max-width: $rail-collapse) {
         grid-template-columns: minmax(0, 1fr);
     }
+}
+
+// Steps whose work is a grid, not a form. Wide enough that a board with ~8
+// featured categories fits without horizontal scrolling, capped so the rows
+// never become unreadably long on an ultrawide.
+.pageWide {
+    --setup-max: 112rem;
 }
 
 // ---- Identity strip -----------------------------------------

@@ -6,6 +6,12 @@ export interface SetupStepMeta {
     num: number;
     label: string;
     skippable: boolean;
+    /**
+     * Step works across a wide table rather than down a form, so the shell
+     * gives it the full page width instead of the reading-width column the
+     * form steps want.
+     */
+    wide?: boolean;
 }
 
 /**
@@ -19,8 +25,14 @@ export const SETUP_STEPS: SetupStepMeta[] = [
     { id: 'details', num: 1, label: 'Game details', skippable: true },
     { id: 'categories', num: 2, label: 'Categories', skippable: true },
     { id: 'groups', num: 3, label: 'Groups', skippable: true },
-    { id: 'category-setup', num: 4, label: 'Category setup', skippable: true },
-    { id: 'boards', num: 5, label: 'Boards', skippable: false },
+    {
+        id: 'category-setup',
+        num: 4,
+        label: 'Category setup',
+        skippable: true,
+        wide: true,
+    },
+    { id: 'boards', num: 5, label: 'Boards', skippable: false, wide: true },
 ];
 
 export const SETUP_STEP_LABELS: Record<SetupStepId, string> =
