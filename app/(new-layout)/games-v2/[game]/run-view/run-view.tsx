@@ -1,3 +1,4 @@
+import moment from 'moment';
 import type React from 'react';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
@@ -76,6 +77,27 @@ export function RunView({
 }): React.JSX.Element {
     const primaryTime = model.realTime ?? model.gameTime;
     const isRejected = model.verificationStatus === 'rejected';
+    // Tombstone (design doc §F / mocks fig. 5): a rejected run keeps this
+    // same page rather than 404ing or vanishing. RunDetail has no separate
+    // "excluded" boolean of its own (mod remove/restore and the verdict
+    // reject/unreject verbs both resolve to this one status field today —
+    // see the design doc's note that the frontend deliberately keeps
+    // reversible layers rather than surfacing every backing verb), so
+    // `isRejected` is the one state this page can render a tombstone from
+    // without inventing a field the backend doesn't send.
+    const isTombstone = isRejected;
+    // Most recent reject-type verdict in the public history feed — the
+    // event whose `at`/`reason` becomes the removal panel's byline.
+    // HistoryEvent carries no actor name (only `byRole: 'mod'|'self'|
+    // 'system'`), so the panel reads "by a moderator", not a specific
+    // username — a real gap: full mock parity ("Removed by weegee_mod")
+    // needs the backend to add an actor ref to either RunDetail or
+    // HistoryEvent.
+    const removalEvent = isTombstone
+        ? (history.find(
+              (e) => e.type === 'verdict' && e.action.includes('reject'),
+          ) ?? null)
+        : null;
     const subcategoryLabel = formatSubcategoryKey(model.subcategoryKey);
     const standing = model.boardStanding;
     const isTopOfBoard = standing?.rank === 1;
@@ -125,174 +147,229 @@ export function RunView({
 
     return (
         <div>
-            <header className={styles.header}>
-                <Link href={gameHref} className={styles.gameLink}>
-                    {model.game.image && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                            src={model.game.image}
-                            width={48}
-                            height={64}
-                            className={styles.gameCover}
-                            alt=""
-                        />
-                    )}
-                    <span>{model.game.display}</span>
-                </Link>
-                <div className={styles.crumbBody}>
-                    <div className={styles.eyebrow}>{eyebrowText}</div>
-                    <div className={styles.timeRow}>
-                        <h1
-                            className={`${styles.time} ${isTopOfBoard ? styles.timeGold : ''}`}
-                        >
-                            {primaryTime != null ? (
-                                // The category's showMilliseconds flag isn't
-                                // fetchable from this page's data (RunDetail
-                                // has no category settings join) without an
-                                // extra call — default to ms here since a run
-                                // page showing more precision than configured
-                                // is never wrong, just occasionally more
-                                // precise than the board.
-                                <DurationToFormatted
-                                    duration={primaryTime}
-                                    withMillis
-                                />
-                            ) : (
-                                '—'
+            {isTombstone && (
+                <RemovalPanel
+                    boardHref={boardHref}
+                    event={removalEvent}
+                    fallbackReason={model.rejectionReason}
+                />
+            )}
+            <div className={isTombstone ? styles.desaturated : undefined}>
+                <header className={styles.header}>
+                    <Link href={gameHref} className={styles.gameLink}>
+                        {model.game.image && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                                src={model.game.image}
+                                width={48}
+                                height={64}
+                                className={styles.gameCover}
+                                alt=""
+                            />
+                        )}
+                        <span>{model.game.display}</span>
+                    </Link>
+                    <div className={styles.crumbBody}>
+                        <div className={styles.eyebrow}>{eyebrowText}</div>
+                        <div className={styles.timeRow}>
+                            <h1
+                                className={`${styles.time} ${isTopOfBoard ? styles.timeGold : ''}`}
+                            >
+                                {primaryTime != null ? (
+                                    // The category's showMilliseconds flag isn't
+                                    // fetchable from this page's data (RunDetail
+                                    // has no category settings join) without an
+                                    // extra call — default to ms here since a run
+                                    // page showing more precision than configured
+                                    // is never wrong, just occasionally more
+                                    // precise than the board.
+                                    <DurationToFormatted
+                                        duration={primaryTime}
+                                        withMillis
+                                    />
+                                ) : (
+                                    '—'
+                                )}
+                            </h1>
+                            <VerificationBadge
+                                status={model.verificationStatus}
+                            />
+                            {isTombstone && (
+                                <span className={styles.notRankedPill}>
+                                    Not ranked
+                                </span>
                             )}
-                        </h1>
-                        <VerificationBadge status={model.verificationStatus} />
-                    </div>
-                    <div className={styles.runnerLine}>
-                        <RunnerAvatar name={model.runnerName} />
-                        {model.isGuest ? (
-                            model.runnerName
-                        ) : (
-                            <UserLink username={model.runnerName} />
-                        )}
-                        {/* RunDetail/ManualTimeDetail carry no country — unlike
+                        </div>
+                        <div className={styles.runnerLine}>
+                            <RunnerAvatar name={model.runnerName} />
+                            {model.isGuest ? (
+                                model.runnerName
+                            ) : (
+                                <UserLink username={model.runnerName} />
+                            )}
+                            {/* RunDetail/ManualTimeDetail carry no country — unlike
                             LeaderboardEntry, this join isn't available here yet. */}
-                        <CountryFlag country={null} />
-                        {model.verifiedBy && (
-                            <span className={styles.verifiedByNote}>
-                                verified by {model.verifiedBy.name}
-                            </span>
-                        )}
-                    </div>
-                    <div className={styles.pillRow}>
-                        <Link href={boardHref} className={styles.pill}>
-                            {model.categoryDisplay}
-                        </Link>
-                        {subcategoryLabel && (
+                            <CountryFlag country={null} />
+                            {model.verifiedBy && (
+                                <span className={styles.verifiedByNote}>
+                                    verified by {model.verifiedBy.name}
+                                </span>
+                            )}
+                        </div>
+                        <div className={styles.pillRow}>
                             <Link href={boardHref} className={styles.pill}>
-                                {subcategoryLabel}
+                                {model.categoryDisplay}
+                            </Link>
+                            {subcategoryLabel && (
+                                <Link href={boardHref} className={styles.pill}>
+                                    {subcategoryLabel}
+                                </Link>
+                            )}
+                        </div>
+                        {standing && rankHref && (
+                            <Link href={rankHref} className={styles.rankLine}>
+                                <strong>
+                                    #{standing.rank} of {standing.totalRunners}
+                                </strong>{' '}
+                                on this board
                             </Link>
                         )}
+                        <div className={styles.headerActions}>
+                            <RunActions
+                                model={model}
+                                sessionUsername={sessionUsername}
+                            />
+                        </div>
                     </div>
-                    {standing && rankHref && (
-                        <Link href={rankHref} className={styles.rankLine}>
-                            <strong>
-                                #{standing.rank} of {standing.totalRunners}
-                            </strong>{' '}
-                            on this board
-                        </Link>
-                    )}
-                    <div className={styles.headerActions}>
-                        <RunActions
-                            model={model}
-                            sessionUsername={sessionUsername}
-                        />
-                    </div>
-                </div>
-            </header>
+                </header>
 
-            {isRejected && model.rejectionReason && (
-                <div className={styles.rejectedNotice}>
-                    Rejected: {model.rejectionReason}
-                </div>
-            )}
+                {showWhatNow && (
+                    <p className={styles.whatNow}>
+                        What now? You can{' '}
+                        <Link href={claimHref}>submit a corrected claim</Link>.
+                    </p>
+                )}
 
-            {showWhatNow && (
-                <p className={styles.whatNow}>
-                    What now? You can{' '}
-                    <Link href={claimHref}>submit a corrected claim</Link>.
-                </p>
-            )}
-
-            <div className="row g-3">
-                <div className="col-lg-8">
-                    {model.vodUrl ? (
-                        isEmbeddableVod(model.vodUrl) ? (
-                            <div className={styles.vodWrap}>
-                                <Vod vod={model.vodUrl} />
-                            </div>
+                <div className="row g-3">
+                    <div className="col-lg-8">
+                        {model.vodUrl ? (
+                            isEmbeddableVod(model.vodUrl) ? (
+                                <div className={styles.vodWrap}>
+                                    <Vod vod={model.vodUrl} />
+                                </div>
+                            ) : (
+                                <div className={styles.mediaPlaceholder}>
+                                    <a
+                                        href={model.vodUrl}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                    >
+                                        Watch video / view evidence ↗
+                                    </a>
+                                </div>
+                            )
                         ) : (
                             <div className={styles.mediaPlaceholder}>
-                                <a
-                                    href={model.vodUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                >
-                                    Watch video / view evidence ↗
-                                </a>
+                                No video attached
                             </div>
-                        )
-                    ) : (
-                        <div className={styles.mediaPlaceholder}>
-                            No video attached
-                        </div>
-                    )}
-                </div>
-                <div className="col-lg-4 d-flex flex-column gap-3">
-                    <div className={styles.surface}>
-                        <div className="d-flex flex-wrap gap-3 mb-2">
-                            <div>
-                                <small className={styles.statLabel}>
-                                    Real Time
-                                </small>
-                                <strong className={styles.statValue}>
-                                    {model.realTime != null ? (
-                                        <DurationToFormatted
-                                            duration={model.realTime}
-                                            withMillis
-                                        />
-                                    ) : (
-                                        '—'
-                                    )}
-                                </strong>
-                            </div>
-                            <div>
-                                <small className={styles.statLabel}>
-                                    Game Time
-                                </small>
-                                <strong className={styles.statValue}>
-                                    {model.gameTime != null ? (
-                                        <DurationToFormatted
-                                            duration={model.gameTime}
-                                            withMillis
-                                        />
-                                    ) : (
-                                        '—'
-                                    )}
-                                </strong>
-                            </div>
-                            {model.runDate && (
+                        )}
+                    </div>
+                    <div className="col-lg-4 d-flex flex-column gap-3">
+                        <div className={styles.surface}>
+                            <div className="d-flex flex-wrap gap-3 mb-2">
                                 <div>
                                     <small className={styles.statLabel}>
-                                        Run date
+                                        Real Time
                                     </small>
-                                    <span>{formatRunDate(model.runDate)}</span>
+                                    <strong className={styles.statValue}>
+                                        {model.realTime != null ? (
+                                            <DurationToFormatted
+                                                duration={model.realTime}
+                                                withMillis
+                                            />
+                                        ) : (
+                                            '—'
+                                        )}
+                                    </strong>
                                 </div>
-                            )}
+                                <div>
+                                    <small className={styles.statLabel}>
+                                        Game Time
+                                    </small>
+                                    <strong className={styles.statValue}>
+                                        {model.gameTime != null ? (
+                                            <DurationToFormatted
+                                                duration={model.gameTime}
+                                                withMillis
+                                            />
+                                        ) : (
+                                            '—'
+                                        )}
+                                    </strong>
+                                </div>
+                                {model.runDate && (
+                                    <div>
+                                        <small className={styles.statLabel}>
+                                            Run date
+                                        </small>
+                                        <span>
+                                            {formatRunDate(model.runDate)}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                            <VariablesLine variables={model.variables} />
                         </div>
-                        <VariablesLine variables={model.variables} />
+                        <OriginPanel model={model} />
                     </div>
-                    <OriginPanel model={model} />
                 </div>
-            </div>
 
-            <RunHistoryList events={history} />
-            {modPanel}
+                <RunHistoryList events={history} />
+                {modPanel}
+            </div>
+        </div>
+    );
+}
+
+/**
+ * The removal event, front and center, in full colour — the one thing on a
+ * tombstone page that isn't desaturated. See `isTombstone` above for why
+ * this only ever renders off `verificationStatus === 'rejected'`, and the
+ * "by a moderator" byline for the actor-name gap in the history feed.
+ */
+function RemovalPanel({
+    boardHref,
+    event,
+    fallbackReason,
+}: {
+    boardHref: string;
+    event: HistoryEvent | null;
+    fallbackReason: string | null;
+}) {
+    const reason = event?.reason ?? fallbackReason;
+    const when = event ? moment(event.at).format('D MMM YYYY, HH:mm') : null;
+    const by = event
+        ? event.byRole === 'self'
+            ? 'the runner'
+            : event.byRole === 'system'
+              ? 'the system'
+              : 'a moderator'
+        : null;
+
+    return (
+        <div className={styles.removalPanel}>
+            <div className={styles.removalHead}>
+                <span className={styles.removalPill}>Removed</span>
+                {by && when && (
+                    <span>
+                        by {by} · {when}
+                    </span>
+                )}
+            </div>
+            {reason && <div className={styles.removalReason}>“{reason}”</div>}
+            <Link href={boardHref} className={styles.removalBack}>
+                ← Back to the board
+            </Link>
         </div>
     );
 }

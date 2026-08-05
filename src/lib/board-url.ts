@@ -15,6 +15,8 @@ export interface BoardLinkContext {
     subcategoryKey?: string | null;
     /** 1-based board page. Omitted/1 -> no `page` param (page 1 is the board's default). */
     page?: number | null;
+    /** 'moderation' -> the board's Moderation tab. Omitted/'board' -> no `view` param. */
+    view?: 'board' | 'moderation' | null;
 }
 
 // Matches data.ts's `DEFAULT_PAGE_SIZE` — the board page size a rank is
@@ -42,6 +44,7 @@ export function buildBoardQuery({
     categorySlug,
     subcategoryKey,
     page,
+    view,
 }: BoardLinkContext): URLSearchParams {
     const sp = new URLSearchParams();
     if (categorySlug) sp.set('category', categorySlug);
@@ -49,6 +52,7 @@ export function buildBoardQuery({
         if (name && value) sp.set(name, value);
     }
     if (page && page > 1) sp.set('page', String(page));
+    if (view && view !== 'board') sp.set('view', view);
     return sp;
 }
 

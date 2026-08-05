@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { Dropdown } from 'react-bootstrap';
-import { ThreeDotsVertical } from 'react-bootstrap-icons';
+import { ClockHistory, ThreeDotsVertical } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import type { ModVerb } from '~app/(new-layout)/games-v2/[game]/manage/moderation/shared/action-model';
 import { RunActionDialog } from '~app/(new-layout)/games-v2/[game]/manage/moderation/shared/run-action-dialog';
@@ -73,6 +73,17 @@ export function RowActionsMenu({
     const loggedIn = !!sessionUsername;
     const isOwn = loggedIn && isSameRunner(entry.runnerName, sessionUsername);
     const isRejected = entry.verificationStatus === 'rejected';
+    // Provenance cue (design doc §F / mocks fig. 1): a trailing-cell marker
+    // on rows with public moderation history, opening this same
+    // HistoryDialog. The paginated LeaderboardEntry carries no explicit
+    // "has history" flag (board-override/move don't change any field this
+    // list reads), so — per the workstream's own fallback guidance — this
+    // uses the one signal that's actually available without a per-row
+    // fetch: a `rejected` verdict is itself a history event, so any
+    // rejected run that's visible at all is guaranteed to have at least one
+    // entry. Manual-time rows (no runId) can't open this dialog at all, so
+    // they're excluded regardless of status.
+    const hasKnownHistory = runId != null && isRejected;
     // The entry's own subcategory, not the board's active filter — a
     // "combined" or filtered view can show entries from other slices.
     const entrySubcategoryKey = buildSubcategoryKey(
@@ -211,6 +222,17 @@ export function RowActionsMenu({
 
     return (
         <>
+            {hasKnownHistory && (
+                <button
+                    type="button"
+                    className={styles.provMarker}
+                    onClick={openHistory}
+                    aria-label="This run has moderation history — view history"
+                    title="Has moderation history — view history"
+                >
+                    <ClockHistory size={14} aria-hidden />
+                </button>
+            )}
             <Dropdown align="end">
                 <Dropdown.Toggle
                     as="button"

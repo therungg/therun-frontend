@@ -5,6 +5,7 @@ import { getSession } from '~src/actions/session.action';
 import { getMyBoardClaim } from '~src/lib/board-claims';
 import { listGameModerators } from '~src/lib/game-moderators';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
+import { getPublicModLog } from '~src/lib/moderation/public-mod-log';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
@@ -102,6 +103,17 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
     );
     if (!data) notFound();
 
+    // The board's public "Moderation" tab (?view=moderation) — a sibling
+    // view of the leaderboard itself, not a separate route. Only fetched
+    // when actually viewing it, so a normal board load never pays for it.
+    const boardView = sp.view === 'moderation' ? 'moderation' : 'board';
+    const initialModLog =
+        boardView === 'moderation'
+            ? await getPublicModLog({ gameId: resolvedGame.id }).catch(
+                  () => null,
+              )
+            : null;
+
     return (
         <GamePage
             data={data}
@@ -110,6 +122,8 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
             canSiteBan={canSiteBan}
             claim={claim}
             moderators={moderators}
+            view={boardView}
+            initialModLog={initialModLog}
         />
     );
 }

@@ -118,14 +118,50 @@
     }
 }
 
-.rejectedNotice {
-    @include board.board-error-alert;
-    // Rejected is the "you can still act on this" family — amber, not the
-    // red reserved for destructive/blocking states.
-    border-color: rgba(dt.$accent-amber, 0.3);
-    background: color-mix(in srgb, #{dt.$accent-amber} 8%, transparent);
-    color: dt.$accent-amber;
+// ---- Tombstone (removed/rejected run) --------------------------------
+// See run-view.tsx's `isTombstone` — everything except the RemovalPanel
+// above it drops to low saturation, so the removal is the one thing in
+// full colour on the page. The time keeps its mono numeral; only the
+// "Not ranked" pill marks it, never a strikethrough.
+.desaturated {
+    filter: saturate(0.35);
+}
+
+.notRankedPill {
+    @include board.board-pill;
+}
+
+.removalPanel {
+    @include board.board-surface(dt.$spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
     margin-bottom: dt.$spacing-lg;
+    border-color: rgba(dt.$accent-red, 0.35);
+}
+
+.removalHead {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.removalPill {
+    @include board.board-pill(dt.$accent-red);
+}
+
+.removalReason {
+    font-size: dt.$font-size-sm;
+    font-style: italic;
+    color: var(--bs-body-color);
+}
+
+.removalBack {
+    @include board.board-quiet-link;
+    align-self: flex-start;
 }
 
 // "What now?" line under a rejected self-claim's own page (requirement 5).
