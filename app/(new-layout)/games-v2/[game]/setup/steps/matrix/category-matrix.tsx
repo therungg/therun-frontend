@@ -20,6 +20,7 @@ import { bulkUpdateCategoriesAction } from '../../actions/bulk-update-categories
 import { setCategoryMinimumAction } from '../../actions/set-category-minimum.action';
 import type { WizardData } from '../../types';
 import { BulkBar } from './bulk-bar';
+import { DefaultsRow } from './defaults-row';
 import styles from './matrix.module.scss';
 import type { PaneId } from './row-panel';
 import { RowPanel } from './row-panel';
@@ -176,6 +177,16 @@ export function CategoryMatrix({
                         </tr>
                     </thead>
                     <tbody>
+                        {/* Row zero: the values every cell below is a
+                            deviation from, in the same columns, editable
+                            where their consequences are visible. */}
+                        <DefaultsRow
+                            gameSlug={data.game.name}
+                            gameId={data.game.id}
+                            defaults={defaults}
+                            policies={data.policies}
+                            columnCount={columnCount}
+                        />
                         {sections.map((section, sectionIdx) => (
                             <MatrixSection
                                 key={section.id ?? `ungrouped-${sectionIdx}`}

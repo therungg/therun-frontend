@@ -1,13 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { boardDefaults } from '~src/lib/setup/board-defaults';
-import { formatTimeInput } from '~src/lib/time-input';
 import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
 import { CategoryMatrix } from './matrix/category-matrix';
-import matrixStyles from './matrix/matrix.module.scss';
 import { StepHeader } from './step-header';
 import { VariablesGrid } from './variables/variables-grid';
 
@@ -43,8 +40,6 @@ export function StepCategorySetup({ data, onAdvance }: StepProps) {
         (c) => !c.archived && (c.isMain ?? false),
     );
 
-    const base = `/games-v2/${data.game.name}/setup`;
-
     const defaults = boardDefaults(data.metadata, data.policies);
 
     return (
@@ -59,19 +54,6 @@ export function StepCategorySetup({ data, onAdvance }: StepProps) {
                 </div>
             ) : (
                 <>
-                    <div className={matrixStyles.defaultsStrip}>
-                        <span className={matrixStyles.defaultsLabel}>
-                            Board defaults
-                        </span>
-                        <DefaultsSummary defaults={defaults} />
-                        <Link
-                            href={`${base}?step=details`}
-                            className={matrixStyles.defaultsChange}
-                        >
-                            Change in step 1 →
-                        </Link>
-                    </div>
-
                     <CategoryMatrix
                         data={data}
                         defaults={defaults}
@@ -90,48 +72,5 @@ export function StepCategorySetup({ data, onAdvance }: StepProps) {
                 Continue to boards
             </button>
         </section>
-    );
-}
-
-/**
- * The board defaults every matrix cell is measured against. Read-only here:
- * step 1 owns them, so there is exactly one place to edit them and no second
- * surface to drift.
- */
-function DefaultsSummary({
-    defaults,
-}: {
-    defaults: ReturnType<typeof boardDefaults>;
-}) {
-    const parts: string[] = [];
-    if (defaults.primaryTiming) {
-        parts.push(defaults.primaryTiming === 'gt' ? 'IGT' : 'RTA');
-    }
-    if (defaults.minMs !== null) {
-        parts.push(`min ${formatTimeInput(defaults.minMs)}`);
-    }
-    if ((defaults.rulesTemplate ?? '').trim()) parts.push('rules template');
-    if (defaults.sortAscending !== null) {
-        parts.push(defaults.sortAscending ? 'lowest wins' : 'highest wins');
-    }
-    if (defaults.showMilliseconds !== null) {
-        parts.push(defaults.showMilliseconds ? 'ms shown' : 'ms hidden');
-    }
-
-    if (parts.length === 0) {
-        return (
-            <span className={matrixStyles.defaultsUnset}>
-                none set — every category keeps its own values
-            </span>
-        );
-    }
-    return (
-        <>
-            {parts.map((p) => (
-                <span key={p} className={matrixStyles.defaultsValue}>
-                    {p}
-                </span>
-            ))}
-        </>
     );
 }
