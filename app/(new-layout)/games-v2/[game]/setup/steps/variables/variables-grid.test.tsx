@@ -113,27 +113,40 @@ describe('VariablesGrid', () => {
         ).toBeTruthy();
     });
 
-    it('states the default in words, in its own column, instead of a third dot', () => {
+    it('collapses the default to one control when every category agrees', () => {
+        // Both categories send unmatched runs to Nintendo 64, which is the
+        // normal case — so the column was eight identical dropdowns stating
+        // one fact. It is a sentence with a control in it instead.
         renderGrid();
-        // The ringed dot meant "runs that do not say land here" and nothing on
-        // the screen said so. The column does — and it names the group, so the
-        // header is a whole thought rather than half of one. "Runs that don't
-        // say" left the reader to supply "…say WHAT".
+        expect(
+            screen.queryByRole('columnheader', { name: 'No Platform given' }),
+        ).toBeNull();
+        expect(
+            screen.getByLabelText(
+                'Where a run with no Platform goes, on all 2 categories',
+            ),
+        ).toBeTruthy();
+        expect(
+            screen.getByText(/doesn’t say which Platform it used goes to/),
+        ).toBeTruthy();
+        expect(screen.queryByText('◉')).toBeNull();
+    });
+
+    it('brings the column back the moment two categories disagree', () => {
+        const data = makeData();
+        // 120 Star sends unmatched runs to its second option instead.
+        data.variables[1].values = [['Nintendo 64', 'n64'], ['Emulator']];
+        data.variables[1].defaultValueIndex = 1;
+        render(<VariablesGrid data={data} />);
+
         expect(
             screen.getByRole('columnheader', { name: 'No Platform given' }),
         ).toBeTruthy();
         expect(
             screen.getByLabelText('On Any%, a run with no Platform goes to'),
         ).toBeTruthy();
-        expect(screen.queryByText('◉')).toBeNull();
-    });
-
-    it('spells out what an unstated option means, where the column is', () => {
-        renderGrid();
         expect(
-            screen.getByText(
-                /Runners don’t always say which Platform they used/,
-            ),
+            screen.getByText(/These categories want different answers/),
         ).toBeTruthy();
     });
 

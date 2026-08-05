@@ -247,10 +247,29 @@ export function VariablesGrid({ data }: { data: WizardData }) {
     };
 
     /**
-     * Where one category's unmatched runs land. Per category by nature — the
-     * option that is "normal" on Any% is not the one that is normal on 100% —
-     * so this is the one edit in this zone that is not fanned out.
+     * Where unmatched runs land, set once for the whole group.
+     *
+     * It CAN differ per category, and when it does the grid gives it a column.
+     * But it almost never does — a board that splits by Platform wants runs
+     * with no platform on the same platform everywhere — and rendering the
+     * same answer eight times down a column, as eight separate dropdowns, is
+     * the repetition this screen keeps having to remove. So the common case is
+     * one control, and the column only appears once the categories disagree.
      */
+    const buildDefaultChangeAll = (
+        group: VariableGroup,
+        bucketKey: string,
+    ): { changes: VariableChangeInput[]; slugs: string[] } => {
+        const built = [...group.byCategory.keys()].map((id) =>
+            buildDefaultChange(group, id, bucketKey),
+        );
+        return {
+            changes: built.flatMap((b) => b.changes),
+            slugs: built.flatMap((b) => b.slugs),
+        };
+    };
+
+    /** Where one category's unmatched runs land. */
     const buildDefaultChange = (
         group: VariableGroup,
         categoryId: number,
@@ -487,6 +506,12 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                 group.name,
                 buildDefaultChange(group, categoryId, bucketKey),
             ),
+        onDefaultAll: (group: VariableGroup, bucketKey: string) =>
+            openPreview(
+                group.nameNormalized,
+                group.name,
+                buildDefaultChangeAll(group, bucketKey),
+            ),
         onCreate: (name: string, options: string[]) => {
             const built = buildCreateChanges(name, role, options);
             // Creating a split adds boards to every featured category, so it
@@ -567,6 +592,7 @@ interface SectionProps {
         categoryId: number,
         bucketKey: string,
     ) => void;
+    onDefaultAll: (group: VariableGroup, bucketKey: string) => void;
     onCreate: (name: string, options: string[]) => void;
 }
 
@@ -587,6 +613,7 @@ function VariableSection({
     onConvert,
     onBuckets,
     onDefault,
+    onDefaultAll,
     onCreate,
 }: SectionProps) {
     const [adding, setAdding] = useState(false);
@@ -673,6 +700,9 @@ function VariableSection({
                         onDefault={(categoryId, bucketKey) =>
                             onDefault(group, categoryId, bucketKey)
                         }
+                        onDefaultAll={(bucketKey) =>
+                            onDefaultAll(group, bucketKey)
+                        }
                     />
                 ))
             )}
@@ -726,6 +756,7 @@ function VariablePalette({
     onConvert,
     onBuckets,
     onDefault,
+    onDefaultAll,
 }: {
     group: VariableGroup;
     role: VariableRoleId;
@@ -740,6 +771,7 @@ function VariablePalette({
     onConvert: (to: VariableRoleId) => void;
     onBuckets: (boardBuckets: BoardBucket[]) => void;
     onDefault: (categoryId: number, bucketKey: string) => void;
+    onDefaultAll: (bucketKey: string) => void;
 }) {
     const [open, setOpen] = useState(true);
     const [editing, setEditing] = useState<string | null>(null);
@@ -748,9 +780,31 @@ function VariablePalette({
         categories.find((c) => c.id === id)?.display ?? `#${id}`;
     const sides = driftSides(group);
     const editingBucket = group.buckets.find((b) => b.key === editing) ?? null;
+
+    /**
+     * The default every category agrees on, or null when they disagree.
+     *
+     * A board that splits by Platform almost always wants a run with no
+     * platform on the same platform everywhere, so the column rendered the
+     * same answer eight times as eight separate dropdowns. When they agree it
+     * becomes one control above the grid; the column only comes back once
+     * there is a disagreement for it to show.
+     */
+    const carriers = categories.filter((c) => group.byCategory.has(c.id));
+    const sharedDefault =
+        role === 'subcategory' &&
+        carriers.length > 0 &&
+        carriers.every(
+            (c) =>
+                group.byCategory.get(c.id)?.defaultBucket ===
+                group.byCategory.get(carriers[0].id)?.defaultBucket,
+        )
+            ? (group.byCategory.get(carriers[0].id)?.defaultBucket ?? null)
+            : null;
+
+    const showsDefaultColumn = role === 'subcategory' && sharedDefault === null;
     // Category + one per option + the default column, when there is one.
-    const columnCount =
-        1 + group.buckets.length + (role === 'subcategory' ? 1 : 0);
+    const columnCount = 1 + group.buckets.length + (showsDefaultColumn ? 1 : 0);
 
     return (
         <div className={styles.palette}>
@@ -807,6 +861,32 @@ function VariablePalette({
 
             {open && (
                 <>
+                    {/* The whole of what used to be a column and a footnote:
+                        one sentence with the control inside it, stating both
+                        that runs arrive without a Platform and where those go.
+                        The column comes back below the moment two categories
+                        want different answers. */}
+                    {sharedDefault !== null && (
+                        <p className={styles.groupSetting}>
+                            A run that doesn&rsquo;t say which {group.name} it
+                            used goes to{' '}
+                            <select
+                                className={styles.defaultSelect}
+                                value={sharedDefault}
+                                disabled={busy}
+                                aria-label={`Where a run with no ${group.name} goes, on all ${carriers.length} categories`}
+                                onChange={(e) => onDefaultAll(e.target.value)}
+                            >
+                                {group.buckets.map((b) => (
+                                    <option key={b.key} value={b.key}>
+                                        {b.label}
+                                    </option>
+                                ))}
+                            </select>
+                            .
+                        </p>
+                    )}
+
                     <div className={styles.scroller}>
                         <table className={styles.grid}>
                             <thead>
@@ -863,7 +943,7 @@ function VariablePalette({
                                         — don't say WHAT — and the only place
                                         that ever answered it was a tooltip on
                                         a marker that no longer exists. */}
-                                    {role === 'subcategory' && (
+                                    {showsDefaultColumn && (
                                         <th
                                             className={styles.defaultHead}
                                             title={`A run submitted without a ${group.name} goes to the subcategory picked here.`}
@@ -961,7 +1041,7 @@ function VariablePalette({
                                                 );
                                             })}
 
-                                            {role === 'subcategory' && (
+                                            {showsDefaultColumn && (
                                                 <td
                                                     className={
                                                         styles.defaultCell
@@ -1025,16 +1105,14 @@ function VariablePalette({
                         </table>
                     </div>
 
-                    {/* The one thing on this grid a reader cannot work out by
-                        looking at it: that runs arrive without a Platform at
-                        all. Everything else says what it is — a checkbox is
-                        checked or it is not, and a column header that edits its
-                        option is drawn as the button it is. */}
-                    {role === 'subcategory' && (
+                    {/* Only when the categories disagree, because only then is
+                        there a column to explain. When they agree the sentence
+                        above the grid carries this and the column is gone. */}
+                    {showsDefaultColumn && (
                         <p className={styles.gridNote}>
-                            Runners don&rsquo;t always say which {group.name}{' '}
-                            they used. Those runs go to the subcategory named in
-                            the last column, per category.
+                            These categories want different answers for a run
+                            that doesn&rsquo;t say which {group.name} it used,
+                            so each one names its own.
                         </p>
                     )}
 
