@@ -191,7 +191,6 @@ export default async function GameAdminConsolePage({ params }: Props) {
         if (metadata) {
             setupCompleteness = computeCompleteness({
                 categories: categoryFactsFromResolved(categories),
-                variableCount: variables.length,
                 policyCount: policies.length,
                 requireVideoAnywhere: categories.some(
                     (c) => !c.archived && c.requireVideo,
