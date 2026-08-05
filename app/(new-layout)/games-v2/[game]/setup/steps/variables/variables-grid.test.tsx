@@ -214,6 +214,25 @@ describe('VariablesGrid', () => {
         expect(screen.queryByRole('button', { name: '↑' })).toBeNull();
     });
 
+    it('collapses from anywhere on the bar, not only from the triangle', () => {
+        renderGrid();
+        expect(screen.getByLabelText('Emulator on Any%')).toBeTruthy();
+
+        // The meta text is not a control — hitting it should still collapse,
+        // the way an accordion head does. Splitting the head into separate
+        // controls briefly left only the triangle live.
+        fireEvent.click(screen.getByText(/on 2 of 2/));
+        expect(screen.queryByLabelText('Emulator on Any%')).toBeNull();
+    });
+
+    it('does not collapse when a control inside the bar is used', () => {
+        renderGrid();
+        // Renaming happens in the bar; the click must not reach it.
+        fireEvent.click(screen.getByRole('button', { name: 'Platform' }));
+        expect(screen.getByLabelText('Rename Platform')).toBeTruthy();
+        expect(screen.getByLabelText('Emulator on Any%')).toBeTruthy();
+    });
+
     it('orders the groups on the board, not on their names', () => {
         const data = makeData();
         // A second group, alphabetically first, so name order and board order

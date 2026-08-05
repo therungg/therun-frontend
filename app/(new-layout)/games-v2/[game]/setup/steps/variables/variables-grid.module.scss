@@ -108,6 +108,9 @@
     border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.45);
     color: inherit;
     text-align: left;
+    // The whole bar collapses the panel, the way an accordion head should.
+    // Splitting the head into separate controls briefly left only the
+    // triangle live, so most of the bar did nothing when clicked.
     cursor: pointer;
     transition: background-color dt.$transition-fast;
 
@@ -115,7 +118,7 @@
         background: rgba(var(--bs-secondary-bg-rgb), 0.8);
     }
 
-    &:focus-visible {
+    &:focus-within {
         outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
         outline-offset: -2px;
     }
@@ -224,8 +227,14 @@
     color: var(--bs-tertiary-color);
     cursor: pointer;
 
+    // A filled disclosure triangle, NOT a chevron. Beside the reorder
+    // controls' ↓ at this size a chevron read as a second down arrow, one of
+    // which appeared not to work — it was the disabled end of the reorder
+    // pair. A triangle is a different kind of mark, so the pair beside it
+    // stays legible as arrows.
     &::after {
-        content: '⌄';
+        content: '▾';
+        font-size: dt.$font-size-sm;
         line-height: 1;
         transition: transform dt.$transition-fast;
     }
