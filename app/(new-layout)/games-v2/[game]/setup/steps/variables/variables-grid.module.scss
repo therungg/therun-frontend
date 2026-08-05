@@ -123,20 +123,12 @@
         outline-offset: -2px;
     }
 
-    // The head collapses the group and said so nowhere. Points down when the
-    // grid is open, right when it is not.
-    &::after {
-        content: '⌄';
-        margin-left: auto;
-        align-self: center;
-        line-height: 1;
-        color: var(--bs-tertiary-color);
-        transition: transform dt.$transition-fast;
-    }
-
-    &[aria-expanded='false']::after {
-        transform: rotate(-90deg);
-    }
+    // NOTE: no ::after here. The head used to be the collapse button and drew
+    // its own chevron; when it was split into separate controls the chevron
+    // moved to .collapse and this one was left behind, so the bar rendered two
+    // marks pointing down and neither was obviously the one that collapsed it.
+    // The `[aria-expanded]` selector it rotated on now lives on .collapse, so
+    // the leftover did not even turn.
 }
 
 // The name of a thing the moderator made, at the scale of one. Everything
@@ -170,50 +162,9 @@
     }
 }
 
-// ---- Board order --------------------------------------------
-// Groups sorted alphabetically and nothing could change it, so the order a
-// runner reads them in was whatever the names happened to be.
-
-.moveGroup {
-    margin-left: auto;
-    display: inline-flex;
-    align-self: center;
-    gap: 2px;
-}
-
-.moveBtn {
-    width: 1.5rem;
-    height: 1.5rem;
-    display: grid;
-    place-items: center;
-    font: inherit;
-    font-size: dt.$font-size-2xs;
-    line-height: 1;
-    color: var(--bs-tertiary-color);
-    background: transparent;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
-    border-radius: dt.$radius-sm;
-    cursor: pointer;
-
-    &:hover:not(:disabled) {
-        border-color: rgba(var(--bs-primary-rgb), 0.6);
-        color: var(--bs-emphasis-color);
-    }
-
-    &:focus-visible {
-        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
-        outline-offset: 1px;
-    }
-
-    &:disabled {
-        opacity: 0.35;
-        cursor: default;
-    }
-}
-
-// Its own control now, rather than the whole head being one big button — that
-// is what kept the name from ever becoming editable. Its auto margin only
-// applies when the order buttons are not there to take it.
+// The only mark in the bar that points anywhere, and the only one that ever
+// should be: it is a disclosure control, and the bar has no other direction to
+// express. Board order is named in words in the footer instead.
 .collapse {
     margin-left: auto;
     align-self: center;
@@ -227,11 +178,8 @@
     color: var(--bs-tertiary-color);
     cursor: pointer;
 
-    // A filled disclosure triangle, NOT a chevron. Beside the reorder
-    // controls' ↓ at this size a chevron read as a second down arrow, one of
-    // which appeared not to work — it was the disabled end of the reorder
-    // pair. A triangle is a different kind of mark, so the pair beside it
-    // stays legible as arrows.
+    // A filled disclosure triangle rather than a chevron: it reads as "this
+    // opens" rather than as a direction, which is what it means.
     &::after {
         content: '▾';
         font-size: dt.$font-size-sm;
@@ -413,6 +361,28 @@
 
     &:disabled {
         opacity: 0.5;
+        cursor: default;
+    }
+}
+
+// ---- Board order --------------------------------------------
+// Named, in the footer, rather than a pair of arrows in the head beside the
+// collapse triangle: two marks pointing down in one bar is one too many, and
+// reordering is rare while collapsing is not.
+
+.orderAction {
+    @include board.board-chip;
+    border-color: rgba(var(--bs-border-color-rgb), 0.4);
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-2xs;
+
+    &:hover:not(:disabled) {
+        border-color: rgba(var(--bs-primary-rgb), 0.6);
+        color: var(--bs-emphasis-color);
+    }
+
+    &:disabled {
+        opacity: 0.4;
         cursor: default;
     }
 }

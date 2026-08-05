@@ -214,6 +214,34 @@ describe('VariablesGrid', () => {
         expect(screen.queryByRole('button', { name: '↑' })).toBeNull();
     });
 
+    it('puts exactly one control in the bar, so nothing competes with the triangle', () => {
+        const data = makeData();
+        data.variables.push({
+            ...data.variables[0],
+            id: 3,
+            categoryId: 10,
+            name: 'Amiibo',
+            nameNormalized: 'amiibo',
+            values: [['Yes'], ['No']],
+            sortOrder: 1,
+        } as WizardData['variables'][number]);
+        render(<VariablesGrid data={data} />);
+
+        // The bar held a reorder pair and a collapse chevron, and the head
+        // still drew a leftover chevron of its own from when it was one big
+        // button — three marks pointing down, one of which did not even
+        // rotate. Board order is named in words in the footer now.
+        const bar = screen
+            .getByRole('button', { name: 'Platform' })
+            .closest('div') as HTMLElement;
+        const controls = within(bar).getAllByRole('button');
+        expect(controls.map((b) => b.getAttribute('aria-label'))).toEqual([
+            null, // the title, which renames
+            'Collapse Platform',
+        ]);
+        expect(within(bar).queryByRole('button', { name: /Move/ })).toBeNull();
+    });
+
     it('collapses from anywhere on the bar, not only from the triangle', () => {
         renderGrid();
         expect(screen.getByLabelText('Emulator on Any%')).toBeTruthy();
@@ -254,7 +282,13 @@ describe('VariablesGrid', () => {
         // Platform is sortOrder 0, Amiibo is 1 — alphabetical would invert it.
         expect(titles).toEqual(['Platform', 'Amiibo']);
 
-        fireEvent.click(screen.getByRole('button', { name: 'Move Amiibo up' }));
+        // Named actions in the footer, not arrows in the head: the head has
+        // exactly one mark that points anywhere, and it is the disclosure
+        // triangle.
+        const amiiboFoot = screen
+            .getAllByRole('button', { name: 'Move up' })
+            .at(-1) as HTMLElement;
+        fireEvent.click(amiiboFoot);
         // Order is display only — the backend builds a subcategory key from
         // names sorted alphabetically — so it writes straight through.
         expect(applyVariableChangesAction).toHaveBeenCalledWith(
