@@ -116,16 +116,30 @@ afterEach(() => {
 });
 
 describe('CategoryMatrix', () => {
-    it('labels the board-default option so a matching cell reads as quiet', () => {
+    it('draws a cell on the board default as a dot instead of its value', () => {
+        renderMatrix();
+        // Any% is on the board's RTA. Row zero already says RTA in this
+        // column, so the cell says nothing — repeating it down every row is
+        // the noise a deviation matrix exists to remove.
+        const quiet = screen.getByLabelText('Timing for Any%');
+        expect(quiet.parentElement?.className).toMatch(/quietWrap/);
+        expect(quiet.parentElement?.textContent).toContain('·');
+
+        // 16 Star ranks by IGT on an RTA board. It differs, so it says so.
+        const loud = screen.getByLabelText('Timing for 16 Star');
+        expect(loud.parentElement?.className).not.toMatch(/quietWrap/);
+    });
+
+    it('names every option plainly — no "Default (…)" wrapper', () => {
         renderMatrix();
         const timing = screen.getByLabelText('Timing for Any%');
         expect(
-            within(timing).getByRole('option', { name: 'Default (RTA)' }),
+            within(timing).getByRole('option', { name: 'RTA' }),
         ).toBeTruthy();
-        // The non-default option is named plainly, no "Default" prefix.
         expect(
             within(timing).getByRole('option', { name: 'IGT' }),
         ).toBeTruthy();
+        expect(within(timing).queryByText(/Default \(/)).toBeNull();
     });
 
     it('shows the board minimum as a placeholder, so an empty cell means "inherits"', () => {
@@ -156,10 +170,19 @@ describe('CategoryMatrix', () => {
         expect(min.placeholder).toBe('10:00');
     });
 
-    it('marks a category with no rules distinctly from one on the template', () => {
+    it('names the two rules sources, and draws the absence as the same em dash every unset cell uses', () => {
         renderMatrix();
-        expect(screen.getByRole('button', { name: 'default' })).toBeTruthy();
-        expect(screen.getByRole('button', { name: 'none' })).toBeTruthy();
+        const onTemplate = screen.getByLabelText(
+            'Rules for Any% — board template',
+        );
+        expect(onTemplate.textContent).toBe('Template');
+
+        const unset = screen.getByLabelText('Rules for 16 Star — not set');
+        expect(unset.textContent).toBe('—');
+        // Not amber: missing rules is the ordinary state of a board being set
+        // up, and spending the exception colour on the majority case is what
+        // made a healthy board look broken.
+        expect(unset.className).not.toMatch(/rulesCustom/);
     });
 
     it('writes a single cell edit straight through', async () => {
@@ -180,7 +203,7 @@ describe('CategoryMatrix', () => {
 
     it('opens rules in a dialog — the one setting that needs room', () => {
         renderMatrix();
-        fireEvent.click(screen.getByRole('button', { name: 'none' }));
+        fireEvent.click(screen.getByLabelText('Rules for 16 Star — not set'));
         const dialog = screen.getByRole('dialog', { name: '16 Star rules' });
         expect(dialog).toBeTruthy();
         expect(
@@ -188,14 +211,19 @@ describe('CategoryMatrix', () => {
         ).toBeTruthy();
     });
 
-    it('puts the icon upload in its own cell, with no panel to open', () => {
+    it('puts the icon beside the name it belongs to, not in a column of its own', () => {
         renderMatrix();
-        // The cell is the control: a file input per row, not a tab.
-        expect(screen.getByLabelText('Icon for Any%')).toBeTruthy();
+        // The slot is the control: a file input per row, not a tab.
+        const icon = screen.getByLabelText('Icon for Any%');
         expect(screen.getByLabelText('Icon for 16 Star')).toBeTruthy();
         expect(
             screen.queryByRole('button', { name: /More settings/ }),
         ).toBeNull();
+
+        // A column of eight empty boxes held the position right after the
+        // name. It is in the name cell now.
+        expect(screen.queryByRole('columnheader', { name: 'Icon' })).toBeNull();
+        expect(icon.closest('td')?.textContent).toContain('Any%');
     });
 
     it('offers only the clock the category does not rank by', () => {

@@ -104,7 +104,7 @@ export function IconCell({ gameSlug, gameId, category }: Props) {
             <label
                 className={`${styles.iconSlot} ${
                     imageUrl ? '' : styles.iconEmpty
-                }`}
+                } ${uploading ? styles.iconUploading : ''}`}
                 title={
                     imageUrl
                         ? `Replace ${category.display}'s icon`

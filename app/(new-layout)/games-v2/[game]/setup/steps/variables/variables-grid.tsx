@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Fragment, useMemo, useState, useTransition } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import { compareByBoardOrder } from '~src/lib/console/category-order';
 import type { VariableChangeInput } from '~src/lib/leaderboard-variables';
@@ -23,6 +23,7 @@ import { describeConsequences } from '~src/lib/variables/consequences';
 import {
     BUILT_IN_FILTERS,
     conversionLabel,
+    conversionNote,
     driftNotice,
     SECTION,
     type VariableRoleId,
@@ -45,7 +46,13 @@ import styles from './variables-grid.module.scss';
  * between boards. And it cannot have a game-level default: the buckets
  * genuinely differ per category. So the sharing a moderator wants comes back
  * as a VIEW: rows are grouped by nameNormalized, presented as one object with
- * a bucket x category grid, and every edit fans out as per-category writes.
+ * a category x option grid, and every edit fans out as per-category writes.
+ *
+ * That grid runs CATEGORIES DOWN THE ROWS, matching the matrix above it. It
+ * used to be transposed — the same eight categories were rows in zone 1 and
+ * columns in zone 2 — which meant reading this screen top to bottom involved
+ * rotating it ninety degrees halfway down. Options are the columns instead,
+ * and a subcategory group's default lands in a column of its own beside them.
  *
  * `role` is not a field here. It is split into two SECTIONS — Subcategories
  * and Filters — because those are two concepts for a moderator and only one
@@ -650,7 +657,6 @@ function VariableSection({
                         group={group}
                         role={role}
                         categories={categories}
-                        variables={variables}
                         busy={busy}
                         isTarget={busyGroup === group.nameNormalized}
                         pendingCount={pendingCount(group)}
@@ -710,7 +716,6 @@ function VariablePalette({
     group,
     role,
     categories,
-    variables,
     busy,
     isTarget,
     pendingCount,
@@ -725,7 +730,6 @@ function VariablePalette({
     group: VariableGroup;
     role: VariableRoleId;
     categories: ResolvedCategory[];
-    variables: WizardData['variables'];
     busy: boolean;
     isTarget: boolean;
     pendingCount: number;
@@ -743,6 +747,12 @@ function VariablePalette({
     const displayOf = (id: number) =>
         categories.find((c) => c.id === id)?.display ?? `#${id}`;
     const sides = driftSides(group);
+    const otherRole: VariableRoleId =
+        role === 'subcategory' ? 'filter' : 'subcategory';
+    const editingBucket = group.buckets.find((b) => b.key === editing) ?? null;
+    // Category + one per option + the default column, when there is one.
+    const columnCount =
+        1 + group.buckets.length + (role === 'subcategory' ? 1 : 0);
 
     return (
         <div className={styles.palette}>
@@ -803,83 +813,110 @@ function VariablePalette({
                         <table className={styles.grid}>
                             <thead>
                                 <tr>
-                                    <th />
-                                    {categories.map((c) => (
-                                        <th key={c.id}>{c.display}</th>
+                                    <th className={styles.corner}>Category</th>
+                                    {/* The option's own column header is how
+                                        you edit the option. Same rule as the
+                                        category matrix: click the thing to
+                                        edit the thing, and never leave the
+                                        grid to do it. */}
+                                    {group.buckets.map((bucket) => (
+                                        <th key={bucket.key}>
+                                            <button
+                                                type="button"
+                                                className={styles.optionButton}
+                                                aria-expanded={
+                                                    editing === bucket.key
+                                                }
+                                                onClick={() =>
+                                                    setEditing(
+                                                        editing === bucket.key
+                                                            ? null
+                                                            : bucket.key,
+                                                    )
+                                                }
+                                            >
+                                                {bucket.label}
+                                                {bucket.aliases.length > 0 && (
+                                                    <span
+                                                        className={
+                                                            styles.aliasCount
+                                                        }
+                                                        title={`${bucket.aliases.length} other ${
+                                                            bucket.aliases
+                                                                .length === 1
+                                                                ? 'spelling'
+                                                                : 'spellings'
+                                                        } resolve here: ${bucket.aliases.join(', ')}`}
+                                                    >
+                                                        +{bucket.aliases.length}
+                                                    </span>
+                                                )}
+                                            </button>
+                                        </th>
                                     ))}
+                                    {/* Where unmatched runs land — per
+                                        category by nature, so a column beside
+                                        the options rather than a value shared
+                                        across the board. */}
+                                    {role === 'subcategory' && (
+                                        <th className={styles.defaultHead}>
+                                            Runs that don&rsquo;t say
+                                        </th>
+                                    )}
                                 </tr>
                             </thead>
                             <tbody>
-                                {group.buckets.map((bucket, bucketIdx) => (
-                                    <Fragment key={bucket.key}>
-                                        <tr>
-                                            <th>
-                                                {/* The option's own row header is
-                                                how you edit the option. Same
-                                                rule as the category matrix:
-                                                click the thing to edit the
-                                                thing, and never leave the
-                                                grid to do it. */}
-                                                <button
-                                                    type="button"
-                                                    className={
-                                                        styles.optionButton
-                                                    }
-                                                    aria-expanded={
-                                                        editing === bucket.key
-                                                    }
-                                                    onClick={() =>
-                                                        setEditing(
-                                                            editing ===
-                                                                bucket.key
-                                                                ? null
-                                                                : bucket.key,
-                                                        )
-                                                    }
-                                                >
-                                                    {bucket.label}
-                                                    {bucket.aliases.length >
-                                                        0 && (
-                                                        <span
-                                                            className={
-                                                                styles.aliasCount
-                                                            }
-                                                        >
-                                                            +
-                                                            {
-                                                                bucket.aliases
-                                                                    .length
-                                                            }
-                                                        </span>
-                                                    )}
-                                                </button>
+                                {editingBucket && (
+                                    <tr className={styles.editorRow}>
+                                        <td colSpan={columnCount}>
+                                            <OptionEditor
+                                                bucket={editingBucket}
+                                                index={group.buckets.indexOf(
+                                                    editingBucket,
+                                                )}
+                                                total={group.buckets.length}
+                                                role={role}
+                                                busy={busy}
+                                                onCancel={() =>
+                                                    setEditing(null)
+                                                }
+                                                onApply={(next) => {
+                                                    setEditing(null);
+                                                    onBuckets(next);
+                                                }}
+                                                buckets={group.buckets}
+                                            />
+                                        </td>
+                                    </tr>
+                                )}
+
+                                {categories.map((c) => {
+                                    const state = group.byCategory.get(c.id);
+                                    return (
+                                        <tr key={c.id}>
+                                            <th
+                                                scope="row"
+                                                className={styles.rowName}
+                                            >
+                                                {c.display}
                                             </th>
-                                            {categories.map((c) => {
+
+                                            {group.buckets.map((bucket) => {
                                                 const on = cellOn(
                                                     c.id,
                                                     bucket.key,
                                                 );
-                                                // Only a subcategory has somewhere
-                                                // for an unmatched run to land, so
-                                                // the default marker is meaningless
-                                                // in the filters section.
-                                                const isDefault =
-                                                    role === 'subcategory' &&
-                                                    group.byCategory.get(c.id)
-                                                        ?.defaultBucket ===
-                                                        bucket.key;
-                                                // Staged, not yet written: drawn
-                                                // provisional so a grid mid-edit
-                                                // never looks already-applied.
+                                                // Staged, not yet written:
+                                                // drawn provisional so a grid
+                                                // mid-edit never looks
+                                                // already-applied.
                                                 const isPending =
                                                     on !==
-                                                    (group.byCategory
-                                                        .get(c.id)
-                                                        ?.buckets.has(
-                                                            bucket.key,
-                                                        ) ?? false);
+                                                    (state?.buckets.has(
+                                                        bucket.key,
+                                                    ) ?? false);
                                                 return (
-                                                    <td key={c.id}>
+                                                    <td key={bucket.key}>
                                                         <button
                                                             type="button"
                                                             className={`${styles.cell} ${
@@ -894,11 +931,6 @@ function VariablePalette({
                                                             disabled={busy}
                                                             aria-pressed={on}
                                                             aria-label={`${bucket.label} on ${c.display}`}
-                                                            title={
-                                                                isDefault
-                                                                    ? 'Runs that do not say land in this subcategory'
-                                                                    : undefined
-                                                            }
                                                             onClick={() =>
                                                                 onToggle(
                                                                     c.id,
@@ -907,60 +939,59 @@ function VariablePalette({
                                                                 )
                                                             }
                                                         >
-                                                            {on
-                                                                ? isDefault
-                                                                    ? '◉'
-                                                                    : '●'
-                                                                : '○'}
+                                                            {on ? '●' : '○'}
                                                         </button>
                                                     </td>
                                                 );
                                             })}
-                                        </tr>
-                                        {editing === bucket.key && (
-                                            <tr>
+
+                                            {role === 'subcategory' && (
                                                 <td
-                                                    colSpan={
-                                                        categories.length + 1
+                                                    className={
+                                                        styles.defaultCell
                                                     }
                                                 >
-                                                    <OptionEditor
-                                                        bucket={bucket}
-                                                        index={bucketIdx}
-                                                        total={
-                                                            group.buckets.length
-                                                        }
-                                                        role={role}
-                                                        busy={busy}
-                                                        onCancel={() =>
-                                                            setEditing(null)
-                                                        }
-                                                        onApply={(next) => {
-                                                            setEditing(null);
-                                                            onBuckets(next);
-                                                        }}
-                                                        buckets={group.buckets}
-                                                    />
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </Fragment>
-                                ))}
-
-                                {/* Where unmatched runs land, per category —
-                                    the one thing here that genuinely differs
-                                    per category, so it is a row of its own
-                                    rather than a board-level value. */}
-                                {role === 'subcategory' && (
-                                    <tr className={styles.defaultRow}>
-                                        <th>Runs that don&rsquo;t say</th>
-                                        {categories.map((c) => {
-                                            const state = group.byCategory.get(
-                                                c.id,
-                                            );
-                                            if (!state) {
-                                                return (
-                                                    <td key={c.id}>
+                                                    {state ? (
+                                                        <select
+                                                            className={
+                                                                styles.defaultSelect
+                                                            }
+                                                            value={
+                                                                state.defaultBucket ??
+                                                                ''
+                                                            }
+                                                            disabled={busy}
+                                                            aria-label={`Default option for ${c.display}`}
+                                                            onChange={(e) =>
+                                                                onDefault(
+                                                                    c.id,
+                                                                    e.target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                        >
+                                                            {group.buckets
+                                                                .filter((b) =>
+                                                                    state.buckets.has(
+                                                                        b.key,
+                                                                    ),
+                                                                )
+                                                                .map((b) => (
+                                                                    <option
+                                                                        key={
+                                                                            b.key
+                                                                        }
+                                                                        value={
+                                                                            b.key
+                                                                        }
+                                                                    >
+                                                                        {
+                                                                            b.label
+                                                                        }
+                                                                    </option>
+                                                                ))}
+                                                        </select>
+                                                    ) : (
                                                         <span
                                                             className={
                                                                 styles.defaultNone
@@ -968,69 +999,25 @@ function VariablePalette({
                                                         >
                                                             —
                                                         </span>
-                                                    </td>
-                                                );
-                                            }
-                                            return (
-                                                <td key={c.id}>
-                                                    <select
-                                                        className={
-                                                            styles.defaultSelect
-                                                        }
-                                                        value={
-                                                            state.defaultBucket ??
-                                                            ''
-                                                        }
-                                                        disabled={busy}
-                                                        aria-label={`Default option for ${c.display}`}
-                                                        onChange={(e) =>
-                                                            onDefault(
-                                                                c.id,
-                                                                e.target.value,
-                                                            )
-                                                        }
-                                                    >
-                                                        {group.buckets
-                                                            .filter((b) =>
-                                                                state.buckets.has(
-                                                                    b.key,
-                                                                ),
-                                                            )
-                                                            .map((b) => (
-                                                                <option
-                                                                    key={b.key}
-                                                                    value={
-                                                                        b.key
-                                                                    }
-                                                                >
-                                                                    {b.label}
-                                                                </option>
-                                                            ))}
-                                                    </select>
+                                                    )}
                                                 </td>
-                                            );
-                                        })}
-                                    </tr>
-                                )}
+                                            )}
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
 
-                    {/* The consequence, shown where it is caused. */}
-                    <p className={styles.consequence}>
-                        {role === 'subcategory'
-                            ? categories
-                                  .filter((c) => group.byCategory.has(c.id))
-                                  .map((c) => {
-                                      const n = subBoardCount(c.id, variables);
-                                      return `${c.display} → ${n} ${
-                                          n === 1
-                                              ? 'leaderboard'
-                                              : 'subcategories'
-                                      }`;
-                                  })
-                                  .join(' · ') || 'Not on any category yet.'
-                            : 'Narrows the leaderboard. No subcategories, no effect on records.'}
+                    {/* The two marks, named. They were a filled dot, a ringed
+                        dot and an empty dot with nothing anywhere saying which
+                        was which; the ring is gone, because the column beside
+                        the grid states the default in words. */}
+                    <p className={styles.legend}>
+                        <span className={styles.legendOn}>●</span> on this
+                        category · <span className={styles.legendOff}>○</span>{' '}
+                        not on it · click a column header to rename an option or
+                        change its accepted spellings
                     </p>
 
                     <div className={styles.paletteFoot}>
@@ -1038,20 +1025,16 @@ function VariablePalette({
                             type="button"
                             className={styles.convertAction}
                             disabled={busy}
-                            onClick={() =>
-                                onConvert(
-                                    role === 'subcategory'
-                                        ? 'filter'
-                                        : 'subcategory',
-                                )
-                            }
+                            onClick={() => onConvert(otherRole)}
                         >
-                            {conversionLabel(
-                                role === 'subcategory'
-                                    ? 'filter'
-                                    : 'subcategory',
-                            )}
+                            {conversionLabel(otherRole)}
                         </button>
+                        {/* The label names the destination; this names what
+                            happens to the boards that already exist, which is
+                            the part that cannot be undone by clicking back. */}
+                        <span className={styles.convertNote}>
+                            {conversionNote(otherRole)}
+                        </span>
                         {role === 'filter' && isTarget && (
                             <span className={styles.savingNote}>Saving…</span>
                         )}

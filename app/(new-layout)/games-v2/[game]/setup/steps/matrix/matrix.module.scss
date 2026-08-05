@@ -28,6 +28,22 @@
     @include board.board-section-count;
 }
 
+// The legend for the whole grid, said once. A cell holding the board default
+// renders as a dot rather than as its value, which only reads if the dot is
+// named — and naming it here is cheaper than repeating "Default (RTA)" in
+// every cell of every column, which is what it replaced.
+.panelBlurb {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    max-width: 46rem;
+    margin: 0 0 dt.$spacing-md;
+}
+
+.blurbDot {
+    @include board.mono-time;
+    color: var(--bs-emphasis-color);
+}
+
 // ---- Board defaults -----------------------------------------
 // Row zero of the grid, not a caption above it: every cell below is a
 // deviation from these values, so they sit in the columns they are compared
@@ -128,6 +144,13 @@
     }
 }
 
+// A group heading is a label, not a row of data — hovering it highlights
+// nothing you can act on.
+.groupRow:hover,
+.offerRow:hover {
+    background: transparent;
+}
+
 // Group heading inside the table body — same eyebrow register as the public
 // band's endcaps, so the grid reads in the board's own sections.
 .groupRow th {
@@ -137,6 +160,10 @@
     border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
 }
 
+// The icon lives here rather than in a column of its own: a column of eight
+// empty dashed squares held the second-most valuable position on the screen and
+// carried no information. Beside the name it reads as the category's own mark,
+// which is what it is on the board.
 .nameCell {
     font-weight: 600;
     color: var(--bs-emphasis-color);
@@ -144,9 +171,74 @@
     min-width: 9rem;
 }
 
+.nameInner {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+}
+
 // ---- Cells --------------------------------------------------
 // .cellQuiet holds the board default; .cellDeviates differs and is the only
 // thing in its column drawn at full strength.
+//
+// A quiet cell does not render its value at all — it renders a dot. The value
+// is the board default, which row zero already states in the same column, so
+// repeating it eight times down the column was the noise this grid exists to
+// remove. The control is still the control: hover or focus and the word comes
+// back in place, and opening it shows real labels.
+
+.quietWrap {
+    position: relative;
+    display: inline-block;
+
+    // The dot stands in for the text, so the text has to go — but the box
+    // keeps its width, or every column would jump on hover.
+    .cellQuiet {
+        color: transparent;
+    }
+
+    // Native option lists are drawn by the platform and do not inherit the
+    // transparent colour, but say so rather than rely on it.
+    option {
+        color: var(--bs-body-color);
+    }
+
+    &:hover .cellQuiet,
+    &:focus-within .cellQuiet {
+        color: var(--bs-tertiary-color);
+    }
+
+    &:hover .quietDot,
+    &:focus-within .quietDot {
+        opacity: 0;
+    }
+
+    // The minimum's "inherits" state is an empty box showing the board value as
+    // a placeholder, which is the same repetition the dot removes everywhere
+    // else. Same treatment: dot at rest, the board value on hover.
+    .cellQuiet::placeholder {
+        color: transparent;
+    }
+
+    &:hover .cellQuiet::placeholder,
+    &:focus-within .cellQuiet::placeholder {
+        color: var(--bs-tertiary-color);
+    }
+}
+
+// Sits where the text starts, not centred: the eye reads down a column of
+// dots and they have to line up with each other and with the values that
+// replace them.
+.quietDot {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    padding-left: dt.$spacing-xs;
+    pointer-events: none;
+    color: var(--bs-tertiary-color);
+    transition: opacity dt.$transition-fast;
+}
 
 .cellControl {
     font: inherit;
@@ -192,9 +284,13 @@
     color: var(--bs-body-color);
 }
 
+// The one control here that is not a dropdown, and the one that therefore has
+// to say it is editable without being touched first: a select has a chevron, a
+// text box has nothing. So it keeps a faint box at rest.
 .minInput {
     @include board.mono-time;
     width: 6.5rem;
+    border-color: rgba(var(--bs-border-color-rgb), 0.28);
 
     &::placeholder {
         color: var(--bs-tertiary-color);
@@ -202,12 +298,12 @@
     }
 }
 
+// Reads as a value in a column of values, not as a shouted status. It was
+// uppercase and letter-spaced, which is the register the column *headers* use.
 .rulesChip {
     @include board.board-chip;
     padding: 0.1rem dt.$spacing-sm;
     font-size: dt.$font-size-2xs;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
     font-weight: 600;
     border-color: rgba(var(--bs-border-color-rgb), 0.45);
 }
@@ -221,28 +317,37 @@
     border-color: rgba(var(--bs-border-color-rgb), 0.7);
 }
 
+// Deliberately NOT amber. Rules missing is the ordinary state of a board being
+// set up, not a fault: seven amber chips made a healthy board look broken and
+// spent the one colour reserved for real exceptions on the majority case. The
+// count in the step rail carries the warning instead, once.
 .rulesNone {
-    color: dt.$accent-amber;
-    border-color: color-mix(in srgb, dt.$accent-amber 45%, transparent);
-    background: color-mix(in srgb, dt.$accent-amber 10%, transparent);
+    color: var(--bs-tertiary-color);
+    border-color: rgba(var(--bs-border-color-rgb), 0.28);
+    border-style: dashed;
 }
 
-// ---- Icon cell ----------------------------------------------
-// The cell IS the control: a thumbnail when there is one, a dashed square when
+// ---- Icon slot ----------------------------------------------
+// The slot IS the control: a thumbnail when there is one, an empty square when
 // there is not, and either opens the file picker. An image was the one thing
 // that looked like it needed a panel; it does not.
+//
+// It sits inside the name cell rather than in a column of its own. As a column
+// it was eight identical dashed boxes in the position right after the name —
+// the most-read column on the screen spent on the least-set field.
 
 .iconCell {
     display: inline-flex;
     align-items: center;
     gap: dt.$spacing-xs;
+    flex: none;
 }
 
 .iconSlot {
     display: grid;
     place-items: center;
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
     border-radius: dt.$radius-sm;
     border: 1px solid transparent;
     cursor: pointer;
@@ -260,13 +365,30 @@
     }
 }
 
-// Empty reads as a slot waiting to be filled, not as a missing image.
+// Empty reads as a slot waiting to be filled, not as a missing image — and
+// quietly, because most of them are empty most of the time. The "+" is the
+// invitation, so it waits until the pointer is there to be invited.
 .iconEmpty {
     border-style: dashed;
-    border-color: rgba(var(--bs-border-color-rgb), 0.6);
+    border-color: rgba(var(--bs-border-color-rgb), 0.35);
     color: var(--bs-tertiary-color);
     font-size: dt.$font-size-sm;
     line-height: 1;
+
+    span {
+        opacity: 0;
+        transition: opacity dt.$transition-fast;
+    }
+
+    &:hover span,
+    &:focus-within span {
+        opacity: 1;
+    }
+}
+
+// An upload in flight is the one thing here worth showing unprompted.
+.iconUploading span {
+    opacity: 1;
 }
 
 .iconImage {
