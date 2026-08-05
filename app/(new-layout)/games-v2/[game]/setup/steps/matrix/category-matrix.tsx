@@ -186,6 +186,8 @@ export function CategoryMatrix({
                             defaults={defaults}
                             policies={data.policies}
                             columnCount={columnCount}
+                            categories={mains}
+                            onApplyToCategories={applyToCategories}
                         />
                         {sections.map((section, sectionIdx) => (
                             <MatrixSection

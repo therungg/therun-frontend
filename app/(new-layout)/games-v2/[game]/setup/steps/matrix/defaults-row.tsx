@@ -3,9 +3,15 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
-import type { BoardDefaults } from '~src/lib/setup/board-defaults';
+import type { BulkCategoryFields } from '~src/lib/category-mgmt';
+import {
+    type BoardDefaults,
+    type DefaultFollowUp,
+    planDefaultFollowUp,
+} from '~src/lib/setup/board-defaults';
 import { findGameMinPolicy } from '~src/lib/setup/game-minimum';
 import { formatTimeInput, parseTimeInput } from '~src/lib/time-input';
+import type { ResolvedCategory } from '../../../../../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../../../../../types/moderation.types';
 import { setBoardMinimumAction } from '../../actions/set-board-minimum.action';
 import { updateGameMetadataAction } from '../../actions/update-game-metadata.action';
@@ -17,6 +23,19 @@ interface Props {
     defaults: BoardDefaults;
     policies: BoardPolicyRow[];
     columnCount: number;
+    /** Featured categories, for the "apply to the rest?" offer. */
+    categories: ResolvedCategory[];
+    onApplyToCategories: (
+        categoryIds: number[],
+        fields: BulkCategoryFields,
+    ) => void;
+}
+
+/** A default that just changed, and who could still follow it. */
+interface Offer {
+    label: string;
+    fields: BulkCategoryFields;
+    plan: DefaultFollowUp;
 }
 
 /**
@@ -42,10 +61,35 @@ export function DefaultsRow({
     defaults,
     policies,
     columnCount,
+    categories,
+    onApplyToCategories,
 }: Props) {
     const router = useRouter();
     const [isSaving, startSave] = useTransition();
     const [openTemplate, setOpenTemplate] = useState(false);
+    const [offer, setOffer] = useState<Offer | null>(null);
+
+    /**
+     * Raised after a default is written, never before: the offer is a
+     * follow-up to something that already happened, so declining it leaves the
+     * board in a coherent state rather than half-applied.
+     */
+    const offerFollowUp = <T,>(
+        label: string,
+        previousDefault: T | null,
+        nextValue: T,
+        readValue: (c: ResolvedCategory) => T,
+        fields: BulkCategoryFields,
+    ) => {
+        const plan = planDefaultFollowUp(
+            categories,
+            previousDefault,
+            nextValue,
+            readValue,
+        );
+        if (plan.following.length + plan.handSet.length === 0) return;
+        setOffer({ label, fields, plan });
+    };
 
     type MetadataFields = Omit<
         Parameters<typeof updateGameMetadataAction>[0],
@@ -105,11 +149,20 @@ export function DefaultsRow({
                         value={defaults.primaryTiming ?? ''}
                         disabled={isSaving}
                         aria-label="Board default timing"
-                        onChange={(e) =>
-                            save({
-                                primaryTiming: e.target.value as 'rt' | 'gt',
-                            })
-                        }
+                        onChange={(e) => {
+                            const next = e.target.value as 'rt' | 'gt';
+                            save({ primaryTiming: next });
+                            offerFollowUp(
+                                next === 'gt' ? 'IGT' : 'RTA',
+                                defaults.primaryTiming,
+                                next,
+                                (c) => c.primaryTiming,
+                                {
+                                    primaryTiming:
+                                        next === 'gt' ? 'gametime' : 'realtime',
+                                },
+                            );
+                        }}
                     >
                         {/* Only offered when the board has no default yet —
                             there is no write that clears primaryTiming, and
@@ -174,14 +227,23 @@ export function DefaultsRow({
                         }
                         disabled={isSaving}
                         aria-label="Board default ranking direction"
-                        onChange={(e) =>
-                            save({
-                                sortAscending:
-                                    e.target.value === ''
-                                        ? null
-                                        : e.target.value === 'asc',
-                            })
-                        }
+                        onChange={(e) => {
+                            const next =
+                                e.target.value === ''
+                                    ? null
+                                    : e.target.value === 'asc';
+                            save({ sortAscending: next });
+                            // "no default" states nothing to follow, so there
+                            // is nothing to offer.
+                            if (next === null) return;
+                            offerFollowUp(
+                                next ? 'lowest first' : 'highest first',
+                                defaults.sortAscending,
+                                next,
+                                (c) => c.sortAscending ?? true,
+                                { sortAscending: next },
+                            );
+                        }}
                     >
                         <option value="">no default</option>
                         <option value="asc">Lowest</option>
@@ -201,14 +263,21 @@ export function DefaultsRow({
                         }
                         disabled={isSaving}
                         aria-label="Board default milliseconds"
-                        onChange={(e) =>
-                            save({
-                                showMilliseconds:
-                                    e.target.value === ''
-                                        ? null
-                                        : e.target.value === 'on',
-                            })
-                        }
+                        onChange={(e) => {
+                            const next =
+                                e.target.value === ''
+                                    ? null
+                                    : e.target.value === 'on';
+                            save({ showMilliseconds: next });
+                            if (next === null) return;
+                            offerFollowUp(
+                                next ? 'milliseconds on' : 'milliseconds off',
+                                defaults.showMilliseconds,
+                                next,
+                                (c) => c.showMilliseconds ?? true,
+                                { showMilliseconds: next },
+                            );
+                        }}
                     >
                         <option value="">no default</option>
                         <option value="on">On</option>
@@ -220,6 +289,91 @@ export function DefaultsRow({
                 <td />
             </tr>
 
+            {offer && (
+                <tr className={styles.offerRow}>
+                    <td colSpan={columnCount}>
+                        <div className={styles.offer}>
+                            <span className={styles.offerText}>
+                                Board default is now <b>{offer.label}</b>.{' '}
+                                {offer.plan.following.length > 0 && (
+                                    <>
+                                        {offer.plan.following.length}{' '}
+                                        {offer.plan.following.length === 1
+                                            ? 'category was'
+                                            : 'categories were'}{' '}
+                                        following the old default
+                                        {offer.plan.handSet.length > 0 && (
+                                            <>
+                                                , {offer.plan.handSet.length}{' '}
+                                                set by hand
+                                            </>
+                                        )}
+                                        .
+                                    </>
+                                )}
+                                {offer.plan.following.length === 0 && (
+                                    <>
+                                        {offer.plan.handSet.length}{' '}
+                                        {offer.plan.handSet.length === 1
+                                            ? 'category does'
+                                            : 'categories do'}{' '}
+                                        not match it.
+                                    </>
+                                )}
+                            </span>
+
+                            {/* The safe apply comes first: categories that
+                                were tracking the board keep tracking it, and
+                                the hand-set ones need a second, louder click. */}
+                            {offer.plan.following.length > 0 && (
+                                <button
+                                    type="button"
+                                    className={styles.offerPrimary}
+                                    disabled={isSaving}
+                                    onClick={() => {
+                                        onApplyToCategories(
+                                            offer.plan.following.map(
+                                                (c) => c.id,
+                                            ),
+                                            offer.fields,
+                                        );
+                                        setOffer(null);
+                                    }}
+                                >
+                                    Apply to those {offer.plan.following.length}
+                                </button>
+                            )}
+                            <button
+                                type="button"
+                                className={styles.offerAction}
+                                disabled={isSaving}
+                                onClick={() => {
+                                    onApplyToCategories(
+                                        [
+                                            ...offer.plan.following,
+                                            ...offer.plan.handSet,
+                                        ].map((c) => c.id),
+                                        offer.fields,
+                                    );
+                                    setOffer(null);
+                                }}
+                            >
+                                Apply to all{' '}
+                                {offer.plan.following.length +
+                                    offer.plan.handSet.length}
+                            </button>
+                            <button
+                                type="button"
+                                className={styles.offerAction}
+                                onClick={() => setOffer(null)}
+                            >
+                                Not now
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            )}
+
             {openTemplate && (
                 <tr className={styles.rulesRow}>
                     <td colSpan={columnCount}>
@@ -229,6 +383,19 @@ export function DefaultsRow({
                             onSave={(text) => {
                                 save({ rulesTemplate: text || null });
                                 setOpenTemplate(false);
+                                if (!text) return;
+                                offerFollowUp(
+                                    'the new rules template',
+                                    (defaults.rulesTemplate ?? '').trim(),
+                                    text,
+                                    // A category with no rules of its own is
+                                    // following the board as surely as one
+                                    // holding the old template verbatim.
+                                    (c) =>
+                                        (c.rules ?? '').trim() ||
+                                        (defaults.rulesTemplate ?? '').trim(),
+                                    { rules: text },
+                                );
                             }}
                             onClose={() => setOpenTemplate(false)}
                         />
