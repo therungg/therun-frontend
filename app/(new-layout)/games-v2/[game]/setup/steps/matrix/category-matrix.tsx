@@ -137,11 +137,11 @@ export function CategoryMatrix({
                             <th>Category</th>
                             <th>Icon</th>
                             <th>Timing</th>
-                            <th>Other time</th>
-                            <th>Minimum</th>
+                            <th>Other timing</th>
+                            <th>Min. Time</th>
                             <th>Rules</th>
                             <th>Ranking</th>
-                            <th>ms</th>
+                            <th>Show Milliseconds</th>
                         </tr>
                     </thead>
                     <tbody>
