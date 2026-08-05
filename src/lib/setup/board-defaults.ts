@@ -227,27 +227,6 @@ export function variableCount(
 }
 
 /**
- * What a bulk apply would actually do, resolved before anything is written.
- *
- * Select-all is the natural gesture on this screen and there is no undo, so
- * the moderator sees which categories change, which are already correct, and
- * which carry a hand-set value that would be overwritten — and chooses whether
- * to include that last group.
- */
-export interface BulkApplyPlan<T> {
-    /** Categories whose value differs and that would be written. */
-    changing: { category: ResolvedCategory; from: T; to: T }[];
-    /** Already equal to the target; writing them would be a no-op. */
-    unchanged: ResolvedCategory[];
-    /**
-     * Changing categories that were deviating from the board default before
-     * this apply — i.e. someone set them deliberately. Always a subset of
-     * `changing`.
-     */
-    overwritingDeviations: ResolvedCategory[];
-}
-
-/**
  * Categories not on a value — the ones a board default change could still
  * bring along.
  *
@@ -264,31 +243,4 @@ export function categoriesNotOn<T>(
     readValue: (c: ResolvedCategory) => T,
 ): ResolvedCategory[] {
     return categories.filter((c) => readValue(c) !== value);
-}
-
-export function planBulkApply<T>(
-    categories: ResolvedCategory[],
-    column: MatrixColumn,
-    target: T,
-    readValue: (c: ResolvedCategory) => T,
-    defaults: BoardDefaults,
-    policies: BoardPolicyRow[],
-): BulkApplyPlan<T> {
-    const changing: { category: ResolvedCategory; from: T; to: T }[] = [];
-    const unchanged: ResolvedCategory[] = [];
-    const overwritingDeviations: ResolvedCategory[] = [];
-
-    for (const category of categories) {
-        const from = readValue(category);
-        if (from === target) {
-            unchanged.push(category);
-            continue;
-        }
-        changing.push({ category, from, to: target });
-        if (deviates(category, column, defaults, policies)) {
-            overwritingDeviations.push(category);
-        }
-    }
-
-    return { changing, unchanged, overwritingDeviations };
 }

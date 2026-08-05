@@ -10,7 +10,6 @@ import {
     hasDefault,
     otherTimeField,
     otherTiming,
-    planBulkApply,
     rulesState,
     showsOtherTime,
 } from '../board-defaults';
@@ -195,52 +194,6 @@ describe('rulesState', () => {
     it('is custom, not default, when the board has no template at all', () => {
         const bare = boardDefaults(makeMetadata({ rulesTemplate: null }), []);
         expect(rulesState(makeCategory(), bare)).toBe('custom');
-    });
-});
-
-describe('planBulkApply', () => {
-    const defaults = boardDefaults(makeMetadata(), []);
-    const read = (c: ResolvedCategory) => c.primaryTiming;
-
-    it('separates categories that change from those already correct', () => {
-        const cats = [
-            makeCategory({ id: 1, display: 'Any%', primaryTiming: 'rt' }),
-            makeCategory({ id: 2, display: '100%', primaryTiming: 'gt' }),
-        ];
-        const plan = planBulkApply(cats, 'timing', 'gt', read, defaults, []);
-        expect(plan.changing.map((c) => c.category.id)).toEqual([1]);
-        expect(plan.unchanged.map((c) => c.id)).toEqual([2]);
-    });
-
-    it('reports which changing categories were deliberately deviating', () => {
-        // 16 Star was hand-set to gametime; applying rt across a select-all
-        // would silently undo that, so it has to surface in the preview.
-        const cats = [
-            makeCategory({ id: 1, display: 'Any%', primaryTiming: 'rt' }),
-            makeCategory({ id: 2, display: '16 Star', primaryTiming: 'gt' }),
-        ];
-        const plan = planBulkApply(cats, 'timing', 'rt', read, defaults, []);
-        expect(plan.changing.map((c) => c.category.id)).toEqual([2]);
-        expect(plan.overwritingDeviations.map((c) => c.display)).toEqual([
-            '16 Star',
-        ]);
-    });
-
-    it('reports no overwrites when every changing category was on the default', () => {
-        const cats = [makeCategory({ id: 1, primaryTiming: 'rt' })];
-        const plan = planBulkApply(cats, 'timing', 'gt', read, defaults, []);
-        expect(plan.changing).toHaveLength(1);
-        expect(plan.overwritingDeviations).toEqual([]);
-    });
-
-    it('changes nothing when every category already holds the target', () => {
-        const cats = [
-            makeCategory({ id: 1, primaryTiming: 'gt' }),
-            makeCategory({ id: 2, primaryTiming: 'gt' }),
-        ];
-        const plan = planBulkApply(cats, 'timing', 'gt', read, defaults, []);
-        expect(plan.changing).toEqual([]);
-        expect(plan.unchanged).toHaveLength(2);
     });
 });
 

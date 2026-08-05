@@ -22,7 +22,6 @@ import type { ResolvedCategory } from '../../../../../../../types/leaderboards.t
 import { bulkUpdateCategoriesAction } from '../../actions/bulk-update-categories.action';
 import { setCategoryMinimumAction } from '../../actions/set-category-minimum.action';
 import type { WizardData } from '../../types';
-import { BulkBar } from './bulk-bar';
 import { DefaultsRow } from './defaults-row';
 import styles from './matrix.module.scss';
 import type { PaneId } from './row-panel';
@@ -54,7 +53,6 @@ export function CategoryMatrix({
     initialOpenCategoryId,
 }: Props) {
     const router = useRouter();
-    const [selected, setSelected] = useState<Set<number>>(new Set());
     // One row expanded at a time, remembering which pane — reopening a row
     // lands where the moderator left it rather than resetting to the first tab.
     const [open, setOpen] = useState<{ id: number; pane: PaneId } | null>(
@@ -75,20 +73,6 @@ export function CategoryMatrix({
         .sort(compareByBoardOrder);
     const sections = sectionsFor(mains, data.groups);
     const grouped = sections.length > 1;
-
-    const toggle = (id: number) => {
-        setSelected((prev) => {
-            const next = new Set(prev);
-            if (next.has(id)) next.delete(id);
-            else next.add(id);
-            return next;
-        });
-    };
-
-    const allSelected = mains.length > 0 && selected.size === mains.length;
-    const toggleAll = () => {
-        setSelected(allSelected ? new Set() : new Set(mains.map((c) => c.id)));
-    };
 
     const applyToCategories = (
         categoryIds: number[],
@@ -142,8 +126,8 @@ export function CategoryMatrix({
         }`;
     };
 
-    // select, name, timing, other time, minimum, rules, ranking, ms, expander
-    const columnCount = 9;
+    // name, timing, other time, minimum, rules, ranking, ms, expander
+    const columnCount = 8;
 
     return (
         <div className={styles.panel}>
@@ -157,14 +141,6 @@ export function CategoryMatrix({
                 <table className={styles.grid}>
                     <thead>
                         <tr>
-                            <th className={styles.selectCell}>
-                                <input
-                                    type="checkbox"
-                                    checked={allSelected}
-                                    onChange={toggleAll}
-                                    aria-label="Select all categories"
-                                />
-                            </th>
                             <th>Category</th>
                             <th>Timing</th>
                             <th>Other time</th>
@@ -204,25 +180,7 @@ export function CategoryMatrix({
                                     const isOpen = open?.id === c.id;
                                     return (
                                         <Fragment key={c.id}>
-                                            <tr
-                                                className={
-                                                    selected.has(c.id)
-                                                        ? styles.rowSelected
-                                                        : undefined
-                                                }
-                                            >
-                                                <td>
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={selected.has(
-                                                            c.id,
-                                                        )}
-                                                        onChange={() =>
-                                                            toggle(c.id)
-                                                        }
-                                                        aria-label={`Select ${c.display}`}
-                                                    />
-                                                </td>
+                                            <tr>
                                                 <td className={styles.nameCell}>
                                                     {c.display}
                                                 </td>
@@ -541,17 +499,6 @@ export function CategoryMatrix({
                     </tbody>
                 </table>
             </div>
-
-            {selected.size > 0 && (
-                <BulkBar
-                    categories={mains.filter((c) => selected.has(c.id))}
-                    defaults={defaults}
-                    policies={data.policies}
-                    busy={isSaving}
-                    onClear={() => setSelected(new Set())}
-                    onApply={applyToCategories}
-                />
-            )}
         </div>
     );
 }

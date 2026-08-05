@@ -137,19 +137,11 @@
     border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
 }
 
-.selectCell {
-    width: 2rem;
-}
-
 .nameCell {
     font-weight: 600;
     color: var(--bs-emphasis-color);
     white-space: normal;
     min-width: 9rem;
-}
-
-.rowSelected td {
-    background: rgba(var(--bs-primary-rgb), 0.08);
 }
 
 // ---- Cells --------------------------------------------------
@@ -375,126 +367,4 @@
 .rulesTextarea {
     @include board.board-dialog-textarea;
     min-height: 8rem;
-}
-
-// ---- Bulk bar -----------------------------------------------
-
-.bulkBar {
-    position: sticky;
-    bottom: dt.$spacing-sm;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: dt.$spacing-sm;
-    margin-top: dt.$spacing-md;
-    padding: dt.$spacing-sm dt.$spacing-lg;
-    border-radius: dt.$radius-md;
-    background: var(--board-surface-bg, var(--bs-body-bg));
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.4);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
-    font-size: dt.$font-size-sm;
-}
-
-.bulkCount {
-    @include board.board-eyebrow;
-    color: var(--bs-primary);
-}
-
-.bulkSpacer {
-    flex: 1;
-}
-
-.bulkControl {
-    @include board.board-chip;
-    border-color: rgba(var(--bs-border-color-rgb), 0.5);
-    font-size: dt.$font-size-sm;
-}
-
-// ---- Apply preview dialog -----------------------------------
-
-.dialogBackdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 1080;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: dt.$spacing-lg;
-    background: rgba(0, 0, 0, 0.55);
-    backdrop-filter: blur(2px);
-}
-
-.dialog {
-    display: flex;
-    flex-direction: column;
-    width: min(34rem, 100%);
-    max-height: 80vh;
-    border-radius: dt.$radius-lg;
-    background: var(--board-surface-bg, var(--bs-body-bg));
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
-    overflow: hidden;
-}
-
-.dialogHeader {
-    @include board.board-dialog-header;
-}
-
-.dialogTitle {
-    @include board.board-dialog-title;
-}
-
-.dialogBody {
-    @include board.board-dialog-body;
-}
-
-.dialogFooter {
-    @include board.board-dialog-footer;
-}
-
-.dialogList {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 dt.$spacing-md;
-    font-size: dt.$font-size-sm;
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-}
-
-.dialogRow {
-    display: flex;
-    align-items: baseline;
-    gap: dt.$spacing-xs;
-}
-
-.dialogSkipped {
-    color: var(--bs-tertiary-color);
-}
-
-.dialogWarn {
-    @include board.board-pill(dt.$accent-amber);
-}
-
-.dialogNote {
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-    margin: 0 0 dt.$spacing-md;
-}
-
-.dialogCheck {
-    display: flex;
-    align-items: flex-start;
-    gap: dt.$spacing-sm;
-    margin: dt.$spacing-md 0 0;
-    padding: dt.$spacing-md;
-    border-radius: dt.$radius-md;
-    background: color-mix(in srgb, dt.$accent-amber 8%, transparent);
-    border: 1px solid color-mix(in srgb, dt.$accent-amber 30%, transparent);
-    font-size: dt.$font-size-sm;
-}
-
-.dialogConfirm {
-    @include board.board-btn-primary;
 }

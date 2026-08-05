@@ -262,46 +262,4 @@ describe('CategoryMatrix', () => {
         });
         expect(screen.queryByText(/Apply to all/)).toBeNull();
     });
-
-    it('previews a bulk apply instead of writing immediately', async () => {
-        renderMatrix();
-        fireEvent.click(screen.getByLabelText('Select all categories'));
-        fireEvent.change(screen.getByLabelText('Apply timing to selected'), {
-            target: { value: 'rt' },
-        });
-
-        expect(screen.getByRole('dialog')).toBeTruthy();
-        expect(bulkUpdateCategoriesAction).not.toHaveBeenCalled();
-    });
-
-    it('skips a deliberately deviating category unless it is opted in', async () => {
-        renderMatrix();
-        fireEvent.click(screen.getByLabelText('Select all categories'));
-        fireEvent.change(screen.getByLabelText('Apply timing to selected'), {
-            target: { value: 'rt' },
-        });
-
-        // Any% already has rt, so only 16 Star would change — and it is a
-        // deliberate deviation, so it is excluded by default and the confirm
-        // button has nothing left to write.
-        const dialog = screen.getByRole('dialog');
-        expect(
-            within(dialog).getByRole('button', { name: 'Apply to 0' }),
-        ).toBeTruthy();
-
-        fireEvent.click(within(dialog).getByRole('checkbox'));
-        fireEvent.click(
-            within(dialog).getByRole('button', { name: 'Apply to 1' }),
-        );
-
-        await waitFor(() =>
-            expect(bulkUpdateCategoriesAction).toHaveBeenCalledTimes(1),
-        );
-        expect(bulkUpdateCategoriesAction).toHaveBeenCalledWith(
-            expect.objectContaining({
-                categoryIds: [20],
-                fields: { primaryTiming: 'realtime' },
-            }),
-        );
-    });
 });
