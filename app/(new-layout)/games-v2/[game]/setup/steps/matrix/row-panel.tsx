@@ -5,11 +5,9 @@ import type { ResolvedCategory } from '../../../../../../../types/leaderboards.t
 import { EmblemPanel } from './emblem-panel';
 import styles from './matrix.module.scss';
 import { RulesPanel } from './rules-panel';
-import { TimingPanel } from './timing-panel';
 
 export const PANES = [
     { id: 'rules', label: 'Rules' },
-    { id: 'timing', label: 'Time columns' },
     { id: 'emblem', label: 'Emblem' },
 ] as const;
 
@@ -86,13 +84,6 @@ export function RowPanel({
                     category={category}
                     template={defaults.rulesTemplate}
                     onClose={onClose}
-                />
-            )}
-            {pane === 'timing' && (
-                <TimingPanel
-                    gameSlug={gameSlug}
-                    gameId={gameId}
-                    category={category}
                 />
             )}
             {pane === 'emblem' && (

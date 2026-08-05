@@ -344,28 +344,6 @@
     margin: dt.$spacing-sm 0 0;
 }
 
-.switchRow {
-    display: flex;
-    gap: dt.$spacing-lg;
-    flex-wrap: wrap;
-    margin-top: dt.$spacing-md;
-}
-
-.switchField {
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-xs;
-    font-size: dt.$font-size-sm;
-
-    input:disabled + span {
-        color: var(--bs-tertiary-color);
-    }
-}
-
-.switchHint {
-    @include board.board-pill;
-}
-
 .emblemRow {
     display: flex;
     align-items: center;

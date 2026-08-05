@@ -27,6 +27,7 @@ import {
 /** The columns the matrix can compare against a board default. */
 export type MatrixColumn =
     | 'timing'
+    | 'otherTime'
     | 'minimum'
     | 'rules'
     | 'ranking'
@@ -34,6 +35,7 @@ export type MatrixColumn =
 
 export const MATRIX_COLUMNS: MatrixColumn[] = [
     'timing',
+    'otherTime',
     'minimum',
     'rules',
     'ranking',
@@ -42,15 +44,55 @@ export const MATRIX_COLUMNS: MatrixColumn[] = [
 
 export const MATRIX_COLUMN_LABEL: Record<MatrixColumn, string> = {
     timing: 'Timing',
+    otherTime: 'Other time',
     minimum: 'Minimum',
     rules: 'Rules',
     ranking: 'Ranking',
     milliseconds: 'Milliseconds',
 };
 
+/**
+ * The clock that is not the ranking one.
+ *
+ * A board ranked by RTA may still want IGT visible beside it, and vice versa.
+ * The ranking clock can never be hidden — a leaderboard sorted by a column
+ * nobody can see is not a leaderboard — so there is only ever one decision
+ * here, and it is about the *other* one. That is why this is a single column
+ * rather than the pair of hide flags it is stored as.
+ */
+export function otherTiming(primary: 'rt' | 'gt'): 'rt' | 'gt' {
+    return primary === 'gt' ? 'rt' : 'gt';
+}
+
+export const TIMING_LABEL: Record<'rt' | 'gt', string> = {
+    rt: 'RTA',
+    gt: 'IGT',
+};
+
+/** Whether a category shows the clock it does not rank by. */
+export function showsOtherTime(category: ResolvedCategory): boolean {
+    return category.primaryTiming === 'gt'
+        ? !(category.hideRealTime ?? false)
+        : !(category.hideGameTime ?? false);
+}
+
+/**
+ * The hide-flag write that shows or hides a category's other clock. Which flag
+ * it is depends on the category's own ranking clock, which is why a bulk apply
+ * across mixed categories has to group by timing rather than send one field.
+ */
+export function otherTimeField(
+    primary: 'rt' | 'gt',
+    show: boolean,
+): { hideRealTime: boolean } | { hideGameTime: boolean } {
+    return primary === 'gt' ? { hideRealTime: !show } : { hideGameTime: !show };
+}
+
 export interface BoardDefaults {
     /** null = the board states no default; every category's own value stands. */
     primaryTiming: 'rt' | 'gt' | null;
+    /** Whether the board shows the clock it does not rank by. */
+    showOtherTime: boolean;
     sortAscending: boolean | null;
     showMilliseconds: boolean | null;
     /** Starter rules text for categories with none of their own. */
@@ -64,8 +106,11 @@ export function boardDefaults(
     policies: BoardPolicyRow[],
 ): BoardDefaults {
     const gamePolicy = findGameMinPolicy(policies);
+    const primary = metadata.primaryTiming ?? 'rt';
     return {
         primaryTiming: metadata.primaryTiming,
+        showOtherTime:
+            primary === 'gt' ? !metadata.hideRealTime : !metadata.hideGameTime,
         sortAscending: metadata.sortAscending,
         showMilliseconds: metadata.showMilliseconds,
         rulesTemplate: metadata.rulesTemplate,
@@ -84,6 +129,9 @@ export function hasDefault(
     switch (column) {
         case 'timing':
             return defaults.primaryTiming !== null;
+        // Stored as two non-null booleans, so the board always states one.
+        case 'otherTime':
+            return true;
         case 'minimum':
             return defaults.minMs !== null;
         case 'rules':
@@ -140,6 +188,8 @@ export function deviates(
     switch (column) {
         case 'timing':
             return category.primaryTiming !== defaults.primaryTiming;
+        case 'otherTime':
+            return showsOtherTime(category) !== defaults.showOtherTime;
         case 'minimum': {
             // A category with no minimum of its own does not deviate: the
             // board minimum is what applies to it.

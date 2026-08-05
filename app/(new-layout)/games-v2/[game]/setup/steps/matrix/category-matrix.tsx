@@ -11,7 +11,11 @@ import {
     deviates,
     hasDefault,
     type MatrixColumn,
+    otherTimeField,
+    otherTiming,
     rulesState,
+    showsOtherTime,
+    TIMING_LABEL,
 } from '~src/lib/setup/board-defaults';
 import { subBoardCount } from '~src/lib/setup/variable-view';
 import { formatTimeInput, parseTimeInput } from '~src/lib/time-input';
@@ -139,8 +143,9 @@ export function CategoryMatrix({
         }`;
     };
 
-    // select, name, timing, minimum, rules, ranking, ms, boards, expander
-    const columnCount = 9;
+    // select, name, timing, other time, minimum, rules, ranking, ms, boards,
+    // expander
+    const columnCount = 10;
 
     return (
         <div className={styles.panel}>
@@ -164,6 +169,7 @@ export function CategoryMatrix({
                             </th>
                             <th>Category</th>
                             <th>Timing</th>
+                            <th>Other time</th>
                             <th>Minimum</th>
                             <th>Rules</th>
                             <th>Ranking</th>
@@ -259,6 +265,61 @@ export function CategoryMatrix({
                                                                 'gt',
                                                                 defaults.primaryTiming,
                                                                 'IGT',
+                                                            )}
+                                                        </option>
+                                                    </select>
+                                                </td>
+
+                                                {/* The ranking clock can never
+                                                    be hidden, so the only
+                                                    decision is whether the
+                                                    OTHER one shows — one
+                                                    column instead of the pair
+                                                    of hide flags it is stored
+                                                    as. */}
+                                                <td>
+                                                    <select
+                                                        className={cellClass(
+                                                            c,
+                                                            'otherTime',
+                                                        )}
+                                                        value={
+                                                            showsOtherTime(c)
+                                                                ? 'on'
+                                                                : 'off'
+                                                        }
+                                                        disabled={isSaving}
+                                                        aria-label={`Show ${
+                                                            TIMING_LABEL[
+                                                                otherTiming(
+                                                                    c.primaryTiming,
+                                                                )
+                                                            ]
+                                                        } for ${c.display}`}
+                                                        onChange={(e) =>
+                                                            applyToCategories(
+                                                                [c.id],
+                                                                otherTimeField(
+                                                                    c.primaryTiming,
+                                                                    e.target
+                                                                        .value ===
+                                                                        'on',
+                                                                ),
+                                                            )
+                                                        }
+                                                    >
+                                                        <option value="on">
+                                                            {labelFor(
+                                                                true,
+                                                                defaults.showOtherTime,
+                                                                `Show ${TIMING_LABEL[otherTiming(c.primaryTiming)]}`,
+                                                            )}
+                                                        </option>
+                                                        <option value="off">
+                                                            {labelFor(
+                                                                false,
+                                                                defaults.showOtherTime,
+                                                                `Hide ${TIMING_LABEL[otherTiming(c.primaryTiming)]}`,
                                                             )}
                                                         </option>
                                                     </select>

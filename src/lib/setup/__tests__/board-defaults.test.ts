@@ -8,8 +8,11 @@ import {
     deviates,
     deviatingColumns,
     hasDefault,
+    otherTimeField,
+    otherTiming,
     planBulkApply,
     rulesState,
+    showsOtherTime,
 } from '../board-defaults';
 
 const TEMPLATE = 'No major skips.';
@@ -258,5 +261,36 @@ describe('categoriesNotOn', () => {
     it('is empty when every category already matches, so nothing is asked', () => {
         expect(categoriesNotOn(cats, 'rt', read).map((c) => c.id)).toEqual([3]);
         expect(categoriesNotOn([cats[2]], 'gt', read)).toEqual([]);
+    });
+});
+
+describe('otherTime', () => {
+    const rtaCategory = {
+        id: 1,
+        primaryTiming: 'rt',
+        hideGameTime: true,
+    } as ResolvedCategory;
+
+    it('is the clock the board does not rank by', () => {
+        expect(otherTiming('rt')).toBe('gt');
+        expect(otherTiming('gt')).toBe('rt');
+    });
+
+    it('reads a category own clock to decide which flag matters', () => {
+        // An RTA category hiding game time is hiding its other clock; the same
+        // flag on an IGT category would be hiding the ranking one, which is
+        // not a state this column can produce.
+        expect(showsOtherTime(rtaCategory)).toBe(false);
+        expect(
+            showsOtherTime({
+                ...rtaCategory,
+                primaryTiming: 'gt',
+            } as ResolvedCategory),
+        ).toBe(true);
+    });
+
+    it('writes the flag belonging to that category clock', () => {
+        expect(otherTimeField('rt', false)).toEqual({ hideGameTime: true });
+        expect(otherTimeField('gt', false)).toEqual({ hideRealTime: true });
     });
 });
