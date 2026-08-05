@@ -1,11 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft } from 'react-bootstrap-icons';
+import { useSearchParams } from 'next/navigation';
 import { boardDefaults } from '~src/lib/setup/board-defaults';
 import { formatTimeInput } from '~src/lib/time-input';
-import { CategoryEditor } from '../../manage/category/category-editor';
 import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
 import { CategoryMatrix } from './matrix/category-matrix';
@@ -22,79 +20,30 @@ import { VariablesGrid } from './variables/variables-grid';
  * A category on the default draws quiet, so the grid is near-empty on a
  * healthy board and only the exceptions catch the eye.
  *
- * Zone 2 is variables, which cannot be a matrix column: a variable is a
- * structure (name + role + ordered alias buckets + default index), and editing
- * one moves existing runs between boards. It gets board-level palettes
- * instead, split into the two sections a moderator actually thinks in —
- * separate leaderboards and run details — see variables-grid.tsx.
+ * Zone 2 is subcategories and filters, which cannot be matrix columns: each is
+ * a structure (name + role + ordered alias buckets + default index), and
+ * editing one moves existing runs between leaderboards. They get board-level
+ * palettes instead — see variables-grid.tsx.
  *
- * What this replaces: a hub whose every row opened the console's five-section
- * editor full-screen, turning a "step" into N nested visits with two competing
- * back buttons. That editor is still reachable per row for the deep cases, but
- * it is no longer the only way through.
+ * There is NO category detail screen. Everything a category has is set from
+ * this one list: the scannable settings as columns, the rest as an expanding
+ * pane under the row (see row-panel.tsx). A route per category is what made
+ * the old step 4 unusable — a moderator working down a board has to keep their
+ * place, and every visit cost them it.
  *
- * `?cat=<id>` still opens the full editor directly, so old deep links —
- * including the retired `?step=exceptions&cat=<id>` shape LEGACY_STEP_MAP
- * folds onto this step — keep landing where they always did.
+ * `?cat=<id>` deep links — including the retired `?step=exceptions&cat=<id>`
+ * shape LEGACY_STEP_MAP folds onto this step — now open that category's row
+ * expanded instead of a separate screen.
  */
 export function StepCategorySetup({ data, onAdvance }: StepProps) {
-    const router = useRouter();
     const params = useSearchParams();
     const catId = Number(params.get('cat')) || null;
 
     const mains = data.categories.filter(
         (c) => !c.archived && (c.isMain ?? false),
     );
-    const open = mains.find((c) => c.id === catId) ?? null;
 
     const base = `/games-v2/${data.game.name}/setup`;
-    const openCategory = (id: number) => {
-        router.replace(`${base}?step=category-setup&cat=${id}`, {
-            scroll: true,
-        });
-    };
-    const backToMatrix = () => {
-        router.replace(`${base}?step=category-setup`, { scroll: true });
-        // Pick up whatever the editor just saved, so the matrix cells are
-        // right the moment the moderator returns to them.
-        router.refresh();
-    };
-
-    if (open) {
-        return (
-            <section>
-                <div className={styles.editorHead}>
-                    <button
-                        type="button"
-                        className={styles.backAction}
-                        onClick={backToMatrix}
-                    >
-                        <ArrowLeft size={14} aria-hidden />
-                        All categories
-                    </button>
-                    <h2 className={styles.editorTitle}>{open.display}</h2>
-                </div>
-                <CategoryEditor
-                    game={data.game}
-                    category={open}
-                    canConfigure
-                    canModerate
-                    canEditStandards={data.canEditStandards}
-                    context="wizard"
-                    gameTimingDefaults={{
-                        primaryTiming: data.metadata.primaryTiming,
-                        hideRealTime: data.metadata.hideRealTime,
-                        hideGameTime: data.metadata.hideGameTime,
-                    }}
-                    copySources={{
-                        categories: data.categories,
-                        variables: data.variables,
-                        policies: data.policies,
-                    }}
-                />
-            </section>
-        );
-    }
 
     const defaults = boardDefaults(data.metadata, data.policies);
 
@@ -126,7 +75,7 @@ export function StepCategorySetup({ data, onAdvance }: StepProps) {
                     <CategoryMatrix
                         data={data}
                         defaults={defaults}
-                        onOpenEditor={openCategory}
+                        initialOpenCategoryId={catId}
                     />
 
                     <VariablesGrid data={data} />

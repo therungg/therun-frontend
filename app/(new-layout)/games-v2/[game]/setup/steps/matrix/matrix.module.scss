@@ -196,38 +196,157 @@
     color: var(--bs-tertiary-color);
 }
 
-.openEditor {
-    @include board.board-quiet-link;
-    font-size: dt.$font-size-2xs;
+// The row's disclosure. Deliberately the quietest control in the row: it is a
+// way in, not a thing to do.
+.expander {
+    background: transparent;
+    border: 0;
+    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-md;
+    line-height: 1;
+    padding: dt.$spacing-xs;
+    cursor: pointer;
+    transition: color dt.$transition-fast;
+
+    &:hover {
+        color: var(--bs-body-color);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
 }
 
-// ---- Inline rules editor ------------------------------------
-// Expands under its own row so the matrix stays on screen above and below —
-// the whole point of replacing the full-screen takeover.
+// ---- Expanded row ------------------------------------------
+// Everything a category has that is not worth a column. Expands under its own
+// row so the matrix stays on screen above and below — the whole point of
+// replacing the category detail screen.
 
 .rulesRow td {
     padding: 0;
     border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
 }
 
-.rulesPanel {
+.rowPanel {
     margin: 0 0 dt.$spacing-sm;
-    padding: dt.$spacing-lg;
     border-radius: dt.$radius-md;
     background: rgba(var(--bs-secondary-bg-rgb), 0.4);
     border-left: 3px solid var(--bs-primary);
     white-space: normal;
+    overflow: hidden;
 }
 
-.rulesHead {
+.paneHead {
     display: flex;
     align-items: center;
-    gap: dt.$spacing-sm;
-    margin-bottom: dt.$spacing-sm;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.25);
 }
 
-.rulesTitle {
+.paneTitle {
     @include board.board-eyebrow;
+}
+
+.paneTabs {
+    display: flex;
+    gap: dt.$spacing-xs;
+}
+
+.paneTab {
+    @include board.board-chip;
+    font-size: dt.$font-size-2xs;
+    border-color: transparent;
+    color: var(--bs-secondary-color);
+
+    &:hover {
+        color: var(--bs-body-color);
+    }
+}
+
+.paneTabOn {
+    border-color: rgba(var(--bs-primary-rgb), 0.5);
+    background: rgba(var(--bs-primary-rgb), 0.12);
+    color: var(--bs-emphasis-color);
+}
+
+.paneClose {
+    margin-left: auto;
+    background: transparent;
+    border: 0;
+    color: var(--bs-tertiary-color);
+    cursor: pointer;
+    line-height: 1;
+
+    &:hover {
+        color: var(--bs-body-color);
+    }
+}
+
+.panePad {
+    padding: dt.$spacing-lg;
+}
+
+.paneNote {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: 0;
+}
+
+.paneError {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-danger);
+    margin: dt.$spacing-sm 0 0;
+}
+
+.switchRow {
+    display: flex;
+    gap: dt.$spacing-lg;
+    flex-wrap: wrap;
+    margin-top: dt.$spacing-md;
+}
+
+.switchField {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-sm;
+
+    input:disabled + span {
+        color: var(--bs-tertiary-color);
+    }
+}
+
+.switchHint {
+    @include board.board-pill;
+}
+
+.emblemRow {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    flex-wrap: wrap;
+}
+
+.emblemImage {
+    border-radius: dt.$radius-sm;
+    object-fit: cover;
+}
+
+.emblemEmpty {
+    @include board.board-section-count;
+    width: 3rem;
+    text-align: center;
+}
+
+.rulesPanel {
+    padding: dt.$spacing-lg;
+}
+
+.rulesFoot {
+    display: flex;
+    margin-top: dt.$spacing-sm;
 }
 
 .rulesActions {
