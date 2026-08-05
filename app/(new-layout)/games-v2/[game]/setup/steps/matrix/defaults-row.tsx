@@ -6,14 +6,15 @@ import { toast } from 'react-toastify';
 import type { BulkCategoryFields } from '~src/lib/category-mgmt';
 import {
     type BoardDefaults,
-    type DefaultFollowUp,
-    planDefaultFollowUp,
+    categoriesNotOn,
+    categoryMinMs,
 } from '~src/lib/setup/board-defaults';
 import { findGameMinPolicy } from '~src/lib/setup/game-minimum';
 import { formatTimeInput, parseTimeInput } from '~src/lib/time-input';
 import type { ResolvedCategory } from '../../../../../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../../../../../types/moderation.types';
 import { setBoardMinimumAction } from '../../actions/set-board-minimum.action';
+import { setCategoryMinimumAction } from '../../actions/set-category-minimum.action';
 import { updateGameMetadataAction } from '../../actions/update-game-metadata.action';
 import styles from './matrix.module.scss';
 
@@ -31,11 +32,12 @@ interface Props {
     ) => void;
 }
 
-/** A default that just changed, and who could still follow it. */
+/** A default that just changed, and the categories it has not reached. */
 interface Offer {
     label: string;
-    fields: BulkCategoryFields;
-    plan: DefaultFollowUp;
+    categories: ResolvedCategory[];
+    /** How to bring them along — a category write, or N policy writes. */
+    apply: (categories: ResolvedCategory[]) => void;
 }
 
 /**
@@ -72,24 +74,31 @@ export function DefaultsRow({
     /**
      * Raised after a default is written, never before: the offer is a
      * follow-up to something that already happened, so declining it leaves the
-     * board in a coherent state rather than half-applied.
+     * board in a coherent state rather than half-applied. Asked only when at
+     * least one category is not already on the new value.
+     *
+     * Only timing, minimum and ranking ask. Milliseconds is cosmetic and the
+     * rules template is a starting point rather than a value a category is
+     * "on" — sweeping either across a board is not what a moderator means by
+     * changing the default.
      */
     const offerFollowUp = <T,>(
         label: string,
-        previousDefault: T | null,
         nextValue: T,
         readValue: (c: ResolvedCategory) => T,
-        fields: BulkCategoryFields,
+        apply: (categories: ResolvedCategory[]) => void,
     ) => {
-        const plan = planDefaultFollowUp(
-            categories,
-            previousDefault,
-            nextValue,
-            readValue,
-        );
-        if (plan.following.length + plan.handSet.length === 0) return;
-        setOffer({ label, fields, plan });
+        const behind = categoriesNotOn(categories, nextValue, readValue);
+        if (behind.length === 0) return;
+        setOffer({ label, categories: behind, apply });
     };
+
+    const applyFields =
+        (fields: BulkCategoryFields) => (cs: ResolvedCategory[]) =>
+            onApplyToCategories(
+                cs.map((c) => c.id),
+                fields,
+            );
 
     type MetadataFields = Omit<
         Parameters<typeof updateGameMetadataAction>[0],
@@ -106,6 +115,31 @@ export function DefaultsRow({
             if ('error' in res) {
                 toast.error(res.error);
                 return;
+            }
+            router.refresh();
+        });
+    };
+
+    /**
+     * The minimum's follow-up cannot ride `bulkUpdateCategoriesAction`: a
+     * minimum is a min_time policy per category, not a category column, so
+     * bringing categories along is N writes rather than one transaction. Only
+     * categories carrying a *conflicting* minimum of their own are in the set
+     * — one with none already follows the board.
+     */
+    const applyMinimum = (ms: number) => (cs: ResolvedCategory[]) => {
+        startSave(async () => {
+            for (const category of cs) {
+                const res = await setCategoryMinimumAction({
+                    gameSlug,
+                    categoryId: category.id,
+                    timing: category.primaryTiming,
+                    minMs: ms,
+                });
+                if ('error' in res) {
+                    toast.error(res.error);
+                    return;
+                }
             }
             router.refresh();
         });
@@ -132,6 +166,15 @@ export function DefaultsRow({
                 return;
             }
             router.refresh();
+            if (ms === null || ms === undefined) return;
+            offerFollowUp(
+                formatTimeInput(ms),
+                ms,
+                // A category with no minimum of its own already follows the
+                // board, so it reads as already on the new value.
+                (c) => categoryMinMs(c, policies) ?? ms,
+                applyMinimum(ms),
+            );
         });
     };
 
@@ -154,13 +197,12 @@ export function DefaultsRow({
                             save({ primaryTiming: next });
                             offerFollowUp(
                                 next === 'gt' ? 'IGT' : 'RTA',
-                                defaults.primaryTiming,
                                 next,
                                 (c) => c.primaryTiming,
-                                {
+                                applyFields({
                                     primaryTiming:
                                         next === 'gt' ? 'gametime' : 'realtime',
-                                },
+                                }),
                             );
                         }}
                     >
@@ -238,10 +280,9 @@ export function DefaultsRow({
                             if (next === null) return;
                             offerFollowUp(
                                 next ? 'lowest first' : 'highest first',
-                                defaults.sortAscending,
                                 next,
                                 (c) => c.sortAscending ?? true,
-                                { sortAscending: next },
+                                applyFields({ sortAscending: next }),
                             );
                         }}
                     >
@@ -269,14 +310,6 @@ export function DefaultsRow({
                                     ? null
                                     : e.target.value === 'on';
                             save({ showMilliseconds: next });
-                            if (next === null) return;
-                            offerFollowUp(
-                                next ? 'milliseconds on' : 'milliseconds off',
-                                defaults.showMilliseconds,
-                                next,
-                                (c) => c.showMilliseconds ?? true,
-                                { showMilliseconds: next },
-                            );
                         }}
                     >
                         <option value="">no default</option>
@@ -295,79 +328,32 @@ export function DefaultsRow({
                         <div className={styles.offer}>
                             <span className={styles.offerText}>
                                 Board default is now <b>{offer.label}</b>.{' '}
-                                {offer.plan.following.length > 0 && (
-                                    <>
-                                        {offer.plan.following.length}{' '}
-                                        {offer.plan.following.length === 1
-                                            ? 'category was'
-                                            : 'categories were'}{' '}
-                                        following the old default
-                                        {offer.plan.handSet.length > 0 && (
-                                            <>
-                                                , {offer.plan.handSet.length}{' '}
-                                                set by hand
-                                            </>
-                                        )}
-                                        .
-                                    </>
-                                )}
-                                {offer.plan.following.length === 0 && (
-                                    <>
-                                        {offer.plan.handSet.length}{' '}
-                                        {offer.plan.handSet.length === 1
-                                            ? 'category does'
-                                            : 'categories do'}{' '}
-                                        not match it.
-                                    </>
-                                )}
+                                {offer.categories.length}{' '}
+                                {offer.categories.length === 1
+                                    ? 'category does'
+                                    : 'categories do'}{' '}
+                                not use it. Apply it to{' '}
+                                {offer.categories.length === 1 ? 'it' : 'them'}{' '}
+                                too?
                             </span>
 
-                            {/* The safe apply comes first: categories that
-                                were tracking the board keep tracking it, and
-                                the hand-set ones need a second, louder click. */}
-                            {offer.plan.following.length > 0 && (
-                                <button
-                                    type="button"
-                                    className={styles.offerPrimary}
-                                    disabled={isSaving}
-                                    onClick={() => {
-                                        onApplyToCategories(
-                                            offer.plan.following.map(
-                                                (c) => c.id,
-                                            ),
-                                            offer.fields,
-                                        );
-                                        setOffer(null);
-                                    }}
-                                >
-                                    Apply to those {offer.plan.following.length}
-                                </button>
-                            )}
                             <button
                                 type="button"
-                                className={styles.offerAction}
+                                className={styles.offerPrimary}
                                 disabled={isSaving}
                                 onClick={() => {
-                                    onApplyToCategories(
-                                        [
-                                            ...offer.plan.following,
-                                            ...offer.plan.handSet,
-                                        ].map((c) => c.id),
-                                        offer.fields,
-                                    );
+                                    offer.apply(offer.categories);
                                     setOffer(null);
                                 }}
                             >
-                                Apply to all{' '}
-                                {offer.plan.following.length +
-                                    offer.plan.handSet.length}
+                                Apply to all {offer.categories.length}
                             </button>
                             <button
                                 type="button"
                                 className={styles.offerAction}
                                 onClick={() => setOffer(null)}
                             >
-                                Not now
+                                Don&rsquo;t change
                             </button>
                         </div>
                     </td>
@@ -383,19 +369,6 @@ export function DefaultsRow({
                             onSave={(text) => {
                                 save({ rulesTemplate: text || null });
                                 setOpenTemplate(false);
-                                if (!text) return;
-                                offerFollowUp(
-                                    'the new rules template',
-                                    (defaults.rulesTemplate ?? '').trim(),
-                                    text,
-                                    // A category with no rules of its own is
-                                    // following the board as surely as one
-                                    // holding the old template verbatim.
-                                    (c) =>
-                                        (c.rules ?? '').trim() ||
-                                        (defaults.rulesTemplate ?? '').trim(),
-                                    { rules: text },
-                                );
                             }}
                             onClose={() => setOpenTemplate(false)}
                         />
