@@ -39,6 +39,13 @@ export function WizardShell({ data, initialStep }: Props) {
     // What the board already has on it, so setup doesn't read like work on a
     // dead page. Empty on a board with nothing yet — see board-pulse.ts.
     const pulse = boardPulse(data.stats);
+    // The URL identifier under the title — the explicit slug, or the derived
+    // name it falls back to. Hidden when it only restates the display name.
+    const slug = data.identifiers.slug ?? data.game.name;
+    const slugLine =
+        slug && slug.toLowerCase() !== data.game.display.toLowerCase()
+            ? slug
+            : null;
 
     const goTo = (id: SetupStepId) => {
         // Keep the URL shareable/resumable and re-read server state so a step
@@ -69,16 +76,19 @@ export function WizardShell({ data, initialStep }: Props) {
                     <img
                         src={data.game.image}
                         alt=""
-                        width={36}
-                        height={48}
+                        width={48}
+                        height={64}
                         className={styles.identityCover}
                     />
                 )}
-                <div>
+                <div className={styles.identityHead}>
                     <span className={styles.eyebrow}>Board setup</span>
                     <span className={styles.identityTitle}>
                         {data.game.display}
                     </span>
+                    {slugLine && (
+                        <span className={styles.identitySlug}>{slugLine}</span>
+                    )}
                 </div>
                 {pulse.length > 0 && (
                     <div className={styles.identityStats}>
