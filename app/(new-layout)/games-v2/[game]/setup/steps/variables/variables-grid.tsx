@@ -302,11 +302,112 @@ export function VariablesGrid({ data }: { data: WizardData }) {
         };
     };
 
+    /**
+     * A brand-new option, onto every category that carries the group.
+     *
+     * This cannot ride `buildBucketChanges`. `rebuildValues` reconciles the
+     * board's bucket list against what each category already has — `kept =
+     * boardBuckets.filter(b => state.buckets.has(b.key))` — which is right for
+     * renaming and reordering and silently drops a bucket no category carries
+     * yet. Adding through that path produced zero changes and looked like a
+     * successful no-op.
+     *
+     * Board-wide is the right default: you add Wii to Platform because the
+     * board has Wii runs, then untick the categories it does not belong on.
+     */
+    const buildAddOptionChanges = (
+        group: VariableGroup,
+        bucket: BoardBucket,
+    ): { changes: VariableChangeInput[]; slugs: string[] } => {
+        const slugs: string[] = [];
+        const changes = [...group.byCategory.values()]
+            .filter((state) => !state.buckets.has(bucket.key))
+            .map((state): VariableChangeInput => {
+                const cat = mains.find((c) => c.id === state.categoryId);
+                if (cat) slugs.push(cat.name);
+                return {
+                    categoryId: state.categoryId,
+                    input: {
+                        name: group.name,
+                        role: state.role,
+                        values: [
+                            ...state.row.values,
+                            [bucket.label, ...bucket.aliases],
+                        ],
+                        // Appended at the end, so nothing that came before it
+                        // shifts and the existing default still points at the
+                        // option it always did.
+                        defaultValueIndex: state.row.defaultValueIndex,
+                        sortOrder: state.row.sortOrder,
+                        description: state.row.description,
+                    },
+                };
+            });
+        return { changes, slugs };
+    };
+
+    /**
+     * Renaming the group, on every category that carries it.
+     *
+     * A name can only be board-level: letting it drift per category is how a
+     * board ends up with "Platform" and "System" that are the same thing.
+     */
+    const buildRenameChanges = (
+        group: VariableGroup,
+        nextName: string,
+    ): { changes: VariableChangeInput[]; slugs: string[] } => {
+        const slugs: string[] = [];
+        const changes = [...group.byCategory.values()].map(
+            (state): VariableChangeInput => {
+                const cat = mains.find((c) => c.id === state.categoryId);
+                if (cat) slugs.push(cat.name);
+                return {
+                    categoryId: state.categoryId,
+                    input: {
+                        name: nextName,
+                        role: state.role,
+                        values: state.row.values,
+                        defaultValueIndex: state.row.defaultValueIndex,
+                        sortOrder: state.row.sortOrder,
+                        description: state.row.description,
+                    },
+                };
+            },
+        );
+        return { changes, slugs };
+    };
+
+    /**
+     * Removing the group from the board — one null write per category that
+     * carries it, which is the same removal an emptied grid produces.
+     *
+     * The only way to do this used to be unticking every option on every
+     * category one cell at a time.
+     */
+    const buildDeleteChanges = (
+        group: VariableGroup,
+    ): { changes: VariableChangeInput[]; slugs: string[] } => {
+        const slugs: string[] = [];
+        const changes = [...group.byCategory.keys()].map(
+            (categoryId): VariableChangeInput => {
+                const cat = mains.find((c) => c.id === categoryId);
+                if (cat) slugs.push(cat.name);
+                return {
+                    categoryId,
+                    input: null,
+                    nameNormalized: group.nameNormalized,
+                };
+            },
+        );
+        return { changes, slugs };
+    };
+
     /** New variable on every featured category, role fixed by its section. */
     const buildCreateChanges = (
         name: string,
         role: VariableRoleId,
         options: string[],
+        defaultIndex: number,
     ): { changes: VariableChangeInput[]; slugs: string[] } => ({
         slugs: mains.map((c) => c.name),
         changes: mains.map((c) => ({
@@ -315,7 +416,7 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                 name,
                 role,
                 values: options.map((o) => [o]),
-                defaultValueIndex: role === 'subcategory' ? 0 : null,
+                defaultValueIndex: role === 'subcategory' ? defaultIndex : null,
                 sortOrder: 0,
                 description: null,
             },
@@ -512,8 +613,33 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                 group.name,
                 buildDefaultChangeAll(group, bucketKey),
             ),
-        onCreate: (name: string, options: string[]) => {
-            const built = buildCreateChanges(name, role, options);
+        onAddOption: (group: VariableGroup, bucket: BoardBucket) =>
+            openPreview(
+                group.nameNormalized,
+                group.name,
+                buildAddOptionChanges(group, bucket),
+            ),
+        onRename: (group: VariableGroup, nextName: string) => {
+            const built = buildRenameChanges(group, nextName);
+            // A subcategory's name is part of its leaderboard's identity, so
+            // renaming relocates runs and gets the same preview an edit does.
+            // A filter's name is only a label on the filter bar.
+            if (role === 'subcategory') {
+                openPreview(group.nameNormalized, nextName, built);
+            } else {
+                applyNow(group.nameNormalized, nextName, built);
+            }
+        },
+        // Always previewed, whichever section it is in: this is the one action
+        // here that destroys rather than edits.
+        onDelete: (group: VariableGroup) =>
+            openPreview(
+                group.nameNormalized,
+                group.name,
+                buildDeleteChanges(group),
+            ),
+        onCreate: (name: string, options: string[], defaultIndex: number) => {
+            const built = buildCreateChanges(name, role, options, defaultIndex);
             // Creating a split adds boards to every featured category, so it
             // gets the same preview an edit does. Creating a detail does not.
             if (role === 'subcategory') openPreview(NEW_KEY, name, built);
@@ -593,7 +719,10 @@ interface SectionProps {
         bucketKey: string,
     ) => void;
     onDefaultAll: (group: VariableGroup, bucketKey: string) => void;
-    onCreate: (name: string, options: string[]) => void;
+    onAddOption: (group: VariableGroup, bucket: BoardBucket) => void;
+    onRename: (group: VariableGroup, nextName: string) => void;
+    onDelete: (group: VariableGroup) => void;
+    onCreate: (name: string, options: string[], defaultIndex: number) => void;
 }
 
 function VariableSection({
@@ -614,6 +743,9 @@ function VariableSection({
     onBuckets,
     onDefault,
     onDefaultAll,
+    onAddOption,
+    onRename,
+    onDelete,
     onCreate,
 }: SectionProps) {
     const [adding, setAdding] = useState(false);
@@ -703,6 +835,10 @@ function VariableSection({
                         onDefaultAll={(bucketKey) =>
                             onDefaultAll(group, bucketKey)
                         }
+                        onAddOption={(bucket) => onAddOption(group, bucket)}
+                        onRename={(next) => onRename(group, next)}
+                        onDelete={() => onDelete(group)}
+                        takenNames={takenNames}
                     />
                 ))
             )}
@@ -723,9 +859,9 @@ function VariableSection({
                     takenNames={takenNames}
                     categoryCount={categories.length}
                     onCancel={() => setAdding(false)}
-                    onCreate={(name, options) => {
+                    onCreate={(name, options, defaultIndex) => {
                         setAdding(false);
-                        onCreate(name, options);
+                        onCreate(name, options, defaultIndex);
                     }}
                 />
             ) : (
@@ -757,6 +893,10 @@ function VariablePalette({
     onBuckets,
     onDefault,
     onDefaultAll,
+    onAddOption,
+    onRename,
+    onDelete,
+    takenNames,
 }: {
     group: VariableGroup;
     role: VariableRoleId;
@@ -772,9 +912,18 @@ function VariablePalette({
     onBuckets: (boardBuckets: BoardBucket[]) => void;
     onDefault: (categoryId: number, bucketKey: string) => void;
     onDefaultAll: (bucketKey: string) => void;
+    onAddOption: (bucket: BoardBucket) => void;
+    onRename: (nextName: string) => void;
+    onDelete: () => void;
+    takenNames: Set<string>;
 }) {
     const [open, setOpen] = useState(true);
     const [editing, setEditing] = useState<string | null>(null);
+    const [renaming, setRenaming] = useState(false);
+    // A new option is edited by the same editor that edits an existing one —
+    // it is the same three questions (name, spellings, where in the order).
+    const [addingOption, setAddingOption] = useState(false);
+    const [confirmDelete, setConfirmDelete] = useState(false);
     const onCount = categories.filter((c) => group.byCategory.has(c.id)).length;
     const displayOf = (id: number) =>
         categories.find((c) => c.id === id)?.display ?? `#${id}`;
@@ -803,28 +952,63 @@ function VariablePalette({
             : null;
 
     const showsDefaultColumn = role === 'subcategory' && sharedDefault === null;
-    // Category + one per option + the default column, when there is one.
-    const columnCount = 1 + group.buckets.length + (showsDefaultColumn ? 1 : 0);
+    // Category + one per option + the add-an-option column + the default
+    // column, when there is one.
+    const columnCount = 2 + group.buckets.length + (showsDefaultColumn ? 1 : 0);
 
     return (
         <div className={styles.palette}>
-            <button
-                type="button"
-                className={styles.paletteHead}
-                aria-expanded={open}
-                onClick={() => setOpen((v) => !v)}
-            >
-                <span className={styles.paletteName}>{group.name}</span>
-                <span className={styles.paletteMeta}>
-                    on {onCount} of {categories.length} · {group.buckets.length}{' '}
-                    {SECTION[role].options.toLowerCase()}
-                </span>
-                {pendingCount > 0 && (
-                    <span className={styles.pendingBadge}>
-                        {pendingCount} pending
-                    </span>
+            {/* The head is a row of separate controls, not one big button. It
+                used to be a single collapse button wrapping everything, which
+                is why the name could never become editable — a button cannot
+                live inside a button, and the group's own name was the one
+                thing on this panel with no way to change it. */}
+            <div className={styles.paletteHead}>
+                {renaming ? (
+                    <RenameGroup
+                        role={role}
+                        current={group.name}
+                        busy={busy}
+                        takenNames={takenNames}
+                        onCancel={() => setRenaming(false)}
+                        onRename={(next) => {
+                            setRenaming(false);
+                            onRename(next);
+                        }}
+                    />
+                ) : (
+                    <>
+                        {/* Click the thing to edit the thing — the same rule
+                            the option column headers follow. */}
+                        <button
+                            type="button"
+                            className={styles.paletteName}
+                            disabled={busy}
+                            title={`Rename ${group.name}`}
+                            onClick={() => setRenaming(true)}
+                        >
+                            {group.name}
+                        </button>
+                        <span className={styles.paletteMeta}>
+                            on {onCount} of {categories.length} ·{' '}
+                            {group.buckets.length}{' '}
+                            {SECTION[role].options.toLowerCase()}
+                        </span>
+                        {pendingCount > 0 && (
+                            <span className={styles.pendingBadge}>
+                                {pendingCount} pending
+                            </span>
+                        )}
+                        <button
+                            type="button"
+                            className={styles.collapse}
+                            aria-expanded={open}
+                            aria-label={`${open ? 'Collapse' : 'Expand'} ${group.name}`}
+                            onClick={() => setOpen((v) => !v)}
+                        />
+                    </>
                 )}
-            </button>
+            </div>
 
             {/* A role disagreement means this makes subcategories on part of
                 the board and only filters the rest. Stated, with both ways
@@ -932,6 +1116,28 @@ function VariablePalette({
                                             </button>
                                         </th>
                                     ))}
+
+                                    {/* A new option is a new column, so the
+                                        control that makes one sits where the
+                                        column will appear. There was no way to
+                                        add an option at all once the group
+                                        existed — you could rename, reorder and
+                                        remove them, but never add. */}
+                                    <th className={styles.addOptionHead}>
+                                        <button
+                                            type="button"
+                                            className={styles.addOption}
+                                            disabled={busy}
+                                            aria-expanded={addingOption}
+                                            onClick={() => {
+                                                setEditing(null);
+                                                setAddingOption((v) => !v);
+                                            }}
+                                        >
+                                            + Option
+                                        </button>
+                                    </th>
+
                                     {/* Where unmatched runs land — per
                                         category by nature, so a column beside
                                         the options rather than a value shared
@@ -971,6 +1177,34 @@ function VariablePalette({
                                                 onApply={(next) => {
                                                     setEditing(null);
                                                     onBuckets(next);
+                                                }}
+                                                buckets={group.buckets}
+                                            />
+                                        </td>
+                                    </tr>
+                                )}
+
+                                {addingOption && (
+                                    <tr className={styles.editorRow}>
+                                        <td colSpan={columnCount}>
+                                            <OptionEditor
+                                                bucket={NEW_BUCKET}
+                                                index={group.buckets.length}
+                                                total={group.buckets.length + 1}
+                                                role={role}
+                                                busy={busy}
+                                                isNew
+                                                onCancel={() =>
+                                                    setAddingOption(false)
+                                                }
+                                                onApply={(next) => {
+                                                    setAddingOption(false);
+                                                    // The editor hands back
+                                                    // the whole list; the new
+                                                    // one is the one it added.
+                                                    onAddOption(
+                                                        next[next.length - 1],
+                                                    );
                                                 }}
                                                 buckets={group.buckets}
                                             />
@@ -1041,6 +1275,9 @@ function VariablePalette({
                                                 );
                                             })}
 
+                                            {/* Under the "+ Option" head. */}
+                                            <td />
+
                                             {showsDefaultColumn && (
                                                 <td
                                                     className={
@@ -1103,6 +1340,51 @@ function VariablePalette({
                                 })}
                             </tbody>
                         </table>
+                    </div>
+
+                    {/* Removing the group. The only way to do this used to be
+                        unticking every option on every category, one cell at a
+                        time, which is not a way to do it. Two steps, because
+                        it deletes leaderboards and the records they hold. */}
+                    <div className={styles.paletteFoot}>
+                        {confirmDelete ? (
+                            <>
+                                <span className={styles.deleteWarning}>
+                                    Delete {group.name} from all {onCount}{' '}
+                                    {onCount === 1 ? 'category' : 'categories'}?
+                                    {role === 'subcategory' &&
+                                        ' Their subcategories collapse back into one leaderboard each.'}
+                                </span>
+                                <button
+                                    type="button"
+                                    className={styles.pendingBtn}
+                                    disabled={busy}
+                                    onClick={() => setConfirmDelete(false)}
+                                >
+                                    Keep it
+                                </button>
+                                <button
+                                    type="button"
+                                    className={styles.deleteConfirm}
+                                    disabled={busy}
+                                    onClick={() => {
+                                        setConfirmDelete(false);
+                                        onDelete();
+                                    }}
+                                >
+                                    Delete
+                                </button>
+                            </>
+                        ) : (
+                            <button
+                                type="button"
+                                className={styles.deleteAction}
+                                disabled={busy}
+                                onClick={() => setConfirmDelete(true)}
+                            >
+                                Delete this {SECTION[role].noun}
+                            </button>
+                        )}
                     </div>
 
                     {/* Only when the categories disagree, because only then is
@@ -1182,6 +1464,86 @@ function VariablePalette({
     );
 }
 
+/** The blank an "+ Option" editor starts from. */
+const NEW_BUCKET: BoardBucket = { key: '', label: '', aliases: [] };
+
+/**
+ * Renaming the group, in the head, where its name is.
+ *
+ * Board-level by necessity: a name that drifted per category is how a board
+ * ends up with "Platform" on half of it and "System" on the rest, which reads
+ * as two groups and is one.
+ */
+function RenameGroup({
+    role,
+    current,
+    busy,
+    takenNames,
+    onCancel,
+    onRename,
+}: {
+    role: VariableRoleId;
+    current: string;
+    busy: boolean;
+    takenNames: Set<string>;
+    onCancel: () => void;
+    onRename: (next: string) => void;
+}) {
+    const [name, setName] = useState(current);
+    const trimmed = name.trim();
+    const normalized = normalizeName(trimmed);
+    // Its own current name is not a collision with itself.
+    const collision =
+        trimmed.length > 0 &&
+        normalized !== normalizeName(current) &&
+        takenNames.has(normalized)
+            ? `${trimmed} already exists on this board.`
+            : null;
+    const ready =
+        trimmed.length > 0 && trimmed !== current && collision === null;
+
+    return (
+        <div className={styles.renameRow}>
+            <label className={styles.renameField}>
+                <span className="visually-hidden">
+                    {role === 'subcategory'
+                        ? 'Subcategory group name'
+                        : 'Filter name'}
+                </span>
+                <input
+                    className={styles.renameInput}
+                    value={name}
+                    disabled={busy}
+                    aria-label={`Rename ${current}`}
+                    onChange={(e) => setName(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && ready) onRename(trimmed);
+                        if (e.key === 'Escape') onCancel();
+                    }}
+                />
+            </label>
+            {collision && <span className={styles.addError}>{collision}</span>}
+            <span className={styles.pendingSpacer} />
+            <button
+                type="button"
+                className={styles.pendingBtn}
+                disabled={busy}
+                onClick={onCancel}
+            >
+                Cancel
+            </button>
+            <button
+                type="button"
+                className={styles.pendingApply}
+                disabled={busy || !ready}
+                onClick={() => onRename(trimmed)}
+            >
+                Rename
+            </button>
+        </div>
+    );
+}
+
 /**
  * What an option *is*, edited in place under its own row.
  *
@@ -1192,6 +1554,11 @@ function VariablePalette({
  *
  * Nothing writes on keystroke — a rename relocates runs, so the whole edit is
  * one previewed change.
+ *
+ * The same editor creates one (`isNew`): a new option asks the same three
+ * questions an existing one does, so it gets the same form rather than a
+ * second one that drifts from it. Reordering and removing are hidden there,
+ * because there is nothing yet to move or remove.
  */
 function OptionEditor({
     bucket,
@@ -1200,6 +1567,7 @@ function OptionEditor({
     role,
     busy,
     buckets,
+    isNew = false,
     onCancel,
     onApply,
 }: {
@@ -1209,6 +1577,7 @@ function OptionEditor({
     role: VariableRoleId;
     busy: boolean;
     buckets: BoardBucket[];
+    isNew?: boolean;
     onCancel: () => void;
     onApply: (next: BoardBucket[]) => void;
 }) {
@@ -1220,10 +1589,24 @@ function OptionEditor({
         .map((a) => a.trim())
         .filter(Boolean);
 
+    const trimmed = label.trim();
+
     const replaced = (): BoardBucket[] =>
-        buckets.map((b) =>
-            b.key === bucket.key ? { ...b, label: label.trim(), aliases } : b,
-        );
+        isNew
+            ? [
+                  ...buckets,
+                  { key: trimmed.toLowerCase(), label: trimmed, aliases },
+              ]
+            : buckets.map((b) =>
+                  b.key === bucket.key ? { ...b, label: trimmed, aliases } : b,
+              );
+
+    // A second option spelled the same as an existing one would silently merge
+    // into it on the next read, so it is caught here instead.
+    const duplicate =
+        isNew &&
+        trimmed.length > 0 &&
+        buckets.some((b) => b.key === trimmed.toLowerCase());
 
     const move = (delta: number) => {
         const next = [...buckets];
@@ -1261,33 +1644,45 @@ function OptionEditor({
                 />
             </label>
 
+            {duplicate && (
+                <p className={styles.addError}>
+                    {trimmed} is already an option here.
+                </p>
+            )}
+
             <div className={styles.optionActions}>
-                <button
-                    type="button"
-                    className={styles.pendingBtn}
-                    disabled={busy || index === 0}
-                    onClick={() => move(-1)}
-                >
-                    ↑
-                </button>
-                <button
-                    type="button"
-                    className={styles.pendingBtn}
-                    disabled={busy || index === total - 1}
-                    onClick={() => move(1)}
-                >
-                    ↓
-                </button>
-                <button
-                    type="button"
-                    className={styles.optionRemove}
-                    disabled={busy}
-                    onClick={() =>
-                        onApply(buckets.filter((b) => b.key !== bucket.key))
-                    }
-                >
-                    Remove from every category
-                </button>
+                {!isNew && (
+                    <>
+                        <button
+                            type="button"
+                            className={styles.pendingBtn}
+                            disabled={busy || index === 0}
+                            onClick={() => move(-1)}
+                        >
+                            ↑
+                        </button>
+                        <button
+                            type="button"
+                            className={styles.pendingBtn}
+                            disabled={busy || index === total - 1}
+                            onClick={() => move(1)}
+                        >
+                            ↓
+                        </button>
+                        <button
+                            type="button"
+                            className={styles.optionRemove}
+                            disabled={busy}
+                            onClick={() =>
+                                onApply(
+                                    buckets.filter((b) => b.key !== bucket.key),
+                                )
+                            }
+                        >
+                            Remove from every category
+                        </button>
+                    </>
+                )}
                 <span className={styles.pendingSpacer} />
                 <button
                     type="button"
@@ -1300,10 +1695,12 @@ function OptionEditor({
                 <button
                     type="button"
                     className={styles.pendingApply}
-                    disabled={busy || !dirty || label.trim().length === 0}
+                    disabled={
+                        busy || !dirty || duplicate || trimmed.length === 0
+                    }
                     onClick={() => onApply(replaced())}
                 >
-                    Preview &amp; apply
+                    {isNew ? 'Preview & add' : 'Preview & apply'}
                 </button>
             </div>
 
@@ -1333,15 +1730,21 @@ function AddVariableForm({
     takenNames: Set<string>;
     categoryCount: number;
     onCancel: () => void;
-    onCreate: (name: string, options: string[]) => void;
+    onCreate: (name: string, options: string[], defaultIndex: number) => void;
 }) {
     const [name, setName] = useState('');
     const [raw, setRaw] = useState('');
+    const [defaultOption, setDefaultOption] = useState('');
 
     const options = raw
         .split('\n')
         .map((v) => v.trim())
         .filter(Boolean);
+
+    // Where unmatched runs land was silently the first option typed, stated in
+    // the note under the form and choosable nowhere. It falls back to the first
+    // if the chosen one is edited away, which is the same rule the grid uses.
+    const defaultIndex = Math.max(0, options.indexOf(defaultOption));
 
     const normalized = normalizeName(name);
     const collision =
@@ -1390,12 +1793,36 @@ function AddVariableForm({
                 />
             </label>
 
+            {/* Asked, not assumed. This was silently the first option typed —
+                stated in the note underneath and choosable nowhere, so getting
+                it wrong meant creating the group and then fixing it. */}
+            {role === 'subcategory' && options.length > 1 && (
+                <label className={styles.addField}>
+                    <span className={styles.addLabel}>
+                        A run that doesn&rsquo;t say which{' '}
+                        {name.trim() || 'option'} it used goes to
+                    </span>
+                    <select
+                        className={styles.addInput}
+                        value={options[defaultIndex]}
+                        disabled={busy}
+                        onChange={(e) => setDefaultOption(e.target.value)}
+                    >
+                        {options.map((o) => (
+                            <option key={o} value={o}>
+                                {o}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+            )}
+
             {collision && <p className={styles.addError}>{collision}</p>}
 
             <p className={styles.addNote}>
                 {role === 'subcategory'
                     ? options.length > 1
-                        ? `Every featured category is multiplied by ${options.length}. Each one splits into ${options.length} subcategories with their own records. A run that doesn't say which ${name.trim() || 'option'} it used goes to ${options[0]}.`
+                        ? `Every featured category is multiplied by ${options.length}. Each one splits into ${options.length} subcategories with their own records.`
                         : 'A subcategory group needs at least two options to split anything.'
                     : `Added to all ${categoryCount} featured ${
                           categoryCount === 1 ? 'category' : 'categories'
@@ -1415,7 +1842,7 @@ function AddVariableForm({
                     type="button"
                     className={styles.pendingApply}
                     disabled={busy || !ready}
-                    onClick={() => onCreate(name.trim(), options)}
+                    onClick={() => onCreate(name.trim(), options, defaultIndex)}
                 >
                     {role === 'subcategory' ? 'Preview & add' : 'Add'}
                 </button>

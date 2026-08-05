@@ -139,11 +139,102 @@
 // The name of a thing the moderator made, at the scale of one. Everything
 // around it — the section label, the column heads — is an eyebrow, so this is
 // the only real title in the zone and the block reads from it outward.
+//
+// It is also the control that renames the group, following the same rule the
+// option headers do: click the thing to edit the thing. Underlined on hover
+// rather than at rest — a title that always looks like a link reads as
+// navigation, and this goes nowhere.
 .paletteName {
+    font: inherit;
     font-size: dt.$font-size-xl;
     font-weight: 700;
     letter-spacing: -0.01em;
     color: var(--bs-emphasis-color);
+    background: transparent;
+    border: 0;
+    padding: 0;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+        text-decoration: underline dotted;
+        text-underline-offset: 4px;
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 3px;
+    }
+}
+
+// Its own control now, rather than the whole head being one big button — that
+// is what kept the name from ever becoming editable.
+.collapse {
+    margin-left: auto;
+    align-self: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    display: grid;
+    place-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: dt.$radius-sm;
+    color: var(--bs-tertiary-color);
+    cursor: pointer;
+
+    &::after {
+        content: '⌄';
+        line-height: 1;
+        transition: transform dt.$transition-fast;
+    }
+
+    &[aria-expanded='false']::after {
+        transform: rotate(-90deg);
+    }
+
+    &:hover {
+        background: rgba(var(--bs-body-color-rgb), 0.06);
+        color: var(--bs-body-color);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+    }
+}
+
+// ---- Renaming the group -------------------------------------
+
+.renameRow {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.renameField {
+    flex: 1;
+    min-width: 12rem;
+    display: flex;
+}
+
+// Sized like the title it replaces, so the head does not jump on open.
+.renameInput {
+    width: 100%;
+    font: inherit;
+    font-size: dt.$font-size-xl;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--bs-emphasis-color);
+    background: var(--bs-body-bg);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    border-radius: dt.$radius-sm;
+    padding: 0 dt.$spacing-xs;
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
 }
 
 .paletteMeta {
@@ -235,6 +326,76 @@
     color: var(--bs-emphasis-color) !important;
     min-width: 9rem;
     padding-left: 0 !important;
+}
+
+// ---- Adding an option ---------------------------------------
+// A new option is a new column, so the control that makes one stands where the
+// column will be. There was no way to add one at all: an existing option could
+// be renamed, reordered and removed, but the set was fixed at creation.
+
+.addOptionHead {
+    width: 1%;
+}
+
+.addOption {
+    font: inherit;
+    font-size: dt.$font-size-2xs;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--bs-tertiary-color);
+    background: transparent;
+    border: 1px dashed rgba(var(--bs-border-color-rgb), 0.6);
+    border-radius: dt.$radius-sm;
+    padding: 0.15rem dt.$spacing-sm;
+    cursor: pointer;
+    white-space: nowrap;
+
+    &:hover:not(:disabled) {
+        border-color: rgba(var(--bs-primary-rgb), 0.7);
+        color: var(--bs-emphasis-color);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 2px;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: default;
+    }
+}
+
+// ---- Deleting the group -------------------------------------
+// Two steps, because it removes leaderboards and the records they hold. Quiet
+// at rest — it is the last thing on the panel and should never be the first
+// thing the eye finds.
+
+.deleteAction {
+    @include board.board-chip;
+    border-color: rgba(var(--bs-border-color-rgb), 0.4);
+    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-2xs;
+
+    &:hover:not(:disabled) {
+        border-color: rgba(var(--bs-danger-rgb), 0.6);
+        color: var(--bs-danger);
+    }
+}
+
+.deleteWarning {
+    flex: 1;
+    min-width: 16rem;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
+}
+
+.deleteConfirm {
+    @include board.board-chip;
+    border-color: rgba(var(--bs-danger-rgb), 0.7);
+    background: rgba(var(--bs-danger-rgb), 0.12);
+    color: var(--bs-danger);
+    font-weight: 600;
 }
 
 // ---- Where unmatched runs land ------------------------------

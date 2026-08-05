@@ -1,5 +1,11 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, within } from '@testing-library/react';
+import {
+    cleanup,
+    fireEvent,
+    render,
+    screen,
+    within,
+} from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { WizardData } from '../../types';
 
@@ -19,6 +25,7 @@ vi.mock('react-toastify', () => ({
     toast: { error: vi.fn(), success: vi.fn(), info: vi.fn() },
 }));
 
+import { previewVariableChangesAction } from '../../actions/apply-variable-changes.action';
 import { VariablesGrid } from './variables-grid';
 
 function makeData(): WizardData {
@@ -186,5 +193,120 @@ describe('VariablesGrid', () => {
     it('drops the mono provenance list the grid already showed', () => {
         renderGrid();
         expect(screen.queryByText(/→ 2 subcategories/)).toBeNull();
+    });
+
+    // The four things a group could not do. Every one of them was already
+    // supported by the write layer — `input: null` deletes, `input.name`
+    // renames, `values` is an arbitrary array — so all four were missing
+    // buttons rather than missing features.
+
+    it('renames the group from its own title', () => {
+        renderGrid();
+        fireEvent.click(screen.getByRole('button', { name: 'Platform' }));
+        const field = screen.getByLabelText('Rename Platform');
+        fireEvent.change(field, { target: { value: 'System' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Rename' }));
+        expect(previewVariableChangesAction).toHaveBeenCalledWith(
+            expect.objectContaining({
+                changes: expect.arrayContaining([
+                    expect.objectContaining({
+                        input: expect.objectContaining({ name: 'System' }),
+                    }),
+                ]),
+            }),
+        );
+    });
+
+    it('deletes the group, behind a confirmation naming what goes', () => {
+        renderGrid();
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Delete this subcategory group',
+            }),
+        );
+        // Says what it costs before it does it.
+        expect(
+            screen.getByText(/collapse back into one leaderboard each/),
+        ).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+
+        // One null write per carrying category — the same removal an emptied
+        // grid produces, which was previously the only way to do this.
+        expect(previewVariableChangesAction).toHaveBeenCalledWith(
+            expect.objectContaining({
+                changes: [
+                    expect.objectContaining({ categoryId: 10, input: null }),
+                    expect.objectContaining({ categoryId: 20, input: null }),
+                ],
+            }),
+        );
+    });
+
+    it('adds an option, in the column where it will appear', () => {
+        renderGrid();
+        fireEvent.click(screen.getByRole('button', { name: '+ Option' }));
+        fireEvent.change(screen.getByLabelText('Name'), {
+            target: { value: 'Wii' },
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'Preview & add' }));
+        expect(previewVariableChangesAction).toHaveBeenCalledWith(
+            expect.objectContaining({
+                changes: expect.arrayContaining([
+                    expect.objectContaining({
+                        input: expect.objectContaining({
+                            values: expect.arrayContaining([['Wii']]),
+                        }),
+                    }),
+                ]),
+            }),
+        );
+    });
+
+    it('refuses an option that already exists rather than silently merging it', () => {
+        renderGrid();
+        fireEvent.click(screen.getByRole('button', { name: '+ Option' }));
+        fireEvent.change(screen.getByLabelText('Name'), {
+            target: { value: 'emulator' },
+        });
+        expect(screen.getByText(/already an option here/)).toBeTruthy();
+        expect(
+            screen
+                .getByRole('button', { name: 'Preview & add' })
+                .hasAttribute('disabled'),
+        ).toBe(true);
+    });
+
+    it('asks where unmatched runs go when creating, instead of taking the first', () => {
+        renderGrid();
+        fireEvent.click(
+            screen.getByRole('button', { name: '+ Add a subcategory group' }),
+        );
+        fireEvent.change(screen.getByLabelText('Subcategory group name'), {
+            target: { value: 'Region' },
+        });
+        fireEvent.change(
+            screen.getByLabelText('Subcategory options, one per line'),
+            { target: { value: 'NTSC\nPAL' } },
+        );
+
+        const picker = screen.getByLabelText(
+            /A run that doesn’t say which Region it used goes to/,
+        ) as HTMLSelectElement;
+        // It used to be options[0], stated in a note and choosable nowhere.
+        fireEvent.change(picker, { target: { value: 'PAL' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Preview & add' }));
+
+        expect(previewVariableChangesAction).toHaveBeenCalledWith(
+            expect.objectContaining({
+                changes: expect.arrayContaining([
+                    expect.objectContaining({
+                        input: expect.objectContaining({
+                            name: 'Region',
+                            defaultValueIndex: 1,
+                        }),
+                    }),
+                ]),
+            }),
+        );
     });
 });
