@@ -14,10 +14,13 @@ import type {
  * lazily when a mod first opens one from the public board's row menu — the
  * public leaderboard payload stays visitor-sized; only mods pay for this.
  */
-export async function loadModBoardContextAction(
-    gameSlug: string,
-): Promise<
-    | { ok: true; categories: ResolvedCategory[]; variables: VariableRow[] }
+export async function loadModBoardContextAction(gameSlug: string): Promise<
+    | {
+          ok: true;
+          gameDisplay: string;
+          categories: ResolvedCategory[];
+          variables: VariableRow[];
+      }
     | { error: string }
 > {
     const session = await getSession();
@@ -38,7 +41,7 @@ export async function loadModBoardContextAction(
             game.id,
             categories.map((c) => c.id),
         );
-        return { ok: true, categories, variables };
+        return { ok: true, gameDisplay: game.display, categories, variables };
     } catch {
         return { error: 'Failed to load board data.' };
     }

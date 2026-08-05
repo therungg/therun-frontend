@@ -156,9 +156,16 @@ export function LeaderboardRow({
     onToggleSelect,
     onSelectRunner,
 }: Props) {
+    // Anonymized rows arrive already redacted from the backend: placeholder
+    // name, `userId`/`picture`/`country` nulled, `isGuest: false`. Always key
+    // the treatment off this flag, never off the name string.
+    const isAnonymous = entry.anonymized === true;
     const showManageButton = canManage && entry.runId != null && !entry.isGuest;
     // Same key a bulk selection groups runners by (leaderboard-pager.ts):
     // registered users by id, guests by name (no persistent identity).
+    // An anonymized runner has no userId, but its placeholder is stable per
+    // user+game — so their runs still group as one runner here, which is the
+    // whole point of a stable placeholder (nobody farms extra board slots).
     const runnerKey =
         entry.userId != null ? `u:${entry.userId}` : `g:${entry.runnerName}`;
     const detailHref =
@@ -240,7 +247,7 @@ export function LeaderboardRow({
             // -1: focusable programmatically (Find me scrolls here and
             // focuses it) without joining the natural tab order.
             tabIndex={isCurrentUser ? -1 : undefined}
-            className={`${styles.row} ${podiumClass} ${isCurrentUser ? styles.youRow : ''} ${selected ? styles.rowSelected : ''}`}
+            className={`${styles.row} ${podiumClass} ${isCurrentUser ? styles.youRow : ''} ${selected ? styles.rowSelected : ''} ${isAnonymous ? styles.anonRow : ''}`}
         >
             {canManage && (
                 <td className={styles.checkCell}>
@@ -285,9 +292,25 @@ export function LeaderboardRow({
                         name={entry.runnerName}
                         picture={entry.picture}
                         size={entry.rank <= 3 ? 'md' : 'sm'}
+                        anonymous={isAnonymous}
                     />
-                    <UserLink username={entry.runnerName} url={undefined} />
-                    <CountryFlag country={entry.country} />
+                    {isAnonymous ? (
+                        // No profile link, no flag: the row keeps its rank,
+                        // its time and its history, and gives up every route
+                        // back to a person. The name is a name — muted, but
+                        // not greyed to unreadable and not italicised.
+                        <span className={styles.anonName}>
+                            {entry.runnerName}
+                        </span>
+                    ) : (
+                        <>
+                            <UserLink
+                                username={entry.runnerName}
+                                url={undefined}
+                            />
+                            <CountryFlag country={entry.country} />
+                        </>
+                    )}
                     {/* No rank-1 chip: the gold spine and gold rank numeral
                         already mark the row, and any label here overclaims —
                         we only know the board's best submitted time. */}

@@ -203,3 +203,48 @@
     margin-top: dt.$spacing-xs;
     max-width: 32rem;
 }
+
+// ── Identity card (anonymize) ────────────────────────────────────────────────
+// Reuses the ban card's scope-row anatomy so the two read as siblings; only
+// the rule list below them is new.
+
+.identityBlurb {
+    margin: 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.ruleList {
+    list-style: none;
+    margin: dt.$spacing-xs 0 0;
+    padding: dt.$spacing-sm 0 0;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.25);
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+.ruleItem {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.ruleHead {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+}
+
+.ruleScope {
+    @include board.board-pill;
+    background: none;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.7);
+    color: var(--bs-secondary-color);
+    text-transform: none;
+    font-weight: 500;
+}

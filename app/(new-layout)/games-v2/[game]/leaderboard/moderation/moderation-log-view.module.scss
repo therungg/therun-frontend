@@ -37,6 +37,84 @@
     color: var(--bs-body-color);
 }
 
+// "Moderator view" switch — a real checkbox with a drawn track, so it keeps
+// native keyboard/AT behaviour and the label click target.
+.viewSwitch {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    cursor: pointer;
+    user-select: none;
+
+    input {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    input:focus-visible + .switchTrack {
+        outline: 2px solid var(--bs-primary);
+        outline-offset: 2px;
+    }
+
+    input:checked + .switchTrack {
+        background: rgba(var(--bs-primary-rgb), 0.75);
+        border-color: rgba(var(--bs-primary-rgb), 0.9);
+
+        .switchKnob {
+            transform: translateX(0.75rem);
+        }
+    }
+
+    input:disabled + .switchTrack {
+        opacity: 0.55;
+    }
+}
+
+.switchTrack {
+    display: inline-block;
+    position: relative;
+    width: 1.75rem;
+    height: 1rem;
+    flex: none;
+    border-radius: 999px;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    background: rgba(var(--bs-border-color-rgb), 0.35);
+    transition: background 0.15s ease;
+}
+
+.switchKnob {
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    background: var(--bs-body-bg);
+    transition: transform 0.15s ease;
+}
+
+.modNote {
+    margin: 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+// The mock's "publicly anonymous · #N" marker — outlined, not filled, so it
+// reads as an annotation on the row rather than another verb pill.
+.anonTag {
+    @include board.board-pill;
+    background: none;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.7);
+    color: var(--bs-secondary-color);
+    text-transform: none;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
 .total {
     margin-left: auto;
     font-family: dt.$font-mono;

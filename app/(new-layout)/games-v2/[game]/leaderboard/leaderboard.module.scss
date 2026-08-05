@@ -706,6 +706,31 @@ tr:focus-within .reveal {
     object-fit: cover;
 }
 
+// ---- Anonymized runners (workstream C) -----------------------
+// The identity is gone; the run is not. So: no avatar image, no flag, no
+// profile link, and a muted name — but the row keeps its rank, its time,
+// its spine and its kebab. Nothing here is derived from the name string;
+// every rule below hangs off the backend's `anonymized` flag.
+.avatarAnon {
+    background: none;
+    border: 1px dashed rgba(var(--bs-border-color-rgb), 0.9);
+    color: var(--bs-tertiary-color);
+    font-weight: 500;
+}
+
+.anonRow .runner {
+    color: var(--bs-secondary-color);
+    font-weight: 500;
+}
+
+.anonName {
+    // Deliberately not italic and not faded further: it is a name, just not
+    // theirs.
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 // ---- Country flags -------------------------------------------
 .flag {
     width: 18px;

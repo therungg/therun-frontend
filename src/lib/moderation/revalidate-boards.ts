@@ -53,6 +53,16 @@ export async function revalidateAffectedBoards(
 // Run/manual detail pages cache under run:{id} / manual-time:{id} (minutes profile).
 // Call after any verdict/exclude/restore/manual-time mutation so the detail page
 // reflects the action immediately.
+/**
+ * Bust just the public mod log. `revalidateAffectedBoards` already does this,
+ * but it returns early when a verb touched no board — and the anonymize verb
+ * (workstream C) is exactly that case: it changes no run's board membership,
+ * yet always writes a log row the acting mod must see immediately.
+ */
+export function revalidateModLog(gameId: number): void {
+    updateTag(modLogTag(gameId));
+}
+
 export function revalidateRunDetails(
     runIds: number[],
     manualTimeIds: number[] = [],

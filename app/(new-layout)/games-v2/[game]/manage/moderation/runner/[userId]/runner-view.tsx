@@ -10,6 +10,7 @@ import type {
     VariableRow,
 } from '../../../../../../../../types/leaderboards.types';
 import type {
+    AnonymizeRuleWithNames,
     GameExclusionRuleRow,
     LeaderboardRosterRow,
     ManualTimeRow,
@@ -29,6 +30,11 @@ import consoleStyles from '../../../console/console.module.scss';
 import { ManualTimeVerdictRow } from '../../attention/manual-time-verdict-row';
 import { deleteRuleAction } from '../../rules/actions/delete-rule.action';
 import type { ModVerb, RunActionTarget } from '../../shared/action-model';
+import {
+    anonymizeUserAction,
+    anonymizeUserGloballyAction,
+    liftAnonymizeRuleAction,
+} from '../../shared/actions/anonymize-rules.action';
 import { deleteManualTimeAction } from '../../shared/actions/manual-times.action';
 import { ManualTimeDialog } from '../../shared/manual-time-dialog';
 import { RunActionDialog } from '../../shared/run-action-dialog';
@@ -55,6 +61,14 @@ interface Props {
      * endpoint, `targetUserId` filter) — reused verbatim via `LogRow`. */
     modLog: PublicModLogEntry[];
     modLogTotal: number;
+    /**
+     * Every anonymize rule targeting this runner — live AND lifted, this
+     * game's plus any site-wide one. Carries REAL identities; this page is
+     * mod-gated, so that is the point (mods need the name to enforce).
+     * Run-scoped rules are absent by contract: the backend's `targetUserId`
+     * filter matches `type: 'user'` rules only.
+     */
+    anonymizeRules: AnonymizeRuleWithNames[];
     /** Where "Back" goes — resolved server-side in page.tsx. */
     backHref: string;
     backLabel: string;
@@ -160,6 +174,7 @@ export function RunnerView({
     canSiteBan,
     modLog,
     modLogTotal,
+    anonymizeRules,
     backHref,
     backLabel,
 }: Props) {
@@ -173,6 +188,12 @@ export function RunnerView({
     const [dialog, setDialog] = useState<DialogState>(null);
     const [runnerDialog, setRunnerDialog] = useState<RunnerDialogState>(null);
     const [liftingRuleId, setLiftingRuleId] = useState<number | null>(null);
+    // Identity card: which scope is mid-apply, and which rule is mid-lift.
+    // `hidingScope` is 'game' | 'global' | a category id, never both at once.
+    const [hidingScope, setHidingScope] = useState<
+        'game' | 'global' | number | null
+    >(null);
+    const [liftingAnonId, setLiftingAnonId] = useState<number | null>(null);
     const [deletingManualId, setDeletingManualId] = useState<number | null>(
         null,
     );
@@ -191,6 +212,8 @@ export function RunnerView({
         setSelected(new Set());
         setLiftingRuleId(null);
         setDeletingManualId(null);
+        setHidingScope(null);
+        setLiftingAnonId(null);
         // Everything on this page came from the server loader; refetch.
         router.refresh();
     };
@@ -251,6 +274,127 @@ export function RunnerView({
                 Unban…
             </button>
         );
+
+    // ── Identity (anonymize, design doc §C / mocks fig. 7) ──────────────────
+    // Anonymize is deliberately NOT part of the ban card: banning removes runs
+    // from boards, anonymizing leaves every run and rank exactly where it is
+    // and only replaces the public name. Its own block, with its permanence
+    // stated, is what the mock asks for.
+    // `type: 'run'` rules also carry a null gameId, so narrow to user rules
+    // before reading a null gameId as "global" — the page's own query filters
+    // run rules out today, but the invariant should not live in the caller.
+    const liveAnonRules = anonymizeRules.filter(
+        (r) => r.liftedAt == null && r.type === 'user',
+    );
+    const globalAnon = liveAnonRules.find((r) => r.gameId == null) ?? null;
+    const gameAnon =
+        liveAnonRules.find((r) => r.gameId != null && r.categoryId == null) ??
+        null;
+    const categoryAnonFor = (categoryId: number) =>
+        liveAnonRules.find((r) => r.categoryId === categoryId) ?? null;
+    // A wider live rule already masks this runner here — a narrower one would
+    // change nothing, so say so instead of offering a no-op button.
+    const coveringAnon = globalAnon ?? gameAnon;
+
+    const applyAnonymize = async (
+        scope: 'game' | 'global' | number,
+        reason: string,
+    ): Promise<string | null> => {
+        const res =
+            scope === 'global'
+                ? await anonymizeUserGloballyAction(gameSlug, {
+                      userId,
+                      reason,
+                  })
+                : await anonymizeUserAction(gameSlug, {
+                      userId,
+                      reason,
+                      categoryId: scope === 'game' ? null : scope,
+                  });
+        if ('error' in res) return res.error;
+        toast.success(
+            res.result.alreadyExists
+                ? 'Already hidden at this scope — nothing changed.'
+                : `Identity hidden — the public now sees ${res.result.rule.displayName}.`,
+        );
+        afterMutation();
+        return null;
+    };
+
+    const liftAnonymize = async (
+        rule: AnonymizeRuleWithNames,
+        reason: string,
+    ): Promise<string | null> => {
+        const res = await liftAnonymizeRuleAction(gameSlug, {
+            ruleId: rule.ruleId,
+            reason,
+            targetUserId: rule.type === 'user' ? rule.targetId : null,
+            global: rule.gameId == null,
+        });
+        if ('error' in res) return res.error;
+        toast.success('Identity restored — the real name is public again.');
+        afterMutation();
+        return null;
+    };
+
+    /**
+     * Trailing control for one Identity scope row. Verbs are never hidden:
+     * a game mod sees the Lift button, disabled, with the reason in its
+     * tooltip — hiding it would leave them guessing why nothing is offered.
+     */
+    const anonScopeControl = (
+        key: 'game' | 'global' | number,
+        rule: AnonymizeRuleWithNames | null,
+        opts: { canApply: boolean; applyDisabledReason?: string },
+    ) => {
+        if (rule) {
+            return liftingAnonId === rule.ruleId ? (
+                <InlineReasonForm
+                    id={`lift-anon-${rule.ruleId}`}
+                    label="Lift reason"
+                    cta="Restore identity"
+                    onSubmit={(reason) => liftAnonymize(rule, reason)}
+                    onCancel={() => setLiftingAnonId(null)}
+                />
+            ) : (
+                <button
+                    type="button"
+                    className={styles.pillBtn}
+                    disabled={!canSiteBan}
+                    title={
+                        canSiteBan
+                            ? 'Lift this rule — the real name becomes public again'
+                            : 'Lifting requires a site admin'
+                    }
+                    onClick={() => setLiftingAnonId(rule.ruleId)}
+                >
+                    Lift…
+                </button>
+            );
+        }
+        if (hidingScope === key) {
+            return (
+                <InlineReasonForm
+                    id={`hide-identity-${String(key)}`}
+                    label="Reason"
+                    cta="Hide identity"
+                    onSubmit={(reason) => applyAnonymize(key, reason)}
+                    onCancel={() => setHidingScope(null)}
+                />
+            );
+        }
+        return (
+            <button
+                type="button"
+                className={styles.pillBtn}
+                disabled={!opts.canApply}
+                title={opts.applyDisabledReason}
+                onClick={() => setHidingScope(key)}
+            >
+                Hide…
+            </button>
+        );
+    };
 
     // One row per distinct category the runner appears on — a combo is
     // (category, subcategoryKey), but a ban rule is category-scoped, so
@@ -760,6 +904,121 @@ export function RunnerView({
                                 Ban…
                             </button>
                         </div>
+                    </div>
+
+                    <div className={styles.sideCard}>
+                        <div className={styles.sideCardHead}>Identity</div>
+                        <p className={styles.identityBlurb}>
+                            {coveringAnon
+                                ? `Hidden from the public as ${coveringAnon.displayName}. Every run and rank is untouched — only the name, avatar, flag and profile link are gone.`
+                                : 'Public. Hiding is permanent and keeps every run and rank in place; moderators always still see the real name.'}
+                        </p>
+                        {categoriesInPlay.map((cat) => {
+                            const rule = categoryAnonFor(cat.id);
+                            return (
+                                <div key={cat.id} className={styles.scopeRow}>
+                                    <div className={styles.scopeLabel}>
+                                        <div className={styles.scopeA}>
+                                            This board · {cat.display}
+                                        </div>
+                                        <div className={styles.scopeB}>
+                                            {rule
+                                                ? `Hidden as ${rule.displayName} by ${rule.createdByName}`
+                                                : coveringAnon
+                                                  ? `Covered by the ${coveringAnon.scope} rule`
+                                                  : 'Public'}
+                                        </div>
+                                    </div>
+                                    {anonScopeControl(cat.id, rule, {
+                                        canApply: coveringAnon == null,
+                                        applyDisabledReason:
+                                            coveringAnon == null
+                                                ? undefined
+                                                : 'Already hidden at a wider scope',
+                                    })}
+                                </div>
+                            );
+                        })}
+                        <div className={styles.scopeRow}>
+                            <div className={styles.scopeLabel}>
+                                <div className={styles.scopeA}>
+                                    This game · {gameDisplay}
+                                </div>
+                                <div className={styles.scopeB}>
+                                    {gameAnon
+                                        ? `Hidden as ${gameAnon.displayName} by ${gameAnon.createdByName} on ${fmtDate(gameAnon.createdAt)}`
+                                        : globalAnon
+                                          ? 'Covered by the site-wide rule'
+                                          : 'Public'}
+                                </div>
+                            </div>
+                            {anonScopeControl('game', gameAnon, {
+                                canApply: globalAnon == null,
+                                applyDisabledReason:
+                                    globalAnon == null
+                                        ? undefined
+                                        : 'Already hidden site-wide',
+                            })}
+                        </div>
+                        {/* Site scope is admin-only on both ends: only an
+                            admin can create a global rule, and only an admin
+                            can lift one. Shown to game mods as state, with
+                            the verb disabled and the reason in the tooltip. */}
+                        <div className={styles.scopeRow}>
+                            <div className={styles.scopeLabel}>
+                                <div className={styles.scopeA}>Entire site</div>
+                                <div className={styles.scopeB}>
+                                    {globalAnon
+                                        ? `Hidden everywhere as ${globalAnon.displayName} by ${globalAnon.createdByName}`
+                                        : 'Admins only'}
+                                </div>
+                            </div>
+                            {anonScopeControl('global', globalAnon, {
+                                canApply: canSiteBan,
+                                applyDisabledReason: canSiteBan
+                                    ? undefined
+                                    : 'Site-wide hiding requires a site admin',
+                            })}
+                        </div>
+                        {anonymizeRules.length > 0 && (
+                            <ul className={styles.ruleList}>
+                                {anonymizeRules.map((rule) => (
+                                    <li
+                                        key={rule.ruleId}
+                                        className={styles.ruleItem}
+                                    >
+                                        <span className={styles.ruleHead}>
+                                            {rule.displayName}
+                                            <span className={styles.ruleScope}>
+                                                {rule.scope}
+                                            </span>
+                                            {rule.liftedAt && (
+                                                <span
+                                                    className={styles.ruleScope}
+                                                >
+                                                    lifted
+                                                </span>
+                                            )}
+                                        </span>
+                                        <span className={styles.manualMeta}>
+                                            {rule.createdByName} ·{' '}
+                                            {fmtDate(rule.createdAt)} · “
+                                            {rule.reason}”
+                                        </span>
+                                        {rule.liftedAt && (
+                                            <span className={styles.manualMeta}>
+                                                Lifted by{' '}
+                                                {rule.liftedByName ??
+                                                    'an admin'}{' '}
+                                                on {fmtDate(rule.liftedAt)}
+                                                {rule.liftReason &&
+                                                    ` · “${rule.liftReason}”`}
+                                            </span>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </div>
 
                     <div className={styles.sideCard}>
