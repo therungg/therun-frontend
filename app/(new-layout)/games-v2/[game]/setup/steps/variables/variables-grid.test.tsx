@@ -115,13 +115,26 @@ describe('VariablesGrid', () => {
 
     it('states the default in words, in its own column, instead of a third dot', () => {
         renderGrid();
-        // The ringed dot meant "runs that do not say land here" and nothing
-        // on the screen said so. The column does.
+        // The ringed dot meant "runs that do not say land here" and nothing on
+        // the screen said so. The column does — and it names the group, so the
+        // header is a whole thought rather than half of one. "Runs that don't
+        // say" left the reader to supply "…say WHAT".
         expect(
-            screen.getByRole('columnheader', { name: /Runs that don/ }),
+            screen.getByRole('columnheader', { name: 'No Platform given' }),
         ).toBeTruthy();
-        expect(screen.getByLabelText('Default option for Any%')).toBeTruthy();
+        expect(
+            screen.getByLabelText('On Any%, a run with no Platform goes to'),
+        ).toBeTruthy();
         expect(screen.queryByText('◉')).toBeNull();
+    });
+
+    it('spells out what an unstated option means, where the column is', () => {
+        renderGrid();
+        expect(
+            screen.getByText(
+                /Runners don’t always say which Platform they used/,
+            ),
+        ).toBeTruthy();
     });
 
     it('marks a cell on and off with two named marks', () => {
