@@ -274,148 +274,154 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                 </div>
             )}
 
-            <div className="d-flex gap-2 align-items-center flex-wrap mb-2">
-                <input
-                    type="search"
-                    className="form-control form-control-sm"
-                    style={{ maxWidth: '22rem' }}
-                    placeholder={`Search ${rows.length.toLocaleString()} categories…`}
-                    aria-label="Search categories"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                />
-                <span className="text-muted small">
-                    {query.trim()
-                        ? `${matches.length.toLocaleString()} match${
-                              matches.length === 1 ? '' : 'es'
-                          }`
-                        : `showing ${visibleRows.length.toLocaleString()} of ${rows.length.toLocaleString()}`}
-                </span>
-            </div>
-
-            <table className={styles.table}>
-                <thead>
-                    <tr>
-                        <th>Show on board</th>
-                        <th>Category</th>
-                        <th>Activity</th>
-                        <th className="text-end">Runners</th>
-                        <th className="text-end">Finished runs</th>
-                        <th className="text-end">Playtime</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {visibleRows.map((r) => (
-                        <tr
-                            key={r.id}
-                            className={r.main ? '' : styles.rowDimmed}
-                        >
-                            <td>
-                                <input
-                                    type="checkbox"
-                                    className="form-check-input"
-                                    aria-label={`Show ${r.display} on the board`}
-                                    checked={r.main}
-                                    onChange={(e) =>
-                                        setMain(r.id, e.target.checked)
-                                    }
-                                />
-                            </td>
-                            <td>
-                                {r.display}
-                                {r.error && (
-                                    <div
-                                        className={`${styles.textDanger} small`}
-                                    >
-                                        {r.error}
-                                    </div>
-                                )}
-                            </td>
-                            <td>
-                                <div className={styles.activityBar}>
-                                    <div
-                                        className={styles.activityFill}
-                                        style={{
-                                            width: `${Math.max(
-                                                2,
-                                                Math.round(
-                                                    (r.uniqueRunners /
-                                                        maxRunners) *
-                                                        100,
-                                                ),
-                                            )}%`,
-                                        }}
-                                    />
-                                </div>
-                            </td>
-                            <td className="text-end">
-                                {r.uniqueRunners.toLocaleString()}
-                            </td>
-                            <td className="text-end">
-                                {r.totalFinishedAttemptCount.toLocaleString()}
-                            </td>
-                            <PlaytimeCell ms={r.totalRunTime} />
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-
-            {hiddenCount > 0 && (
-                <div className="d-flex gap-2 align-items-center mb-3">
-                    <span className="text-muted small">
-                        {hiddenCount.toLocaleString()} quieter categor
-                        {hiddenCount === 1 ? 'y' : 'ies'} not shown.
-                    </span>
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-link px-0"
-                        onClick={() => setShowAll(true)}
-                    >
-                        Show all
-                    </button>
-                </div>
-            )}
-
-            {query.trim() && matches.length === 0 && (
-                <p className="text-muted small">
-                    No category matches “{query.trim()}”.
-                </p>
-            )}
-
-            <div className="mb-3">
-                <div className="text-muted small">
-                    {checkedCount} shown · {rows.length - checkedCount} hidden ·{' '}
-                    {share}% of finished runs covered
-                </div>
-                <div
-                    className={styles.meter}
-                    role="progressbar"
-                    aria-label="Share of finished runs covered by shown categories"
-                    aria-valuenow={share}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                >
-                    <div
-                        className={styles.meterFill}
-                        style={{ width: `${share}%` }}
+            <div className={styles.section}>
+                <div className="d-flex gap-2 align-items-center flex-wrap mb-3">
+                    <input
+                        type="search"
+                        className="form-control form-control-sm"
+                        style={{ maxWidth: '22rem' }}
+                        placeholder={`Search ${rows.length.toLocaleString()} categories…`}
+                        aria-label="Search categories"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
                     />
+                    <span className="text-muted small">
+                        {query.trim()
+                            ? `${matches.length.toLocaleString()} match${
+                                  matches.length === 1 ? '' : 'es'
+                              }`
+                            : `showing ${visibleRows.length.toLocaleString()} of ${rows.length.toLocaleString()}`}
+                    </span>
+                </div>
+
+                <table className={styles.table}>
+                    <thead>
+                        <tr>
+                            <th>Show on board</th>
+                            <th>Category</th>
+                            <th>Activity</th>
+                            <th className="text-end">Runners</th>
+                            <th className="text-end">Finished runs</th>
+                            <th className="text-end">Playtime</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {visibleRows.map((r) => (
+                            <tr
+                                key={r.id}
+                                className={r.main ? '' : styles.rowDimmed}
+                            >
+                                <td>
+                                    <input
+                                        type="checkbox"
+                                        className="form-check-input"
+                                        aria-label={`Show ${r.display} on the board`}
+                                        checked={r.main}
+                                        onChange={(e) =>
+                                            setMain(r.id, e.target.checked)
+                                        }
+                                    />
+                                </td>
+                                <td>
+                                    {r.display}
+                                    {r.error && (
+                                        <div
+                                            className={`${styles.textDanger} small`}
+                                        >
+                                            {r.error}
+                                        </div>
+                                    )}
+                                </td>
+                                <td>
+                                    <div className={styles.activityBar}>
+                                        <div
+                                            className={styles.activityFill}
+                                            style={{
+                                                width: `${Math.max(
+                                                    2,
+                                                    Math.round(
+                                                        (r.uniqueRunners /
+                                                            maxRunners) *
+                                                            100,
+                                                    ),
+                                                )}%`,
+                                            }}
+                                        />
+                                    </div>
+                                </td>
+                                <td className="text-end">
+                                    {r.uniqueRunners.toLocaleString()}
+                                </td>
+                                <td className="text-end">
+                                    {r.totalFinishedAttemptCount.toLocaleString()}
+                                </td>
+                                <PlaytimeCell ms={r.totalRunTime} />
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+
+                {hiddenCount > 0 && (
+                    <div className="d-flex gap-2 align-items-center mb-3">
+                        <span className="text-muted small">
+                            {hiddenCount.toLocaleString()} quieter categor
+                            {hiddenCount === 1 ? 'y' : 'ies'} not shown.
+                        </span>
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-link px-0"
+                            onClick={() => setShowAll(true)}
+                        >
+                            Show all
+                        </button>
+                    </div>
+                )}
+
+                {query.trim() && matches.length === 0 && (
+                    <p className="text-muted small">
+                        No category matches “{query.trim()}”.
+                    </p>
+                )}
+
+                <div className={styles.coverageRow}>
+                    <div className="text-muted small">
+                        {checkedCount} shown · {rows.length - checkedCount}{' '}
+                        hidden · {share}% of finished runs covered
+                    </div>
+                    <div
+                        className={styles.meter}
+                        role="progressbar"
+                        aria-label="Share of finished runs covered by shown categories"
+                        aria-valuenow={share}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                    >
+                        <div
+                            className={styles.meterFill}
+                            style={{ width: `${share}%` }}
+                        />
+                    </div>
                 </div>
             </div>
 
             {!mainOk && (
-                <div className={`${styles.warnNote} mt-2`}>
+                <div className={`${styles.warnNote} mt-3`}>
                     Pick at least one category.
                 </div>
             )}
-            {progress && <div className="text-muted small">{progress}</div>}
-            <button
-                type="button"
-                className={`${styles.primaryAction} mt-2`}
-                disabled={isSaving || !mainOk}
-                onClick={save}
-            >
-                {isSaving ? 'Saving…' : 'Save & continue'}
-            </button>
+            <div className={styles.detailsFooter}>
+                <p className={styles.footerHint}>
+                    {progress ?? 'Saves your picks, then moves on to Groups.'}
+                </p>
+                <button
+                    type="button"
+                    className={styles.primaryAction}
+                    disabled={isSaving || !mainOk}
+                    onClick={save}
+                >
+                    {isSaving ? 'Saving…' : 'Save & continue'}
+                </button>
+            </div>
         </section>
     );
 }
