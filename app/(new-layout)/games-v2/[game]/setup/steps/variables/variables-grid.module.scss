@@ -1,24 +1,25 @@
 @use '../../../../../styles/design-tokens' as dt;
 @use '../../../../../styles/board' as board;
 
-// Zone 2 of step 4, on the same contract as the scalar matrix above it.
+// Zone 2 of step 4, on the same row axis as the scalar matrix above it:
+// CATEGORIES ARE ROWS. They used to run across the top here and down the left
+// there, so reading the screen meant mentally transposing it halfway down.
+// Options are the columns instead.
 //
-// It used to be a bare heading with a paragraph under it, sitting beside a
-// framed panel — the same kind of thing at two different levels of the page,
-// which is what made the screen read as two products stacked. It is a panel
-// now, with the same surface, the same head and the same row axis: CATEGORIES
-// ARE ROWS. Above, eight categories ran down the left; here they used to run
-// across the top, so reading the screen meant mentally transposing it halfway
-// down. Options are the columns instead.
+// The SECTION is not a panel. It was one briefly, which made every subcategory
+// group a card inside a box — and a thing nested inside a container can never
+// outrank it, however it is styled. A group a moderator creates is a whole
+// object, the peer of "Featured categories", not one of its contents. So the
+// section is a bare label with a rule under it, and each group below it is a
+// top-level panel in its own right.
 
 .zone {
-    @include board.board-surface(dt.$spacing-xl);
-    margin-bottom: dt.$spacing-lg;
+    margin-bottom: dt.$spacing-3xl;
 }
 
 .zoneHead {
     @include board.board-section-head;
-    margin-bottom: dt.$spacing-md;
+    margin-bottom: dt.$spacing-sm;
 }
 
 .zoneTitle {
@@ -62,11 +63,10 @@
     @include board.board-section-count;
 }
 
-// Inside a panel now, so it does not bring a surface of its own — a card in a
-// card is how this screen ended up with four nested frames.
+// Stands where a group would, so it carries a group's frame.
 .empty {
+    @include board.board-surface(dt.$spacing-xl);
     @include board.board-empty;
-    padding: dt.$spacing-xl 0;
 }
 
 .emptyTitle {
@@ -82,25 +82,18 @@
 
 // ---- One variable -------------------------------------------
 
-// One subcategory group is an OBJECT — a thing with a name, a set of options
-// and a grid — and a board can carry several. Stacked as faint hairline boxes
-// they ran together into one long striped field and you lost track of which
-// grid belonged to which group.
+// One subcategory group is an OBJECT — a name, a set of options, a grid, and
+// real leaderboards on the public board behind it. Adding one is not filling
+// in a field; it is creating a thing. So it gets the same surface the category
+// matrix gets, at the same level of the page, and nothing contains it but the
+// step.
 //
-// So each one is built like a card: a filled head carrying the name at title
-// scale, a ruled edge under it, and real air between blocks. Scale and spacing
-// only — nothing tinted, nothing washed. The name is the largest type in the
-// section on purpose; the section heading above it is an eyebrow, because the
-// section is a container and the group is the thing.
+// It was a hairline box, then a card inside the section panel. Neither read as
+// its own object: a box inside a box is a list item however it is drawn.
 .palette {
-    margin-bottom: dt.$spacing-2xl;
+    @include board.board-surface(0);
+    margin-bottom: dt.$spacing-lg;
     overflow: hidden;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.85);
-    border-radius: dt.$radius-lg;
-
-    &:last-of-type {
-        margin-bottom: 0;
-    }
 }
 
 .paletteHead {
@@ -143,9 +136,13 @@
     }
 }
 
+// The name of a thing the moderator made, at the scale of one. Everything
+// around it — the section label, the column heads — is an eyebrow, so this is
+// the only real title in the zone and the block reads from it outward.
 .paletteName {
-    font-size: dt.$font-size-lg;
+    font-size: dt.$font-size-xl;
     font-weight: 700;
+    letter-spacing: -0.01em;
     color: var(--bs-emphasis-color);
 }
 
@@ -502,12 +499,11 @@
 // on a category row. Only rendered for categories with two or more groups —
 // with one group every leaderboard is one option and the grid already said it.
 
-// Inner block, matching .palette — the section is the panel.
+// A consequence of the groups above rather than a group itself, so it sits at
+// the same level but reads quieter — no filled head, no title.
 .combos {
-    margin-top: dt.$spacing-md;
-    padding: dt.$spacing-lg;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
-    border-radius: dt.$radius-md;
+    @include board.board-surface(dt.$spacing-lg);
+    margin-bottom: dt.$spacing-lg;
 }
 
 .combosHead {
@@ -573,19 +569,45 @@
 // No role picker: the section already answered that question, so the form only
 // collects a name and the options.
 
+// Shaped like the panel it will become, not like a chip. Adding a group
+// creates a whole object with leaderboards behind it, and the control that
+// does it should stand where the object will stand.
 .addAction {
-    @include board.board-chip;
-    border-style: dashed;
-    border-color: rgba(var(--bs-border-color-rgb), 0.6);
+    display: block;
+    width: 100%;
+    padding: dt.$spacing-lg;
+    font: inherit;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    background: transparent;
+    border: 1px dashed rgba(var(--bs-border-color-rgb), 0.7);
+    border-radius: dt.$radius-lg;
+    cursor: pointer;
+    transition: border-color dt.$transition-fast, color dt.$transition-fast;
+
+    &:hover:not(:disabled) {
+        border-color: rgba(var(--bs-primary-rgb), 0.7);
+        color: var(--bs-emphasis-color);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 2px;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
 }
 
+// Where the new group will appear, so it is already shaped like one.
 .addForm {
+    @include board.board-surface(dt.$spacing-lg);
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-sm;
-    padding: dt.$spacing-lg;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
-    border-radius: dt.$radius-md;
 }
 
 .addField {
