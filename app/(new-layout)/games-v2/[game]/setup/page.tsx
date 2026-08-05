@@ -75,9 +75,21 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         catData.categories.map((c) => c.id),
     );
 
+    // Only variables on featured categories count toward the summary — a big
+    // game carries a thousand junk timer-split categories, and counting their
+    // variables reported nonsense like "1044 variables" for a board that shows
+    // a handful. The step only sets up the featured categories anyway.
+    const featuredCategoryIds = new Set(
+        catData.categories
+            .filter((c) => !c.archived && (c.isMain ?? false))
+            .map((c) => c.id),
+    );
+
     const completeness = computeCompleteness({
         categories: categoryFactsFromResolved(catData.categories),
-        variableCount: variables.length,
+        variableCount: variables.filter((v) =>
+            featuredCategoryIds.has(v.categoryId),
+        ).length,
         policyCount: policies.length,
         requireVideoAnywhere: catData.categories.some(
             (c) => !c.archived && c.requireVideo,
