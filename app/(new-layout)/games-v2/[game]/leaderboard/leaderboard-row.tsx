@@ -130,6 +130,12 @@ interface Props {
     categorySlug: string;
     /** Subcategory-role variable names, for building this row's own subcategory key from `entry.variables`. */
     subcategoryDefKeys: string[];
+    /** Checkbox column — only rendered when `canManage`, and only for rows with a real run. */
+    selected?: boolean;
+    /** Shift-click extends a range — the click handler forwards the native event's shiftKey. */
+    onToggleSelect?: (runId: number, shiftKey: boolean) => void;
+    /** Kebab's "Select all runs by …" shortcut to the single-runner bulk state. */
+    onSelectRunner?: (runnerKey: string) => void;
 }
 
 export function LeaderboardRow({
@@ -146,8 +152,15 @@ export function LeaderboardRow({
     showMilliseconds,
     categorySlug,
     subcategoryDefKeys,
+    selected = false,
+    onToggleSelect,
+    onSelectRunner,
 }: Props) {
     const showManageButton = canManage && entry.runId != null && !entry.isGuest;
+    // Same key a bulk selection groups runners by (leaderboard-pager.ts):
+    // registered users by id, guests by name (no persistent identity).
+    const runnerKey =
+        entry.userId != null ? `u:${entry.userId}` : `g:${entry.runnerName}`;
     const detailHref =
         entry.source === 'manual' && entry.manualTimeId != null
             ? `/games-v2/${gameSlug}/manual/${entry.manualTimeId}`
@@ -227,8 +240,34 @@ export function LeaderboardRow({
             // -1: focusable programmatically (Find me scrolls here and
             // focuses it) without joining the natural tab order.
             tabIndex={isCurrentUser ? -1 : undefined}
-            className={`${styles.row} ${podiumClass} ${isCurrentUser ? styles.youRow : ''}`}
+            className={`${styles.row} ${podiumClass} ${isCurrentUser ? styles.youRow : ''} ${selected ? styles.rowSelected : ''}`}
         >
+            {canManage && (
+                <td className={styles.checkCell}>
+                    {entry.runId != null && (
+                        <input
+                            type="checkbox"
+                            className={styles.checkbox}
+                            checked={selected}
+                            aria-label={`Select ${entry.runnerName}'s run`}
+                            onClick={(e) => {
+                                // Controlled entirely from parent selection
+                                // state — prevent the native toggle so a
+                                // shift-click range-select doesn't also
+                                // flip this row an extra, out-of-sync time.
+                                e.preventDefault();
+                                onToggleSelect?.(
+                                    entry.runId as number,
+                                    e.shiftKey,
+                                );
+                            }}
+                            onChange={() => {
+                                /* handled in onClick above */
+                            }}
+                        />
+                    )}
+                </td>
+            )}
             <td className={`${styles.rank} ${rankClass}`}>
                 {displayRank.tied && (
                     <>
@@ -291,6 +330,11 @@ export function LeaderboardRow({
                         gameSlug={gameSlug}
                         categorySlug={categorySlug}
                         subcategoryDefKeys={subcategoryDefKeys}
+                        onSelectRunner={
+                            onSelectRunner
+                                ? () => onSelectRunner(runnerKey)
+                                : undefined
+                        }
                     />
                     {showManageButton && (
                         <Link

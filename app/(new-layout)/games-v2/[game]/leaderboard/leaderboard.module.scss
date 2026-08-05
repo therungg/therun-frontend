@@ -285,6 +285,67 @@ tr:focus-within .reveal {
     font-weight: 700;
 }
 
+// ---- Mod bulk-select (checkbox column, canManage only) -----------------
+// Mirrors the mock's `.c-check`/`.ck`/selected-row tint — see
+// docs/plans/2026-08-05-board-moderation-mocks.html fig. 1–2.
+.checkCell {
+    width: 2.2rem;
+    padding-right: 0 !important;
+}
+
+.checkbox {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 15px;
+    height: 15px;
+    border: 1px solid rgba(var(--bs-emphasis-color-rgb), 0.35);
+    border-radius: 4px;
+    background: var(--bs-body-bg);
+    display: block;
+    cursor: pointer;
+    position: relative;
+    margin: 0;
+
+    &:checked,
+    &:indeterminate {
+        background: var(--bs-primary);
+        border-color: var(--bs-primary);
+    }
+
+    &:checked::after {
+        content: '';
+        position: absolute;
+        left: 4px;
+        top: 1px;
+        width: 4px;
+        height: 8px;
+        border: solid #fff;
+        border-width: 0 2px 2px 0;
+        transform: rotate(42deg);
+    }
+
+    &:indeterminate::after {
+        content: '';
+        position: absolute;
+        left: 3px;
+        top: 6px;
+        width: 7px;
+        height: 2px;
+        background: #fff;
+    }
+}
+
+// Declared after .rank1Row/.youRow so a selected row's tint always wins —
+// selection is the viewer's active intent, and should read over any of the
+// row's own ambient identity coloring.
+.rowSelected td {
+    background: rgba(var(--bs-primary-rgb), 0.08) !important;
+
+    &:first-child {
+        box-shadow: inset 3px 0 0 var(--bs-primary);
+    }
+}
+
 .iconLink {
     display: inline-flex;
     align-items: center;

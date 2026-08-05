@@ -3,7 +3,14 @@
 // removal is "loud" (a reject verdict — runner notified, appealable) or "quiet"
 // (a silent exclusion). See spec §3–§4.
 
-export type ModVerb = 'approve' | 'remove' | 'restore' | 'ban';
+// `reject` is a bulk-bar-only addition (board multi-select, workstream B):
+// a direct verdict rejection (loud, notified, appealable) with no
+// notify-toggle/reason-category picker — those are `remove`'s nuance for
+// the single-row case. Distinct verbs so Verify/Reject/Remove can sit
+// side-by-side per the approved bulk-bar mock, matching the design's
+// verb table (verify/reject/restore → mod-verdicts-handler; remove/restore
+// → exclude/include).
+export type ModVerb = 'approve' | 'reject' | 'remove' | 'restore' | 'ban';
 
 export type RemoveReason = 'cheating' | 'breaks_rules' | 'doesnt_belong';
 

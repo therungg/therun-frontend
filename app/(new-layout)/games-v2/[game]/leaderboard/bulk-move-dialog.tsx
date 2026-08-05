@@ -1,59 +1,60 @@
 'use client';
 
 import { useEffect, useMemo, useState, useTransition } from 'react';
-import {
-    buildSubcategoryKey,
-    parseSubcategoryKey,
-} from '~src/lib/variables/keys';
+import { buildSubcategoryKey } from '~src/lib/variables/keys';
 import type {
     ResolvedCategory,
     VariableRow,
-} from '../../../../../../types/leaderboards.types';
-import type { LeaderboardRosterRow } from '../../../../../../types/moderation.types';
-import { BoardDialog } from '../../shared/board-dialog';
-import { moveRunAction } from '../moderation/shared/actions/board-override.action';
-import { fireUndoToast } from '../moderation/shared/undo-toast';
-import styles from './board-curation.module.scss';
+} from '../../../../../types/leaderboards.types';
+import type { AffectedLeaderboard } from '../../../../../types/moderation.types';
+import styles from '../manage/boards/board-curation.module.scss';
 import {
     defaultCanonicalOf,
     SubcategoryBands,
     subcategoryVariablesFor,
-} from './subcategory-bands';
+} from '../manage/boards/subcategory-bands';
+import { moveRunAction } from '../manage/moderation/shared/actions/board-override.action';
+import { BoardDialog } from '../shared/board-dialog';
 
-export interface MoveDialogProps {
+const MIN_REASON = 10;
+
+export interface BulkMoveTarget {
+    runId: number;
+    runnerName: string;
+    /** This run's own current subcategory key (may differ from the board's active filter). */
+    subcategoryKey: string;
+}
+
+export interface BulkMoveDialogProps {
     open: boolean;
     onClose: () => void;
-    row: LeaderboardRosterRow;
-    /** The row's current placement. */
+    runs: BulkMoveTarget[];
+    /** The board's current category — the runs' shared source category. */
     category: ResolvedCategory;
-    /** Move-to target choices — the board's featured categories (self
-     * included, so a mod can change only the subcategory). */
     categories: ResolvedCategory[];
     variables: VariableRow[];
-    /** The row's current subcategory key. */
-    subcategoryKey: string;
     gameSlug: string;
     onMutated: () => void;
 }
 
 /**
- * Move a run to another category/subcategory via a board override —
- * extracted from the console's `RowActions` so the public board's row menu
- * mounts the same implementation. Owns its pending state and blocks its own
- * close while the move is in flight, same contract as AdjustDialog and
- * RunnerDialog.
+ * Bulk version of MoveDialog — one target category/subcategory picked once,
+ * applied to every selected run via a sequence of `moveRunAction` calls
+ * (the backend's board-override endpoint is per-run; there is no batch
+ * variant). Each selected run keeps its own *current* subcategory as the
+ * move source, since a combined/filtered view can hold runs from more than
+ * one subcategory even though they share a category.
  */
-export function MoveDialog({
+export function BulkMoveDialog({
     open,
     onClose,
-    row,
+    runs,
     category,
     categories,
     variables,
-    subcategoryKey,
     gameSlug,
     onMutated,
-}: MoveDialogProps) {
+}: BulkMoveDialogProps) {
     const [targetCategoryId, setTargetCategoryId] = useState<number | ''>('');
     const [selectedValues, setSelectedValues] = useState<
         Record<string, string>
@@ -62,23 +63,13 @@ export function MoveDialog({
     const [error, setError] = useState<string | null>(null);
     const [isMoving, startMove] = useTransition();
 
-    const MIN_REASON = 10;
-    const reasonOk = reason.trim().length >= MIN_REASON;
-
-    // Seed from the row's *current* placement (not the target category's
-    // defaults) each time the dialog opens, so Apply starts disabled —
-    // nothing has changed yet.
     useEffect(() => {
         if (!open) return;
         setTargetCategoryId(category.id);
-        const initial: Record<string, string> = {};
-        for (const part of parseSubcategoryKey(subcategoryKey)) {
-            initial[part.name] = part.value;
-        }
-        setSelectedValues(initial);
+        setSelectedValues({});
         setReason('');
         setError(null);
-    }, [open, category.id, subcategoryKey]);
+    }, [open, category.id]);
 
     const close = () => {
         if (isMoving) return;
@@ -105,67 +96,65 @@ export function MoveDialog({
         );
     }, [targetSubcatVars, selectedValues]);
 
-    // The backend rejects a move to the run's current placement — prevent
-    // it client-side too rather than round-tripping for the error.
-    const isNoOpMove =
-        targetCategory != null &&
-        targetCategory.id === category.id &&
-        targetKey === subcategoryKey;
+    const reasonOk = reason.trim().length >= MIN_REASON;
+
+    // A run whose current placement already IS the target is a no-op for
+    // that run specifically — skipped rather than blocking the whole batch.
+    const movable = runs.filter(
+        (r) =>
+            !(
+                targetCategory?.id === category.id &&
+                targetKey === r.subcategoryKey
+            ),
+    );
+
+    if (!open) return null;
 
     const confirmMove = () => {
-        if (targetCategory == null || isNoOpMove || !reasonOk) return;
-        const source = { categoryId: category.id, subcategoryKey };
+        if (targetCategory == null || movable.length === 0 || !reasonOk) return;
+        const finalReason = reason.trim();
         const target = {
             categoryId: targetCategory.id,
             subcategoryKey: targetKey,
         };
-        const finalReason = reason.trim();
         startMove(async () => {
-            // Source loses the run, target gains it — both leaderboard reads
-            // need their cache invalidated.
-            const res = await moveRunAction(
-                gameSlug,
-                row.runId,
-                target,
-                [source, target],
-                finalReason,
-            );
-            if ('error' in res) {
-                setError(res.error);
+            const errors: string[] = [];
+            for (const run of movable) {
+                const source = {
+                    categoryId: category.id,
+                    subcategoryKey: run.subcategoryKey,
+                };
+                const affected: AffectedLeaderboard[] = [source, target];
+                const res = await moveRunAction(
+                    gameSlug,
+                    run.runId,
+                    target,
+                    affected,
+                    finalReason,
+                );
+                if ('error' in res)
+                    errors.push(`${run.runnerName}: ${res.error}`);
+            }
+            if (errors.length > 0) {
+                setError(errors.join('; '));
                 return;
             }
             onClose();
-            // The row leaves this board immediately — no slip needed (unlike
-            // Remove, a moved row has nowhere on *this* board to land a
-            // next-run candidate). The undo toast is a portal, independent
-            // of this row's lifecycle, so it keeps working even after
-            // `onMutated`'s reload unmounts this component.
             onMutated();
-            fireUndoToast(
-                `Moved ${row.runnerName}.`,
-                // Undo restores the run to `source` — the same pair, just
-                // reversed, since this closure already knows both sides.
-                // Clearing an override takes no reason (see setBoardOverride).
-                () =>
-                    moveRunAction(gameSlug, row.runId, null, [target, source]),
-                onMutated,
-            );
         });
     };
-
-    if (!open) return null;
 
     return (
         <BoardDialog
             open
             onClose={close}
-            labelledBy="move-sheet-title"
+            labelledBy="bulk-move-title"
             size="sm"
             closeOnBackdropClick={!isMoving}
         >
             <div className={styles.dialogHeader}>
-                <h5 id="move-sheet-title" className={styles.dialogTitle}>
-                    Move {row.runnerName}
+                <h5 id="bulk-move-title" className={styles.dialogTitle}>
+                    Move {runs.length} run{runs.length === 1 ? '' : 's'}
                 </h5>
                 <button
                     type="button"
@@ -176,11 +165,14 @@ export function MoveDialog({
                 />
             </div>
             <div className={styles.dialogBody}>
-                <label htmlFor="move-category" className={styles.fieldLabel}>
+                <label
+                    htmlFor="bulk-move-category"
+                    className={styles.fieldLabel}
+                >
                     Category
                 </label>
                 <select
-                    id="move-category"
+                    id="bulk-move-category"
                     className="form-select form-select-sm mb-2"
                     value={targetCategoryId}
                     onChange={(e) => {
@@ -204,18 +196,22 @@ export function MoveDialog({
                             [name]: canonical,
                         }))
                     }
-                    idPrefix={`move-${row.runId}`}
+                    idPrefix="bulk-move"
                 />
-                {isNoOpMove && (
-                    <p className={styles.moveNote}>Already placed here.</p>
+                {movable.length < runs.length && (
+                    <p className={styles.moveNote}>
+                        {runs.length - movable.length} run
+                        {runs.length - movable.length === 1 ? '' : 's'} already
+                        placed here — only {movable.length} will move.
+                    </p>
                 )}
-                <label htmlFor="move-reason" className={styles.fieldLabel}>
+                <label htmlFor="bulk-move-reason" className={styles.fieldLabel}>
                     Reason — required, min {MIN_REASON} characters
                 </label>
                 <textarea
-                    id="move-reason"
+                    id="bulk-move-reason"
                     className={styles.dialogTextarea}
-                    rows={2}
+                    rows={3}
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
                     disabled={isMoving}
@@ -247,11 +243,13 @@ export function MoveDialog({
                     disabled={
                         isMoving ||
                         targetCategory == null ||
-                        isNoOpMove ||
+                        movable.length === 0 ||
                         !reasonOk
                     }
                 >
-                    {isMoving ? 'Moving…' : 'Apply'}
+                    {isMoving
+                        ? 'Moving…'
+                        : `Move ${movable.length} run${movable.length === 1 ? '' : 's'}`}
                 </button>
             </div>
         </BoardDialog>

@@ -11,5 +11,8 @@ export function describeEvent(e: HistoryEvent): string {
     if (e.type === 'exclusion') return 'Run excluded';
     if (e.type === 'report') return 'Run reported';
     if (e.type === 'appeal') return 'Appeal opened';
+    if (e.type === 'edit') return 'Run edited';
+    if (e.type === 'move') return 'Run moved to another board';
+    if (e.type === 'mark') return 'Marked for later';
     return e.action || 'Event';
 }

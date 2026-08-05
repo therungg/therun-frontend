@@ -61,16 +61,18 @@ const MIN_REASON = 10;
 const PREVIEW_GATES_CONFIRM: Record<ModVerb, boolean> = {
     approve: false,
     restore: false,
+    reject: true,
     remove: true,
     ban: true,
 };
 
 // approve/restore are fast triage — a note is optional and audit-logged, not
-// gated. remove/ban (and bulk variants of both, which reuse these same verbs)
+// gated. reject/remove/ban (and bulk variants, which reuse these same verbs)
 // stay gated at MIN_REASON since they're consequential for the runner.
 const REASON_REQUIRED: Record<ModVerb, boolean> = {
     approve: false,
     restore: false,
+    reject: true,
     remove: true,
     ban: true,
 };
@@ -89,7 +91,8 @@ type PreviewState =
     | { kind: 'exclude'; data: PreviewExcludeResult };
 
 const VERB_TITLE: Record<ModVerb, string> = {
-    approve: 'Approve',
+    approve: 'Verify',
+    reject: 'Reject',
     remove: 'Remove',
     restore: 'Restore',
     ban: 'Ban runner',
@@ -134,14 +137,19 @@ export function RunActionDialog({
     // request, or null when the route is an exclude instead. `restore` previews
     // as 'unreject' (shows which runs come back); its CONFIRM goes through
     // restoreRunsAction (include + unreject) instead — see handleConfirm.
+    // `reject` is the bulk-bar's direct verdict verb — always the 'reject'
+    // action, no notify branching (that nuance stays on `remove`).
     const previewVerdictAction: VerdictAction | null =
         verb === 'approve'
             ? 'verify'
-            : verb === 'restore'
-              ? 'unreject'
-              : verb === 'remove' && resolveRemoveMechanism(notify) === 'reject'
-                ? 'reject'
-                : null;
+            : verb === 'reject'
+              ? 'reject'
+              : verb === 'restore'
+                ? 'unreject'
+                : verb === 'remove' &&
+                    resolveRemoveMechanism(notify) === 'reject'
+                  ? 'reject'
+                  : null;
 
     // For CONFIRM, restore is NOT a plain verdict apply — exclude it here.
     const confirmVerdictAction: VerdictAction | null =

@@ -26,6 +26,8 @@ export async function moveRunAction(
     runId: number,
     target: { categoryId: number; subcategoryKey: string } | null,
     affected: AffectedLeaderboard[],
+    /** Required by the backend when `target` is set — min 10 characters. */
+    reason?: string,
 ): Promise<{ ok: true } | { error: string }> {
     const session = await getSession();
     if (!session?.username || !session.id) return { error: 'Not signed in.' };
@@ -37,7 +39,7 @@ export async function moveRunAction(
     }
 
     try {
-        await setBoardOverride(session.id, game.id, runId, target);
+        await setBoardOverride(session.id, game.id, runId, target, reason);
         await revalidateAffectedBoards(game.id, game.name, affected);
         return { ok: true };
     } catch (e) {
