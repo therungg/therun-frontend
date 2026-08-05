@@ -248,3 +248,43 @@ across a selection. A batch policy route would be the fix.
 - Bulk apply **previews the diff before writing** (recommended, unchallenged).
 - Rules open as an **inline expanded row** (recommended, unchallenged).
 - Reordering **leaves step 4**.
+
+
+## Update, 2026-08-05 — the category detail screen is gone
+
+Joey: *everything* must be settable from the all-categories view, with no
+category detail. `CategoryEditor` is no longer mounted by the wizard at all;
+`?cat=<id>` deep links now open that category's row expanded.
+
+The rule that decides where a setting lives:
+
+- **A column** when it is scannable across the whole board — one glance tells
+  you which categories deviate. Timing, minimum, rules state, ranking,
+  milliseconds, leaderboard count.
+- **A pane** on the expanded row when it is not — a wall of rules text, an
+  image, a pair of switches nobody compares across rows, a list of
+  combinations. Panes are tabs (`row-panel.tsx`): Rules · Leaderboards · Time
+  columns · Emblem.
+- **Never a route.** Losing the list is what made the old step 4 unusable.
+
+What moved in:
+
+| Was | Now |
+|---|---|
+| `TimingSettingsSection` hide flags | Time columns pane, one field per write (the forceRealTime guard must not see untouched fields) |
+| `CategorySettingsSection` emblem | Emblem pane |
+| `CombinationsSection` | Leaderboards pane — which combinations exist, run counts, open/closed |
+| `VariablesSection` per-option detail | Option editor in zone 2: rename, aliases, order, remove-everywhere; plus a per-category default row |
+| `RulesSection` | already the inline rules pane |
+
+Aliases became board-level (`VariableGroup.buckets[].aliases`) and fan out on
+write. A category whose spellings had drifted converges on the next edit —
+deliberately, since that is how two spellings of one option stop existing.
+
+**Not carried over, on purpose or pending a decision:**
+
+- `CopyFromControl` ("copy this category's config from another") — the bulk bar
+  covers the same job by naming values explicitly. It does not copy variables.
+- The Standards below-minimum sample list. The minimum itself is a column; the
+  diagnostic list of runs that would be cut has no home in setup any more.
+- `CategoryEditor` is untouched in its console context.
