@@ -95,7 +95,7 @@
 .palette {
     margin-bottom: dt.$spacing-2xl;
     overflow: hidden;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.85);
     border-radius: dt.$radius-lg;
 
     &:last-of-type {
@@ -221,8 +221,14 @@
     }
 }
 
+// The grid's first column sits flush with the group name above it. It used to
+// carry the table's own cell padding on top of the block's, which put the
+// section heading, the group name and the category list on three different
+// left edges — the single biggest source of "messy" on a screen that is
+// otherwise all rectangles.
 .corner {
     text-align: left !important;
+    padding-left: 0 !important;
 }
 
 // Same weight and colour as the matrix's name cell: it is the same list of
@@ -231,6 +237,7 @@
     font-weight: 600 !important;
     color: var(--bs-emphasis-color) !important;
     min-width: 9rem;
+    padding-left: 0 !important;
 }
 
 // ---- Where unmatched runs land ------------------------------
@@ -271,12 +278,21 @@
 // of prose under the grid to say which was which — and a grid that has to be
 // annotated to be read is a grid that does not read. Nobody has ever needed a
 // legend for a checkbox.
+// Deliberately NOT the brand accent. On a healthy board every box is ticked,
+// so a saturated fill made two dozen cells carrying no information the loudest
+// thing on the screen — the same mistake the amber "NONE" chips made one panel
+// up. Muted, the eye lands on the empty one, which is the cell that means
+// something.
 .cell {
     width: 16px;
     height: 16px;
     margin: dt.$spacing-xs 0;
-    accent-color: var(--bs-primary);
+    accent-color: var(--bs-secondary-color);
     cursor: pointer;
+
+    &:hover:not(:disabled) {
+        accent-color: var(--bs-primary);
+    }
 
     &:focus-visible {
         outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
@@ -451,6 +467,20 @@
     margin: 0;
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
+}
+
+// The shared default, as a sentence with the control inside it. Replaces a
+// column of eight identical dropdowns and the footnote that explained them.
+.groupSetting {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: dt.$spacing-md dt.$spacing-lg;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.25);
 }
 
 .defaultSelect {
