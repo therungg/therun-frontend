@@ -5,6 +5,7 @@ import {
     driftSides,
     groupVariables,
     partitionGroups,
+    rebuildValues,
     resolveToggles,
     subBoardCount,
 } from '../variable-view';
@@ -296,5 +297,85 @@ describe('categoriesToConvert', () => {
         // version and trigger a rebuild for no change.
         expect(categoriesToConvert(group, 'subcategory')).toEqual([2]);
         expect(categoriesToConvert(group, 'filter')).toEqual([1]);
+    });
+});
+
+describe('rebuildValues', () => {
+    function twoCategories() {
+        return groupVariables([
+            makeVariable({
+                id: 1,
+                categoryId: 1,
+                values: [['N64', 'n64'], ['Emulator']],
+                defaultValueIndex: 0,
+            }),
+            makeVariable({
+                id: 2,
+                categoryId: 2,
+                values: [['N64']],
+                defaultValueIndex: 0,
+            }),
+        ]);
+    }
+
+    it('collects aliases board-level, canonical excluded', () => {
+        const [group] = twoCategories();
+        expect(group.buckets[0]).toEqual({
+            key: 'n64',
+            label: 'N64',
+            aliases: ['n64'],
+        });
+    });
+
+    it('fans a rename out to every category carrying the option', () => {
+        const [group] = twoCategories();
+        const next = group.buckets.map((b) =>
+            b.key === 'n64' ? { ...b, label: 'Nintendo 64' } : b,
+        );
+        const out = rebuildValues(group, next);
+        expect(out.map((r) => r.categoryId).sort()).toEqual([1, 2]);
+        expect(out.find((r) => r.categoryId === 2)?.values).toEqual([
+            ['Nintendo 64', 'n64'],
+        ]);
+    });
+
+    it('leaves placement alone — a category never gains an option it lacked', () => {
+        const [group] = twoCategories();
+        const next = group.buckets.map((b) =>
+            b.key === 'emulator' ? { ...b, label: 'Emu' } : b,
+        );
+        const out = rebuildValues(group, next);
+        // Category 2 never had Emulator and still does not.
+        expect(out.find((r) => r.categoryId === 2)?.values).toEqual([
+            ['N64', 'n64'],
+        ]);
+    });
+
+    it('converges drifted aliases onto the board-level set', () => {
+        // Category 2 stored a bare ['N64'] while category 1 also accepts
+        // 'n64'. Any edit pulls it onto the shared set — that is how two
+        // spellings of one option stop existing.
+        const [group] = twoCategories();
+        const out = rebuildValues(group, group.buckets);
+        expect(out.map((r) => r.categoryId)).toEqual([2]);
+        expect(out[0].values).toEqual([['N64', 'n64']]);
+    });
+
+    it('keeps each category pointing at its own default after a reorder', () => {
+        const [group] = twoCategories();
+        const reversed = [...group.buckets].reverse();
+        const out = rebuildValues(group, reversed);
+        // Category 1 defaulted to N64, now in position 1 rather than 0.
+        expect(out.find((r) => r.categoryId === 1)?.defaultIndex).toBe(1);
+    });
+
+    it('empties a category left with no options, rather than writing an illegal one', () => {
+        const [group] = twoCategories();
+        const out = rebuildValues(
+            group,
+            group.buckets.filter((b) => b.key !== 'n64'),
+        );
+        expect(out.find((r) => r.categoryId === 2)?.values).toEqual([]);
+        expect(out.find((r) => r.categoryId === 2)?.defaultIndex).toBeNull();
     });
 });

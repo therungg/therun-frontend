@@ -282,6 +282,110 @@
     @include board.board-btn-primary;
 }
 
+// ---- Editing an option --------------------------------------
+// Click the option's row header to edit the option. Same rule as the category
+// matrix one zone up: the thing is its own affordance, and editing it never
+// costs you the grid.
+
+.optionButton {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+
+    &:hover {
+        color: var(--bs-emphasis-color);
+        text-decoration: underline dotted;
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 2px;
+    }
+}
+
+// How many other spellings resolve to this option — the only hint that a
+// bucket is more than its name.
+.aliasCount {
+    @include board.board-pill;
+    font-size: dt.$font-size-2xs;
+}
+
+.optionEditor {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-md dt.$spacing-lg;
+    margin: dt.$spacing-xs 0;
+    border-left: 3px solid var(--bs-primary);
+    background: rgba(var(--bs-secondary-bg-rgb), 0.4);
+    border-radius: dt.$radius-md;
+    white-space: normal;
+}
+
+.optionField {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    max-width: 28rem;
+}
+
+.optionActions {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    flex-wrap: wrap;
+}
+
+.optionRemove {
+    @include board.board-chip;
+    border-color: rgba(var(--bs-danger-rgb), 0.5);
+    color: var(--bs-danger);
+}
+
+.optionNote {
+    margin: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+// ---- Default option -----------------------------------------
+
+.defaultRow {
+    th,
+    td {
+        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+        padding-top: dt.$spacing-sm;
+    }
+
+    th {
+        font-size: dt.$font-size-2xs;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--bs-tertiary-color);
+    }
+}
+
+.defaultSelect {
+    font: inherit;
+    font-size: dt.$font-size-2xs;
+    padding: 0.1rem dt.$spacing-xs;
+    border-radius: dt.$radius-sm;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    background: transparent;
+    color: var(--bs-body-color);
+}
+
+.defaultNone {
+    color: var(--bs-tertiary-color);
+}
+
 // ---- Adding one ---------------------------------------------
 // No role picker: the section already answered that question, so the form only
 // collects a name and the options.

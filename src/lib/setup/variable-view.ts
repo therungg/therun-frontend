@@ -36,8 +36,15 @@ export interface VariableGroup {
     nameNormalized: string;
     /** Display name; the most common spelling across categories. */
     name: string;
-    /** Union of every bucket seen on any category, in first-seen order. */
-    buckets: { key: string; label: string }[];
+    /**
+     * Union of every bucket seen on any category, in first-seen order.
+     *
+     * `aliases` is the union of the other accepted spellings across
+     * categories, canonical excluded. Aliases are part of a bucket's identity
+     * rather than its placement — "n64" means the same thing on every
+     * category — so they are held board-level and fan back out on write.
+     */
+    buckets: { key: string; label: string; aliases: string[] }[];
     /** Per-category state, keyed by categoryId. */
     byCategory: Map<number, VariableCategoryState>;
     /** The role most categories use — what "apply this shape" would stamp. */
@@ -81,15 +88,20 @@ export function groupVariables(rows: VariableRow[]): VariableGroup[] {
         const roles = roleCounts.get(row.nameNormalized) as Map<string, number>;
         roles.set(row.role, (roles.get(row.role) ?? 0) + 1);
 
-        const seen = new Set(group.buckets.map((b) => b.key));
+        const byKey = new Map(group.buckets.map((b) => [b.key, b]));
         const buckets = new Set<string>();
         for (const bucket of row.values) {
             const key = bucketKey(bucket);
             if (!key) continue;
             buckets.add(key);
-            if (!seen.has(key)) {
-                seen.add(key);
-                group.buckets.push({ key, label: bucketLabel(bucket) });
+            let entry = byKey.get(key);
+            if (!entry) {
+                entry = { key, label: bucketLabel(bucket), aliases: [] };
+                byKey.set(key, entry);
+                group.buckets.push(entry);
+            }
+            for (const alias of bucket.slice(1)) {
+                if (!entry.aliases.includes(alias)) entry.aliases.push(alias);
             }
         }
 
@@ -201,6 +213,78 @@ export function subBoardCount(categoryId: number, rows: VariableRow[]): number {
     );
     if (subs.length === 0) return 1;
     return subs.reduce((total, r) => total * Math.max(r.values.length, 1), 1);
+}
+
+export interface BoardBucket {
+    key: string;
+    label: string;
+    aliases: string[];
+}
+
+/**
+ * Recomputes every category's `values` from a board-level option list.
+ *
+ * This is the write path for the edits that are about what an option *is*
+ * rather than where it applies — renaming it, changing which spellings it
+ * accepts, reordering the list, removing it from the board entirely. Those are
+ * identity, and identity is shared: a moderator who renames "VC" to "Virtual
+ * Console" means it everywhere, and letting the name drift per category is how
+ * a board ends up with two options that are the same option.
+ *
+ * Placement is NOT touched. A category keeps exactly the options it already
+ * carried, minus any dropped from the board list — that stays the grid's job.
+ *
+ * Only categories whose stored values actually change come back, so a rename
+ * of one option does not republish (and rebuild) every category on the board.
+ * A category whose aliases have drifted from the board-level union does count
+ * as changed and converges on the next edit — deliberately: that is how two
+ * spellings of the same option stop existing.
+ * A category left with nothing yields `values: []`, which the caller turns
+ * into a removal — an empty variable is not a legal shape.
+ */
+export function rebuildValues(
+    group: VariableGroup,
+    boardBuckets: BoardBucket[],
+): { categoryId: number; values: string[][]; defaultIndex: number | null }[] {
+    const out: {
+        categoryId: number;
+        values: string[][];
+        defaultIndex: number | null;
+    }[] = [];
+
+    for (const state of group.byCategory.values()) {
+        const kept = boardBuckets.filter((b) => state.buckets.has(b.key));
+        const values = kept.map((b) => [b.label, ...b.aliases]);
+
+        if (sameValues(state.row.values, values)) continue;
+
+        const at = kept.findIndex((b) => b.key === state.defaultBucket);
+        out.push({
+            categoryId: state.categoryId,
+            values,
+            // Only a subcategory needs a default; an emptied variable has
+            // nowhere to point one at.
+            defaultIndex:
+                state.role === 'subcategory' && values.length > 0
+                    ? at >= 0
+                        ? at
+                        : 0
+                    : null,
+        });
+    }
+
+    return out;
+}
+
+function sameValues(a: string[][], b: string[][]): boolean {
+    if (a.length !== b.length) return false;
+    return a.every((bucket, i) => {
+        const other = b[i];
+        return (
+            bucket.length === other.length &&
+            bucket.every((v, j) => v === other[j])
+        );
+    });
 }
 
 /** One staged cell toggle, before it is applied. */
