@@ -230,79 +230,92 @@ function ApplyDialog({
                 aria-label={staged.label}
                 onClick={(e) => e.stopPropagation()}
             >
-                <p className={styles.dialogTitle}>{staged.label}</p>
+                <div className={styles.dialogHeader}>
+                    <p className={styles.dialogTitle}>{staged.label}</p>
+                </div>
 
-                {changing.length === 0 ? (
-                    <p className={styles.dialogNote}>
-                        Every selected category already has this value. Nothing
-                        to apply.
-                    </p>
-                ) : (
-                    <>
-                        <ul className={styles.dialogList}>
-                            {changing.map(({ category }) => {
-                                const isDeviation = deviatingIds.has(
-                                    category.id,
-                                );
-                                const skipped =
-                                    isDeviation && !includeDeviating;
-                                return (
-                                    <li key={category.id}>
-                                        <span
-                                            className={
-                                                skipped
-                                                    ? styles.dialogFrom
-                                                    : undefined
-                                            }
+                <div className={styles.dialogBody}>
+                    {changing.length === 0 ? (
+                        <p className={styles.dialogNote}>
+                            Every selected category already has this value.
+                            Nothing to apply.
+                        </p>
+                    ) : (
+                        <>
+                            <ul className={styles.dialogList}>
+                                {changing.map(({ category }) => {
+                                    const isDeviation = deviatingIds.has(
+                                        category.id,
+                                    );
+                                    const skipped =
+                                        isDeviation && !includeDeviating;
+                                    return (
+                                        <li
+                                            key={category.id}
+                                            className={styles.dialogRow}
                                         >
-                                            {category.display}
-                                        </span>
-                                        {isDeviation && (
-                                            <span className={styles.dialogWarn}>
-                                                {' '}
-                                                — set deliberately
-                                                {skipped ? ', skipped' : ''}
+                                            <span
+                                                className={
+                                                    skipped
+                                                        ? styles.dialogSkipped
+                                                        : undefined
+                                                }
+                                            >
+                                                {category.display}
                                             </span>
-                                        )}
-                                    </li>
-                                );
-                            })}
-                        </ul>
+                                            {isDeviation && (
+                                                <span
+                                                    className={
+                                                        styles.dialogWarn
+                                                    }
+                                                >
+                                                    {skipped
+                                                        ? 'skipped'
+                                                        : 'set deliberately'}
+                                                </span>
+                                            )}
+                                        </li>
+                                    );
+                                })}
+                            </ul>
 
-                        {unchanged.length > 0 && (
-                            <p className={styles.dialogNote}>
-                                {unchanged.length}{' '}
-                                {unchanged.length === 1
-                                    ? 'category already has'
-                                    : 'categories already have'}{' '}
-                                this value.
-                            </p>
-                        )}
+                            {unchanged.length > 0 && (
+                                <p className={styles.dialogNote}>
+                                    {unchanged.length}{' '}
+                                    {unchanged.length === 1
+                                        ? 'category already has'
+                                        : 'categories already have'}{' '}
+                                    this value.
+                                </p>
+                            )}
 
-                        {overwritingDeviations.length > 0 && (
-                            <label className={styles.dialogCheck}>
-                                <input
-                                    type="checkbox"
-                                    checked={includeDeviating}
-                                    onChange={(e) =>
-                                        setIncludeDeviating(e.target.checked)
-                                    }
-                                />
-                                <span>
-                                    Also overwrite the{' '}
-                                    {overwritingDeviations.length}{' '}
-                                    {overwritingDeviations.length === 1
-                                        ? 'category'
-                                        : 'categories'}{' '}
-                                    that differ from the board default on
-                                    purpose. This cannot be undone.
-                                </span>
-                            </label>
-                        )}
-                    </>
-                )}
+                            {overwritingDeviations.length > 0 && (
+                                <label className={styles.dialogCheck}>
+                                    <input
+                                        type="checkbox"
+                                        checked={includeDeviating}
+                                        onChange={(e) =>
+                                            setIncludeDeviating(
+                                                e.target.checked,
+                                            )
+                                        }
+                                    />
+                                    <span>
+                                        Also overwrite the{' '}
+                                        {overwritingDeviations.length}{' '}
+                                        {overwritingDeviations.length === 1
+                                            ? 'category'
+                                            : 'categories'}{' '}
+                                        that differ from the board default on
+                                        purpose. This cannot be undone.
+                                    </span>
+                                </label>
+                            )}
+                        </>
+                    )}
+                </div>
 
-                <div className={styles.dialogActions}>
+                <div className={styles.dialogFooter}>
                     <button
                         type="button"
                         className={styles.bulkControl}
@@ -312,7 +325,7 @@ function ApplyDialog({
                     </button>
                     <button
                         type="button"
-                        className={styles.bulkControl}
+                        className={styles.dialogConfirm}
                         disabled={willWrite === 0}
                         onClick={() => onConfirm(includeDeviating)}
                     >

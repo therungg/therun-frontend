@@ -118,7 +118,7 @@ export function StepCategorySetup({ data, onAdvance }: StepProps) {
                             href={`${base}?step=details`}
                             className={matrixStyles.defaultsChange}
                         >
-                            Change
+                            Change in step 1 →
                         </Link>
                     </div>
 

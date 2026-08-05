@@ -125,7 +125,13 @@ export function CategoryMatrix({ data, defaults, onOpenEditor }: Props) {
     const columnCount = 9;
 
     return (
-        <>
+        <div className={styles.panel}>
+            <div className={styles.head}>
+                <span className={styles.headTitle}>Featured categories</span>
+                <span className={styles.headCount}>
+                    {mains.length} on the board
+                </span>
+            </div>
             <div className={styles.scroller}>
                 <table className={styles.grid}>
                     <thead>
@@ -284,7 +290,10 @@ export function CategoryMatrix({ data, defaults, onOpenEditor }: Props) {
                                                         className={`${styles.rulesChip} ${
                                                             rules === 'none'
                                                                 ? styles.rulesNone
-                                                                : ''
+                                                                : rules ===
+                                                                    'custom'
+                                                                  ? styles.rulesCustom
+                                                                  : styles.rulesDefault
                                                         }`}
                                                         aria-expanded={isOpen}
                                                         onClick={() =>
@@ -448,7 +457,7 @@ export function CategoryMatrix({ data, defaults, onOpenEditor }: Props) {
                     onApply={applyToCategories}
                 />
             )}
-        </>
+        </div>
     );
 }
 

@@ -205,22 +205,24 @@ export function VariablesGrid({ data }: { data: WizardData }) {
 
     return (
         <section className={styles.zone}>
-            <h3 className={styles.zoneHead}>
-                Variables
+            <div className={styles.zoneHead}>
+                <span className={styles.zoneTitle}>Variables</span>
                 <span className={styles.zoneCount}>
                     {groups.length === 0
                         ? 'none on this board'
                         : `${groups.length} on this board`}
                 </span>
-            </h3>
+            </div>
 
             {groups.length === 0 ? (
-                <p className={styles.emptyNote}>
-                    No variables yet. Variables split a category into sub-boards
-                    (Platform, Region) or add a filter. Add one from a
-                    category&rsquo;s full editor and it shows up here across the
-                    whole board.
-                </p>
+                <div className={styles.empty}>
+                    <p className={styles.emptyTitle}>No variables yet</p>
+                    <p className={styles.emptyNote}>
+                        Variables split a category into sub-boards (Platform,
+                        Region) or add a filter. Add one from a category&rsquo;s
+                        full editor and it shows up here across the whole board.
+                    </p>
+                </div>
             ) : (
                 groups.map((group) => (
                     <VariablePalette
@@ -288,11 +290,13 @@ function VariablePalette({
                 onClick={() => setOpen((v) => !v)}
             >
                 <span className={styles.paletteName}>{group.name}</span>
-                <span className={styles.paletteMeta}>
+                <span className={styles.paletteRole}>
                     {group.dominantRole === 'subcategory'
                         ? 'sub-boards'
-                        : 'filter'}{' '}
-                    · on {onCount} of {categories.length}
+                        : 'filter'}
+                </span>
+                <span className={styles.paletteMeta}>
+                    on {onCount} of {categories.length}
                 </span>
                 {group.roleDrift && (
                     <span className={styles.driftBadge}>
@@ -321,15 +325,22 @@ function VariablePalette({
                             <tbody>
                                 {group.buckets.map((bucket) => (
                                     <tr key={bucket.key}>
-                                        <th className={styles.bucketName}>
-                                            {bucket.label}
-                                        </th>
+                                        <th>{bucket.label}</th>
                                         {categories.map((c) => {
                                             const on = cellOn(c.id, bucket.key);
                                             const isDefault =
                                                 group.byCategory.get(c.id)
                                                     ?.defaultBucket ===
                                                 bucket.key;
+                                            // Staged, not yet written: drawn
+                                            // provisional so a grid mid-edit
+                                            // never looks already-applied.
+                                            const isPending =
+                                                on !==
+                                                (group.byCategory
+                                                    .get(c.id)
+                                                    ?.buckets.has(bucket.key) ??
+                                                    false);
                                             return (
                                                 <td key={c.id}>
                                                     <button
@@ -338,6 +349,10 @@ function VariablePalette({
                                                             on
                                                                 ? styles.cellOn
                                                                 : styles.cellOff
+                                                        } ${
+                                                            isPending
+                                                                ? styles.cellPending
+                                                                : ''
                                                         }`}
                                                         disabled={busy}
                                                         aria-pressed={on}
@@ -367,7 +382,7 @@ function VariablePalette({
                                     </tr>
                                 ))}
                                 <tr className={styles.roleRow}>
-                                    <th className={styles.bucketName}>role</th>
+                                    <th>role</th>
                                     {categories.map((c) => {
                                         const state = group.byCategory.get(
                                             c.id,
@@ -413,7 +428,7 @@ function VariablePalette({
 
                     {pendingCount > 0 && (
                         <div className={styles.pendingBar}>
-                            <span>
+                            <span className={styles.pendingLabel}>
                                 {pendingCount}{' '}
                                 {pendingCount === 1 ? 'category' : 'categories'}{' '}
                                 changed, not applied yet
@@ -429,7 +444,7 @@ function VariablePalette({
                             </button>
                             <button
                                 type="button"
-                                className={styles.pendingBtn}
+                                className={styles.pendingApply}
                                 disabled={busy}
                                 onClick={onApply}
                             >
@@ -475,23 +490,31 @@ function ConsequenceDialog({
                 aria-label={`Apply changes to ${name}`}
                 onClick={(e) => e.stopPropagation()}
             >
-                <p className={styles.dialogTitle}>{copy.headline}</p>
-                {copy.detail && (
-                    <p className={styles.dialogNote}>{copy.detail}</p>
-                )}
+                <div className={styles.dialogHeader}>
+                    <p className={styles.dialogTitle}>{copy.headline}</p>
+                </div>
 
-                {preview.categories.length > 0 && (
-                    <ul className={styles.dialogList}>
-                        {preview.categories.map((c) => (
-                            <li key={c.categoryId}>
-                                {c.display} — {c.moved}{' '}
-                                {c.moved === 1 ? 'run' : 'runs'} move
-                            </li>
-                        ))}
-                    </ul>
-                )}
+                <div className={styles.dialogBody}>
+                    {copy.detail && (
+                        <p className={styles.dialogNote}>{copy.detail}</p>
+                    )}
 
-                <div className={styles.dialogActions}>
+                    {preview.categories.length > 0 && (
+                        <ul className={styles.dialogList}>
+                            {preview.categories.map((c) => (
+                                <li key={c.categoryId}>
+                                    {c.display} —{' '}
+                                    <span className={styles.dialogMoved}>
+                                        {c.moved}
+                                    </span>{' '}
+                                    {c.moved === 1 ? 'run' : 'runs'} move
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+
+                <div className={styles.dialogFooter}>
                     <button
                         type="button"
                         className={styles.pendingBtn}
@@ -502,7 +525,7 @@ function ConsequenceDialog({
                     </button>
                     <button
                         type="button"
-                        className={styles.pendingBtn}
+                        className={styles.pendingApply}
                         disabled={busy}
                         onClick={onConfirm}
                     >

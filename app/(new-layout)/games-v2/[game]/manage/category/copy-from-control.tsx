@@ -331,7 +331,7 @@ export function CopyFromControl({
                     <div className={styles.actions}>
                         <button
                             type="button"
-                            className="btn btn-sm btn-primary"
+                            className={styles.confirm}
                             onClick={handleApply}
                             disabled={
                                 applying || !plan || plan.steps.length === 0
@@ -341,7 +341,7 @@ export function CopyFromControl({
                         </button>
                         <button
                             type="button"
-                            className="btn btn-sm btn-outline-secondary"
+                            className={styles.cancel}
                             onClick={close}
                             disabled={applying}
                         >
