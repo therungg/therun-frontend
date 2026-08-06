@@ -33,7 +33,7 @@ export function SetupChecklistCard({ gameSlug, completeness }: Props) {
                         </strong>
                     </div>
                     <Link
-                        href={`/games-v2/${gameSlug}/setup${
+                        href={`/games-v2/${encodeURIComponent(gameSlug)}/setup${
                             completeness.firstIncomplete
                                 ? `?step=${completeness.firstIncomplete}`
                                 : ''

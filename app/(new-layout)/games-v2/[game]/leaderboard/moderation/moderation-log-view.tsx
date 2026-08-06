@@ -295,7 +295,7 @@ export function LogRow({
                     <span className={styles.what}>
                         {entry.runId != null ? (
                             <Link
-                                href={`/games-v2/${gameSlug}/run/${entry.runId}`}
+                                href={`/games-v2/${encodeURIComponent(gameSlug)}/run/${entry.runId}`}
                             >
                                 {subject}
                             </Link>

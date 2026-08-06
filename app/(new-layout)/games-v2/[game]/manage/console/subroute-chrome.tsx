@@ -38,7 +38,7 @@ export function SubrouteChrome({
 }: Props) {
     const router = useRouter();
     const groups = useMemo(() => buildNav(flags), [flags]);
-    const base = `/games-v2/${game.name}/manage`;
+    const base = `/games-v2/${encodeURIComponent(game.name)}/manage`;
 
     const navigate = (id: NavItemId) => {
         if (id === 'roster') {

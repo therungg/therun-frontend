@@ -42,7 +42,9 @@ export function LeaderboardPbs({ rankings }: Props) {
                             key={`${row.gameId}-${row.categoryId}-${row.subcategoryKey}`}
                         >
                             <td>
-                                <Link href={`/games-v2/${row.gameSlug}`}>
+                                <Link
+                                    href={`/games-v2/${encodeURIComponent(row.gameSlug)}`}
+                                >
                                     {row.game}
                                 </Link>
                             </td>
@@ -61,7 +63,7 @@ export function LeaderboardPbs({ rankings }: Props) {
                             </td>
                             <td>
                                 <Link
-                                    href={`/games-v2/${row.gameSlug}/run/${row.runId}`}
+                                    href={`/games-v2/${encodeURIComponent(row.gameSlug)}/run/${row.runId}`}
                                 >
                                     <DurationToFormatted duration={primary} />
                                 </Link>

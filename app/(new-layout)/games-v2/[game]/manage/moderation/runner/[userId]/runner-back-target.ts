@@ -32,24 +32,24 @@ export function resolveRunnerBackTarget(
         const query =
             validCategoryId != null ? `?categoryId=${validCategoryId}` : '';
         return {
-            href: `/games-v2/${gameSlug}/manage/moderation/roster${query}`,
+            href: `/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/roster${query}`,
             label: 'Back to Browse runs',
         };
     }
     if (from === 'board') {
         return {
-            href: `/games-v2/${gameSlug}`,
+            href: `/games-v2/${encodeURIComponent(gameSlug)}`,
             label: 'Back to leaderboard',
         };
     }
     if (from === 'boards') {
         return {
-            href: `/games-v2/${gameSlug}/manage?pane=boards`,
+            href: `/games-v2/${encodeURIComponent(gameSlug)}/manage?pane=boards`,
             label: 'Back to Boards',
         };
     }
     return {
-        href: `/games-v2/${gameSlug}/manage`,
+        href: `/games-v2/${encodeURIComponent(gameSlug)}/manage`,
         label: 'Back to console',
     };
 }

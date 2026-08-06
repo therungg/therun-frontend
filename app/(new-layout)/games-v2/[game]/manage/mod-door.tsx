@@ -60,7 +60,7 @@ export function ModDoor({ game, claim }: Props) {
                             Sign in with Twitch to apply to moderate.
                         </p>
                         <TwitchLoginButton
-                            url={`/games-v2/${game.name}/manage`}
+                            url={`/games-v2/${encodeURIComponent(game.name)}/manage`}
                         />
                     </div>
                 )}

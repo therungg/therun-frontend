@@ -110,7 +110,7 @@ export default async function SubmitRunPage({
                         .
                     </p>
                     <TwitchLoginButton
-                        url={`/games-v2/${game.name}/submit${loginQs ? `?${loginQs}` : ''}`}
+                        url={`/games-v2/${encodeURIComponent(game.name)}/submit${loginQs ? `?${loginQs}` : ''}`}
                     />
                 </div>
             </div>

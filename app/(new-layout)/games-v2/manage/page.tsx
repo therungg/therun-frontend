@@ -147,7 +147,7 @@ export default async function GamesManageHubPage() {
                                     !
                                 </span>
                                 <Link
-                                    href={`/games-v2/${row.slug}/manage?pane=attention`}
+                                    href={`/games-v2/${encodeURIComponent(row.slug)}/manage?pane=attention`}
                                     className={styles.openLink}
                                 >
                                     Open console
@@ -195,7 +195,7 @@ export default async function GamesManageHubPage() {
                                 {badgeText}
                             </span>
                             <Link
-                                href={`/games-v2/${row.slug}/manage?pane=attention`}
+                                href={`/games-v2/${encodeURIComponent(row.slug)}/manage?pane=attention`}
                                 className={styles.openLink}
                             >
                                 Open console

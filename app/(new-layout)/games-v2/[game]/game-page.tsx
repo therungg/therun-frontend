@@ -81,7 +81,7 @@ export function GamePage({
                         No runs uploaded for this game yet.
                     </p>
                     <Link
-                        href={`/games-v2/${data.game.name}/submit`}
+                        href={`/games-v2/${encodeURIComponent(data.game.name)}/submit`}
                         className={`${styles.primaryAction} mt-3`}
                     >
                         Submit the first run
@@ -97,7 +97,7 @@ export function GamePage({
     const backToWall =
         data.categories.length > 1
             ? {
-                  href: `/games-v2/${data.game.name}`,
+                  href: `/games-v2/${encodeURIComponent(data.game.name)}`,
                   label: 'All categories',
               }
             : undefined;

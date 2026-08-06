@@ -57,7 +57,7 @@ export function BoardHealthCard({ gameSlug, health }: Props) {
                         )}
                         {item.pane ? (
                             <Link
-                                href={`/games-v2/${gameSlug}/manage?pane=${item.pane}`}
+                                href={`/games-v2/${encodeURIComponent(gameSlug)}/manage?pane=${item.pane}`}
                             >
                                 {item.label}
                             </Link>

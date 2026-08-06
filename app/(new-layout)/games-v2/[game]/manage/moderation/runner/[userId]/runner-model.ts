@@ -270,5 +270,5 @@ export function publicBoardHref(
     for (const { name, value } of parseSubcategoryKey(combo.subcategoryKey)) {
         params.set(name, value);
     }
-    return `/games-v2/${gameSlug}?${params.toString()}`;
+    return `/games-v2/${encodeURIComponent(gameSlug)}?${params.toString()}`;
 }

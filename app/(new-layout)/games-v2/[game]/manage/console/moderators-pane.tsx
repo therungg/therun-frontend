@@ -112,7 +112,9 @@ export function ModeratorsPane({
                 <div className={styles.noteInfo}>
                     {pendingApplications} pending application
                     {pendingApplications === 1 ? '' : 's'} —{' '}
-                    <Link href={`/games-v2/${gameSlug}/manage?pane=attention`}>
+                    <Link
+                        href={`/games-v2/${encodeURIComponent(gameSlug)}/manage?pane=attention`}
+                    >
                         review in Needs attention
                     </Link>
                 </div>

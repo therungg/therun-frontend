@@ -73,7 +73,7 @@ export function ReassignmentStatus<
                     <div className={styles.actions}>
                         {targetGameSlug && (
                             <Link
-                                href={`/games-v2/${targetGameSlug}`}
+                                href={`/games-v2/${encodeURIComponent(targetGameSlug)}`}
                                 className={styles.link}
                             >
                                 View target game ↗

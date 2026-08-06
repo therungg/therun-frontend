@@ -34,7 +34,7 @@ export function CategoryDetail({
     prev,
     next,
 }: Props) {
-    const base = `/games-v2/${game.name}/manage`;
+    const base = `/games-v2/${encodeURIComponent(game.name)}/manage`;
 
     return (
         <div className={styles.wrap}>

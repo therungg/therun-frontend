@@ -197,7 +197,7 @@ export function GameHero({
                     })}
                     {(canManage || canModerate) && (
                         <Link
-                            href={`/games-v2/${game.name}/manage`}
+                            href={`/games-v2/${encodeURIComponent(game.name)}/manage`}
                             className={styles.quietChip}
                         >
                             Manage

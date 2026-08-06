@@ -125,7 +125,7 @@ export function GameOverviewPage({
                             </p>
                             {(canManage || canModerate) && (
                                 <Link
-                                    href={`/games-v2/${data.game.name}/manage`}
+                                    href={`/games-v2/${encodeURIComponent(data.game.name)}/manage`}
                                     className={gamePageStyles.primaryAction}
                                 >
                                     Open the console

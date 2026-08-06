@@ -94,8 +94,8 @@ export function RosterView({
     initialCategoryId,
 }: Props) {
     const router = useRouter();
-    const baseHref = `/games-v2/${gameSlug}/manage/moderation`;
-    const consoleHref = `/games-v2/${gameSlug}/manage`;
+    const baseHref = `/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation`;
+    const consoleHref = `/games-v2/${encodeURIComponent(gameSlug)}/manage`;
 
     const [categoryId, setCategoryId] = useState<number | null>(
         initialCategoryId,

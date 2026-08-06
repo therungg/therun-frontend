@@ -117,7 +117,7 @@ export function BoardMasthead({
                         back={back}
                         standingsHref={
                             data.categories.length > 1
-                                ? `/games-v2/${data.game.name}/standings`
+                                ? `/games-v2/${encodeURIComponent(data.game.name)}/standings`
                                 : undefined
                         }
                     />

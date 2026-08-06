@@ -42,13 +42,15 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
         resolvedGame.redirectedToGameId != null &&
         resolvedGame.redirectedToSlug
     ) {
-        permanentRedirect(`/games-v2/${resolvedGame.redirectedToSlug}`);
+        permanentRedirect(
+            `/games-v2/${encodeURIComponent(resolvedGame.redirectedToSlug)}`,
+        );
     }
 
     const { categories, groups } = await resolveCategory(resolvedGame.id);
     const decision = decideGameRootView(categories, sp.category);
     if (decision.view === 'redirect') {
-        redirect(`/games-v2/${resolvedGame.name}`);
+        redirect(`/games-v2/${encodeURIComponent(resolvedGame.name)}`);
     }
 
     const ability = defineAbilityFor(session);

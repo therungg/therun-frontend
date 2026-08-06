@@ -42,7 +42,7 @@ export default async function GameStandingsPage({ params }: PageProps) {
         resolvedGame.redirectedToSlug
     ) {
         permanentRedirect(
-            `/games-v2/${resolvedGame.redirectedToSlug}/standings`,
+            `/games-v2/${encodeURIComponent(resolvedGame.redirectedToSlug)}/standings`,
         );
     }
 
@@ -51,7 +51,8 @@ export default async function GameStandingsPage({ params }: PageProps) {
     // Standings across a single category is just that category's board. Same
     // threshold decideGameRootView applies to the overview, so the tab band and
     // this route can't disagree about whether standings exist.
-    if (featured.length < 2) redirect(`/games-v2/${resolvedGame.name}`);
+    if (featured.length < 2)
+        redirect(`/games-v2/${encodeURIComponent(resolvedGame.name)}`);
 
     const ability = defineAbilityFor(session);
     const canManage = ability.can(

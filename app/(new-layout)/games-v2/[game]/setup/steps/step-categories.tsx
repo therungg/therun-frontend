@@ -131,7 +131,9 @@ export function StepCategories({ data, onAdvance }: StepProps) {
         return (
             <section>
                 <StepHeader step="categories" title="No categories yet" />
-                <Link href={`/games-v2/${data.game.name}/submit`}>
+                <Link
+                    href={`/games-v2/${encodeURIComponent(data.game.name)}/submit`}
+                >
                     Point runners at the submission form →
                 </Link>
                 <div>
