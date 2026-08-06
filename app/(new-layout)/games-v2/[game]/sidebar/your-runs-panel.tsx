@@ -58,7 +58,7 @@ export function YourRunsPanel({ rankings, gameSlug }: Props) {
                             </div>
                             <span className={styles.statValue}>
                                 <Link
-                                    href={`/games-v2/${gameSlug}/run/${r.runId}`}
+                                    href={`/games-v2/${encodeURIComponent(gameSlug)}/run/${r.runId}`}
                                 >
                                     <DurationToFormatted duration={primary} />
                                 </Link>

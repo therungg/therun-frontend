@@ -98,13 +98,17 @@ export function linkFor(n: NotificationRow): string | null {
 
     switch (n.type) {
         case 'board_claim_approved':
-            return gameSlug ? `/games-v2/${gameSlug}/setup` : null;
+            return gameSlug
+                ? `/games-v2/${encodeURIComponent(gameSlug)}/setup`
+                : null;
         case 'board_claim_denied':
-            return gameSlug ? `/games-v2/${gameSlug}` : null;
+            return gameSlug
+                ? `/games-v2/${encodeURIComponent(gameSlug)}`
+                : null;
         case 'verdict_applied': {
             const runId = num(p.runId);
             return gameSlug && runId !== null
-                ? `/games-v2/${gameSlug}/run/${runId}`
+                ? `/games-v2/${encodeURIComponent(gameSlug)}/run/${runId}`
                 : null;
         }
         case 'manual_time_verdict':
@@ -112,7 +116,7 @@ export function linkFor(n: NotificationRow): string | null {
         case 'manual_time_deleted': {
             const manualTimeId = num(p.manualTimeId);
             return gameSlug && manualTimeId !== null
-                ? `/games-v2/${gameSlug}/manual/${manualTimeId}`
+                ? `/games-v2/${encodeURIComponent(gameSlug)}/manual/${manualTimeId}`
                 : null;
         }
         default:

@@ -121,7 +121,7 @@ export function ConsoleShell({
         if (!redirect) return;
         if (redirect.kind === 'detail') {
             router.replace(
-                `/games-v2/${game.name}/manage/category/${redirect.categoryId}#${redirect.hash}`,
+                `/games-v2/${encodeURIComponent(game.name)}/manage/category/${redirect.categoryId}#${redirect.hash}`,
             );
         } else {
             router.replace(`?pane=${redirect.pane}`, { scroll: false });
@@ -211,7 +211,7 @@ export function ConsoleShell({
         // The wizard is a full-focus page with its own "Back to console"
         // link — it must not write `?pane=` or become activeItem here.
         if (id === 'setup') {
-            router.push(`/games-v2/${game.name}/setup`);
+            router.push(`/games-v2/${encodeURIComponent(game.name)}/setup`);
             return;
         }
         // Opening History from the sidebar is an overlay, not a navigation —
@@ -351,7 +351,7 @@ export function ConsoleShell({
                         // That is now its own route rather than a pane +
                         // `cat=`, so Back returns to the index cleanly.
                         router.push(
-                            `/games-v2/${game.name}/manage/category/${id}`,
+                            `/games-v2/${encodeURIComponent(game.name)}/manage/category/${id}`,
                         );
                     }}
                 />

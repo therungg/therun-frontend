@@ -22,7 +22,7 @@ interface Props {
  */
 export function ViewTabs({ gameSlug }: Props) {
     const pathname = usePathname();
-    const base = `/games-v2/${gameSlug}`;
+    const base = `/games-v2/${encodeURIComponent(gameSlug)}`;
     const onStandings = pathname === `${base}/standings`;
 
     return (

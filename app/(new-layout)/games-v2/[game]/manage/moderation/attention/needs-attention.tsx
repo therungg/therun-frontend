@@ -522,13 +522,13 @@ export function NeedsAttention({
                         </p>
                         <div className={styles.emptyLinks}>
                             <Link
-                                href={`/games-v2/${gameSlug}/manage?pane=history`}
+                                href={`/games-v2/${encodeURIComponent(gameSlug)}/manage?pane=history`}
                                 className={styles.emptyLink}
                             >
                                 Review history
                             </Link>
                             <Link
-                                href={`/games-v2/${gameSlug}/manage/moderation/roster`}
+                                href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/roster`}
                                 className={styles.emptyLink}
                             >
                                 Browse runs
@@ -894,7 +894,7 @@ function SingleItemCard({
                     {item.userId != null && (
                         <>
                             <Link
-                                href={`/games-v2/${gameSlug}/manage/moderation/runner/${item.userId}`}
+                                href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${item.userId}`}
                                 className={clsx(
                                     'btn btn-sm btn-outline-secondary',
                                     styles.pushEnd,
@@ -1053,7 +1053,7 @@ function RunnerGroupCard({
                 <div className={clsx(styles.actions, styles.pushEnd)}>
                     {userId != null && (
                         <Link
-                            href={`/games-v2/${gameSlug}/manage/moderation/runner/${userId}`}
+                            href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${userId}`}
                             className="btn btn-sm btn-outline-secondary"
                         >
                             View runner

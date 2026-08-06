@@ -61,12 +61,25 @@ function withQuery(path: string, sp: URLSearchParams): string {
     return qs ? `${path}?${qs}` : path;
 }
 
+/**
+ * A game slug as a single URL path segment. Slugs are raw backend names
+ * (`ResolvedGame.name`) and may contain `/`, `%`, `?`, `#` — e.g.
+ * "legostarwars:thecompletesaga(pc/console)" — so they must be
+ * percent-encoded exactly once, at the point they enter a path.
+ */
+export function gameSegment(gameSlug: string): string {
+    return encodeURIComponent(gameSlug);
+}
+
 /** Board URL for a game, optionally scoped to a category + subcategory. */
 export function buildBoardHref(
     gameSlug: string,
     ctx: BoardLinkContext = {},
 ): string {
-    return withQuery(`/games-v2/${gameSlug}`, buildBoardQuery(ctx));
+    return withQuery(
+        `/games-v2/${gameSegment(gameSlug)}`,
+        buildBoardQuery(ctx),
+    );
 }
 
 /**
@@ -81,7 +94,7 @@ export function buildCurationHref(
 ): string {
     const sp = buildBoardQuery(ctx);
     sp.set('pane', 'boards');
-    return withQuery(`/games-v2/${gameSlug}/manage`, sp);
+    return withQuery(`/games-v2/${gameSegment(gameSlug)}/manage`, sp);
 }
 
 /**
@@ -96,5 +109,5 @@ export function buildSubmitHref(
 ): string {
     const sp = buildBoardQuery(ctx);
     if (ctx.mode) sp.set('mode', ctx.mode);
-    return withQuery(`/games-v2/${gameSlug}/submit`, sp);
+    return withQuery(`/games-v2/${gameSegment(gameSlug)}/submit`, sp);
 }

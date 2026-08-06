@@ -401,7 +401,7 @@ export function RowActionsMenu({
                                     <Dropdown.Item
                                         as={Link}
                                         className={styles.item}
-                                        href={`/games-v2/${gameSlug}/manage/moderation/runner/${entry.userId}?from=board`}
+                                        href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${entry.userId}?from=board`}
                                     >
                                         View runner page
                                     </Dropdown.Item>

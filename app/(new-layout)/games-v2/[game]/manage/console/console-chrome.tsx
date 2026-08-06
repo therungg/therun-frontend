@@ -107,7 +107,7 @@ export function ConsoleChrome({
                         <div className={styles.eyebrow}>Admin</div>
                         <h1 className={styles.title}>
                             <Link
-                                href={`/games-v2/${game.name}/manage`}
+                                href={`/games-v2/${encodeURIComponent(game.name)}/manage`}
                                 className={styles.titleLink}
                             >
                                 {game.display}
@@ -124,7 +124,7 @@ export function ConsoleChrome({
                             </Link>
                         )}
                         <BackLink
-                            href={`/games-v2/${game.name}`}
+                            href={`/games-v2/${encodeURIComponent(game.name)}`}
                             label="Back to leaderboard"
                         />
                     </div>

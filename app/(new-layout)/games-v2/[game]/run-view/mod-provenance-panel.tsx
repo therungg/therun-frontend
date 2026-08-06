@@ -34,7 +34,7 @@ export function ModProvenancePanel({
                 <h2 className="h6 mb-0">Moderator view</h2>
                 {showConsoleLink && runId != null && (
                     <Link
-                        href={`/games-v2/${gameSlug}/manage/run/${runId}`}
+                        href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/run/${runId}`}
                         className="btn btn-sm btn-outline-secondary"
                     >
                         Open in console

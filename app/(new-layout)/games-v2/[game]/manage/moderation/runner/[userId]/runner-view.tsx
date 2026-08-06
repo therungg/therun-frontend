@@ -674,7 +674,7 @@ export function RunnerView({
                                                                     </button>
                                                                     <a
                                                                         className="btn btn-sm btn-outline-secondary"
-                                                                        href={`/games-v2/${gameSlug}/manage/run/${r.runId}`}
+                                                                        href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/run/${r.runId}`}
                                                                     >
                                                                         Open
                                                                     </a>

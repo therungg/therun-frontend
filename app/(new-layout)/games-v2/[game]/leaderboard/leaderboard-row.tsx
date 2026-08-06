@@ -170,9 +170,9 @@ export function LeaderboardRow({
         entry.userId != null ? `u:${entry.userId}` : `g:${entry.runnerName}`;
     const detailHref =
         entry.source === 'manual' && entry.manualTimeId != null
-            ? `/games-v2/${gameSlug}/manual/${entry.manualTimeId}`
+            ? `/games-v2/${encodeURIComponent(gameSlug)}/manual/${entry.manualTimeId}`
             : entry.runId != null
-              ? `/games-v2/${gameSlug}/run/${entry.runId}`
+              ? `/games-v2/${encodeURIComponent(gameSlug)}/run/${entry.runId}`
               : null;
 
     const podiumClass =
@@ -361,7 +361,7 @@ export function LeaderboardRow({
                     />
                     {showManageButton && (
                         <Link
-                            href={`/games-v2/${gameSlug}/manage/run/${entry.runId}`}
+                            href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/run/${entry.runId}`}
                             className={styles.manageLink}
                         >
                             Manage

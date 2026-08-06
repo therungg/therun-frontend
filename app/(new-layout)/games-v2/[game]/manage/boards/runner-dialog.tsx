@@ -268,7 +268,7 @@ export function RunnerDialog({
                 {!hideDossierLink && (
                     <p className={styles.moveNote}>
                         <Link
-                            href={`/games-v2/${gameSlug}/manage/moderation/runner/${row.userId}?from=${dossierFrom}`}
+                            href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${row.userId}?from=${dossierFrom}`}
                         >
                             View full runner page — runs, bans, history ↗
                         </Link>

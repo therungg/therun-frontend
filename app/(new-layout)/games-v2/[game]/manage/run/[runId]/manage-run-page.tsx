@@ -45,7 +45,7 @@ export function ManageRunPage({
                 </div>
                 <div className="ms-auto">
                     <BackLink
-                        href={`/games-v2/${game.name}`}
+                        href={`/games-v2/${encodeURIComponent(game.name)}`}
                         label="Back to leaderboard"
                     />
                 </div>

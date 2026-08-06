@@ -426,7 +426,7 @@ export function SubmitForm({
                         See it on the board
                     </Link>
                     <Link
-                        href={`/games-v2/${game.name}/run/${runResult.id}`}
+                        href={`/games-v2/${encodeURIComponent(game.name)}/run/${runResult.id}`}
                         className="btn btn-sm btn-outline-secondary"
                     >
                         View your run
@@ -468,7 +468,7 @@ export function SubmitForm({
                         See it on the board
                     </Link>
                     <Link
-                        href={`/games-v2/${game.name}/manual/${claimResult.manualTimeId}`}
+                        href={`/games-v2/${encodeURIComponent(game.name)}/manual/${claimResult.manualTimeId}`}
                         className="btn btn-sm btn-outline-secondary"
                     >
                         View your time

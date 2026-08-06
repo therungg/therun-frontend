@@ -50,9 +50,12 @@ export function WizardShell({ data, initialStep }: Props) {
     const goTo = (id: SetupStepId) => {
         // Keep the URL shareable/resumable and re-read server state so a step
         // always sees writes committed by previous steps (or by co-mods).
-        router.replace(`/games-v2/${data.game.name}/setup?step=${id}`, {
-            scroll: true,
-        });
+        router.replace(
+            `/games-v2/${encodeURIComponent(data.game.name)}/setup?step=${id}`,
+            {
+                scroll: true,
+            },
+        );
         router.refresh();
     };
 
@@ -108,7 +111,7 @@ export function WizardShell({ data, initialStep }: Props) {
                     </div>
                 )}
                 <BackLink
-                    href={`/games-v2/${data.game.name}/manage`}
+                    href={`/games-v2/${encodeURIComponent(data.game.name)}/manage`}
                     label="Back to console"
                     className={styles.identityBack}
                 />
@@ -247,7 +250,9 @@ function ConsoleWayfinding({
     return (
         <p className={styles.wayfinding}>
             After setup this lives in the console under{' '}
-            <Link href={`/games-v2/${gameSlug}/manage?pane=${location.pane}`}>
+            <Link
+                href={`/games-v2/${encodeURIComponent(gameSlug)}/manage?pane=${location.pane}`}
+            >
                 {location.crumb}
             </Link>
             .

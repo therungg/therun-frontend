@@ -62,7 +62,7 @@ export function RecentPbsPanel({ pbs, gameSlug }: Props) {
                                 <Link
                                     href={
                                         typeof p.runId === 'number'
-                                            ? `/games-v2/${gameSlug}/run/${p.runId}`
+                                            ? `/games-v2/${encodeURIComponent(gameSlug)}/run/${p.runId}`
                                             : `/${p.username}`
                                     }
                                 >

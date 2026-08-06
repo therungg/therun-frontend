@@ -91,9 +91,9 @@ function GoLiveFooter({ data }: { data: WizardData }) {
             s.status !== 'done' &&
             firstUnconfiguredMain
         ) {
-            return `/games-v2/${data.game.name}/setup?step=category-setup&cat=${firstUnconfiguredMain.id}`;
+            return `/games-v2/${encodeURIComponent(data.game.name)}/setup?step=category-setup&cat=${firstUnconfiguredMain.id}`;
         }
-        return `/games-v2/${data.game.name}/setup?step=${s.step}`;
+        return `/games-v2/${encodeURIComponent(data.game.name)}/setup?step=${s.step}`;
     };
 
     const addMod = () => {
@@ -174,13 +174,13 @@ function GoLiveFooter({ data }: { data: WizardData }) {
                 </p>
                 <div className="d-flex gap-2 justify-content-center">
                     <Link
-                        href={`/games-v2/${data.game.name}/manage`}
+                        href={`/games-v2/${encodeURIComponent(data.game.name)}/manage`}
                         className={styles.primaryAction}
                     >
                         Go to your console
                     </Link>
                     <Link
-                        href={`/games-v2/${data.game.name}`}
+                        href={`/games-v2/${encodeURIComponent(data.game.name)}`}
                         className={styles.secondaryAction}
                     >
                         View your board
@@ -293,7 +293,7 @@ function GoLiveFooter({ data }: { data: WizardData }) {
             {error && <div className={styles.errorNote}>{error}</div>}
             {alreadyLive ? (
                 <Link
-                    href={`/games-v2/${data.game.name}/manage`}
+                    href={`/games-v2/${encodeURIComponent(data.game.name)}/manage`}
                     className={styles.primaryAction}
                 >
                     Back to console

@@ -262,7 +262,7 @@ export function HistoryDrawer({ gameSlug, open, onClose }: Props) {
                                                             <>
                                                                 {' '}
                                                                 <Link
-                                                                    href={`/games-v2/${gameSlug}/manage/run/${runId}`}
+                                                                    href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/run/${runId}`}
                                                                 >
                                                                     {row.target}
                                                                 </Link>
