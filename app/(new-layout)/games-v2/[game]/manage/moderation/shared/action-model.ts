@@ -82,6 +82,13 @@ export function hasTrueInverse(_verb: ModVerb): boolean {
 export const UNDO_VERIFY_REASON = 'Undo of accidental verification';
 
 /**
+ * Min reason length the backend's `validateReason` enforces on anonymize
+ * rules. Lives here (not in the action file) because `'use server'` modules
+ * may only export async functions.
+ */
+export const MIN_ANONYMIZE_REASON = 10;
+
+/**
  * A ban's undo is deleting the exclusion rule it created. If the rule
  * already existed (this ban just matched a pre-existing one — see
  * CreateRuleResult.alreadyExists), deleting it would remove a rule outside

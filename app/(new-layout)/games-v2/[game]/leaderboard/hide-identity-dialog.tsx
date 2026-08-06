@@ -2,10 +2,10 @@
 
 import { useId, useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
+import { MIN_ANONYMIZE_REASON } from '../manage/moderation/shared/action-model';
 import {
     anonymizeRunAction,
     anonymizeUserAction,
-    MIN_ANONYMIZE_REASON,
 } from '../manage/moderation/shared/actions/anonymize-rules.action';
 import { BoardDialog } from '../shared/board-dialog';
 import styles from './hide-identity-dialog.module.scss';

@@ -23,6 +23,7 @@ import type {
     AnonymizeRuleWithNames,
     CreateAnonymizeResult,
 } from '../../../../../../../../types/moderation.types';
+import { MIN_ANONYMIZE_REASON } from '../action-model';
 
 /**
  * The anonymize verb, filed from the board kebab and the runner panel
@@ -40,9 +41,6 @@ import type {
  * admin-only, which the backend also enforces (we mirror it so the UI can
  * disable-with-reason rather than surface a raw 403).
  */
-
-/** Min length the backend's `validateReason` enforces. Mirrored client-side. */
-export const MIN_ANONYMIZE_REASON = 10;
 
 type Fail = { error: string };
 
