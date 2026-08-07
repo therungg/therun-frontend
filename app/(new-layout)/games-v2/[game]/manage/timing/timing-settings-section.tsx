@@ -261,12 +261,19 @@ export function TimingSettingsSection({
                     disabled={busy}
                     onChange={(v) =>
                         // LRT is IGT under another name: primaryTiming stays
-                        // 'gametime', only the display label changes.
+                        // 'gametime', only the display label changes. Flipping
+                        // to real time keeps the label, so a later flip back
+                        // (or the secondary column) still reads LRT.
                         setState((s) => ({
                             ...s,
                             primaryTiming:
                                 v === 'realtime' ? 'realtime' : 'gametime',
-                            gameTimeLabel: v === 'lrt' ? 'lrt' : 'igt',
+                            gameTimeLabel:
+                                v === 'realtime'
+                                    ? s.gameTimeLabel
+                                    : v === 'lrt'
+                                      ? 'lrt'
+                                      : 'igt',
                         }))
                     }
                 />

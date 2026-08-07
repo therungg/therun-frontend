@@ -125,15 +125,19 @@ export function timingChoiceOf(
 }
 
 /** The (primaryTiming, label) pair a timing choice writes, in the
- *  'realtime'/'gametime' vocabulary category writes use. */
+ *  'realtime'/'gametime' vocabulary category writes use. Choosing RTA leaves
+ *  the label untouched: a board flipped to RTA keeps calling its (now
+ *  secondary) game-time clock LRT rather than silently reverting to IGT. */
 export function timingChoiceFields(choice: TimingChoice): {
     primaryTiming: 'realtime' | 'gametime';
-    gameTimeLabel: GameTimeLabel;
+    gameTimeLabel?: GameTimeLabel;
 } {
-    return {
-        primaryTiming: choice === 'rt' ? 'realtime' : 'gametime',
-        gameTimeLabel: choice === 'lrt' ? 'lrt' : 'igt',
-    };
+    return choice === 'rt'
+        ? { primaryTiming: 'realtime' }
+        : {
+              primaryTiming: 'gametime',
+              gameTimeLabel: choice === 'lrt' ? 'lrt' : 'igt',
+          };
 }
 
 /** Whether a category shows the clock it does not rank by. */
