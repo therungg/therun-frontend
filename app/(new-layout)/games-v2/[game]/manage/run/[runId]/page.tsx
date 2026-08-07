@@ -40,16 +40,15 @@ export default async function GameRunManagePage({ params }: Props) {
         notFound();
     }
 
-    // User-from-category exclusion (POST /admin/exclusions) is admin-only.
-    const canExcludeUsers = (session.roles ?? []).includes('admin');
-
     const game = await resolveGame(slug);
     if (!game) notFound();
     const chrome = await loadConsoleChrome(session, game);
 
     const [provenance, history] = await Promise.all([
         getRunProvenance(session.id, game.id, runId).catch(() => null),
-        getRunHistory(runId).catch(() => []),
+        // Pass the session so a moderator gets the enriched history (actor
+        // names + per-event ids), matching the board drawer's timeline.
+        getRunHistory(runId, session.id).catch(() => []),
     ]);
 
     return (
@@ -62,7 +61,6 @@ export default async function GameRunManagePage({ params }: Props) {
         >
             <ManageRunPage
                 data={data}
-                canExcludeUsers={canExcludeUsers}
                 provenance={provenance}
                 history={history}
             />
