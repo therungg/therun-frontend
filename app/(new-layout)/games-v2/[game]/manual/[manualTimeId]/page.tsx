@@ -74,6 +74,7 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
                 isGuest: mt.isGuest,
                 realTime: mt.timing === 'realtime' ? mt.timeMs : null,
                 gameTime: mt.timing === 'gametime' ? mt.timeMs : null,
+                gameTimeLabel: 'igt',
                 runDate: null,
                 vodUrl: mt.evidenceUrl,
                 verificationStatus: mt.verificationStatus,

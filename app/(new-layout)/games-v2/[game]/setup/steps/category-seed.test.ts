@@ -23,12 +23,14 @@ describe('buildCategorySeed', () => {
         expect(
             buildCategorySeed({
                 primaryTiming: 'rt',
+                gameTimeLabel: null,
                 hideRealTime: false,
                 hideGameTime: false,
                 rulesTemplate: null,
             }),
         ).toEqual({
             primaryTiming: 'realtime',
+            gameTimeLabel: 'igt',
             hideRealTime: false,
             hideGameTime: false,
             rulesTemplate: null,
@@ -39,12 +41,14 @@ describe('buildCategorySeed', () => {
         expect(
             buildCategorySeed({
                 primaryTiming: null,
+                gameTimeLabel: null,
                 hideRealTime: false,
                 hideGameTime: false,
                 rulesTemplate: null,
             }),
         ).toEqual({
             primaryTiming: 'realtime',
+            gameTimeLabel: 'igt',
             hideRealTime: false,
             hideGameTime: false,
             rulesTemplate: null,
@@ -55,12 +59,14 @@ describe('buildCategorySeed', () => {
         expect(
             buildCategorySeed({
                 primaryTiming: 'gt',
+                gameTimeLabel: null,
                 hideRealTime: true,
                 hideGameTime: false,
                 rulesTemplate: null,
             }),
         ).toEqual({
             primaryTiming: 'gametime',
+            gameTimeLabel: 'igt',
             hideRealTime: true,
             hideGameTime: false,
             rulesTemplate: null,
@@ -71,12 +77,14 @@ describe('buildCategorySeed', () => {
         expect(
             buildCategorySeed({
                 primaryTiming: 'rt',
+                gameTimeLabel: null,
                 hideRealTime: false,
                 hideGameTime: true,
                 rulesTemplate: 'No major skips.',
             }),
         ).toEqual({
             primaryTiming: 'realtime',
+            gameTimeLabel: 'igt',
             hideRealTime: false,
             hideGameTime: true,
             rulesTemplate: 'No major skips.',
@@ -87,12 +95,14 @@ describe('buildCategorySeed', () => {
         expect(
             buildCategorySeed({
                 primaryTiming: 'rt',
+                gameTimeLabel: null,
                 hideRealTime: true,
                 hideGameTime: true,
                 rulesTemplate: null,
             }),
         ).toEqual({
             primaryTiming: 'realtime',
+            gameTimeLabel: 'igt',
             hideRealTime: false,
             hideGameTime: false,
             rulesTemplate: null,
@@ -106,6 +116,7 @@ describe('seedUpdateBody', () => {
             seedUpdateBody(
                 {
                     primaryTiming: 'realtime',
+                    gameTimeLabel: 'igt',
                     hideRealTime: false,
                     hideGameTime: true,
                     rulesTemplate: 'No skips.',
@@ -114,6 +125,7 @@ describe('seedUpdateBody', () => {
             ),
         ).toEqual({
             primaryTiming: 'realtime',
+            gameTimeLabel: 'igt',
             hideRealTime: false,
             hideGameTime: true,
             rules: 'No skips.',
@@ -125,6 +137,7 @@ describe('seedUpdateBody', () => {
             seedUpdateBody(
                 {
                     primaryTiming: 'realtime',
+                    gameTimeLabel: 'igt',
                     hideRealTime: false,
                     hideGameTime: false,
                     rulesTemplate: 'No skips.',
@@ -133,6 +146,7 @@ describe('seedUpdateBody', () => {
             ),
         ).toEqual({
             primaryTiming: 'realtime',
+            gameTimeLabel: 'igt',
             hideRealTime: false,
             hideGameTime: false,
         });
@@ -143,6 +157,7 @@ describe('seedUpdateBody', () => {
             seedUpdateBody(
                 {
                     primaryTiming: 'gametime',
+                    gameTimeLabel: 'igt',
                     hideRealTime: true,
                     hideGameTime: false,
                     rulesTemplate: null,
@@ -151,6 +166,7 @@ describe('seedUpdateBody', () => {
             ),
         ).toEqual({
             primaryTiming: 'gametime',
+            gameTimeLabel: 'igt',
             hideRealTime: true,
             hideGameTime: false,
         });
@@ -161,6 +177,7 @@ describe('seedUpdateBody', () => {
             seedUpdateBody(
                 {
                     primaryTiming: 'realtime',
+                    gameTimeLabel: 'igt',
                     hideRealTime: false,
                     hideGameTime: false,
                     rulesTemplate: '   ',
@@ -169,6 +186,7 @@ describe('seedUpdateBody', () => {
             ),
         ).toEqual({
             primaryTiming: 'realtime',
+            gameTimeLabel: 'igt',
             hideRealTime: false,
             hideGameTime: false,
         });

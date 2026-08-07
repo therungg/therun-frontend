@@ -90,6 +90,7 @@ export default async function RunDetailPage({ params }: PageProps) {
                 isGuest: run.isGuest,
                 realTime: run.realTime,
                 gameTime: run.gameTime,
+                gameTimeLabel: run.gameTimeLabel ?? 'igt',
                 runDate: run.runDate,
                 vodUrl: run.vodUrl,
                 verificationStatus: run.verificationStatus,

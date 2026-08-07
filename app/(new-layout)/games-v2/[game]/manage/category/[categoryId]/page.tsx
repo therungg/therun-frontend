@@ -98,6 +98,7 @@ export default async function CategoryDetailPage({ params }: Props) {
                 copySources={copySources}
                 gameTimingDefaults={{
                     primaryTiming: metadata.primaryTiming,
+                    gameTimeLabel: metadata.gameTimeLabel,
                     hideRealTime: metadata.hideRealTime,
                     hideGameTime: metadata.hideGameTime,
                 }}

@@ -23,6 +23,8 @@ interface Props {
     gameSlug: string;
     variableKeys: string[];
     primaryTiming: TimingKey;
+    /** What the board calls its game-time clock. Display only. */
+    gameTimeLabel?: 'igt' | 'lrt';
     /** True when any subcategory / variable / verified filter narrows the board. */
     filtersActive: boolean;
     /** category.showMilliseconds ?? true — precision the board is configured for. */
@@ -52,6 +54,7 @@ export function LeaderboardTable({
     gameSlug,
     variableKeys,
     primaryTiming,
+    gameTimeLabel = 'igt',
     filtersActive,
     showMilliseconds,
     categorySlug,
@@ -123,7 +126,7 @@ export function LeaderboardTable({
     }
 
     const { hideRealTime, hideGameTime } = leaderboard;
-    const { primary, secondary } = timingColumns(primaryTiming);
+    const { primary, secondary } = timingColumns(primaryTiming, gameTimeLabel);
     // Every entry in the loaded window has no secondary time at all — hide
     // the column entirely rather than render a wall of dashes. A later page
     // introducing data re-shows it (recomputed each render, not sticky).

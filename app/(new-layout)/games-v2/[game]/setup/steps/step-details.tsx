@@ -1,6 +1,10 @@
 'use client';
 
 import { useRef, useState, useTransition } from 'react';
+import {
+    type TimingChoice,
+    timingChoiceOf,
+} from '~src/lib/setup/board-defaults';
 import { RULES_STARTER_TEMPLATE } from '~src/lib/setup/rules-template';
 import { updateGameMetadataAction } from '../actions/update-game-metadata.action';
 import { GameDetailsForm } from '../game-details-form';
@@ -8,15 +12,18 @@ import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
 import { StepHeader } from './step-header';
 
-type Timing = 'rt' | 'gt';
-
 export function StepDetails({ data, onAdvance }: StepProps) {
     // Game-level primary timing lives on the game-metadata read path, not
     // `data.game.primaryTiming` — `resolveGame()` never populates that field
     // (it only fetches identity fields from `/v1/games/by-slug`), so it is
     // always undefined. `data.metadata` is the real source of truth here.
-    const [timing, setTiming] = useState<Timing>(
-        data.metadata.primaryTiming ?? 'rt',
+    // 'lrt' is IGT under another name: it saves as gt + gameTimeLabel 'lrt'
+    // and behaves identically everywhere.
+    const [timing, setTiming] = useState<TimingChoice>(
+        timingChoiceOf(
+            data.metadata.primaryTiming ?? 'rt',
+            data.metadata.gameTimeLabel ?? 'igt',
+        ),
     );
     const [rulesTemplate, setRulesTemplate] = useState(
         data.metadata.rulesTemplate ?? RULES_STARTER_TEMPLATE,
@@ -31,7 +38,7 @@ export function StepDetails({ data, onAdvance }: StepProps) {
     // server's both-hidden guard can never trip because the primary's hide
     // flag is derived as false at save time.
     const [showSecondary, setShowSecondary] = useState(() => {
-        const initial: Timing = data.metadata.primaryTiming ?? 'rt';
+        const initial = data.metadata.primaryTiming ?? 'rt';
         return initial === 'rt'
             ? !(data.metadata.hideGameTime ?? false)
             : !(data.metadata.hideRealTime ?? false);
@@ -59,12 +66,13 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                 const metaRes = await updateGameMetadataAction({
                     gameSlug: data.game.name,
                     gameId: data.game.id,
-                    primaryTiming: timing,
+                    primaryTiming: timing === 'rt' ? 'rt' : 'gt',
+                    gameTimeLabel: timing === 'lrt' ? 'lrt' : 'igt',
                     rulesTemplate: rulesTemplate.trim() || null,
                     gameRules: gameRules.trim() || null,
                     emulatorPolicy,
                     hideRealTime: timing === 'rt' ? false : !showSecondary,
-                    hideGameTime: timing === 'gt' ? false : !showSecondary,
+                    hideGameTime: timing === 'rt' ? !showSecondary : false,
                 });
                 if ('error' in metaRes) {
                     setDefaultsError(metaRes.error);
@@ -138,17 +146,35 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                             >
                                 IGT
                             </button>
+                            <button
+                                type="button"
+                                role="radio"
+                                aria-checked={timing === 'lrt'}
+                                className={
+                                    timing === 'lrt'
+                                        ? styles.segmentActive
+                                        : undefined
+                                }
+                                onClick={() => setTiming('lrt')}
+                            >
+                                LRT
+                            </button>
                         </div>
                         <p className="text-muted small mb-0">
                             The default timing method for this board’s
-                            categories.
+                            categories. LRT (load-removed time) works exactly
+                            like IGT — it is just what the clock is called.
                         </p>
                     </div>
                     <div>
                         <h4 className="h6">Time columns</h4>
                         <p className="text-muted small mb-2">
-                            {timing === 'rt' ? 'Real time' : 'In-game time'} is
-                            always shown.
+                            {timing === 'rt'
+                                ? 'Real time'
+                                : timing === 'lrt'
+                                  ? 'Load-removed time'
+                                  : 'In-game time'}{' '}
+                            is always shown.
                         </p>
                         <div className="form-check">
                             <input

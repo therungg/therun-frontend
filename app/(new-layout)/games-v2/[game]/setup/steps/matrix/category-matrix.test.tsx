@@ -55,6 +55,7 @@ const metadata = {
     links: [],
     igdbUrl: null,
     primaryTiming: 'rt',
+    gameTimeLabel: null,
     rulesTemplate: 'No major skips.',
     gameRules: null,
     emulatorPolicy: null,

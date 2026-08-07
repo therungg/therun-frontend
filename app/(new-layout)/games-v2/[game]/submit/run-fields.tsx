@@ -1,10 +1,24 @@
-import type { VariableRow } from '../../../../../types/leaderboards.types';
+import type {
+    GameTimeLabel,
+    VariableRow,
+} from '../../../../../types/leaderboards.types';
 import { type TimeField, TimeInput } from './time-input';
 
-const TIMING_EXPLAINER =
-    'Real time (RTA) — wall-clock time. Game time (IGT) — the in-game timer.';
+function timingExplainer(gameTimeLabel: GameTimeLabel): string {
+    return gameTimeLabel === 'lrt'
+        ? 'Real time (RTA) — wall-clock time. Load-removed time (LRT) — the timer with loads removed.'
+        : 'Real time (RTA) — wall-clock time. Game time (IGT) — the in-game timer.';
+}
+
+function gameTimeFieldLabel(gameTimeLabel: GameTimeLabel): string {
+    return gameTimeLabel === 'lrt'
+        ? 'Load-removed time (LRT)'
+        : 'Game time (IGT)';
+}
 
 interface Props {
+    /** What the selected category calls its game-time clock. */
+    gameTimeLabel?: GameTimeLabel;
     // Optional variables — submit-mode only.
     filterDefs: VariableRow[];
     filters: Record<string, string>;
@@ -36,6 +50,7 @@ interface Props {
 
 /** The run-submission-only fields: optional variables, RT/GT, date, video URL. */
 export function RunFields({
+    gameTimeLabel = 'igt',
     filterDefs,
     filters,
     onFilterChange,
@@ -101,14 +116,16 @@ export function RunFields({
             {showGt && (
                 <TimeInput
                     id="submit-gt"
-                    label="Game time (IGT)"
+                    label={gameTimeFieldLabel(gameTimeLabel)}
                     required={!primaryIsRt}
                     field={gt}
                     onChange={onChangeGt}
                 />
             )}
             {showRt && showGt && (
-                <div className="form-text">{TIMING_EXPLAINER}</div>
+                <div className="form-text">
+                    {timingExplainer(gameTimeLabel)}
+                </div>
             )}
 
             <div>

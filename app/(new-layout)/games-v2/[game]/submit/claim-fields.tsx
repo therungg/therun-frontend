@@ -1,10 +1,16 @@
+import type { GameTimeLabel } from '../../../../../types/leaderboards.types';
 import type { ModTiming } from '../../../../../types/moderation.types';
 import { type TimeField, TimeInput } from './time-input';
 
-const TIMING_EXPLAINER =
-    'Real time (RTA) — wall-clock time. Game time (IGT) — the in-game timer.';
+function timingExplainer(gameTimeLabel: GameTimeLabel): string {
+    return gameTimeLabel === 'lrt'
+        ? 'Real time (RTA) — wall-clock time. Load-removed time (LRT) — the timer with loads removed.'
+        : 'Real time (RTA) — wall-clock time. Game time (IGT) — the in-game timer.';
+}
 
 interface Props {
+    /** What the selected category calls its game-time clock. */
+    gameTimeLabel?: GameTimeLabel;
     claimTimingChoice: boolean;
     claimTiming: ModTiming;
     onClaimTimingChange: (timing: ModTiming) => void;
@@ -19,6 +25,7 @@ interface Props {
 
 /** The claim-only fields: timing choice, asserted time, evidence URL. */
 export function ClaimFields({
+    gameTimeLabel = 'igt',
     claimTimingChoice,
     claimTiming,
     onClaimTimingChange,
@@ -46,9 +53,15 @@ export function ClaimFields({
                         }
                     >
                         <option value="realtime">Real time (RTA)</option>
-                        <option value="gametime">Game time (IGT)</option>
+                        <option value="gametime">
+                            {gameTimeLabel === 'lrt'
+                                ? 'Load-removed time (LRT)'
+                                : 'Game time (IGT)'}
+                        </option>
                     </select>
-                    <div className="form-text">{TIMING_EXPLAINER}</div>
+                    <div className="form-text">
+                        {timingExplainer(gameTimeLabel)}
+                    </div>
                 </div>
             )}
 
@@ -57,7 +70,9 @@ export function ClaimFields({
                 label={
                     effectiveClaimTiming === 'realtime'
                         ? 'Real time (RTA)'
-                        : 'Game time (IGT)'
+                        : gameTimeLabel === 'lrt'
+                          ? 'Load-removed time (LRT)'
+                          : 'Game time (IGT)'
                 }
                 required
                 field={claimTime}

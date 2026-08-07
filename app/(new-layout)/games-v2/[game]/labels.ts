@@ -12,7 +12,7 @@ export type LabelVariableDef = Pick<
 >;
 
 const REAL_TIME_KEYS = new Set(['rt', 'realtime', 'rta']);
-const GAME_TIME_KEYS = new Set(['gt', 'gametime', 'igt']);
+const GAME_TIME_KEYS = new Set(['gt', 'gametime', 'igt', 'lrt']);
 
 /**
  * Splits a raw camelCase/snake_case/kebab-case/whitespace token into
@@ -130,10 +130,16 @@ export function formatVariableList(
  * (`RTA`/`IGT`). Unknown values fall back to a humanized string — the raw
  * enum is never shown to users.
  */
-export function timingMethodLabel(method: string): string {
+export function timingMethodLabel(
+    method: string,
+    gameTimeLabel: 'igt' | 'lrt' = 'igt',
+): string {
     if (!method) return '';
     const norm = method.trim().toLowerCase();
     if (REAL_TIME_KEYS.has(norm)) return 'Real time';
-    if (GAME_TIME_KEYS.has(norm)) return 'Game time';
+    if (norm === 'lrt') return 'Load-removed time';
+    if (GAME_TIME_KEYS.has(norm)) {
+        return gameTimeLabel === 'lrt' ? 'Load-removed time' : 'Game time';
+    }
     return humanizeWord(method);
 }

@@ -10,7 +10,10 @@ import {
     categoryMinMs,
     otherTimeField,
     otherTiming,
-    TIMING_LABEL,
+    type TimingChoice,
+    timingChoiceFields,
+    timingChoiceOf,
+    timingLabel,
 } from '~src/lib/setup/board-defaults';
 import { findGameMinPolicy } from '~src/lib/setup/game-minimum';
 import { formatTimeInput, parseTimeInput } from '~src/lib/time-input';
@@ -185,8 +188,10 @@ export function DefaultsRow({
     const hasTemplate = (defaults.rulesTemplate ?? '').trim().length > 0;
     // The clock the board does not rank by — the only one there is a decision
     // about, since the ranking one can never be hidden.
-    const otherLabel =
-        TIMING_LABEL[otherTiming(defaults.primaryTiming ?? 'rt')];
+    const otherLabel = timingLabel(
+        otherTiming(defaults.primaryTiming ?? 'rt'),
+        defaults.gameTimeLabel ?? 'igt',
+    );
 
     return (
         <>
@@ -199,20 +204,34 @@ export function DefaultsRow({
                 <td>
                     <select
                         className={styles.defaultsControl}
-                        value={defaults.primaryTiming ?? ''}
+                        value={
+                            defaults.primaryTiming === null
+                                ? ''
+                                : timingChoiceOf(
+                                      defaults.primaryTiming,
+                                      defaults.gameTimeLabel ?? 'igt',
+                                  )
+                        }
                         disabled={isSaving}
                         aria-label="Board default timing"
                         onChange={(e) => {
-                            const next = e.target.value as 'rt' | 'gt';
-                            save({ primaryTiming: next });
+                            const next = e.target.value as TimingChoice;
+                            save({
+                                primaryTiming: next === 'rt' ? 'rt' : 'gt',
+                                gameTimeLabel: next === 'lrt' ? 'lrt' : 'igt',
+                            });
                             offerFollowUp(
-                                next === 'gt' ? 'IGT' : 'RTA',
+                                timingLabel(
+                                    next === 'rt' ? 'rt' : 'gt',
+                                    next === 'lrt' ? 'lrt' : 'igt',
+                                ),
                                 next,
-                                (c) => c.primaryTiming,
-                                applyFields({
-                                    primaryTiming:
-                                        next === 'gt' ? 'gametime' : 'realtime',
-                                }),
+                                (c) =>
+                                    timingChoiceOf(
+                                        c.primaryTiming,
+                                        c.gameTimeLabel,
+                                    ),
+                                applyFields(timingChoiceFields(next)),
                             );
                         }}
                     >
@@ -225,6 +244,7 @@ export function DefaultsRow({
                         )}
                         <option value="rt">RTA</option>
                         <option value="gt">IGT</option>
+                        <option value="lrt">LRT</option>
                     </select>
                 </td>
 

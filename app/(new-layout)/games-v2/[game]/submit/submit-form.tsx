@@ -603,6 +603,7 @@ export function SubmitForm({
 
                 {mode === 'submit' ? (
                     <RunFields
+                        gameTimeLabel={category.gameTimeLabel ?? 'igt'}
                         filterDefs={filterDefs}
                         filters={filters}
                         onFilterChange={(name, value) =>
@@ -631,6 +632,7 @@ export function SubmitForm({
                     />
                 ) : (
                     <ClaimFields
+                        gameTimeLabel={category.gameTimeLabel ?? 'igt'}
                         claimTimingChoice={claimTimingChoice}
                         claimTiming={claimTiming}
                         onClaimTimingChange={setClaimTiming}

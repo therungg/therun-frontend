@@ -22,6 +22,8 @@ export interface CategoryConfigRow {
     isMain: boolean;
     archived: boolean;
     timing: PrimaryTiming;
+    /** What the board calls its game-time clock. Display only. */
+    gameTimeLabel: 'igt' | 'lrt';
     hideRealTime: boolean;
     hideGameTime: boolean;
     showMilliseconds: boolean;
@@ -92,6 +94,7 @@ export function buildCategoryRows(input: {
         isMain: c.isMain ?? false,
         archived: c.archived,
         timing: toPrimaryTiming(c.primaryTiming),
+        gameTimeLabel: c.gameTimeLabel === 'lrt' ? 'lrt' : 'igt',
         hideRealTime: c.hideRealTime ?? false,
         hideGameTime: c.hideGameTime ?? false,
         showMilliseconds: c.showMilliseconds ?? false,
@@ -108,7 +111,11 @@ export function columnValue(
 ): string | number | boolean | null {
     switch (column) {
         case 'timing':
-            return row.timing;
+            // The label is part of the answer: an LRT board and an IGT board
+            // disagree on timing even though both store 'gametime'.
+            return row.timing === 'gametime'
+                ? `gametime:${row.gameTimeLabel}`
+                : row.timing;
         case 'minimum':
             return row.minTimeMs;
         case 'rules':

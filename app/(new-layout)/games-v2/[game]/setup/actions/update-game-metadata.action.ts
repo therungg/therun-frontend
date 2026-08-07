@@ -21,6 +21,8 @@ interface Input {
     discordUrl?: string | null;
     links?: GameLink[];
     primaryTiming?: 'rt' | 'gt';
+    /** Wizard default for what new categories call their game-time clock. */
+    gameTimeLabel?: 'igt' | 'lrt' | null;
     rulesTemplate?: string | null;
     gameRules?: string | null;
     emulatorPolicy?: 'allowed' | 'banned' | null;
@@ -111,6 +113,8 @@ export async function updateGameMetadataAction(
     }
     if (input.primaryTiming !== undefined)
         body.primaryTiming = input.primaryTiming;
+    if (input.gameTimeLabel !== undefined)
+        body.gameTimeLabel = input.gameTimeLabel;
     if (input.rulesTemplate !== undefined)
         body.rulesTemplate = input.rulesTemplate;
     if (input.gameRules !== undefined) body.gameRules = input.gameRules;

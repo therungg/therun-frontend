@@ -50,6 +50,8 @@ export interface RunViewModel {
     isGuest: boolean;
     realTime: number | null;
     gameTime: number | null;
+    /** What this run's board calls its game-time clock. Display only. */
+    gameTimeLabel: 'igt' | 'lrt';
     runDate: string | null; // null for manual times (no run date)
     vodUrl: string | null;
     verificationStatus: 'pending' | 'verified' | 'rejected';
@@ -294,7 +296,9 @@ export function RunView({
                                 </div>
                                 <div>
                                     <small className={styles.statLabel}>
-                                        Game Time
+                                        {model.gameTimeLabel === 'lrt'
+                                            ? 'Load-Removed Time'
+                                            : 'Game Time'}
                                     </small>
                                     <strong className={styles.statValue}>
                                         {model.gameTime != null ? (

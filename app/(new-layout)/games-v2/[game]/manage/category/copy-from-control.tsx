@@ -142,6 +142,7 @@ export function CopyFromControl({
                     gameId,
                     categoryId: target.id,
                     primaryTiming: step.primaryTiming,
+                    gameTimeLabel: step.gameTimeLabel,
                     hideRealTime: step.hideRealTime,
                     hideGameTime: step.hideGameTime,
                 });

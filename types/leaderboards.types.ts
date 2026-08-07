@@ -21,11 +21,20 @@ export interface ResolvedGroup {
     hiddenByDefault?: boolean;
 }
 
+/**
+ * What a board calls its game-time clock. Display vocabulary only — an LRT
+ * (load-removed time) board stores primaryTiming 'gt' and ranks identically
+ * to an IGT one; the label just renames the clock everywhere it is shown.
+ */
+export type GameTimeLabel = 'igt' | 'lrt';
+
 export interface ResolvedCategory {
     id: number;
     name: string;
     display: string;
     primaryTiming: 'rt' | 'gt';
+    /** Absent = 'igt'. */
+    gameTimeLabel?: GameTimeLabel;
     sortAscending?: boolean;
     isMain?: boolean;
     /** Normalized from API archived/active (see src/lib/archived-flag.ts). Archived = invisible everywhere. */
@@ -197,6 +206,8 @@ export interface LeaderboardExportResponse {
     category: { id: number; slug: string; display: string };
     timing: 'rt' | 'gt';
     defaultTiming: 'rt' | 'gt';
+    /** What this board calls its game-time clock. Display only. */
+    gameTimeLabel: GameTimeLabel;
     forceRealTime: boolean;
     hideRealTime: boolean;
     hideGameTime: boolean;
@@ -219,6 +230,8 @@ export interface UserRanking {
     time: number;
     gameTime: number | null;
     primaryTiming: 'rt' | 'gt';
+    /** What this board calls its game-time clock. Display only. */
+    gameTimeLabel?: GameTimeLabel;
     verificationStatus: 'pending' | 'verified' | 'rejected';
     vodUrl: string | null;
     runDate: string;
@@ -240,6 +253,8 @@ export interface RunDetail {
     time: number;
     realTime: number | null;
     gameTime: number | null;
+    /** What this run's board calls its game-time clock. Display only. */
+    gameTimeLabel?: GameTimeLabel;
     runDate: string;
     vodUrl: string | null;
     verificationStatus: 'pending' | 'verified' | 'rejected';
@@ -331,6 +346,8 @@ export interface StandingsCategory {
     display: string;
     /** Which clock this board is ranked by. Display only — pct is a ratio. */
     timing: 'rt' | 'gt';
+    /** What this board calls its game-time clock. Display only. */
+    gameTimeLabel?: GameTimeLabel;
     /** Fastest time on the board; the denominator for this column's pct. */
     wrTimeMs: number;
     entryCount: number;

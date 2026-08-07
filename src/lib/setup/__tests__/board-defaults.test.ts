@@ -37,6 +37,7 @@ function makeMetadata(overrides: Partial<GameMetadata> = {}): GameMetadata {
         gameRules: null,
         emulatorPolicy: null,
         primaryTiming: 'rt',
+        gameTimeLabel: null,
         hideRealTime: false,
         hideGameTime: false,
         sortAscending: true,

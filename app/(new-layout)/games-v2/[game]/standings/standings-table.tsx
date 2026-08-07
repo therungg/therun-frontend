@@ -121,7 +121,9 @@ export function StandingsTable({ gameSlug, rows, columns }: Props) {
                                     </Link>
                                     {category.timing === 'gt' && (
                                         <span className={styles.timingTag}>
-                                            IGT
+                                            {category.gameTimeLabel === 'lrt'
+                                                ? 'LRT'
+                                                : 'IGT'}
                                         </span>
                                     )}
                                 </th>

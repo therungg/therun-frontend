@@ -45,6 +45,8 @@ interface Props {
     gameSlug: string;
     variableKeys: string[];
     primaryTiming: TimingKey;
+    /** What the board calls its game-time clock. Display only. */
+    gameTimeLabel?: 'igt' | 'lrt';
     filtersActive: boolean;
     /** category.showMilliseconds ?? true — precision the board is configured for. */
     showMilliseconds: boolean;
@@ -87,6 +89,7 @@ export function LeaderboardPager({
     gameSlug,
     variableKeys,
     primaryTiming,
+    gameTimeLabel = 'igt',
     filtersActive,
     showMilliseconds,
     categorySlug,
@@ -492,6 +495,7 @@ export function LeaderboardPager({
                 gameSlug={gameSlug}
                 variableKeys={variableKeys}
                 primaryTiming={primaryTiming}
+                gameTimeLabel={gameTimeLabel}
                 filtersActive={filtersActive}
                 showMilliseconds={showMilliseconds}
                 categorySlug={categorySlug}

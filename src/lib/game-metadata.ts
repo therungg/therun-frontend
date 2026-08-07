@@ -24,6 +24,7 @@ export const EMPTY_GAME_METADATA: GameMetadata = {
     gameRules: null,
     emulatorPolicy: null,
     primaryTiming: null,
+    gameTimeLabel: null,
     hideRealTime: false,
     hideGameTime: false,
     // null, not a value: a failed metadata read must not be mistaken for a

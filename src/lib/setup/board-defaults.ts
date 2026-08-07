@@ -13,6 +13,7 @@
 // rather than nulling the column.
 
 import type {
+    GameTimeLabel,
     ResolvedCategory,
     VariableRow,
 } from '../../../types/leaderboards.types';
@@ -96,10 +97,44 @@ export function otherTiming(primary: 'rt' | 'gt'): 'rt' | 'gt' {
     return primary === 'gt' ? 'rt' : 'gt';
 }
 
-export const TIMING_LABEL: Record<'rt' | 'gt', string> = {
-    rt: 'RTA',
-    gt: 'IGT',
-};
+/**
+ * Short clock name for chips, selects and matrix cells. The game-time clock
+ * is called IGT or LRT per category (gameTimeLabel) — same behaviour, LRT is
+ * purely what the community calls a load-removed clock.
+ */
+export function timingLabel(
+    key: 'rt' | 'gt',
+    gameTimeLabel: GameTimeLabel = 'igt',
+): string {
+    if (key === 'rt') return 'RTA';
+    return gameTimeLabel === 'lrt' ? 'LRT' : 'IGT';
+}
+
+/**
+ * The three-way timing choice the UI offers: RTA, IGT, LRT. The last two are
+ * the same clock (primaryTiming 'gt') under different names — the choice is
+ * what collapses (primaryTiming, gameTimeLabel) into one control.
+ */
+export type TimingChoice = 'rt' | 'gt' | 'lrt';
+
+export function timingChoiceOf(
+    primary: 'rt' | 'gt',
+    gameTimeLabel: GameTimeLabel = 'igt',
+): TimingChoice {
+    return primary === 'gt' && gameTimeLabel === 'lrt' ? 'lrt' : primary;
+}
+
+/** The (primaryTiming, label) pair a timing choice writes, in the
+ *  'realtime'/'gametime' vocabulary category writes use. */
+export function timingChoiceFields(choice: TimingChoice): {
+    primaryTiming: 'realtime' | 'gametime';
+    gameTimeLabel: GameTimeLabel;
+} {
+    return {
+        primaryTiming: choice === 'rt' ? 'realtime' : 'gametime',
+        gameTimeLabel: choice === 'lrt' ? 'lrt' : 'igt',
+    };
+}
 
 /** Whether a category shows the clock it does not rank by. */
 export function showsOtherTime(category: ResolvedCategory): boolean {
@@ -123,6 +158,8 @@ export function otherTimeField(
 export interface BoardDefaults {
     /** null = the board states no default; every category's own value stands. */
     primaryTiming: 'rt' | 'gt' | null;
+    /** What the board default calls the game-time clock; null = unset (IGT). */
+    gameTimeLabel: GameTimeLabel | null;
     /** Whether the board shows the clock it does not rank by. */
     showOtherTime: boolean;
     sortAscending: boolean | null;
@@ -141,6 +178,7 @@ export function boardDefaults(
     const primary = metadata.primaryTiming ?? 'rt';
     return {
         primaryTiming: metadata.primaryTiming,
+        gameTimeLabel: metadata.gameTimeLabel,
         showOtherTime:
             primary === 'gt' ? !metadata.hideRealTime : !metadata.hideGameTime,
         sortAscending: metadata.sortAscending,
@@ -219,7 +257,18 @@ export function deviates(
     if (!hasDefault(defaults, column)) return false;
     switch (column) {
         case 'timing':
-            return category.primaryTiming !== defaults.primaryTiming;
+            // The choice, not just the clock: an LRT category on an IGT-default
+            // board is a deviation even though both rank by game time.
+            return (
+                timingChoiceOf(
+                    category.primaryTiming,
+                    category.gameTimeLabel,
+                ) !==
+                timingChoiceOf(
+                    defaults.primaryTiming ?? 'rt',
+                    defaults.gameTimeLabel ?? 'igt',
+                )
+            );
         case 'otherTime':
             return showsOtherTime(category) !== defaults.showOtherTime;
         case 'minimum': {

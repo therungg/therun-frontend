@@ -39,6 +39,8 @@ export interface UpdateGameBody {
     configured?: boolean;
     links?: GameLink[];
     primaryTiming?: 'rt' | 'gt';
+    /** Wizard default for what new categories call their game-time clock. */
+    gameTimeLabel?: 'igt' | 'lrt' | null;
     rulesTemplate?: string | null;
     gameRules?: string | null;
     emulatorPolicy?: 'allowed' | 'banned' | null;
@@ -95,6 +97,9 @@ export interface GameMetadata {
     gameRules: string | null;
     emulatorPolicy: 'allowed' | 'banned' | null;
     primaryTiming: 'rt' | 'gt' | null;
+    /** Wizard default for what new categories call their game-time clock.
+     *  NULL = unset; categories' own 'igt' default stands. */
+    gameTimeLabel: 'igt' | 'lrt' | null;
     hideRealTime: boolean;
     hideGameTime: boolean;
     /**
@@ -128,6 +133,7 @@ interface GameMetadataPageData {
         gameRules?: string | null;
         emulatorPolicy?: string | null;
         primaryTiming?: string | null;
+        gameTimeLabel?: string | null;
         hideRealTime?: boolean | null;
         hideGameTime?: boolean | null;
         sortAscending?: boolean | null;
@@ -221,6 +227,12 @@ export async function getGameMetadata(gameId: number): Promise<GameMetadata> {
                 ? 'gt'
                 : data?.game?.primaryTiming === 'rt'
                   ? 'rt'
+                  : null,
+        gameTimeLabel:
+            data?.game?.gameTimeLabel === 'lrt'
+                ? 'lrt'
+                : data?.game?.gameTimeLabel === 'igt'
+                  ? 'igt'
                   : null,
         hideRealTime: data?.game?.hideRealTime ?? false,
         hideGameTime: data?.game?.hideGameTime ?? false,

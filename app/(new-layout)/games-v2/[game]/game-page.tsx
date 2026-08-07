@@ -225,6 +225,10 @@ export function GamePage({
                                         primaryTiming={
                                             data.selectedCategory.primaryTiming
                                         }
+                                        gameTimeLabel={
+                                            data.selectedCategory
+                                                .gameTimeLabel ?? 'igt'
+                                        }
                                         filtersActive={filtersActive}
                                         showMilliseconds={showMilliseconds}
                                         categorySlug={

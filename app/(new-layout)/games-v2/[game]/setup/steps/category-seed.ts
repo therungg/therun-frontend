@@ -3,6 +3,7 @@ import type { ResolvedCategory } from '../../../../../../types/leaderboards.type
 
 export interface CategorySeed {
     primaryTiming: 'realtime' | 'gametime';
+    gameTimeLabel: 'igt' | 'lrt';
     hideRealTime: boolean;
     hideGameTime: boolean;
     rulesTemplate: string | null;
@@ -19,7 +20,11 @@ export interface CategorySeed {
 export function buildCategorySeed(
     metadata: Pick<
         GameMetadata,
-        'primaryTiming' | 'hideRealTime' | 'hideGameTime' | 'rulesTemplate'
+        | 'primaryTiming'
+        | 'gameTimeLabel'
+        | 'hideRealTime'
+        | 'hideGameTime'
+        | 'rulesTemplate'
     >,
 ): CategorySeed {
     // Both-hidden is invalid (the update action rejects it); legacy games can
@@ -29,6 +34,7 @@ export function buildCategorySeed(
     return {
         primaryTiming:
             metadata.primaryTiming === 'gt' ? 'gametime' : 'realtime',
+        gameTimeLabel: metadata.gameTimeLabel === 'lrt' ? 'lrt' : 'igt',
         hideRealTime: bothHidden ? false : metadata.hideRealTime,
         hideGameTime: bothHidden ? false : metadata.hideGameTime,
         rulesTemplate: metadata.rulesTemplate,
@@ -46,12 +52,14 @@ export function seedUpdateBody(
     currentRulesEmpty: boolean,
 ): {
     primaryTiming: 'realtime' | 'gametime';
+    gameTimeLabel: 'igt' | 'lrt';
     hideRealTime: boolean;
     hideGameTime: boolean;
     rules?: string;
 } {
     return {
         primaryTiming: seed.primaryTiming,
+        gameTimeLabel: seed.gameTimeLabel,
         hideRealTime: seed.hideRealTime,
         hideGameTime: seed.hideGameTime,
         ...(currentRulesEmpty && seed.rulesTemplate?.trim()
