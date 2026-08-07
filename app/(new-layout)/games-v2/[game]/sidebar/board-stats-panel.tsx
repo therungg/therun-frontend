@@ -4,18 +4,27 @@ import styles from './sidebar.module.scss';
 
 interface Props {
     category: ResolvedCategory;
+    /** Entry count of the board as currently viewed (leaderboard totalItems).
+     * Null when no board response is loaded. */
+    boardSize?: number | null;
 }
 
 /**
  * The active board's own numbers — the masthead's facts line stays
  * game-level, so this is the only place the selected category's stats
  * appear. Board view only; the overview has no single active board.
+ *
+ * The headline count is the BOARD SIZE, not category_stats.unique_runners.
+ * unique_runners counts everyone whose timer ever synced the category —
+ * including people with zero finished runs, who can never appear on the
+ * board. "Runners: 8" beside a 6-row board read as two missing entries
+ * (LSW:TCS 100%, 2026-08-07); on the board page, the board is the unit
+ * people care about.
  */
-export function BoardStatsPanel({ category }: Props) {
+export function BoardStatsPanel({ category, boardSize = null }: Props) {
     const attempts = category.totalAttemptCount ?? 0;
     const finished = category.totalFinishedAttemptCount ?? 0;
-    const runners = category.uniqueRunners ?? 0;
-    if (runners === 0 && attempts === 0) return null;
+    if (boardSize == null && attempts === 0) return null;
 
     const finishedPct =
         attempts > 0 ? Math.round((finished / attempts) * 100) : null;
@@ -26,10 +35,14 @@ export function BoardStatsPanel({ category }: Props) {
                 Category: {category.display}
             </span>
             <dl className={styles.statList}>
-                <div className={styles.statRow}>
-                    <dt className={styles.statLabel}>Runners</dt>
-                    <dd className={styles.statValue}>{formatCount(runners)}</dd>
-                </div>
+                {boardSize != null && (
+                    <div className={styles.statRow}>
+                        <dt className={styles.statLabel}>On the board</dt>
+                        <dd className={styles.statValue}>
+                            {formatCount(boardSize)}
+                        </dd>
+                    </div>
+                )}
                 <div className={styles.statRow}>
                     <dt className={styles.statLabel}>Attempts</dt>
                     <dd

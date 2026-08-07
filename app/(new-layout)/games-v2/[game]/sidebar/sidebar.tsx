@@ -33,6 +33,8 @@ interface Props {
     activeRaces?: Race[];
     /** The active board — board view only; the overview has none. */
     board?: ResolvedCategory | null;
+    /** Entry count of the board as currently viewed (leaderboard totalItems). */
+    boardSize?: number | null;
 }
 
 export function Sidebar({
@@ -45,12 +47,15 @@ export function Sidebar({
     series,
     activeRaces,
     board,
+    boardSize,
 }: Props) {
     return (
         <>
             <LivePanel gameDisplay={game.display} />
             <ActiveRacesPanel races={activeRaces ?? []} />
-            {board && <BoardStatsPanel category={board} />}
+            {board && (
+                <BoardStatsPanel category={board} boardSize={boardSize} />
+            )}
             <YourRunsPanel rankings={yourRuns} gameSlug={game.name} />
             <RecentPbsPanel pbs={recentPbs} gameSlug={game.name} />
             {series && (
