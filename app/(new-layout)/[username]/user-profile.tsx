@@ -4,7 +4,7 @@ import React, { useEffect, useReducer, useState } from 'react';
 import { Col, Row, Tab, Tabs } from 'react-bootstrap';
 import { TwitchEmbed } from 'react-twitch-embed';
 import type { UserRanking } from 'types/leaderboards.types';
-import type { User as IUser, User } from 'types/session.types';
+import type { User } from 'types/session.types';
 import { GlobalGameData } from '~app/(new-layout)/[username]/[game]/[run]/run';
 import { LeaderboardPbs } from '~app/(new-layout)/[username]/leaderboard-pbs';
 import { prepareSessions } from '~app/(new-layout)/[username]/prepare-sessions.component';
@@ -22,6 +22,7 @@ import { SessionOverview } from '~src/components/run/user-detail/session-overvie
 import { UserOverview } from '~src/components/run/user-detail/user-overview';
 import { UserRaceStatsTable } from '~src/components/run/user-detail/user-race-stats';
 import { UserStats } from '~src/components/run/user-detail/user-stats';
+import { useSession } from '~src/components/session-provider';
 import Stats from '~src/components/user/stats';
 import { Userform } from '~src/components/user/userform';
 import { useLiveRunsWebsocket } from '~src/components/websocket/use-reconnect-websocket';
@@ -32,7 +33,6 @@ export interface UserPageProps {
     username: string;
     hasGameTime: boolean;
     defaultGameTime: boolean;
-    session: IUser;
     userData: UserData;
     allGlobalGameData: GlobalGameData[];
     liveData?: LiveRun;
@@ -46,12 +46,12 @@ export const UserProfile = ({
     userData,
     hasGameTime,
     defaultGameTime,
-    session,
     allGlobalGameData,
     liveData,
     raceStats,
     rankings,
 }: UserPageProps) => {
+    const session = useSession();
     const [useGameTime, setUseGameTime] = useState(
         hasGameTime && defaultGameTime,
     );

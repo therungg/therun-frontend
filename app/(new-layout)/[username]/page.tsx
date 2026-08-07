@@ -1,11 +1,11 @@
 import { Metadata } from 'next';
+import { cacheLife } from 'next/cache';
 import { GlobalGameData } from '~app/(new-layout)/[username]/[game]/[run]/run';
 import { getRunmap } from '~app/(new-layout)/[username]/runmap.component';
 import { UserProfile } from '~app/(new-layout)/[username]/user-profile';
 import { CombinedTournamentPage } from '~app/(new-layout)/tournaments/[tournament]/combined-tournament-page';
 import { TournamentPage } from '~app/(new-layout)/tournaments/[tournament]/page';
 import { getTournamentNameFromSlug } from '~app/(new-layout)/tournaments/tournament-list';
-import { getSession } from '~src/actions/session.action';
 import { getGameGlobal } from '~src/components/game/get-game';
 import { JsonLd } from '~src/components/json-ld';
 import { getGlobalUser } from '~src/lib/get-global-user';
@@ -26,7 +26,6 @@ interface PageProps {
 }
 
 export default async function Page(props: PageProps) {
-    const searchParams = await props.searchParams;
     const params = await props.params;
     if (!params || !params.username) throw new Error('Username not found');
 
@@ -35,6 +34,9 @@ export default async function Page(props: PageProps) {
     const tournament = getTournamentNameFromSlug(username);
 
     if (tournament) {
+        // Only the tournament branch depends on searchParams — awaiting it up
+        // front would make every profile render dynamic.
+        const searchParams = await props.searchParams;
         if ('guidingTournament' in tournament) {
             return CombinedTournamentPage({
                 params: tournament,
@@ -47,6 +49,13 @@ export default async function Page(props: PageProps) {
             });
         }
     }
+
+    return <UserProfilePage username={username} />;
+}
+
+async function UserProfilePage({ username }: { username: string }) {
+    'use cache';
+    cacheLife('hours');
 
     const runs = (await getUserRuns(username)) || [];
 
@@ -79,14 +88,12 @@ export default async function Page(props: PageProps) {
         });
     }
 
-    const [userData, liveData, raceStats, session, rankings] =
-        await Promise.all([
-            getGlobalUser(username),
-            getLiveRunForUser(username),
-            getUserRaceStats(username),
-            getSession(),
-            getUserRankingsByName(username).catch(() => []),
-        ] as const);
+    const [userData, liveData, raceStats, rankings] = await Promise.all([
+        getGlobalUser(username),
+        getLiveRunForUser(username),
+        getUserRaceStats(username),
+        getUserRankingsByName(username).catch(() => []),
+    ] as const);
 
     // Find favorite game+category by total playtime
     const favoriteRun =
@@ -147,7 +154,6 @@ export default async function Page(props: PageProps) {
                 hasGameTime={hasGameTime}
                 defaultGameTime={defaultGameTime}
                 liveData={liveData}
-                session={session}
                 userData={userData}
                 allGlobalGameData={allGlobalGameData}
                 raceStats={raceStats}

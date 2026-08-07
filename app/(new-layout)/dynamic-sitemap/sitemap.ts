@@ -7,27 +7,18 @@ import {
     getRaceGameStats,
     getRaceGameStatsByGame,
 } from '~src/lib/races';
-import { getAllSitemapRuns, getSitemapUsers } from '~src/lib/sitemap';
+import { getSitemapUsers } from '~src/lib/sitemap';
 import { safeEncodeURI } from '~src/utils/uri';
 
 export const maxDuration = 300;
 
-const RUNS_PER_SITEMAP = 40000;
-
+// Individual run pages are intentionally NOT in the sitemap. Advertising
+// ~200k run URLs invited crawlers to render the entire catalog around the
+// clock, which dominated Vercel usage (~99% of traffic was bots vs ~300
+// human viewers/day). Run pages are still reachable and indexable via the
+// user profile pages listed in the users sitemap.
 export async function generateSitemaps() {
-    const runs = await getAllSitemapRuns();
-    const runSitemapCount = Math.ceil(runs.length / RUNS_PER_SITEMAP);
-
-    return [
-        { id: 0 },
-        { id: 1 },
-        { id: 2 },
-        { id: 3 },
-        { id: 4 },
-        ...Array.from({ length: runSitemapCount }, (_, i) => ({
-            id: 5 + i,
-        })),
-    ];
+    return [{ id: 0 }, { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }];
 }
 
 export default async function sitemap(props: {
@@ -46,7 +37,9 @@ export default async function sitemap(props: {
         case 4:
             return sitemapForEvents();
         default:
-            return sitemapForRuns(id - 5);
+            // Stale shard URLs (the removed run sitemaps) resolve to an
+            // empty sitemap instead of erroring.
+            return [];
     }
 }
 
@@ -151,25 +144,5 @@ const sitemapForEvents = async (): Promise<MetadataRoute.Sitemap> => {
         url: 'https://therun.gg/events/' + event.slug,
         changeFrequency: 'weekly',
         priority: 0.4,
-    }));
-};
-
-const sitemapForRuns = async (
-    chunkIndex: number,
-): Promise<MetadataRoute.Sitemap> => {
-    const runs = await getAllSitemapRuns();
-    const start = chunkIndex * RUNS_PER_SITEMAP;
-    const chunk = runs.slice(start, start + RUNS_PER_SITEMAP);
-
-    return chunk.map((run) => ({
-        url:
-            'https://therun.gg/' +
-            run.user +
-            '/' +
-            safeEncodeURI(run.game) +
-            '/' +
-            safeEncodeURI(run.run),
-        changeFrequency: 'weekly',
-        priority: 0.5,
     }));
 };

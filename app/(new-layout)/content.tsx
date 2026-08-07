@@ -2,16 +2,14 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import React, { useEffect } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { Bounce, ToastContainer, toast } from 'react-toastify';
 
-export const Content: React.FunctionComponent<React.PropsWithChildren> = ({
-    children,
-}) => {
-    const { systemTheme, resolvedTheme } = useTheme();
+// Isolated so useSearchParams doesn't sit directly in the layout shell —
+// there it would force every page's prerender to bail out. Wrapped in its
+// own Suspense boundary, it renders nothing and only fires toasts.
+const QueryToasts = () => {
     const query = useSearchParams();
-
-    const prefix = systemTheme === 'light' ? '/lightmode' : '';
 
     useEffect(() => {
         if (query.has('toast')) {
@@ -22,6 +20,16 @@ export const Content: React.FunctionComponent<React.PropsWithChildren> = ({
             toast[type](query.get('toast'));
         }
     }, [query.get('toast')]);
+
+    return null;
+};
+
+export const Content: React.FunctionComponent<React.PropsWithChildren> = ({
+    children,
+}) => {
+    const { systemTheme, resolvedTheme } = useTheme();
+
+    const prefix = systemTheme === 'light' ? '/lightmode' : '';
 
     return (
         <div className="my-4 pb-5 main-container container">
@@ -48,6 +56,9 @@ export const Content: React.FunctionComponent<React.PropsWithChildren> = ({
                 href="/safari-pinned-tab.svg"
                 color="#5bbad5"
             />
+            <Suspense fallback={null}>
+                <QueryToasts />
+            </Suspense>
             <ToastContainer
                 position="top-center"
                 autoClose={5000}
