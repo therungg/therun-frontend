@@ -40,8 +40,6 @@ interface Props {
     categorySlug: string;
     /** Subcategory-role variable names, for building this row's own subcategory key from `entry.variables`. */
     subcategoryDefKeys: string[];
-    /** "Select all runs by …" — the kebab's shortcut to the single-runner bulk-bar state. Omitted when the viewer can't manage runs. */
-    onSelectRunner?: () => void;
     /** "Moderate…" — opens the run inspector drawer on this row. Omitted when the viewer can't manage runs. */
     onModerate?: () => void;
 }
@@ -61,7 +59,6 @@ export function RowActionsMenu({
     gameSlug,
     categorySlug,
     subcategoryDefKeys,
-    onSelectRunner,
     onModerate,
 }: Props) {
     const runId = entry.runId ?? null;
@@ -269,16 +266,6 @@ export function RowActionsMenu({
                                     onClick={onModerate}
                                 >
                                     Moderate…
-                                </Dropdown.Item>
-                            )}
-                            {onSelectRunner && (
-                                <Dropdown.Item
-                                    as="button"
-                                    type="button"
-                                    className={styles.item}
-                                    onClick={onSelectRunner}
-                                >
-                                    Select all runs by {entry.runnerName}
                                 </Dropdown.Item>
                             )}
                         </>

@@ -135,16 +135,8 @@ describe('RowActionsMenu — mod section (drawer era)', () => {
         expect(onModerate).toHaveBeenCalledTimes(1);
     });
 
-    it('offers Select all runs by <runner> and forwards the click', () => {
-        const onSelectRunner = vi.fn();
-        renderMenu({ onSelectRunner });
-        openMenu();
-        fireEvent.click(screen.getByText('Select all runs by alice'));
-        expect(onSelectRunner).toHaveBeenCalledTimes(1);
-    });
-
     it('no longer carries the verbs that moved into the inspector', () => {
-        renderMenu({ onModerate: vi.fn(), onSelectRunner: vi.fn() });
+        renderMenu({ onModerate: vi.fn() });
         openMenu();
         for (const gone of [
             'Verify run',
@@ -156,6 +148,7 @@ describe('RowActionsMenu — mod section (drawer era)', () => {
             'Hide identity…',
             'Mark for later',
             'View runner page',
+            'Select all runs by alice',
         ]) {
             expect(screen.queryByText(gone)).toBeNull();
         }

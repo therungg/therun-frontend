@@ -348,15 +348,19 @@ export function RunInspector({
         onMutated();
     };
 
+    // A board shows one run per user, so the runner's game-wide run tally is
+    // noise here (it was reading "471 runs · 471 pending"). What a moderator
+    // actually wants is: how many boards in this game they hold a slot on,
+    // and whether they carry prior rejections. `isLeaderboardEntry(Gt)` marks
+    // the runs that are actually ON a board (one per category), so counting
+    // those gives the honest small number.
+    const boardCount =
+        runnerRuns?.filter(
+            (r) => r.isLeaderboardEntry || r.isLeaderboardEntryGt,
+        ).length ?? 0;
     const rejectedCount =
         runnerRuns?.filter((r) => r.verificationStatus === 'rejected').length ??
         0;
-    const pendingCount =
-        runnerRuns?.filter(
-            (r) =>
-                r.verificationStatus === 'pending' ||
-                r.verificationStatus === 'unverified',
-        ).length ?? 0;
 
     return (
         <>
@@ -467,14 +471,12 @@ export function RunInspector({
                                         </span>
                                     ) : (
                                         <>
-                                            {runnerRuns.length} run
-                                            {runnerRuns.length === 1 ? '' : 's'}{' '}
-                                            in this game
-                                            {pendingCount > 0 &&
-                                                ` · ${pendingCount} pending`}
+                                            On {boardCount} board
+                                            {boardCount === 1 ? '' : 's'} in
+                                            this game
                                             {rejectedCount > 0 && (
                                                 <span className="text-danger">
-                                                    {` · ${rejectedCount} rejected`}
+                                                    {` · ${rejectedCount} prior rejection${rejectedCount === 1 ? '' : 's'}`}
                                                 </span>
                                             )}
                                         </>
