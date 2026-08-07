@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import { ThreeDotsVertical } from 'react-bootstrap-icons';
@@ -14,22 +13,32 @@ import {
 } from '~src/actions/run-user-actions.action';
 import Link from '~src/components/link';
 import { buildSubmitHref } from '~src/lib/board-url';
-import type {
-    LeaderboardEntry,
-    ResolvedCategory,
-    VariableRow,
-} from '../../../../../types/leaderboards.types';
+import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
 import type { HistoryEvent } from '../../../../../types/moderation.types';
-import { ManualTimeDialog } from '../manage/moderation/shared/manual-time-dialog';
 import { isSameRunner } from '../shared/is-same-runner';
 import {
     SelfRunVerdictDialog,
     useSelfRunVerdict,
 } from '../shared/self-run-verdict';
 import { buildSubcategoryKey } from '../submit/subcategory-key';
-import { loadModBoardContextAction } from './actions/load-mod-board-context.action';
 import { HistoryDialog, ReasonDialog } from './row-action-dialogs';
 import styles from './row-actions-menu.module.scss';
+
+// Shared react-bootstrap Dropdown popper config for the row kebabs. `fixed`
+// so the panel escapes the table wrapper's overflow; `adaptive: false`
+// because Popper's adaptive mode anchors a fixed-strategy popper against the
+// wrong offset parent and parks it in the viewport corner. Non-adaptive emits
+// plain viewport top/left (and, with gpuAcceleration off, no transform for a
+// CSS animation to fight).
+const MENU_POPPER = {
+    strategy: 'fixed' as const,
+    modifiers: [
+        {
+            name: 'computeStyles',
+            options: { adaptive: false, gpuAcceleration: false },
+        },
+    ],
+};
 
 interface Props {
     entry: LeaderboardEntry;
@@ -45,12 +54,6 @@ interface Props {
 }
 
 type ModalKind = 'report' | 'appeal' | 'history' | null;
-
-interface ModBoardContext {
-    gameDisplay: string;
-    categories: ResolvedCategory[];
-    variables: VariableRow[];
-}
 
 export function RowActionsMenu({
     entry,
@@ -86,18 +89,52 @@ export function RowActionsMenu({
     const [pending, startTransition] = useTransition();
     const selfVerdict = useSelfRunVerdict();
 
-    // Manual-time entries have no finished_run — they get their own menu
-    // (verdicts/delete/edit go to the manual-times endpoints instead).
+    // Manual-time entries have no finished_run. Their moderation lives in the
+    // set-time inspector (ManualInspector) opened via Moderate…, so the kebab
+    // is just the entry point plus a link to the set-time detail page.
     if (runId == null) {
         if (!canManage || entry.manualTimeId == null) return null;
         return (
-            <ManualRowActionsMenu
-                entry={entry}
-                manualTimeId={entry.manualTimeId}
-                gameSlug={gameSlug}
-                categorySlug={categorySlug}
-                subcategoryKey={entrySubcategoryKey}
-            />
+            <Dropdown align="end">
+                <Dropdown.Toggle
+                    as="button"
+                    type="button"
+                    id={`manual-actions-${entry.manualTimeId}`}
+                    className={styles.toggle}
+                    aria-label="Set-time actions"
+                    title="Set-time actions"
+                >
+                    <ThreeDotsVertical aria-hidden size={16} />
+                </Dropdown.Toggle>
+                <Dropdown.Menu
+                    className={styles.menu}
+                    popperConfig={MENU_POPPER}
+                >
+                    <Dropdown.Item
+                        as={Link}
+                        className={styles.item}
+                        href={`/games-v2/${encodeURIComponent(gameSlug)}/manual/${entry.manualTimeId}`}
+                    >
+                        View set time
+                    </Dropdown.Item>
+                    {onModerate && (
+                        <>
+                            <Dropdown.Divider className={styles.menuDivider} />
+                            <Dropdown.Header className={styles.menuHeader}>
+                                Moderator
+                            </Dropdown.Header>
+                            <Dropdown.Item
+                                as="button"
+                                type="button"
+                                className={styles.item}
+                                onClick={onModerate}
+                            >
+                                Moderate…
+                            </Dropdown.Item>
+                        </>
+                    )}
+                </Dropdown.Menu>
+            </Dropdown>
         );
     }
 
@@ -163,30 +200,7 @@ export function RowActionsMenu({
                 </Dropdown.Toggle>
                 <Dropdown.Menu
                     className={styles.menu}
-                    // `fixed` so the panel escapes the table wrapper's
-                    // overflow. `adaptive: false` because Popper's adaptive
-                    // mode anchors with `inset: auto 0 0 auto` and expresses
-                    // the real offset as a delta measured against
-                    // `getOffsetParent(popper).clientWidth/clientHeight` —
-                    // and for a fixed-strategy popper that offsetParent is
-                    // not the box the browser resolves `right/bottom: 0`
-                    // against. The two disagreed, parking the menu in the
-                    // viewport corner instead of beside its toggle.
-                    // Non-adaptive emits plain viewport `top`/`left`
-                    // (and, with gpuAcceleration off, no transform at all,
-                    // so no CSS animation can fight it for the property).
-                    popperConfig={{
-                        strategy: 'fixed',
-                        modifiers: [
-                            {
-                                name: 'computeStyles',
-                                options: {
-                                    adaptive: false,
-                                    gpuAcceleration: false,
-                                },
-                            },
-                        ],
-                    }}
+                    popperConfig={MENU_POPPER}
                 >
                     <Dropdown.Item
                         as="button"
@@ -317,205 +331,6 @@ export function RowActionsMenu({
                 onCancel={selfVerdict.cancel}
                 onConfirm={selfVerdict.confirm}
             />
-        </>
-    );
-}
-
-/**
- * Mod kebab for a manual (set) time row. Mirrors the run kebab's verb set
- * where a manual-time equivalent exists: Verify/Reject (verdict endpoint),
- * Remove (delete — a manual time has no exclude machinery), Change time
- * (edit timeMs/evidence via ManualTimeDialog), plus the runner links.
- * Move/Mark/Hide-identity/history are run-only and deliberately absent.
- */
-function ManualRowActionsMenu({
-    entry,
-    manualTimeId,
-    gameSlug,
-    categorySlug,
-    subcategoryKey,
-}: {
-    entry: LeaderboardEntry;
-    manualTimeId: number;
-    gameSlug: string;
-    categorySlug: string;
-    subcategoryKey: string;
-}) {
-    const router = useRouter();
-    const [modVerb, setModVerb] = useState<ModVerb | null>(null);
-    const [editOpen, setEditOpen] = useState(false);
-    const [modCtx, setModCtx] = useState<ModBoardContext | null>(null);
-    const [_ctxPending, startCtxLoad] = useTransition();
-
-    const modCategory =
-        modCtx?.categories.find((c) => c.name === categorySlug) ?? null;
-
-    const openEdit = () => {
-        if (modCtx != null) {
-            if (modCategory == null) {
-                toast.error("Could not resolve this board's category.");
-                return;
-            }
-            setEditOpen(true);
-            return;
-        }
-        startCtxLoad(async () => {
-            const res = await loadModBoardContextAction(gameSlug);
-            if ('error' in res) {
-                toast.error(res.error);
-                return;
-            }
-            const ctx = {
-                gameDisplay: res.gameDisplay,
-                categories: res.categories,
-                variables: res.variables,
-            };
-            setModCtx(ctx);
-            if (!ctx.categories.some((c) => c.name === categorySlug)) {
-                toast.error("Could not resolve this board's category.");
-                return;
-            }
-            setEditOpen(true);
-        });
-    };
-
-    const onMutated = () => {
-        setModVerb(null);
-        setEditOpen(false);
-        router.refresh();
-    };
-
-    // The entry carries the time in whichever clock the manual time
-    // asserted — exactly one of gameTime/realTime is set for manual rows.
-    const timing = entry.gameTime != null ? 'gametime' : 'realtime';
-    const timeMs = entry.gameTime ?? entry.realTime ?? entry.time ?? 0;
-
-    return (
-        <>
-            <Dropdown align="end">
-                <Dropdown.Toggle
-                    as="button"
-                    type="button"
-                    id={`manual-actions-${manualTimeId}`}
-                    className={styles.toggle}
-                    aria-label="Set-time actions"
-                    title="Set-time actions"
-                >
-                    <ThreeDotsVertical aria-hidden size={16} />
-                </Dropdown.Toggle>
-                <Dropdown.Menu
-                    className={styles.menu}
-                    // Same fixed/non-adaptive popper as the run kebab — see
-                    // the comment there for why.
-                    popperConfig={{
-                        strategy: 'fixed',
-                        modifiers: [
-                            {
-                                name: 'computeStyles',
-                                options: {
-                                    adaptive: false,
-                                    gpuAcceleration: false,
-                                },
-                            },
-                        ],
-                    }}
-                >
-                    <Dropdown.Item
-                        as={Link}
-                        className={styles.item}
-                        href={`/games-v2/${encodeURIComponent(gameSlug)}/manual/${manualTimeId}`}
-                    >
-                        View set time
-                    </Dropdown.Item>
-                    <Dropdown.Divider className={styles.menuDivider} />
-                    <Dropdown.Header className={styles.menuHeader}>
-                        Moderator
-                    </Dropdown.Header>
-                    {entry.verificationStatus !== 'verified' && (
-                        <Dropdown.Item
-                            as="button"
-                            type="button"
-                            className={styles.item}
-                            onClick={() => setModVerb('approve')}
-                        >
-                            Verify set time
-                        </Dropdown.Item>
-                    )}
-                    {entry.verificationStatus !== 'rejected' && (
-                        <Dropdown.Item
-                            as="button"
-                            type="button"
-                            className={styles.item}
-                            onClick={() => setModVerb('reject')}
-                        >
-                            Reject set time
-                        </Dropdown.Item>
-                    )}
-                    <Dropdown.Item
-                        as="button"
-                        type="button"
-                        className={styles.item}
-                        onClick={openEdit}
-                    >
-                        Change time…
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                        as="button"
-                        type="button"
-                        className={`${styles.item} ${styles.danger}`}
-                        onClick={() => setModVerb('remove')}
-                    >
-                        Remove set time…
-                    </Dropdown.Item>
-                    {entry.userId != null && (
-                        <Dropdown.Item
-                            as={Link}
-                            className={styles.item}
-                            href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${entry.userId}?from=board`}
-                        >
-                            View runner page
-                        </Dropdown.Item>
-                    )}
-                </Dropdown.Menu>
-            </Dropdown>
-
-            {modVerb && (
-                <RunActionDialog
-                    gameSlug={gameSlug}
-                    verb={modVerb}
-                    target={{
-                        kind: 'runs',
-                        runIds: [],
-                        manualTimeIds: [manualTimeId],
-                        label: `${entry.runnerName}'s set time`,
-                    }}
-                    onDone={onMutated}
-                    onClose={() => setModVerb(null)}
-                />
-            )}
-
-            {editOpen && modCategory != null && (
-                <ManualTimeDialog
-                    gameSlug={gameSlug}
-                    runnerRef={
-                        entry.userId != null
-                            ? { userId: entry.userId }
-                            : { guestName: entry.runnerName }
-                    }
-                    runnerLabel={entry.runnerName}
-                    categoryId={modCategory.id}
-                    categoryLabel={modCategory.display}
-                    subcategoryKey={subcategoryKey}
-                    existing={{
-                        id: manualTimeId,
-                        timing,
-                        timeMs,
-                        evidenceUrl: entry.vodUrl ?? null,
-                    }}
-                    onDone={onMutated}
-                    onClose={() => setEditOpen(false)}
-                />
-            )}
         </>
     );
 }

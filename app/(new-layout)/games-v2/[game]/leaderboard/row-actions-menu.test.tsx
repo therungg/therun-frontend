@@ -175,41 +175,29 @@ describe('RowActionsMenu — manual (set) time rows', () => {
         expect(container.innerHTML).toBe('');
     });
 
-    it('shows the manual verb set for managers', () => {
-        renderMenu({ entry: manualEntry({ verificationStatus: 'pending' }) });
+    it('offers View set time and Moderate… (which opens the set-time inspector)', () => {
+        const onModerate = vi.fn();
+        renderMenu({ entry: manualEntry(), onModerate });
         fireEvent.click(
             screen.getByRole('button', { name: 'Set-time actions' }),
         );
-        expect(screen.getByText('Verify set time')).toBeTruthy();
-        expect(screen.getByText('Reject set time')).toBeTruthy();
-        expect(screen.getByText('Change time…')).toBeTruthy();
-        expect(screen.getByText('Remove set time…')).toBeTruthy();
-        expect(screen.getByText('View runner page')).toBeTruthy();
-        // Run-only verbs must not leak in.
-        expect(screen.queryByText('Move…')).toBeNull();
-        expect(screen.queryByText('Mark for later')).toBeNull();
+        expect(screen.getByText('View set time')).toBeTruthy();
+        fireEvent.click(screen.getByText('Moderate…'));
+        expect(onModerate).toHaveBeenCalledTimes(1);
     });
 
-    it('hides the verdict the row already has', () => {
-        renderMenu({ entry: manualEntry({ verificationStatus: 'verified' }) });
+    it('drops the old inline verb set — verdicts now live in the inspector', () => {
+        renderMenu({ entry: manualEntry(), onModerate: vi.fn() });
         fireEvent.click(
             screen.getByRole('button', { name: 'Set-time actions' }),
         );
-        expect(screen.queryByText('Verify set time')).toBeNull();
-        expect(screen.getByText('Reject set time')).toBeTruthy();
-    });
-
-    it('loads board context and opens the edit dialog', async () => {
-        renderMenu({ entry: manualEntry() });
-        fireEvent.click(
-            screen.getByRole('button', { name: 'Set-time actions' }),
-        );
-        fireEvent.click(screen.getByText('Change time…'));
-        await waitFor(() =>
-            expect(screen.getByTestId('manual-time-dialog')).toBeTruthy(),
-        );
-        expect(mocks.loadModBoardContextAction).toHaveBeenCalledWith(
-            'some-game',
-        );
+        for (const gone of [
+            'Verify set time',
+            'Reject set time',
+            'Change time…',
+            'Remove set time…',
+        ]) {
+            expect(screen.queryByText(gone)).toBeNull();
+        }
     });
 });
