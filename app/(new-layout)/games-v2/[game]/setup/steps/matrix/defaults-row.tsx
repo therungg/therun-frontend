@@ -218,7 +218,14 @@ export function DefaultsRow({
                             const next = e.target.value as TimingChoice;
                             save({
                                 primaryTiming: next === 'rt' ? 'rt' : 'gt',
-                                gameTimeLabel: next === 'lrt' ? 'lrt' : 'igt',
+                                // RTA leaves the label alone — see
+                                // timingChoiceFields.
+                                ...(next === 'rt'
+                                    ? {}
+                                    : {
+                                          gameTimeLabel:
+                                              next === 'lrt' ? 'lrt' : 'igt',
+                                      }),
                             });
                             offerFollowUp(
                                 timingLabel(

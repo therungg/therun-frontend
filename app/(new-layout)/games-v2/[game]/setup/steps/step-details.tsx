@@ -67,7 +67,16 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                     gameSlug: data.game.name,
                     gameId: data.game.id,
                     primaryTiming: timing === 'rt' ? 'rt' : 'gt',
-                    gameTimeLabel: timing === 'lrt' ? 'lrt' : 'igt',
+                    // RTA leaves the stored label alone (see
+                    // timingChoiceFields) — undefined is "untouched" to the
+                    // action, so a board flipped to RTA keeps calling its
+                    // game-time clock LRT.
+                    gameTimeLabel:
+                        timing === 'rt'
+                            ? undefined
+                            : timing === 'lrt'
+                              ? 'lrt'
+                              : 'igt',
                     rulesTemplate: rulesTemplate.trim() || null,
                     gameRules: gameRules.trim() || null,
                     emulatorPolicy,
