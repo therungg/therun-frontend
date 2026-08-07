@@ -227,6 +227,14 @@
     font-variant-numeric: tabular-nums;
 }
 
+.featuredTimeLabel {
+    margin-left: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--bs-secondary-color);
+}
+
 .featuredDelta {
     display: inline-flex;
     align-items: center;
@@ -450,6 +458,14 @@
     color: var(--bs-body-color);
     letter-spacing: -0.03em;
     font-variant-numeric: tabular-nums;
+}
+
+.listTimeLabel {
+    margin-left: 0.25rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--bs-secondary-color);
 }
 
 .listDelta {
