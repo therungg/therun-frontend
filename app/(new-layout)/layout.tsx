@@ -1,7 +1,5 @@
 import { Viewport } from 'next';
 import React, { Suspense } from 'react';
-import { getSession } from '~src/actions/session.action';
-import { SessionErrorBoundary } from '~src/components/errors/session.error-boundary';
 import { Providers } from '~src/components/providers';
 import { Scripts } from '~src/components/scripts';
 import buildMetadata from '~src/utils/metadata';
@@ -12,37 +10,32 @@ import { Footer } from './components/footer';
 import { NavigationProgress } from './components/navigation-progress';
 import { Content } from './content';
 import styles from './layout.module.scss';
+import { SessionErrorGate } from './session-error-gate';
 
 export const metadata = buildMetadata();
 export const viewport: Viewport = {
     themeColor: '#007c00',
 };
-export default async function RootLayout({
+export default function RootLayout({
     // Layouts must accept a children prop.
     // This will be populated with nested layouts or pages
     children,
 }: {
     children: React.ReactNode;
 }) {
-    const session = await getSession();
-    const sessionError = session.sessionError;
-
     return (
-        <Providers user={session}>
+        <Providers>
             <Scripts />
             <Suspense fallback={null}>
                 <NavigationProgress />
             </Suspense>
             <div className={styles.background}>
                 <header className={styles.header}>
-                    <Header
-                        username={session?.username}
-                        picture={session?.picture}
-                    />
+                    <Header />
                 </header>
                 <main className={styles.main}>
                     <Content>
-                        {sessionError ? <SessionErrorBoundary /> : children}
+                        <SessionErrorGate>{children}</SessionErrorGate>
                     </Content>
                 </main>
                 <div className={styles.footer}>

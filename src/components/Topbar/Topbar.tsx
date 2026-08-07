@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from '~src/components/link';
+import { useSession } from '~src/components/session-provider';
 import { Can } from '~src/rbac/Can.component';
 import type { FeaturedPatronsResponse } from '../../../types/patreon.types';
 import { MobileMenu } from './MobileMenu';
@@ -19,18 +20,11 @@ import {
 } from './topbar-nav-items';
 
 interface TopbarProps {
-    username: string;
-    picture: string;
-    sessionError: string | null;
     featuredPatrons: FeaturedPatronsResponse;
 }
 
-export const Topbar = ({
-    username,
-    picture,
-    sessionError,
-    featuredPatrons,
-}: Partial<TopbarProps>) => {
+export const Topbar = ({ featuredPatrons }: Partial<TopbarProps>) => {
+    const { username, picture, sessionError } = useSession();
     const pathname = usePathname();
 
     // Helper for admin items rendered via children

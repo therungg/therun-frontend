@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
+import { cacheLife } from 'next/cache';
 import { notFound } from 'next/navigation';
 import RunDetail from '~app/(new-layout)/[username]/[game]/[run]/run';
-import { getSession } from '~src/actions/session.action';
 import { getGameGlobal } from '~src/components/game/get-game';
 import { JsonLd } from '~src/components/json-ld';
 import { getGlobalUser } from '~src/lib/get-global-user';
@@ -17,7 +17,9 @@ interface PageProps {
 }
 
 export default async function RunPage(props: PageProps) {
-    const searchParams = await props.searchParams;
+    'use cache';
+    cacheLife('hours');
+
     const params = await props.params;
     if (!params || !params.username || !params.game || !params.run)
         throw new Error('Params not found');
@@ -38,7 +40,6 @@ export default async function RunPage(props: PageProps) {
     if (!run) notFound();
 
     const liveData = await getLiveRunForUser(username);
-    const viewerSession = await getSession();
 
     const runUrl = run.customUrl ? `${username}/${run.customUrl}` : run.url;
 
@@ -75,8 +76,6 @@ export default async function RunPage(props: PageProps) {
                 runName={runName}
                 globalGameData={globalGameData}
                 liveData={liveData}
-                tab={searchParams.tab}
-                viewerUsername={viewerSession.username}
             />
         </>
     );
