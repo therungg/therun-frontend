@@ -1,6 +1,8 @@
 import { Button } from 'react-bootstrap';
 import { AbortRaceButton } from '~app/(new-layout)/races/components/buttons/abort-race-button';
 import { StartRaceButton } from '~app/(new-layout)/races/components/buttons/start-race-button';
+import { ForceFinishRaceForm } from '~app/(new-layout)/races/components/forms/force-finish-race-form';
+import { ForceStartRaceForm } from '~app/(new-layout)/races/components/forms/force-start-race-form';
 import { KickUserForm } from '~app/(new-layout)/races/components/forms/kick-user-form';
 import { SetTimeForUserForm } from '~app/(new-layout)/races/components/forms/set-time-for-user-form';
 import { Race } from '~app/(new-layout)/races/races.types';
@@ -18,6 +20,7 @@ export const RaceAdminActions = ({
         return <></>;
     }
     const raceIsPending = race.status === 'pending';
+    const raceIsStarting = race.status === 'starting';
     const raceIsOngoing = race.status === 'progress';
 
     const raceCanBeStarted =
@@ -32,12 +35,16 @@ export const RaceAdminActions = ({
     const raceCanBeAborted = raceIsPending;
     const userCanBeKicked = raceIsPending || raceIsOngoing;
     const userTimeCanBeSet = raceIsOngoing;
+    const raceCanBeForceStarted = raceIsPending;
+    const raceCanBeForceFinished = raceIsStarting || raceIsOngoing;
 
     const showAdminpanel =
         raceCanBeEdited ||
         raceCanBeAborted ||
         userCanBeKicked ||
-        userTimeCanBeSet;
+        userTimeCanBeSet ||
+        raceCanBeForceStarted ||
+        raceCanBeForceFinished;
 
     if (!showAdminpanel) return;
 
@@ -75,6 +82,12 @@ export const RaceAdminActions = ({
                     raceId={race.raceId}
                     users={race.participants?.map((p) => p.user)}
                 />
+            )}
+            {raceCanBeForceStarted && (
+                <ForceStartRaceForm raceId={race.raceId} />
+            )}
+            {raceCanBeForceFinished && (
+                <ForceFinishRaceForm raceId={race.raceId} />
             )}
             {userTimeCanBeSet && (
                 <SetTimeForUserForm
