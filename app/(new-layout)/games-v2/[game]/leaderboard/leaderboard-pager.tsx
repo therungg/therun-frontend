@@ -19,6 +19,7 @@ import styles from './leaderboard.module.scss';
 import { YOU_ROW_ID } from './leaderboard-row';
 import { LeaderboardTable } from './leaderboard-table';
 import { paginationItems } from './pagination-items';
+import { RunInspector } from './run-inspector';
 import { type BoardSelectionKey, entrySelectionKey } from './selection';
 import type { TimingKey } from './timing-columns';
 
@@ -137,6 +138,9 @@ export function LeaderboardPager({
     // Shift-click range-select anchor — the last row clicked without
     // shift, or the most recent shift-click's endpoint.
     const lastClickedRef = useRef<BoardSelectionKey | null>(null);
+    // Run inspector (mods only) — tracked by runId, not entry reference, so
+    // a page refetch after a verdict re-derives the fresh row.
+    const [inspectRunId, setInspectRunId] = useState<number | null>(null);
 
     const [entryClass] = useState(() => {
         if (typeof window === 'undefined') return styles.boardStagger;
@@ -197,6 +201,26 @@ export function LeaderboardPager({
     };
 
     const entries = board.entries;
+
+    // ---- Run inspector (mods only) ---------------------------------------
+    // j/k step through the page's run rows (manual set times keep their own
+    // kebab until they join the inspector).
+    const runEntries = entries.filter((e) => e.runId != null);
+    const inspectIndex =
+        inspectRunId == null
+            ? -1
+            : runEntries.findIndex((e) => e.runId === inspectRunId);
+    const inspectEntry = inspectIndex >= 0 ? runEntries[inspectIndex] : null;
+
+    // A refetch or page navigation can drop the inspected run off the page
+    // (quiet removal, verified filter) — close rather than show stale data.
+    useEffect(() => {
+        if (inspectRunId != null && inspectEntry == null) {
+            setInspectRunId(null);
+        }
+    }, [inspectRunId, inspectEntry]);
+
+    const boardRefresh = () => startRefetch(refetchCurrentPage);
 
     // ---- Bulk selection (mods only) --------------------------------------
     const selectableKeys = entries
@@ -442,7 +466,42 @@ export function LeaderboardPager({
                 onToggleSelect={toggleSelect}
                 onSelectRunner={selectRunner}
                 onToggleAllVisible={toggleAllVisible}
+                onModerate={
+                    canManage
+                        ? (entry) => setInspectRunId(entry.runId ?? null)
+                        : undefined
+                }
+                onBoardRefresh={canManage ? boardRefresh : undefined}
             />
+            {canManage && inspectEntry != null && (
+                <RunInspector
+                    entry={inspectEntry}
+                    gameSlug={gameSlug}
+                    categorySlug={categorySlug}
+                    gameTimeLabel={gameTimeLabel}
+                    showMilliseconds={showMilliseconds}
+                    onClose={() => setInspectRunId(null)}
+                    onMutated={boardRefresh}
+                    onPrev={
+                        inspectIndex > 0
+                            ? () =>
+                                  setInspectRunId(
+                                      runEntries[inspectIndex - 1].runId ??
+                                          null,
+                                  )
+                            : undefined
+                    }
+                    onNext={
+                        inspectIndex < runEntries.length - 1
+                            ? () =>
+                                  setInspectRunId(
+                                      runEntries[inspectIndex + 1].runId ??
+                                          null,
+                                  )
+                            : undefined
+                    }
+                />
+            )}
             {canManage && selectedKeys.size > 0 && (
                 <BoardBulkBar
                     gameSlug={gameSlug}

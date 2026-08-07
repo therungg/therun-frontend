@@ -369,16 +369,27 @@ tr:focus-within .reveal {
     }
 }
 
-// Moderator "Manage" affordance: control-pill styled link with the same
-// coarse-pointer hit-area treatment as the row-actions kebab.
-.manageLink {
+// Moderator one-click Verify on a pending row: control-pill styled button
+// with the same coarse-pointer hit-area treatment as the row-actions kebab.
+.quickVerify {
     @include board.control-pill;
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    background: none;
     padding: dt.$spacing-xs dt.$spacing-md;
-    text-decoration: none;
+    color: var(--bs-success);
 
-    // Touch-target pass: bumped from spacing-md to guarantee a ≥44px
-    // hit area (the prior value landed right at the boundary).
+    &:hover:not(:disabled) {
+        border-color: var(--bs-success);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+
+    // Touch-target pass: guarantee a ≥44px hit area.
     @media (pointer: coarse) {
         padding: dt.$spacing-lg;
     }
