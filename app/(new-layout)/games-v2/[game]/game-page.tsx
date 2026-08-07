@@ -14,7 +14,6 @@ import { GameHero } from './header/game-hero';
 import mastheadStyles from './header/masthead.module.scss';
 import { formatSubcategoryKey, type LabelVariableDef } from './labels';
 import { LeaderboardPager } from './leaderboard/leaderboard-pager';
-import { LiveStrip } from './leaderboard/live-strip';
 import { ModerationLogView } from './leaderboard/moderation/moderation-log-view';
 import { RulesBody } from './rules/rules-panel';
 import { Sidebar } from './sidebar/sidebar';
@@ -177,12 +176,6 @@ export function GamePage({
                             />
                         ) : (
                             <>
-                                <LiveStrip
-                                    gameDisplay={data.game.display}
-                                    categoryDisplay={
-                                        data.selectedCategory.display
-                                    }
-                                />
                                 {data.invalidCombination ? (
                                     <InvalidCombinationNotice
                                         gameSlug={data.game.name}

@@ -516,66 +516,6 @@ tr:focus-within .reveal {
     }
 }
 
-// ---- Live strip ----------------------------------------------
-// Someone is running this exact board right now. `.liveDot`'s treatment is
-// replicated from sidebar.module.scss rather than composed across modules
-// (cross-module class composition depends on bundler concat order).
-.liveStrip {
-    // A real panel, not a floating outline: with every neighbour now a
-    // lifted surface, a border-only strip read as unanchored text.
-    @include board.board-surface(dt.$spacing-sm dt.$spacing-lg);
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-sm;
-    margin-block-end: dt.$spacing-sm;
-    font-size: dt.$font-size-sm;
-}
-
-.liveStripDot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: dt.$accent-red;
-    flex-shrink: 0;
-    animation: liveStripPulse 2s ease-in-out infinite;
-}
-
-@keyframes liveStripPulse {
-    0%,
-    100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.4;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .liveStripDot {
-        animation: none;
-    }
-}
-
-.liveStripText {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.liveStripLink {
-    font-weight: 600;
-    text-decoration: none;
-}
-
-.liveStripMore {
-    @include board.control-pill;
-    margin-left: auto;
-    flex-shrink: 0;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-    padding: dt.$spacing-xs dt.$spacing-md;
-}
-
 // ---- Range indicator + Find me --------------------------------
 .boardMetaBar {
     display: flex;
