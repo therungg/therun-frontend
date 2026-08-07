@@ -201,10 +201,16 @@ export function LeaderboardPager({
         .filter((id): id is number => id != null);
 
     const toggleSelect = (runId: number, shiftKey: boolean) => {
+        // Anchor bookkeeping stays outside the updater: StrictMode
+        // double-invokes updaters, and a ref mutation inside meant the
+        // second run saw the anchor already moved to the clicked row,
+        // collapsing every shift-range to a single row.
+        const anchorId = lastClickedRef.current;
+        lastClickedRef.current = runId;
         setSelectedRunIds((prev) => {
             const next = new Set(prev);
-            if (shiftKey && lastClickedRef.current != null) {
-                const anchor = selectableRunIds.indexOf(lastClickedRef.current);
+            if (shiftKey && anchorId != null) {
+                const anchor = selectableRunIds.indexOf(anchorId);
                 const target = selectableRunIds.indexOf(runId);
                 if (anchor !== -1 && target !== -1) {
                     const [start, end] =
@@ -214,13 +220,11 @@ export function LeaderboardPager({
                         if (shouldSelect) next.add(id);
                         else next.delete(id);
                     }
-                    lastClickedRef.current = runId;
                     return next;
                 }
             }
             if (next.has(runId)) next.delete(runId);
             else next.add(runId);
-            lastClickedRef.current = runId;
             return next;
         });
     };

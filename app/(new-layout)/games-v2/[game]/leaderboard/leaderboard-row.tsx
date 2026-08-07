@@ -281,11 +281,15 @@ export function LeaderboardRow({
                             checked={selected}
                             aria-label={`Select ${entry.runnerName}'s run`}
                             onClick={(e) => {
-                                // Controlled entirely from parent selection
-                                // state — prevent the native toggle so a
-                                // shift-click range-select doesn't also
-                                // flip this row an extra, out-of-sync time.
-                                e.preventDefault();
+                                // No preventDefault: it would revert the
+                                // native toggle after React committed
+                                // `checked`, desyncing the DOM so the
+                                // checkmark appears one click late on the
+                                // previous row clicked. The native toggle
+                                // always matches what toggleSelect decides
+                                // for the clicked row (shift-ranges included),
+                                // so letting it through keeps DOM and state
+                                // in agreement.
                                 onToggleSelect?.(
                                     entry.runId as number,
                                     e.shiftKey,
