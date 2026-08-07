@@ -14,6 +14,7 @@ import styles from './leaderboard.module.scss';
 import { relativeDate } from './relative-date';
 import { RowActionsMenu } from './row-actions-menu';
 import { RunnerAvatar } from './runner-avatar';
+import { type BoardSelectionKey, entrySelectionKey } from './selection';
 import {
     type TimingKey,
     timingColumnHidden,
@@ -133,10 +134,11 @@ interface Props {
     /** category.rtaFallback — an entry with no game time on a GT board is
      * ranked by its real time; the ranked cell shows it with an RTA marker. */
     rtaFallback?: boolean;
-    /** Checkbox column — only rendered when `canManage`, and only for rows with a real run. */
+    /** Checkbox column — only rendered when `canManage`, for rows with a
+     * run or a manual set time (see selection.ts for the key scheme). */
     selected?: boolean;
     /** Shift-click extends a range — the click handler forwards the native event's shiftKey. */
-    onToggleSelect?: (runId: number, shiftKey: boolean) => void;
+    onToggleSelect?: (key: BoardSelectionKey, shiftKey: boolean) => void;
     /** Kebab's "Select all runs by …" shortcut to the single-runner bulk state. */
     onSelectRunner?: (runnerKey: string) => void;
 }
@@ -164,6 +166,7 @@ export function LeaderboardRow({
     // name, `userId`/`picture`/`country` nulled, `isGuest: false`. Always key
     // the treatment off this flag, never off the name string.
     const isAnonymous = entry.anonymized === true;
+    const selectionKey = entrySelectionKey(entry);
     const showManageButton = canManage && entry.runId != null && !entry.isGuest;
     // Same key a bulk selection groups runners by (leaderboard-pager.ts):
     // registered users by id, guests by name (no persistent identity).
@@ -274,7 +277,7 @@ export function LeaderboardRow({
         >
             {canManage && (
                 <td className={styles.checkCell}>
-                    {entry.runId != null && (
+                    {selectionKey != null && (
                         <input
                             type="checkbox"
                             className={styles.checkbox}
@@ -290,10 +293,7 @@ export function LeaderboardRow({
                                 // for the clicked row (shift-ranges included),
                                 // so letting it through keeps DOM and state
                                 // in agreement.
-                                onToggleSelect?.(
-                                    entry.runId as number,
-                                    e.shiftKey,
-                                );
+                                onToggleSelect?.(selectionKey, e.shiftKey);
                             }}
                             onChange={() => {
                                 /* handled in onClick above */

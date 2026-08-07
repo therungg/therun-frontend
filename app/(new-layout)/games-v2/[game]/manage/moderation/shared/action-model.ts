@@ -122,9 +122,20 @@ export function defaultBanScopeForCategories(
     return distinct.size > 1 ? 'game' : 'category';
 }
 
-/** What a dialog instance acts on. `ban` requires a `runner` target; the rest require `runs`. */
+/** What a dialog instance acts on. `ban` requires a `runner` target; the rest require `runs`.
+ *
+ * `manualTimeIds` rides along on the `runs` kind for board selections that
+ * include manual set times: approve/reject map to the manual-time verdict
+ * endpoint, remove maps to delete. There is no preview or undo for the
+ * manual portion (the backend has neither), and `restore` skips it —
+ * a deleted manual time has nothing to restore to. */
 export type RunActionTarget =
-    | { kind: 'runs'; runIds: number[]; label: string }
+    | {
+          kind: 'runs';
+          runIds: number[];
+          manualTimeIds?: number[];
+          label: string;
+      }
     | {
           kind: 'runner';
           runnerId: number;

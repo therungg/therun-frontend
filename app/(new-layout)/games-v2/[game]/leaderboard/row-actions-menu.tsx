@@ -24,6 +24,7 @@ import { AdjustDialog } from '../manage/boards/adjust-dialog';
 import { MoveDialog } from '../manage/boards/move-dialog';
 import { RunnerDialog } from '../manage/boards/runner-dialog';
 import { markRunsAction } from '../manage/moderation/shared/actions/marks.action';
+import { ManualTimeDialog } from '../manage/moderation/shared/manual-time-dialog';
 import { isSameRunner } from '../shared/is-same-runner';
 import {
     SelfRunVerdictDialog,
@@ -116,8 +117,20 @@ export function RowActionsMenu({
     const [_ctxPending, startCtxLoad] = useTransition();
     const [_markPending, startMark] = useTransition();
 
-    // Manual-time entries have no finished_run to act on.
-    if (runId == null) return null;
+    // Manual-time entries have no finished_run — they get their own menu
+    // (verdicts/delete/edit go to the manual-times endpoints instead).
+    if (runId == null) {
+        if (!canManage || entry.manualTimeId == null) return null;
+        return (
+            <ManualRowActionsMenu
+                entry={entry}
+                manualTimeId={entry.manualTimeId}
+                gameSlug={gameSlug}
+                categorySlug={categorySlug}
+                subcategoryKey={entrySubcategoryKey}
+            />
+        );
+    }
 
     const rosterRow = entryToRosterRow(entry, entrySubcategoryKey);
     const modCategory =
@@ -557,6 +570,205 @@ export function RowActionsMenu({
                 onCancel={selfVerdict.cancel}
                 onConfirm={selfVerdict.confirm}
             />
+        </>
+    );
+}
+
+/**
+ * Mod kebab for a manual (set) time row. Mirrors the run kebab's verb set
+ * where a manual-time equivalent exists: Verify/Reject (verdict endpoint),
+ * Remove (delete — a manual time has no exclude machinery), Change time
+ * (edit timeMs/evidence via ManualTimeDialog), plus the runner links.
+ * Move/Mark/Hide-identity/history are run-only and deliberately absent.
+ */
+function ManualRowActionsMenu({
+    entry,
+    manualTimeId,
+    gameSlug,
+    categorySlug,
+    subcategoryKey,
+}: {
+    entry: LeaderboardEntry;
+    manualTimeId: number;
+    gameSlug: string;
+    categorySlug: string;
+    subcategoryKey: string;
+}) {
+    const router = useRouter();
+    const [modVerb, setModVerb] = useState<ModVerb | null>(null);
+    const [editOpen, setEditOpen] = useState(false);
+    const [modCtx, setModCtx] = useState<ModBoardContext | null>(null);
+    const [_ctxPending, startCtxLoad] = useTransition();
+
+    const modCategory =
+        modCtx?.categories.find((c) => c.name === categorySlug) ?? null;
+
+    const openEdit = () => {
+        if (modCtx != null) {
+            if (modCategory == null) {
+                toast.error("Could not resolve this board's category.");
+                return;
+            }
+            setEditOpen(true);
+            return;
+        }
+        startCtxLoad(async () => {
+            const res = await loadModBoardContextAction(gameSlug);
+            if ('error' in res) {
+                toast.error(res.error);
+                return;
+            }
+            const ctx = {
+                gameDisplay: res.gameDisplay,
+                categories: res.categories,
+                variables: res.variables,
+            };
+            setModCtx(ctx);
+            if (!ctx.categories.some((c) => c.name === categorySlug)) {
+                toast.error("Could not resolve this board's category.");
+                return;
+            }
+            setEditOpen(true);
+        });
+    };
+
+    const onMutated = () => {
+        setModVerb(null);
+        setEditOpen(false);
+        router.refresh();
+    };
+
+    // The entry carries the time in whichever clock the manual time
+    // asserted — exactly one of gameTime/realTime is set for manual rows.
+    const timing = entry.gameTime != null ? 'gametime' : 'realtime';
+    const timeMs = entry.gameTime ?? entry.realTime ?? entry.time ?? 0;
+
+    return (
+        <>
+            <Dropdown align="end">
+                <Dropdown.Toggle
+                    as="button"
+                    type="button"
+                    id={`manual-actions-${manualTimeId}`}
+                    className={styles.toggle}
+                    aria-label="Set-time actions"
+                    title="Set-time actions"
+                >
+                    <ThreeDotsVertical aria-hidden size={16} />
+                </Dropdown.Toggle>
+                <Dropdown.Menu
+                    className={styles.menu}
+                    // Same fixed/non-adaptive popper as the run kebab — see
+                    // the comment there for why.
+                    popperConfig={{
+                        strategy: 'fixed',
+                        modifiers: [
+                            {
+                                name: 'computeStyles',
+                                options: {
+                                    adaptive: false,
+                                    gpuAcceleration: false,
+                                },
+                            },
+                        ],
+                    }}
+                >
+                    <Dropdown.Item
+                        as={Link}
+                        className={styles.item}
+                        href={`/games-v2/${encodeURIComponent(gameSlug)}/manual/${manualTimeId}`}
+                    >
+                        View set time
+                    </Dropdown.Item>
+                    <Dropdown.Divider className={styles.menuDivider} />
+                    <Dropdown.Header className={styles.menuHeader}>
+                        Moderator
+                    </Dropdown.Header>
+                    {entry.verificationStatus !== 'verified' && (
+                        <Dropdown.Item
+                            as="button"
+                            type="button"
+                            className={styles.item}
+                            onClick={() => setModVerb('approve')}
+                        >
+                            Verify set time
+                        </Dropdown.Item>
+                    )}
+                    {entry.verificationStatus !== 'rejected' && (
+                        <Dropdown.Item
+                            as="button"
+                            type="button"
+                            className={styles.item}
+                            onClick={() => setModVerb('reject')}
+                        >
+                            Reject set time
+                        </Dropdown.Item>
+                    )}
+                    <Dropdown.Item
+                        as="button"
+                        type="button"
+                        className={styles.item}
+                        onClick={openEdit}
+                    >
+                        Change time…
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                        as="button"
+                        type="button"
+                        className={`${styles.item} ${styles.danger}`}
+                        onClick={() => setModVerb('remove')}
+                    >
+                        Remove set time…
+                    </Dropdown.Item>
+                    {entry.userId != null && (
+                        <Dropdown.Item
+                            as={Link}
+                            className={styles.item}
+                            href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${entry.userId}?from=board`}
+                        >
+                            View runner page
+                        </Dropdown.Item>
+                    )}
+                </Dropdown.Menu>
+            </Dropdown>
+
+            {modVerb && (
+                <RunActionDialog
+                    gameSlug={gameSlug}
+                    verb={modVerb}
+                    target={{
+                        kind: 'runs',
+                        runIds: [],
+                        manualTimeIds: [manualTimeId],
+                        label: `${entry.runnerName}'s set time`,
+                    }}
+                    onDone={onMutated}
+                    onClose={() => setModVerb(null)}
+                />
+            )}
+
+            {editOpen && modCategory != null && (
+                <ManualTimeDialog
+                    gameSlug={gameSlug}
+                    runnerRef={
+                        entry.userId != null
+                            ? { userId: entry.userId }
+                            : { guestName: entry.runnerName }
+                    }
+                    runnerLabel={entry.runnerName}
+                    categoryId={modCategory.id}
+                    categoryLabel={modCategory.display}
+                    subcategoryKey={subcategoryKey}
+                    existing={{
+                        id: manualTimeId,
+                        timing,
+                        timeMs,
+                        evidenceUrl: entry.vodUrl ?? null,
+                    }}
+                    onDone={onMutated}
+                    onClose={() => setEditOpen(false)}
+                />
+            )}
         </>
     );
 }
