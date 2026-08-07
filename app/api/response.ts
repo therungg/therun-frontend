@@ -21,7 +21,9 @@ export const apiResponse = ({
     status = 200,
     headers = {},
 }: ApiResponse) => {
-    return NextResponse.json(body, {
+    // NextResponse.json(undefined) throws "Value is not JSON serializable" —
+    // a missing upstream body must degrade to an explicit null, not a 500.
+    return NextResponse.json(body ?? null, {
         headers: {
             'Access-Control-Allow-Origin': '*',
             'Cache-Control': `s-maxage=${cache?.maxAge}, stale-while-revalidate=${cache?.swr}`,
