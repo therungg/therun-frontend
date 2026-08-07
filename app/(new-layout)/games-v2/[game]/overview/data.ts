@@ -1,3 +1,4 @@
+import { getGameActivityTimeseries } from '~src/lib/game-activity';
 import { EMPTY_GAME_METADATA } from '~src/lib/game-metadata';
 import type { GameMetadata } from '~src/lib/game-mgmt';
 import { getGameMetadata } from '~src/lib/game-mgmt';
@@ -20,6 +21,7 @@ import type {
     ResolvedGroup,
     UserRanking,
 } from '../../../../../types/leaderboards.types';
+import { isoDaysAgo, toSparklineSeries } from '../header/sparkline-data';
 import {
     filterPbsToFeatured,
     RECENT_PB_FETCH_LIMIT,
@@ -44,12 +46,9 @@ export interface GameOverviewData {
         d90: TopRunnerRow[];
         d30: TopRunnerRow[];
     };
+    /** Zero-filled daily playtime, last 90 days — the hero's sparkline. */
+    activitySparkline: number[];
     sessionUsername: string | null;
-}
-
-/** Day-granular ISO date, so the cached period fetches key stably per day. */
-function isoDaysAgo(days: number): string {
-    return new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
 }
 
 // The card's record is the top of the category's DEFAULT board — the exact
@@ -95,6 +94,7 @@ export async function loadGameOverviewData(
         runnersAllTime,
         runners90,
         runners30,
+        activity90,
     ] = await Promise.all([
         getQuickStats(game.id).catch(() => ({
             totalRunTime: 0,
@@ -114,6 +114,9 @@ export async function loadGameOverviewData(
         getTopRunnersAllTime(game.id).catch(() => []),
         getTopRunnersForPeriod(game.id, isoDaysAgo(90), today).catch(() => []),
         getTopRunnersForPeriod(game.id, isoDaysAgo(30), today).catch(() => []),
+        getGameActivityTimeseries(game.id, isoDaysAgo(90), today).catch(
+            () => [],
+        ),
     ]);
 
     return {
@@ -133,6 +136,7 @@ export async function loadGameOverviewData(
             d90: runners90,
             d30: runners30,
         },
+        activitySparkline: toSparklineSeries(activity90, 90),
         sessionUsername,
     };
 }
