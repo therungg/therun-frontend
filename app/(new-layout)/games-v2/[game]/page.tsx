@@ -82,7 +82,10 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
 
     let claim: ClaimCtaState | null = null;
     if (sessionUsername && !canManage && !canManageRuns) {
-        const myClaim = await getMyBoardClaim(session.id, resolvedGame.id);
+        const myClaim = await getMyBoardClaim(
+            session.id,
+            resolvedGame.id,
+        ).catch(() => null);
         claim = {
             gameId: resolvedGame.id,
             hasModerators: moderators.length > 0,

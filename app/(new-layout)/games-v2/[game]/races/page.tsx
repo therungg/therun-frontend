@@ -101,7 +101,10 @@ export default async function GameRacesPage({ params }: PageProps) {
     const moderators = await listGameModerators(resolvedGame.id);
     let claim: ClaimCtaState | null = null;
     if (sessionUsername && !canManage && !canModerate) {
-        const myClaim = await getMyBoardClaim(session.id, resolvedGame.id);
+        const myClaim = await getMyBoardClaim(
+            session.id,
+            resolvedGame.id,
+        ).catch(() => null);
         claim = {
             gameId: resolvedGame.id,
             hasModerators: moderators.length > 0,
