@@ -134,6 +134,12 @@
     padding-left: calc(#{dt.$avatar-xs} + #{dt.$spacing-xs});
 }
 
+// Second line for rows with no avatar gutter (active races).
+.pbMetaFlush {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+}
+
 .pbDelta {
     color: var(--bs-link-color);
 }

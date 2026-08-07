@@ -14,6 +14,7 @@ import {
 import { getQuickStats, resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { getGlobalStats } from '~src/lib/highlights';
 import { getLeaderboardExport } from '~src/lib/leaderboards-v1';
+import { getRaceGameStatsByGame } from '~src/lib/races';
 import { getGameStandings } from '~src/lib/standings';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
@@ -151,6 +152,7 @@ export default async function GameStatsPage({ params }: PageProps) {
         distributionEntries,
         standings,
         globalStats,
+        raceStats,
     ] = await Promise.all([
         getQuickStats(resolvedGame.id).catch(() => ({
             totalRunTime: 0,
@@ -190,6 +192,9 @@ export default async function GameStatsPage({ params }: PageProps) {
             () => ({ status: 'error' }) as const,
         ),
         getGlobalStats().catch(() => null),
+        getRaceGameStatsByGame(encodeURIComponent(resolvedGame.display)).catch(
+            () => null,
+        ),
     ]);
 
     const countryRows: BreakdownRow[] = (() => {
@@ -228,7 +233,10 @@ export default async function GameStatsPage({ params }: PageProps) {
             />
             {/* Full-width like standings: the chart and the table earn the
                 rail's 340px more than the rail does here. */}
-            <ViewTabs gameSlug={resolvedGame.name} />
+            <ViewTabs
+                gameSlug={resolvedGame.name}
+                showRaces={(raceStats?.stats?.totalRaces ?? 0) > 0}
+            />
             <section className={styles.section}>
                 <div className={styles.sectionHead}>
                     <span className={styles.sectionLabel}>Activity</span>

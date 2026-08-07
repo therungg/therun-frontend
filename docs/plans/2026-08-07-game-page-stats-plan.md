@@ -123,7 +123,18 @@ Respect `anonymized` entries everywhere a runner name renders.
 
 ---
 
-## Phase 3 — Races tab + sidebar panel
+## Phase 3 — Races tab + sidebar panel — BUILT 2026-08-07 (branch game-page-stats-phase3, stacked on phase2)
+
+As-built notes: the race API keys on the percent-encoded DISPLAY name
+(`%20`, not `+` — verified against prod); games whose display differs from
+their race-API key simply don't show the tab. The Races tab appears on the
+tab band of all game-root views when `totalRaces > 0`; the races route
+itself only redirects when the game has no races (no 2+-featured rule — race
+availability is orthogonal to featured categories, though the tab band that
+links to it still only renders on multi-category roots). Category
+leaderboards are server-rendered top-3 podia per category (capped at 8)
+rather than a client picker. The active-races sidebar panel is fetched with
+the page (no polling — the race page itself is the live surface).
 
 All read-only reuse of `src/lib/races.ts` (separate races API; no backend work).
 
