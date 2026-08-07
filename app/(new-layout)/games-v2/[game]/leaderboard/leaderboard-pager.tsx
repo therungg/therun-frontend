@@ -451,7 +451,6 @@ export function LeaderboardPager({
                 leaderboard={board}
                 sessionUsername={sessionUsername}
                 canManage={canManage}
-                canSiteBan={canSiteBan}
                 gameSlug={gameSlug}
                 variableKeys={variableKeys}
                 primaryTiming={primaryTiming}
@@ -478,6 +477,7 @@ export function LeaderboardPager({
                     entry={inspectEntry}
                     gameSlug={gameSlug}
                     categorySlug={categorySlug}
+                    subcategoryDefKeys={subcategoryDefKeys}
                     gameTimeLabel={gameTimeLabel}
                     showMilliseconds={showMilliseconds}
                     onClose={() => setInspectRunId(null)}

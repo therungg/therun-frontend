@@ -119,89 +119,46 @@ beforeEach(() => {
     mocks.loadModBoardContextAction.mockResolvedValue(MOD_CONTEXT);
 });
 
-describe('RowActionsMenu — console-parity mod items', () => {
-    it('renders the new mod items only for managers', () => {
-        renderMenu({ canManage: false });
+describe('RowActionsMenu — mod section (drawer era)', () => {
+    it('shows no mod section for non-managers', () => {
+        renderMenu({ canManage: false, onModerate: vi.fn() });
         openMenu();
-        expect(screen.queryByText('Move…')).toBeNull();
-        expect(screen.queryByText('Adjust time…')).toBeNull();
-        expect(screen.queryByText('Runner…')).toBeNull();
-        expect(screen.queryByText('Mark for later')).toBeNull();
+        expect(screen.queryByText('Moderate…')).toBeNull();
+        expect(screen.queryByText('Moderator')).toBeNull();
     });
 
-    it('shows Move/Adjust/Runner/Mark for a manager on a user row', () => {
-        renderMenu();
+    it('offers Moderate… and forwards the click', () => {
+        const onModerate = vi.fn();
+        renderMenu({ onModerate });
         openMenu();
-        expect(screen.getByText('Move…')).toBeTruthy();
-        expect(screen.getByText('Adjust time…')).toBeTruthy();
-        expect(screen.getByText('Runner…')).toBeTruthy();
-        expect(screen.getByText('Mark for later')).toBeTruthy();
+        fireEvent.click(screen.getByText('Moderate…'));
+        expect(onModerate).toHaveBeenCalledTimes(1);
     });
 
-    it('hides Runner… for guests and relabels Adjust as Set time…', () => {
-        renderMenu({ entry: entry({ userId: null, isGuest: true }) });
+    it('offers Select all runs by <runner> and forwards the click', () => {
+        const onSelectRunner = vi.fn();
+        renderMenu({ onSelectRunner });
         openMenu();
-        expect(screen.queryByText('Runner…')).toBeNull();
-        expect(screen.getByText('Set time…')).toBeTruthy();
+        fireEvent.click(screen.getByText('Select all runs by alice'));
+        expect(onSelectRunner).toHaveBeenCalledTimes(1);
     });
 
-    it('loads board context once and opens the Move dialog', async () => {
-        renderMenu();
+    it('no longer carries the verbs that moved into the inspector', () => {
+        renderMenu({ onModerate: vi.fn(), onSelectRunner: vi.fn() });
         openMenu();
-        fireEvent.click(screen.getByText('Move…'));
-        await waitFor(() =>
-            expect(screen.getByTestId('move-dialog')).toBeTruthy(),
-        );
-        expect(mocks.loadModBoardContextAction).toHaveBeenCalledTimes(1);
-        expect(mocks.loadModBoardContextAction).toHaveBeenCalledWith(
-            'some-game',
-        );
-
-        // Second open reuses the cached context.
-        openMenu();
-        fireEvent.click(screen.getByText('Adjust time…'));
-        await waitFor(() =>
-            expect(screen.getByTestId('adjust-dialog')).toBeTruthy(),
-        );
-        expect(mocks.loadModBoardContextAction).toHaveBeenCalledTimes(1);
-    });
-
-    it('surfaces a context-load error and opens nothing', async () => {
-        mocks.loadModBoardContextAction.mockResolvedValue({
-            error: 'Not authorized to moderate this game.',
-        });
-        renderMenu();
-        openMenu();
-        fireEvent.click(screen.getByText('Move…'));
-        await waitFor(() =>
-            expect(mocks.toastError).toHaveBeenCalledWith(
-                'Not authorized to moderate this game.',
-            ),
-        );
-        expect(screen.queryByTestId('move-dialog')).toBeNull();
-    });
-
-    it('errors when the board category cannot be resolved', async () => {
-        renderMenu({ categorySlug: 'other-category' });
-        openMenu();
-        fireEvent.click(screen.getByText('Move…'));
-        await waitFor(() => expect(mocks.toastError).toHaveBeenCalled());
-        expect(screen.queryByTestId('move-dialog')).toBeNull();
-    });
-
-    it('marks the run for later', async () => {
-        mocks.markRunsAction.mockResolvedValue({ ok: true });
-        renderMenu();
-        openMenu();
-        fireEvent.click(screen.getByText('Mark for later'));
-        await waitFor(() =>
-            expect(mocks.markRunsAction).toHaveBeenCalledWith(
-                'some-game',
-                [42],
-                true,
-            ),
-        );
-        expect(mocks.toastSuccess).toHaveBeenCalled();
+        for (const gone of [
+            'Verify run',
+            'Remove run…',
+            'Restore run',
+            'Move…',
+            'Adjust time…',
+            'Runner…',
+            'Hide identity…',
+            'Mark for later',
+            'View runner page',
+        ]) {
+            expect(screen.queryByText(gone)).toBeNull();
+        }
     });
 });
 
