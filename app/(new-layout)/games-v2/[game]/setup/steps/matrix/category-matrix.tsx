@@ -17,7 +17,10 @@ import {
     rendersAsDot,
     rulesState,
     showsOtherTime,
-    TIMING_LABEL,
+    type TimingChoice,
+    timingChoiceFields,
+    timingChoiceOf,
+    timingLabel,
 } from '~src/lib/setup/board-defaults';
 import { formatTimeInput, parseTimeInput } from '~src/lib/time-input';
 import type { ResolvedCategory } from '../../../../../../../types/leaderboards.types';
@@ -210,20 +213,19 @@ export function CategoryMatrix({
                                                             c,
                                                             'timing',
                                                         )}
-                                                        value={c.primaryTiming}
+                                                        value={timingChoiceOf(
+                                                            c.primaryTiming,
+                                                            c.gameTimeLabel,
+                                                        )}
                                                         disabled={isSaving}
                                                         aria-label={`Timing for ${c.display}`}
                                                         onChange={(e) =>
                                                             applyToCategories(
                                                                 [c.id],
-                                                                {
-                                                                    primaryTiming:
-                                                                        e.target
-                                                                            .value ===
-                                                                        'gt'
-                                                                            ? 'gametime'
-                                                                            : 'realtime',
-                                                                },
+                                                                timingChoiceFields(
+                                                                    e.target
+                                                                        .value as TimingChoice,
+                                                                ),
                                                             )
                                                         }
                                                     >
@@ -232,6 +234,9 @@ export function CategoryMatrix({
                                                         </option>
                                                         <option value="gt">
                                                             IGT
+                                                        </option>
+                                                        <option value="lrt">
+                                                            LRT
                                                         </option>
                                                     </select>
                                                 </Cell>
@@ -259,13 +264,12 @@ export function CategoryMatrix({
                                                                 : 'off'
                                                         }
                                                         disabled={isSaving}
-                                                        aria-label={`Show ${
-                                                            TIMING_LABEL[
-                                                                otherTiming(
-                                                                    c.primaryTiming,
-                                                                )
-                                                            ]
-                                                        } for ${c.display}`}
+                                                        aria-label={`Show ${timingLabel(
+                                                            otherTiming(
+                                                                c.primaryTiming,
+                                                            ),
+                                                            c.gameTimeLabel,
+                                                        )} for ${c.display}`}
                                                         onChange={(e) =>
                                                             applyToCategories(
                                                                 [c.id],
@@ -280,23 +284,21 @@ export function CategoryMatrix({
                                                     >
                                                         <option value="on">
                                                             Show{' '}
-                                                            {
-                                                                TIMING_LABEL[
-                                                                    otherTiming(
-                                                                        c.primaryTiming,
-                                                                    )
-                                                                ]
-                                                            }
+                                                            {timingLabel(
+                                                                otherTiming(
+                                                                    c.primaryTiming,
+                                                                ),
+                                                                c.gameTimeLabel,
+                                                            )}
                                                         </option>
                                                         <option value="off">
                                                             Hide{' '}
-                                                            {
-                                                                TIMING_LABEL[
-                                                                    otherTiming(
-                                                                        c.primaryTiming,
-                                                                    )
-                                                                ]
-                                                            }
+                                                            {timingLabel(
+                                                                otherTiming(
+                                                                    c.primaryTiming,
+                                                                ),
+                                                                c.gameTimeLabel,
+                                                            )}
                                                         </option>
                                                     </select>
                                                 </Cell>
@@ -326,7 +328,7 @@ export function CategoryMatrix({
                                                                 : 'off'
                                                         }
                                                         disabled={isSaving}
-                                                        title="Put RTA in leaderboard if IGT is not available"
+                                                        title={`Put RTA in leaderboard if ${timingLabel('gt', c.gameTimeLabel)} is not available`}
                                                         aria-label={`RTA fallback for ${c.display}`}
                                                         onChange={(e) =>
                                                             applyToCategories(

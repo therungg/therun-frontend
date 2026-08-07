@@ -868,7 +868,11 @@ function ConfigCells({
     return (
         <>
             <td className="text-center">
-                {cfg.timing === 'gametime' ? 'IGT' : 'RTA'}
+                {cfg.timing === 'gametime'
+                    ? cfg.gameTimeLabel === 'lrt'
+                        ? 'LRT'
+                        : 'IGT'
+                    : 'RTA'}
                 <Outlier on={differs.timing.has(cfg.id)} />
             </td>
             <td className="text-end">

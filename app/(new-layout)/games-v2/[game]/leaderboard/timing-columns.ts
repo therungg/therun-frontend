@@ -3,6 +3,8 @@
 // (leaderboard-row.tsx) derive their order from here so they can never
 // drift out of sync with each other or with `category.primaryTiming`.
 
+import type { GameTimeLabel } from '../../../../../types/leaderboards.types';
+
 export type TimingKey = 'rt' | 'gt';
 
 export interface TimingColumn {
@@ -12,15 +14,23 @@ export interface TimingColumn {
 
 const REAL_TIME: TimingColumn = { key: 'rt', label: 'Real time' };
 const GAME_TIME: TimingColumn = { key: 'gt', label: 'Game time' };
+const LOAD_REMOVED_TIME: TimingColumn = {
+    key: 'gt',
+    label: 'Load-removed time',
+};
 
 /** Primary-timing-first column order: the ranking column always leads. */
-export function timingColumns(primaryTiming: TimingKey): {
+export function timingColumns(
+    primaryTiming: TimingKey,
+    gameTimeLabel: GameTimeLabel = 'igt',
+): {
     primary: TimingColumn;
     secondary: TimingColumn;
 } {
+    const gameTime = gameTimeLabel === 'lrt' ? LOAD_REMOVED_TIME : GAME_TIME;
     return primaryTiming === 'gt'
-        ? { primary: GAME_TIME, secondary: REAL_TIME }
-        : { primary: REAL_TIME, secondary: GAME_TIME };
+        ? { primary: gameTime, secondary: REAL_TIME }
+        : { primary: REAL_TIME, secondary: gameTime };
 }
 
 /** Determines if a timing column should be hidden. */

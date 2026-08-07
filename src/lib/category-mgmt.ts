@@ -115,6 +115,9 @@ export async function listManageCategories(
 
 export interface UpdateCategoryBody {
     primaryTiming?: PrimaryTiming;
+    /** What the board calls its game-time clock. Display only — 'lrt' boards
+     * store primaryTiming 'gametime' and rank identically. */
+    gameTimeLabel?: 'igt' | 'lrt';
     hideRealTime?: boolean;
     hideGameTime?: boolean;
     /** Rank RTA-only runs on the game-time board by their real time. Backend
@@ -156,6 +159,8 @@ export async function updateCategory(
  */
 export interface BulkCategoryFields {
     primaryTiming?: 'realtime' | 'gametime';
+    /** What the board calls its game-time clock ('igt' | 'lrt'). Display only. */
+    gameTimeLabel?: 'igt' | 'lrt';
     hideRealTime?: boolean;
     hideGameTime?: boolean;
     /** Rank RTA-only runs on the game-time board by their real time. Backend

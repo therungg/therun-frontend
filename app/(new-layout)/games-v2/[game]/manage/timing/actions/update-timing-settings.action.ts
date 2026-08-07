@@ -15,6 +15,8 @@ interface Input {
     gameId: number;
     categoryId: number;
     primaryTiming?: PrimaryTiming;
+    /** What the board calls its game-time clock ('igt' | 'lrt'). Display only. */
+    gameTimeLabel?: 'igt' | 'lrt';
     hideRealTime?: boolean;
     hideGameTime?: boolean;
     rtaFallback?: boolean;
@@ -41,6 +43,8 @@ export async function updateTimingSettingsAction(
     const body: UpdateCategoryBody = {};
     if (input.primaryTiming !== undefined)
         body.primaryTiming = input.primaryTiming;
+    if (input.gameTimeLabel !== undefined)
+        body.gameTimeLabel = input.gameTimeLabel;
     if (input.hideRealTime !== undefined)
         body.hideRealTime = input.hideRealTime;
     if (input.hideGameTime !== undefined)

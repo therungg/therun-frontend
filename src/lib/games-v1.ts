@@ -37,6 +37,7 @@ interface CategoriesEndpointRow {
     total_pbs?: number;
     unique_runners: number;
     primary_timing?: string; // "realtime" | "gametime" | "rt" | "gt"
+    game_time_label?: string; // "igt" | "lrt"
     hide_real_time?: boolean;
     hide_game_time?: boolean;
     sort_ascending?: boolean;
@@ -261,6 +262,10 @@ export async function resolveCategory(
                 r.primary_timing === 'gt' || r.primary_timing === 'gametime'
                     ? ('gt' as const)
                     : ('rt' as const),
+            gameTimeLabel:
+                r.game_time_label === 'lrt'
+                    ? ('lrt' as const)
+                    : ('igt' as const),
             sortAscending: r.sort_ascending ?? true,
             isMain: flags?.isMain ?? false,
             archived: flags?.archived ?? false,

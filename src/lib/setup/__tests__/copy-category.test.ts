@@ -118,6 +118,7 @@ describe('planCategoryCopy', () => {
             {
                 kind: 'timing',
                 primaryTiming: 'realtime',
+                gameTimeLabel: 'igt',
                 hideRealTime: false,
                 hideGameTime: true,
             },

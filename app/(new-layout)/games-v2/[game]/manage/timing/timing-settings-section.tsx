@@ -19,6 +19,8 @@ import { updateTimingSettingsAction } from './actions/update-timing-settings.act
  * it just don't get the caption. */
 export interface GameTimingDefaults {
     primaryTiming: 'rt' | 'gt' | null;
+    /** What the game default calls the game-time clock; null = unset (IGT). */
+    gameTimeLabel: 'igt' | 'lrt' | null;
     hideRealTime: boolean;
     hideGameTime: boolean;
 }
@@ -35,6 +37,9 @@ interface Props {
 // (primary always false), so the server's both-hidden guard can't trip.
 interface State {
     primaryTiming: PrimaryTiming;
+    /** What this board calls its game-time clock. Display only — 'lrt'
+     * behaves exactly like 'igt'. */
+    gameTimeLabel: 'igt' | 'lrt';
     showSecondary: boolean;
     rtaFallback: boolean;
 }
@@ -43,6 +48,7 @@ interface State {
  * actually changed — the update action treats undefined as untouched. */
 interface StoredFlags {
     primaryTiming: PrimaryTiming;
+    gameTimeLabel: 'igt' | 'lrt';
     hideRealTime: boolean;
     hideGameTime: boolean;
     rtaFallback: boolean;
@@ -65,6 +71,7 @@ function storedOf(category: ResolvedCategory): StoredFlags {
     return {
         primaryTiming:
             category.primaryTiming === 'gt' ? 'gametime' : 'realtime',
+        gameTimeLabel: category.gameTimeLabel === 'lrt' ? 'lrt' : 'igt',
         hideRealTime: category.hideRealTime ?? false,
         hideGameTime: category.hideGameTime ?? false,
         rtaFallback: category.rtaFallback ?? false,
@@ -74,6 +81,7 @@ function storedOf(category: ResolvedCategory): StoredFlags {
 function stateOf(stored: StoredFlags): State {
     return {
         primaryTiming: stored.primaryTiming,
+        gameTimeLabel: stored.gameTimeLabel,
         showSecondary:
             stored.primaryTiming === 'realtime'
                 ? !stored.hideGameTime
@@ -99,6 +107,7 @@ function defaultsState(defaults: GameTimingDefaults): State {
     return stateOf({
         primaryTiming:
             defaults.primaryTiming === 'gt' ? 'gametime' : 'realtime',
+        gameTimeLabel: defaults.gameTimeLabel === 'lrt' ? 'lrt' : 'igt',
         hideRealTime: defaults.hideRealTime,
         hideGameTime: defaults.hideGameTime,
         rtaFallback: false,
@@ -107,7 +116,11 @@ function defaultsState(defaults: GameTimingDefaults): State {
 
 function describeState(state: State): string {
     const primary =
-        state.primaryTiming === 'gametime' ? 'Game time' : 'Real time';
+        state.primaryTiming === 'gametime'
+            ? state.gameTimeLabel === 'lrt'
+                ? 'Load-removed time'
+                : 'Game time'
+            : 'Real time';
     return state.showSecondary
         ? `${primary} · both clocks shown`
         : `${primary} only`;
@@ -121,6 +134,7 @@ export function TimingSettingsSection({
 }: Props) {
     const fallback: StoredFlags = {
         primaryTiming: 'realtime',
+        gameTimeLabel: 'igt',
         hideRealTime: false,
         hideGameTime: false,
         rtaFallback: false,
@@ -145,6 +159,7 @@ export function TimingSettingsSection({
     }, [
         category?.id,
         category?.primaryTiming,
+        category?.gameTimeLabel,
         category?.hideRealTime,
         category?.hideGameTime,
         category?.rtaFallback,
@@ -159,6 +174,7 @@ export function TimingSettingsSection({
     const desiredRtaFallback = hasIgt(state) ? state.rtaFallback : false;
     const dirty =
         state.primaryTiming !== original.primaryTiming ||
+        state.gameTimeLabel !== original.gameTimeLabel ||
         desired.hideRealTime !== original.hideRealTime ||
         desired.hideGameTime !== original.hideGameTime ||
         desiredRtaFallback !== original.rtaFallback;
@@ -168,6 +184,8 @@ export function TimingSettingsSection({
     const matchesDefault =
         gameDefault != null &&
         gameDefault.primaryTiming === state.primaryTiming &&
+        (state.primaryTiming === 'realtime' ||
+            gameDefault.gameTimeLabel === state.gameTimeLabel) &&
         gameDefault.showSecondary === state.showSecondary;
 
     const handleSubmit = (e: FormEvent) => {
@@ -182,6 +200,10 @@ export function TimingSettingsSection({
                 primaryTiming:
                     state.primaryTiming !== original.primaryTiming
                         ? state.primaryTiming
+                        : undefined,
+                gameTimeLabel:
+                    state.gameTimeLabel !== original.gameTimeLabel
+                        ? state.gameTimeLabel
                         : undefined,
                 hideRealTime:
                     desired.hideRealTime !== original.hideRealTime
@@ -203,6 +225,7 @@ export function TimingSettingsSection({
             toast.success('Timing settings saved');
             setOriginal({
                 primaryTiming: state.primaryTiming,
+                gameTimeLabel: state.gameTimeLabel,
                 ...desired,
                 rtaFallback: desiredRtaFallback,
             });
@@ -223,16 +246,27 @@ export function TimingSettingsSection({
             <form onSubmit={handleSubmit}>
                 <SegmentedControl
                     label="Primary timing"
-                    value={state.primaryTiming}
+                    value={
+                        state.primaryTiming === 'realtime'
+                            ? 'realtime'
+                            : state.gameTimeLabel === 'lrt'
+                              ? 'lrt'
+                              : 'gametime'
+                    }
                     options={[
                         { value: 'realtime', label: 'Real time' },
-                        { value: 'gametime', label: 'Game time' },
+                        { value: 'gametime', label: 'IGT' },
+                        { value: 'lrt', label: 'LRT' },
                     ]}
                     disabled={busy}
                     onChange={(v) =>
+                        // LRT is IGT under another name: primaryTiming stays
+                        // 'gametime', only the display label changes.
                         setState((s) => ({
                             ...s,
-                            primaryTiming: v as PrimaryTiming,
+                            primaryTiming:
+                                v === 'realtime' ? 'realtime' : 'gametime',
+                            gameTimeLabel: v === 'lrt' ? 'lrt' : 'igt',
                         }))
                     }
                 />
@@ -240,7 +274,9 @@ export function TimingSettingsSection({
                     id="showSecondary"
                     label={
                         state.primaryTiming === 'realtime'
-                            ? 'Also show game time'
+                            ? state.gameTimeLabel === 'lrt'
+                                ? 'Also show load-removed time'
+                                : 'Also show game time'
                             : 'Also show real time'
                     }
                     checked={state.showSecondary}
@@ -253,7 +289,7 @@ export function TimingSettingsSection({
                     <>
                         <SwitchField
                             id="rtaFallback"
-                            label="Put RTA in leaderboard if IGT is not available"
+                            label={`Put RTA in leaderboard if ${state.gameTimeLabel === 'lrt' ? 'LRT' : 'IGT'} is not available`}
                             checked={state.rtaFallback}
                             disabled={busy}
                             onChange={(checked) =>

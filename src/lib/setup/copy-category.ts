@@ -17,6 +17,7 @@ export type CopyStep =
     | {
           kind: 'timing';
           primaryTiming: 'realtime' | 'gametime';
+          gameTimeLabel: 'igt' | 'lrt';
           hideRealTime: boolean;
           hideGameTime: boolean;
       }
@@ -100,6 +101,7 @@ export function planCategoryCopy(input: {
         steps.push({
             kind: 'timing',
             primaryTiming: mapTiming(source.primaryTiming),
+            gameTimeLabel: source.gameTimeLabel ?? 'igt',
             hideRealTime: source.hideRealTime ?? false,
             hideGameTime: source.hideGameTime ?? false,
         });
