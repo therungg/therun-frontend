@@ -16,9 +16,10 @@
 - `BoardStatsPanel` stays board-only: the new hero stat band supersedes it on the
   overview, so wiring it there would duplicate.
 
-## Backend handoffs (document, don't build — frontend lane)
+## Backend handoffs — SHIPPED 2026-08-07 (therun commit 0a0efad)
 
-Both ride existing routes (no new API Gateway resources — the `api` stack is at 499/500):
+Joey granted backend access for this task; both built and deployed. Both ride
+existing routes (no new API Gateway resources — the `api` stack is at 499/500):
 
 1. **Date-bucketed game activity.** `GET /games/activity` needs a variant that returns
    per-day (or per-week) buckets for one game: e.g. `type=games&game_id=N&group_by=date`
@@ -34,7 +35,7 @@ Everything else in all three phases uses endpoints that already exist.
 
 ---
 
-## Phase 1 — Overview upgrade (all frontend, existing endpoints)
+## Phase 1 — Overview upgrade — BUILT 2026-08-07 (branch game-page-stats-phase1)
 
 ### 1.1 Hero stat band
 Replace the tertiary facts line's stats portion in `GameHero` (full variant,
@@ -85,7 +86,15 @@ endpoint alone.
 
 ---
 
-## Phase 2 — Stats tab
+## Phase 2 — Stats tab — BUILT 2026-08-07 (branch game-page-stats-phase2, stacked on phase1)
+
+Deviations from the spec below: no per-category filter on the activity chart
+yet (the endpoint supports `categoryId`; UI deferred); platform/emulator
+aggregates over featured boards' exports capped at 12 boards; countries come
+from the standings payload; Stats follows the same 2+-featured-categories
+redirect rule as Standings (the tab band only exists on the multi-category
+game root — single-category games' root is their board). The 90-day playtime
+sparkline cell also landed in the hero band (overview/standings/stats).
 
 New route `app/(new-layout)/games-v2/[game]/stats/page.tsx`, mirroring the standings
 route pattern (own `loading.tsx`, hero condensed, no sidebar rail, admin gate).
