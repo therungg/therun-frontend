@@ -2,7 +2,10 @@ import { useEffect, useRef } from 'react';
 import { Funnel, Trophy } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import { buildSubmitHref } from '~src/lib/board-url';
-import type { LeaderboardResponse } from '../../../../../types/leaderboards.types';
+import type {
+    LeaderboardEntry,
+    LeaderboardResponse,
+} from '../../../../../types/leaderboards.types';
 import { ClearFiltersButton } from '../filters/clear-filters-button';
 import { isSameRunner } from '../shared/is-same-runner';
 import { computeDisplayRanks } from './display-rank';
@@ -46,6 +49,10 @@ interface Props {
     onSelectRunner?: (runnerKey: string) => void;
     /** Header checkbox — toggles every currently-rendered selectable row. */
     onToggleAllVisible?: () => void;
+    /** Kebab's "Moderate…" — opens the run inspector on that entry. */
+    onModerate?: (entry: LeaderboardEntry) => void;
+    /** Board page refetch for row-level mutations (quick Verify + undo). */
+    onBoardRefresh?: () => void;
 }
 
 export function LeaderboardTable({
@@ -67,6 +74,8 @@ export function LeaderboardTable({
     onToggleSelect,
     onSelectRunner,
     onToggleAllVisible,
+    onModerate,
+    onBoardRefresh,
 }: Props) {
     const selectableKeys = leaderboard.entries
         .map(entrySelectionKey)
@@ -230,6 +239,8 @@ export function LeaderboardTable({
                             })()}
                             onToggleSelect={onToggleSelect}
                             onSelectRunner={onSelectRunner}
+                            onModerate={onModerate}
+                            onBoardRefresh={onBoardRefresh}
                         />
                     ))}
                 </tbody>

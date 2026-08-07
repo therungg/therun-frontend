@@ -11,6 +11,7 @@ import { usePopoverFocus } from '../shared/use-popover-focus';
 import { CountryFlag } from './country-flag';
 import type { DisplayRank } from './display-rank';
 import styles from './leaderboard.module.scss';
+import { QuickVerifyButton } from './quick-verify-button';
 import { relativeDate } from './relative-date';
 import { RowActionsMenu } from './row-actions-menu';
 import { RunnerAvatar } from './runner-avatar';
@@ -141,6 +142,10 @@ interface Props {
     onToggleSelect?: (key: BoardSelectionKey, shiftKey: boolean) => void;
     /** Kebab's "Select all runs by …" shortcut to the single-runner bulk state. */
     onSelectRunner?: (runnerKey: string) => void;
+    /** Kebab's "Moderate…" — opens the run inspector drawer on this entry. */
+    onModerate?: (entry: LeaderboardEntry) => void;
+    /** Board page refetch for row-level mutations (quick Verify + its undo). */
+    onBoardRefresh?: () => void;
 }
 
 export function LeaderboardRow({
@@ -161,13 +166,22 @@ export function LeaderboardRow({
     selected = false,
     onToggleSelect,
     onSelectRunner,
+    onModerate,
+    onBoardRefresh,
 }: Props) {
     // Anonymized rows arrive already redacted from the backend: placeholder
     // name, `userId`/`picture`/`country` nulled, `isGuest: false`. Always key
     // the treatment off this flag, never off the name string.
     const isAnonymous = entry.anonymized === true;
     const selectionKey = entrySelectionKey(entry);
-    const showManageButton = canManage && entry.runId != null && !entry.isGuest;
+    // One-click Verify for the queue-clearing common case; every other mod
+    // verb goes through the inspector drawer (kebab → Moderate…).
+    const showQuickVerify =
+        canManage &&
+        entry.runId != null &&
+        entry.source !== 'manual' &&
+        entry.verificationStatus === 'pending' &&
+        onBoardRefresh != null;
     // Same key a bulk selection groups runners by (leaderboard-pager.ts):
     // registered users by id, guests by name (no persistent identity).
     // An anonymized runner has no userId, but its placeholder is stable per
@@ -387,6 +401,14 @@ export function LeaderboardRow({
                     </a>
                 )}
                 <span className={styles.reveal}>
+                    {showQuickVerify && (
+                        <QuickVerifyButton
+                            gameSlug={gameSlug}
+                            runId={entry.runId as number}
+                            runnerName={entry.runnerName}
+                            onMutated={onBoardRefresh as () => void}
+                        />
+                    )}
                     <RowActionsMenu
                         entry={entry}
                         sessionUsername={sessionUsername}
@@ -400,15 +422,10 @@ export function LeaderboardRow({
                                 ? () => onSelectRunner(runnerKey)
                                 : undefined
                         }
+                        onModerate={
+                            onModerate ? () => onModerate(entry) : undefined
+                        }
                     />
-                    {showManageButton && (
-                        <Link
-                            href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/run/${entry.runId}`}
-                            className={styles.manageLink}
-                        >
-                            Manage
-                        </Link>
-                    )}
                 </span>
             </td>
         </tr>

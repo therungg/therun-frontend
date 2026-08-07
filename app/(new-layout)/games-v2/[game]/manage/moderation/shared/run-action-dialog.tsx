@@ -1,6 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
+import {
+    type RefObject,
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+    useTransition,
+} from 'react';
 import { toast } from 'react-toastify';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type {
@@ -33,24 +40,6 @@ import {
 } from './actions/verdicts.action';
 import styles from './run-action-dialog.module.scss';
 import { fireUndoToast } from './undo-toast';
-
-interface Props {
-    gameSlug: string;
-    verb: ModVerb;
-    target: RunActionTarget;
-    onDone: () => void;
-    onClose: () => void;
-    /** Initial ban scope for a `ban` verb (default 'category'). */
-    defaultBanScope?: BanScope;
-    /**
-     * Called after a successful Undo mutation completes, instead of onDone.
-     * Some panes' onDone removes the item from local list state (correct for
-     * the original action, wrong for an undo — the item needs to reappear).
-     * Falls back to onDone for panes where re-running it is already the
-     * right "resync" behavior (a refetch or router.refresh()).
-     */
-    onUndoComplete?: () => void;
-}
 
 const MIN_REASON = 10;
 
@@ -92,7 +81,7 @@ type PreviewState =
     | { kind: 'verdict'; data: VerdictPreviewResult }
     | { kind: 'exclude'; data: PreviewExcludeResult };
 
-const VERB_TITLE: Record<ModVerb, string> = {
+export const VERB_TITLE: Record<ModVerb, string> = {
     approve: 'Verify',
     reject: 'Reject',
     remove: 'Remove',
@@ -100,7 +89,42 @@ const VERB_TITLE: Record<ModVerb, string> = {
     ban: 'Ban runner',
 };
 
-export function RunActionDialog({
+export interface RunActionFormProps {
+    gameSlug: string;
+    verb: ModVerb;
+    target: RunActionTarget;
+    onDone: () => void;
+    /** Cancel — dismisses the form without acting. */
+    onClose: () => void;
+    /** Initial ban scope for a `ban` verb (default 'category'). */
+    defaultBanScope?: BanScope;
+    /**
+     * Called after a successful Undo mutation completes, instead of onDone.
+     * Some panes' onDone removes the item from local list state (correct for
+     * the original action, wrong for an undo — the item needs to reappear).
+     * Falls back to onDone for panes where re-running it is already the
+     * right "resync" behavior (a refetch or router.refresh()).
+     */
+    onUndoComplete?: () => void;
+    /** External refs so a wrapping dialog can drive initial focus itself. */
+    confirmRef?: RefObject<HTMLButtonElement | null>;
+    reasonFieldRef?: RefObject<HTMLTextAreaElement | null>;
+    /** Inline (non-dialog) hosts: focus the reason/Confirm on mount. */
+    autoFocus?: boolean;
+    /** Mirrors the confirm mutation's in-flight state to the host. */
+    onBusyChange?: (busy: boolean) => void;
+    /** Mirrors ban-scope changes to the host (the dialog's header reads it). */
+    onScopeChange?: (scope: BanScope) => void;
+}
+
+/**
+ * The verify/reject/remove/restore/ban form — reason-category picker,
+ * notify toggle, ban scope, affected-runs preview, reason field and the
+ * Cancel/Confirm footer, plus every confirm/undo mutation path. Presentation-
+ * agnostic: `RunActionDialog` wraps it in the centered BoardDialog chrome,
+ * and the board's run inspector renders it inline in its footer.
+ */
+export function RunActionForm({
     gameSlug,
     verb,
     target,
@@ -108,7 +132,12 @@ export function RunActionDialog({
     onClose,
     defaultBanScope,
     onUndoComplete,
-}: Props) {
+    confirmRef: confirmRefProp,
+    reasonFieldRef: reasonFieldRefProp,
+    autoFocus = false,
+    onBusyChange,
+    onScopeChange,
+}: RunActionFormProps) {
     // Undo toasts (approve/remove/restore/ban) hand control back to the pane
     // via refreshAfterUndo so the card/list reflects the reversal.
     const refreshAfterUndo = onUndoComplete ?? onDone;
@@ -124,6 +153,15 @@ export function RunActionDialog({
     const [error, setError] = useState<string | null>(null);
     const [isPreviewing, startPreview] = useTransition();
     const [isConfirming, startConfirm] = useTransition();
+
+    const changeScope = (next: BanScope) => {
+        setScope(next);
+        onScopeChange?.(next);
+    };
+
+    useEffect(() => {
+        onBusyChange?.(isConfirming);
+    }, [isConfirming, onBusyChange]);
 
     const runIds = target.kind === 'runs' ? target.runIds : [];
     const manualTimeIds =
@@ -220,10 +258,20 @@ export function RunActionDialog({
 
     // Confirm button ref (approve/restore auto-focus this — reason is
     // optional, so Confirm is already actionable) and reason field ref
-    // (remove/ban auto-focus this — reason is required).
-    const confirmRef = useRef<HTMLButtonElement>(null);
-    const reasonFieldRef = useRef<HTMLTextAreaElement>(null);
-    const initialFocusRef = reasonRequired ? reasonFieldRef : confirmRef;
+    // (remove/ban auto-focus this — reason is required). A wrapping dialog
+    // supplies its own refs and drives focus through BoardDialog; inline
+    // hosts opt into the mount-focus effect below via `autoFocus`.
+    const ownConfirmRef = useRef<HTMLButtonElement>(null);
+    const ownReasonFieldRef = useRef<HTMLTextAreaElement>(null);
+    const confirmRef = confirmRefProp ?? ownConfirmRef;
+    const reasonFieldRef = reasonFieldRefProp ?? ownReasonFieldRef;
+
+    useEffect(() => {
+        if (!autoFocus) return;
+        (reasonRequired ? reasonFieldRef : confirmRef).current?.focus();
+        // Mount-only — refs and reasonRequired are fixed for a given verb.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleConfirm = () => {
         if (!reasonOk) return;
@@ -387,39 +435,8 @@ export function RunActionDialog({
         });
     };
 
-    const headerTarget =
-        target.kind === 'runs'
-            ? target.label
-            : `${target.runnerName} · ${scope === 'category' ? target.categoryDisplay : `${target.gameDisplay} (entire game)`}`;
-
-    // Ignore close requests (Escape included) while a confirm mutation is in
-    // flight — mirrors the disabled Cancel/close-button state below.
-    const requestClose = () => {
-        if (!isConfirming) onClose();
-    };
-
     return (
-        <BoardDialog
-            open
-            onClose={requestClose}
-            labelledBy="run-action-title"
-            size="lg"
-            closeOnBackdropClick={false}
-            initialFocusRef={initialFocusRef}
-        >
-            <div className={styles.header}>
-                <h5 className={styles.title} id="run-action-title">
-                    {VERB_TITLE[verb]} — {headerTarget}
-                </h5>
-                <button
-                    type="button"
-                    className="btn-close"
-                    aria-label="Close"
-                    onClick={requestClose}
-                    disabled={isConfirming}
-                />
-            </div>
-
+        <>
             <div className={styles.body}>
                 {verb === 'remove' && (
                     <div className="mb-3">
@@ -478,7 +495,7 @@ export function RunActionDialog({
                                 id="ban-scope-category"
                                 name="ban-scope"
                                 checked={scope === 'category'}
-                                onChange={() => setScope('category')}
+                                onChange={() => changeScope('category')}
                                 disabled={isConfirming}
                             />
                             <label
@@ -495,7 +512,7 @@ export function RunActionDialog({
                                 id="ban-scope-game"
                                 name="ban-scope"
                                 checked={scope === 'game'}
-                                onChange={() => setScope('game')}
+                                onChange={() => changeScope('game')}
                                 disabled={isConfirming}
                             />
                             <label
@@ -651,7 +668,7 @@ export function RunActionDialog({
                 <button
                     type="button"
                     className="btn btn-sm btn-outline-secondary"
-                    onClick={requestClose}
+                    onClick={onClose}
                     disabled={isConfirming}
                 >
                     Cancel
@@ -668,6 +685,86 @@ export function RunActionDialog({
                         : `Confirm ${VERB_TITLE[verb].toLowerCase()}`}
                 </button>
             </div>
+        </>
+    );
+}
+
+interface Props {
+    gameSlug: string;
+    verb: ModVerb;
+    target: RunActionTarget;
+    onDone: () => void;
+    onClose: () => void;
+    /** Initial ban scope for a `ban` verb (default 'category'). */
+    defaultBanScope?: BanScope;
+    /** See RunActionFormProps.onUndoComplete. */
+    onUndoComplete?: () => void;
+}
+
+export function RunActionDialog({
+    gameSlug,
+    verb,
+    target,
+    onDone,
+    onClose,
+    defaultBanScope,
+    onUndoComplete,
+}: Props) {
+    // Mirror of the form's in-flight confirm state — gates the header close
+    // button and Escape, same as Cancel inside the form.
+    const [busy, setBusy] = useState(false);
+    // Mirror of the form's ban scope — the header's target line reads it.
+    const [scope, setScope] = useState<BanScope>(defaultBanScope ?? 'category');
+
+    const confirmRef = useRef<HTMLButtonElement>(null);
+    const reasonFieldRef = useRef<HTMLTextAreaElement>(null);
+    const initialFocusRef = REASON_REQUIRED[verb] ? reasonFieldRef : confirmRef;
+
+    const headerTarget =
+        target.kind === 'runs'
+            ? target.label
+            : `${target.runnerName} · ${scope === 'category' ? target.categoryDisplay : `${target.gameDisplay} (entire game)`}`;
+
+    // Ignore close requests (Escape included) while a confirm mutation is in
+    // flight — mirrors the disabled Cancel/close-button state.
+    const requestClose = () => {
+        if (!busy) onClose();
+    };
+
+    return (
+        <BoardDialog
+            open
+            onClose={requestClose}
+            labelledBy="run-action-title"
+            size="lg"
+            closeOnBackdropClick={false}
+            initialFocusRef={initialFocusRef}
+        >
+            <div className={styles.header}>
+                <h5 className={styles.title} id="run-action-title">
+                    {VERB_TITLE[verb]} — {headerTarget}
+                </h5>
+                <button
+                    type="button"
+                    className="btn-close"
+                    aria-label="Close"
+                    onClick={requestClose}
+                    disabled={busy}
+                />
+            </div>
+            <RunActionForm
+                gameSlug={gameSlug}
+                verb={verb}
+                target={target}
+                onDone={onDone}
+                onClose={requestClose}
+                defaultBanScope={defaultBanScope}
+                onUndoComplete={onUndoComplete}
+                confirmRef={confirmRef}
+                reasonFieldRef={reasonFieldRef}
+                onBusyChange={setBusy}
+                onScopeChange={setScope}
+            />
         </BoardDialog>
     );
 }
