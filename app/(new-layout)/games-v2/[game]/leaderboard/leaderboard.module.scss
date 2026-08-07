@@ -443,6 +443,60 @@ tr:focus-within .reveal {
     @include board.board-overlay-enter(rise);
 }
 
+// ---- Pagination ----------------------------------------------
+// Real numbered pages under the table. Same pill vocabulary as every other
+// board control; the current page is the one filled-in pill.
+.paginationBar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    margin-block: dt.$spacing-lg;
+}
+
+.pageBtn {
+    @include board.control-pill;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    min-width: 2.5em;
+    justify-content: center;
+
+    &:disabled {
+        opacity: 0.5;
+    }
+
+    @media (pointer: coarse) {
+        padding-block: dt.$spacing-lg;
+    }
+}
+
+.pageBtnCurrent {
+    background: var(--bs-emphasis-color);
+    color: var(--bs-body-bg);
+    border-color: var(--bs-emphasis-color);
+    // The current page is a fact, not an action — it stays put (and stays
+    // readable) when the whole bar disables during a page fetch.
+    &:disabled {
+        opacity: 1;
+    }
+    &:hover {
+        background: var(--bs-emphasis-color);
+        color: var(--bs-body-bg);
+    }
+}
+
+.pageGap {
+    color: var(--bs-tertiary-color);
+    padding-inline: dt.$spacing-xs;
+    user-select: none;
+}
+
+.pagerErrorBar {
+    justify-content: center;
+    margin-block-end: dt.$spacing-lg;
+}
+
 // ---- Show more ----------------------------------------------
 .showMoreBar {
     display: flex;
