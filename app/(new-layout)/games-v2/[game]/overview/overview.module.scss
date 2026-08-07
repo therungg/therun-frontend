@@ -352,6 +352,87 @@
     z-index: 2;
 }
 
+// ---- Top runners ---------------------------------------------
+// Section head with the period toggle riding the hairline's far end —
+// board-section-head's default space-between anatomy.
+.runnersHead {
+    @include board.board-section-head;
+}
+
+.runnersPeriods {
+    display: flex;
+    gap: dt.$spacing-xs;
+}
+
+.periodPill {
+    @include board.control-pill;
+    font-size: dt.$font-size-2xs;
+}
+
+.periodPillActive {
+    @include board.control-pill-active;
+    font-size: dt.$font-size-2xs;
+}
+
+// Rank gutter, runner, then three numeric columns in one tabular grid —
+// a miniature board, not a data table with chrome.
+.runnersTable {
+    display: grid;
+    gap: 2px;
+}
+
+.runnersRow {
+    display: grid;
+    grid-template-columns: 2ch minmax(0, 1fr) repeat(3, minmax(4.5rem, auto));
+    align-items: baseline;
+    gap: dt.$spacing-md;
+    padding-block: dt.$spacing-xs;
+    font-size: dt.$font-size-sm;
+
+    & + & {
+        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+    }
+
+    @media (max-width: 575.98px) {
+        // Drop the attempts column's guaranteed width on phones; the grid
+        // keeps five tracks, they just share the row tighter.
+        grid-template-columns: 2ch minmax(0, 1fr) repeat(3, auto);
+        gap: dt.$spacing-sm;
+    }
+}
+
+.runnersHeadRow {
+    @include board.board-eyebrow;
+    border-top: none;
+    padding-block: 0 dt.$spacing-xs;
+}
+
+.runnersRank {
+    @include board.mono-time;
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
+    color: var(--bs-tertiary-color);
+}
+
+.runnersName {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.runnersNum {
+    @include board.mono-time;
+    text-align: right;
+    color: var(--bs-secondary-color);
+}
+
+.runnersEmpty {
+    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-sm;
+    margin: 0;
+}
+
 .emptyState {
     display: flex;
     flex-direction: column;

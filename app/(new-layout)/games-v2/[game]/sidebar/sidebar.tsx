@@ -1,3 +1,4 @@
+import type { GameSeriesSibling } from '~src/lib/game-mgmt';
 import type { GameModerator } from '../../../../../types/board-claims.types';
 import type {
     RecentPb,
@@ -10,6 +11,7 @@ import { BoardStatsPanel } from './board-stats-panel';
 import { LivePanel } from './live-panel';
 import { ModeratorsPanel } from './moderators-panel';
 import { RecentPbsPanel } from './recent-pbs-panel';
+import { SeriesPanel } from './series-panel';
 import styles from './sidebar.module.scss';
 import { YourRunsPanel } from './your-runs-panel';
 
@@ -20,6 +22,11 @@ interface Props {
     claim?: ClaimCtaState | null;
     about?: string | null;
     moderators?: GameModerator[];
+    /** Series cross-navigation — empty until pageData carries seriesGames. */
+    series?: {
+        display: string | null;
+        games: GameSeriesSibling[];
+    };
     /** The active board — board view only; the overview has none. */
     board?: ResolvedCategory | null;
 }
@@ -31,6 +38,7 @@ export function Sidebar({
     claim,
     about,
     moderators,
+    series,
     board,
 }: Props) {
     return (
@@ -39,6 +47,12 @@ export function Sidebar({
             {board && <BoardStatsPanel category={board} />}
             <YourRunsPanel rankings={yourRuns} gameSlug={game.name} />
             <RecentPbsPanel pbs={recentPbs} gameSlug={game.name} />
+            {series && (
+                <SeriesPanel
+                    seriesDisplay={series.display}
+                    games={series.games}
+                />
+            )}
             <ModeratorsPanel moderators={moderators ?? []} />
             <AboutPanel about={about ?? null} />
             {claim?.hasModerators && (

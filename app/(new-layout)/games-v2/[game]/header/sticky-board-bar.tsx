@@ -2,7 +2,6 @@ import type {
     ResolvedCategory,
     ResolvedGroup,
 } from '../../../../../types/leaderboards.types';
-import gamePageStyles from '../game-page.module.scss';
 import styles from './masthead.module.scss';
 import { SwitchBoardPopover } from './switch-board-popover';
 
@@ -13,7 +12,6 @@ interface Props {
     boardName: string;
     /** The selected category's icon, if it has one. */
     categoryIconUrl?: string | null;
-    onOpenHistory: () => void;
     /** Passed through to `SwitchBoardPopover` — its own state stays local
      * to that component, not lifted up here. */
     categories: ResolvedCategory[];
@@ -44,7 +42,6 @@ export function StickyBoardBar({
     gameDisplay,
     boardName,
     categoryIconUrl,
-    onOpenHistory,
     categories,
     groups,
     selectedCategoryName,
@@ -88,15 +85,6 @@ export function StickyBoardBar({
                 selectedCategoryName={selectedCategoryName}
                 variableKeys={variableKeys}
             />
-            <span className={styles.stickyEnd}>
-                <button
-                    type="button"
-                    className={gamePageStyles.quietLink}
-                    onClick={onOpenHistory}
-                >
-                    History
-                </button>
-            </span>
         </div>
     );
 }

@@ -335,14 +335,6 @@
     gap: dt.$spacing-xs;
 }
 
-.stickyEnd {
-    flex-shrink: 0;
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-sm;
-}
-
 // ---- Board / Moderation view tabs ----------------------------------
 // Same anatomy as the game root's Categories/Standings tabs
 // (header/view-tabs.module.scss) — a hairline rail with the active tab's

@@ -48,6 +48,7 @@ const metadata = {
     summary: null,
     summaryOverride: null,
     seriesDisplay: null,
+    seriesGames: [],
     genres: [],
     companies: [],
     configured: true,

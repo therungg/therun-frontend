@@ -173,6 +173,43 @@
     color: var(--bs-tertiary-color);
 }
 
+// Full-hero stat band: the game's scale as large tabular numerals with
+// eyebrow labels, hairlines between cells. Fills the cover's height under
+// the title instead of hiding the numbers in the tertiary facts line.
+.statBand {
+    display: flex;
+    align-items: stretch;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm dt.$spacing-xl;
+    margin-top: dt.$spacing-lg;
+}
+
+.statCell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    & + & {
+        border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+        padding-left: dt.$spacing-xl;
+    }
+}
+
+.statBandValue {
+    @include board.mono-time;
+    font-size: dt.$font-size-2xl;
+    font-weight: 700;
+    line-height: 1.1;
+
+    @media (max-width: 991.98px) {
+        font-size: dt.$font-size-xl;
+    }
+}
+
+.statBandLabel {
+    @include board.board-eyebrow;
+}
+
 // One horizontal action cluster, vertically centred on the hero row —
 // quiet chips lead into the primary CTA on the right. Stacking these
 // (button, then chips at other heights) read as three unrelated floaters.

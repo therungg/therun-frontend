@@ -10,7 +10,6 @@ import type {
     ValidCombinations,
     VariableRow,
     VariablesResponse,
-    WrHistoryEntry,
 } from '../../types/leaderboards.types';
 import { V1FetchError, v1Fetch } from './v1-fetch';
 
@@ -169,22 +168,6 @@ export async function getVariables(
         reservedParams: body.reservedParams ?? [],
         validCombinations: body.validCombinations ?? { mode: 'open' },
     };
-}
-
-export async function getWrHistory(
-    gameSlug: string,
-    categorySlug: string,
-    subcategoryKey = '',
-): Promise<WrHistoryEntry[]> {
-    'use cache';
-    cacheLife('minutes');
-    cacheTag(`wr-history:${gameSlug}:${categorySlug}:${subcategoryKey}`);
-
-    // Wire param is still named `subcategory` (kept for back-compat). The
-    // value is the plain-text key now, not a hash.
-    const path = `/v1/leaderboards/wr-history/${encodeURIComponent(gameSlug)}/${encodeURIComponent(categorySlug)}?subcategory=${encodeURIComponent(subcategoryKey)}`;
-    const body = await v1Fetch<{ result: WrHistoryEntry[] }>(path);
-    return body.result ?? [];
 }
 
 export async function getUserRankings(userId: number): Promise<UserRanking[]> {

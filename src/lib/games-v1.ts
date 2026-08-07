@@ -20,6 +20,7 @@ interface GamesEndpointRow {
     totalRunTime: number;
     totalAttemptCount: number;
     totalFinishedAttemptCount: number;
+    totalPbs?: number;
     uniqueRunners: number;
 }
 
@@ -104,6 +105,7 @@ export async function getQuickStats(gameId: number): Promise<QuickStats> {
             totalRunTime: 0,
             totalAttemptCount: 0,
             totalFinishedAttemptCount: 0,
+            totalPbs: 0,
             uniqueRunners: 0,
         };
     }
@@ -111,6 +113,7 @@ export async function getQuickStats(gameId: number): Promise<QuickStats> {
         totalRunTime: row.totalRunTime,
         totalAttemptCount: row.totalAttemptCount,
         totalFinishedAttemptCount: row.totalFinishedAttemptCount,
+        totalPbs: row.totalPbs ?? 0,
         uniqueRunners: row.uniqueRunners,
     };
 }

@@ -139,6 +139,7 @@ export async function loadGamePageData(
                 totalRunTime: 0,
                 totalAttemptCount: 0,
                 totalFinishedAttemptCount: 0,
+                totalPbs: 0,
                 uniqueRunners: 0,
             })),
             getRecentPbs(game.id, RECENT_PB_FETCH_LIMIT, {

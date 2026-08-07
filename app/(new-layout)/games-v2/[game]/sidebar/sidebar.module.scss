@@ -138,6 +138,23 @@
     color: var(--bs-link-color);
 }
 
+// Live rows: how deep into the run the attempt is, by splits completed.
+// A hairline track so the bar reads as telemetry, not as a loading state.
+.progressTrack {
+    height: 3px;
+    border-radius: 999px;
+    background: rgba(var(--bs-border-color-rgb), 0.35);
+    overflow: hidden;
+    margin-block: dt.$spacing-xs 4px;
+}
+
+.progressFill {
+    height: 100%;
+    border-radius: inherit;
+    background: var(--bs-primary);
+    transition: width dt.$transition-slow;
+}
+
 // Live rows: pace deltas share the improvement-blue / behind-red idiom
 // the rest of the site uses for comparisons.
 .paceAhead {
@@ -146,6 +163,41 @@
 
 .paceBehind {
     color: var(--bs-red);
+}
+
+// ---- Series panel: cover-thumb rows --------------------------
+.seriesRow {
+    & + & {
+        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+    }
+}
+
+.seriesLink {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    padding-block: dt.$spacing-xs;
+    font-size: dt.$font-size-sm;
+    text-decoration: none;
+    color: inherit;
+
+    &:hover {
+        color: var(--bs-primary);
+    }
+}
+
+.seriesArt {
+    width: 24px;
+    height: 32px;
+    border-radius: dt.$radius-sm;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.seriesName {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .yourRunRow {

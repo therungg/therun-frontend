@@ -9,6 +9,7 @@ function stats(over: Partial<QuickStats> = {}): QuickStats {
         totalRunTime: 0,
         totalAttemptCount: 0,
         totalFinishedAttemptCount: 0,
+        totalPbs: 0,
         uniqueRunners: 0,
         ...over,
     };
