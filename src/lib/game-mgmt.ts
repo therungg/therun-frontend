@@ -61,6 +61,14 @@ export interface GameIgdbPlatformMeta {
     abbreviation: string | null;
 }
 
+/** A sibling game in the same series — pageData.seriesGames (backend handoff). */
+export interface GameSeriesSibling {
+    slug: string;
+    display: string;
+    coverUrl: string | null;
+    sortOrderInSeries: number | null;
+}
+
 export interface GameMetadata {
     coverUrl: string | null;
     platforms: string[];
@@ -73,6 +81,12 @@ export interface GameMetadata {
     igdbUrl: string | null;
     firstReleaseDate: string | null;
     seriesDisplay: string | null;
+    /**
+     * Other games in the same series. Empty until the backend starts baking
+     * `seriesGames` into pageData — the Series panel renders nothing until
+     * then (see docs/plans/2026-08-07-game-page-stats-plan.md, handoff #2).
+     */
+    seriesGames: GameSeriesSibling[];
     genres: string[];
     igdbPlatforms: GameIgdbPlatformMeta[];
     companies: GameCompanyMeta[];
@@ -119,6 +133,14 @@ interface GameMetadataPageData {
         sortAscending?: boolean | null;
         showMilliseconds?: boolean | null;
     };
+    seriesGames?:
+        | {
+              slug?: string | null;
+              display?: string | null;
+              coverUrl?: string | null;
+              sortOrderInSeries?: number | null;
+          }[]
+        | null;
     metadata?: {
         genres?: string[] | null;
         platforms?:
@@ -154,6 +176,18 @@ export async function getGameMetadata(gameId: number): Promise<GameMetadata> {
         igdbUrl: data?.game?.igdbUrl || null,
         firstReleaseDate: data?.game?.firstReleaseDate ?? null,
         seriesDisplay: data?.game?.seriesDisplay ?? null,
+        seriesGames: (data?.seriesGames ?? []).flatMap((g) =>
+            g?.slug && g.display
+                ? [
+                      {
+                          slug: g.slug,
+                          display: g.display,
+                          coverUrl: g.coverUrl ?? null,
+                          sortOrderInSeries: g.sortOrderInSeries ?? null,
+                      },
+                  ]
+                : [],
+        ),
         genres: (data?.metadata?.genres ?? []).filter(
             (g): g is string => typeof g === 'string' && g.length > 0,
         ),

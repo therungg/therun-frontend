@@ -28,6 +28,7 @@ function makeMetadata(overrides: Partial<GameMetadata> = {}): GameMetadata {
         igdbUrl: null,
         firstReleaseDate: null,
         seriesDisplay: null,
+        seriesGames: [],
         genres: [],
         igdbPlatforms: [],
         companies: [],

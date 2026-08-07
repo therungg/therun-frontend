@@ -1,6 +1,11 @@
 import { EMPTY_GAME_METADATA } from '~src/lib/game-metadata';
 import type { GameMetadata } from '~src/lib/game-mgmt';
 import { getGameMetadata } from '~src/lib/game-mgmt';
+import {
+    getTopRunnersAllTime,
+    getTopRunnersForPeriod,
+    type TopRunnerRow,
+} from '~src/lib/game-top-runners';
 import { getQuickStats, getRecentPbs } from '~src/lib/games-v1';
 import {
     getLeaderboard,
@@ -34,7 +39,17 @@ export interface GameOverviewData {
     cards: OverviewCardData[];
     recentPbs: RecentPb[];
     yourRuns: UserRanking[];
+    topRunners: {
+        allTime: TopRunnerRow[];
+        d90: TopRunnerRow[];
+        d30: TopRunnerRow[];
+    };
     sessionUsername: string | null;
+}
+
+/** Day-granular ISO date, so the cached period fetches key stably per day. */
+function isoDaysAgo(days: number): string {
+    return new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
 }
 
 // The card's record is the top of the category's DEFAULT board — the exact
@@ -70,23 +85,36 @@ export async function loadGameOverviewData(
     groups: ResolvedGroup[],
     sessionUsername: string | null,
 ): Promise<GameOverviewData> {
-    const [quickStats, gameMeta, recentPbs, rawYourRuns, cardEntries] =
-        await Promise.all([
-            getQuickStats(game.id).catch(() => ({
-                totalRunTime: 0,
-                totalAttemptCount: 0,
-                totalFinishedAttemptCount: 0,
-                uniqueRunners: 0,
-            })),
-            getGameMetadata(game.id).catch(() => EMPTY_GAME_METADATA),
-            getRecentPbs(game.id, RECENT_PB_FETCH_LIMIT, {
-                featuredOnly: true,
-            }).catch(() => []),
-            sessionUsername
-                ? getUserRankingsByName(sessionUsername).catch(() => [])
-                : Promise.resolve([]),
-            Promise.all(featured.map((c) => fetchCardEntries(game.name, c))),
-        ]);
+    const today = isoDaysAgo(0);
+    const [
+        quickStats,
+        gameMeta,
+        recentPbs,
+        rawYourRuns,
+        cardEntries,
+        runnersAllTime,
+        runners90,
+        runners30,
+    ] = await Promise.all([
+        getQuickStats(game.id).catch(() => ({
+            totalRunTime: 0,
+            totalAttemptCount: 0,
+            totalFinishedAttemptCount: 0,
+            totalPbs: 0,
+            uniqueRunners: 0,
+        })),
+        getGameMetadata(game.id).catch(() => EMPTY_GAME_METADATA),
+        getRecentPbs(game.id, RECENT_PB_FETCH_LIMIT, {
+            featuredOnly: true,
+        }).catch(() => []),
+        sessionUsername
+            ? getUserRankingsByName(sessionUsername).catch(() => [])
+            : Promise.resolve([]),
+        Promise.all(featured.map((c) => fetchCardEntries(game.name, c))),
+        getTopRunnersAllTime(game.id).catch(() => []),
+        getTopRunnersForPeriod(game.id, isoDaysAgo(90), today).catch(() => []),
+        getTopRunnersForPeriod(game.id, isoDaysAgo(30), today).catch(() => []),
+    ]);
 
     return {
         game,
@@ -100,6 +128,11 @@ export async function loadGameOverviewData(
         // The sidebar must not surface PBs from boards the wall can't link to.
         recentPbs: filterPbsToFeatured(recentPbs, featured),
         yourRuns: rawYourRuns.filter((r) => r.gameSlug === game.name),
+        topRunners: {
+            allTime: runnersAllTime,
+            d90: runners90,
+            d30: runners30,
+        },
         sessionUsername,
     };
 }

@@ -92,6 +92,7 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
                 canManage={canManage}
                 canModerate={canManageRuns}
                 claim={claim}
+                moderators={moderators}
             />
         );
     }

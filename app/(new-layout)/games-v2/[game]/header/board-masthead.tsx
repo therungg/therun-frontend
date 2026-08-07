@@ -25,7 +25,6 @@ interface Props {
     subcategoryKey: string;
     rulesOpen: boolean;
     onToggleRules: () => void;
-    onOpenHistory: () => void;
     /** 'moderation' -> the Board/Moderation tab reads as on the Moderation side. */
     view?: 'board' | 'moderation';
 }
@@ -39,7 +38,6 @@ export function BoardMasthead({
     subcategoryKey,
     rulesOpen,
     onToggleRules,
-    onOpenHistory,
     view = 'board',
 }: Props) {
     const category = data.selectedCategory;
@@ -234,7 +232,6 @@ export function BoardMasthead({
                     gameDisplay={data.game.display}
                     boardName={boardName}
                     categoryIconUrl={category.imageUrl}
-                    onOpenHistory={onOpenHistory}
                     categories={data.categories}
                     groups={data.groups}
                     selectedCategoryName={category.name}

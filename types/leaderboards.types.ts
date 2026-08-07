@@ -54,6 +54,8 @@ export interface QuickStats {
     totalRunTime: number;
     totalAttemptCount: number;
     totalFinishedAttemptCount: number;
+    /** Count of runs that were a PB when finished — game_stats.total_pbs. */
+    totalPbs: number;
     uniqueRunners: number;
 }
 
@@ -200,14 +202,6 @@ export interface LeaderboardExportResponse {
     truncated: boolean;
     exportedAt: string;
     entries: LeaderboardExportEntry[];
-}
-
-export interface WrHistoryEntry {
-    runnerName: string;
-    time: number;
-    timingMethod: 'rt' | 'gt';
-    setAt: string;
-    supersededAt?: string | null;
 }
 
 export interface UserRanking {

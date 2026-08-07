@@ -101,23 +101,39 @@ export function GameHero({
         variant === 'condensed' && stats.totalAttemptCount > 0
             ? `${formatCount(stats.totalAttemptCount)} attempts`
             : null,
-        // Full hero: the former stat band's numbers, folded into the facts
-        // line instead of their own row (density pass) — same "omit if
-        // missing" rule the band used (hours already guarded on > 0; runners
-        // and runs guarded the same way so a stat-less game never renders
-        // "0 runners").
-        variant === 'full' && stats.uniqueRunners > 0
-            ? `${formatCount(stats.uniqueRunners)} runners`
-            : null,
-        variant === 'full' && stats.totalAttemptCount > 0
-            ? `${formatCount(stats.totalAttemptCount)} runs`
-            : null,
-        variant === 'full' && stats.totalRunTime > 0
-            ? `${formatHours(stats.totalRunTime)} h played`
-            : null,
     ]
         .filter(Boolean)
         .join(' · ');
+
+    // Full hero only: the game's scale, promoted to a stat band instead of
+    // hiding in the facts line — these numbers are the page's best argument
+    // for itself. Same omit-if-zero rule as everywhere else, so a stat-less
+    // game renders no band at all rather than a row of zeroes.
+    const bandCells =
+        variant === 'full'
+            ? [
+                  {
+                      label: 'Runners',
+                      value: formatCount(stats.uniqueRunners),
+                      show: stats.uniqueRunners > 0,
+                  },
+                  {
+                      label: 'Attempts',
+                      value: formatCount(stats.totalAttemptCount),
+                      show: stats.totalAttemptCount > 0,
+                  },
+                  {
+                      label: 'Hours played',
+                      value: formatHours(stats.totalRunTime),
+                      show: stats.totalRunTime > 0,
+                  },
+                  {
+                      label: 'PBs set',
+                      value: formatCount(stats.totalPbs),
+                      show: stats.totalPbs > 0,
+                  },
+              ].filter((c) => c.show)
+            : [];
 
     return (
         <header
@@ -165,6 +181,20 @@ export function GameHero({
                     )}
                     {factsLine && (
                         <p className={styles.heroFactsLine}>{factsLine}</p>
+                    )}
+                    {bandCells.length > 0 && (
+                        <div className={styles.statBand}>
+                            {bandCells.map((c) => (
+                                <div key={c.label} className={styles.statCell}>
+                                    <span className={styles.statBandValue}>
+                                        {c.value}
+                                    </span>
+                                    <span className={styles.statBandLabel}>
+                                        {c.label}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
                     )}
                 </div>
                 <div className={styles.heroActions}>

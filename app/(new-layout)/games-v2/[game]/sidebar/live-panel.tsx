@@ -107,8 +107,33 @@ function PaceLine({ run }: { run: LiveRun }) {
     }
     const delta = run.delta;
     const showDelta = typeof delta === 'number' && delta !== 0;
+    // How deep into the run the attempt is, by split — currentSplitIndex is
+    // the split in progress, so completed = index. Minified payloads always
+    // carry the splits array; guard anyway so a malformed run just loses
+    // its bar, not the row.
+    const splitCount = run.splits?.length ?? 0;
+    const progress =
+        splitCount > 0
+            ? Math.min(Math.max(run.currentSplitIndex / splitCount, 0), 1)
+            : null;
     return (
         <div className={styles.pbMeta}>
+            {progress !== null && (
+                <div
+                    className={styles.progressTrack}
+                    role="progressbar"
+                    aria-valuenow={Math.round(progress * 100)}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={`Split ${run.currentSplitIndex + 1} of ${splitCount}`}
+                    title={`Split ${run.currentSplitIndex + 1} of ${splitCount}`}
+                >
+                    <div
+                        className={styles.progressFill}
+                        style={{ width: `${progress * 100}%` }}
+                    />
+                </div>
+            )}
             {run.currentSplitName}
             {showDelta && (
                 <>

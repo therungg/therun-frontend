@@ -84,6 +84,7 @@ export default async function GameStandingsPage({ params }: PageProps) {
             totalRunTime: 0,
             totalAttemptCount: 0,
             totalFinishedAttemptCount: 0,
+            totalPbs: 0,
             uniqueRunners: 0,
         })),
         getGameMetadata(resolvedGame.id).catch(() => EMPTY_GAME_METADATA),

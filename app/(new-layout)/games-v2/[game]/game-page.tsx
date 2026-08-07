@@ -1,6 +1,5 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { useEffect, useMemo, useState } from 'react';
 import Link from '~src/components/link';
 import { buildBoardHref } from '~src/lib/board-url';
@@ -19,11 +18,6 @@ import { ModerationLogView } from './leaderboard/moderation/moderation-log-view'
 import { RulesBody } from './rules/rules-panel';
 import { Sidebar } from './sidebar/sidebar';
 import type { GamePageData } from './types';
-
-const WrHistoryDrawer = dynamic(
-    () => import('./drawers/wr-history-drawer').then((m) => m.WrHistoryDrawer),
-    { ssr: false },
-);
 
 interface Props {
     data: GamePageData;
@@ -54,9 +48,7 @@ export function GamePage({
         [data.variables],
     );
     const [rulesOpen, setRulesOpen] = useState(false);
-    const [historyOpen, setHistoryOpen] = useState(false);
     useEffect(() => setRulesOpen(false), [data.selectedCategory.id]);
-    useEffect(() => setHistoryOpen(false), [data.selectedCategory.id]);
     // Single owner of every board-URL-push transition (category/subcategory
     // pills, verified toggle, Filters popover) — see use-board-nav.ts.
     // Hooks run unconditionally, so this is created even on the
@@ -140,7 +132,6 @@ export function GamePage({
                     subcategoryKey={subcategoryKey}
                     rulesOpen={rulesOpen}
                     onToggleRules={() => setRulesOpen((o) => !o)}
-                    onOpenHistory={() => setHistoryOpen(true)}
                     view={view}
                 />
                 {rulesOpen &&
@@ -153,17 +144,6 @@ export function GamePage({
                             emulatorPolicy={data.gameMeta.emulatorPolicy}
                         />
                     )}
-                {historyOpen && (
-                    <WrHistoryDrawer
-                        show={historyOpen}
-                        onHide={() => setHistoryOpen(false)}
-                        gameSlug={data.game.name}
-                        categorySlug={data.selectedCategory.name}
-                        categoryDisplay={data.selectedCategory.display}
-                        subcategoryKey={subcategoryKey}
-                        showMilliseconds={showMilliseconds}
-                    />
-                )}
                 <div className={styles.grid}>
                     <div
                         className={`${styles.colMain} ${boardNav.isPending ? styles.colMainPending : ''}`}
@@ -265,6 +245,10 @@ export function GamePage({
                             recentPbs={data.recentPbs}
                             claim={claim}
                             moderators={moderators}
+                            series={{
+                                display: data.gameMeta.seriesDisplay,
+                                games: data.gameMeta.seriesGames,
+                            }}
                             board={data.selectedCategory}
                             about={
                                 data.gameMeta.summaryOverride ??

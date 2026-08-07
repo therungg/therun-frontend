@@ -1,4 +1,5 @@
 import Link from '~src/components/link';
+import type { GameModerator } from '../../../../../types/board-claims.types';
 import type { ResolvedGroup } from '../../../../../types/leaderboards.types';
 import { sortCategoriesForDisplay } from '../category-sort';
 import type { ClaimCtaState } from '../claim/claim-cta';
@@ -10,12 +11,14 @@ import { CategoryCard } from './category-card';
 import { CollapsibleSection } from './collapsible-section';
 import type { GameOverviewData } from './data';
 import styles from './overview.module.scss';
+import { TopRunners } from './top-runners';
 
 interface Props {
     data: GameOverviewData;
     canManage: boolean;
     canModerate: boolean;
     claim?: ClaimCtaState | null;
+    moderators?: GameModerator[];
 }
 
 interface CardSection {
@@ -91,6 +94,7 @@ export function GameOverviewPage({
     canManage,
     canModerate,
     claim,
+    moderators,
 }: Props) {
     const sections = sectionize(data.cards, data.groups);
 
@@ -184,6 +188,13 @@ export function GameOverviewPage({
                             );
                         })
                     )}
+                    {data.cards.length > 0 && (
+                        <TopRunners
+                            allTime={data.topRunners.allTime}
+                            d90={data.topRunners.d90}
+                            d30={data.topRunners.d30}
+                        />
+                    )}
                 </div>
                 <aside className={gamePageStyles.rail}>
                     <Sidebar
@@ -191,6 +202,11 @@ export function GameOverviewPage({
                         yourRuns={data.yourRuns}
                         recentPbs={data.recentPbs}
                         claim={claim}
+                        moderators={moderators}
+                        series={{
+                            display: data.gameMeta.seriesDisplay,
+                            games: data.gameMeta.seriesGames,
+                        }}
                         about={
                             data.gameMeta.summaryOverride ??
                             data.gameMeta.summary

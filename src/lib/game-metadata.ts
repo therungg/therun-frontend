@@ -15,6 +15,7 @@ export const EMPTY_GAME_METADATA: GameMetadata = {
     igdbUrl: null,
     firstReleaseDate: null,
     seriesDisplay: null,
+    seriesGames: [],
     genres: [],
     igdbPlatforms: [],
     companies: [],
