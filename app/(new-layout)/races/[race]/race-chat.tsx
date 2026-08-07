@@ -228,6 +228,10 @@ const getRaceMessage = (message: RaceMessage) => {
             const data = message.data as RaceMessageModeratorData;
             return `Race was started by ${data.moderator}`;
         }
+        case 'race-moderator-finish': {
+            const data = message.data as RaceMessageModeratorData;
+            return `Race was force-finished by ${data.moderator}`;
+        }
         case 'race-finish':
             return 'Everyone is done. The race is finished';
         case 'race-rated':

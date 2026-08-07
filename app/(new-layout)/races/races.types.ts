@@ -300,6 +300,7 @@ export type RaceMessageType =
     | 'race-reset'
     | 'race-moderator-start'
     | 'race-moderator-start-fail'
+    | 'race-moderator-finish'
     | 'race-admin-kick'
     | 'participant-join'
     | 'participant-unjoin'
