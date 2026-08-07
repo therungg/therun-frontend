@@ -13,7 +13,7 @@ export const ForceStartRaceForm = ({ raceId }: { raceId: string }) => {
         return (
             <Button
                 className="w-100 fs-5 mt-2"
-                variant="danger"
+                variant="primary"
                 onClick={() => {
                     setConfirming(true);
                 }}
@@ -36,12 +36,12 @@ export const ForceStartRaceForm = ({ raceId }: { raceId: string }) => {
                         className="w-75"
                         innerText="Force start race"
                         pendingText="Force starting race..."
-                        variant="danger"
+                        variant="primary"
                     />
 
                     <Button
                         className="w-25"
-                        variant="primary"
+                        variant="secondary"
                         onClick={() => {
                             setConfirming(false);
                         }}
