@@ -248,6 +248,11 @@ export function DefaultsRow({
                     </select>
                 </td>
 
+                {/* RTA fallback has no board-wide default on purpose: ranking
+                    RTA against IGT is a per-category judgment call, so row
+                    zero holds the same em dash as any other unset value. */}
+                <td title="No board default — set per category">—</td>
+
                 <td>
                     <input
                         type="text"
