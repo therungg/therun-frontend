@@ -117,6 +117,9 @@ export interface UpdateCategoryBody {
     primaryTiming?: PrimaryTiming;
     hideRealTime?: boolean;
     hideGameTime?: boolean;
+    /** Rank RTA-only runs on the game-time board by their real time. Backend
+     * rejects true when the category's own hideGameTime flag is set. */
+    rtaFallback?: boolean;
     isMain?: boolean;
     active?: boolean;
     groupId?: number | null;

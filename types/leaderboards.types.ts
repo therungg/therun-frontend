@@ -48,6 +48,9 @@ export interface ResolvedCategory {
     requireVideoTopN?: number | null;
     hideRealTime?: boolean;
     hideGameTime?: boolean;
+    /** "Put RTA in leaderboard if IGT is not available" — RTA-only runs rank
+     * on the game-time board by their real time. */
+    rtaFallback?: boolean;
 }
 
 export interface QuickStats {

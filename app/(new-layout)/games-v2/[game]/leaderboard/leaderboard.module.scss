@@ -209,6 +209,13 @@ tr:focus-within .reveal {
     @include board.board-pill;
 }
 
+// RTA-fallback entries on a game-time board: the ranked cell carries the
+// run's real time — this pill says which clock it is.
+.rtaTag {
+    @include board.board-pill;
+    margin-left: 0.4rem;
+}
+
 // .secondaryHeader itself is declared inside `.table` above (see note there)
 // so it wins specificity over board-table's `thead th` color rule.
 

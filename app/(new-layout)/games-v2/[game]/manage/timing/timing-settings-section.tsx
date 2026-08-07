@@ -36,6 +36,7 @@ interface Props {
 interface State {
     primaryTiming: PrimaryTiming;
     showSecondary: boolean;
+    rtaFallback: boolean;
 }
 
 /** Server truth, kept verbatim so saves can send only the fields that
@@ -44,6 +45,13 @@ interface StoredFlags {
     primaryTiming: PrimaryTiming;
     hideRealTime: boolean;
     hideGameTime: boolean;
+    rtaFallback: boolean;
+}
+
+/** The option only makes sense where the board carries IGT at all — as the
+ * primary clock, or shown as the secondary. */
+function hasIgt(state: State): boolean {
+    return state.primaryTiming === 'gametime' || state.showSecondary;
 }
 
 /**
@@ -59,6 +67,7 @@ function storedOf(category: ResolvedCategory): StoredFlags {
             category.primaryTiming === 'gt' ? 'gametime' : 'realtime',
         hideRealTime: category.hideRealTime ?? false,
         hideGameTime: category.hideGameTime ?? false,
+        rtaFallback: category.rtaFallback ?? false,
     };
 }
 
@@ -69,6 +78,7 @@ function stateOf(stored: StoredFlags): State {
             stored.primaryTiming === 'realtime'
                 ? !stored.hideGameTime
                 : !stored.hideRealTime,
+        rtaFallback: stored.rtaFallback,
     };
 }
 
@@ -85,11 +95,13 @@ function hidePairOf(state: State): {
 }
 
 function defaultsState(defaults: GameTimingDefaults): State {
+    // Game defaults don't carry rtaFallback — it stays a per-category call.
     return stateOf({
         primaryTiming:
             defaults.primaryTiming === 'gt' ? 'gametime' : 'realtime',
         hideRealTime: defaults.hideRealTime,
         hideGameTime: defaults.hideGameTime,
+        rtaFallback: false,
     });
 }
 
@@ -111,6 +123,7 @@ export function TimingSettingsSection({
         primaryTiming: 'realtime',
         hideRealTime: false,
         hideGameTime: false,
+        rtaFallback: false,
     };
     const [state, setState] = useState<State>(() =>
         stateOf(category ? storedOf(category) : fallback),
@@ -134,15 +147,21 @@ export function TimingSettingsSection({
         category?.primaryTiming,
         category?.hideRealTime,
         category?.hideGameTime,
+        category?.rtaFallback,
     ]);
 
     if (!category) return null;
 
     const desired = hidePairOf(state);
+    // The switch only applies while the board carries IGT; leaving it behind
+    // (e.g. flipping to RT-only) silently clears it rather than persisting a
+    // setting the board can no longer act on.
+    const desiredRtaFallback = hasIgt(state) ? state.rtaFallback : false;
     const dirty =
         state.primaryTiming !== original.primaryTiming ||
         desired.hideRealTime !== original.hideRealTime ||
-        desired.hideGameTime !== original.hideGameTime;
+        desired.hideGameTime !== original.hideGameTime ||
+        desiredRtaFallback !== original.rtaFallback;
     const busy = isSaving;
 
     const gameDefault = gameDefaults ? defaultsState(gameDefaults) : null;
@@ -172,13 +191,21 @@ export function TimingSettingsSection({
                     desired.hideGameTime !== original.hideGameTime
                         ? desired.hideGameTime
                         : undefined,
+                rtaFallback:
+                    desiredRtaFallback !== original.rtaFallback
+                        ? desiredRtaFallback
+                        : undefined,
             });
             if ('error' in res) {
                 setFormError(res.error);
                 return;
             }
             toast.success('Timing settings saved');
-            setOriginal({ primaryTiming: state.primaryTiming, ...desired });
+            setOriginal({
+                primaryTiming: state.primaryTiming,
+                ...desired,
+                rtaFallback: desiredRtaFallback,
+            });
         });
     };
 
@@ -222,6 +249,28 @@ export function TimingSettingsSection({
                         setState((s) => ({ ...s, showSecondary: checked }))
                     }
                 />
+                {hasIgt(state) && (
+                    <>
+                        <SwitchField
+                            id="rtaFallback"
+                            label="Put RTA in leaderboard if IGT is not available"
+                            checked={state.rtaFallback}
+                            disabled={busy}
+                            onChange={(checked) =>
+                                setState((s) => ({
+                                    ...s,
+                                    rtaFallback: checked,
+                                }))
+                            }
+                        />
+                        {state.rtaFallback && (
+                            <p className="text-muted small mb-0 mt-1">
+                                Runs without game time rank by their real time
+                                on the game-time board, marked as RTA.
+                            </p>
+                        )}
+                    </>
+                )}
                 {gameDefault && (
                     <p className="text-muted small mb-0 mt-1">
                         Game default: {describeState(gameDefault)}
@@ -234,7 +283,14 @@ export function TimingSettingsSection({
                                     type="button"
                                     className="btn btn-link btn-sm p-0 align-baseline"
                                     disabled={busy}
-                                    onClick={() => setState(gameDefault)}
+                                    onClick={() =>
+                                        // Clock fields only — rtaFallback has
+                                        // no game-level default to restore.
+                                        setState((s) => ({
+                                            ...gameDefault,
+                                            rtaFallback: s.rtaFallback,
+                                        }))
+                                    }
                                 >
                                     Use game default
                                 </button>

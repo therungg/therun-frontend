@@ -45,6 +45,7 @@ interface CategoriesEndpointRow {
     show_milliseconds?: boolean;
     require_video?: boolean;
     require_video_top_n?: number | null;
+    rta_fallback?: boolean;
 }
 
 export async function resolveGame(slug: string): Promise<ResolvedGame | null> {
@@ -278,6 +279,7 @@ export async function resolveCategory(
             requireVideoTopN: r.require_video_top_n ?? null,
             hideRealTime: r.hide_real_time ?? false,
             hideGameTime: r.hide_game_time ?? false,
+            rtaFallback: r.rta_fallback ?? false,
         };
     });
 
