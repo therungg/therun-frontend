@@ -4,17 +4,7 @@ import { TopbarSkeleton } from '~src/components/Topbar/TopbarSkeleton';
 import { getFeaturedPatrons } from '~src/lib/featured-patrons';
 import type { FeaturedPatronsResponse } from '../../types/patreon.types';
 
-interface HeaderProps {
-    username: string;
-    picture: string;
-    sessionError: string | null;
-}
-
-export const Header = async ({
-    username,
-    picture,
-    sessionError,
-}: Partial<HeaderProps>) => {
+export const Header = async () => {
     let featuredPatrons: FeaturedPatronsResponse;
     try {
         featuredPatrons = await getFeaturedPatrons();
@@ -24,12 +14,7 @@ export const Header = async ({
 
     return (
         <ErrorBoundary fallback={<TopbarSkeleton />}>
-            <Topbar
-                username={username}
-                picture={picture}
-                sessionError={sessionError}
-                featuredPatrons={featuredPatrons}
-            />
+            <Topbar featuredPatrons={featuredPatrons} />
         </ErrorBoundary>
     );
 };

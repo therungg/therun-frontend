@@ -34,7 +34,6 @@ interface RunPageProps {
     globalGameData: GlobalGameData;
     liveData: LiveRun;
     tab?: string;
-    viewerUsername?: string;
 }
 
 export interface Runs {
@@ -58,7 +57,6 @@ export default function RunDetail({
     globalGameData,
     liveData,
     tab = 'dashboard',
-    viewerUsername,
 }: RunPageProps) {
     const { baseUrl } = React.useContext(AppContext);
     // Older run records carry `game: null` and a slugified `run`, even though
@@ -72,6 +70,14 @@ export default function RunDetail({
     const gameDisplay = run.game || displayGame || safeDecodeURI(game) || '';
     const forceRealTime = !!globalGameData.forceRealTime;
     const [activeTab, setActiveTab] = useState<string>(tab);
+
+    // The ?tab= deep link is read on the client so the server render stays
+    // cacheable — reading searchParams server-side would make every run page
+    // dynamic.
+    useEffect(() => {
+        const tabParam = new URLSearchParams(window.location.search).get('tab');
+        if (tabParam) setActiveTab(tabParam);
+    }, []);
 
     const [useGameTime, setUseGameTime] = useState(
         !!(
