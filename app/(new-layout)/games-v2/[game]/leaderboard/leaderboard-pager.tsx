@@ -23,11 +23,6 @@ import { RunInspector } from './run-inspector';
 import { type BoardSelectionKey, entrySelectionKey } from './selection';
 import type { TimingKey } from './timing-columns';
 
-/** Same runner-grouping key leaderboard-row.tsx uses for "select all runs by …". */
-function runnerKeyOf(entry: LeaderboardEntry): string {
-    return entry.userId != null ? `u:${entry.userId}` : `g:${entry.runnerName}`;
-}
-
 // "Find me" fallback: the board API has no rank/user lookup that accounts
 // for the current filter state (subcategory, varFilters, verified,
 // combined — see getUserRankingsByName in src/lib/leaderboards-v1.ts,
@@ -266,19 +261,6 @@ export function LeaderboardPager({
         });
     };
 
-    const selectRunner = (runnerKey: string) => {
-        setSelectedKeys((prev) => {
-            const next = new Set(prev);
-            for (const e of entries) {
-                const key = entrySelectionKey(e);
-                if (key != null && runnerKeyOf(e) === runnerKey) {
-                    next.add(key);
-                }
-            }
-            return next;
-        });
-    };
-
     const clearSelection = () => setSelectedKeys(new Set());
 
     const handleBulkMutated = () => {
@@ -463,7 +445,6 @@ export function LeaderboardPager({
                 rtaFallback={rtaFallback}
                 selectedKeys={selectedKeys}
                 onToggleSelect={toggleSelect}
-                onSelectRunner={selectRunner}
                 onToggleAllVisible={toggleAllVisible}
                 onModerate={
                     canManage

@@ -139,8 +139,6 @@ interface Props {
     selected?: boolean;
     /** Shift-click extends a range — the click handler forwards the native event's shiftKey. */
     onToggleSelect?: (key: BoardSelectionKey, shiftKey: boolean) => void;
-    /** Kebab's "Select all runs by …" shortcut to the single-runner bulk state. */
-    onSelectRunner?: (runnerKey: string) => void;
     /** Kebab's "Moderate…" — opens the run inspector drawer on this entry. */
     onModerate?: (entry: LeaderboardEntry) => void;
     /** Board page refetch for row-level mutations (quick Verify + its undo). */
@@ -163,7 +161,6 @@ export function LeaderboardRow({
     rtaFallback = false,
     selected = false,
     onToggleSelect,
-    onSelectRunner,
     onModerate,
     onBoardRefresh,
 }: Props) {
@@ -180,13 +177,6 @@ export function LeaderboardRow({
         entry.source !== 'manual' &&
         entry.verificationStatus === 'pending' &&
         onBoardRefresh != null;
-    // Same key a bulk selection groups runners by (leaderboard-pager.ts):
-    // registered users by id, guests by name (no persistent identity).
-    // An anonymized runner has no userId, but its placeholder is stable per
-    // user+game — so their runs still group as one runner here, which is the
-    // whole point of a stable placeholder (nobody farms extra board slots).
-    const runnerKey =
-        entry.userId != null ? `u:${entry.userId}` : `g:${entry.runnerName}`;
     const detailHref =
         entry.source === 'manual' && entry.manualTimeId != null
             ? `/games-v2/${encodeURIComponent(gameSlug)}/manual/${entry.manualTimeId}`
@@ -414,11 +404,6 @@ export function LeaderboardRow({
                         gameSlug={gameSlug}
                         categorySlug={categorySlug}
                         subcategoryDefKeys={subcategoryDefKeys}
-                        onSelectRunner={
-                            onSelectRunner
-                                ? () => onSelectRunner(runnerKey)
-                                : undefined
-                        }
                         onModerate={
                             onModerate ? () => onModerate(entry) : undefined
                         }

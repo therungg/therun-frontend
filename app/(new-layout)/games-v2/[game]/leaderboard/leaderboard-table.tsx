@@ -45,7 +45,6 @@ interface Props {
      * Keys are `r:<runId>` / `m:<manualTimeId>` (see selection.ts). */
     selectedKeys?: Set<BoardSelectionKey>;
     onToggleSelect?: (key: BoardSelectionKey, shiftKey: boolean) => void;
-    onSelectRunner?: (runnerKey: string) => void;
     /** Header checkbox — toggles every currently-rendered selectable row. */
     onToggleAllVisible?: () => void;
     /** Kebab's "Moderate…" — opens the run inspector on that entry. */
@@ -70,7 +69,6 @@ export function LeaderboardTable({
     rtaFallback = false,
     selectedKeys,
     onToggleSelect,
-    onSelectRunner,
     onToggleAllVisible,
     onModerate,
     onBoardRefresh,
@@ -235,7 +233,6 @@ export function LeaderboardTable({
                                 );
                             })()}
                             onToggleSelect={onToggleSelect}
-                            onSelectRunner={onSelectRunner}
                             onModerate={onModerate}
                             onBoardRefresh={onBoardRefresh}
                         />
