@@ -352,28 +352,7 @@
     z-index: 2;
 }
 
-// ---- Top runners ---------------------------------------------
-// Section head with the period toggle riding the hairline's far end —
-// board-section-head's default space-between anatomy.
-.runnersHead {
-    @include board.board-section-head;
-}
-
-.runnersPeriods {
-    display: flex;
-    gap: dt.$spacing-xs;
-}
-
-.periodPill {
-    @include board.control-pill;
-    font-size: dt.$font-size-2xs;
-}
-
-.periodPillActive {
-    @include board.control-pill-active;
-    font-size: dt.$font-size-2xs;
-}
-
+// ---- Top-runners table (consumed by the Stats tab's table) ---
 // Rank gutter, runner, then three numeric columns in one tabular grid —
 // a miniature board, not a data table with chrome.
 .runnersTable {
@@ -425,12 +404,6 @@
     @include board.mono-time;
     text-align: right;
     color: var(--bs-secondary-color);
-}
-
-.runnersEmpty {
-    color: var(--bs-tertiary-color);
-    font-size: dt.$font-size-sm;
-    margin: 0;
 }
 
 .emptyState {

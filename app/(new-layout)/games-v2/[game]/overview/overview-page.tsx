@@ -12,7 +12,6 @@ import { CategoryCard } from './category-card';
 import { CollapsibleSection } from './collapsible-section';
 import type { GameOverviewData } from './data';
 import styles from './overview.module.scss';
-import { TopRunners } from './top-runners';
 
 interface Props {
     data: GameOverviewData;
@@ -196,13 +195,6 @@ export function GameOverviewPage({
                                 </section>
                             );
                         })
-                    )}
-                    {data.cards.length > 0 && (
-                        <TopRunners
-                            allTime={data.topRunners.allTime}
-                            d90={data.topRunners.d90}
-                            d30={data.topRunners.d30}
-                        />
                     )}
                 </div>
                 <aside className={gamePageStyles.rail}>
