@@ -25,6 +25,7 @@ import {
     undoReason,
 } from './action-model';
 import { excludeAction, previewExcludeAction } from './actions/exclude.action';
+import { manualTimesBulkAction } from './actions/manual-times.action';
 import { restoreRunsAction } from './actions/restore.action';
 import {
     applyVerdictsAction,
@@ -125,6 +126,20 @@ export function RunActionDialog({
     const [isConfirming, startConfirm] = useTransition();
 
     const runIds = target.kind === 'runs' ? target.runIds : [];
+    const manualTimeIds =
+        target.kind === 'runs' ? (target.manualTimeIds ?? []) : [];
+    // How this verb lands on the selection's manual set times (if any):
+    // verdicts map to the manual-time verdict endpoint, remove maps to
+    // delete (manual times have no exclude machinery — delete IS their
+    // removal). `restore`/`ban` have no manual equivalent and skip them.
+    const manualOp: 'verify' | 'reject' | 'delete' | null =
+        verb === 'approve'
+            ? 'verify'
+            : verb === 'reject'
+              ? 'reject'
+              : verb === 'remove'
+                ? 'delete'
+                : null;
     const banRule: UserExclusionRuleInput | null =
         target.kind === 'runner'
             ? {
@@ -166,6 +181,9 @@ export function RunActionDialog({
                 if ('error' in res) return setPreviewError(res.error);
                 return setPreview({ kind: 'exclude', data: res.preview });
             }
+            // A manual-times-only selection has no run preview to fetch —
+            // the manual note under the summary is the whole preview.
+            if (runIds.length === 0) return setPreview(null);
             if (previewVerdictAction) {
                 const res = await previewVerdictsAction(
                     gameSlug,
@@ -270,21 +288,54 @@ export function RunActionDialog({
                 );
                 return onDone();
             }
-            if (confirmVerdictAction) {
-                const res = await applyVerdictsAction(
+            // The manual portion of a mixed selection. Runs first, manual
+            // second; a manual failure surfaces as the dialog error even if
+            // the runs part already applied (the toast/refresh only fire on
+            // full success, so the mod sees exactly what didn't happen).
+            const applyManualTimes = async (): Promise<string | null> => {
+                if (manualOp == null || manualTimeIds.length === 0) {
+                    return null;
+                }
+                const res = await manualTimesBulkAction(
                     gameSlug,
-                    confirmVerdictAction,
-                    runIds,
+                    manualTimeIds,
+                    manualOp,
                     finalReason,
                 );
-                if ('error' in res) return setError(res.error);
-                const n = res.result.affectedRunCount;
-                const message = `${VERB_TITLE[verb]} — ${n} run${n === 1 ? '' : 's'} updated.`;
+                if ('error' in res) return res.error;
+                if (res.failed > 0) {
+                    return `${res.failed} of ${manualTimeIds.length} set time${manualTimeIds.length === 1 ? '' : 's'} failed to update.`;
+                }
+                return null;
+            };
+            // Undo toasts only cover the runs machinery (verdicts/excludes
+            // have true inverses; a deleted manual time doesn't). A mixed
+            // action would leave the manual part un-undone, so it gets a
+            // plain success toast instead of a lying Undo button.
+            const manualInvolved = manualTimeIds.length > 0;
+            if (confirmVerdictAction) {
+                let n = 0;
+                if (runIds.length > 0) {
+                    const res = await applyVerdictsAction(
+                        gameSlug,
+                        confirmVerdictAction,
+                        runIds,
+                        finalReason,
+                    );
+                    if ('error' in res) return setError(res.error);
+                    n = res.result.affectedRunCount;
+                }
+                const manualError = await applyManualTimes();
+                if (manualError) return setError(manualError);
+                const total = n + manualTimeIds.length;
+                const message = `${VERB_TITLE[verb]} — ${total} run${total === 1 ? '' : 's'} updated.`;
                 // Verify's inverse is `unverify` (verified → pending), not
                 // restoreRunsAction's include+unreject — unreject is a no-op
                 // against an already-verified run, so that generic undo path
                 // would silently do nothing here.
-                if (verb === 'approve') {
+                if (manualInvolved || runIds.length === 0) {
+                    toast.success(message);
+                } else if (verb === 'approve') {
                     fireUndoToast(
                         message,
                         () =>
@@ -312,16 +363,26 @@ export function RunActionDialog({
                 }
                 return onDone();
             }
-            const res = await excludeAction(gameSlug, {
-                runIds,
-                reason: finalReason,
-            });
-            if ('error' in res) return setError(res.error);
-            fireUndoToast(
-                'Removed.',
-                () => restoreRunsAction(gameSlug, runIds, undoReason(verb)),
-                refreshAfterUndo,
-            );
+            if (runIds.length > 0) {
+                const res = await excludeAction(gameSlug, {
+                    runIds,
+                    reason: finalReason,
+                });
+                if ('error' in res) return setError(res.error);
+            }
+            {
+                const manualError = await applyManualTimes();
+                if (manualError) return setError(manualError);
+            }
+            if (manualInvolved || runIds.length === 0) {
+                toast.success('Removed.');
+            } else {
+                fireUndoToast(
+                    'Removed.',
+                    () => restoreRunsAction(gameSlug, runIds, undoReason(verb)),
+                    refreshAfterUndo,
+                );
+            }
             onDone();
         });
     };
@@ -454,6 +515,19 @@ export function RunActionDialog({
                     <div className={styles.errorAlert} role="alert">
                         {previewError}
                     </div>
+                )}
+
+                {manualTimeIds.length > 0 && manualOp != null && (
+                    <p className={styles.previewSummary}>
+                        <strong>{manualTimeIds.length}</strong> set time
+                        {manualTimeIds.length === 1 ? '' : 's'} will be{' '}
+                        {manualOp === 'delete'
+                            ? 'deleted — a deleted set time cannot be restored'
+                            : manualOp === 'verify'
+                              ? 'verified'
+                              : 'rejected'}
+                        .
+                    </p>
                 )}
 
                 {preview && (

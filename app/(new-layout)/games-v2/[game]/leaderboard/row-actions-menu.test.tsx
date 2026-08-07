@@ -42,6 +42,9 @@ vi.mock('../manage/boards/runner-dialog', () => ({
 vi.mock('../manage/moderation/shared/run-action-dialog', () => ({
     RunActionDialog: () => null,
 }));
+vi.mock('../manage/moderation/shared/manual-time-dialog', () => ({
+    ManualTimeDialog: () => <div data-testid="manual-time-dialog" />,
+}));
 vi.mock('../shared/self-run-verdict', () => ({
     SelfRunVerdictDialog: () => null,
     useSelfRunVerdict: () => ({
@@ -199,5 +202,64 @@ describe('RowActionsMenu — console-parity mod items', () => {
             ),
         );
         expect(mocks.toastSuccess).toHaveBeenCalled();
+    });
+});
+
+function manualEntry(
+    overrides: Partial<LeaderboardEntry> = {},
+): LeaderboardEntry {
+    return entry({
+        runId: null,
+        source: 'manual',
+        manualTimeId: 77,
+        ...overrides,
+    });
+}
+
+describe('RowActionsMenu — manual (set) time rows', () => {
+    it('renders nothing for non-managers', () => {
+        const { container } = renderMenu({
+            entry: manualEntry(),
+            canManage: false,
+        });
+        expect(container.innerHTML).toBe('');
+    });
+
+    it('shows the manual verb set for managers', () => {
+        renderMenu({ entry: manualEntry({ verificationStatus: 'pending' }) });
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Set-time actions' }),
+        );
+        expect(screen.getByText('Verify set time')).toBeTruthy();
+        expect(screen.getByText('Reject set time')).toBeTruthy();
+        expect(screen.getByText('Change time…')).toBeTruthy();
+        expect(screen.getByText('Remove set time…')).toBeTruthy();
+        expect(screen.getByText('View runner page')).toBeTruthy();
+        // Run-only verbs must not leak in.
+        expect(screen.queryByText('Move…')).toBeNull();
+        expect(screen.queryByText('Mark for later')).toBeNull();
+    });
+
+    it('hides the verdict the row already has', () => {
+        renderMenu({ entry: manualEntry({ verificationStatus: 'verified' }) });
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Set-time actions' }),
+        );
+        expect(screen.queryByText('Verify set time')).toBeNull();
+        expect(screen.getByText('Reject set time')).toBeTruthy();
+    });
+
+    it('loads board context and opens the edit dialog', async () => {
+        renderMenu({ entry: manualEntry() });
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Set-time actions' }),
+        );
+        fireEvent.click(screen.getByText('Change time…'));
+        await waitFor(() =>
+            expect(screen.getByTestId('manual-time-dialog')).toBeTruthy(),
+        );
+        expect(mocks.loadModBoardContextAction).toHaveBeenCalledWith(
+            'some-game',
+        );
     });
 });

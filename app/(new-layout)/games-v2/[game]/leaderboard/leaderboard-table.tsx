@@ -8,6 +8,7 @@ import { isSameRunner } from '../shared/is-same-runner';
 import { computeDisplayRanks } from './display-rank';
 import styles from './leaderboard.module.scss';
 import { LeaderboardRow } from './leaderboard-row';
+import { type BoardSelectionKey, entrySelectionKey } from './selection';
 import {
     type TimingKey,
     timingColumnHidden,
@@ -38,9 +39,10 @@ interface Props {
     /** category.rtaFallback — a GT-board entry with no game time is ranked by
      * its real time and gets an RTA marker in the ranked column. */
     rtaFallback?: boolean;
-    /** Bulk selection — checkbox column only renders when `canManage`. */
-    selectedRunIds?: Set<number>;
-    onToggleSelect?: (runId: number, shiftKey: boolean) => void;
+    /** Bulk selection — checkbox column only renders when `canManage`.
+     * Keys are `r:<runId>` / `m:<manualTimeId>` (see selection.ts). */
+    selectedKeys?: Set<BoardSelectionKey>;
+    onToggleSelect?: (key: BoardSelectionKey, shiftKey: boolean) => void;
     onSelectRunner?: (runnerKey: string) => void;
     /** Header checkbox — toggles every currently-rendered selectable row. */
     onToggleAllVisible?: () => void;
@@ -61,20 +63,19 @@ export function LeaderboardTable({
     subcategoryKey,
     subcategoryDefKeys,
     rtaFallback = false,
-    selectedRunIds,
+    selectedKeys,
     onToggleSelect,
     onSelectRunner,
     onToggleAllVisible,
 }: Props) {
-    const selectableRunIds = leaderboard.entries
-        .map((e) => e.runId)
-        .filter((id): id is number => id != null);
-    const selectedCount = selectedRunIds
-        ? selectableRunIds.filter((id) => selectedRunIds.has(id)).length
+    const selectableKeys = leaderboard.entries
+        .map(entrySelectionKey)
+        .filter((key): key is BoardSelectionKey => key != null);
+    const selectedCount = selectedKeys
+        ? selectableKeys.filter((key) => selectedKeys.has(key)).length
         : 0;
     const allSelected =
-        selectableRunIds.length > 0 &&
-        selectedCount === selectableRunIds.length;
+        selectableKeys.length > 0 && selectedCount === selectableKeys.length;
     const someSelected = selectedCount > 0 && !allSelected;
     const selectAllRef = useRef<HTMLInputElement>(null);
     useEffect(() => {
@@ -162,7 +163,7 @@ export function LeaderboardTable({
                                     checked={allSelected}
                                     aria-label="Select all runs on this page"
                                     onChange={onToggleAllVisible}
-                                    disabled={selectableRunIds.length === 0}
+                                    disabled={selectableKeys.length === 0}
                                 />
                             </th>
                         )}
@@ -220,10 +221,13 @@ export function LeaderboardTable({
                             categorySlug={categorySlug}
                             subcategoryDefKeys={subcategoryDefKeys}
                             rtaFallback={rtaFallback}
-                            selected={
-                                entry.runId != null &&
-                                (selectedRunIds?.has(entry.runId) ?? false)
-                            }
+                            selected={(() => {
+                                const key = entrySelectionKey(entry);
+                                return (
+                                    key != null &&
+                                    (selectedKeys?.has(key) ?? false)
+                                );
+                            })()}
                             onToggleSelect={onToggleSelect}
                             onSelectRunner={onSelectRunner}
                         />

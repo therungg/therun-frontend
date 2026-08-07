@@ -19,6 +19,7 @@ import styles from './leaderboard.module.scss';
 import { YOU_ROW_ID } from './leaderboard-row';
 import { LeaderboardTable } from './leaderboard-table';
 import { paginationItems } from './pagination-items';
+import { type BoardSelectionKey, entrySelectionKey } from './selection';
 import type { TimingKey } from './timing-columns';
 
 /** Same runner-grouping key leaderboard-row.tsx uses for "select all runs by …". */
@@ -125,15 +126,17 @@ export function LeaderboardPager({
     // effect even if the row was already on-screen from a prior search.
     const [highlightToken, setHighlightToken] = useState(0);
     // Bulk selection (mods only — the checkbox column itself only renders
-    // when `canManage`, so a non-mod never populates this). Page-scoped:
-    // navigating clears it, since acting on rows you can no longer see is
-    // exactly the mistake a selection UI exists to prevent.
-    const [selectedRunIds, setSelectedRunIds] = useState<Set<number>>(
+    // when `canManage`, so a non-mod never populates this). Keys are
+    // `r:<runId>` / `m:<manualTimeId>` (see selection.ts) so manual set
+    // times are selectable alongside runs. Page-scoped: navigating clears
+    // it, since acting on rows you can no longer see is exactly the
+    // mistake a selection UI exists to prevent.
+    const [selectedKeys, setSelectedKeys] = useState<Set<BoardSelectionKey>>(
         new Set(),
     );
     // Shift-click range-select anchor — the last row clicked without
     // shift, or the most recent shift-click's endpoint.
-    const lastClickedRef = useRef<number | null>(null);
+    const lastClickedRef = useRef<BoardSelectionKey | null>(null);
 
     const [entryClass] = useState(() => {
         if (typeof window === 'undefined') return styles.boardStagger;
@@ -163,7 +166,7 @@ export function LeaderboardPager({
     const showPage = (res: LeaderboardResponse, page: number) => {
         setNavError(null);
         setBoard(res);
-        setSelectedRunIds(new Set());
+        setSelectedKeys(new Set());
         lastClickedRef.current = null;
         setUrlPage(page);
     };
@@ -196,62 +199,63 @@ export function LeaderboardPager({
     const entries = board.entries;
 
     // ---- Bulk selection (mods only) --------------------------------------
-    const selectableRunIds = entries
-        .map((e) => e.runId)
-        .filter((id): id is number => id != null);
+    const selectableKeys = entries
+        .map(entrySelectionKey)
+        .filter((key): key is BoardSelectionKey => key != null);
 
-    const toggleSelect = (runId: number, shiftKey: boolean) => {
+    const toggleSelect = (key: BoardSelectionKey, shiftKey: boolean) => {
         // Anchor bookkeeping stays outside the updater: StrictMode
         // double-invokes updaters, and a ref mutation inside meant the
         // second run saw the anchor already moved to the clicked row,
         // collapsing every shift-range to a single row.
-        const anchorId = lastClickedRef.current;
-        lastClickedRef.current = runId;
-        setSelectedRunIds((prev) => {
+        const anchorKey = lastClickedRef.current;
+        lastClickedRef.current = key;
+        setSelectedKeys((prev) => {
             const next = new Set(prev);
-            if (shiftKey && anchorId != null) {
-                const anchor = selectableRunIds.indexOf(anchorId);
-                const target = selectableRunIds.indexOf(runId);
+            if (shiftKey && anchorKey != null) {
+                const anchor = selectableKeys.indexOf(anchorKey);
+                const target = selectableKeys.indexOf(key);
                 if (anchor !== -1 && target !== -1) {
                     const [start, end] =
                         anchor < target ? [anchor, target] : [target, anchor];
-                    const shouldSelect = !prev.has(runId);
-                    for (const id of selectableRunIds.slice(start, end + 1)) {
-                        if (shouldSelect) next.add(id);
-                        else next.delete(id);
+                    const shouldSelect = !prev.has(key);
+                    for (const k of selectableKeys.slice(start, end + 1)) {
+                        if (shouldSelect) next.add(k);
+                        else next.delete(k);
                     }
                     return next;
                 }
             }
-            if (next.has(runId)) next.delete(runId);
-            else next.add(runId);
+            if (next.has(key)) next.delete(key);
+            else next.add(key);
             return next;
         });
     };
 
     const toggleAllVisible = () => {
-        setSelectedRunIds((prev) => {
+        setSelectedKeys((prev) => {
             const allSelected =
-                selectableRunIds.length > 0 &&
-                selectableRunIds.every((id) => prev.has(id));
+                selectableKeys.length > 0 &&
+                selectableKeys.every((key) => prev.has(key));
             if (allSelected) return new Set();
-            return new Set(selectableRunIds);
+            return new Set(selectableKeys);
         });
     };
 
     const selectRunner = (runnerKey: string) => {
-        setSelectedRunIds((prev) => {
+        setSelectedKeys((prev) => {
             const next = new Set(prev);
             for (const e of entries) {
-                if (e.runId != null && runnerKeyOf(e) === runnerKey) {
-                    next.add(e.runId);
+                const key = entrySelectionKey(e);
+                if (key != null && runnerKeyOf(e) === runnerKey) {
+                    next.add(key);
                 }
             }
             return next;
         });
     };
 
-    const clearSelection = () => setSelectedRunIds(new Set());
+    const clearSelection = () => setSelectedKeys(new Set());
 
     const handleBulkMutated = () => {
         clearSelection();
@@ -434,19 +438,19 @@ export function LeaderboardPager({
                 subcategoryKey={subcategoryKey}
                 subcategoryDefKeys={subcategoryDefKeys}
                 rtaFallback={rtaFallback}
-                selectedRunIds={selectedRunIds}
+                selectedKeys={selectedKeys}
                 onToggleSelect={toggleSelect}
                 onSelectRunner={selectRunner}
                 onToggleAllVisible={toggleAllVisible}
             />
-            {canManage && selectedRunIds.size > 0 && (
+            {canManage && selectedKeys.size > 0 && (
                 <BoardBulkBar
                     gameSlug={gameSlug}
                     categorySlug={categorySlug}
                     canSiteBan={canSiteBan}
                     subcategoryDefKeys={subcategoryDefKeys}
                     entries={entries}
-                    selectedRunIds={selectedRunIds}
+                    selectedKeys={selectedKeys}
                     onClear={clearSelection}
                     onMutated={handleBulkMutated}
                     busy={isRefetching}

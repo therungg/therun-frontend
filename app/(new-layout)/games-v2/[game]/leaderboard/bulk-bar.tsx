@@ -16,6 +16,7 @@ import { loadModBoardContextAction } from './actions/load-mod-board-context.acti
 import styles from './bulk-bar.module.scss';
 import { BulkMoveDialog } from './bulk-move-dialog';
 import { entryToRosterRow } from './mod-row';
+import { type BoardSelectionKey, entrySelectionKey } from './selection';
 
 interface Props {
     gameSlug: string;
@@ -24,7 +25,8 @@ interface Props {
     subcategoryDefKeys: string[];
     /** Every currently-loaded/visible entry — the selection is a subset of these. */
     entries: LeaderboardEntry[];
-    selectedRunIds: Set<number>;
+    /** `r:<runId>` / `m:<manualTimeId>` keys — see selection.ts. */
+    selectedKeys: Set<BoardSelectionKey>;
     onClear: () => void;
     /** After a bulk mutation applies successfully. */
     onMutated: () => void;
@@ -56,22 +58,38 @@ export function BoardBulkBar({
     canSiteBan,
     subcategoryDefKeys,
     entries,
-    selectedRunIds,
+    selectedKeys,
     onClear,
     onMutated,
     busy = false,
 }: Props) {
-    const selected = entries.filter(
-        (e) => e.runId != null && selectedRunIds.has(e.runId),
-    );
-    const runIds = selected.map((e) => e.runId as number);
+    const selected = entries.filter((e) => {
+        const key = entrySelectionKey(e);
+        return key != null && selectedKeys.has(key);
+    });
+    const runIds = selected
+        .map((e) => e.runId)
+        .filter((id): id is number => id != null);
+    // Manual set times ride along on the verdict/remove verbs; the
+    // run-only verbs (Move/Mark/Restore) gate on their presence below.
+    const manualTimeIds = selected
+        .filter((e) => e.runId == null)
+        .map((e) => e.manualTimeId)
+        .filter((id): id is number => id != null);
+    const hasManual = manualTimeIds.length > 0;
     const runnerKeys = new Set(selected.map(runnerKeyOf));
     const runnerNames = new Set(selected.map((e) => e.runnerName));
     const singleRunner = runnerKeys.size === 1 ? selected[0] : null;
     const singleRunnerHasAccount =
         singleRunner != null && singleRunner.userId != null;
+    // RunnerDialog needs a run-backed roster row — a manual-only selection
+    // for one runner still can't open it.
+    const singleRunnerRunEntry =
+        runnerKeys.size === 1
+            ? (selected.find((e) => e.runId != null) ?? null)
+            : null;
     const canRestore = selected.some(
-        (e) => e.verificationStatus === 'rejected',
+        (e) => e.runId != null && e.verificationStatus === 'rejected',
     );
 
     const entrySubcategoryKey = (entry: LeaderboardEntry) =>
@@ -140,7 +158,7 @@ export function BoardBulkBar({
         });
     };
 
-    const label = `${runIds.length} run${runIds.length === 1 ? '' : 's'}`;
+    const label = `${selected.length} run${selected.length === 1 ? '' : 's'}`;
     const runnerLine =
         runnerKeys.size === 1
             ? Array.from(runnerNames)[0]
@@ -151,7 +169,9 @@ export function BoardBulkBar({
             ? `Selection spans ${runnerKeys.size} runners.`
             : singleRunner != null && !singleRunnerHasAccount
               ? "Guest runs don't have a runner page."
-              : null;
+              : singleRunnerRunEntry == null
+                ? 'Runner actions need at least one run-backed row selected.'
+                : null;
 
     return (
         <>
@@ -199,7 +219,9 @@ export function BoardBulkBar({
                         title={
                             canRestore
                                 ? undefined
-                                : 'Nothing selected is currently removed.'
+                                : hasManual
+                                  ? 'Set times can’t be restored — nothing run-backed in the selection is removed.'
+                                  : 'Nothing selected is currently removed.'
                         }
                         onClick={() => setModVerb('restore')}
                     >
@@ -208,7 +230,12 @@ export function BoardBulkBar({
                     <button
                         type="button"
                         className={styles.pill}
-                        disabled={busy || ctxPending}
+                        disabled={busy || ctxPending || hasManual}
+                        title={
+                            hasManual
+                                ? 'Set times can’t be moved — deselect them first.'
+                                : undefined
+                        }
                         onClick={openMove}
                     >
                         Move…
@@ -216,7 +243,12 @@ export function BoardBulkBar({
                     <button
                         type="button"
                         className={styles.pill}
-                        disabled={busy || markPending}
+                        disabled={busy || markPending || hasManual}
+                        title={
+                            hasManual
+                                ? 'Set times can’t be marked — deselect them first.'
+                                : undefined
+                        }
                         onClick={handleMark}
                     >
                         Mark
@@ -248,7 +280,16 @@ export function BoardBulkBar({
                 <RunActionDialog
                     gameSlug={gameSlug}
                     verb={modVerb}
-                    target={{ kind: 'runs', runIds, label }}
+                    target={{
+                        kind: 'runs',
+                        runIds,
+                        // restore has no manual-time equivalent — the ids
+                        // are simply not sent, so a mixed selection
+                        // restores its run-backed rows only.
+                        manualTimeIds:
+                            modVerb === 'restore' ? [] : manualTimeIds,
+                        label,
+                    }}
                     onDone={() => {
                         setModVerb(null);
                         onMutated();
@@ -279,15 +320,15 @@ export function BoardBulkBar({
 
             {modCtx != null &&
                 modCategory != null &&
-                singleRunner != null &&
+                singleRunnerRunEntry != null &&
                 singleRunnerHasAccount && (
                     <RunnerDialog
                         open={runnerOpen}
                         onClose={() => setRunnerOpen(false)}
                         row={
                             entryToRosterRow(
-                                singleRunner,
-                                entrySubcategoryKey(singleRunner),
+                                singleRunnerRunEntry,
+                                entrySubcategoryKey(singleRunnerRunEntry),
                             ) as NonNullable<
                                 ReturnType<typeof entryToRosterRow>
                             >
@@ -295,7 +336,9 @@ export function BoardBulkBar({
                         category={modCategory}
                         variables={modCtx.variables}
                         gameSlug={gameSlug}
-                        subcategoryKey={entrySubcategoryKey(singleRunner)}
+                        subcategoryKey={entrySubcategoryKey(
+                            singleRunnerRunEntry,
+                        )}
                         canSiteBan={canSiteBan}
                         dossierFrom="board"
                         onMutated={() => {
