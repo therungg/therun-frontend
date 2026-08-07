@@ -1,13 +1,15 @@
 'use client';
 
 import moment from 'moment';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
+import { Dropdown } from 'react-bootstrap';
 import {
     BoxArrowUpRight,
     ChevronDown,
     ChevronUp,
     PlayBtn,
 } from 'react-bootstrap-icons';
+import { toast } from 'react-toastify';
 import type { ModVerb } from '~app/(new-layout)/games-v2/[game]/manage/moderation/shared/action-model';
 import {
     RunActionForm,
@@ -21,13 +23,30 @@ import { describeEvent } from '~src/lib/run-view/describe-event';
 import type {
     GameTimeLabel,
     LeaderboardEntry,
+    ResolvedCategory,
+    VariableRow,
 } from '../../../../../types/leaderboards.types';
 import type {
     HistoryEvent,
     UserEligibleRunRow,
 } from '../../../../../types/moderation.types';
+import { AdjustDialog } from '../manage/boards/adjust-dialog';
+import { MoveDialog } from '../manage/boards/move-dialog';
 import { loadUserEligibleRunsAction } from '../manage/moderation/shared/actions/eligible-runs.action';
+import { excludeAction } from '../manage/moderation/shared/actions/exclude.action';
+import { markRunsAction } from '../manage/moderation/shared/actions/marks.action';
+import { restoreRunsAction } from '../manage/moderation/shared/actions/restore.action';
+import { applyVerdictsAction } from '../manage/moderation/shared/actions/verdicts.action';
 import { useDialogBehavior } from '../shared/board-dialog';
+import { buildSubcategoryKey } from '../submit/subcategory-key';
+import { loadModBoardContextAction } from './actions/load-mod-board-context.action';
+import { HideIdentityDialog } from './hide-identity-dialog';
+import {
+    type HistoryUndoPlan,
+    historyUndoPlan,
+    historyUndoReason,
+} from './history-undo';
+import { entryToRosterRow } from './mod-row';
 import { relativeDate } from './relative-date';
 import styles from './run-inspector.module.scss';
 
@@ -36,6 +55,9 @@ interface Props {
     entry: LeaderboardEntry;
     gameSlug: string;
     categorySlug: string;
+    /** Subcategory-role variable names — builds this run's own subcategory
+     * key for the Move/Adjust/Hide-identity dialogs. */
+    subcategoryDefKeys: string[];
     gameTimeLabel?: GameTimeLabel;
     showMilliseconds: boolean;
     onClose: () => void;
@@ -44,6 +66,70 @@ interface Props {
     /** Step to the adjacent run row without closing — j/k also bind to these. */
     onPrev?: () => void;
     onNext?: () => void;
+}
+
+interface ModBoardContext {
+    gameDisplay: string;
+    categories: ResolvedCategory[];
+    variables: VariableRow[];
+}
+
+type ModDialogKind = 'move' | 'adjust' | 'hide-identity';
+
+/** Inline Undo on the timeline's latest event — runs the mapped inverse. */
+function TimelineUndoButton({
+    gameSlug,
+    runId,
+    event,
+    plan,
+    onUndone,
+}: {
+    gameSlug: string;
+    runId: number;
+    event: HistoryEvent;
+    plan: HistoryUndoPlan;
+    onUndone: () => void;
+}) {
+    const [isPending, startTransition] = useTransition();
+
+    const undo = () => {
+        startTransition(async () => {
+            const reason = historyUndoReason(event);
+            const res =
+                plan.kind === 'verdict'
+                    ? await applyVerdictsAction(
+                          gameSlug,
+                          plan.action,
+                          [runId],
+                          reason,
+                      )
+                    : plan.kind === 'restore'
+                      ? await restoreRunsAction(gameSlug, [runId], reason)
+                      : plan.kind === 'exclude'
+                        ? await excludeAction(gameSlug, {
+                              runIds: [runId],
+                              reason,
+                          })
+                        : await markRunsAction(gameSlug, [runId], plan.marked);
+            if ('error' in res) {
+                toast.error(res.error);
+                return;
+            }
+            toast.success('Undone.');
+            onUndone();
+        });
+    };
+
+    return (
+        <button
+            type="button"
+            className={styles.timelineUndo}
+            onClick={undo}
+            disabled={isPending}
+        >
+            {isPending ? 'Undoing…' : '↩ Undo'}
+        </button>
+    );
 }
 
 const STATUS_BADGE: Record<string, { label: string; className: string }> = {
@@ -74,6 +160,7 @@ export function RunInspector({
     entry,
     gameSlug,
     categorySlug,
+    subcategoryDefKeys,
     gameTimeLabel = 'igt',
     showMilliseconds,
     onClose,
@@ -87,6 +174,10 @@ export function RunInspector({
 
     const [history, setHistory] = useState<HistoryEvent[] | null>(null);
     const [historyError, setHistoryError] = useState<string | null>(null);
+    // Bumped after a timeline undo — some inverses (mark, exclude/include)
+    // don't change verificationStatus, so the status-keyed reload below
+    // wouldn't fire on its own.
+    const [historyReload, setHistoryReload] = useState(0);
 
     // Runner track record, from the same eligible-runs read the console's
     // Adjust dialog uses — game-wide, so the counts mean "in this game",
@@ -95,7 +186,83 @@ export function RunInspector({
         null,
     );
 
-    useDialogBehavior({ open: true, onClose, panelRef });
+    // Move/Adjust/Hide-identity need the game's board context (categories +
+    // variable defs) — loaded lazily on first use, same as the old kebab, so
+    // opening the drawer alone stays cheap.
+    const [modCtx, setModCtx] = useState<ModBoardContext | null>(null);
+    const [modDialog, setModDialog] = useState<ModDialogKind | null>(null);
+    const [_ctxPending, startCtxLoad] = useTransition();
+    const [_markPending, startMark] = useTransition();
+
+    // While a Move/Adjust/Hide-identity dialog is stacked on top, hand the
+    // focus trap + Escape + scroll lock over to it — two live traps on
+    // `document` would fight, and the drawer's Escape would close both.
+    useDialogBehavior({ open: modDialog == null, onClose, panelRef });
+
+    const entrySubcategoryKey = buildSubcategoryKey(
+        Object.fromEntries(
+            Object.entries(entry.variables ?? {}).filter(([k]) =>
+                subcategoryDefKeys.includes(k),
+            ),
+        ),
+    );
+    const rosterRow = entryToRosterRow(entry, entrySubcategoryKey);
+    const modCategory =
+        modCtx?.categories.find((c) => c.name === categorySlug) ?? null;
+
+    const openModDialog = (kind: ModDialogKind) => {
+        if (modCtx != null) {
+            if (modCategory == null) {
+                toast.error("Could not resolve this board's category.");
+                return;
+            }
+            setModDialog(kind);
+            return;
+        }
+        startCtxLoad(async () => {
+            const res = await loadModBoardContextAction(gameSlug);
+            if ('error' in res) {
+                toast.error(res.error);
+                return;
+            }
+            const ctx = {
+                gameDisplay: res.gameDisplay,
+                categories: res.categories,
+                variables: res.variables,
+            };
+            setModCtx(ctx);
+            if (!ctx.categories.some((c) => c.name === categorySlug)) {
+                toast.error("Could not resolve this board's category.");
+                return;
+            }
+            setModDialog(kind);
+        });
+    };
+
+    const markForLater = () => {
+        startMark(async () => {
+            const res = await markRunsAction(gameSlug, [runId], true);
+            if ('error' in res) {
+                toast.error(res.error);
+                return;
+            }
+            toast.success(
+                "Marked for later — it's in the console's marked pile.",
+            );
+            setHistoryReload((n) => n + 1);
+        });
+    };
+
+    const modTimeMs =
+        modCategory?.primaryTiming === 'gt'
+            ? (rosterRow?.gameTime ?? null)
+            : (rosterRow?.time ?? null);
+
+    const onModDialogMutated = () => {
+        setModDialog(null);
+        setHistoryReload((n) => n + 1);
+        onMutated();
+    };
 
     // Stepping to another row abandons a half-open verb form — that's the
     // point of the guard in the key handler below, and the explicit arrows
@@ -110,7 +277,7 @@ export function RunInspector({
     // field.
     useEffect(() => {
         const onKeyDown = (e: KeyboardEvent) => {
-            if (activeVerb != null) return;
+            if (activeVerb != null || modDialog != null) return;
             if (e.metaKey || e.ctrlKey || e.altKey) return;
             const t = e.target as HTMLElement | null;
             if (
@@ -134,7 +301,7 @@ export function RunInspector({
         return () => document.removeEventListener('keydown', onKeyDown);
         // step is stable enough — it only wraps the two props below.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeVerb, onNext, onPrev]);
+    }, [activeVerb, modDialog, onNext, onPrev]);
 
     // History reloads on run change and after a verdict lands (the parent's
     // refetch hands back an entry whose status reflects the action).
@@ -150,7 +317,7 @@ export function RunInspector({
         return () => {
             stale = true;
         };
-    }, [runId, entry.verificationStatus]);
+    }, [runId, entry.verificationStatus, historyReload]);
 
     useEffect(() => {
         const userId = entry.userId;
@@ -347,27 +514,58 @@ export function RunInspector({
                         )}
                         {history !== null && history.length > 0 && (
                             <ul className={styles.historyList}>
-                                {history.map((event, i) => (
-                                    <li
-                                        key={`${event.at}-${i}`}
-                                        className={styles.historyItem}
-                                    >
-                                        <div className={styles.historyEvent}>
-                                            {describeEvent(event)}
-                                        </div>
-                                        <div className="text-muted small">
-                                            {event.byRole} ·{' '}
-                                            {moment(event.at).fromNow()}
-                                        </div>
-                                        {event.reason && (
+                                {history.map((event, i) => {
+                                    const plan = historyUndoPlan(
+                                        event,
+                                        i === history.length - 1,
+                                    );
+                                    return (
+                                        <li
+                                            key={`${event.at}-${i}`}
+                                            className={styles.historyItem}
+                                        >
                                             <div
-                                                className={styles.historyReason}
+                                                className="d-flex align-items-baseline
+                                                    justify-content-between gap-2"
                                             >
-                                                “{event.reason}”
+                                                <span
+                                                    className={
+                                                        styles.historyEvent
+                                                    }
+                                                >
+                                                    {describeEvent(event)}
+                                                </span>
+                                                {plan && (
+                                                    <TimelineUndoButton
+                                                        gameSlug={gameSlug}
+                                                        runId={runId}
+                                                        event={event}
+                                                        plan={plan}
+                                                        onUndone={() => {
+                                                            setHistoryReload(
+                                                                (n) => n + 1,
+                                                            );
+                                                            onMutated();
+                                                        }}
+                                                    />
+                                                )}
                                             </div>
-                                        )}
-                                    </li>
-                                ))}
+                                            <div className="text-muted small">
+                                                {event.by?.name ?? event.byRole}{' '}
+                                                · {moment(event.at).fromNow()}
+                                            </div>
+                                            {event.reason && (
+                                                <div
+                                                    className={
+                                                        styles.historyReason
+                                                    }
+                                                >
+                                                    “{event.reason}”
+                                                </div>
+                                            )}
+                                        </li>
+                                    );
+                                })}
                             </ul>
                         )}
                     </div>
@@ -377,7 +575,7 @@ export function RunInspector({
                     expands the shared action form in place. */}
                 <div className="border-top">
                     {activeVerb == null ? (
-                        <div className="d-flex gap-2 p-3">
+                        <div className="d-flex gap-2 p-3 align-items-center">
                             {verbsForStatus(entry.verificationStatus).map(
                                 (verb) => (
                                     <button
@@ -397,6 +595,48 @@ export function RunInspector({
                                     </button>
                                 ),
                             )}
+                            <Dropdown drop="up" align="end" className="ms-auto">
+                                <Dropdown.Toggle
+                                    as="button"
+                                    type="button"
+                                    id={`run-inspector-more-${runId}`}
+                                    className="btn btn-sm btn-outline-secondary"
+                                >
+                                    More
+                                </Dropdown.Toggle>
+                                <Dropdown.Menu>
+                                    <Dropdown.Item
+                                        as="button"
+                                        type="button"
+                                        onClick={() => openModDialog('move')}
+                                    >
+                                        Move…
+                                    </Dropdown.Item>
+                                    <Dropdown.Item
+                                        as="button"
+                                        type="button"
+                                        onClick={() => openModDialog('adjust')}
+                                    >
+                                        Adjust time…
+                                    </Dropdown.Item>
+                                    <Dropdown.Item
+                                        as="button"
+                                        type="button"
+                                        onClick={() =>
+                                            openModDialog('hide-identity')
+                                        }
+                                    >
+                                        Hide identity…
+                                    </Dropdown.Item>
+                                    <Dropdown.Item
+                                        as="button"
+                                        type="button"
+                                        onClick={markForLater}
+                                    >
+                                        Mark for later
+                                    </Dropdown.Item>
+                                </Dropdown.Menu>
+                            </Dropdown>
                         </div>
                     ) : (
                         <div className={styles.verbForm}>
@@ -443,6 +683,48 @@ export function RunInspector({
                     )}
                 </div>
             </div>
+
+            {/* Stacked mod dialogs (their own BoardDialog chrome). While one
+                is open the drawer's dialog behavior is suspended — see the
+                useDialogBehavior call above. */}
+            {modCtx != null && modCategory != null && rosterRow != null && (
+                <>
+                    <MoveDialog
+                        open={modDialog === 'move'}
+                        onClose={() => setModDialog(null)}
+                        row={rosterRow}
+                        category={modCategory}
+                        categories={modCtx.categories}
+                        variables={modCtx.variables}
+                        subcategoryKey={entrySubcategoryKey}
+                        gameSlug={gameSlug}
+                        onMutated={onModDialogMutated}
+                    />
+                    <AdjustDialog
+                        open={modDialog === 'adjust'}
+                        onClose={() => setModDialog(null)}
+                        row={rosterRow}
+                        category={modCategory}
+                        gameSlug={gameSlug}
+                        subcategoryKey={entrySubcategoryKey}
+                        timeMs={modTimeMs}
+                        onMutated={onModDialogMutated}
+                    />
+                    <HideIdentityDialog
+                        open={modDialog === 'hide-identity'}
+                        onClose={() => setModDialog(null)}
+                        onDone={onModDialogMutated}
+                        gameSlug={gameSlug}
+                        gameDisplay={modCtx.gameDisplay}
+                        runnerName={entry.runnerName}
+                        runId={runId}
+                        userId={entry.userId ?? null}
+                        categoryId={modCategory.id}
+                        categoryDisplay={modCategory.display}
+                        subcategoryKey={entrySubcategoryKey}
+                    />
+                </>
+            )}
         </>
     );
 }

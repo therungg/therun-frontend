@@ -120,7 +120,6 @@ interface Props {
     displayRank: DisplayRank;
     isCurrentUser: boolean;
     canManage: boolean;
-    canSiteBan?: boolean;
     gameSlug: string;
     hideRealTime: boolean;
     hideGameTime: boolean;
@@ -153,7 +152,6 @@ export function LeaderboardRow({
     displayRank,
     isCurrentUser,
     canManage,
-    canSiteBan = false,
     gameSlug,
     hideRealTime,
     hideGameTime,
@@ -413,7 +411,6 @@ export function LeaderboardRow({
                         entry={entry}
                         sessionUsername={sessionUsername}
                         canManage={canManage}
-                        canSiteBan={canSiteBan}
                         gameSlug={gameSlug}
                         categorySlug={categorySlug}
                         subcategoryDefKeys={subcategoryDefKeys}

@@ -78,6 +78,23 @@
     font-weight: 500;
 }
 
+.timelineUndo {
+    border: none;
+    background: none;
+    padding: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-primary);
+    white-space: nowrap;
+
+    &:hover:not(:disabled) {
+        text-decoration: underline;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
+
 .historyReason {
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);

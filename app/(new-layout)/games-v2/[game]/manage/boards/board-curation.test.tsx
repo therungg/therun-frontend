@@ -103,6 +103,25 @@ vi.mock('next/navigation', () => ({
     useRouter: () => ({ refresh: mocks.routerRefresh, replace: vi.fn() }),
     useSearchParams: () => new URLSearchParams(),
 }));
+// The shared RunActionDialog (RowActions' Remove…/Approve…) performs its
+// mutations itself and has its own suite — stubbed to its callback surface
+// so `removeRow` below can simulate a landed removal via Confirm.
+vi.mock('../moderation/shared/run-action-dialog', () => ({
+    RunActionDialog: (props: {
+        verb: string;
+        onDone: () => void;
+        onClose: () => void;
+    }) => (
+        <div role="dialog" aria-label={`${props.verb} dialog`}>
+            <button type="button" onClick={() => props.onDone()}>
+                Confirm {props.verb}
+            </button>
+            <button type="button" onClick={() => props.onClose()}>
+                Cancel {props.verb}
+            </button>
+        </div>
+    ),
+}));
 
 const mockUseBoardData = vi.mocked(useBoardData);
 
@@ -465,7 +484,7 @@ describe('BoardCuration — bulk selection', () => {
         fireEvent.click(screen.getByLabelText('Select bob'));
         expect(screen.getByText('2 selected')).toBeTruthy();
 
-        removeRow('alice', 'Cheating.');
+        removeRow('alice');
 
         await waitFor(() =>
             expect(screen.getByText('1 selected')).toBeTruthy(),
@@ -480,19 +499,16 @@ function rowContaining(name: string): HTMLElement {
     return found;
 }
 
-/** Drives the Remove reason popover for the row containing `runnerName`:
- * opens it, types `reason`, and confirms. Remove now requires a typed
- * reason (Joey's feedback: "when removing, a reason should be given"),
- * so every Remove click in these suites goes through this popover instead
- * of firing immediately. */
-function removeRow(runnerName: string, reason: string) {
+/** Drives the shared Remove dialog (stubbed above) for the row containing
+ * `runnerName`: opens Remove… and confirms. The real dialog collects the
+ * reason and performs the exclude/reject itself; Confirm here stands in for
+ * that mutation having landed, which is all BoardCuration reacts to. */
+function removeRow(runnerName: string) {
     const row = rowContaining(runnerName);
-    fireEvent.click(within(row).getByRole('button', { name: 'Remove' }));
-    fireEvent.change(within(row).getByLabelText('Reason — required'), {
-        target: { value: reason },
-    });
-    const buttons = within(row).getAllByRole('button', { name: 'Remove' });
-    fireEvent.click(buttons[buttons.length - 1]);
+    fireEvent.click(within(row).getByRole('button', { name: 'Remove…' }));
+    fireEvent.click(
+        within(row).getByRole('button', { name: 'Confirm remove' }),
+    );
 }
 
 describe('BoardCuration subcategory bands', () => {
