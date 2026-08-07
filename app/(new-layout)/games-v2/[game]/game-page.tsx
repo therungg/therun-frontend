@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import type { Race } from '~app/(new-layout)/races/races.types';
 import Link from '~src/components/link';
 import { buildBoardHref } from '~src/lib/board-url';
 import type { GameModerator } from '../../../../types/board-claims.types';
@@ -27,6 +28,7 @@ interface Props {
     canSiteBan?: boolean;
     claim?: ClaimCtaState | null;
     moderators?: GameModerator[];
+    activeRaces?: Race[];
     /** 'moderation' -> render the public Moderation tab instead of the board. */
     view?: 'board' | 'moderation';
     /** First page of the public mod-log, fetched only when `view === 'moderation'`. */
@@ -40,6 +42,7 @@ export function GamePage({
     canSiteBan = false,
     claim,
     moderators,
+    activeRaces,
     view = 'board',
     initialModLog,
 }: Props) {
@@ -245,6 +248,7 @@ export function GamePage({
                             recentPbs={data.recentPbs}
                             claim={claim}
                             moderators={moderators}
+                            activeRaces={activeRaces}
                             series={{
                                 display: data.gameMeta.seriesDisplay,
                                 games: data.gameMeta.seriesGames,

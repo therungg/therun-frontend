@@ -1,0 +1,172 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+.section {
+    margin-bottom: dt.$spacing-2xl;
+}
+
+.sectionHead {
+    @include board.board-section-head;
+}
+
+.sectionLabel {
+    @include board.board-eyebrow;
+}
+
+.sectionNote {
+    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-xs;
+    margin: 0;
+}
+
+// Race-scale strip: the hero band's cell vocabulary, one row under the tabs.
+.raceBand {
+    display: flex;
+    align-items: stretch;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm dt.$spacing-xl;
+    margin-bottom: dt.$spacing-2xl;
+}
+
+// ---- Race rows (happening now / recent) ----------------------
+.raceList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.raceRow {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    padding-block: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+
+    & + & {
+        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+    }
+
+    @media (max-width: 575.98px) {
+        flex-direction: column;
+        gap: 2px;
+    }
+}
+
+.raceName {
+    font-weight: 600;
+    text-decoration: none;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.raceMeta {
+    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-xs;
+    flex-shrink: 0;
+}
+
+.raceWinner {
+    color: var(--bs-secondary-color);
+    font-weight: 600;
+}
+
+// ---- Category cards ------------------------------------------
+.categoryGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(20rem, 100%), 1fr));
+    gap: dt.$spacing-lg;
+}
+
+.categoryCard {
+    @include board.board-surface(dt.$spacing-md dt.$spacing-lg);
+}
+
+.categoryTitle {
+    font-size: dt.$font-size-md;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0 0 2px;
+}
+
+.categoryStats {
+    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-xs;
+    margin: 0 0 dt.$spacing-md;
+}
+
+.podia {
+    display: flex;
+    gap: dt.$spacing-2xl;
+    flex-wrap: wrap;
+}
+
+.podium {
+    min-width: 10rem;
+    flex: 1;
+}
+
+.podiumTitle {
+    @include board.board-eyebrow;
+    display: block;
+    margin-bottom: dt.$spacing-xs;
+}
+
+.podiumList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 2px;
+    counter-reset: podium;
+}
+
+.podiumRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+    counter-increment: podium;
+
+    &::before {
+        content: counter(podium);
+        @include board.mono-time;
+        font-size: dt.$font-size-2xs;
+        font-weight: 600;
+        color: var(--bs-tertiary-color);
+        width: 1ch;
+        flex-shrink: 0;
+    }
+
+    // Board signature rank accents, same as the overview podium.
+    &:nth-child(1)::before {
+        color: dt.$accent-gold;
+        font-weight: 700;
+    }
+
+    &:nth-child(2)::before {
+        color: dt.$accent-silver;
+    }
+
+    &:nth-child(3)::before {
+        color: dt.$accent-bronze;
+    }
+}
+
+.podiumUser {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+}
+
+.podiumValue {
+    @include board.mono-time;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    flex-shrink: 0;
+}

@@ -1,3 +1,4 @@
+import type { Race } from '~app/(new-layout)/races/races.types';
 import type { GameSeriesSibling } from '~src/lib/game-mgmt';
 import type { GameModerator } from '../../../../../types/board-claims.types';
 import type {
@@ -7,6 +8,7 @@ import type {
 } from '../../../../../types/leaderboards.types';
 import { ClaimCta, type ClaimCtaState } from '../claim/claim-cta';
 import { AboutPanel } from './about-panel';
+import { ActiveRacesPanel } from './active-races-panel';
 import { BoardStatsPanel } from './board-stats-panel';
 import { LivePanel } from './live-panel';
 import { ModeratorsPanel } from './moderators-panel';
@@ -27,6 +29,8 @@ interface Props {
         display: string | null;
         games: GameSeriesSibling[];
     };
+    /** Active races for this game, fetched with the page. */
+    activeRaces?: Race[];
     /** The active board — board view only; the overview has none. */
     board?: ResolvedCategory | null;
 }
@@ -39,11 +43,13 @@ export function Sidebar({
     about,
     moderators,
     series,
+    activeRaces,
     board,
 }: Props) {
     return (
         <>
             <LivePanel gameDisplay={game.display} />
+            <ActiveRacesPanel races={activeRaces ?? []} />
             {board && <BoardStatsPanel category={board} />}
             <YourRunsPanel rankings={yourRuns} gameSlug={game.name} />
             <RecentPbsPanel pbs={recentPbs} gameSlug={game.name} />

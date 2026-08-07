@@ -6,6 +6,8 @@ import styles from './view-tabs.module.scss';
 
 interface Props {
     gameSlug: string;
+    /** Game has finished races on the race API — adds the Races tab. */
+    showRaces?: boolean;
 }
 
 /**
@@ -20,13 +22,14 @@ interface Props {
  * suppressing this on games with fewer than two featured categories, since
  * standings across a single category is just that category's board.
  */
-export function ViewTabs({ gameSlug }: Props) {
+export function ViewTabs({ gameSlug, showRaces = false }: Props) {
     const pathname = usePathname();
     const base = `/games-v2/${encodeURIComponent(gameSlug)}`;
     const tabs = [
         { href: base, label: 'Categories' },
         { href: `${base}/standings`, label: 'Standings' },
         { href: `${base}/stats`, label: 'Stats' },
+        ...(showRaces ? [{ href: `${base}/races`, label: 'Races' }] : []),
     ];
 
     return (

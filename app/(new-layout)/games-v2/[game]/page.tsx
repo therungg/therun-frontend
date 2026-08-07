@@ -6,6 +6,10 @@ import { getMyBoardClaim } from '~src/lib/board-claims';
 import { listGameModerators } from '~src/lib/game-moderators';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { getPublicModLog } from '~src/lib/moderation/public-mod-log';
+import {
+    getAllActiveRacesByGame,
+    getRaceGameStatsByGame,
+} from '~src/lib/races';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
@@ -66,7 +70,15 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
 
     // Fetched unconditionally now: the sidebar's Moderators panel needs it
     // on every board view, not just the claim-CTA path.
-    const moderators = await listGameModerators(resolvedGame.id);
+    // Race data rides along: the race API keys on the DISPLAY name. Both
+    // calls fail soft — a race-API blip must never take down a game page.
+    const raceKey = encodeURIComponent(resolvedGame.display);
+    const [moderators, raceStats, activeRaces] = await Promise.all([
+        listGameModerators(resolvedGame.id),
+        getRaceGameStatsByGame(raceKey).catch(() => null),
+        getAllActiveRacesByGame(raceKey).catch(() => []),
+    ]);
+    const showRaces = (raceStats?.stats?.totalRaces ?? 0) > 0;
 
     let claim: ClaimCtaState | null = null;
     if (sessionUsername && !canManage && !canManageRuns) {
@@ -93,6 +105,8 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
                 canModerate={canManageRuns}
                 claim={claim}
                 moderators={moderators}
+                showRaces={showRaces}
+                activeRaces={activeRaces}
             />
         );
     }
@@ -125,6 +139,7 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
             canSiteBan={canSiteBan}
             claim={claim}
             moderators={moderators}
+            activeRaces={activeRaces}
             view={boardView}
             initialModLog={initialModLog}
         />

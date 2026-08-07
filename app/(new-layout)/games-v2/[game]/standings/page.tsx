@@ -8,6 +8,7 @@ import { EMPTY_GAME_METADATA } from '~src/lib/game-metadata';
 import { getGameMetadata } from '~src/lib/game-mgmt';
 import { listGameModerators } from '~src/lib/game-moderators';
 import { getQuickStats, resolveCategory, resolveGame } from '~src/lib/games-v1';
+import { getRaceGameStatsByGame } from '~src/lib/races';
 import { getGameStandings } from '~src/lib/standings';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
@@ -80,22 +81,26 @@ export default async function GameStandingsPage({ params }: PageProps) {
         };
     }
 
-    const [standings, quickStats, gameMeta, activity90] = await Promise.all([
-        getGameStandings(resolvedGame.id),
-        getQuickStats(resolvedGame.id).catch(() => ({
-            totalRunTime: 0,
-            totalAttemptCount: 0,
-            totalFinishedAttemptCount: 0,
-            totalPbs: 0,
-            uniqueRunners: 0,
-        })),
-        getGameMetadata(resolvedGame.id).catch(() => EMPTY_GAME_METADATA),
-        getGameActivityTimeseries(
-            resolvedGame.id,
-            isoDaysAgo(90),
-            isoDaysAgo(0),
-        ).catch(() => []),
-    ]);
+    const [standings, quickStats, gameMeta, activity90, raceStats] =
+        await Promise.all([
+            getGameStandings(resolvedGame.id),
+            getQuickStats(resolvedGame.id).catch(() => ({
+                totalRunTime: 0,
+                totalAttemptCount: 0,
+                totalFinishedAttemptCount: 0,
+                totalPbs: 0,
+                uniqueRunners: 0,
+            })),
+            getGameMetadata(resolvedGame.id).catch(() => EMPTY_GAME_METADATA),
+            getGameActivityTimeseries(
+                resolvedGame.id,
+                isoDaysAgo(90),
+                isoDaysAgo(0),
+            ).catch(() => []),
+            getRaceGameStatsByGame(
+                encodeURIComponent(resolvedGame.display),
+            ).catch(() => null),
+        ]);
 
     return (
         <div>
@@ -115,7 +120,10 @@ export default async function GameStandingsPage({ params }: PageProps) {
                 fitting and their tail hiding behind a scroll. */}
             <div>
                 <div>
-                    <ViewTabs gameSlug={resolvedGame.name} />
+                    <ViewTabs
+                        gameSlug={resolvedGame.name}
+                        showRaces={(raceStats?.stats?.totalRaces ?? 0) > 0}
+                    />
                     {standings.status === 'ok' ? (
                         <StandingsView
                             gameSlug={resolvedGame.name}

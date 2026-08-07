@@ -1,3 +1,4 @@
+import type { Race } from '~app/(new-layout)/races/races.types';
 import Link from '~src/components/link';
 import type { GameModerator } from '../../../../../types/board-claims.types';
 import type { ResolvedGroup } from '../../../../../types/leaderboards.types';
@@ -19,6 +20,8 @@ interface Props {
     canModerate: boolean;
     claim?: ClaimCtaState | null;
     moderators?: GameModerator[];
+    showRaces?: boolean;
+    activeRaces?: Race[];
 }
 
 interface CardSection {
@@ -95,6 +98,8 @@ export function GameOverviewPage({
     canModerate,
     claim,
     moderators,
+    showRaces,
+    activeRaces,
 }: Props) {
     const sections = sectionize(data.cards, data.groups);
 
@@ -116,7 +121,10 @@ export function GameOverviewPage({
                     {/* Standings across a single category is just that board,
                         so the tabs only exist once there are two. */}
                     {data.cards.length > 1 && (
-                        <ViewTabs gameSlug={data.game.name} />
+                        <ViewTabs
+                            gameSlug={data.game.name}
+                            showRaces={showRaces}
+                        />
                     )}
                     {data.cards.length === 0 ? (
                         <div className={styles.emptyState}>
@@ -204,6 +212,7 @@ export function GameOverviewPage({
                         recentPbs={data.recentPbs}
                         claim={claim}
                         moderators={moderators}
+                        activeRaces={activeRaces}
                         series={{
                             display: data.gameMeta.seriesDisplay,
                             games: data.gameMeta.seriesGames,
