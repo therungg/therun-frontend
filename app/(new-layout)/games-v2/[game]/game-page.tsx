@@ -232,6 +232,10 @@ export function GamePage({
                                         }
                                         subcategoryKey={subcategoryKey}
                                         subcategoryDefKeys={subcategoryDefKeys}
+                                        rtaFallback={
+                                            data.selectedCategory.rtaFallback ??
+                                            false
+                                        }
                                         variableDefs={data.variables}
                                         selectedVarFilters={
                                             data.activeFilters.varFilters

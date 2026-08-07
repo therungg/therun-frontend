@@ -130,6 +130,9 @@ interface Props {
     categorySlug: string;
     /** Subcategory-role variable names, for building this row's own subcategory key from `entry.variables`. */
     subcategoryDefKeys: string[];
+    /** category.rtaFallback — an entry with no game time on a GT board is
+     * ranked by its real time; the ranked cell shows it with an RTA marker. */
+    rtaFallback?: boolean;
     /** Checkbox column — only rendered when `canManage`, and only for rows with a real run. */
     selected?: boolean;
     /** Shift-click extends a range — the click handler forwards the native event's shiftKey. */
@@ -152,6 +155,7 @@ export function LeaderboardRow({
     showMilliseconds,
     categorySlug,
     subcategoryDefKeys,
+    rtaFallback = false,
     selected = false,
     onToggleSelect,
     onSelectRunner,
@@ -203,25 +207,36 @@ export function LeaderboardRow({
         value: number | null,
         dimmed: boolean,
         stretched: boolean,
+        rtaTag = false,
     ) => (
         <td className={dimmed ? styles.timeSecondary : styles.time}>
             {value != null ? (
-                detailHref ? (
-                    <Link
-                        href={detailHref}
-                        className={stretched ? 'stretched-link' : undefined}
-                    >
+                <>
+                    {detailHref ? (
+                        <Link
+                            href={detailHref}
+                            className={stretched ? 'stretched-link' : undefined}
+                        >
+                            <DurationToFormatted
+                                duration={value}
+                                withMillis={showMilliseconds}
+                            />
+                        </Link>
+                    ) : (
                         <DurationToFormatted
                             duration={value}
                             withMillis={showMilliseconds}
                         />
-                    </Link>
-                ) : (
-                    <DurationToFormatted
-                        duration={value}
-                        withMillis={showMilliseconds}
-                    />
-                )
+                    )}
+                    {rtaTag && (
+                        <span
+                            className={styles.rtaTag}
+                            title="No game time — ranked by real time"
+                        >
+                            RTA
+                        </span>
+                    )}
+                </>
             ) : (
                 '—'
             )}
@@ -231,6 +246,14 @@ export function LeaderboardRow({
     // Same primary-first order as the header (leaderboard-table.tsx), so
     // cells always line up under the column that claims them.
     const { primary, secondary } = timingColumns(primaryTiming);
+    // RTA fallback: a GT-board entry with no game time is ranked by its real
+    // time — surface that time in the ranked column (tagged), instead of a
+    // dash above slower-but-ranked-lower rows.
+    const isRtaFallbackEntry =
+        rtaFallback &&
+        primaryTiming === 'gt' &&
+        entry.gameTime == null &&
+        entry.realTime != null;
     const timingValue = (key: TimingKey) =>
         key === 'rt' ? entry.realTime : entry.gameTime;
     const timingHidden = (key: TimingKey) =>
@@ -316,9 +339,24 @@ export function LeaderboardRow({
                         we only know the board's best submitted time. */}
                 </span>
             </td>
-            {primaryVisible && time(timingValue(primary.key), false, true)}
+            {primaryVisible &&
+                time(
+                    isRtaFallbackEntry
+                        ? entry.realTime
+                        : timingValue(primary.key),
+                    false,
+                    true,
+                    isRtaFallbackEntry,
+                )}
             {secondaryVisible &&
-                time(timingValue(secondary.key), true, !primaryVisible)}
+                time(
+                    // The fallback entry's real time already occupies the
+                    // ranked cell — repeating it under "Real time" would read
+                    // as two distinct clocks agreeing by coincidence.
+                    isRtaFallbackEntry ? null : timingValue(secondary.key),
+                    true,
+                    !primaryVisible,
+                )}
             <td
                 className={`${styles.meta} ${styles.when}`}
                 title={entry.runDate ? formatRunDate(entry.runDate) : undefined}

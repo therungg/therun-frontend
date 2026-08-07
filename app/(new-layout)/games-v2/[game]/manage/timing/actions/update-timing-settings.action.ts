@@ -17,6 +17,7 @@ interface Input {
     primaryTiming?: PrimaryTiming;
     hideRealTime?: boolean;
     hideGameTime?: boolean;
+    rtaFallback?: boolean;
 }
 
 export async function updateTimingSettingsAction(
@@ -44,6 +45,7 @@ export async function updateTimingSettingsAction(
         body.hideRealTime = input.hideRealTime;
     if (input.hideGameTime !== undefined)
         body.hideGameTime = input.hideGameTime;
+    if (input.rtaFallback !== undefined) body.rtaFallback = input.rtaFallback;
 
     if (Object.keys(body).length === 0) {
         return { result: { updated: false } };

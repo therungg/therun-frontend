@@ -58,6 +58,8 @@ interface Props {
     variableDefs: VariableRow[];
     /** Active filter-variable selections, keyed by `nameNormalized`. */
     selectedVarFilters: Record<string, string>;
+    /** category.rtaFallback — GT board ranks RTA-only runs by real time. */
+    rtaFallback?: boolean;
 }
 
 // Module-level flag (not state): the parent keys this component by the
@@ -92,6 +94,7 @@ export function LeaderboardPager({
     subcategoryDefKeys,
     variableDefs,
     selectedVarFilters,
+    rtaFallback = false,
 }: Props) {
     const [pages, setPages] = useState<LeaderboardEntry[][]>([initial.entries]);
     const [minPage, setMinPage] = useState(initial.page);
@@ -494,6 +497,7 @@ export function LeaderboardPager({
                 categorySlug={categorySlug}
                 subcategoryKey={subcategoryKey}
                 subcategoryDefKeys={subcategoryDefKeys}
+                rtaFallback={rtaFallback}
                 selectedRunIds={selectedRunIds}
                 onToggleSelect={toggleSelect}
                 onSelectRunner={selectRunner}

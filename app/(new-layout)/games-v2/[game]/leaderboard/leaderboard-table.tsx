@@ -33,6 +33,9 @@ interface Props {
     subcategoryKey: string;
     /** Subcategory-role variable names, for building a row's own subcategory key from `entry.variables`. */
     subcategoryDefKeys: string[];
+    /** category.rtaFallback — a GT-board entry with no game time is ranked by
+     * its real time and gets an RTA marker in the ranked column. */
+    rtaFallback?: boolean;
     /** Bulk selection — checkbox column only renders when `canManage`. */
     selectedRunIds?: Set<number>;
     onToggleSelect?: (runId: number, shiftKey: boolean) => void;
@@ -54,6 +57,7 @@ export function LeaderboardTable({
     categorySlug,
     subcategoryKey,
     subcategoryDefKeys,
+    rtaFallback = false,
     selectedRunIds,
     onToggleSelect,
     onSelectRunner,
@@ -212,6 +216,7 @@ export function LeaderboardTable({
                             showMilliseconds={showMilliseconds}
                             categorySlug={categorySlug}
                             subcategoryDefKeys={subcategoryDefKeys}
+                            rtaFallback={rtaFallback}
                             selected={
                                 entry.runId != null &&
                                 (selectedRunIds?.has(entry.runId) ?? false)
