@@ -310,7 +310,10 @@ tr:focus-within .reveal {
     background: var(--bs-body-bg);
     display: block;
     cursor: pointer;
+    // Above the row's stretched link (z-index: 1) — without this the link's
+    // ::after covers the checkbox and clicks navigate instead of toggling.
     position: relative;
+    z-index: 2;
     margin: 0;
 
     &:checked,
