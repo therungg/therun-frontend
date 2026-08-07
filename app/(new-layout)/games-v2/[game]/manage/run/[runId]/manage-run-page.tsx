@@ -12,17 +12,11 @@ import type { ManageRunData } from './types';
 
 interface Props {
     data: ManageRunData;
-    canExcludeUsers: boolean;
     provenance: RunProvenance | null;
     history: HistoryEvent[];
 }
 
-export function ManageRunPage({
-    data,
-    canExcludeUsers,
-    provenance,
-    history,
-}: Props) {
+export function ManageRunPage({ data, provenance, history }: Props) {
     const { game, run } = data;
 
     return (
@@ -82,11 +76,7 @@ export function ManageRunPage({
                 />
             </div>
 
-            <RunCard
-                run={run}
-                gameSlug={game.name}
-                canExcludeUsers={canExcludeUsers}
-            />
+            <RunCard run={run} gameSlug={game.name} />
         </div>
     );
 }
