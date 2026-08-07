@@ -262,6 +262,7 @@ export function GamePage({
                                 games: data.gameMeta.seriesGames,
                             }}
                             board={data.selectedCategory}
+                            boardSize={data.leaderboard?.totalItems ?? null}
                             about={
                                 data.gameMeta.summaryOverride ??
                                 data.gameMeta.summary
