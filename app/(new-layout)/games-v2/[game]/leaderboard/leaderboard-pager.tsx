@@ -18,7 +18,7 @@ import { planFindMeSearch } from './find-me-plan';
 import styles from './leaderboard.module.scss';
 import { YOU_ROW_ID } from './leaderboard-row';
 import { LeaderboardTable } from './leaderboard-table';
-import { mergeEntries } from './merge-entries';
+import { paginationItems } from './pagination-items';
 import type { TimingKey } from './timing-columns';
 
 /** Same runner-grouping key leaderboard-row.tsx uses for "select all runs by …". */
@@ -30,8 +30,8 @@ function runnerKeyOf(entry: LeaderboardEntry): string {
 // for the current filter state (subcategory, varFilters, verified,
 // combined — see getUserRankingsByName in src/lib/leaderboards-v1.ts,
 // which only returns a fixed default-board rank), so we page forward from
-// maxPage, then (if still not found and budget remains) backward from
-// minPage - 1, looking for the session user's row instead of jumping
+// the current page, then (if still not found and budget remains) backward
+// toward page 1, looking for the session user's row instead of jumping
 // straight there. Capped so a genuinely-absent user doesn't trigger
 // unbounded fetching — see find-me-plan.ts.
 const MAX_FIND_ME_PAGES = 10;
@@ -70,15 +70,15 @@ interface Props {
 // every later remount (a category/filter swap) gets the quick 120ms
 // fade instead. Because this lives outside the component, it survives
 // across those remounts while still being fixed for the lifetime of
-// any single instance (Show more/previous never touch it).
+// any single instance (page navigation never touches it).
 let hasAnimatedFirstBoard = false;
 
 /**
- * Client accumulator around the SSR'd page: "Show more" appends the
- * next page, "Show previous" prepends (deep links land mid-board).
- * The URL's ?page= tracks the highest loaded page via replaceState
- * so refresh/share keeps a valid deep link. Parent must key this
- * component by the filter signature so state resets on any change.
+ * Client pagination around the SSR'd page: real numbered pages, one page
+ * of rows in the DOM at a time. The URL's ?page= tracks the current page
+ * via replaceState so refresh/share keeps a valid deep link. Parent must
+ * key this component by the filter signature so state resets on any
+ * change.
  */
 export function LeaderboardPager({
     initial,
@@ -99,19 +99,18 @@ export function LeaderboardPager({
     selectedVarFilters,
     rtaFallback = false,
 }: Props) {
-    const [pages, setPages] = useState<LeaderboardEntry[][]>([initial.entries]);
-    const [minPage, setMinPage] = useState(initial.page);
-    const [maxPage, setMaxPage] = useState(initial.page);
-    // Board's top edge — a deep link straight to page N > 1 only has that
-    // page's rows loaded, so on mount we scroll this into view instead of
-    // trusting the browser's scroll restoration, which could otherwise
-    // leave the viewport pointed at nothing above the loaded window. The
-    // range indicator ("Showing 51–75 of …") orients the rest.
+    // The whole viewed page, response-shaped: entries plus the page/total
+    // bookkeeping every control below derives from. Navigation swaps it
+    // wholesale, so totals stay honest if the board changes size under us.
+    const [board, setBoard] = useState<LeaderboardResponse>(initial);
+    // Board's top edge — page navigation scrolls this back into view so a
+    // "next page" click never leaves the viewport stranded mid-table, and a
+    // deep link straight to ?page=N gets anchored on mount.
     const boardTopRef = useRef<HTMLDivElement>(null);
     const [isPending, startTransition] = useTransition();
-    // Which direction's fetch last failed, if any — drives the inline
-    // error under that direction's bar and lets Retry redo the same load.
-    const [error, setError] = useState<'before' | 'after' | null>(null);
+    // Page whose fetch last failed, if any — drives the inline error under
+    // the pagination bar and lets Retry redo the same navigation.
+    const [navError, setNavError] = useState<number | null>(null);
     // 'searching' drives the Find me button's in-flight label. A miss
     // resolves to one of two sticky notes (so it doesn't invite endless
     // re-clicking) depending on how much of the board was actually
@@ -125,18 +124,10 @@ export function LeaderboardPager({
     // Bumped after a successful find to (re-)trigger the scroll+focus
     // effect even if the row was already on-screen from a prior search.
     const [highlightToken, setHighlightToken] = useState(0);
-    // Frozen for the lifetime of this instance so the wrapper's entry
-    // animation never re-fires when "Show more"/"Show previous" appends
-    // a page — only the initial mount decides stagger vs. fade. Server
-    // always emits stagger (module scope persists across requests, so
-    // mutating the flag during SSR would desync from a fresh client);
-    // a fresh client computes stagger on hydration too (match). Only
-    // client-side remounts (filter swaps) get the fade.
     // Bulk selection (mods only — the checkbox column itself only renders
-    // when `canManage`, so a non-mod never populates this). Lives here
-    // (not in the table) because it must survive "Show more"/"Show
-    // previous" appending pages, and the bulk bar sits below the table,
-    // outside LeaderboardTable's own render tree.
+    // when `canManage`, so a non-mod never populates this). Page-scoped:
+    // navigating clears it, since acting on rows you can no longer see is
+    // exactly the mistake a selection UI exists to prevent.
     const [selectedRunIds, setSelectedRunIds] = useState<Set<number>>(
         new Set(),
     );
@@ -153,12 +144,14 @@ export function LeaderboardPager({
         return cls;
     });
 
-    // Keeps the URL's ?page= in sync with the highest loaded page so
-    // refresh/share lands on a valid deep link.
-    const setUrlPage = (highest: number) => {
+    // Keeps the URL's ?page= in sync with the viewed page so refresh/share
+    // lands on the same page. replaceState, not pushState: this component
+    // has no popstate handling, so history entries the back button can't
+    // actually restore would be a lie.
+    const setUrlPage = (page: number) => {
         const sp = new URLSearchParams(window.location.search);
-        if (highest === 1) sp.delete('page');
-        else sp.set('page', String(highest));
+        if (page === 1) sp.delete('page');
+        else sp.set('page', String(page));
         const qs = sp.toString();
         window.history.replaceState(
             null,
@@ -167,48 +160,43 @@ export function LeaderboardPager({
         );
     };
 
-    const load = (page: number, position: 'before' | 'after') => {
+    const showPage = (res: LeaderboardResponse, page: number) => {
+        setNavError(null);
+        setBoard(res);
+        setSelectedRunIds(new Set());
+        lastClickedRef.current = null;
+        setUrlPage(page);
+    };
+
+    const goTo = (page: number) => {
+        if (page < 1 || page > board.totalPages || page === board.page) return;
         startTransition(async () => {
             const res = await fetchLeaderboardPage({ ...query, page });
             if (!res) {
-                setError(position);
+                setNavError(page);
                 return;
             }
-            setError(null);
-            setPages((prev) =>
-                position === 'after'
-                    ? [...prev, res.entries]
-                    : [res.entries, ...prev],
-            );
-            if (position === 'after') setMaxPage(page);
-            else setMinPage(page);
-            setUrlPage(position === 'after' ? page : maxPage);
+            showPage(res, page);
+            boardTopRef.current?.scrollIntoView({ block: 'start' });
         });
     };
 
     // Read-your-writes for the bulk bar's own mutations: the backend's cache
     // tags now invalidate immediately (updateTag — see revalidate-boards.ts),
-    // but this component's `pages` client state was seeded once from
+    // but this component's `board` client state was seeded once from
     // `initial` and won't pick up a re-render's fresh server props on its
-    // own. Re-fetching every currently-loaded page and swapping them in is
-    // the client-side half of "the mod sees the result immediately".
+    // own. Re-fetching the viewed page and swapping it in is the
+    // client-side half of "the mod sees the result immediately".
     const [isRefetching, startRefetch] = useTransition();
-    const refetchLoadedPages = async () => {
-        const pageNumbers = Array.from(
-            { length: maxPage - minPage + 1 },
-            (_, i) => minPage + i,
-        );
-        const results = await Promise.all(
-            pageNumbers.map((page) => fetchLeaderboardPage({ ...query, page })),
-        );
-        const next = results.map((r, i) => r?.entries ?? pages[i] ?? []);
-        setPages(next);
+    const refetchCurrentPage = async () => {
+        const res = await fetchLeaderboardPage({ ...query, page: board.page });
+        if (res) setBoard(res);
     };
 
-    const merged = mergeEntries(pages);
+    const entries = board.entries;
 
     // ---- Bulk selection (mods only) --------------------------------------
-    const selectableRunIds = merged
+    const selectableRunIds = entries
         .map((e) => e.runId)
         .filter((id): id is number => id != null);
 
@@ -250,7 +238,7 @@ export function LeaderboardPager({
     const selectRunner = (runnerKey: string) => {
         setSelectedRunIds((prev) => {
             const next = new Set(prev);
-            for (const e of merged) {
+            for (const e of entries) {
                 if (e.runId != null && runnerKeyOf(e) === runnerKey) {
                     next.add(e.runId);
                 }
@@ -263,25 +251,25 @@ export function LeaderboardPager({
 
     const handleBulkMutated = () => {
         clearSelection();
-        startRefetch(refetchLoadedPages);
+        startRefetch(refetchCurrentPage);
     };
 
     // No verified/pending counts exist on LeaderboardResponse, so this is
-    // derived from the loaded window: honest ("includes"), never a count.
+    // derived from the viewed page: honest ("includes"), never a count.
     const hasPendingLoaded =
         !query.verified &&
-        merged.some(
+        entries.some(
             (e) => e.source !== 'manual' && e.verificationStatus === 'pending',
         );
     const isCurrentUserVisible =
         sessionUsername !== null &&
-        merged.some((e) => isSameRunner(e.runnerName, sessionUsername));
+        entries.some((e) => isSameRunner(e.runnerName, sessionUsername));
     const showFindMe =
         sessionUsername !== null &&
         !isCurrentUserVisible &&
         findMeStatus !== 'not-found' &&
         findMeStatus !== 'partial-miss' &&
-        initial.totalItems > 0;
+        board.totalItems > 0;
 
     const findMe = () => {
         if (
@@ -291,73 +279,38 @@ export function LeaderboardPager({
         )
             return;
         setFindMeStatus('searching');
-        const startMinPage = minPage;
-        const startMaxPage = maxPage;
         startTransition(async () => {
             const plan = planFindMeSearch(
-                startMinPage,
-                startMaxPage,
-                initial.totalPages,
+                board.page,
+                board.page,
+                board.totalPages,
                 MAX_FIND_ME_PAGES,
             );
-            const forwardPages: LeaderboardEntry[][] = [];
-            const backwardPages: LeaderboardEntry[][] = [];
-            let newMaxPage = startMaxPage;
-            let newMinPage = startMinPage;
-            let found = false;
-            let failed = false;
-            let failedDirection: 'before' | 'after' = 'after';
             for (const page of plan) {
                 const res = await fetchLeaderboardPage({ ...query, page });
                 if (!res) {
-                    failed = true;
-                    failedDirection = page > startMaxPage ? 'after' : 'before';
-                    break;
-                }
-                if (page > startMaxPage) {
-                    forwardPages.push(res.entries);
-                    newMaxPage = page;
-                } else {
-                    backwardPages.push(res.entries);
-                    newMinPage = page;
+                    setNavError(page);
+                    setFindMeStatus('idle');
+                    return;
                 }
                 if (
                     res.entries.some((e) =>
                         isSameRunner(e.runnerName, sessionUsername),
                     )
                 ) {
-                    found = true;
-                    break;
+                    // Found: real pagination means we JUMP to that page
+                    // rather than growing a window toward it.
+                    showPage(res, page);
+                    setFindMeStatus('idle');
+                    setHighlightToken((t) => t + 1);
+                    return;
                 }
             }
-            if (forwardPages.length > 0 || backwardPages.length > 0) {
-                // mergeEntries re-sorts by rank, so exact concatenation
-                // order here doesn't matter for what's rendered — only
-                // minPage/maxPage need to reflect the new contiguous
-                // window for computeBoardRange.
-                setPages((prev) => [
-                    ...backwardPages,
-                    ...prev,
-                    ...forwardPages,
-                ]);
-                if (newMaxPage !== startMaxPage) setMaxPage(newMaxPage);
-                if (newMinPage !== startMinPage) setMinPage(newMinPage);
-                setUrlPage(newMaxPage);
-            }
-            if (failed) {
-                setError(failedDirection);
-                setFindMeStatus('idle');
-                return;
-            }
-            setError(null);
-            if (found) {
-                setFindMeStatus('idle');
-                setHighlightToken((t) => t + 1);
-                return;
-            }
-            const boardFullyLoaded =
-                newMinPage === 1 && newMaxPage === initial.totalPages;
-            setFindMeStatus(boardFullyLoaded ? 'not-found' : 'partial-miss');
+            setNavError(null);
+            // The plan covers every page but the current one when it fits
+            // the budget — only then is a miss a verdict about the board.
+            const searchedWholeBoard = plan.length >= board.totalPages - 1;
+            setFindMeStatus(searchedWholeBoard ? 'not-found' : 'partial-miss');
         });
     };
 
@@ -384,10 +337,9 @@ export function LeaderboardPager({
     }, [highlightToken]);
 
     // Deep-link scroll anchor (G17): a fresh page load at ?page=N > 1 only
-    // has that page's window loaded — jump the board's top edge into view
-    // on mount so scroll restoration never strands the viewport above an
-    // absent page 1. Mount-only; "Show previous"/"Show more" never re-fire
-    // this (empty deps).
+    // renders that page — jump the board's top edge into view on mount so
+    // scroll restoration never strands the viewport above content that
+    // isn't there. Mount-only; goTo does its own anchoring (empty deps).
     useEffect(() => {
         if (initial.page > 1) {
             boardTopRef.current?.scrollIntoView({ block: 'start' });
@@ -396,39 +348,15 @@ export function LeaderboardPager({
     }, []);
 
     const range = computeBoardRange(
-        minPage,
-        initial.pageSize,
-        merged.length,
-        initial.totalItems,
+        board.page,
+        board.pageSize,
+        entries.length,
+        board.totalItems,
     );
 
     return (
         <div className={entryClass} ref={boardTopRef}>
-            {minPage > 1 && (
-                <div className={styles.showMoreBar}>
-                    <button
-                        type="button"
-                        className={styles.showMoreBtn}
-                        disabled={isPending}
-                        onClick={() => load(minPage - 1, 'before')}
-                    >
-                        {isPending ? 'Loading…' : 'Show previous'}
-                    </button>
-                    {error === 'before' && (
-                        <div className={styles.pagerError}>
-                            <span>Couldn't load more runs.</span>
-                            <button
-                                type="button"
-                                className={styles.pagerErrorRetry}
-                                onClick={() => load(minPage - 1, 'before')}
-                            >
-                                Retry
-                            </button>
-                        </div>
-                    )}
-                </div>
-            )}
-            {(initial.totalItems > 0 || filtersActive) && (
+            {(board.totalItems > 0 || filtersActive) && (
                 <div className={styles.boardMetaBar}>
                     <span className={styles.metaLead}>
                         {range && (
@@ -488,7 +416,7 @@ export function LeaderboardPager({
                 </div>
             )}
             <LeaderboardTable
-                leaderboard={{ ...initial, entries: merged }}
+                leaderboard={board}
                 sessionUsername={sessionUsername}
                 canManage={canManage}
                 canSiteBan={canSiteBan}
@@ -513,35 +441,76 @@ export function LeaderboardPager({
                     categorySlug={categorySlug}
                     canSiteBan={canSiteBan}
                     subcategoryDefKeys={subcategoryDefKeys}
-                    entries={merged}
+                    entries={entries}
                     selectedRunIds={selectedRunIds}
                     onClear={clearSelection}
                     onMutated={handleBulkMutated}
                     busy={isRefetching}
                 />
             )}
-            {maxPage < initial.totalPages && (
-                <div className={styles.showMoreBar}>
+            {board.totalPages > 1 && (
+                <nav
+                    className={styles.paginationBar}
+                    aria-label="Leaderboard pages"
+                >
                     <button
                         type="button"
-                        className={styles.showMoreBtn}
-                        disabled={isPending}
-                        onClick={() => load(maxPage + 1, 'after')}
+                        className={styles.pageBtn}
+                        disabled={isPending || board.page === 1}
+                        onClick={() => goTo(board.page - 1)}
                     >
-                        {isPending ? 'Loading…' : 'Show more'}
+                        ‹ Previous
                     </button>
-                    {error === 'after' && (
-                        <div className={styles.pagerError}>
-                            <span>Couldn't load more runs.</span>
-                            <button
-                                type="button"
-                                className={styles.pagerErrorRetry}
-                                onClick={() => load(maxPage + 1, 'after')}
-                            >
-                                Retry
-                            </button>
-                        </div>
+                    {paginationItems(board.page, board.totalPages).map(
+                        (item, i) =>
+                            item === 'gap' ? (
+                                <span
+                                    // eslint-disable-next-line react/no-array-index-key
+                                    key={`gap-${i}`}
+                                    className={styles.pageGap}
+                                    aria-hidden
+                                >
+                                    …
+                                </span>
+                            ) : (
+                                <button
+                                    key={item}
+                                    type="button"
+                                    className={
+                                        item === board.page
+                                            ? `${styles.pageBtn} ${styles.pageBtnCurrent}`
+                                            : styles.pageBtn
+                                    }
+                                    aria-current={
+                                        item === board.page ? 'page' : undefined
+                                    }
+                                    disabled={isPending}
+                                    onClick={() => goTo(item)}
+                                >
+                                    {item.toLocaleString()}
+                                </button>
+                            ),
                     )}
+                    <button
+                        type="button"
+                        className={styles.pageBtn}
+                        disabled={isPending || board.page === board.totalPages}
+                        onClick={() => goTo(board.page + 1)}
+                    >
+                        Next ›
+                    </button>
+                </nav>
+            )}
+            {navError != null && (
+                <div className={`${styles.pagerError} ${styles.pagerErrorBar}`}>
+                    <span>Couldn't load page {navError}.</span>
+                    <button
+                        type="button"
+                        className={styles.pagerErrorRetry}
+                        onClick={() => goTo(navError)}
+                    >
+                        Retry
+                    </button>
                 </div>
             )}
         </div>
