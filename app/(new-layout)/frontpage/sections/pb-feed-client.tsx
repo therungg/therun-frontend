@@ -17,6 +17,15 @@ import styles from './pb-feed.module.scss';
 
 const ROTATE_INTERVAL = 8000;
 
+// IGT runs show game time as the primary value (same convention as /runs);
+// the improvement delta must then compare against the previous IGT PB.
+const getPbTimes = (pb: FinishedRunPB) => {
+    const usesGameTime = pb.gameTime != null;
+    const time = usesGameTime ? (pb.gameTime as number) : pb.time;
+    const previousPb = usesGameTime ? pb.previousPbGameTime : pb.previousPb;
+    return { usesGameTime, time, previousPb };
+};
+
 interface PbFeedClientProps {
     notablePbs: FinishedRunPB[];
     allPbs: FinishedRunPB[];
@@ -366,8 +375,9 @@ const FeaturedCarousel = ({
                         pb.userPicture && pb.userPicture !== 'noimage'
                             ? pb.userPicture
                             : userPictures[pb.username] || null;
+                    const { usesGameTime, time, previousPb } = getPbTimes(pb);
                     const improvement =
-                        pb.previousPb !== null ? pb.previousPb - pb.time : null;
+                        previousPb !== null ? previousPb - time : null;
                     const hasImprovement =
                         improvement !== null && improvement > 0;
 
@@ -460,8 +470,17 @@ const FeaturedCarousel = ({
                                     <div className={styles.featuredBottom}>
                                         <span className={styles.featuredTime}>
                                             <DurationToFormatted
-                                                duration={pb.time}
+                                                duration={time}
                                             />
+                                            {usesGameTime && (
+                                                <span
+                                                    className={
+                                                        styles.featuredTimeLabel
+                                                    }
+                                                >
+                                                    IGT
+                                                </span>
+                                            )}
                                         </span>
                                         {hasImprovement ? (
                                             <span
@@ -578,7 +597,8 @@ const CompactItem = ({
     gameImageUrl?: string;
 }) => {
     const FALLBACK_IMAGE = useFallbackImage();
-    const improvement = pb.previousPb !== null ? pb.previousPb - pb.time : null;
+    const { usesGameTime, time, previousPb } = getPbTimes(pb);
+    const improvement = previousPb !== null ? previousPb - time : null;
     const hasImprovement = improvement !== null && improvement > 0;
 
     return (
@@ -624,7 +644,10 @@ const CompactItem = ({
             <div className={styles.listRight}>
                 <span className={styles.listTimeRow}>
                     <span className={styles.listTime}>
-                        <DurationToFormatted duration={pb.time} />
+                        <DurationToFormatted duration={time} />
+                        {usesGameTime && (
+                            <span className={styles.listTimeLabel}>IGT</span>
+                        )}
                     </span>
                     {hasImprovement ? (
                         <span className={styles.listDelta}>
