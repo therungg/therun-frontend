@@ -1,0 +1,30 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-lg;
+    padding-top: dt.$spacing-xl;
+}
+
+.chart,
+.row {
+    @include board.board-skeleton;
+    border-radius: dt.$radius-sm;
+}
+
+.chart {
+    height: 260px;
+    border-radius: dt.$radius-md;
+}
+
+.table {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+.row {
+    height: 2.25rem;
+}

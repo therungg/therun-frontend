@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { getMyBoardClaim } from '~src/lib/board-claims';
+import { getGameActivityTimeseries } from '~src/lib/game-activity';
 import { EMPTY_GAME_METADATA } from '~src/lib/game-metadata';
 import { getGameMetadata } from '~src/lib/game-mgmt';
 import { listGameModerators } from '~src/lib/game-moderators';
@@ -13,6 +14,7 @@ import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 import type { ClaimCtaState } from '../claim/claim-cta';
 import { GameHero } from '../header/game-hero';
+import { isoDaysAgo, toSparklineSeries } from '../header/sparkline-data';
 import { ViewTabs } from '../header/view-tabs';
 import { orderStandingsForDisplay, standingsSections } from './order';
 import styles from './standings.module.scss';
@@ -78,7 +80,7 @@ export default async function GameStandingsPage({ params }: PageProps) {
         };
     }
 
-    const [standings, quickStats, gameMeta] = await Promise.all([
+    const [standings, quickStats, gameMeta, activity90] = await Promise.all([
         getGameStandings(resolvedGame.id),
         getQuickStats(resolvedGame.id).catch(() => ({
             totalRunTime: 0,
@@ -88,6 +90,11 @@ export default async function GameStandingsPage({ params }: PageProps) {
             uniqueRunners: 0,
         })),
         getGameMetadata(resolvedGame.id).catch(() => EMPTY_GAME_METADATA),
+        getGameActivityTimeseries(
+            resolvedGame.id,
+            isoDaysAgo(90),
+            isoDaysAgo(0),
+        ).catch(() => []),
     ]);
 
     return (
@@ -101,6 +108,7 @@ export default async function GameStandingsPage({ params }: PageProps) {
                 canManage={canManage}
                 canModerate={canModerate}
                 claim={claim}
+                activity={toSparklineSeries(activity90, 90)}
             />
             {/* No sidebar rail here: the matrix is the page, and the rail's
                 340px is exactly the difference between a game's categories

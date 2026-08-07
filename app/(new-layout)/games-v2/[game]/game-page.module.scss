@@ -210,6 +210,19 @@
     @include board.board-eyebrow;
 }
 
+// Sparkline cell: the polyline inherits the primary tone and bottoms out
+// on the same baseline as the numerals beside it.
+.statSpark {
+    color: var(--bs-primary);
+    display: block;
+    height: calc(#{dt.$font-size-2xl} * 1.1);
+    width: 120px;
+
+    @media (max-width: 991.98px) {
+        height: calc(#{dt.$font-size-xl} * 1.1);
+    }
+}
+
 // One horizontal action cluster, vertically centred on the hero row —
 // quiet chips lead into the primary CTA on the right. Stacking these
 // (button, then chips at other heights) read as three unrelated floaters.

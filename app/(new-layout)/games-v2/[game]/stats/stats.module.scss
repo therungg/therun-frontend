@@ -1,0 +1,132 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+.section {
+    margin-bottom: dt.$spacing-2xl;
+}
+
+.sectionHead {
+    @include board.board-section-head;
+}
+
+.sectionLabel {
+    @include board.board-eyebrow;
+}
+
+.sectionEmpty {
+    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-sm;
+    margin: 0;
+}
+
+// Two-column band for the smaller breakdowns (platforms/emulator |
+// countries); collapses on narrow viewports.
+.breakdownGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
+    gap: dt.$spacing-2xl;
+}
+
+// ---- Chart / table controls ----------------------------------
+// Metric pills lead, period pills trail — one control row above the plot,
+// same anatomy as the overview's Top-runners head.
+.chartControls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    flex-wrap: wrap;
+    margin-bottom: dt.$spacing-md;
+}
+
+.pillGroup {
+    display: flex;
+    gap: dt.$spacing-xs;
+    flex-wrap: wrap;
+}
+
+.pill {
+    @include board.control-pill;
+    font-size: dt.$font-size-2xs;
+}
+
+.pillActive {
+    @include board.control-pill-active;
+    font-size: dt.$font-size-2xs;
+}
+
+.chartFrame {
+    height: 260px;
+}
+
+.chartTooltip {
+    @include board.board-surface(dt.$spacing-xs dt.$spacing-md);
+    box-shadow: dt.$shadow-md;
+    background: var(--board-surface-bg, var(--bs-body-bg));
+    font-size: dt.$font-size-xs;
+    white-space: nowrap;
+}
+
+.chartTooltipMeta {
+    color: var(--bs-secondary-color);
+}
+
+// ---- Breakdown bars ------------------------------------------
+.barList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: dt.$spacing-xs;
+}
+
+.barRow {
+    display: grid;
+    grid-template-columns: minmax(6rem, 11rem) minmax(0, 1fr) 4.5rem;
+    align-items: center;
+    gap: dt.$spacing-md;
+    font-size: dt.$font-size-sm;
+}
+
+.barLabel {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    min-width: 0;
+}
+
+.barLabelText {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.barTrack {
+    height: 8px;
+    border-radius: dt.$radius-sm;
+    background: rgba(var(--bs-border-color-rgb), 0.25);
+    overflow: hidden;
+}
+
+.barFill {
+    display: block;
+    height: 100%;
+    // 4px-radius data end on the value side only — the bar grows from the
+    // track's left baseline.
+    border-radius: 0 dt.$radius-sm dt.$radius-sm 0;
+    background: var(--bs-primary);
+}
+
+.barCount {
+    @include board.mono-time;
+    font-size: dt.$font-size-xs;
+    text-align: right;
+    color: var(--bs-secondary-color);
+}
+
+// Site-share footnote under the last section.
+.footnote {
+    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-xs;
+    margin: dt.$spacing-2xl 0 0;
+}

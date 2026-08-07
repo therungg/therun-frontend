@@ -23,24 +23,27 @@ interface Props {
 export function ViewTabs({ gameSlug }: Props) {
     const pathname = usePathname();
     const base = `/games-v2/${encodeURIComponent(gameSlug)}`;
-    const onStandings = pathname === `${base}/standings`;
+    const tabs = [
+        { href: base, label: 'Categories' },
+        { href: `${base}/standings`, label: 'Standings' },
+        { href: `${base}/stats`, label: 'Stats' },
+    ];
 
     return (
         <nav className={styles.tabs} aria-label="Game views">
-            <Link
-                href={base}
-                className={onStandings ? styles.tab : styles.tabActive}
-                aria-current={onStandings ? undefined : 'page'}
-            >
-                Categories
-            </Link>
-            <Link
-                href={`${base}/standings`}
-                className={onStandings ? styles.tabActive : styles.tab}
-                aria-current={onStandings ? 'page' : undefined}
-            >
-                Standings
-            </Link>
+            {tabs.map((t) => {
+                const active = pathname === t.href;
+                return (
+                    <Link
+                        key={t.href}
+                        href={t.href}
+                        className={active ? styles.tabActive : styles.tab}
+                        aria-current={active ? 'page' : undefined}
+                    >
+                        {t.label}
+                    </Link>
+                );
+            })}
         </nav>
     );
 }

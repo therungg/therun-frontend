@@ -109,6 +109,7 @@ export function GameOverviewPage({
                 canManage={canManage}
                 canModerate={canModerate}
                 claim={claim}
+                activity={data.activitySparkline}
             />
             <div className={gamePageStyles.grid}>
                 <div className={gamePageStyles.colMain}>

@@ -51,6 +51,51 @@ interface Props {
      * the subject: a small cover and one facts line, no stat band.
      */
     variant?: 'full' | 'condensed';
+    /**
+     * Zero-filled daily playtime for the band's last cell (90 days). Empty
+     * or absent = no sparkline cell — the band's omit-if-missing rule.
+     */
+    activity?: number[];
+}
+
+/**
+ * The band's ambient telemetry: daily playtime as a bare polyline, sized
+ * to sit on the numerals' baseline. Decorative summary of the Stats tab's
+ * real chart — no axes, no tooltip, aria-hidden.
+ */
+function Sparkline({ values }: { values: number[] }) {
+    const w = 120;
+    const h = 30;
+    const max = Math.max(...values);
+    if (max <= 0) return null;
+    const step = w / Math.max(values.length - 1, 1);
+    const d = values
+        .map(
+            (v, i) =>
+                `${i === 0 ? 'M' : 'L'}${(i * step).toFixed(1)},${(
+                    h - (v / max) * (h - 2) - 1
+                ).toFixed(1)}`,
+        )
+        .join(' ');
+    return (
+        <svg
+            className={styles.statSpark}
+            viewBox={`0 0 ${w} ${h}`}
+            width={w}
+            height={h}
+            aria-hidden
+        >
+            <path
+                d={d}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                strokeLinejoin="round"
+                strokeLinecap="round"
+                vectorEffect="non-scaling-stroke"
+            />
+        </svg>
+    );
 }
 
 export function GameHero({
@@ -65,6 +110,7 @@ export function GameHero({
     back,
     standingsHref,
     variant = 'full',
+    activity,
 }: Props) {
     // Carries the current board context (category + subcategory) into the
     // submit form so it preselects both — see submit/page.tsx requirement 1.
@@ -194,6 +240,16 @@ export function GameHero({
                                     </span>
                                 </div>
                             ))}
+                            {variant === 'full' &&
+                                activity &&
+                                activity.length > 0 && (
+                                    <div className={styles.statCell}>
+                                        <Sparkline values={activity} />
+                                        <span className={styles.statBandLabel}>
+                                            Activity · 90d
+                                        </span>
+                                    </div>
+                                )}
                         </div>
                     )}
                 </div>
