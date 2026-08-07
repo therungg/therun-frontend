@@ -22,6 +22,19 @@ export async function GET(
         safeEncodeURI(category),
     );
 
+    // The backend gateway has no /games/global/{game}/{category} route, so
+    // this arrives as undefined once the remote cache expires — and
+    // NextResponse.json(undefined) throws, turning a missing upstream into a
+    // 500. Serve an explicit 404 instead, with a short cache so it stops
+    // hammering the (broken) upstream per request.
+    if (gameData == null) {
+        return apiResponse({
+            body: null,
+            status: 404,
+            cache: { maxAge: 300, swr: 3600 },
+        });
+    }
+
     return apiResponse({
         body: gameData,
         // getCategory is remote-cached for days; match the CDN freshness.
