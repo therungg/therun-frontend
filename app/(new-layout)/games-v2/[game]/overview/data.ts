@@ -2,11 +2,6 @@ import { getGameActivityTimeseries } from '~src/lib/game-activity';
 import { EMPTY_GAME_METADATA } from '~src/lib/game-metadata';
 import type { GameMetadata } from '~src/lib/game-mgmt';
 import { getGameMetadata } from '~src/lib/game-mgmt';
-import {
-    getTopRunnersAllTime,
-    getTopRunnersForPeriod,
-    type TopRunnerRow,
-} from '~src/lib/game-top-runners';
 import { getQuickStats, getRecentPbs } from '~src/lib/games-v1';
 import {
     getLeaderboard,
@@ -41,11 +36,6 @@ export interface GameOverviewData {
     cards: OverviewCardData[];
     recentPbs: RecentPb[];
     yourRuns: UserRanking[];
-    topRunners: {
-        allTime: TopRunnerRow[];
-        d90: TopRunnerRow[];
-        d30: TopRunnerRow[];
-    };
     /** Zero-filled daily playtime, last 90 days — the hero's sparkline. */
     activitySparkline: number[];
     sessionUsername: string | null;
@@ -91,9 +81,6 @@ export async function loadGameOverviewData(
         recentPbs,
         rawYourRuns,
         cardEntries,
-        runnersAllTime,
-        runners90,
-        runners30,
         activity90,
     ] = await Promise.all([
         getQuickStats(game.id).catch(() => ({
@@ -111,9 +98,6 @@ export async function loadGameOverviewData(
             ? getUserRankingsByName(sessionUsername).catch(() => [])
             : Promise.resolve([]),
         Promise.all(featured.map((c) => fetchCardEntries(game.name, c))),
-        getTopRunnersAllTime(game.id).catch(() => []),
-        getTopRunnersForPeriod(game.id, isoDaysAgo(90), today).catch(() => []),
-        getTopRunnersForPeriod(game.id, isoDaysAgo(30), today).catch(() => []),
         getGameActivityTimeseries(game.id, isoDaysAgo(90), today).catch(
             () => [],
         ),
@@ -131,11 +115,6 @@ export async function loadGameOverviewData(
         // The sidebar must not surface PBs from boards the wall can't link to.
         recentPbs: filterPbsToFeatured(recentPbs, featured),
         yourRuns: rawYourRuns.filter((r) => r.gameSlug === game.name),
-        topRunners: {
-            allTime: runnersAllTime,
-            d90: runners90,
-            d30: runners30,
-        },
         activitySparkline: toSparklineSeries(activity90, 90),
         sessionUsername,
     };
