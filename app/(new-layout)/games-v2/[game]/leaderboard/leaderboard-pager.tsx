@@ -18,6 +18,7 @@ import { planFindMeSearch } from './find-me-plan';
 import styles from './leaderboard.module.scss';
 import { YOU_ROW_ID } from './leaderboard-row';
 import { LeaderboardTable } from './leaderboard-table';
+import { ManualInspector } from './manual-inspector';
 import { paginationItems } from './pagination-items';
 import { RunInspector } from './run-inspector';
 import { type BoardSelectionKey, entrySelectionKey } from './selection';
@@ -133,9 +134,10 @@ export function LeaderboardPager({
     // Shift-click range-select anchor — the last row clicked without
     // shift, or the most recent shift-click's endpoint.
     const lastClickedRef = useRef<BoardSelectionKey | null>(null);
-    // Run inspector (mods only) — tracked by runId, not entry reference, so
-    // a page refetch after a verdict re-derives the fresh row.
+    // Run / set-time inspector (mods only) — tracked by id, not entry
+    // reference, so a page refetch after a verdict re-derives the fresh row.
     const [inspectRunId, setInspectRunId] = useState<number | null>(null);
+    const [inspectManualId, setInspectManualId] = useState<number | null>(null);
 
     const [entryClass] = useState(() => {
         if (typeof window === 'undefined') return styles.boardStagger;
@@ -197,9 +199,9 @@ export function LeaderboardPager({
 
     const entries = board.entries;
 
-    // ---- Run inspector (mods only) ---------------------------------------
-    // j/k step through the page's run rows (manual set times keep their own
-    // kebab until they join the inspector).
+    // ---- Run / set-time inspector (mods only) ----------------------------
+    // j/k step through the page's rows of the same kind (real runs for the
+    // run inspector, set times for the set-time inspector).
     const runEntries = entries.filter((e) => e.runId != null);
     const inspectIndex =
         inspectRunId == null
@@ -207,15 +209,42 @@ export function LeaderboardPager({
             : runEntries.findIndex((e) => e.runId === inspectRunId);
     const inspectEntry = inspectIndex >= 0 ? runEntries[inspectIndex] : null;
 
-    // A refetch or page navigation can drop the inspected run off the page
+    const manualEntries = entries.filter((e) => e.manualTimeId != null);
+    const inspectManualIndex =
+        inspectManualId == null
+            ? -1
+            : manualEntries.findIndex(
+                  (e) => e.manualTimeId === inspectManualId,
+              );
+    const inspectManualEntry =
+        inspectManualIndex >= 0 ? manualEntries[inspectManualIndex] : null;
+
+    // A refetch or page navigation can drop the inspected row off the page
     // (quiet removal, verified filter) — close rather than show stale data.
     useEffect(() => {
         if (inspectRunId != null && inspectEntry == null) {
             setInspectRunId(null);
         }
     }, [inspectRunId, inspectEntry]);
+    useEffect(() => {
+        if (inspectManualId != null && inspectManualEntry == null) {
+            setInspectManualId(null);
+        }
+    }, [inspectManualId, inspectManualEntry]);
 
     const boardRefresh = () => startRefetch(refetchCurrentPage);
+
+    // Route the kebab's Moderate… to the matching inspector, and never open
+    // both at once.
+    const openModerate = (entry: LeaderboardEntry) => {
+        if (entry.runId != null) {
+            setInspectManualId(null);
+            setInspectRunId(entry.runId);
+        } else if (entry.manualTimeId != null) {
+            setInspectRunId(null);
+            setInspectManualId(entry.manualTimeId);
+        }
+    };
 
     // ---- Bulk selection (mods only) --------------------------------------
     const selectableKeys = entries
@@ -446,11 +475,7 @@ export function LeaderboardPager({
                 selectedKeys={selectedKeys}
                 onToggleSelect={toggleSelect}
                 onToggleAllVisible={toggleAllVisible}
-                onModerate={
-                    canManage
-                        ? (entry) => setInspectRunId(entry.runId ?? null)
-                        : undefined
-                }
+                onModerate={canManage ? openModerate : undefined}
                 onBoardRefresh={canManage ? boardRefresh : undefined}
             />
             {canManage && inspectEntry != null && (
@@ -478,6 +503,36 @@ export function LeaderboardPager({
                                   setInspectRunId(
                                       runEntries[inspectIndex + 1].runId ??
                                           null,
+                                  )
+                            : undefined
+                    }
+                />
+            )}
+            {canManage && inspectManualEntry != null && (
+                <ManualInspector
+                    entry={inspectManualEntry}
+                    gameSlug={gameSlug}
+                    categorySlug={categorySlug}
+                    subcategoryDefKeys={subcategoryDefKeys}
+                    gameTimeLabel={gameTimeLabel}
+                    showMilliseconds={showMilliseconds}
+                    onClose={() => setInspectManualId(null)}
+                    onMutated={boardRefresh}
+                    onPrev={
+                        inspectManualIndex > 0
+                            ? () =>
+                                  setInspectManualId(
+                                      manualEntries[inspectManualIndex - 1]
+                                          .manualTimeId ?? null,
+                                  )
+                            : undefined
+                    }
+                    onNext={
+                        inspectManualIndex < manualEntries.length - 1
+                            ? () =>
+                                  setInspectManualId(
+                                      manualEntries[inspectManualIndex + 1]
+                                          .manualTimeId ?? null,
                                   )
                             : undefined
                     }
