@@ -158,6 +158,9 @@ export interface BulkCategoryFields {
     primaryTiming?: 'realtime' | 'gametime';
     hideRealTime?: boolean;
     hideGameTime?: boolean;
+    /** Rank RTA-only runs on the game-time board by their real time. Backend
+     * rejects true for any selected category whose own hideGameTime is set. */
+    rtaFallback?: boolean;
     rules?: string | null;
     sortAscending?: boolean;
     showMilliseconds?: boolean;

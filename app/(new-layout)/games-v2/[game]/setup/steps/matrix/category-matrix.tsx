@@ -131,8 +131,9 @@ export function CategoryMatrix({
     const dotted = (c: ResolvedCategory, column: MatrixColumn) =>
         rendersAsDot(column) && cellState(c, column) === 'quiet';
 
-    // name (icon included), timing, other time, minimum, rules, ranking, ms
-    const columnCount = 7;
+    // name (icon included), timing, other time, RTA fallback, minimum,
+    // rules, ranking, ms
+    const columnCount = 8;
 
     return (
         <div className={styles.panel}>
@@ -149,6 +150,9 @@ export function CategoryMatrix({
                             <th>Category</th>
                             <th>Timing</th>
                             <th>Other timing</th>
+                            <th title="Put RTA in leaderboard if IGT is not available">
+                                RTA fallback
+                            </th>
                             <th>Min. time</th>
                             <th>Rules</th>
                             <th>Ranking</th>
@@ -296,6 +300,56 @@ export function CategoryMatrix({
                                                         </option>
                                                     </select>
                                                 </Cell>
+                                            </td>
+
+                                            {/* Only meaningful where the
+                                                board carries IGT at all —
+                                                RTA-primary categories that
+                                                hide IGT get the same em dash
+                                                as every other unset cell. No
+                                                board default exists: On is
+                                                always a deliberate mark. */}
+                                            <td>
+                                                {c.primaryTiming === 'gt' ||
+                                                showsOtherTime(c) ? (
+                                                    <select
+                                                        className={`${styles.cellControl} ${
+                                                            (c.rtaFallback ??
+                                                            false)
+                                                                ? styles.cellDeviates
+                                                                : styles.cellNoDefault
+                                                        }`}
+                                                        value={
+                                                            (c.rtaFallback ??
+                                                            false)
+                                                                ? 'on'
+                                                                : 'off'
+                                                        }
+                                                        disabled={isSaving}
+                                                        title="Put RTA in leaderboard if IGT is not available"
+                                                        aria-label={`RTA fallback for ${c.display}`}
+                                                        onChange={(e) =>
+                                                            applyToCategories(
+                                                                [c.id],
+                                                                {
+                                                                    rtaFallback:
+                                                                        e.target
+                                                                            .value ===
+                                                                        'on',
+                                                                },
+                                                            )
+                                                        }
+                                                    >
+                                                        <option value="off">
+                                                            Off
+                                                        </option>
+                                                        <option value="on">
+                                                            On
+                                                        </option>
+                                                    </select>
+                                                ) : (
+                                                    '\u2014'
+                                                )}
                                             </td>
 
                                             <td>
