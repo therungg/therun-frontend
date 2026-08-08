@@ -191,7 +191,6 @@ export function RunInspector({
     const [modCtx, setModCtx] = useState<ModBoardContext | null>(null);
     const [modDialog, setModDialog] = useState<ModDialogKind | null>(null);
     const [_ctxPending, startCtxLoad] = useTransition();
-    const [_markPending, startMark] = useTransition();
 
     // While a Move/Adjust/Hide-identity dialog is stacked on top, hand the
     // focus trap + Escape + scroll lock over to it — two live traps on
@@ -235,20 +234,6 @@ export function RunInspector({
                 return;
             }
             setModDialog(kind);
-        });
-    };
-
-    const markForLater = () => {
-        startMark(async () => {
-            const res = await markRunsAction(gameSlug, [runId], true);
-            if ('error' in res) {
-                toast.error(res.error);
-                return;
-            }
-            toast.success(
-                "Marked for later — it's in the console's marked pile.",
-            );
-            setHistoryReload((n) => n + 1);
         });
     };
 
@@ -621,13 +606,6 @@ export function RunInspector({
                                     }
                                 >
                                     Hide identity…
-                                </button>
-                                <button
-                                    type="button"
-                                    className={styles.secondaryBtn}
-                                    onClick={markForLater}
-                                >
-                                    Mark for later
                                 </button>
                             </div>
                         </>
