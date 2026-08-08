@@ -144,6 +144,55 @@ export async function deleteManualTimeAction(
     }
 }
 
+/**
+ * Board bulk-bar support: apply one verdict/delete op to several manual
+ * times in a single server round trip. Partial failure is reported, not
+ * hidden — the caller gets how many applied and how many failed.
+ */
+export async function manualTimesBulkAction(
+    gameSlug: string,
+    ids: number[],
+    op: 'verify' | 'reject' | 'delete',
+    reason: string,
+): Promise<{ ok: true; affected: number; failed: number } | Fail> {
+    const g = await requireMod(gameSlug);
+    if ('error' in g) return g;
+    let affected = 0;
+    let failed = 0;
+    const affectedBoards: {
+        categoryId: number;
+        subcategoryKey: string;
+    }[] = [];
+    for (const id of ids) {
+        try {
+            if (op === 'delete') {
+                const result = await deleteManualTime(
+                    g.sessionId,
+                    g.gameId,
+                    id,
+                    reason,
+                );
+                affectedBoards.push(...result.affectedLeaderboards);
+            } else {
+                await manualTimeVerdict(g.sessionId, g.gameId, id, {
+                    action: op,
+                    reason,
+                });
+            }
+            affected++;
+        } catch {
+            failed++;
+        }
+    }
+    if (affectedBoards.length > 0) {
+        await revalidateAffectedBoards(g.gameId, g.gameName, affectedBoards);
+    }
+    if (affected > 0) {
+        revalidateRunDetails([], ids);
+    }
+    return { ok: true, affected, failed };
+}
+
 export async function manualTimeVerdictAction(
     gameSlug: string,
     id: number,

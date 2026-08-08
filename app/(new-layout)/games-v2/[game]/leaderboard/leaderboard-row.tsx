@@ -11,9 +11,11 @@ import { usePopoverFocus } from '../shared/use-popover-focus';
 import { CountryFlag } from './country-flag';
 import type { DisplayRank } from './display-rank';
 import styles from './leaderboard.module.scss';
+import { QuickVerifyButton } from './quick-verify-button';
 import { relativeDate } from './relative-date';
 import { RowActionsMenu } from './row-actions-menu';
 import { RunnerAvatar } from './runner-avatar';
+import { type BoardSelectionKey, entrySelectionKey } from './selection';
 import {
     type TimingKey,
     timingColumnHidden,
@@ -118,7 +120,6 @@ interface Props {
     displayRank: DisplayRank;
     isCurrentUser: boolean;
     canManage: boolean;
-    canSiteBan?: boolean;
     gameSlug: string;
     hideRealTime: boolean;
     hideGameTime: boolean;
@@ -133,12 +134,15 @@ interface Props {
     /** category.rtaFallback — an entry with no game time on a GT board is
      * ranked by its real time; the ranked cell shows it with an RTA marker. */
     rtaFallback?: boolean;
-    /** Checkbox column — only rendered when `canManage`, and only for rows with a real run. */
+    /** Checkbox column — only rendered when `canManage`, for rows with a
+     * run or a manual set time (see selection.ts for the key scheme). */
     selected?: boolean;
     /** Shift-click extends a range — the click handler forwards the native event's shiftKey. */
-    onToggleSelect?: (runId: number, shiftKey: boolean) => void;
-    /** Kebab's "Select all runs by …" shortcut to the single-runner bulk state. */
-    onSelectRunner?: (runnerKey: string) => void;
+    onToggleSelect?: (key: BoardSelectionKey, shiftKey: boolean) => void;
+    /** Kebab's "Moderate…" — opens the run inspector drawer on this entry. */
+    onModerate?: (entry: LeaderboardEntry) => void;
+    /** Board page refetch for row-level mutations (quick Verify + its undo). */
+    onBoardRefresh?: () => void;
 }
 
 export function LeaderboardRow({
@@ -146,7 +150,6 @@ export function LeaderboardRow({
     displayRank,
     isCurrentUser,
     canManage,
-    canSiteBan = false,
     gameSlug,
     hideRealTime,
     hideGameTime,
@@ -158,20 +161,22 @@ export function LeaderboardRow({
     rtaFallback = false,
     selected = false,
     onToggleSelect,
-    onSelectRunner,
+    onModerate,
+    onBoardRefresh,
 }: Props) {
     // Anonymized rows arrive already redacted from the backend: placeholder
     // name, `userId`/`picture`/`country` nulled, `isGuest: false`. Always key
     // the treatment off this flag, never off the name string.
     const isAnonymous = entry.anonymized === true;
-    const showManageButton = canManage && entry.runId != null && !entry.isGuest;
-    // Same key a bulk selection groups runners by (leaderboard-pager.ts):
-    // registered users by id, guests by name (no persistent identity).
-    // An anonymized runner has no userId, but its placeholder is stable per
-    // user+game — so their runs still group as one runner here, which is the
-    // whole point of a stable placeholder (nobody farms extra board slots).
-    const runnerKey =
-        entry.userId != null ? `u:${entry.userId}` : `g:${entry.runnerName}`;
+    const selectionKey = entrySelectionKey(entry);
+    // One-click Verify for the queue-clearing common case; every other mod
+    // verb goes through the inspector drawer (kebab → Moderate…).
+    const showQuickVerify =
+        canManage &&
+        entry.runId != null &&
+        entry.source !== 'manual' &&
+        entry.verificationStatus === 'pending' &&
+        onBoardRefresh != null;
     const detailHref =
         entry.source === 'manual' && entry.manualTimeId != null
             ? `/games-v2/${encodeURIComponent(gameSlug)}/manual/${entry.manualTimeId}`
@@ -274,22 +279,23 @@ export function LeaderboardRow({
         >
             {canManage && (
                 <td className={styles.checkCell}>
-                    {entry.runId != null && (
+                    {selectionKey != null && (
                         <input
                             type="checkbox"
                             className={styles.checkbox}
                             checked={selected}
                             aria-label={`Select ${entry.runnerName}'s run`}
                             onClick={(e) => {
-                                // Controlled entirely from parent selection
-                                // state — prevent the native toggle so a
-                                // shift-click range-select doesn't also
-                                // flip this row an extra, out-of-sync time.
-                                e.preventDefault();
-                                onToggleSelect?.(
-                                    entry.runId as number,
-                                    e.shiftKey,
-                                );
+                                // No preventDefault: it would revert the
+                                // native toggle after React committed
+                                // `checked`, desyncing the DOM so the
+                                // checkmark appears one click late on the
+                                // previous row clicked. The native toggle
+                                // always matches what toggleSelect decides
+                                // for the clicked row (shift-ranges included),
+                                // so letting it through keeps DOM and state
+                                // in agreement.
+                                onToggleSelect?.(selectionKey, e.shiftKey);
                             }}
                             onChange={() => {
                                 /* handled in onClick above */
@@ -383,28 +389,30 @@ export function LeaderboardRow({
                     </a>
                 )}
                 <span className={styles.reveal}>
+                    {showQuickVerify && (
+                        <QuickVerifyButton
+                            gameSlug={gameSlug}
+                            runId={entry.runId as number}
+                            runnerName={entry.runnerName}
+                            onMutated={onBoardRefresh as () => void}
+                        />
+                    )}
+                    {canManage && onModerate && (
+                        <button
+                            type="button"
+                            className={styles.moderateBtn}
+                            onClick={() => onModerate(entry)}
+                        >
+                            Moderate
+                        </button>
+                    )}
                     <RowActionsMenu
                         entry={entry}
                         sessionUsername={sessionUsername}
-                        canManage={canManage}
-                        canSiteBan={canSiteBan}
                         gameSlug={gameSlug}
                         categorySlug={categorySlug}
                         subcategoryDefKeys={subcategoryDefKeys}
-                        onSelectRunner={
-                            onSelectRunner
-                                ? () => onSelectRunner(runnerKey)
-                                : undefined
-                        }
                     />
-                    {showManageButton && (
-                        <Link
-                            href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/run/${entry.runId}`}
-                            className={styles.manageLink}
-                        >
-                            Manage
-                        </Link>
-                    )}
                 </span>
             </td>
         </tr>

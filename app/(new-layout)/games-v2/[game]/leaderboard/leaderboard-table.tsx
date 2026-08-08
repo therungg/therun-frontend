@@ -2,12 +2,16 @@ import { useEffect, useRef } from 'react';
 import { Funnel, Trophy } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import { buildSubmitHref } from '~src/lib/board-url';
-import type { LeaderboardResponse } from '../../../../../types/leaderboards.types';
+import type {
+    LeaderboardEntry,
+    LeaderboardResponse,
+} from '../../../../../types/leaderboards.types';
 import { ClearFiltersButton } from '../filters/clear-filters-button';
 import { isSameRunner } from '../shared/is-same-runner';
 import { computeDisplayRanks } from './display-rank';
 import styles from './leaderboard.module.scss';
 import { LeaderboardRow } from './leaderboard-row';
+import { type BoardSelectionKey, entrySelectionKey } from './selection';
 import {
     type TimingKey,
     timingColumnHidden,
@@ -19,7 +23,6 @@ interface Props {
     leaderboard: LeaderboardResponse;
     sessionUsername: string | null;
     canManage: boolean;
-    canSiteBan?: boolean;
     gameSlug: string;
     variableKeys: string[];
     primaryTiming: TimingKey;
@@ -38,19 +41,22 @@ interface Props {
     /** category.rtaFallback — a GT-board entry with no game time is ranked by
      * its real time and gets an RTA marker in the ranked column. */
     rtaFallback?: boolean;
-    /** Bulk selection — checkbox column only renders when `canManage`. */
-    selectedRunIds?: Set<number>;
-    onToggleSelect?: (runId: number, shiftKey: boolean) => void;
-    onSelectRunner?: (runnerKey: string) => void;
+    /** Bulk selection — checkbox column only renders when `canManage`.
+     * Keys are `r:<runId>` / `m:<manualTimeId>` (see selection.ts). */
+    selectedKeys?: Set<BoardSelectionKey>;
+    onToggleSelect?: (key: BoardSelectionKey, shiftKey: boolean) => void;
     /** Header checkbox — toggles every currently-rendered selectable row. */
     onToggleAllVisible?: () => void;
+    /** Kebab's "Moderate…" — opens the run inspector on that entry. */
+    onModerate?: (entry: LeaderboardEntry) => void;
+    /** Board page refetch for row-level mutations (quick Verify + undo). */
+    onBoardRefresh?: () => void;
 }
 
 export function LeaderboardTable({
     leaderboard,
     sessionUsername,
     canManage,
-    canSiteBan = false,
     gameSlug,
     variableKeys,
     primaryTiming,
@@ -61,20 +67,20 @@ export function LeaderboardTable({
     subcategoryKey,
     subcategoryDefKeys,
     rtaFallback = false,
-    selectedRunIds,
+    selectedKeys,
     onToggleSelect,
-    onSelectRunner,
     onToggleAllVisible,
+    onModerate,
+    onBoardRefresh,
 }: Props) {
-    const selectableRunIds = leaderboard.entries
-        .map((e) => e.runId)
-        .filter((id): id is number => id != null);
-    const selectedCount = selectedRunIds
-        ? selectableRunIds.filter((id) => selectedRunIds.has(id)).length
+    const selectableKeys = leaderboard.entries
+        .map(entrySelectionKey)
+        .filter((key): key is BoardSelectionKey => key != null);
+    const selectedCount = selectedKeys
+        ? selectableKeys.filter((key) => selectedKeys.has(key)).length
         : 0;
     const allSelected =
-        selectableRunIds.length > 0 &&
-        selectedCount === selectableRunIds.length;
+        selectableKeys.length > 0 && selectedCount === selectableKeys.length;
     const someSelected = selectedCount > 0 && !allSelected;
     const selectAllRef = useRef<HTMLInputElement>(null);
     useEffect(() => {
@@ -162,7 +168,7 @@ export function LeaderboardTable({
                                     checked={allSelected}
                                     aria-label="Select all runs on this page"
                                     onChange={onToggleAllVisible}
-                                    disabled={selectableRunIds.length === 0}
+                                    disabled={selectableKeys.length === 0}
                                 />
                             </th>
                         )}
@@ -210,7 +216,6 @@ export function LeaderboardTable({
                                 sessionUsername,
                             )}
                             canManage={canManage}
-                            canSiteBan={canSiteBan}
                             gameSlug={gameSlug}
                             hideRealTime={rowHideRealTime}
                             hideGameTime={rowHideGameTime}
@@ -220,12 +225,16 @@ export function LeaderboardTable({
                             categorySlug={categorySlug}
                             subcategoryDefKeys={subcategoryDefKeys}
                             rtaFallback={rtaFallback}
-                            selected={
-                                entry.runId != null &&
-                                (selectedRunIds?.has(entry.runId) ?? false)
-                            }
+                            selected={(() => {
+                                const key = entrySelectionKey(entry);
+                                return (
+                                    key != null &&
+                                    (selectedKeys?.has(key) ?? false)
+                                );
+                            })()}
                             onToggleSelect={onToggleSelect}
-                            onSelectRunner={onSelectRunner}
+                            onModerate={onModerate}
+                            onBoardRefresh={onBoardRefresh}
                         />
                     ))}
                 </tbody>

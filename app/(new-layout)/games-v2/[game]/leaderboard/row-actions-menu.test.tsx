@@ -42,6 +42,9 @@ vi.mock('../manage/boards/runner-dialog', () => ({
 vi.mock('../manage/moderation/shared/run-action-dialog', () => ({
     RunActionDialog: () => null,
 }));
+vi.mock('../manage/moderation/shared/manual-time-dialog', () => ({
+    ManualTimeDialog: () => <div data-testid="manual-time-dialog" />,
+}));
 vi.mock('../shared/self-run-verdict', () => ({
     SelfRunVerdictDialog: () => null,
     useSelfRunVerdict: () => ({
@@ -98,7 +101,6 @@ function renderMenu(props: Partial<Parameters<typeof RowActionsMenu>[0]> = {}) {
         <RowActionsMenu
             entry={entry()}
             sessionUsername="modperson"
-            canManage
             gameSlug="some-game"
             categorySlug="any-percent"
             subcategoryDefKeys={[]}
@@ -116,88 +118,52 @@ beforeEach(() => {
     mocks.loadModBoardContextAction.mockResolvedValue(MOD_CONTEXT);
 });
 
-describe('RowActionsMenu — console-parity mod items', () => {
-    it('renders the new mod items only for managers', () => {
-        renderMenu({ canManage: false });
-        openMenu();
-        expect(screen.queryByText('Move…')).toBeNull();
-        expect(screen.queryByText('Adjust time…')).toBeNull();
-        expect(screen.queryByText('Runner…')).toBeNull();
-        expect(screen.queryByText('Mark for later')).toBeNull();
-    });
-
-    it('shows Move/Adjust/Runner/Mark for a manager on a user row', () => {
+describe('RowActionsMenu — viewer/self kebab (mod actions moved out)', () => {
+    it('shows the viewer items but no moderator section', () => {
         renderMenu();
         openMenu();
-        expect(screen.getByText('Move…')).toBeTruthy();
-        expect(screen.getByText('Adjust time…')).toBeTruthy();
-        expect(screen.getByText('Runner…')).toBeTruthy();
-        expect(screen.getByText('Mark for later')).toBeTruthy();
+        expect(screen.getByText('Run history')).toBeTruthy();
+        // Mod verbs now live on the row's direct Moderate button + drawer,
+        // never in this kebab.
+        expect(screen.queryByText('Moderator')).toBeNull();
+        for (const gone of [
+            'Moderate…',
+            'Verify run',
+            'Remove run…',
+            'Restore run',
+            'Move…',
+            'Adjust time…',
+            'Runner…',
+            'Hide identity…',
+            'Mark for later',
+            'View runner page',
+            'Select all runs by alice',
+        ]) {
+            expect(screen.queryByText(gone)).toBeNull();
+        }
     });
 
-    it('hides Runner… for guests and relabels Adjust as Set time…', () => {
-        renderMenu({ entry: entry({ userId: null, isGuest: true }) });
-        openMenu();
-        expect(screen.queryByText('Runner…')).toBeNull();
-        expect(screen.getByText('Set time…')).toBeTruthy();
-    });
-
-    it('loads board context once and opens the Move dialog', async () => {
+    it('offers Report run for a logged-in non-owner', () => {
         renderMenu();
         openMenu();
-        fireEvent.click(screen.getByText('Move…'));
-        await waitFor(() =>
-            expect(screen.getByTestId('move-dialog')).toBeTruthy(),
-        );
-        expect(mocks.loadModBoardContextAction).toHaveBeenCalledTimes(1);
-        expect(mocks.loadModBoardContextAction).toHaveBeenCalledWith(
-            'some-game',
-        );
-
-        // Second open reuses the cached context.
-        openMenu();
-        fireEvent.click(screen.getByText('Adjust time…'));
-        await waitFor(() =>
-            expect(screen.getByTestId('adjust-dialog')).toBeTruthy(),
-        );
-        expect(mocks.loadModBoardContextAction).toHaveBeenCalledTimes(1);
+        expect(screen.getByText('Report run')).toBeTruthy();
     });
+});
 
-    it('surfaces a context-load error and opens nothing', async () => {
-        mocks.loadModBoardContextAction.mockResolvedValue({
-            error: 'Not authorized to moderate this game.',
-        });
-        renderMenu();
-        openMenu();
-        fireEvent.click(screen.getByText('Move…'));
-        await waitFor(() =>
-            expect(mocks.toastError).toHaveBeenCalledWith(
-                'Not authorized to moderate this game.',
-            ),
-        );
-        expect(screen.queryByTestId('move-dialog')).toBeNull();
+function manualEntry(
+    overrides: Partial<LeaderboardEntry> = {},
+): LeaderboardEntry {
+    return entry({
+        runId: null,
+        source: 'manual',
+        manualTimeId: 77,
+        ...overrides,
     });
+}
 
-    it('errors when the board category cannot be resolved', async () => {
-        renderMenu({ categorySlug: 'other-category' });
-        openMenu();
-        fireEvent.click(screen.getByText('Move…'));
-        await waitFor(() => expect(mocks.toastError).toHaveBeenCalled());
-        expect(screen.queryByTestId('move-dialog')).toBeNull();
-    });
-
-    it('marks the run for later', async () => {
-        mocks.markRunsAction.mockResolvedValue({ ok: true });
-        renderMenu();
-        openMenu();
-        fireEvent.click(screen.getByText('Mark for later'));
-        await waitFor(() =>
-            expect(mocks.markRunsAction).toHaveBeenCalledWith(
-                'some-game',
-                [42],
-                true,
-            ),
-        );
-        expect(mocks.toastSuccess).toHaveBeenCalled();
+describe('RowActionsMenu — manual (set) time rows', () => {
+    it('renders no kebab at all — moderation is the row Moderate button, and the time cell links to the detail page', () => {
+        const { container } = renderMenu({ entry: manualEntry() });
+        expect(container.innerHTML).toBe('');
     });
 });
