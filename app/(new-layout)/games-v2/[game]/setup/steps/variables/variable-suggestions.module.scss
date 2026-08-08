@@ -2,10 +2,10 @@
 @use '../../../../../styles/board' as board;
 
 // ============================================================
-// VariableSuggestions — the step's lead surface. One row per suggested
-// variable: name + the categories it's relevant in, its observed values, and
-// add-as-subcategory / add-as-filter actions. Presentational; the add form it
-// opens lives in the grid.
+// VariableSuggestions — the step's lead surface. One card per suggested
+// variable: name + already-added status, a value-distribution bar list, and a
+// state-aware footer (add actions / the gap to fill / a covered confirmation).
+// Presentational; the pre-filled add form it opens lives in the grid.
 // ============================================================
 
 .panel {
@@ -23,8 +23,8 @@
 .lede {
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
-    margin: 0 0 dt.$spacing-md 0;
-    max-width: 70ch;
+    margin: 0 0 dt.$spacing-lg 0;
+    max-width: 68ch;
 }
 
 .muted {
@@ -34,89 +34,176 @@
 }
 
 .list {
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-sm;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: dt.$spacing-md;
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
-.row {
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
-    border-radius: dt.$radius-md;
-    padding: dt.$spacing-sm dt.$spacing-md;
+// --- one suggestion --------------------------------------------------------
+
+.card {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-lg;
+    padding: dt.$spacing-md;
+    background: rgba(var(--bs-body-color-rgb), 0.015);
 }
 
-.head {
+.cardHead {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    gap: dt.$spacing-md;
-    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
 }
 
 .name {
     font-size: dt.$font-size-md;
     font-weight: 700;
+    letter-spacing: -0.01em;
 }
 
-.relevant {
+// Reserved status green — the bars stay monochrome so this reads as state.
+.pillAdded {
+    flex: none;
     font-size: dt.$font-size-xs;
-    color: var(--bs-secondary-color);
+    font-weight: 600;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    color: dt.$accent-green;
+    background: rgba(76, 175, 80, 0.12);
+    white-space: nowrap;
 }
 
-.values {
+// --- value distribution ----------------------------------------------------
+
+.bars {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: dt.$spacing-xs;
-    margin: dt.$spacing-xs 0;
 }
 
-.value {
+// label | proportional track | count. Fixed label + value columns keep the
+// tracks aligned so magnitude reads down the column at a glance.
+.barRow {
+    display: grid;
+    grid-template-columns: minmax(0, 9rem) 1fr auto;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+}
+
+.barLabel {
     display: inline-flex;
     align-items: baseline;
     gap: 0.35em;
-    font-size: dt.$font-size-sm;
-    padding: 0.1rem 0.5rem;
-    border-radius: 999px;
-    background: rgba(var(--bs-border-color-rgb), 0.25);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.alias {
+// Extra spellings folded into this bucket by normalization ("Nintendo 64" +
+// "nintendo64"). A quiet marker, not a number to read.
+.aliasTag {
+    flex: none;
     font-size: dt.$font-size-xs;
     color: var(--bs-secondary-color);
+    padding: 0 0.3em;
+    border-radius: dt.$radius-sm;
+    background: rgba(var(--bs-border-color-rgb), 0.4);
 }
 
-.count {
+.barTrack {
+    display: block;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: rgba(var(--bs-border-color-rgb), 0.35);
+    overflow: hidden;
+}
+
+// Single-hue magnitude mark, baseline-anchored, rounded data end.
+.barFill {
+    display: block;
+    height: 100%;
+    min-width: 2px;
+    border-radius: 999px;
+    background: rgba(var(--bs-emphasis-color-rgb), 0.55);
+}
+
+.barValue {
     @include board.mono-time;
     font-size: dt.$font-size-xs;
     color: var(--bs-secondary-color);
+    text-align: right;
 }
 
-.moreValues {
-    align-self: center;
+.moreRow {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    padding-left: calc(9rem + #{dt.$spacing-sm});
+}
+
+// --- footer: relevance + state action --------------------------------------
+
+.footer {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    margin-top: auto;
+    padding-top: dt.$spacing-sm;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+}
+
+.relevance {
     font-size: dt.$font-size-xs;
     color: var(--bs-secondary-color);
 }
 
-.already {
+.coveredNote {
     font-size: dt.$font-size-sm;
     color: dt.$accent-green;
-    margin: dt.$spacing-xs 0 0 0;
+}
+
+.gapNote {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
 }
 
 .actions {
     display: flex;
     gap: dt.$spacing-sm;
-    margin-top: dt.$spacing-sm;
+    margin-top: dt.$spacing-xs;
 }
 
-.addBtn {
+.addPrimary {
     font-size: dt.$font-size-sm;
-    padding: 0.25rem 0.75rem;
+    font-weight: 600;
+    padding: 0.3rem 0.85rem;
     border-radius: dt.$radius-sm;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    border: 1px solid var(--bs-primary);
+    background: var(--bs-primary);
+    color: #fff;
+    cursor: pointer;
+
+    &:hover {
+        filter: brightness(1.08);
+    }
+}
+
+.addSecondary {
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    padding: 0.3rem 0.85rem;
+    border-radius: dt.$radius-sm;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.7);
     background: transparent;
     color: var(--bs-body-color);
     cursor: pointer;
