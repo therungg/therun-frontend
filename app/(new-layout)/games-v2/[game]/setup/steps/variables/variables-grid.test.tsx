@@ -317,11 +317,16 @@ describe('VariablesGrid', () => {
         const field = screen.getByLabelText('Rename Platform');
         fireEvent.change(field, { target: { value: 'System' } });
         fireEvent.click(screen.getByRole('button', { name: 'Rename' }));
+        // Rename changes ONLY the display name; the key stays 'platform' so the
+        // URL and stored runs don't move.
         expect(previewVariableChangesAction).toHaveBeenCalledWith(
             expect.objectContaining({
                 changes: expect.arrayContaining([
                     expect.objectContaining({
-                        input: expect.objectContaining({ name: 'System' }),
+                        input: expect.objectContaining({
+                            name: 'System',
+                            nameNormalized: 'platform',
+                        }),
                     }),
                 ]),
             }),
@@ -415,6 +420,8 @@ describe('VariablesGrid', () => {
                     expect.objectContaining({
                         input: expect.objectContaining({
                             name: 'Region',
+                            // Key auto-slugged from the name.
+                            nameNormalized: 'region',
                             defaultValueIndex: 1,
                             values: [
                                 ['NTSC', 'ntsc-u'],
