@@ -6,33 +6,24 @@ import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
 import { CategoryMatrix } from './matrix/category-matrix';
 import { StepHeader } from './step-header';
-import { VariablesGrid } from './variables/variables-grid';
 
 /**
- * Step 4 configures every featured category on one screen, in two zones,
- * because the work has two different shapes.
+ * Category settings: the per-category scalars for every featured category on
+ * one screen — timing, minimum, rules, ranking direction, milliseconds —
+ * rendered as DEVIATIONS from the board defaults set in step 1. A cell holding
+ * the default renders as a dot rather than its value, so the grid is near-empty
+ * on a healthy board and only the exceptions catch the eye.
  *
- * Zone 1 is a matrix of scalars — timing, minimum, rules, ranking direction,
- * milliseconds — rendered as DEVIATIONS from the board defaults set in step 1.
- * A cell holding the default renders as a dot rather than as its value, so the
- * grid is near-empty on a healthy board and only the exceptions catch the eye.
+ * Subcategories and filters are NOT here — they are their own step now (they
+ * are structures, not scalars, and editing one relocates runs, so they stage
+ * and preview differently). What both steps must NOT differ on is the axis:
+ * categories are rows in both.
  *
- * Zone 2 is subcategories and filters, which cannot be matrix columns: each is
- * a structure (name + role + ordered alias buckets + default index), and
- * editing one moves existing runs between leaderboards. They get board-level
- * palettes instead — see variables-grid.tsx.
- *
- * The two zones are separate panels and will stay separate, because they write
- * differently (scalars land immediately; a subcategory edit is staged and
- * previewed because it relocates runs). What they must NOT differ on is the
- * axis: categories are rows in both. Everything else on this screen is
- * negotiable; that is the one thing that made it unreadable.
- *
- * There is NO category detail screen. Everything a category has is set from
- * this one list: the scannable settings as columns, the rest as an expanding
- * pane under the row (see row-panel.tsx). A route per category is what made
- * the old step 4 unusable — a moderator working down a board has to keep their
- * place, and every visit cost them it.
+ * There is NO category detail screen. Everything scalar a category has is set
+ * from this one list: the scannable settings as columns, the rest as an
+ * expanding pane under the row (see row-panel.tsx). A route per category is
+ * what made the old step 4 unusable — a moderator working down a board has to
+ * keep their place, and every visit cost them it.
  *
  * `?cat=<id>` deep links — including the retired `?step=exceptions&cat=<id>`
  * shape LEGACY_STEP_MAP folds onto this step — now open that category's row
@@ -50,7 +41,7 @@ export function StepCategorySetup({ data, onAdvance }: StepProps) {
 
     return (
         <section>
-            <StepHeader step="category-setup" title="Set up each category" />
+            <StepHeader step="category-setup" title="Category settings" />
 
             {mains.length === 0 ? (
                 <div className={styles.infoNote}>
@@ -59,15 +50,11 @@ export function StepCategorySetup({ data, onAdvance }: StepProps) {
                     here to configure.
                 </div>
             ) : (
-                <>
-                    <CategoryMatrix
-                        data={data}
-                        defaults={defaults}
-                        initialOpenCategoryId={catId}
-                    />
-
-                    <VariablesGrid data={data} />
-                </>
+                <CategoryMatrix
+                    data={data}
+                    defaults={defaults}
+                    initialOpenCategoryId={catId}
+                />
             )}
 
             <button
@@ -75,7 +62,7 @@ export function StepCategorySetup({ data, onAdvance }: StepProps) {
                 className={styles.primaryAction}
                 onClick={onAdvance}
             >
-                Continue to boards
+                Continue to subcategories
             </button>
         </section>
     );

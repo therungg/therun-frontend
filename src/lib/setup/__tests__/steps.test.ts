@@ -18,19 +18,21 @@ describe('SETUP_STEPS', () => {
         expect(SETUP_STEPS.map((s) => s.id)).toEqual(SETUP_STEP_ORDER);
     });
 
-    it('is the five-step category-centric wizard', () => {
+    it('is the six-step category-centric wizard', () => {
         expect(SETUP_STEPS.map((s) => s.id)).toEqual([
             'details',
             'categories',
             'groups',
             'category-setup',
+            'variables',
             'boards',
         ]);
         expect(SETUP_STEPS.map((s) => s.label)).toEqual([
             'Game details',
             'Categories',
             'Groups',
-            'Category setup',
+            'Category settings',
+            'Subcategories & filters',
             'Boards',
         ]);
     });
@@ -68,11 +70,16 @@ describe('resolveSetupStep', () => {
         expect(resolveSetupStep('category-setup')).toBe('category-setup');
     });
 
+    it('passes the revived variables step id straight through', () => {
+        // `variables` is a live step id again (Subcategories & filters), so an
+        // old ?step=variables link lands on that step rather than being folded
+        // onto category settings.
+        expect(resolveSetupStep('variables')).toBe('variables');
+    });
+
     it('maps every retired step id onto its successor', () => {
         // Bookmarks and links minted by older wizards must still land on the
-        // screen that now owns that work. Variables are category-scoped now,
-        // so ?step=variables lands on the per-category hub.
-        expect(resolveSetupStep('variables')).toBe('category-setup');
+        // screen that now owns that work.
         expect(resolveSetupStep('exceptions')).toBe('category-setup');
         expect(resolveSetupStep('defaults')).toBe('details');
         expect(resolveSetupStep('finish')).toBe('boards');
@@ -93,10 +100,11 @@ describe('resolveSetupStep', () => {
 });
 
 describe('vocabulary alignment', () => {
-    // `details` and `category-setup` are the two multi-concept steps: step 1
-    // carries the board's timing/rules defaults alongside the game's details,
-    // and step 4 is every per-category setting on one screen. They keep their
-    // own rail labels; the console reaches their contents by its own routes.
+    // `details` and `category-setup` keep bespoke rail labels rather than a
+    // concept label: step 1 carries the board's timing/rules defaults alongside
+    // the game's details, and "Category settings" reads better on the rail than
+    // the bare "Categories" concept it maps to. The console reaches both by its
+    // own routes.
     const MULTI_CONCEPT: SetupStepId[] = ['details', 'category-setup'];
 
     it('takes every single-concept rail label from the shared vocabulary', () => {

@@ -20,7 +20,7 @@ import type { StepProps, WizardData } from '../types';
 import { StepHeader } from './step-header';
 
 /**
- * Step 5: what the boards actually look like, then go live.
+ * Final step: what the boards actually look like, then go live.
  *
  * The curation half is the real BoardCuration view — category switcher,
  * subcategory bands, ranked table, sourced live from the mod roster
