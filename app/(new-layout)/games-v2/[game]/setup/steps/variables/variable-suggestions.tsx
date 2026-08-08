@@ -52,19 +52,24 @@ export function VariableSuggestions({
     );
 
     // Configured variables keyed by normalized name → where they already live
-    // (and as which role), so a suggestion can say it's already set.
+    // (and as which role), so a suggestion can say it's already set. Restricted
+    // to the FEATURED categories this step manages: `existingVariables` spans
+    // every category on the game (hundreds of ILs/extensions on a big game), and
+    // without this filter the "already added" line listed all of them.
     const existingByName = useMemo(() => {
+        const featured = new Set(categories.map((c) => c.id));
         const map = new Map<
             string,
             { role: VariableRoleId; categoryId: number }[]
         >();
         for (const v of existingVariables) {
+            if (!featured.has(v.categoryId)) continue;
             const list = map.get(v.nameNormalized) ?? [];
             list.push({ role: v.role, categoryId: v.categoryId });
             map.set(v.nameNormalized, list);
         }
         return map;
-    }, [existingVariables]);
+    }, [existingVariables, categories]);
 
     const catName = (id: number) => displayById.get(id) ?? `#${id}`;
 
