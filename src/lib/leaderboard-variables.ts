@@ -281,3 +281,36 @@ export async function listVariableValueCounts(
         { sessionId },
     );
 }
+
+/**
+ * A variable that clears the relevance bar within at least one category —
+ * share of that category's runners >= 10% AND >= 5 distinct setters. Suggested
+ * even when it is rare game-wide, because relevance is measured against each
+ * category's own population, not the game's.
+ *
+ * `relevantCategoryIds` are exactly the categories it cleared; `perCategory`
+ * carries the numbers behind that (for a "relevant in X (67%)" label); `values`
+ * is the observed value distribution across those categories, for pre-filling
+ * buckets. Mirrors CategoryVariableSuggestion in the backend handler.
+ */
+export interface CategoryVariableSuggestion {
+    variable: string;
+    relevantCategoryIds: number[];
+    perCategory: Record<
+        number,
+        { setters: number; runners: number; share: number }
+    >;
+    values: VariableValueCount[];
+}
+
+export async function listVariableSuggestionsByCategory(
+    sessionId: string,
+    gameId: number,
+    categoryIds: number[],
+): Promise<CategoryVariableSuggestion[]> {
+    if (categoryIds.length === 0) return [];
+    return apiFetch<CategoryVariableSuggestion[]>(
+        `${basePath(gameId)}?valueCounts=1&byCategory=1&categoryIds=${categoryIds.join(',')}`,
+        { sessionId },
+    );
+}
