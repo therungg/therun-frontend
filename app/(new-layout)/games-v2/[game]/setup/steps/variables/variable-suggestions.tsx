@@ -28,9 +28,18 @@ interface Props {
     onAdd: (prefill: SuggestionAddPrefill) => void;
 }
 
-// Values beyond this collapse into a "+N more" chip — the head is enough to
+// Values beyond this collapse into a "+N more" row — the head is enough to
 // recognize the variable; the full set pre-fills the add form.
-const VALUE_HEAD = 8;
+const VALUE_HEAD = 6;
+
+const roleLabel = (role: VariableRoleId) =>
+    role === 'subcategory' ? 'Subcategory' : 'Filter';
+
+/** "16 Star, 1 Star +3" — a few names, then a count, never a wall. */
+function nameList(names: string[], cap = 3): string {
+    if (names.length <= cap) return names.join(', ');
+    return `${names.slice(0, cap).join(', ')} +${names.length - cap}`;
+}
 
 /**
  * The step's lead surface: variables runners actually set, per category, each
@@ -115,6 +124,7 @@ export function VariableSuggestions({
             <ul className={styles.list}>
                 {suggestions.map((s) => {
                     const buckets = bucketsFromValues(s.values);
+                    const maxCount = buckets[0]?.count ?? 0;
                     const raw = buckets
                         .map((b) => b.aliases.join(', '))
                         .join('\n');
@@ -127,17 +137,28 @@ export function VariableSuggestions({
                     const addedRoles = [
                         ...new Set(existing.map((e) => e.role)),
                     ];
+                    const addedRoleText = addedRoles.map(roleLabel).join(' + ');
                     const remaining = s.relevantCategoryIds.filter(
                         (id) => !addedCategoryIds.has(id),
                     );
-                    const relevantLabel = s.relevantCategoryIds
-                        .map((id) => {
-                            const pct = Math.round(
-                                (s.perCategory[id]?.share ?? 0) * 100,
-                            );
-                            return `${catName(id)} (${pct}%)`;
-                        })
-                        .join(' · ');
+
+                    const pcts = s.relevantCategoryIds.map((id) =>
+                        Math.round((s.perCategory[id]?.share ?? 0) * 100),
+                    );
+                    const lo = Math.min(...pcts);
+                    const hi = Math.max(...pcts);
+                    const shareText = lo === hi ? `${hi}%` : `${lo}–${hi}%`;
+                    const n = s.relevantCategoryIds.length;
+                    const relevance = `Relevant in ${n} ${
+                        n === 1 ? 'category' : 'categories'
+                    } · ${shareText} of runners`;
+
+                    const state =
+                        existing.length === 0
+                            ? 'new'
+                            : remaining.length === 0
+                              ? 'covered'
+                              : 'partial';
 
                     // Default the picker to the categories where it's relevant
                     // and not yet added; fall back to all relevant ones.
@@ -152,71 +173,120 @@ export function VariableSuggestions({
                         });
 
                     return (
-                        <li key={s.variable} className={styles.row}>
-                            <div className={styles.head}>
+                        <li key={s.variable} className={styles.card}>
+                            <div className={styles.cardHead}>
                                 <span className={styles.name}>
                                     {s.variable}
                                 </span>
-                                <span className={styles.relevant}>
-                                    relevant in {relevantLabel}
-                                </span>
-                            </div>
-
-                            <div className={styles.values}>
-                                {buckets.slice(0, VALUE_HEAD).map((b) => (
-                                    <span
-                                        key={b.label}
-                                        className={styles.value}
-                                    >
-                                        {b.label === '' ? '(blank)' : b.label}
-                                        {b.aliases.length > 1 && (
-                                            <span className={styles.alias}>
-                                                {' '}
-                                                +{b.aliases.length - 1}
-                                            </span>
-                                        )}
-                                        <span className={styles.count}>
-                                            {b.count.toLocaleString()}
-                                        </span>
-                                    </span>
-                                ))}
-                                {buckets.length > VALUE_HEAD && (
-                                    <span className={styles.moreValues}>
-                                        +{buckets.length - VALUE_HEAD} more
+                                {state !== 'new' && (
+                                    <span className={styles.pillAdded}>
+                                        ✓ {addedRoleText}
                                     </span>
                                 )}
                             </div>
 
-                            {existing.length > 0 && (
-                                <p className={styles.already}>
-                                    Already added as {addedRoles.join(' / ')} in{' '}
-                                    {[...addedCategoryIds]
-                                        .map(catName)
-                                        .join(', ')}
-                                    {remaining.length === 0
-                                        ? '.'
-                                        : ' — add it to the rest below.'}
-                                </p>
-                            )}
+                            <div className={styles.bars}>
+                                {buckets.slice(0, VALUE_HEAD).map((b) => (
+                                    <div
+                                        key={b.label}
+                                        className={styles.barRow}
+                                    >
+                                        <span
+                                            className={styles.barLabel}
+                                            title={b.aliases.join(', ')}
+                                        >
+                                            {b.label === ''
+                                                ? '(blank)'
+                                                : b.label}
+                                            {b.aliases.length > 1 && (
+                                                <span
+                                                    className={styles.aliasTag}
+                                                >
+                                                    +{b.aliases.length - 1}
+                                                </span>
+                                            )}
+                                        </span>
+                                        <span
+                                            className={styles.barTrack}
+                                            aria-hidden="true"
+                                        >
+                                            <span
+                                                className={styles.barFill}
+                                                style={{
+                                                    width: `${
+                                                        maxCount > 0
+                                                            ? (
+                                                                  b.count /
+                                                                      maxCount
+                                                              ) * 100
+                                                            : 0
+                                                    }%`,
+                                                }}
+                                            />
+                                        </span>
+                                        <span className={styles.barValue}>
+                                            {b.count.toLocaleString()}
+                                        </span>
+                                    </div>
+                                ))}
+                                {buckets.length > VALUE_HEAD && (
+                                    <div className={styles.moreRow}>
+                                        +{buckets.length - VALUE_HEAD} more{' '}
+                                        {buckets.length - VALUE_HEAD === 1
+                                            ? 'value'
+                                            : 'values'}
+                                    </div>
+                                )}
+                            </div>
 
-                            {remaining.length > 0 && (
-                                <div className={styles.actions}>
-                                    <button
-                                        type="button"
-                                        className={styles.addBtn}
-                                        onClick={() => openAdd('subcategory')}
-                                    >
-                                        Add as subcategory
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className={styles.addBtn}
-                                        onClick={() => openAdd('filter')}
-                                    >
-                                        Add as filter
-                                    </button>
-                                </div>
-                            )}
+                            <div className={styles.footer}>
+                                <span className={styles.relevance}>
+                                    {relevance}
+                                </span>
+
+                                {state === 'covered' && (
+                                    <span className={styles.coveredNote}>
+                                        Already a {addedRoleText.toLowerCase()}{' '}
+                                        in all of them
+                                    </span>
+                                )}
+                                {state === 'partial' && (
+                                    <span className={styles.gapNote}>
+                                        {addedRoleText} in{' '}
+                                        {addedCategoryIds.size} · not yet in{' '}
+                                        {nameList(remaining.map(catName))}
+                                        <button
+                                            type="button"
+                                            className={styles.addPrimary}
+                                            onClick={() =>
+                                                openAdd(addedRoles[0])
+                                            }
+                                        >
+                                            Add to {remaining.length} more
+                                        </button>
+                                    </span>
+                                )}
+                                {state === 'new' && (
+                                    <span className={styles.actions}>
+                                        <button
+                                            type="button"
+                                            className={styles.addPrimary}
+                                            onClick={() =>
+                                                openAdd('subcategory')
+                                            }
+                                        >
+                                            Add as subcategory
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={styles.addSecondary}
+                                            onClick={() => openAdd('filter')}
+                                        >
+                                            Add as filter
+                                        </button>
+                                    </span>
+                                )}
+                            </div>
                         </li>
                     );
                 })}
