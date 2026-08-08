@@ -101,6 +101,47 @@
     font-style: italic;
 }
 
+// The drawer's primary action bar. The verbs are the whole point of the
+// inspector, so they read as full-size buttons that share the width evenly;
+// the trailing secondary control (More / Change time) stays compact.
+.actionBar {
+    display: flex;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-lg;
+    align-items: stretch;
+}
+
+.verbBtn {
+    flex: 1 1 0;
+    font-weight: 600;
+    padding-top: dt.$spacing-md;
+    padding-bottom: dt.$spacing-md;
+    white-space: nowrap;
+}
+
+// Secondary actions (Move / Adjust / Hide identity / Mark / Change time) —
+// always visible, never hidden behind a menu, but visually quieter than the
+// primary verbs above them.
+.secondaryBar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+    padding: 0 dt.$spacing-lg dt.$spacing-lg;
+}
+
+.secondaryBtn {
+    @include board.control-pill;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    background: none;
+    padding: dt.$spacing-xs dt.$spacing-md;
+    color: var(--bs-body-color);
+
+    &:hover {
+        border-color: var(--bs-primary);
+        color: var(--bs-primary);
+    }
+}
+
 .verbForm {
     // The shared form brings its own body/footer padding.
     max-height: 60vh;

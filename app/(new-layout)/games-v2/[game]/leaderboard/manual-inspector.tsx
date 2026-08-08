@@ -351,17 +351,19 @@ export function ManualInspector({
 
                 <div className="border-top">
                     {activeVerb == null ? (
-                        <div className="d-flex gap-2 p-3 align-items-center flex-wrap">
-                            {manualVerbsForStatus(entry.verificationStatus).map(
-                                (verb) => (
+                        <>
+                            <div className={styles.actionBar}>
+                                {manualVerbsForStatus(
+                                    entry.verificationStatus,
+                                ).map((verb) => (
                                     <button
                                         key={verb}
                                         type="button"
-                                        className={`btn btn-sm ${
+                                        className={`btn ${styles.verbBtn} ${
                                             verb === 'approve'
                                                 ? 'btn-success'
                                                 : verb === 'remove'
-                                                  ? 'btn-outline-danger'
+                                                  ? 'btn-danger'
                                                   : 'btn-outline-secondary'
                                         }`}
                                         onClick={() => setActiveVerb(verb)}
@@ -371,16 +373,18 @@ export function ManualInspector({
                                             : VERB_TITLE[verb]}
                                         {verb === 'remove' && '…'}
                                     </button>
-                                ),
-                            )}
-                            <button
-                                type="button"
-                                className="btn btn-sm btn-outline-secondary ms-auto"
-                                onClick={openEdit}
-                            >
-                                Change time…
-                            </button>
-                        </div>
+                                ))}
+                            </div>
+                            <div className={styles.secondaryBar}>
+                                <button
+                                    type="button"
+                                    className={styles.secondaryBtn}
+                                    onClick={openEdit}
+                                >
+                                    Change time…
+                                </button>
+                            </div>
+                        </>
                     ) : (
                         <div className={styles.verbForm}>
                             <div className={styles.verbFormTitle}>

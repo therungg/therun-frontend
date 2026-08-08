@@ -397,16 +397,21 @@ export function LeaderboardRow({
                             onMutated={onBoardRefresh as () => void}
                         />
                     )}
+                    {canManage && onModerate && (
+                        <button
+                            type="button"
+                            className={styles.moderateBtn}
+                            onClick={() => onModerate(entry)}
+                        >
+                            Moderate
+                        </button>
+                    )}
                     <RowActionsMenu
                         entry={entry}
                         sessionUsername={sessionUsername}
-                        canManage={canManage}
                         gameSlug={gameSlug}
                         categorySlug={categorySlug}
                         subcategoryDefKeys={subcategoryDefKeys}
-                        onModerate={
-                            onModerate ? () => onModerate(entry) : undefined
-                        }
                     />
                 </span>
             </td>

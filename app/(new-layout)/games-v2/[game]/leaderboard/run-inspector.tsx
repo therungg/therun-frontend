@@ -2,7 +2,6 @@
 
 import moment from 'moment';
 import { useEffect, useRef, useState, useTransition } from 'react';
-import { Dropdown } from 'react-bootstrap';
 import {
     BoxArrowUpRight,
     ChevronDown,
@@ -577,69 +576,61 @@ export function RunInspector({
                     expands the shared action form in place. */}
                 <div className="border-top">
                     {activeVerb == null ? (
-                        <div className="d-flex gap-2 p-3 align-items-center">
-                            {verbsForStatus(entry.verificationStatus).map(
-                                (verb) => (
-                                    <button
-                                        key={verb}
-                                        type="button"
-                                        className={`btn btn-sm ${
-                                            verb === 'approve'
-                                                ? 'btn-success'
-                                                : verb === 'remove'
-                                                  ? 'btn-outline-danger'
-                                                  : 'btn-outline-secondary'
-                                        }`}
-                                        onClick={() => setActiveVerb(verb)}
-                                    >
-                                        {VERB_TITLE[verb]}
-                                        {verb === 'remove' && '…'}
-                                    </button>
-                                ),
-                            )}
-                            <Dropdown drop="up" align="end" className="ms-auto">
-                                <Dropdown.Toggle
-                                    as="button"
+                        <>
+                            <div className={styles.actionBar}>
+                                {verbsForStatus(entry.verificationStatus).map(
+                                    (verb) => (
+                                        <button
+                                            key={verb}
+                                            type="button"
+                                            className={`btn ${styles.verbBtn} ${
+                                                verb === 'approve'
+                                                    ? 'btn-success'
+                                                    : verb === 'remove'
+                                                      ? 'btn-danger'
+                                                      : 'btn-outline-secondary'
+                                            }`}
+                                            onClick={() => setActiveVerb(verb)}
+                                        >
+                                            {VERB_TITLE[verb]}
+                                            {verb === 'remove' && '…'}
+                                        </button>
+                                    ),
+                                )}
+                            </div>
+                            <div className={styles.secondaryBar}>
+                                <button
                                     type="button"
-                                    id={`run-inspector-more-${runId}`}
-                                    className="btn btn-sm btn-outline-secondary"
+                                    className={styles.secondaryBtn}
+                                    onClick={() => openModDialog('move')}
                                 >
-                                    More
-                                </Dropdown.Toggle>
-                                <Dropdown.Menu>
-                                    <Dropdown.Item
-                                        as="button"
-                                        type="button"
-                                        onClick={() => openModDialog('move')}
-                                    >
-                                        Move…
-                                    </Dropdown.Item>
-                                    <Dropdown.Item
-                                        as="button"
-                                        type="button"
-                                        onClick={() => openModDialog('adjust')}
-                                    >
-                                        Adjust time…
-                                    </Dropdown.Item>
-                                    <Dropdown.Item
-                                        as="button"
-                                        type="button"
-                                        onClick={() =>
-                                            openModDialog('hide-identity')
-                                        }
-                                    >
-                                        Hide identity…
-                                    </Dropdown.Item>
-                                    <Dropdown.Item
-                                        as="button"
-                                        type="button"
-                                        onClick={markForLater}
-                                    >
-                                        Mark for later
-                                    </Dropdown.Item>
-                                </Dropdown.Menu>
-                            </Dropdown>
-                        </div>
+                                    Move…
+                                </button>
+                                <button
+                                    type="button"
+                                    className={styles.secondaryBtn}
+                                    onClick={() => openModDialog('adjust')}
+                                >
+                                    Adjust time…
+                                </button>
+                                <button
+                                    type="button"
+                                    className={styles.secondaryBtn}
+                                    onClick={() =>
+                                        openModDialog('hide-identity')
+                                    }
+                                >
+                                    Hide identity…
+                                </button>
+                                <button
+                                    type="button"
+                                    className={styles.secondaryBtn}
+                                    onClick={markForLater}
+                                >
+                                    Mark for later
+                                </button>
+                            </div>
+                        </>
                     ) : (
                         <div className={styles.verbForm}>
                             <div className={styles.verbFormTitle}>

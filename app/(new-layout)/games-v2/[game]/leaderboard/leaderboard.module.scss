@@ -395,6 +395,26 @@ tr:focus-within .reveal {
     }
 }
 
+// Direct "Moderate" affordance — the mod's primary path into the run
+// inspector, so it's a first-class filled button on the row rather than an
+// item buried in the kebab.
+.moderateBtn {
+    @include board.control-pill;
+    border: 1px solid var(--bs-primary);
+    padding: dt.$spacing-xs dt.$spacing-md;
+    background: var(--bs-primary);
+    color: #fff;
+    font-weight: 500;
+
+    &:hover {
+        filter: brightness(1.08);
+    }
+
+    @media (pointer: coarse) {
+        padding: dt.$spacing-lg;
+    }
+}
+
 // ---- Empty state (calm pattern: icon + title + action) ------
 .empty {
     @include board.board-empty;
