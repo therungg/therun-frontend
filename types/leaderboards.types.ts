@@ -163,6 +163,11 @@ export interface LeaderboardEntry {
     verificationStatus: 'pending' | 'verified' | 'rejected';
     // Keyed by nameNormalized; values are canonical bucket values.
     variables?: Record<string, string> | null;
+    // What the runner actually submitted (normalized keys, raw values),
+    // BEFORE subcategory defaults were filled in. A defaulted subcategory
+    // appears in `variables` but not here — the board's value columns use
+    // that to leave never-set cells blank. Null/absent when not stamped yet.
+    rawVariables?: Record<string, string> | null;
     // Manual-times feature: 'manual' entries are a mod/self-asserted time with no
     // backing finished_run (runId is null). Defaults to 'run' when absent.
     source?: 'run' | 'manual';

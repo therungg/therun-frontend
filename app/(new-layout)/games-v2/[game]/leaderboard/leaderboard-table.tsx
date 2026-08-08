@@ -26,9 +26,11 @@ interface Props {
     gameSlug: string;
     variableKeys: string[];
     /** Variables opted into a board column; `display` maps stored (normalized)
-     * values to their bucket's canonical label. */
+     * values to their bucket's canonical label, `altKey` is the display name
+     * normalized (rawVariables may use either key). */
     valueColumns: {
         key: string;
+        altKey: string;
         label: string;
         display: Record<string, string>;
     }[];

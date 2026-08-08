@@ -125,9 +125,11 @@ interface Props {
     hideGameTime: boolean;
     primaryTiming: TimingKey;
     /** Variables opted into a board column; `display` maps stored (normalized)
-     * values to their bucket's canonical label. */
+     * values to their bucket's canonical label, `altKey` is the display name
+     * normalized (rawVariables may use either key). */
     valueColumns: {
         key: string;
+        altKey: string;
         label: string;
         display: Record<string, string>;
     }[];
@@ -372,13 +374,23 @@ export function LeaderboardRow({
                     !primaryVisible,
                 )}
             {valueColumns.map((col) => {
-                const raw = entry.variables?.[col.key];
+                const value = entry.variables?.[col.key];
+                // Only show a value the runner actually submitted. A defaulted
+                // subcategory appears in `variables` but not in `rawVariables`
+                // (which holds the pre-default submission, keyed by either the
+                // variable's key or its display name) — those cells stay
+                // blank rather than claiming the runner said the default.
+                const raw = entry.rawVariables;
+                const runnerSetIt =
+                    raw != null &&
+                    (raw[col.key] !== undefined ||
+                        raw[col.altKey] !== undefined);
                 return (
                     <td key={col.key} className={styles.value}>
-                        {raw != null
+                        {value != null && runnerSetIt
                             ? // Stored values are normalized; show the
                               // bucket's canonical label when we know it.
-                              (col.display[raw.trim().toLowerCase()] ?? raw)
+                              (col.display[value.trim().toLowerCase()] ?? value)
                             : '—'}
                     </td>
                 );
