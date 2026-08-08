@@ -628,6 +628,11 @@ export interface HistoryEvent {
     reason: string | null;
     at: string;
     detail?: Record<string, unknown>;
+    /** Mod-only enrichment (backend 2026-08-08): present when the caller can
+     * moderate the run's game. logId keys the unified-log row; `by` is the
+     * acting user's real identity (null for system writers). */
+    logId?: number;
+    by?: { userId: number; name: string } | null;
 }
 
 export interface AppealInput {

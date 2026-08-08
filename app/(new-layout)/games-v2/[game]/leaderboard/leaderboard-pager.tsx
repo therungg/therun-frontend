@@ -18,13 +18,11 @@ import { planFindMeSearch } from './find-me-plan';
 import styles from './leaderboard.module.scss';
 import { YOU_ROW_ID } from './leaderboard-row';
 import { LeaderboardTable } from './leaderboard-table';
+import { ManualInspector } from './manual-inspector';
 import { paginationItems } from './pagination-items';
+import { RunInspector } from './run-inspector';
+import { type BoardSelectionKey, entrySelectionKey } from './selection';
 import type { TimingKey } from './timing-columns';
-
-/** Same runner-grouping key leaderboard-row.tsx uses for "select all runs by …". */
-function runnerKeyOf(entry: LeaderboardEntry): string {
-    return entry.userId != null ? `u:${entry.userId}` : `g:${entry.runnerName}`;
-}
 
 // "Find me" fallback: the board API has no rank/user lookup that accounts
 // for the current filter state (subcategory, varFilters, verified,
@@ -125,15 +123,21 @@ export function LeaderboardPager({
     // effect even if the row was already on-screen from a prior search.
     const [highlightToken, setHighlightToken] = useState(0);
     // Bulk selection (mods only — the checkbox column itself only renders
-    // when `canManage`, so a non-mod never populates this). Page-scoped:
-    // navigating clears it, since acting on rows you can no longer see is
-    // exactly the mistake a selection UI exists to prevent.
-    const [selectedRunIds, setSelectedRunIds] = useState<Set<number>>(
+    // when `canManage`, so a non-mod never populates this). Keys are
+    // `r:<runId>` / `m:<manualTimeId>` (see selection.ts) so manual set
+    // times are selectable alongside runs. Page-scoped: navigating clears
+    // it, since acting on rows you can no longer see is exactly the
+    // mistake a selection UI exists to prevent.
+    const [selectedKeys, setSelectedKeys] = useState<Set<BoardSelectionKey>>(
         new Set(),
     );
     // Shift-click range-select anchor — the last row clicked without
     // shift, or the most recent shift-click's endpoint.
-    const lastClickedRef = useRef<number | null>(null);
+    const lastClickedRef = useRef<BoardSelectionKey | null>(null);
+    // Run / set-time inspector (mods only) — tracked by id, not entry
+    // reference, so a page refetch after a verdict re-derives the fresh row.
+    const [inspectRunId, setInspectRunId] = useState<number | null>(null);
+    const [inspectManualId, setInspectManualId] = useState<number | null>(null);
 
     const [entryClass] = useState(() => {
         if (typeof window === 'undefined') return styles.boardStagger;
@@ -163,7 +167,7 @@ export function LeaderboardPager({
     const showPage = (res: LeaderboardResponse, page: number) => {
         setNavError(null);
         setBoard(res);
-        setSelectedRunIds(new Set());
+        setSelectedKeys(new Set());
         lastClickedRef.current = null;
         setUrlPage(page);
     };
@@ -195,59 +199,98 @@ export function LeaderboardPager({
 
     const entries = board.entries;
 
-    // ---- Bulk selection (mods only) --------------------------------------
-    const selectableRunIds = entries
-        .map((e) => e.runId)
-        .filter((id): id is number => id != null);
+    // ---- Run / set-time inspector (mods only) ----------------------------
+    // j/k step through the page's rows of the same kind (real runs for the
+    // run inspector, set times for the set-time inspector).
+    const runEntries = entries.filter((e) => e.runId != null);
+    const inspectIndex =
+        inspectRunId == null
+            ? -1
+            : runEntries.findIndex((e) => e.runId === inspectRunId);
+    const inspectEntry = inspectIndex >= 0 ? runEntries[inspectIndex] : null;
 
-    const toggleSelect = (runId: number, shiftKey: boolean) => {
-        setSelectedRunIds((prev) => {
+    const manualEntries = entries.filter((e) => e.manualTimeId != null);
+    const inspectManualIndex =
+        inspectManualId == null
+            ? -1
+            : manualEntries.findIndex(
+                  (e) => e.manualTimeId === inspectManualId,
+              );
+    const inspectManualEntry =
+        inspectManualIndex >= 0 ? manualEntries[inspectManualIndex] : null;
+
+    // A refetch or page navigation can drop the inspected row off the page
+    // (quiet removal, verified filter) — close rather than show stale data.
+    useEffect(() => {
+        if (inspectRunId != null && inspectEntry == null) {
+            setInspectRunId(null);
+        }
+    }, [inspectRunId, inspectEntry]);
+    useEffect(() => {
+        if (inspectManualId != null && inspectManualEntry == null) {
+            setInspectManualId(null);
+        }
+    }, [inspectManualId, inspectManualEntry]);
+
+    const boardRefresh = () => startRefetch(refetchCurrentPage);
+
+    // Route the kebab's Moderate… to the matching inspector, and never open
+    // both at once.
+    const openModerate = (entry: LeaderboardEntry) => {
+        if (entry.runId != null) {
+            setInspectManualId(null);
+            setInspectRunId(entry.runId);
+        } else if (entry.manualTimeId != null) {
+            setInspectRunId(null);
+            setInspectManualId(entry.manualTimeId);
+        }
+    };
+
+    // ---- Bulk selection (mods only) --------------------------------------
+    const selectableKeys = entries
+        .map(entrySelectionKey)
+        .filter((key): key is BoardSelectionKey => key != null);
+
+    const toggleSelect = (key: BoardSelectionKey, shiftKey: boolean) => {
+        // Anchor bookkeeping stays outside the updater: StrictMode
+        // double-invokes updaters, and a ref mutation inside meant the
+        // second run saw the anchor already moved to the clicked row,
+        // collapsing every shift-range to a single row.
+        const anchorKey = lastClickedRef.current;
+        lastClickedRef.current = key;
+        setSelectedKeys((prev) => {
             const next = new Set(prev);
-            if (shiftKey && lastClickedRef.current != null) {
-                const anchor = selectableRunIds.indexOf(lastClickedRef.current);
-                const target = selectableRunIds.indexOf(runId);
+            if (shiftKey && anchorKey != null) {
+                const anchor = selectableKeys.indexOf(anchorKey);
+                const target = selectableKeys.indexOf(key);
                 if (anchor !== -1 && target !== -1) {
                     const [start, end] =
                         anchor < target ? [anchor, target] : [target, anchor];
-                    const shouldSelect = !prev.has(runId);
-                    for (const id of selectableRunIds.slice(start, end + 1)) {
-                        if (shouldSelect) next.add(id);
-                        else next.delete(id);
+                    const shouldSelect = !prev.has(key);
+                    for (const k of selectableKeys.slice(start, end + 1)) {
+                        if (shouldSelect) next.add(k);
+                        else next.delete(k);
                     }
-                    lastClickedRef.current = runId;
                     return next;
                 }
             }
-            if (next.has(runId)) next.delete(runId);
-            else next.add(runId);
-            lastClickedRef.current = runId;
+            if (next.has(key)) next.delete(key);
+            else next.add(key);
             return next;
         });
     };
 
     const toggleAllVisible = () => {
-        setSelectedRunIds((prev) => {
+        setSelectedKeys((prev) => {
             const allSelected =
-                selectableRunIds.length > 0 &&
-                selectableRunIds.every((id) => prev.has(id));
+                selectableKeys.length > 0 &&
+                selectableKeys.every((key) => prev.has(key));
             if (allSelected) return new Set();
-            return new Set(selectableRunIds);
+            return new Set(selectableKeys);
         });
     };
 
-    const selectRunner = (runnerKey: string) => {
-        setSelectedRunIds((prev) => {
-            const next = new Set(prev);
-            for (const e of entries) {
-                if (e.runId != null && runnerKeyOf(e) === runnerKey) {
-                    next.add(e.runId);
-                }
-            }
-            return next;
-        });
-    };
-
-    const clearSelection = () => setSelectedRunIds(new Set());
+    const clearSelection = () => setSelectedKeys(new Set());
 
     const handleBulkMutated = () => {
         clearSelection();
@@ -419,7 +462,6 @@ export function LeaderboardPager({
                 leaderboard={board}
                 sessionUsername={sessionUsername}
                 canManage={canManage}
-                canSiteBan={canSiteBan}
                 gameSlug={gameSlug}
                 variableKeys={variableKeys}
                 primaryTiming={primaryTiming}
@@ -430,19 +472,80 @@ export function LeaderboardPager({
                 subcategoryKey={subcategoryKey}
                 subcategoryDefKeys={subcategoryDefKeys}
                 rtaFallback={rtaFallback}
-                selectedRunIds={selectedRunIds}
+                selectedKeys={selectedKeys}
                 onToggleSelect={toggleSelect}
-                onSelectRunner={selectRunner}
                 onToggleAllVisible={toggleAllVisible}
+                onModerate={canManage ? openModerate : undefined}
+                onBoardRefresh={canManage ? boardRefresh : undefined}
             />
-            {canManage && selectedRunIds.size > 0 && (
+            {canManage && inspectEntry != null && (
+                <RunInspector
+                    entry={inspectEntry}
+                    gameSlug={gameSlug}
+                    categorySlug={categorySlug}
+                    subcategoryDefKeys={subcategoryDefKeys}
+                    gameTimeLabel={gameTimeLabel}
+                    showMilliseconds={showMilliseconds}
+                    onClose={() => setInspectRunId(null)}
+                    onMutated={boardRefresh}
+                    onPrev={
+                        inspectIndex > 0
+                            ? () =>
+                                  setInspectRunId(
+                                      runEntries[inspectIndex - 1].runId ??
+                                          null,
+                                  )
+                            : undefined
+                    }
+                    onNext={
+                        inspectIndex < runEntries.length - 1
+                            ? () =>
+                                  setInspectRunId(
+                                      runEntries[inspectIndex + 1].runId ??
+                                          null,
+                                  )
+                            : undefined
+                    }
+                />
+            )}
+            {canManage && inspectManualEntry != null && (
+                <ManualInspector
+                    entry={inspectManualEntry}
+                    gameSlug={gameSlug}
+                    categorySlug={categorySlug}
+                    subcategoryDefKeys={subcategoryDefKeys}
+                    gameTimeLabel={gameTimeLabel}
+                    showMilliseconds={showMilliseconds}
+                    onClose={() => setInspectManualId(null)}
+                    onMutated={boardRefresh}
+                    onPrev={
+                        inspectManualIndex > 0
+                            ? () =>
+                                  setInspectManualId(
+                                      manualEntries[inspectManualIndex - 1]
+                                          .manualTimeId ?? null,
+                                  )
+                            : undefined
+                    }
+                    onNext={
+                        inspectManualIndex < manualEntries.length - 1
+                            ? () =>
+                                  setInspectManualId(
+                                      manualEntries[inspectManualIndex + 1]
+                                          .manualTimeId ?? null,
+                                  )
+                            : undefined
+                    }
+                />
+            )}
+            {canManage && selectedKeys.size > 0 && (
                 <BoardBulkBar
                     gameSlug={gameSlug}
                     categorySlug={categorySlug}
                     canSiteBan={canSiteBan}
                     subcategoryDefKeys={subcategoryDefKeys}
                     entries={entries}
-                    selectedRunIds={selectedRunIds}
+                    selectedKeys={selectedKeys}
                     onClear={clearSelection}
                     onMutated={handleBulkMutated}
                     busy={isRefetching}

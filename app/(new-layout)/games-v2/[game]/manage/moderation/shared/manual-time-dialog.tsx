@@ -24,8 +24,11 @@ interface Props {
     categoryId: number;
     categoryLabel?: string;
     subcategoryKey: string;
-    /** Present => edit an existing manual time (timing is then fixed). */
-    existing?: ManualTimeRow;
+    /** Present => edit an existing manual time (timing is then fixed).
+     * Only the fields the edit path actually reads — callers that don't
+     * hold a full ManualTimeRow (e.g. the board kebab, which adapts a
+     * LeaderboardEntry) can supply just these. */
+    existing?: Pick<ManualTimeRow, 'id' | 'timing' | 'timeMs' | 'evidenceUrl'>;
     onDone: () => void;
     onClose: () => void;
 }

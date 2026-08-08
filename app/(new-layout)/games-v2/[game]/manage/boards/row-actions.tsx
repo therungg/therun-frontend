@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useTransition } from 'react';
-import { toast } from 'react-toastify';
+import { useEffect, useRef, useState } from 'react';
 import Link from '~src/components/link';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type {
@@ -13,7 +12,7 @@ import type {
     UserEligibleRunRow,
 } from '../../../../../../types/moderation.types';
 import { usePopoverFocus } from '../../shared/use-popover-focus';
-import { applyVerdictsAction } from '../moderation/shared/actions/verdicts.action';
+import { RunActionDialog } from '../moderation/shared/run-action-dialog';
 import { AdjustDialog } from './adjust-dialog';
 import styles from './board-curation.module.scss';
 import { MoveDialog } from './move-dialog';
@@ -40,19 +39,16 @@ export interface RowActionsProps {
      * sites are unaffected. */
     canSiteBan?: boolean;
     /**
-     * True while `BoardCuration`'s exclude call for this row's Remove is in
-     * flight. Remove itself — the exclude call, the undo toast, the
-     * next-run slip — is owned by `BoardCuration`, not this component:
-     * a removed row has to keep rendering (from a frozen snapshot) even
-     * after a *sibling* row's own action reloads the board and this run
-     * drops out of the live roster data. If Remove lived here instead, a
-     * reload triggered by any other row's action (Approve, Move, Runner…,
-     * Adjust…) would unmount this component — and the slip with it — mid-
-     * flight. See `PendingRemoval`/`PendingRemovalCells` below, rendered by
-     * `BoardCuration` in this component's place once Remove succeeds.
+     * Fires after the shared Remove dialog's mutation lands. The dialog owns
+     * the removal itself (reason category, notify toggle, preview, min-10 —
+     * the same Remove as everywhere else); `BoardCuration` owns what happens
+     * to the ROW afterwards: it pins a frozen snapshot in place and offers
+     * the next-run slip, which must survive sibling-row reloads — see
+     * `PendingRemoval`/`PendingRemovalCells` below.
      */
-    removing: boolean;
-    onRemove: (reason: string) => void;
+    onRemoved: () => void;
+    /** Fires after the Remove undo toast's restore lands — unpins the row. */
+    onRemoveUndone: () => void;
     onMutated: () => void;
 }
 
@@ -69,8 +65,10 @@ export function primaryValueOf(
 
 /**
  * Time cell + quiet hover-revealed action cluster for one board-curation row
- * (Remove, Run… menu: Approve/Move/Adjust, Runner…). Rendered as a fragment
- * of two `<td>`s in place of `BoardCuration`'s old plain time cell.
+ * (Remove…, Run… menu: Approve/Move/Adjust, Runner…). Remove and Approve go
+ * through the shared `RunActionDialog` — identical validation, preview and
+ * undo to the board and every other surface. Rendered as a fragment of two
+ * `<td>`s in place of `BoardCuration`'s old plain time cell.
  */
 export function RowActions({
     row,
@@ -82,8 +80,8 @@ export function RowActions({
     timeMs,
     belowMinimum,
     canSiteBan = false,
-    removing,
-    onRemove,
+    onRemoved,
+    onRemoveUndone,
     onMutated,
 }: RowActionsProps) {
     const isGuest = row.userId == null;
@@ -94,7 +92,8 @@ export function RowActions({
     const menuRef = useRef<HTMLDivElement>(null);
     const [runnerOpen, setRunnerOpen] = useState(false);
     const [adjustOpen, setAdjustOpen] = useState(false);
-    const [isApproving, startApprove] = useTransition();
+    const [approveOpen, setApproveOpen] = useState(false);
+    const [removeOpen, setRemoveOpen] = useState(false);
 
     usePopoverFocus({
         open: menuOpen,
@@ -113,63 +112,14 @@ export function RowActions({
         return () => document.removeEventListener('mousedown', onDown);
     }, [menuOpen]);
 
-    const handleApprove = () => {
-        setMenuOpen(false);
-        startApprove(async () => {
-            const res = await applyVerdictsAction(
-                gameSlug,
-                'verify',
-                [row.runId],
-                'Approved from board curation',
-            );
-            if ('error' in res) {
-                toast.error(res.error);
-                return;
-            }
-            toast.success('Run approved.');
-            onMutated();
-        });
-    };
-
-    // ---- Remove (reason popover) ---------------------------------------
-    const [removeOpen, setRemoveOpen] = useState(false);
-    const [removeReason, setRemoveReason] = useState('');
-    const removeRootRef = useRef<HTMLDivElement>(null);
-    const removePanelRef = useRef<HTMLDivElement>(null);
-
-    usePopoverFocus({
-        open: removeOpen,
-        onClose: () => setRemoveOpen(false),
-        panelRef: removePanelRef,
-    });
-
-    useEffect(() => {
-        if (!removeOpen) return;
-        const onDown = (e: MouseEvent) => {
-            if (!removeRootRef.current?.contains(e.target as Node)) {
-                setRemoveOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', onDown);
-        return () => document.removeEventListener('mousedown', onDown);
-    }, [removeOpen]);
-
-    const confirmRemove = () => {
-        const trimmed = removeReason.trim();
-        if (trimmed.length === 0) return;
-        setRemoveOpen(false);
-        onRemove(trimmed);
-    };
-
     // ---- Move (dialog extracted to move-dialog.tsx) --------------------
     const [moveOpen, setMoveOpen] = useState(false);
 
-    // Mutual exclusion across the cluster: while any one of these row
-    // mutations is in flight (Remove's exclude call included, tracked by
-    // `BoardCuration` and handed down as `removing`), the other buttons are
-    // disabled too. Dialogs own their own pending states and block their own
-    // close, so `busy` only needs to cover what it directly protects here.
-    const busy = isApproving || removing;
+    const dialogTarget = {
+        kind: 'runs' as const,
+        runIds: [row.runId],
+        label: `${row.runnerName}'s run`,
+    };
 
     return (
         <>
@@ -188,75 +138,13 @@ export function RowActions({
             </td>
             <td className={styles.actionsCell}>
                 <div className={styles.actionCluster}>
-                    <div className={styles.menuRoot} ref={removeRootRef}>
-                        <button
-                            type="button"
-                            className={styles.actionBtn}
-                            aria-haspopup="dialog"
-                            aria-expanded={removeOpen}
-                            onClick={() => {
-                                if (removeOpen) {
-                                    setRemoveOpen(false);
-                                } else {
-                                    setRemoveReason('');
-                                    setRemoveOpen(true);
-                                }
-                            }}
-                            disabled={busy}
-                        >
-                            Remove
-                        </button>
-                        {removeOpen && (
-                            <div
-                                ref={removePanelRef}
-                                role="dialog"
-                                aria-modal="true"
-                                aria-label={`Remove ${row.runnerName}`}
-                                className={`${styles.menuPanel} ${styles.removePanel}`}
-                            >
-                                <label
-                                    htmlFor={`remove-reason-${row.runId}`}
-                                    className={styles.fieldLabel}
-                                >
-                                    Reason — required
-                                </label>
-                                <input
-                                    id={`remove-reason-${row.runId}`}
-                                    type="text"
-                                    className={styles.dialogInput}
-                                    value={removeReason}
-                                    onChange={(e) =>
-                                        setRemoveReason(e.target.value)
-                                    }
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                            e.preventDefault();
-                                            confirmRemove();
-                                        }
-                                    }}
-                                />
-                                <div className={styles.popoverActions}>
-                                    <button
-                                        type="button"
-                                        className={styles.slipAction}
-                                        onClick={() => setRemoveOpen(false)}
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className={styles.confirmBtn}
-                                        onClick={confirmRemove}
-                                        disabled={
-                                            removeReason.trim().length === 0
-                                        }
-                                    >
-                                        Remove
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                    <button
+                        type="button"
+                        className={styles.actionBtn}
+                        onClick={() => setRemoveOpen(true)}
+                    >
+                        Remove…
+                    </button>
                     <div className={styles.menuRoot} ref={menuRootRef}>
                         <button
                             type="button"
@@ -264,7 +152,6 @@ export function RowActions({
                             aria-haspopup="dialog"
                             aria-expanded={menuOpen}
                             onClick={() => setMenuOpen((v) => !v)}
-                            disabled={busy}
                         >
                             Run…
                         </button>
@@ -279,15 +166,17 @@ export function RowActions({
                                 <button
                                     type="button"
                                     className={styles.menuItem}
-                                    onClick={handleApprove}
+                                    onClick={() => {
+                                        setMenuOpen(false);
+                                        setApproveOpen(true);
+                                    }}
                                     disabled={
-                                        busy ||
                                         row.verificationStatus === 'verified'
                                     }
                                 >
                                     {row.verificationStatus === 'verified'
                                         ? 'Approved'
-                                        : 'Approve'}
+                                        : 'Approve…'}
                                 </button>
                                 <button
                                     type="button"
@@ -296,7 +185,6 @@ export function RowActions({
                                         setMenuOpen(false);
                                         setMoveOpen(true);
                                     }}
-                                    disabled={busy}
                                 >
                                     Move…
                                 </button>
@@ -307,7 +195,6 @@ export function RowActions({
                                         setMenuOpen(false);
                                         setAdjustOpen(true);
                                     }}
-                                    disabled={busy}
                                 >
                                     {isGuest ? 'Set time…' : 'Adjust…'}
                                 </button>
@@ -320,7 +207,6 @@ export function RowActions({
                                 type="button"
                                 className={styles.actionBtn}
                                 onClick={() => setRunnerOpen(true)}
-                                disabled={busy}
                             >
                                 Runner…
                             </button>
@@ -335,6 +221,33 @@ export function RowActions({
                     )}
                 </div>
             </td>
+
+            {removeOpen && (
+                <RunActionDialog
+                    gameSlug={gameSlug}
+                    verb="remove"
+                    target={dialogTarget}
+                    onDone={() => {
+                        setRemoveOpen(false);
+                        onRemoved();
+                    }}
+                    onClose={() => setRemoveOpen(false)}
+                    onUndoComplete={onRemoveUndone}
+                />
+            )}
+            {approveOpen && (
+                <RunActionDialog
+                    gameSlug={gameSlug}
+                    verb="approve"
+                    target={dialogTarget}
+                    onDone={() => {
+                        setApproveOpen(false);
+                        onMutated();
+                    }}
+                    onClose={() => setApproveOpen(false)}
+                    onUndoComplete={onMutated}
+                />
+            )}
 
             <MoveDialog
                 open={moveOpen}
@@ -376,15 +289,12 @@ export function RowActions({
  * A row `BoardCuration` has pinned in place after a successful Remove —
  * rendered from this frozen snapshot rather than the live roster data,
  * specifically so a *sibling* row's reload can't unmount it (or discard its
- * next-run slip) before the user has resolved it. See the `removing` doc on
+ * next-run slip) before the user has resolved it. See the `onRemoved` doc on
  * `RowActionsProps` above for why this can't live inside `RowActions`.
  */
 export interface PendingRemoval {
     row: LeaderboardRosterRow;
     timeMs: number | null;
-    /** The reason typed into the Remove popover for this row — reused
-     * as-is if the next-run slip's "Remove too" is taken. */
-    reason: string;
     nextRun: UserEligibleRunRow | null;
     nextRunLoading: boolean;
 }

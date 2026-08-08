@@ -28,17 +28,18 @@ import {
 // plain outer `const`s (which would still be in their TDZ when the factory
 // runs) — see variables-section.test.tsx for the same pattern.
 const mocks = vi.hoisted(() => ({
-    applyVerdictsAction: vi.fn(),
     moveRunAction: vi.fn(),
     toastSuccess: vi.fn(),
     toastError: vi.fn(),
     RunnerDialog: vi.fn().mockReturnValue(null),
     AdjustDialog: vi.fn().mockReturnValue(null),
+    /** Records every RunActionDialog render's props. */
+    dialogRender: vi.fn(),
+    /** The onUndoComplete captured at the stub's last Confirm — stands in
+     * for the real dialog's undo toast, which outlives the dialog. */
+    lastUndoComplete: { current: null as null | (() => void) },
 }));
 
-vi.mock('../moderation/shared/actions/verdicts.action', () => ({
-    applyVerdictsAction: mocks.applyVerdictsAction,
-}));
 vi.mock('../moderation/shared/actions/board-override.action', () => ({
     moveRunAction: mocks.moveRunAction,
 }));
@@ -50,6 +51,39 @@ vi.mock('./runner-dialog', () => ({
 }));
 vi.mock('./adjust-dialog', () => ({
     AdjustDialog: mocks.AdjustDialog,
+}));
+// The shared RunActionDialog performs the remove/approve mutations itself
+// and has its own suite — here a stub exposes the three callbacks so tests
+// assert RowActions' wiring: Confirm → onDone (capturing onUndoComplete the
+// way the real dialog's undo toast does), Cancel → onClose.
+vi.mock('../moderation/shared/run-action-dialog', () => ({
+    RunActionDialog: (props: {
+        verb: string;
+        gameSlug: string;
+        target: unknown;
+        onDone: () => void;
+        onClose: () => void;
+        onUndoComplete?: () => void;
+    }) => {
+        mocks.dialogRender(props);
+        return (
+            <div role="dialog" aria-label={`${props.verb} dialog`}>
+                <button
+                    type="button"
+                    onClick={() => {
+                        mocks.lastUndoComplete.current =
+                            props.onUndoComplete ?? null;
+                        props.onDone();
+                    }}
+                >
+                    Confirm {props.verb}
+                </button>
+                <button type="button" onClick={() => props.onClose()}>
+                    Cancel {props.verb}
+                </button>
+            </div>
+        );
+    },
 }));
 
 const CATEGORY: ResolvedCategory = {
@@ -108,7 +142,8 @@ function rosterRow(
 
 function renderRowActions(overrides: Partial<RowActionsProps> = {}) {
     const onMutated = vi.fn();
-    const onRemove = vi.fn();
+    const onRemoved = vi.fn();
+    const onRemoveUndone = vi.fn();
     const row = overrides.row ?? rosterRow({});
     const props: RowActionsProps = {
         row,
@@ -119,8 +154,8 @@ function renderRowActions(overrides: Partial<RowActionsProps> = {}) {
         gameSlug: 'some-game',
         timeMs: 20_000,
         belowMinimum: false,
-        removing: false,
-        onRemove,
+        onRemoved,
+        onRemoveUndone,
         onMutated,
         ...overrides,
     };
@@ -133,11 +168,12 @@ function renderRowActions(overrides: Partial<RowActionsProps> = {}) {
             </tbody>
         </table>,
     );
-    return { onMutated, onRemove, row: props.row };
+    return { onMutated, onRemoved, onRemoveUndone, row: props.row };
 }
 
 beforeEach(() => {
     vi.clearAllMocks();
+    mocks.lastUndoComplete.current = null;
 });
 
 afterEach(() => {
@@ -145,18 +181,18 @@ afterEach(() => {
 });
 
 describe('RowActions — cluster surface', () => {
-    it('shows Remove, Run… and Runner… for a registered user', () => {
+    it('shows Remove…, Run… and Runner… for a registered user', () => {
         renderRowActions();
 
-        expect(screen.getByRole('button', { name: 'Remove' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Remove…' })).toBeTruthy();
         expect(screen.getByRole('button', { name: 'Run…' })).toBeTruthy();
         expect(screen.getByRole('button', { name: 'Runner…' })).toBeTruthy();
     });
 
-    it('shows only Remove and Run… for a guest row (no Runner…)', () => {
+    it('shows only Remove… and Run… for a guest row (no Runner…)', () => {
         renderRowActions({ row: rosterRow({ userId: null }) });
 
-        expect(screen.getByRole('button', { name: 'Remove' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Remove…' })).toBeTruthy();
         expect(screen.getByRole('button', { name: 'Run…' })).toBeTruthy();
         expect(screen.queryByRole('button', { name: 'Runner…' })).toBeNull();
     });
@@ -169,122 +205,119 @@ describe('RowActions — cluster surface', () => {
             expect(screen.queryByRole('button', { name })).toBeNull();
         }
     });
-
-    it('disables the whole cluster while a removal is in flight for this row', () => {
-        renderRowActions({ removing: true });
-
-        for (const name of ['Remove', 'Run…', 'Runner…']) {
-            expect(
-                (screen.getByRole('button', { name }) as HTMLButtonElement)
-                    .disabled,
-            ).toBe(true);
-        }
-    });
 });
 
-describe('RowActions — Remove', () => {
-    it('opens a reason popover, keeps confirm disabled until a reason is entered, and calls onRemove with the trimmed reason', () => {
-        const { onRemove } = renderRowActions();
+describe('RowActions — Remove (shared dialog)', () => {
+    it('opens the shared dialog with verb remove targeting this run', () => {
+        renderRowActions();
 
-        fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
-
-        const panel = screen.getByRole('dialog', { name: 'Remove runner' });
-        const confirmBtn = within(panel).getByRole('button', {
-            name: 'Remove',
-        }) as HTMLButtonElement;
-        expect(confirmBtn.disabled).toBe(true);
-
-        fireEvent.change(screen.getByLabelText('Reason — required'), {
-            target: { value: '  spam  ' },
-        });
-        expect(confirmBtn.disabled).toBe(false);
-
-        fireEvent.click(confirmBtn);
-
-        expect(onRemove).toHaveBeenCalledWith('spam');
-        expect(mocks.applyVerdictsAction).not.toHaveBeenCalled();
-        expect(mocks.moveRunAction).not.toHaveBeenCalled();
         expect(
-            screen.queryByRole('dialog', { name: 'Remove runner' }),
+            screen.queryByRole('dialog', { name: 'remove dialog' }),
+        ).toBeNull();
+        fireEvent.click(screen.getByRole('button', { name: 'Remove…' }));
+
+        expect(
+            screen.getByRole('dialog', { name: 'remove dialog' }),
+        ).toBeTruthy();
+        const props =
+            mocks.dialogRender.mock.calls[
+                mocks.dialogRender.mock.calls.length - 1
+            ][0];
+        expect(props.verb).toBe('remove');
+        expect(props.gameSlug).toBe('some-game');
+        expect(props.target).toEqual({
+            kind: 'runs',
+            runIds: [1],
+            label: "runner's run",
+        });
+    });
+
+    it('fires onRemoved when the dialog lands, and closes it', () => {
+        const { onRemoved, onMutated } = renderRowActions();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Remove…' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Confirm remove' }));
+
+        expect(onRemoved).toHaveBeenCalledTimes(1);
+        expect(onMutated).not.toHaveBeenCalled();
+        expect(
+            screen.queryByRole('dialog', { name: 'remove dialog' }),
         ).toBeNull();
     });
 
-    it('confirms on Enter in the reason input', () => {
-        const { onRemove } = renderRowActions();
+    it("routes the dialog's undo back through onRemoveUndone", () => {
+        const { onRemoveUndone } = renderRowActions();
 
-        fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
-        const input = screen.getByLabelText('Reason — required');
-        fireEvent.change(input, { target: { value: 'spam' } });
-        fireEvent.keyDown(input, { key: 'Enter' });
+        fireEvent.click(screen.getByRole('button', { name: 'Remove…' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Confirm remove' }));
 
-        expect(onRemove).toHaveBeenCalledWith('spam');
-        expect(
-            screen.queryByRole('dialog', { name: 'Remove runner' }),
-        ).toBeNull();
+        // The real dialog's undo toast outlives the dialog — the stub
+        // captured onUndoComplete at Confirm, exactly like the toast does.
+        expect(mocks.lastUndoComplete.current).toBeTruthy();
+        mocks.lastUndoComplete.current?.();
+        expect(onRemoveUndone).toHaveBeenCalledTimes(1);
     });
 
-    it('Escape closes the popover without calling onRemove', () => {
-        const { onRemove } = renderRowActions();
+    it('cancelling the dialog fires nothing', () => {
+        const { onRemoved } = renderRowActions();
 
-        fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
-        fireEvent.change(screen.getByLabelText('Reason — required'), {
-            target: { value: 'spam' },
-        });
-        fireEvent.keyDown(document, { key: 'Escape' });
+        fireEvent.click(screen.getByRole('button', { name: 'Remove…' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Cancel remove' }));
 
         expect(
-            screen.queryByRole('dialog', { name: 'Remove runner' }),
+            screen.queryByRole('dialog', { name: 'remove dialog' }),
         ).toBeNull();
-        expect(onRemove).not.toHaveBeenCalled();
+        expect(onRemoved).not.toHaveBeenCalled();
     });
 });
 
 describe('RowActions — Run… menu', () => {
-    it('lists Approve/Move…/Adjust… for a registered user', () => {
+    it('lists Approve…/Move…/Adjust… for a registered user', () => {
         renderRowActions({ row: rosterRow({ verificationStatus: 'pending' }) });
         fireEvent.click(screen.getByRole('button', { name: 'Run…' }));
 
-        expect(screen.getByRole('button', { name: 'Approve' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Approve…' })).toBeTruthy();
         expect(screen.getByRole('button', { name: 'Move…' })).toBeTruthy();
         expect(screen.getByRole('button', { name: 'Adjust…' })).toBeTruthy();
         expect(screen.queryByRole('button', { name: 'Set time…' })).toBeNull();
     });
 
-    it('lists Approve/Move…/Set time… for a guest row', () => {
+    it('lists Approve…/Move…/Set time… for a guest row', () => {
         renderRowActions({
             row: rosterRow({ userId: null, verificationStatus: 'pending' }),
         });
         fireEvent.click(screen.getByRole('button', { name: 'Run…' }));
 
-        expect(screen.getByRole('button', { name: 'Approve' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Approve…' })).toBeTruthy();
         expect(screen.getByRole('button', { name: 'Move…' })).toBeTruthy();
         expect(screen.getByRole('button', { name: 'Set time…' })).toBeTruthy();
         expect(screen.queryByRole('button', { name: 'Adjust…' })).toBeNull();
     });
 
-    it('calls applyVerdictsAction on Approve and closes the menu', async () => {
-        mocks.applyVerdictsAction.mockResolvedValue({
-            ok: true,
-            result: { affectedRunCount: 1, affectedLeaderboards: [] },
-        });
+    it('opens the shared dialog with verb approve and fires onMutated on Confirm', () => {
         const { onMutated } = renderRowActions({
             row: rosterRow({ verificationStatus: 'pending' }),
         });
 
         fireEvent.click(screen.getByRole('button', { name: 'Run…' }));
-        fireEvent.click(screen.getByRole('button', { name: 'Approve' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Approve…' }));
 
-        await waitFor(() =>
-            expect(mocks.applyVerdictsAction).toHaveBeenCalledWith(
-                'some-game',
-                'verify',
-                [1],
-                'Approved from board curation',
-            ),
-        );
-        await waitFor(() => expect(onMutated).toHaveBeenCalled());
-        expect(mocks.toastSuccess).toHaveBeenCalled();
+        // Opening the dialog also closes the Run… menu.
         expect(screen.queryByRole('button', { name: 'Move…' })).toBeNull();
+        const props =
+            mocks.dialogRender.mock.calls[
+                mocks.dialogRender.mock.calls.length - 1
+            ][0];
+        expect(props.verb).toBe('approve');
+        expect(props.target.runIds).toEqual([1]);
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Confirm approve' }),
+        );
+        expect(onMutated).toHaveBeenCalledTimes(1);
+        expect(
+            screen.queryByRole('dialog', { name: 'approve dialog' }),
+        ).toBeNull();
     });
 
     it('disables Approve and relabels it "Approved" when already verified', () => {
@@ -297,25 +330,12 @@ describe('RowActions — Run… menu', () => {
             name: 'Approved',
         }) as HTMLButtonElement;
         expect(approveBtn.disabled).toBe(true);
-        expect(screen.queryByRole('button', { name: 'Approve' })).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Approve…' })).toBeNull();
 
         fireEvent.click(approveBtn);
-        expect(mocks.applyVerdictsAction).not.toHaveBeenCalled();
-    });
-
-    it('toasts an error and keeps the row usable when Approve fails', async () => {
-        mocks.applyVerdictsAction.mockResolvedValue({ error: 'nope' });
-        const { onMutated } = renderRowActions({
-            row: rosterRow({ verificationStatus: 'pending' }),
-        });
-
-        fireEvent.click(screen.getByRole('button', { name: 'Run…' }));
-        fireEvent.click(screen.getByRole('button', { name: 'Approve' }));
-
-        await waitFor(() =>
-            expect(mocks.toastError).toHaveBeenCalledWith('nope'),
-        );
-        expect(onMutated).not.toHaveBeenCalled();
+        expect(
+            screen.queryByRole('dialog', { name: 'approve dialog' }),
+        ).toBeNull();
     });
 });
 
@@ -535,7 +555,6 @@ function pendingRemoval(overrides: Partial<PendingRemoval>): PendingRemoval {
     return {
         row: rosterRow({}),
         timeMs: 20_000,
-        reason: 'Board curation during setup',
         nextRun: null,
         nextRunLoading: false,
         ...overrides,

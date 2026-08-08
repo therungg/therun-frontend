@@ -1,9 +1,8 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { Dropdown } from 'react-bootstrap';
-import { ClockHistory, ThreeDotsVertical } from 'react-bootstrap-icons';
+import { ThreeDotsVertical } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import type { ModVerb } from '~app/(new-layout)/games-v2/[game]/manage/moderation/shared/action-model';
 import { RunActionDialog } from '~app/(new-layout)/games-v2/[game]/manage/moderation/shared/run-action-dialog';
@@ -14,78 +13,59 @@ import {
 } from '~src/actions/run-user-actions.action';
 import Link from '~src/components/link';
 import { buildSubmitHref } from '~src/lib/board-url';
-import type {
-    LeaderboardEntry,
-    ResolvedCategory,
-    VariableRow,
-} from '../../../../../types/leaderboards.types';
+import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
 import type { HistoryEvent } from '../../../../../types/moderation.types';
-import { AdjustDialog } from '../manage/boards/adjust-dialog';
-import { MoveDialog } from '../manage/boards/move-dialog';
-import { RunnerDialog } from '../manage/boards/runner-dialog';
-import { markRunsAction } from '../manage/moderation/shared/actions/marks.action';
 import { isSameRunner } from '../shared/is-same-runner';
 import {
     SelfRunVerdictDialog,
     useSelfRunVerdict,
 } from '../shared/self-run-verdict';
 import { buildSubcategoryKey } from '../submit/subcategory-key';
-import { loadModBoardContextAction } from './actions/load-mod-board-context.action';
-import { HideIdentityDialog } from './hide-identity-dialog';
-import { entryToRosterRow } from './mod-row';
 import { HistoryDialog, ReasonDialog } from './row-action-dialogs';
 import styles from './row-actions-menu.module.scss';
+
+// Shared react-bootstrap Dropdown popper config for the row kebabs. `fixed`
+// so the panel escapes the table wrapper's overflow; `adaptive: false`
+// because Popper's adaptive mode anchors a fixed-strategy popper against the
+// wrong offset parent and parks it in the viewport corner. Non-adaptive emits
+// plain viewport top/left (and, with gpuAcceleration off, no transform for a
+// CSS animation to fight).
+const MENU_POPPER = {
+    strategy: 'fixed' as const,
+    modifiers: [
+        {
+            name: 'computeStyles',
+            options: { adaptive: false, gpuAcceleration: false },
+        },
+    ],
+};
 
 interface Props {
     entry: LeaderboardEntry;
     sessionUsername: string | null;
-    canManage?: boolean;
-    /** Admins only — shows RunnerDialog's "Entire site" scope. */
-    canSiteBan?: boolean;
     gameSlug: string;
     /** This row's own category (a board is single-category). */
     categorySlug: string;
     /** Subcategory-role variable names, for building this row's own subcategory key from `entry.variables`. */
     subcategoryDefKeys: string[];
-    /** "Select all runs by …" — the kebab's shortcut to the single-runner bulk-bar state. Omitted when the viewer can't manage runs. */
-    onSelectRunner?: () => void;
 }
 
 type ModalKind = 'report' | 'appeal' | 'history' | null;
-type ModDialogKind = 'move' | 'adjust' | 'runner' | 'hide-identity';
 
-interface ModBoardContext {
-    gameDisplay: string;
-    categories: ResolvedCategory[];
-    variables: VariableRow[];
-}
-
+// Viewer / self kebab for a board row: run history, report, and the runner's
+// own self-service verbs. Moderator actions are NOT here — a mod opens the
+// run inspector from the row's direct Moderate button instead.
 export function RowActionsMenu({
     entry,
     sessionUsername,
-    canManage,
-    canSiteBan = false,
     gameSlug,
     categorySlug,
     subcategoryDefKeys,
-    onSelectRunner,
 }: Props) {
-    const router = useRouter();
     const runId = entry.runId ?? null;
     const loggedIn = !!sessionUsername;
     const isOwn = loggedIn && isSameRunner(entry.runnerName, sessionUsername);
     const isRejected = entry.verificationStatus === 'rejected';
-    // Provenance cue (design doc §F / mocks fig. 1): a trailing-cell marker
-    // on rows with public moderation history, opening this same
-    // HistoryDialog. The paginated LeaderboardEntry carries no explicit
-    // "has history" flag (board-override/move don't change any field this
-    // list reads), so — per the workstream's own fallback guidance — this
-    // uses the one signal that's actually available without a per-row
-    // fetch: a `rejected` verdict is itself a history event, so any
-    // rejected run that's visible at all is guaranteed to have at least one
-    // entry. Manual-time rows (no runId) can't open this dialog at all, so
-    // they're excluded regardless of status.
-    const hasKnownHistory = runId != null && isRejected;
     // The entry's own subcategory, not the board's active filter — a
     // "combined" or filtered view can show entries from other slices.
     const entrySubcategoryKey = buildSubcategoryKey(
@@ -102,79 +82,16 @@ export function RowActionsMenu({
     });
 
     const [modal, setModal] = useState<ModalKind>(null);
-    const [modVerb, setModVerb] = useState<ModVerb | null>(null);
     const [reason, setReason] = useState('');
     const [history, setHistory] = useState<HistoryEvent[] | null>(null);
     const [pending, startTransition] = useTransition();
     const selfVerdict = useSelfRunVerdict();
 
-    // Console-parity mod dialogs (Move/Adjust/Runner) — their board context
-    // (categories + variable defs) loads lazily on first open and is cached
-    // for the page's lifetime, so the public payload stays visitor-sized.
-    const [modCtx, setModCtx] = useState<ModBoardContext | null>(null);
-    const [modDialog, setModDialog] = useState<ModDialogKind | null>(null);
-    const [_ctxPending, startCtxLoad] = useTransition();
-    const [_markPending, startMark] = useTransition();
-
-    // Manual-time entries have no finished_run to act on.
+    // Manual-time entries have no finished_run and no viewer-facing menu
+    // items: mods reach moderation through the row's direct Moderate button
+    // (which opens the set-time inspector), and the time cell already links
+    // to the set-time detail page. So the kebab has nothing to show.
     if (runId == null) return null;
-
-    const rosterRow = entryToRosterRow(entry, entrySubcategoryKey);
-    const modCategory =
-        modCtx?.categories.find((c) => c.name === categorySlug) ?? null;
-
-    const openModDialog = (kind: ModDialogKind) => {
-        if (modCtx != null) {
-            if (modCategory == null) {
-                toast.error("Could not resolve this board's category.");
-                return;
-            }
-            setModDialog(kind);
-            return;
-        }
-        startCtxLoad(async () => {
-            const res = await loadModBoardContextAction(gameSlug);
-            if ('error' in res) {
-                toast.error(res.error);
-                return;
-            }
-            const ctx = {
-                gameDisplay: res.gameDisplay,
-                categories: res.categories,
-                variables: res.variables,
-            };
-            if (!ctx.categories.some((c) => c.name === categorySlug)) {
-                setModCtx(ctx);
-                toast.error("Could not resolve this board's category.");
-                return;
-            }
-            setModCtx(ctx);
-            setModDialog(kind);
-        });
-    };
-
-    const markForLater = () => {
-        startMark(async () => {
-            const res = await markRunsAction(gameSlug, [runId], true);
-            if ('error' in res) {
-                toast.error(res.error);
-                return;
-            }
-            toast.success(
-                "Marked for later — it's in the console's marked pile.",
-            );
-        });
-    };
-
-    const modTimeMs =
-        modCategory?.primaryTiming === 'gt'
-            ? (rosterRow?.gameTime ?? null)
-            : (rosterRow?.time ?? null);
-
-    const onModMutated = () => {
-        setModDialog(null);
-        router.refresh();
-    };
 
     const close = () => {
         setModal(null);
@@ -225,17 +142,6 @@ export function RowActionsMenu({
 
     return (
         <>
-            {hasKnownHistory && (
-                <button
-                    type="button"
-                    className={styles.provMarker}
-                    onClick={openHistory}
-                    aria-label="This run has moderation history — view history"
-                    title="Has moderation history — view history"
-                >
-                    <ClockHistory size={14} aria-hidden />
-                </button>
-            )}
             <Dropdown align="end">
                 <Dropdown.Toggle
                     as="button"
@@ -249,30 +155,7 @@ export function RowActionsMenu({
                 </Dropdown.Toggle>
                 <Dropdown.Menu
                     className={styles.menu}
-                    // `fixed` so the panel escapes the table wrapper's
-                    // overflow. `adaptive: false` because Popper's adaptive
-                    // mode anchors with `inset: auto 0 0 auto` and expresses
-                    // the real offset as a delta measured against
-                    // `getOffsetParent(popper).clientWidth/clientHeight` —
-                    // and for a fixed-strategy popper that offsetParent is
-                    // not the box the browser resolves `right/bottom: 0`
-                    // against. The two disagreed, parking the menu in the
-                    // viewport corner instead of beside its toggle.
-                    // Non-adaptive emits plain viewport `top`/`left`
-                    // (and, with gpuAcceleration off, no transform at all,
-                    // so no CSS animation can fight it for the property).
-                    popperConfig={{
-                        strategy: 'fixed',
-                        modifiers: [
-                            {
-                                name: 'computeStyles',
-                                options: {
-                                    adaptive: false,
-                                    gpuAcceleration: false,
-                                },
-                            },
-                        ],
-                    }}
+                    popperConfig={MENU_POPPER}
                 >
                     <Dropdown.Item
                         as="button"
@@ -338,180 +221,8 @@ export function RowActionsMenu({
                             </Dropdown.Item>
                         </>
                     )}
-                    {canManage && (
-                        <>
-                            <Dropdown.Divider className={styles.menuDivider} />
-                            <Dropdown.Header className={styles.menuHeader}>
-                                Moderator
-                            </Dropdown.Header>
-                            <Dropdown.Item
-                                as="button"
-                                type="button"
-                                className={styles.item}
-                                onClick={() => setModVerb('approve')}
-                            >
-                                Verify run
-                            </Dropdown.Item>
-                            <Dropdown.Item
-                                as="button"
-                                type="button"
-                                className={`${styles.item} ${styles.danger}`}
-                                onClick={() => setModVerb('remove')}
-                            >
-                                Remove run…
-                            </Dropdown.Item>
-                            {isRejected && (
-                                <Dropdown.Item
-                                    as="button"
-                                    type="button"
-                                    className={styles.item}
-                                    onClick={() => setModVerb('restore')}
-                                >
-                                    Restore run
-                                </Dropdown.Item>
-                            )}
-                            <Dropdown.Item
-                                as="button"
-                                type="button"
-                                className={styles.item}
-                                onClick={() => openModDialog('move')}
-                            >
-                                Move…
-                            </Dropdown.Item>
-                            <Dropdown.Item
-                                as="button"
-                                type="button"
-                                className={styles.item}
-                                onClick={() => openModDialog('adjust')}
-                            >
-                                {entry.userId == null
-                                    ? 'Set time…'
-                                    : 'Adjust time…'}
-                            </Dropdown.Item>
-                            {entry.userId != null && (
-                                <>
-                                    <Dropdown.Item
-                                        as="button"
-                                        type="button"
-                                        className={styles.item}
-                                        onClick={() => openModDialog('runner')}
-                                    >
-                                        Runner…
-                                    </Dropdown.Item>
-                                    <Dropdown.Item
-                                        as={Link}
-                                        className={styles.item}
-                                        href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${entry.userId}?from=board`}
-                                    >
-                                        View runner page
-                                    </Dropdown.Item>
-                                </>
-                            )}
-                            {/* Anonymize (design doc §C). Offered for every
-                                row, including already-anonymized ones — a
-                                run-scoped mask can still be widened to the
-                                whole runner, and the dialog explains which
-                                scopes need an account. */}
-                            <Dropdown.Item
-                                as="button"
-                                type="button"
-                                className={styles.item}
-                                onClick={() => openModDialog('hide-identity')}
-                            >
-                                Hide identity…
-                            </Dropdown.Item>
-                            <Dropdown.Item
-                                as="button"
-                                type="button"
-                                className={styles.item}
-                                onClick={markForLater}
-                            >
-                                Mark for later
-                            </Dropdown.Item>
-                            {onSelectRunner && (
-                                <Dropdown.Item
-                                    as="button"
-                                    type="button"
-                                    className={styles.item}
-                                    onClick={onSelectRunner}
-                                >
-                                    Select all runs by {entry.runnerName}
-                                </Dropdown.Item>
-                            )}
-                        </>
-                    )}
                 </Dropdown.Menu>
             </Dropdown>
-
-            {modCtx != null && modCategory != null && rosterRow != null && (
-                <>
-                    <MoveDialog
-                        open={modDialog === 'move'}
-                        onClose={() => setModDialog(null)}
-                        row={rosterRow}
-                        category={modCategory}
-                        categories={modCtx.categories}
-                        variables={modCtx.variables}
-                        subcategoryKey={entrySubcategoryKey}
-                        gameSlug={gameSlug}
-                        onMutated={onModMutated}
-                    />
-                    <AdjustDialog
-                        open={modDialog === 'adjust'}
-                        onClose={() => setModDialog(null)}
-                        row={rosterRow}
-                        category={modCategory}
-                        gameSlug={gameSlug}
-                        subcategoryKey={entrySubcategoryKey}
-                        timeMs={modTimeMs}
-                        onMutated={onModMutated}
-                    />
-                    <HideIdentityDialog
-                        open={modDialog === 'hide-identity'}
-                        onClose={() => setModDialog(null)}
-                        onDone={onModMutated}
-                        gameSlug={gameSlug}
-                        gameDisplay={modCtx.gameDisplay}
-                        runnerName={entry.runnerName}
-                        runId={runId}
-                        userId={entry.userId ?? null}
-                        categoryId={modCategory.id}
-                        categoryDisplay={modCategory.display}
-                        subcategoryKey={entrySubcategoryKey}
-                    />
-                    {rosterRow.userId != null && (
-                        <RunnerDialog
-                            open={modDialog === 'runner'}
-                            onClose={() => setModDialog(null)}
-                            row={rosterRow}
-                            category={modCategory}
-                            variables={modCtx.variables}
-                            gameSlug={gameSlug}
-                            subcategoryKey={entrySubcategoryKey}
-                            canSiteBan={canSiteBan}
-                            dossierFrom="board"
-                            onMutated={onModMutated}
-                        />
-                    )}
-                </>
-            )}
-
-            {modVerb && (
-                <RunActionDialog
-                    gameSlug={gameSlug}
-                    verb={modVerb}
-                    target={{
-                        kind: 'runs',
-                        runIds: [runId],
-                        label: `${entry.runnerName}'s run`,
-                    }}
-                    onDone={() => {
-                        setModVerb(null);
-                        router.refresh();
-                    }}
-                    onClose={() => setModVerb(null)}
-                />
-            )}
 
             <ReasonDialog
                 open={modal === 'report'}

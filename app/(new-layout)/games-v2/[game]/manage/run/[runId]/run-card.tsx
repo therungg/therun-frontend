@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import Link from '~src/components/link';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { formatRunDate } from '~src/lib/format-run-date';
 import type { RunDetail } from '../../../../../../../types/leaderboards.types';
@@ -13,16 +14,17 @@ import styles from './run-card.module.scss';
 interface Props {
     run: RunDetail;
     gameSlug: string;
-    canExcludeUsers: boolean;
 }
 
-export function RunCard({ run, gameSlug, canExcludeUsers }: Props) {
+// Mirrors the run inspector's footer: run-scoped verdicts only (Verify /
+// Restore / Remove), state-driven. Runner-scoped actions (ban, anonymize)
+// are deliberately NOT here — they require clicking through to the runner
+// page, same rule the board drawer follows.
+export function RunCard({ run, gameSlug }: Props) {
     const router = useRouter();
     const [modVerb, setModVerb] = useState<ModVerb | null>(null);
     const isRejected = run.verificationStatus === 'rejected';
     const isVerified = run.verificationStatus === 'verified';
-    const canExcludeThisRunner =
-        canExcludeUsers && !run.isGuest && run.userId != null;
 
     return (
         <section className={styles.card}>
@@ -111,14 +113,13 @@ export function RunCard({ run, gameSlug, canExcludeUsers }: Props) {
                             Restore run
                         </button>
                     )}
-                    {canExcludeThisRunner && run.userId != null && (
-                        <button
-                            type="button"
-                            className="btn btn-sm btn-outline-danger"
-                            onClick={() => setModVerb('ban')}
+                    {!run.isGuest && run.userId != null && (
+                        <Link
+                            className="btn btn-sm btn-outline-secondary ms-auto"
+                            href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${run.userId}`}
                         >
-                            Ban runner…
-                        </button>
+                            Runner page →
+                        </Link>
                     )}
                 </div>
             </div>
@@ -127,22 +128,11 @@ export function RunCard({ run, gameSlug, canExcludeUsers }: Props) {
                 <RunActionDialog
                     gameSlug={gameSlug}
                     verb={modVerb}
-                    target={
-                        modVerb === 'ban'
-                            ? {
-                                  kind: 'runner',
-                                  runnerId: run.userId as number,
-                                  runnerName: run.runnerName,
-                                  categoryId: run.categoryId,
-                                  categoryDisplay: run.categoryDisplay,
-                                  gameDisplay: run.gameDisplay,
-                              }
-                            : {
-                                  kind: 'runs',
-                                  runIds: [run.runId],
-                                  label: `${run.runnerName}'s run`,
-                              }
-                    }
+                    target={{
+                        kind: 'runs',
+                        runIds: [run.runId],
+                        label: `${run.runnerName}'s run`,
+                    }}
                     onDone={() => {
                         setModVerb(null);
                         router.refresh();

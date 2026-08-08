@@ -378,12 +378,6 @@ export function BoardCuration({
     const [pendingRemovals, setPendingRemovals] = useState<
         Map<number, PendingRemoval>
     >(new Map());
-    // Rows whose exclude call (the mutation that produces the entry above)
-    // is currently in flight — used only to disable that row's action
-    // cluster while it's uncertain whether Remove succeeded.
-    const [removingRunIds, setRemovingRunIds] = useState<Set<number>>(
-        new Set(),
-    );
 
     // Runs currently clearing a board-override via the "moved here" tag's
     // (×) — tracked separately from `RowActions`' own busy state since
@@ -399,7 +393,6 @@ export function BoardCuration({
 
     useEffect(() => {
         setPendingRemovals(new Map());
-        setRemovingRunIds(new Set());
         setSelectedRunIds(new Set());
     }, [category?.id, subcategoryKey, boardPageIndex, showMarkedOnly]);
 
@@ -455,27 +448,15 @@ export function BoardCuration({
         });
     };
 
-    const startRemoval = (
+    // The removal itself (reason category, notify toggle, preview, undo
+    // toast) happens in `RowActions`' shared Remove dialog — this only owns
+    // what happens to the row afterwards: pin the frozen snapshot and look
+    // up the next-run slip.
+    const handleRemoved = (
         row: LeaderboardRosterRow,
         rowTimeMs: number | null,
-        reason: string,
     ) => {
-        setRemovingRunIds((prev) => new Set(prev).add(row.runId));
         (async () => {
-            const res = await excludeAction(game.name, {
-                runIds: [row.runId],
-                reason,
-            });
-            setRemovingRunIds((prev) => {
-                const next = new Set(prev);
-                next.delete(row.runId);
-                return next;
-            });
-            if ('error' in res) {
-                toast.error(res.error);
-                return;
-            }
-
             // A removed row can't be part of a bulk Accept/Ban selection
             // anymore — without this, a stale runId rides along in
             // `selectedRunIds` and a subsequent bulk action fires against a
@@ -494,21 +475,11 @@ export function BoardCuration({
                 next.set(row.runId, {
                     row,
                     timeMs: rowTimeMs,
-                    reason,
                     nextRun: null,
                     nextRunLoading: row.userId != null,
                 });
                 return next;
             });
-            fireUndoToast(
-                `Removed ${row.runnerName}.`,
-                () =>
-                    restoreRunsAction(game.name, [row.runId], 'Undo of remove'),
-                () => {
-                    dropPending(row.runId);
-                    reload();
-                },
-            );
 
             if (row.userId == null) {
                 // Guests have no userId to query eligible runs for — no slip
@@ -574,15 +545,13 @@ export function BoardCuration({
         reload();
     };
 
-    const handleRemoveToo = (
-        runId: number,
-        candidate: UserEligibleRunRow,
-        reason: string,
-    ) => {
+    const handleRemoveToo = (runId: number, candidate: UserEligibleRunRow) => {
         (async () => {
             const res = await excludeAction(game.name, {
                 runIds: [candidate.runId],
-                reason,
+                // Canned (min-10) — the follow-up removal of the same
+                // runner's replacement run from the next-run slip.
+                reason: "Removed together with the runner's removed run",
             });
             if ('error' in res) {
                 // Nothing changed — the original run's overlay entry is
@@ -1203,7 +1172,6 @@ export function BoardCuration({
                                                             handleRemoveToo(
                                                                 row.runId,
                                                                 pending.nextRun,
-                                                                pending.reason,
                                                             )
                                                         }
                                                     />
@@ -1221,16 +1189,18 @@ export function BoardCuration({
                                                         belowMinimum={
                                                             belowMinimum
                                                         }
-                                                        removing={removingRunIds.has(
-                                                            row.runId,
-                                                        )}
-                                                        onRemove={(reason) =>
-                                                            startRemoval(
+                                                        onRemoved={() =>
+                                                            handleRemoved(
                                                                 row,
                                                                 timeMs,
-                                                                reason,
                                                             )
                                                         }
+                                                        onRemoveUndone={() => {
+                                                            dropPending(
+                                                                row.runId,
+                                                            );
+                                                            reload();
+                                                        }}
                                                         onMutated={reload}
                                                         canSiteBan={canSiteBan}
                                                     />

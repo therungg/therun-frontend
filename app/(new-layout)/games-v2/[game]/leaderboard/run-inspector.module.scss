@@ -1,0 +1,176 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+// ============================================================
+// RunInspector — the board's single-run moderation drawer. Same
+// slide-in presentation + motion vocabulary as the console's
+// HistoryDrawer; content styling stays board-native.
+// ============================================================
+
+.backdrop {
+    z-index: calc(#{dt.$z-drawer} - 1);
+    background: rgba(0, 0, 0, 0.4);
+    @include board.board-overlay-enter(fade);
+}
+
+.panel {
+    z-index: dt.$z-drawer;
+    width: min(33rem, 100%);
+    @include board.board-overlay-enter(slide-right);
+}
+
+.runnerName {
+    font-weight: 600;
+    font-size: 1.05rem;
+}
+
+.timesLine {
+    display: flex;
+    gap: dt.$spacing-lg;
+    margin-top: dt.$spacing-sm;
+    font-variant-numeric: tabular-nums;
+}
+
+.timeLabel {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.factLink {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    text-decoration: none;
+    transition: color dt.$transition-fast;
+
+    &:hover {
+        color: var(--bs-primary);
+    }
+}
+
+.sectionTitle {
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--bs-secondary-color);
+    margin-bottom: dt.$spacing-md;
+}
+
+.historyList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+}
+
+.historyItem {
+    border-left: 2px solid var(--bs-border-color);
+    padding-left: dt.$spacing-md;
+}
+
+.historyEvent {
+    font-size: dt.$font-size-sm;
+    font-weight: 500;
+}
+
+.timelineUndo {
+    border: none;
+    background: none;
+    padding: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-primary);
+    white-space: nowrap;
+
+    &:hover:not(:disabled) {
+        text-decoration: underline;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
+
+.historyReason {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    font-style: italic;
+}
+
+// The drawer's primary action bar. The verbs are the whole point of the
+// inspector, so they read as full-size buttons that share the width evenly;
+// the trailing secondary control (More / Change time) stays compact.
+.actionBar {
+    display: flex;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-lg;
+    align-items: stretch;
+}
+
+.verbBtn {
+    flex: 1 1 0;
+    font-weight: 600;
+    padding-top: dt.$spacing-md;
+    padding-bottom: dt.$spacing-md;
+    white-space: nowrap;
+}
+
+// Secondary actions (Move / Adjust / Hide identity / Mark / Change time) —
+// always visible, never hidden behind a menu, but visually quieter than the
+// primary verbs above them.
+.secondaryBar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+    padding: 0 dt.$spacing-lg dt.$spacing-lg;
+}
+
+.secondaryBtn {
+    @include board.control-pill;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    background: none;
+    padding: dt.$spacing-xs dt.$spacing-md;
+    color: var(--bs-body-color);
+
+    &:hover {
+        border-color: var(--bs-primary);
+        color: var(--bs-primary);
+    }
+}
+
+.verbForm {
+    // The shared form brings its own body/footer padding.
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.verbFormTitle {
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    padding: dt.$spacing-md dt.$spacing-lg 0;
+}
+
+.stepBtn {
+    @include board.control-pill;
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    background: none;
+
+    kbd {
+        font-size: 0.7rem;
+        background: var(--bs-tertiary-bg);
+        color: var(--bs-secondary-color);
+        border-radius: 3px;
+        padding: 0 0.3em;
+    }
+
+    &:disabled {
+        opacity: 0.4;
+    }
+}
