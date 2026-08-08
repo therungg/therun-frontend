@@ -115,12 +115,6 @@ export function VariableSuggestions({
     return (
         <section className={styles.panel}>
             <h3 className={styles.title}>Suggested variables</h3>
-            <p className={styles.lede}>
-                Variables runners actually set, measured against each
-                category&rsquo;s own runners. Add one as a subcategory (its own
-                boards) or a filter — the observed values pre-fill so you can
-                merge spellings before it saves.
-            </p>
             <ul className={styles.list}>
                 {suggestions.map((s) => {
                     const buckets = bucketsFromValues(s.values);
