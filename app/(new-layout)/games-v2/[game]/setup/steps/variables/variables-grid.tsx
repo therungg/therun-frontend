@@ -215,6 +215,10 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                 categoryId: r.categoryId,
                 input: {
                     name: group.name,
+                    // Identify the row by its stable key, never re-derived from
+                    // the (editable) display name — otherwise a group with a
+                    // custom key drifts to a new key on every edit.
+                    nameNormalized: group.nameNormalized,
                     role,
                     values,
                     defaultValueIndex:
@@ -248,6 +252,7 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                     categoryId,
                     input: {
                         name: row?.name ?? group.name,
+                        nameNormalized: group.nameNormalized,
                         role: to,
                         values: row?.values ?? [],
                         defaultValueIndex:
@@ -291,6 +296,7 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                     categoryId: r.categoryId,
                     input: {
                         name: group.name,
+                        nameNormalized: group.nameNormalized,
                         role: existing?.role ?? group.dominantRole,
                         values: r.values,
                         defaultValueIndex: r.defaultIndex,
@@ -348,6 +354,7 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                     categoryId,
                     input: {
                         name: state.row.name,
+                        nameNormalized: group.nameNormalized,
                         role: state.role,
                         values: state.row.values,
                         defaultValueIndex: index,
@@ -386,6 +393,7 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                     categoryId: state.categoryId,
                     input: {
                         name: group.name,
+                        nameNormalized: group.nameNormalized,
                         role: state.role,
                         values: [
                             ...state.row.values,
@@ -441,6 +449,7 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                     categoryId: state.categoryId,
                     input: {
                         name: g.name,
+                        nameNormalized: g.nameNormalized,
                         role: state.role,
                         values: state.row.values,
                         defaultValueIndex: state.row.defaultValueIndex,
@@ -470,8 +479,12 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                 if (cat) slugs.push(cat.name);
                 return {
                     categoryId: state.categoryId,
+                    // Rename touches ONLY the display name — the key stays the
+                    // group's existing identity so the URL and stored runs
+                    // don't move.
                     input: {
                         name: nextName,
+                        nameNormalized: group.nameNormalized,
                         role: state.role,
                         values: state.row.values,
                         defaultValueIndex: state.row.defaultValueIndex,
@@ -512,6 +525,9 @@ export function VariablesGrid({ data }: { data: WizardData }) {
     /** New variable on every featured category, role fixed by its section. */
     const buildCreateChanges = (
         name: string,
+        // The key (nameNormalized) — the LiveSplit variable runs match on,
+        // derived from the display name at creation and then held stable.
+        key: string,
         role: VariableRoleId,
         // Each option is its canonical label followed by the other spellings
         // that resolve to it — the same [label, ...aliases] shape a stored row
@@ -533,6 +549,7 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                 categoryId: c.id,
                 input: {
                     name,
+                    nameNormalized: key,
                     role,
                     values: options,
                     defaultValueIndex:
@@ -549,6 +566,7 @@ export function VariablesGrid({ data }: { data: WizardData }) {
     // is additive and applies straight away.
     const createVariable = (
         name: string,
+        key: string,
         role: VariableRoleId,
         options: string[][],
         defaultIndex: number,
@@ -556,6 +574,7 @@ export function VariablesGrid({ data }: { data: WizardData }) {
     ) => {
         const built = buildCreateChanges(
             name,
+            key,
             role,
             options,
             defaultIndex,
@@ -792,10 +811,12 @@ export function VariablesGrid({ data }: { data: WizardData }) {
             ),
         onCreate: (
             name: string,
+            key: string,
             options: string[][],
             defaultIndex: number,
             categoryIds?: number[],
-        ) => createVariable(name, role, options, defaultIndex, categoryIds),
+        ) =>
+            createVariable(name, key, role, options, defaultIndex, categoryIds),
         suggestedNames,
     });
 
@@ -826,10 +847,17 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                     initialRaw={pendingAdd.raw}
                     initialSelectedIds={pendingAdd.selectedIds}
                     onCancel={() => setPendingAdd(null)}
-                    onCreate={(name, options, defaultIndex, categoryIds) => {
+                    onCreate={(
+                        name,
+                        key,
+                        options,
+                        defaultIndex,
+                        categoryIds,
+                    ) => {
                         setPendingAdd(null);
                         createVariable(
                             name,
+                            key,
                             pendingAdd.role,
                             options,
                             defaultIndex,
@@ -919,6 +947,7 @@ interface SectionProps {
     onDelete: (group: VariableGroup) => void;
     onCreate: (
         name: string,
+        key: string,
         options: string[][],
         defaultIndex: number,
         categoryIds?: number[],
@@ -1067,9 +1096,15 @@ function VariableSection({
                     categories={categories}
                     suggestedNames={suggestedNames}
                     onCancel={() => setAdding(false)}
-                    onCreate={(name, options, defaultIndex, categoryIds) => {
+                    onCreate={(
+                        name,
+                        key,
+                        options,
+                        defaultIndex,
+                        categoryIds,
+                    ) => {
                         setAdding(false);
-                        onCreate(name, options, defaultIndex, categoryIds);
+                        onCreate(name, key, options, defaultIndex, categoryIds);
                     }}
                 />
             ) : (
@@ -2019,6 +2054,7 @@ function AddVariableForm({
     onCancel: () => void;
     onCreate: (
         name: string,
+        key: string,
         options: string[][],
         defaultIndex: number,
         categoryIds: number[],
@@ -2059,11 +2095,16 @@ function AddVariableForm({
     // if the chosen one is edited away, which is the same rule the grid uses.
     const defaultIndex = Math.max(0, labels.indexOf(defaultOption));
 
-    const normalized = normalizeName(name);
+    // The name the moderator types is the DISPLAY name, shown above the board's
+    // subcategory buttons. The key (nameNormalized) is derived from it the same
+    // way an incoming LiveSplit variable is normalized, so runs match — and,
+    // once set, it stays put when the display name is later edited.
+    const normalizedName = normalizeName(name);
     const collision =
-        normalized.length > 0 && takenNames.has(normalized)
-            ? BUILT_IN_FILTERS.some((f) => normalizeName(f) === normalized) ||
-              RESERVED_NAMES.includes(normalized)
+        normalizedName.length > 0 && takenNames.has(normalizedName)
+            ? BUILT_IN_FILTERS.some(
+                  (f) => normalizeName(f) === normalizedName,
+              ) || RESERVED_NAMES.includes(normalizedName)
                 ? `${name.trim()} is already a built-in filter.`
                 : `${name.trim()} already exists on this board.`
             : null;
@@ -2072,9 +2113,9 @@ function AddVariableForm({
     // suggestions. Non-blocking — the moderator may know something the data
     // doesn't reflect yet (a new category, an upcoming rule).
     const offList =
-        normalized.length > 0 &&
+        normalizedName.length > 0 &&
         collision === null &&
-        !suggestedNames.has(normalized);
+        !suggestedNames.has(normalizedName);
 
     const ready =
         name.trim().length > 0 &&
@@ -2200,6 +2241,7 @@ function AddVariableForm({
                     onClick={() =>
                         onCreate(
                             name.trim(),
+                            normalizedName,
                             options,
                             defaultIndex,
                             selectedIds,

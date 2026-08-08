@@ -1,7 +1,6 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { slugifyVariableKey } from '~src/lib/variables/keys';
 import {
     capitalize,
     ROLE_LABEL,
@@ -14,7 +13,8 @@ import styles from './variables.module.scss';
 
 export interface VariableFormValues {
     name: string;
-    /** The URL/storage key, slugged from the name but independently editable. */
+    /** The key runs match on: derived from the name on create, the row's own
+     *  stable identity on edit (so the display name can change freely). */
     nameNormalized: string;
     role: 'subcategory' | 'filter';
     values: string[][];
@@ -79,11 +79,6 @@ export function VariableForm({
     error,
 }: Props) {
     const [name, setName] = useState(editing?.name ?? '');
-    // The key (web address) auto-follows the name via slug until the moderator
-    // edits it directly; after that it stays put. In edit mode it is locked to
-    // the row's existing identity (like the name), so it never auto-follows.
-    const [key, setKey] = useState(editing?.nameNormalized ?? '');
-    const [keyTouched, setKeyTouched] = useState(mode === 'edit');
     const [role, setRole] = useState<'subcategory' | 'filter'>(
         editing?.role ?? 'subcategory',
     );
@@ -108,19 +103,22 @@ export function VariableForm({
         }
     }, [buckets.length, defaultIdx]);
 
-    // Auto-suggest the key from the name until the moderator takes it over.
-    useEffect(() => {
-        if (!keyTouched) setKey(slugifyVariableKey(name));
-    }, [name, keyTouched]);
-
     const reservedLower = useMemo(
         () => new Set(reservedParams.map((r) => r.toLowerCase())),
         [reservedParams],
     );
-    // The stored key is the slug of whatever is in the key field.
-    const normalizedKey = useMemo(() => slugifyVariableKey(key), [key]);
+    // The name the moderator types is the DISPLAY name, shown above the board's
+    // subcategory buttons. The key (nameNormalized) is the LiveSplit variable
+    // runs match on: on create it is derived from the name; on edit it is the
+    // row's existing identity, held stable so the display name can change
+    // without moving the board or breaking matching.
+    const derivedKey = useMemo(() => normalizeName(name), [name]);
+    const nameNormalized =
+        mode === 'edit' ? (editing?.nameNormalized ?? derivedKey) : derivedKey;
     const keyCollidesReserved =
-        normalizedKey.length > 0 && reservedLower.has(normalizedKey);
+        mode === 'create' &&
+        nameNormalized.length > 0 &&
+        reservedLower.has(nameNormalized);
 
     const setBucket = (idx: number, patch: Partial<Bucket>) => {
         setBuckets((prev) =>
@@ -152,13 +150,13 @@ export function VariableForm({
             setLocalError('Name must be 64 characters or fewer.');
             return;
         }
-        if (!normalizedKey) {
-            setLocalError('Key must contain at least one letter or number.');
+        if (!nameNormalized) {
+            setLocalError('Name must contain at least one letter or number.');
             return;
         }
         if (keyCollidesReserved) {
             setLocalError(
-                `"${normalizedKey}" is reserved — pick a different key.`,
+                `"${nameNormalized}" is a reserved name — pick a different one.`,
             );
             return;
         }
@@ -196,7 +194,7 @@ export function VariableForm({
 
         onSubmit({
             name: cleanName,
-            nameNormalized: normalizedKey,
+            nameNormalized,
             role,
             values,
             defaultValueIndex: resolvedDefault,
@@ -221,47 +219,21 @@ export function VariableForm({
                     <input
                         id="var-name"
                         type="text"
-                        className="form-control form-control-sm"
+                        className={`form-control form-control-sm ${keyCollidesReserved ? 'is-invalid' : ''}`}
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="Solo or Co-op?"
-                        disabled={isBusy || mode === 'edit'}
+                        disabled={isBusy}
                     />
                     <small className="text-muted d-block">
-                        Shown to runners. Can be anything.
-                    </small>
-                </div>
-                <div className="col-md-6">
-                    <label htmlFor="var-key" className="form-label small mb-1">
-                        Key (web address)
-                    </label>
-                    <input
-                        id="var-key"
-                        type="text"
-                        className={`form-control form-control-sm font-monospace ${keyCollidesReserved ? 'is-invalid' : ''}`}
-                        value={key}
-                        onChange={(e) => {
-                            setKeyTouched(true);
-                            setKey(e.target.value);
-                        }}
-                        onBlur={() => setKey(normalizedKey)}
-                        placeholder="coop"
-                        disabled={isBusy || mode === 'edit'}
-                    />
-                    <small className="text-muted d-block">
-                        Used in the URL: <code>?{normalizedKey || '…'}=…</code>
-                        {mode === 'create' && (
-                            <>
-                                {' '}
-                                Auto-filled from the name — edit for a cleaner
-                                address. Can’t change later.
-                            </>
-                        )}
+                        {mode === 'edit'
+                            ? `Shown above the board's buttons. Runs still match on the LiveSplit variable “${nameNormalized}”.`
+                            : 'Shown above the board’s buttons — make it friendly. Runs match on the LiveSplit variable name.'}
                     </small>
                     {keyCollidesReserved && (
                         <small className="text-danger d-block">
-                            "{normalizedKey}" is reserved — pick a different
-                            key.
+                            “{nameNormalized}” is a reserved name — pick a
+                            different one.
                         </small>
                     )}
                 </div>

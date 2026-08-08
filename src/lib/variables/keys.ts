@@ -24,23 +24,6 @@ export function normalizeVariableName(raw: string): string {
     return raw.trim().toLowerCase().replace(/\s+/g, '').replace(/[=|]/g, '');
 }
 
-/**
- * Turns a display name into a clean URL/storage key: lowercases, collapses any
- * run of non-alphanumeric characters to a single hyphen, and trims hyphens.
- * e.g. "Solo or Co-op?" -> "solo-or-co-op". Unlike `normalizeVariableName`
- * (which only strips whitespace and `=`/`|`, leaving `?`, `-` etc. intact),
- * this produces a key safe to sit in a URL. The output is idempotent under
- * `normalizeVariableName`, so a key built here still matches the backend's
- * read-time run-variable normalization.
- */
-export function slugifyVariableKey(raw: string): string {
-    return raw
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-}
-
 /** Parses a `name=value|name=value` subcategory key into ordered pairs. */
 export function parseSubcategoryKey(key: string): SubcategoryKeyPart[] {
     if (!key) return [];

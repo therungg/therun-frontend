@@ -273,11 +273,12 @@ export function VariablesSection({
                 gameSlug,
                 gameId,
                 body: {
-                    // Upsert key is (gameId, categoryId, nameNormalized).
-                    // Use the editing row's identity, NOT the form's (the name
-                    // and key fields are both locked in edit mode anyway).
+                    // Upsert identity is (gameId, categoryId, nameNormalized):
+                    // keep the editing row's stable key so runs still match,
+                    // but take the NEW display name from the form — editing the
+                    // friendly label is the whole point.
                     categoryId: editing.categoryId,
-                    name: editing.name,
+                    name: values.name,
                     nameNormalized: editing.nameNormalized,
                     role: editing.role,
                     values: values.values,
