@@ -333,6 +333,28 @@ describe('VariablesGrid', () => {
         );
     });
 
+    it('removes one category from the group in a single click', () => {
+        renderGrid();
+        // Any% carries Platform; drop just that category, not the whole group.
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Remove Platform from Any%' }),
+        );
+        // Staged, not written — a subcategory change previews before it moves
+        // runs.
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Preview & apply' }),
+        );
+
+        // Any% is emptied → a null write; 120 Star is untouched and absent.
+        expect(previewVariableChangesAction).toHaveBeenCalledWith(
+            expect.objectContaining({
+                changes: [
+                    expect.objectContaining({ categoryId: 10, input: null }),
+                ],
+            }),
+        );
+    });
+
     it('deletes the group, behind a confirmation naming what goes', () => {
         renderGrid();
         fireEvent.click(

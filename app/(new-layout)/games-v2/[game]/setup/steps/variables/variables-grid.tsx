@@ -674,6 +674,42 @@ export function VariablesGrid({ data }: { data: WizardData }) {
         }
     };
 
+    /**
+     * Remove a whole category from the group in one gesture — stages every one
+     * of its currently-on options off. An emptied row is a removal
+     * (`buildChanges` writes `input: null`), so this is the discoverable
+     * equivalent of unticking the row cell by cell.
+     */
+    const removeCategory = (group: VariableGroup, categoryId: number) => {
+        const before = pending.get(group.nameNormalized) ?? [];
+        const offs = group.buckets
+            .filter((b) => cellOn(group, categoryId, b.key))
+            .map((b) => ({ categoryId, bucketKey: b.key, on: false }));
+        if (offs.length === 0) return;
+        const next = [...before, ...offs];
+        setPending((prev) => {
+            const map = new Map(prev);
+            map.set(group.nameNormalized, next);
+            return map;
+        });
+
+        // Filters apply on the click, like a cell toggle; subcategories stage
+        // and are previewed before they relocate any runs.
+        if (group.dominantRole === 'filter') {
+            applyNow(
+                group.nameNormalized,
+                group.name,
+                buildChanges(group, next),
+                () =>
+                    setPending((prev) => {
+                        const map = new Map(prev);
+                        map.set(group.nameNormalized, before);
+                        return map;
+                    }),
+            );
+        }
+    };
+
     /** Effective on/off for a cell, staged toggles included. */
     const cellOn = (
         group: VariableGroup,
@@ -738,6 +774,7 @@ export function VariablesGrid({ data }: { data: WizardData }) {
         takenNames,
         cellOn,
         onToggle: toggleCell,
+        onRemoveCategory: removeCategory,
         pendingCount,
         onDiscard: discard,
         onStage: (group: VariableGroup) =>
@@ -926,6 +963,7 @@ interface SectionProps {
         bucketKey: string,
         on: boolean,
     ) => void;
+    onRemoveCategory: (group: VariableGroup, categoryId: number) => void;
     pendingCount: (group: VariableGroup) => number;
     onDiscard: (group: VariableGroup) => void;
     onStage: (group: VariableGroup) => void;
@@ -967,6 +1005,7 @@ function VariableSection({
     takenNames,
     cellOn,
     onToggle,
+    onRemoveCategory,
     pendingCount,
     onDiscard,
     onStage,
@@ -1058,6 +1097,9 @@ function VariableSection({
                         onToggle={(categoryId, bucketKey, on) =>
                             onToggle(group, categoryId, bucketKey, on)
                         }
+                        onRemoveCategory={(categoryId) =>
+                            onRemoveCategory(group, categoryId)
+                        }
                         onApply={() => onStage(group)}
                         onDiscard={() => onDiscard(group)}
                         onConvert={(to) => onConvert(group, to)}
@@ -1130,6 +1172,7 @@ function VariablePalette({
     pendingCount,
     cellOn,
     onToggle,
+    onRemoveCategory,
     onApply,
     onDiscard,
     onConvert,
@@ -1152,6 +1195,7 @@ function VariablePalette({
     pendingCount: number;
     cellOn: (categoryId: number, bucketKey: string) => boolean;
     onToggle: (categoryId: number, bucketKey: string, on: boolean) => void;
+    onRemoveCategory: (categoryId: number) => void;
     onApply: () => void;
     onDiscard: () => void;
     onConvert: (to: VariableRoleId) => void;
@@ -1482,6 +1526,12 @@ function VariablePalette({
 
                                 {categories.map((c) => {
                                     const state = group.byCategory.get(c.id);
+                                    // Effective membership, staged edits
+                                    // included: a category is in the group when
+                                    // any of its options is on.
+                                    const inGroup = group.buckets.some((b) =>
+                                        cellOn(c.id, b.key),
+                                    );
                                     return (
                                         <tr key={c.id}>
                                             <th
@@ -1543,8 +1593,33 @@ function VariablePalette({
                                                 );
                                             })}
 
-                                            {/* Under the "+ Option" head. */}
-                                            <td />
+                                            {/* Under the "+ Option" head: the
+                                                row's own remove control, so a
+                                                category can leave the group in
+                                                one click instead of unticking
+                                                every option. */}
+                                            <td
+                                                className={styles.rowRemoveCell}
+                                            >
+                                                {inGroup && (
+                                                    <button
+                                                        type="button"
+                                                        className={
+                                                            styles.rowRemove
+                                                        }
+                                                        disabled={busy}
+                                                        title={`Remove ${group.name} from ${c.display}`}
+                                                        aria-label={`Remove ${group.name} from ${c.display}`}
+                                                        onClick={() =>
+                                                            onRemoveCategory(
+                                                                c.id,
+                                                            )
+                                                        }
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                )}
+                                            </td>
 
                                             {showsDefaultColumn && (
                                                 <td
