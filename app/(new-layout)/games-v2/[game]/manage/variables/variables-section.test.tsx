@@ -82,7 +82,7 @@ async function openCreateFormAndFillIn() {
         }
     });
     fireEvent.click(addBtn);
-    fireEvent.change(screen.getByLabelText('Name'), {
+    fireEvent.change(screen.getByLabelText('Display name'), {
         target: { value: 'Platform' },
     });
     fireEvent.change(screen.getByPlaceholderText('Nintendo 64'), {

@@ -244,6 +244,7 @@ export function VariablesSection({
                     body: {
                         categoryId,
                         name: values.name,
+                        nameNormalized: values.nameNormalized,
                         role: values.role,
                         values: values.values,
                         defaultValueIndex: values.defaultValueIndex,
@@ -273,10 +274,11 @@ export function VariablesSection({
                 gameId,
                 body: {
                     // Upsert key is (gameId, categoryId, nameNormalized).
-                    // Use the editing row's identity, NOT the form's (the
-                    // name field is locked in edit mode anyway).
+                    // Use the editing row's identity, NOT the form's (the name
+                    // and key fields are both locked in edit mode anyway).
                     categoryId: editing.categoryId,
                     name: editing.name,
+                    nameNormalized: editing.nameNormalized,
                     role: editing.role,
                     values: values.values,
                     defaultValueIndex: values.defaultValueIndex,
@@ -305,6 +307,7 @@ export function VariablesSection({
                 body: {
                     categoryId: row.categoryId,
                     name: row.name,
+                    nameNormalized: row.nameNormalized,
                     role: row.role,
                     values: row.values,
                     defaultValueIndex: row.defaultValueIndex,

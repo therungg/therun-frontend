@@ -1,5 +1,30 @@
 import { describe, expect, it } from 'vitest';
-import { buildSubcategoryKey, parseSubcategoryKey } from '../keys';
+import {
+    buildSubcategoryKey,
+    normalizeVariableName,
+    parseSubcategoryKey,
+    slugifyVariableKey,
+} from '../keys';
+
+describe('slugifyVariableKey', () => {
+    it('turns a messy display name into a clean url key', () => {
+        expect(slugifyVariableKey('Solo or Co-op?')).toBe('solo-or-co-op');
+    });
+    it('collapses runs of punctuation/whitespace to single hyphens', () => {
+        expect(slugifyVariableKey('  Any % !!! Route  ')).toBe('any-route');
+    });
+    it('is idempotent', () => {
+        const once = slugifyVariableKey('Solo or Co-op?');
+        expect(slugifyVariableKey(once)).toBe(once);
+    });
+    it('survives normalizeVariableName unchanged (matches read-time keys)', () => {
+        const slug = slugifyVariableKey('Solo or Co-op?');
+        expect(normalizeVariableName(slug)).toBe(slug);
+    });
+    it('is empty when there is nothing alphanumeric', () => {
+        expect(slugifyVariableKey('???')).toBe('');
+    });
+});
 
 describe('parseSubcategoryKey', () => {
     it('splits pipe-joined name=value pairs', () => {

@@ -30,6 +30,13 @@ function unwrapVariableRow(body: unknown): VariableRow | null {
 export interface UpsertVariableInput {
     categoryId: number;
     name: string;
+    /**
+     * Explicit URL/storage key, decoupled from the display `name`. Sent on
+     * create (slugged from the name, editable); on edit, pass the existing
+     * row's `nameNormalized` so the backend matches the same identity. Omit to
+     * let the backend derive the key from the name.
+     */
+    nameNormalized?: string;
     role: 'subcategory' | 'filter';
     values: string[][];
     defaultValueIndex?: number | null;
