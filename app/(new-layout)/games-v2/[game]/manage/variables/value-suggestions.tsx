@@ -26,16 +26,10 @@ interface Props {
 
 type Scope = 'category' | 'game';
 
-// Values shown per variable before the rest collapse into a "+N more" line.
-// Raw submitted values have a long, noisy tail (typos, casing, jokes); the
-// head is what's worth bucketing.
-const TOP_N = 6;
-
 interface Group {
     variable: string;
     values: VariableValueCount[];
     max: number;
-    hidden: number;
 }
 
 function groupByVariable(counts: VariableValueCount[]): Group[] {
@@ -48,21 +42,20 @@ function groupByVariable(counts: VariableValueCount[]): Group[] {
     const groups: Group[] = [];
     for (const [variable, values] of byVar) {
         // Backend already orders by count desc within a variable, but don't
-        // rely on it surviving the round-trip — sort defensively.
+        // rely on it surviving the round-trip — sort defensively. Every value
+        // is shown; the point is to see the full submitted set to bucket it.
         const sorted = [...values].sort((a, b) => b.count - a.count);
-        const head = sorted.slice(0, TOP_N);
         groups.push({
             variable,
-            values: head,
-            max: head[0]?.count ?? 0,
-            hidden: sorted.length - head.length,
+            values: sorted,
+            max: sorted[0]?.count ?? 0,
         });
     }
     // Variables with the most distinct submitted values first — those are the
     // ones a moderator most needs help bucketing.
     return groups.sort(
         (a, b) =>
-            b.values.length + b.hidden - (a.values.length + a.hidden) ||
+            b.values.length - a.values.length ||
             a.variable.localeCompare(b.variable),
     );
 }
@@ -235,13 +228,6 @@ export function ValueSuggestions({
                                             </li>
                                         ))}
                                     </ul>
-                                    {g.hidden > 0 && (
-                                        <div className={styles.tail}>
-                                            +{g.hidden.toLocaleString()} more
-                                            value
-                                            {g.hidden === 1 ? '' : 's'}
-                                        </div>
-                                    )}
                                 </div>
                             ))}
                         </div>

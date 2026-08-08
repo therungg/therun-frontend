@@ -37,6 +37,10 @@
     margin: 0;
     padding: 0;
     list-style: none;
+    // Every value renders (no top-N cap); a variable with a long tail scrolls
+    // inside its own card rather than stretching the page.
+    max-height: 18rem;
+    overflow-y: auto;
 }
 
 // value label | proportional bar | count. The bar takes the flexible middle
@@ -75,10 +79,4 @@
     font-size: dt.$font-size-xs;
     color: var(--bs-secondary-color);
     text-align: right;
-}
-
-.tail {
-    margin-top: dt.$spacing-xs;
-    font-size: dt.$font-size-xs;
-    color: var(--bs-secondary-color);
 }
