@@ -1,10 +1,13 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { CategoryVariableSuggestion } from '~src/lib/leaderboard-variables';
 import { normalizeVariableName } from '~src/lib/variables/keys';
 import type { VariableRoleId } from '~src/lib/variables/language';
-import { bucketsFromValues } from '~src/lib/variables/suggested-buckets';
+import {
+    bucketsFromValues,
+    mergeBuckets,
+} from '~src/lib/variables/suggested-buckets';
 import type {
     ResolvedCategory,
     VariableRow,
@@ -116,175 +119,225 @@ export function VariableSuggestions({
         <section className={styles.panel}>
             <h3 className={styles.title}>Suggested variables</h3>
             <ul className={styles.list}>
-                {suggestions.map((s) => {
-                    const buckets = bucketsFromValues(s.values);
-                    const maxCount = buckets[0]?.count ?? 0;
-                    const raw = buckets
-                        .map((b) => b.aliases.join(', '))
-                        .join('\n');
-                    const existing =
-                        existingByName.get(normalizeVariableName(s.variable)) ??
-                        [];
-                    const addedCategoryIds = new Set(
-                        existing.map((e) => e.categoryId),
-                    );
-                    const addedRoles = [
-                        ...new Set(existing.map((e) => e.role)),
-                    ];
-                    const addedRoleText = addedRoles.map(roleLabel).join(' + ');
-                    const remaining = s.relevantCategoryIds.filter(
-                        (id) => !addedCategoryIds.has(id),
-                    );
-
-                    const pcts = s.relevantCategoryIds.map((id) =>
-                        Math.round((s.perCategory[id]?.share ?? 0) * 100),
-                    );
-                    const lo = Math.min(...pcts);
-                    const hi = Math.max(...pcts);
-                    const shareText = lo === hi ? `${hi}%` : `${lo}–${hi}%`;
-                    const n = s.relevantCategoryIds.length;
-                    const relevance = `Relevant in ${n} ${
-                        n === 1 ? 'category' : 'categories'
-                    } · ${shareText} of runners`;
-
-                    const state =
-                        existing.length === 0
-                            ? 'new'
-                            : remaining.length === 0
-                              ? 'covered'
-                              : 'partial';
-
-                    // Default the picker to the categories where it's relevant
-                    // and not yet added; fall back to all relevant ones.
-                    const openAdd = (role: VariableRoleId) =>
-                        onAdd({
-                            role,
-                            name: s.variable,
-                            raw,
-                            selectedIds: remaining.length
-                                ? remaining
-                                : s.relevantCategoryIds,
-                        });
-
-                    return (
-                        <li key={s.variable} className={styles.card}>
-                            <div className={styles.cardHead}>
-                                <span className={styles.name}>
-                                    {s.variable}
-                                </span>
-                                {state !== 'new' && (
-                                    <span className={styles.pillAdded}>
-                                        ✓ {addedRoleText}
-                                    </span>
-                                )}
-                            </div>
-
-                            <div className={styles.bars}>
-                                {buckets.slice(0, VALUE_HEAD).map((b) => (
-                                    <div
-                                        key={b.label}
-                                        className={styles.barRow}
-                                    >
-                                        <span
-                                            className={styles.barLabel}
-                                            title={b.aliases.join(', ')}
-                                        >
-                                            {b.label === ''
-                                                ? '(blank)'
-                                                : b.label}
-                                            {b.aliases.length > 1 && (
-                                                <span
-                                                    className={styles.aliasTag}
-                                                >
-                                                    +{b.aliases.length - 1}
-                                                </span>
-                                            )}
-                                        </span>
-                                        <span
-                                            className={styles.barTrack}
-                                            aria-hidden="true"
-                                        >
-                                            <span
-                                                className={styles.barFill}
-                                                style={{
-                                                    width: `${
-                                                        maxCount > 0
-                                                            ? (
-                                                                  b.count /
-                                                                      maxCount
-                                                              ) * 100
-                                                            : 0
-                                                    }%`,
-                                                }}
-                                            />
-                                        </span>
-                                        <span className={styles.barValue}>
-                                            {b.count.toLocaleString()}
-                                        </span>
-                                    </div>
-                                ))}
-                                {buckets.length > VALUE_HEAD && (
-                                    <div className={styles.moreRow}>
-                                        +{buckets.length - VALUE_HEAD} more{' '}
-                                        {buckets.length - VALUE_HEAD === 1
-                                            ? 'value'
-                                            : 'values'}
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className={styles.footer}>
-                                <span className={styles.relevance}>
-                                    {relevance}
-                                </span>
-
-                                {state === 'covered' && (
-                                    <span className={styles.coveredNote}>
-                                        Already a {addedRoleText.toLowerCase()}{' '}
-                                        in all of them
-                                    </span>
-                                )}
-                                {state === 'partial' && (
-                                    <span className={styles.gapNote}>
-                                        {addedRoleText} in{' '}
-                                        {addedCategoryIds.size} · not yet in{' '}
-                                        {nameList(remaining.map(catName))}
-                                        <button
-                                            type="button"
-                                            className={styles.addPrimary}
-                                            onClick={() =>
-                                                openAdd(addedRoles[0])
-                                            }
-                                        >
-                                            Add to {remaining.length} more
-                                        </button>
-                                    </span>
-                                )}
-                                {state === 'new' && (
-                                    <span className={styles.actions}>
-                                        <button
-                                            type="button"
-                                            className={styles.addPrimary}
-                                            onClick={() =>
-                                                openAdd('subcategory')
-                                            }
-                                        >
-                                            Add as subcategory
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className={styles.addSecondary}
-                                            onClick={() => openAdd('filter')}
-                                        >
-                                            Add as filter
-                                        </button>
-                                    </span>
-                                )}
-                            </div>
-                        </li>
-                    );
-                })}
+                {suggestions.map((s) => (
+                    <SuggestionCard
+                        key={s.variable}
+                        suggestion={s}
+                        existing={
+                            existingByName.get(
+                                normalizeVariableName(s.variable),
+                            ) ?? []
+                        }
+                        catName={catName}
+                        onAdd={onAdd}
+                    />
+                ))}
             </ul>
         </section>
+    );
+}
+
+interface CardProps {
+    suggestion: CategoryVariableSuggestion;
+    existing: { role: VariableRoleId; categoryId: number }[];
+    catName: (id: number) => string;
+    onAdd: (prefill: SuggestionAddPrefill) => void;
+}
+
+function SuggestionCard({
+    suggestion: s,
+    existing,
+    catName,
+    onAdd,
+}: CardProps) {
+    // Live bucket set: starts alias-grouped, mutated by drag-to-merge. The add
+    // form is pre-filled from THIS, so pre-merges carry through.
+    const [buckets, setBuckets] = useState(() => bucketsFromValues(s.values));
+    const [expanded, setExpanded] = useState(false);
+    const [dragLabel, setDragLabel] = useState<string | null>(null);
+    const [overLabel, setOverLabel] = useState<string | null>(null);
+
+    const maxCount = Math.max(0, ...buckets.map((b) => b.count));
+    const raw = buckets.map((b) => b.aliases.join(', ')).join('\n');
+
+    const addedCategoryIds = new Set(existing.map((e) => e.categoryId));
+    const addedRoles = [...new Set(existing.map((e) => e.role))];
+    const addedRoleText = addedRoles.map(roleLabel).join(' + ');
+    const remaining = s.relevantCategoryIds.filter(
+        (id) => !addedCategoryIds.has(id),
+    );
+
+    const pcts = s.relevantCategoryIds.map((id) =>
+        Math.round((s.perCategory[id]?.share ?? 0) * 100),
+    );
+    const lo = Math.min(...pcts);
+    const hi = Math.max(...pcts);
+    const shareText = lo === hi ? `${hi}%` : `${lo}–${hi}%`;
+    const n = s.relevantCategoryIds.length;
+    const relevance = `Relevant in ${n} ${
+        n === 1 ? 'category' : 'categories'
+    } · ${shareText} of runners`;
+
+    const state =
+        existing.length === 0
+            ? 'new'
+            : remaining.length === 0
+              ? 'covered'
+              : 'partial';
+
+    const openAdd = (role: VariableRoleId) =>
+        onAdd({
+            role,
+            name: s.variable,
+            raw,
+            selectedIds: remaining.length ? remaining : s.relevantCategoryIds,
+        });
+
+    // Drop `dragLabel`'s bucket onto `target`, folding its spellings in as
+    // aliases (the mod declaring N64 and Nintendo 64 the same thing early).
+    const dropOnto = (target: string) => {
+        if (dragLabel && dragLabel !== target) {
+            setBuckets((prev) => mergeBuckets(prev, dragLabel, target));
+        }
+        setDragLabel(null);
+        setOverLabel(null);
+    };
+
+    const shown = expanded ? buckets : buckets.slice(0, VALUE_HEAD);
+    const hidden = buckets.length - shown.length;
+
+    return (
+        <li className={styles.card}>
+            <div className={styles.cardHead}>
+                <span className={styles.name}>{s.variable}</span>
+                {state !== 'new' && (
+                    <span className={styles.pillAdded}>✓ {addedRoleText}</span>
+                )}
+            </div>
+
+            <div className={styles.bars}>
+                {shown.map((b) => (
+                    <div
+                        key={b.label}
+                        className={`${styles.barRow} ${
+                            overLabel === b.label ? styles.barRowOver : ''
+                        } ${dragLabel === b.label ? styles.barRowDragging : ''}`}
+                        draggable
+                        onDragStart={() => setDragLabel(b.label)}
+                        onDragEnd={() => {
+                            setDragLabel(null);
+                            setOverLabel(null);
+                        }}
+                        onDragOver={(e) => {
+                            if (!dragLabel || dragLabel === b.label) return;
+                            e.preventDefault();
+                            setOverLabel(b.label);
+                        }}
+                        onDragLeave={() =>
+                            setOverLabel((o) => (o === b.label ? null : o))
+                        }
+                        onDrop={(e) => {
+                            e.preventDefault();
+                            dropOnto(b.label);
+                        }}
+                    >
+                        <span
+                            className={styles.barLabel}
+                            title={b.aliases.join(', ')}
+                        >
+                            <span className={styles.dragHandle} aria-hidden>
+                                ⠿
+                            </span>
+                            {b.label === '' ? '(blank)' : b.label}
+                            {b.aliases.length > 1 && (
+                                <span className={styles.aliasTag}>
+                                    +{b.aliases.length - 1}
+                                </span>
+                            )}
+                        </span>
+                        <span className={styles.barTrack} aria-hidden="true">
+                            <span
+                                className={styles.barFill}
+                                style={{
+                                    width: `${
+                                        maxCount > 0
+                                            ? (b.count / maxCount) * 100
+                                            : 0
+                                    }%`,
+                                }}
+                            />
+                        </span>
+                        <span className={styles.barValue}>
+                            {b.count.toLocaleString()}
+                        </span>
+                    </div>
+                ))}
+
+                {hidden > 0 && (
+                    <button
+                        type="button"
+                        className={styles.moreRow}
+                        onClick={() => setExpanded(true)}
+                    >
+                        + {hidden} more {hidden === 1 ? 'value' : 'values'}
+                    </button>
+                )}
+                {expanded && buckets.length > VALUE_HEAD && (
+                    <button
+                        type="button"
+                        className={styles.moreRow}
+                        onClick={() => setExpanded(false)}
+                    >
+                        Show fewer
+                    </button>
+                )}
+                {buckets.length > 1 && (
+                    <p className={styles.mergeHint}>
+                        Drag a value onto another to merge their spellings.
+                    </p>
+                )}
+            </div>
+
+            <div className={styles.footer}>
+                <span className={styles.relevance}>{relevance}</span>
+
+                {state === 'covered' && (
+                    <span className={styles.coveredNote}>
+                        Already a {addedRoleText.toLowerCase()} in all of them
+                    </span>
+                )}
+                {state === 'partial' && (
+                    <span className={styles.gapNote}>
+                        {addedRoleText} in {addedCategoryIds.size} · not yet in{' '}
+                        {nameList(remaining.map(catName))}
+                        <button
+                            type="button"
+                            className={styles.addPrimary}
+                            onClick={() => openAdd(addedRoles[0])}
+                        >
+                            Add to {remaining.length} more
+                        </button>
+                    </span>
+                )}
+                {state === 'new' && (
+                    <span className={styles.actions}>
+                        <button
+                            type="button"
+                            className={styles.addPrimary}
+                            onClick={() => openAdd('subcategory')}
+                        >
+                            Add as subcategory
+                        </button>
+                        <button
+                            type="button"
+                            className={styles.addSecondary}
+                            onClick={() => openAdd('filter')}
+                        >
+                            Add as filter
+                        </button>
+                    </span>
+                )}
+            </div>
+        </li>
     );
 }
