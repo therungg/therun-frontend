@@ -17,6 +17,7 @@ import { updateVariableAction } from './actions/update-variable.action';
 import { VariableBandPreview } from './band-preview';
 import { CombinationsSection } from './combinations-section';
 import { ConsequenceDialog } from './consequence-dialog';
+import { ValueSuggestions } from './value-suggestions';
 import { VariableForm, type VariableFormValues } from './variable-form';
 import { VariableTable } from './variable-table';
 
@@ -427,6 +428,12 @@ export function VariablesSection({
                 onMoveUp={handleMoveUp}
                 onMoveDown={handleMoveDown}
                 busy={busy}
+            />
+
+            <ValueSuggestions
+                gameSlug={gameSlug}
+                gameId={gameId}
+                selectedCategory={selectedCategory}
             />
 
             <CombinationsSection

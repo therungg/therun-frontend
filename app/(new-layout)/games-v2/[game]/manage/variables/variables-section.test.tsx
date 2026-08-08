@@ -20,6 +20,7 @@ const mocks = vi.hoisted(() => ({
     deleteVariableAction: vi.fn(),
     loadVariablesAction: vi.fn(),
     loadCombinationsAction: vi.fn(),
+    loadVariableValueCountsAction: vi.fn(),
     rebuildBoardsAction: vi.fn(),
 }));
 
@@ -40,6 +41,9 @@ vi.mock('./actions/load-variables.action', () => ({
 }));
 vi.mock('./actions/load-combinations.action', () => ({
     loadCombinationsAction: mocks.loadCombinationsAction,
+}));
+vi.mock('./actions/load-variable-value-counts.action', () => ({
+    loadVariableValueCountsAction: mocks.loadVariableValueCountsAction,
 }));
 vi.mock('./actions/rebuild-boards.action', () => ({
     rebuildBoardsAction: mocks.rebuildBoardsAction,
@@ -95,6 +99,9 @@ describe('VariablesSection write path', () => {
         });
         mocks.loadCombinationsAction.mockResolvedValue({
             result: { combinations: [], mode: 'open' },
+        });
+        mocks.loadVariableValueCountsAction.mockResolvedValue({
+            result: [],
         });
     });
 

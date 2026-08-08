@@ -253,3 +253,31 @@ export async function replaceCombinations(
         body: { subcategoryKeys },
     });
 }
+
+/**
+ * One row per raw variable=value found on finished runs, with the count of
+ * distinct runners who submitted it. Setup-time suggestion data for the
+ * variables editor — shows the real value distribution (and long tail to
+ * bucket) so a moderator doesn't have to guess what people actually enter.
+ *
+ * `categoryId === null` widens the scope to the whole game. The backend serves
+ * this from an index-range slice (not a full scan); callers should still cache
+ * it — it's a slow-moving hint, not live data.
+ */
+export interface VariableValueCount {
+    variable: string;
+    value: string;
+    count: number;
+}
+
+export async function listVariableValueCounts(
+    sessionId: string,
+    gameId: number,
+    categoryId: number | null,
+): Promise<VariableValueCount[]> {
+    const scope = categoryId !== null ? `&categoryId=${categoryId}` : '';
+    return apiFetch<VariableValueCount[]>(
+        `${basePath(gameId)}?valueCounts=1${scope}`,
+        { sessionId },
+    );
+}
