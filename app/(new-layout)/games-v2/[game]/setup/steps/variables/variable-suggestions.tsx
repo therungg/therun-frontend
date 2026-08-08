@@ -38,6 +38,23 @@ const VALUE_HEAD = 6;
 const roleLabel = (role: VariableRoleId) =>
     role === 'subcategory' ? 'Subcategory' : 'Filter';
 
+/**
+ * Best-effort friendly title for a raw runner-submitted variable key. Splits
+ * camelCase and underscores and title-cases the result — so `timingMethod`
+ * reads as "Timing Method". A key that was already normalized to lowercase with
+ * its spaces stripped (`soloorco-op?`) can't be fully reconstructed, so the raw
+ * key is always shown beneath as the honest source (see `.keyName`).
+ */
+function humanizeKey(raw: string): string {
+    const spaced = raw
+        .replace(/_+/g, ' ')
+        .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+        .replace(/\s+/g, ' ')
+        .trim();
+    if (!spaced) return raw;
+    return spaced.replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 /** "16 Star, 1 Star +3" — a few names, then a count, never a wall. */
 function nameList(names: string[], cap = 3): string {
     if (names.length <= cap) return names.join(', ');
@@ -115,9 +132,19 @@ export function VariableSuggestions({
         );
     }
 
+    // One section-level line instead of the same sentence under every card.
+    const anyMergeable = suggestions.some((s) => s.values.length > 1);
+
     return (
         <section className={styles.panel}>
-            <h3 className={styles.title}>Suggested variables</h3>
+            <div className={styles.head}>
+                <h3 className={styles.title}>Suggested variables</h3>
+                {anyMergeable && (
+                    <span className={styles.headHint}>
+                        Drag a value onto another to merge their spellings.
+                    </span>
+                )}
+            </div>
             <ul className={styles.list}>
                 {suggestions.map((s) => (
                     <SuggestionCard
@@ -209,7 +236,15 @@ function SuggestionCard({
     return (
         <li className={styles.card}>
             <div className={styles.cardHead}>
-                <span className={styles.name}>{s.variable}</span>
+                <span className={styles.cardHeadText}>
+                    <span className={styles.name}>
+                        {humanizeKey(s.variable)}
+                    </span>
+                    {/* The exact key runners submit — the identity the display
+                        name is set from. Kept visible and honest rather than
+                        pretending the humanized title is what's stored. */}
+                    <code className={styles.keyName}>{s.variable}</code>
+                </span>
                 {state !== 'new' && (
                     <span className={styles.pillAdded}>✓ {addedRoleText}</span>
                 )}
@@ -290,11 +325,6 @@ function SuggestionCard({
                     >
                         Show fewer
                     </button>
-                )}
-                {buckets.length > 1 && (
-                    <p className={styles.mergeHint}>
-                        Drag a value onto another to merge their spellings.
-                    </p>
                 )}
             </div>
 

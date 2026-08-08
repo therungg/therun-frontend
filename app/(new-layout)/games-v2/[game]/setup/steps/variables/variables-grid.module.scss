@@ -240,6 +240,25 @@
     @include board.board-section-count;
 }
 
+// Delete, moved into the head beside the collapse control. Quiet at rest —
+// it's destructive and behind a confirm — and reddens on hover. Pushed to the
+// right so it sits just left of the chevron.
+.headDelete {
+    margin-left: auto;
+    padding: 0.1rem dt.$spacing-sm;
+    border: 1px solid transparent;
+    border-radius: dt.$radius-sm;
+    background: transparent;
+    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-2xs;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+        border-color: rgba(var(--bs-danger-rgb), 0.6);
+        color: var(--bs-danger);
+    }
+}
+
 // ---- Role drift ---------------------------------------------
 // The same thing is a leaderboard split on part of the board and a filter on
 // the rest. That is a contradiction, not a footnote — it gets a strip and two
@@ -318,6 +337,54 @@
     padding-left: 0 !important;
 }
 
+// The bulk-toggle row: "All categories" plus a tri-state per option, sitting
+// in the grid body so its checkboxes align with the cells they act on for
+// free. Muted and ruled off a little harder so it reads as a utility row, not
+// the first category.
+.allRow {
+    th,
+    td {
+        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.45) !important;
+    }
+}
+
+.allRowName {
+    padding-left: 0 !important;
+    font-weight: 500 !important;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color) !important;
+}
+
+// Inner wrapper, because flex on the th itself would drop it out of the
+// table's cell model (the same trap the option headers hit).
+.allRowNameInner {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+// The all-on matrix, as one line instead of a wall of identical checkboxes.
+.gridSummary {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    flex-wrap: wrap;
+    padding: dt.$spacing-md dt.$spacing-lg;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.gridSummaryText {
+    @include board.board-section-count;
+}
+
+.gridAdjust {
+    @include board.board-chip;
+    border-color: rgba(var(--bs-border-color-rgb), 0.5);
+    font-size: dt.$font-size-2xs;
+    flex: none;
+}
+
 // Same weight and colour as the matrix's name cell: it is the same list of
 // categories, read the same way down the same edge of the screen.
 .rowName {
@@ -372,21 +439,26 @@
     width: 1%;
 }
 
+// The one control that adds a value — it was a faint dashed ghost in the
+// corner, the easiest thing on the grid to miss. Given the primary accent and
+// a tick more weight so it reads as an action, not a decoration.
 .addOption {
     font: inherit;
     font-size: dt.$font-size-2xs;
     font-weight: 600;
     letter-spacing: 0.04em;
-    color: var(--bs-tertiary-color);
-    background: transparent;
-    border: 1px dashed rgba(var(--bs-border-color-rgb), 0.6);
+    color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.08);
+    border: 1px dashed rgba(var(--bs-primary-rgb), 0.55);
     border-radius: dt.$radius-sm;
-    padding: 0.15rem dt.$spacing-sm;
+    padding: 0.2rem dt.$spacing-sm;
     cursor: pointer;
     white-space: nowrap;
 
     &:hover:not(:disabled) {
-        border-color: rgba(var(--bs-primary-rgb), 0.7);
+        border-style: solid;
+        border-color: rgba(var(--bs-primary-rgb), 0.9);
+        background: rgba(var(--bs-primary-rgb), 0.15);
         color: var(--bs-emphasis-color);
     }
 
@@ -438,6 +510,18 @@
         border-color: rgba(var(--bs-danger-rgb), 0.6);
         color: var(--bs-danger);
     }
+}
+
+// The confirm, as a banner right under the head where Delete was clicked.
+.deleteBanner {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    flex-wrap: wrap;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    border-top: 1px solid rgba(var(--bs-danger-rgb), 0.35);
+    border-bottom: 1px solid rgba(var(--bs-danger-rgb), 0.35);
+    background: rgba(var(--bs-danger-rgb), 0.07);
 }
 
 .deleteWarning {
@@ -557,6 +641,41 @@
 
 .savingNote {
     @include board.board-section-count;
+}
+
+// Filter-only: opt a filter's value into its own leaderboard column. Sits
+// above the demote/convert foot inside the palette, and is repeated in the add
+// form; both share these classes.
+.showValueRow {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5em;
+    padding-top: dt.$spacing-xs;
+    cursor: pointer;
+
+    input {
+        margin-top: 0.15em;
+        flex: none;
+    }
+}
+
+// The palette instance sits in the padded panel body, so it earns the same
+// horizontal inset as .gridNote / .groupSetting; the add-form instance is
+// already inside a padded surface and takes none.
+.showValueInPalette {
+    padding: dt.$spacing-sm dt.$spacing-lg 0;
+}
+
+.showValueText {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    font-size: dt.$font-size-sm;
+}
+
+.showValueHint {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
 }
 
 // ---- Staged changes -----------------------------------------
@@ -684,6 +803,16 @@
     color: var(--bs-secondary-color);
 }
 
+// Both group-level settings — the shared default and "show as a value" —
+// share one strip above the grid, so neither reads as belonging to the matrix.
+.groupSettings {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-md dt.$spacing-lg;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.25);
+}
+
 // The shared default, as a sentence with the control inside it. Replaces a
 // column of eight identical dropdowns and the footnote that explained them.
 .groupSetting {
@@ -692,10 +821,8 @@
     gap: dt.$spacing-xs;
     flex-wrap: wrap;
     margin: 0;
-    padding: dt.$spacing-md dt.$spacing-lg;
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
-    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.25);
 }
 
 .defaultSelect {
