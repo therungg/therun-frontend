@@ -12,8 +12,11 @@
 
     // A slightly distinct header band gives the table structure now that
     // the whole surface is lifted off the canvas. Neutral, both themes.
+    // Header text at full strength — the eyebrow-muted headers were part of
+    // why the whole board whispered next to SRC's.
     thead th {
-        background: rgba(var(--bs-body-color-rgb), 0.04);
+        background: rgba(var(--bs-body-color-rgb), 0.05);
+        color: var(--bs-emphasis-color);
     }
 
     tbody td {
@@ -24,6 +27,14 @@
         @media (max-width: 575.98px) {
             padding-inline: dt.$spacing-sm;
         }
+    }
+
+    // Zebra: a whisper of rhythm so long boards read in rows, not a field
+    // of hairlines. `:where()` zeroes the pseudo-class's specificity so the
+    // podium / you-row / selected washes (declared later, same class+element
+    // weight) win on their rows.
+    :where(tbody tr:nth-child(even)) td {
+        background: rgba(var(--bs-body-color-rgb), 0.022);
     }
 
     tbody tr:last-child td {
