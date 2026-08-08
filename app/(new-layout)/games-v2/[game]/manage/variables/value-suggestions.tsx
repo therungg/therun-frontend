@@ -163,7 +163,8 @@ export function ValueSuggestions({
                             ? 'runs in this category'
                             : 'runs game-wide'}
                         . Use it to decide which values are worth a subcategory
-                        or filter — the counts are distinct runners.
+                        or filter — the counts are distinct runners, and only
+                        variables set by at least 10% of them appear.
                     </p>
 
                     {loadError && (
