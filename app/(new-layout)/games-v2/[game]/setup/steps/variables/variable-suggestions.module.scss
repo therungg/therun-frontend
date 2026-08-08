@@ -70,29 +70,10 @@
     gap: dt.$spacing-sm;
 }
 
-.cardHeadText {
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
-    min-width: 0;
-}
-
 .name {
     font-size: dt.$font-size-md;
     font-weight: 700;
     letter-spacing: -0.01em;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-// The raw runner-submitted key, beneath the humanized title. Mono and muted so
-// it reads as an identifier and never competes with the name above it — the
-// fix for the old head, where the ugliest string was the loudest.
-.keyName {
-    font-family: var(--bs-font-monospace);
-    font-size: dt.$font-size-xs;
-    color: var(--bs-secondary-color);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
