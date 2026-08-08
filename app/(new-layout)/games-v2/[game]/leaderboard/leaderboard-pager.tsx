@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from 'react';
 import type { LeaderboardQuery } from '~src/lib/leaderboards-v1';
+import { normalizeVariableName } from '~src/lib/variables/keys';
 import type {
     LeaderboardEntry,
     LeaderboardResponse,
@@ -105,6 +106,11 @@ export function LeaderboardPager({
     // `display` maps every accepted spelling (lowercased) to its bucket's
     // canonical label: entries store normalized values ("solo"), the def's
     // buckets carry the display form ("Solo").
+    //
+    // `altKey` is the display name normalized — the resolver accepts a
+    // LiveSplit variable named after either the key or the display name, so
+    // the row's "did the runner actually set this?" check must look for both
+    // in the entry's rawVariables.
     const valueColumns = variableDefs
         .filter((d) => d.showValueOnBoard === true)
         .map((d) => {
@@ -114,7 +120,12 @@ export function LeaderboardPager({
                     display[spelling.trim().toLowerCase()] = bucket[0];
                 }
             }
-            return { key: d.nameNormalized, label: d.name, display };
+            return {
+                key: d.nameNormalized,
+                altKey: normalizeVariableName(d.name),
+                label: d.name,
+                display,
+            };
         });
 
     // The whole viewed page, response-shaped: entries plus the page/total
