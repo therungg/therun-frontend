@@ -25,8 +25,13 @@ interface Props {
     canManage: boolean;
     gameSlug: string;
     variableKeys: string[];
-    /** Filter variables opted into a board column ({ key: nameNormalized, label }). */
-    valueColumns: { key: string; label: string }[];
+    /** Variables opted into a board column; `display` maps stored (normalized)
+     * values to their bucket's canonical label. */
+    valueColumns: {
+        key: string;
+        label: string;
+        display: Record<string, string>;
+    }[];
     primaryTiming: TimingKey;
     /** What the board calls its game-time clock. Display only. */
     gameTimeLabel?: 'igt' | 'lrt';
