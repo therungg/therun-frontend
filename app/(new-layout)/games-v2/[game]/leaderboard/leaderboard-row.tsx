@@ -124,8 +124,13 @@ interface Props {
     hideRealTime: boolean;
     hideGameTime: boolean;
     primaryTiming: TimingKey;
-    /** Filter variables opted into a board column ({ key: nameNormalized, label }). */
-    valueColumns: { key: string; label: string }[];
+    /** Variables opted into a board column; `display` maps stored (normalized)
+     * values to their bucket's canonical label. */
+    valueColumns: {
+        key: string;
+        label: string;
+        display: Record<string, string>;
+    }[];
     sessionUsername: string | null;
     /** category.showMilliseconds ?? true — precision the board is configured for. */
     showMilliseconds: boolean;
@@ -366,11 +371,18 @@ export function LeaderboardRow({
                     true,
                     !primaryVisible,
                 )}
-            {valueColumns.map((col) => (
-                <td key={col.key} className={styles.value}>
-                    {entry.variables?.[col.key] ?? '—'}
-                </td>
-            ))}
+            {valueColumns.map((col) => {
+                const raw = entry.variables?.[col.key];
+                return (
+                    <td key={col.key} className={styles.value}>
+                        {raw != null
+                            ? // Stored values are normalized; show the
+                              // bucket's canonical label when we know it.
+                              (col.display[raw.trim().toLowerCase()] ?? raw)
+                            : '—'}
+                    </td>
+                );
+            })}
             <td
                 className={`${styles.meta} ${styles.when}`}
                 title={entry.runDate ? formatRunDate(entry.runDate) : undefined}

@@ -101,9 +101,21 @@ export function LeaderboardPager({
     // board column. Keyed by nameNormalized, which is how a runner's value is
     // stored on each entry (entry.variables[key]). A subcategory's value is
     // constant on a single split board and only varies on the combined view.
+    //
+    // `display` maps every accepted spelling (lowercased) to its bucket's
+    // canonical label: entries store normalized values ("solo"), the def's
+    // buckets carry the display form ("Solo").
     const valueColumns = variableDefs
         .filter((d) => d.showValueOnBoard === true)
-        .map((d) => ({ key: d.nameNormalized, label: d.name }));
+        .map((d) => {
+            const display: Record<string, string> = {};
+            for (const bucket of d.values) {
+                for (const spelling of bucket) {
+                    display[spelling.trim().toLowerCase()] = bucket[0];
+                }
+            }
+            return { key: d.nameNormalized, label: d.name, display };
+        });
 
     // The whole viewed page, response-shaped: entries plus the page/total
     // bookkeeping every control below derives from. Navigation swaps it
