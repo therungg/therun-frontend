@@ -101,7 +101,6 @@ function renderMenu(props: Partial<Parameters<typeof RowActionsMenu>[0]> = {}) {
         <RowActionsMenu
             entry={entry()}
             sessionUsername="modperson"
-            canManage
             gameSlug="some-game"
             categorySlug="any-percent"
             subcategoryDefKeys={[]}
@@ -119,26 +118,16 @@ beforeEach(() => {
     mocks.loadModBoardContextAction.mockResolvedValue(MOD_CONTEXT);
 });
 
-describe('RowActionsMenu — mod section (drawer era)', () => {
-    it('shows no mod section for non-managers', () => {
-        renderMenu({ canManage: false, onModerate: vi.fn() });
+describe('RowActionsMenu — viewer/self kebab (mod actions moved out)', () => {
+    it('shows the viewer items but no moderator section', () => {
+        renderMenu();
         openMenu();
-        expect(screen.queryByText('Moderate…')).toBeNull();
+        expect(screen.getByText('Run history')).toBeTruthy();
+        // Mod verbs now live on the row's direct Moderate button + drawer,
+        // never in this kebab.
         expect(screen.queryByText('Moderator')).toBeNull();
-    });
-
-    it('offers Moderate… and forwards the click', () => {
-        const onModerate = vi.fn();
-        renderMenu({ onModerate });
-        openMenu();
-        fireEvent.click(screen.getByText('Moderate…'));
-        expect(onModerate).toHaveBeenCalledTimes(1);
-    });
-
-    it('no longer carries the verbs that moved into the inspector', () => {
-        renderMenu({ onModerate: vi.fn() });
-        openMenu();
         for (const gone of [
+            'Moderate…',
             'Verify run',
             'Remove run…',
             'Restore run',
@@ -152,6 +141,12 @@ describe('RowActionsMenu — mod section (drawer era)', () => {
         ]) {
             expect(screen.queryByText(gone)).toBeNull();
         }
+    });
+
+    it('offers Report run for a logged-in non-owner', () => {
+        renderMenu();
+        openMenu();
+        expect(screen.getByText('Report run')).toBeTruthy();
     });
 });
 
@@ -167,37 +162,8 @@ function manualEntry(
 }
 
 describe('RowActionsMenu — manual (set) time rows', () => {
-    it('renders nothing for non-managers', () => {
-        const { container } = renderMenu({
-            entry: manualEntry(),
-            canManage: false,
-        });
+    it('renders no kebab at all — moderation is the row Moderate button, and the time cell links to the detail page', () => {
+        const { container } = renderMenu({ entry: manualEntry() });
         expect(container.innerHTML).toBe('');
-    });
-
-    it('offers View set time and Moderate… (which opens the set-time inspector)', () => {
-        const onModerate = vi.fn();
-        renderMenu({ entry: manualEntry(), onModerate });
-        fireEvent.click(
-            screen.getByRole('button', { name: 'Set-time actions' }),
-        );
-        expect(screen.getByText('View set time')).toBeTruthy();
-        fireEvent.click(screen.getByText('Moderate…'));
-        expect(onModerate).toHaveBeenCalledTimes(1);
-    });
-
-    it('drops the old inline verb set — verdicts now live in the inspector', () => {
-        renderMenu({ entry: manualEntry(), onModerate: vi.fn() });
-        fireEvent.click(
-            screen.getByRole('button', { name: 'Set-time actions' }),
-        );
-        for (const gone of [
-            'Verify set time',
-            'Reject set time',
-            'Change time…',
-            'Remove set time…',
-        ]) {
-            expect(screen.queryByText(gone)).toBeNull();
-        }
     });
 });

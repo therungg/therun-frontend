@@ -43,26 +43,24 @@ const MENU_POPPER = {
 interface Props {
     entry: LeaderboardEntry;
     sessionUsername: string | null;
-    canManage?: boolean;
     gameSlug: string;
     /** This row's own category (a board is single-category). */
     categorySlug: string;
     /** Subcategory-role variable names, for building this row's own subcategory key from `entry.variables`. */
     subcategoryDefKeys: string[];
-    /** "Moderate…" — opens the run inspector drawer on this row. Omitted when the viewer can't manage runs. */
-    onModerate?: () => void;
 }
 
 type ModalKind = 'report' | 'appeal' | 'history' | null;
 
+// Viewer / self kebab for a board row: run history, report, and the runner's
+// own self-service verbs. Moderator actions are NOT here — a mod opens the
+// run inspector from the row's direct Moderate button instead.
 export function RowActionsMenu({
     entry,
     sessionUsername,
-    canManage,
     gameSlug,
     categorySlug,
     subcategoryDefKeys,
-    onModerate,
 }: Props) {
     const runId = entry.runId ?? null;
     const loggedIn = !!sessionUsername;
@@ -89,54 +87,11 @@ export function RowActionsMenu({
     const [pending, startTransition] = useTransition();
     const selfVerdict = useSelfRunVerdict();
 
-    // Manual-time entries have no finished_run. Their moderation lives in the
-    // set-time inspector (ManualInspector) opened via Moderate…, so the kebab
-    // is just the entry point plus a link to the set-time detail page.
-    if (runId == null) {
-        if (!canManage || entry.manualTimeId == null) return null;
-        return (
-            <Dropdown align="end">
-                <Dropdown.Toggle
-                    as="button"
-                    type="button"
-                    id={`manual-actions-${entry.manualTimeId}`}
-                    className={styles.toggle}
-                    aria-label="Set-time actions"
-                    title="Set-time actions"
-                >
-                    <ThreeDotsVertical aria-hidden size={16} />
-                </Dropdown.Toggle>
-                <Dropdown.Menu
-                    className={styles.menu}
-                    popperConfig={MENU_POPPER}
-                >
-                    <Dropdown.Item
-                        as={Link}
-                        className={styles.item}
-                        href={`/games-v2/${encodeURIComponent(gameSlug)}/manual/${entry.manualTimeId}`}
-                    >
-                        View set time
-                    </Dropdown.Item>
-                    {onModerate && (
-                        <>
-                            <Dropdown.Divider className={styles.menuDivider} />
-                            <Dropdown.Header className={styles.menuHeader}>
-                                Moderator
-                            </Dropdown.Header>
-                            <Dropdown.Item
-                                as="button"
-                                type="button"
-                                className={styles.item}
-                                onClick={onModerate}
-                            >
-                                Moderate…
-                            </Dropdown.Item>
-                        </>
-                    )}
-                </Dropdown.Menu>
-            </Dropdown>
-        );
-    }
+    // Manual-time entries have no finished_run and no viewer-facing menu
+    // items: mods reach moderation through the row's direct Moderate button
+    // (which opens the set-time inspector), and the time cell already links
+    // to the set-time detail page. So the kebab has nothing to show.
+    if (runId == null) return null;
 
     const close = () => {
         setModal(null);
@@ -264,24 +219,6 @@ export function RowActionsMenu({
                             >
                                 Appeal rejection
                             </Dropdown.Item>
-                        </>
-                    )}
-                    {canManage && (
-                        <>
-                            <Dropdown.Divider className={styles.menuDivider} />
-                            <Dropdown.Header className={styles.menuHeader}>
-                                Moderator
-                            </Dropdown.Header>
-                            {onModerate && (
-                                <Dropdown.Item
-                                    as="button"
-                                    type="button"
-                                    className={styles.item}
-                                    onClick={onModerate}
-                                >
-                                    Moderate…
-                                </Dropdown.Item>
-                            )}
                         </>
                     )}
                 </Dropdown.Menu>
