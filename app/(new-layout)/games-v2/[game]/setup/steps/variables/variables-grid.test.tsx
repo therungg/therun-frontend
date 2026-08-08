@@ -397,7 +397,7 @@ describe('VariablesGrid', () => {
         fireEvent.click(
             screen.getByRole('button', { name: '+ Add a subcategory group' }),
         );
-        fireEvent.change(screen.getByLabelText('Subcategory group name'), {
+        fireEvent.change(screen.getByLabelText('Subcategory display name'), {
             target: { value: 'Region' },
         });
         fireEvent.change(
@@ -420,13 +420,46 @@ describe('VariablesGrid', () => {
                     expect.objectContaining({
                         input: expect.objectContaining({
                             name: 'Region',
-                            // Key auto-slugged from the name.
+                            // Key follows the display name when untouched.
                             nameNormalized: 'region',
                             defaultValueIndex: 1,
                             values: [
                                 ['NTSC', 'ntsc-u'],
                                 ['PAL', 'pal-e'],
                             ],
+                        }),
+                    }),
+                ]),
+            }),
+        );
+    });
+
+    it('lets the display name and the LiveSplit variable be set apart on create', () => {
+        renderGrid();
+        fireEvent.click(
+            screen.getByRole('button', { name: '+ Add a subcategory group' }),
+        );
+        fireEvent.change(screen.getByLabelText('Subcategory display name'), {
+            target: { value: 'Solo or Co-op?' },
+        });
+        // The runners' LiveSplit variable is just "coop" — set it apart from
+        // the friendly display name so runs still match.
+        fireEvent.change(screen.getByLabelText('Variable name in LiveSplit'), {
+            target: { value: 'coop' },
+        });
+        fireEvent.change(
+            screen.getByLabelText(/Subcategory options, one per line/),
+            { target: { value: 'Solo\nCo-op' } },
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Preview & add' }));
+
+        expect(previewVariableChangesAction).toHaveBeenCalledWith(
+            expect.objectContaining({
+                changes: expect.arrayContaining([
+                    expect.objectContaining({
+                        input: expect.objectContaining({
+                            name: 'Solo or Co-op?',
+                            nameNormalized: 'coop',
                         }),
                     }),
                 ]),

@@ -79,6 +79,11 @@ export function VariableForm({
     error,
 }: Props) {
     const [name, setName] = useState(editing?.name ?? '');
+    // The LiveSplit variable name — the key runs match on. On create it follows
+    // the display name until the moderator edits it (so identical names stay one
+    // field); on edit it is the row's fixed identity and isn't shown as an input.
+    const [liveVar, setLiveVar] = useState(editing?.nameNormalized ?? '');
+    const [liveVarTouched, setLiveVarTouched] = useState(mode === 'edit');
     const [role, setRole] = useState<'subcategory' | 'filter'>(
         editing?.role ?? 'subcategory',
     );
@@ -103,16 +108,20 @@ export function VariableForm({
         }
     }, [buckets.length, defaultIdx]);
 
+    // On create the LiveSplit field mirrors the display name until touched.
+    useEffect(() => {
+        if (mode === 'create' && !liveVarTouched) setLiveVar(name);
+    }, [name, liveVarTouched, mode]);
+
     const reservedLower = useMemo(
         () => new Set(reservedParams.map((r) => r.toLowerCase())),
         [reservedParams],
     );
-    // The name the moderator types is the DISPLAY name, shown above the board's
-    // subcategory buttons. The key (nameNormalized) is the LiveSplit variable
-    // runs match on: on create it is derived from the name; on edit it is the
-    // row's existing identity, held stable so the display name can change
-    // without moving the board or breaking matching.
-    const derivedKey = useMemo(() => normalizeName(name), [name]);
+    // `name` is the DISPLAY name shown above the board's subcategory buttons.
+    // The key (nameNormalized) is the normalized LiveSplit variable runs match
+    // on: on create it comes from the LiveSplit field; on edit it is the row's
+    // existing identity, held stable so the display name can change freely.
+    const derivedKey = useMemo(() => normalizeName(liveVar), [liveVar]);
     const nameNormalized =
         mode === 'edit' ? (editing?.nameNormalized ?? derivedKey) : derivedKey;
     const keyCollidesReserved =
@@ -228,7 +237,7 @@ export function VariableForm({
                     <small className="text-muted d-block">
                         {mode === 'edit'
                             ? `Shown above the board's buttons. Runs still match on the LiveSplit variable “${nameNormalized}”.`
-                            : 'Shown above the board’s buttons — make it friendly. Runs match on the LiveSplit variable name.'}
+                            : 'Shown above the board’s buttons — make it friendly.'}
                     </small>
                     {keyCollidesReserved && (
                         <small className="text-danger d-block">
@@ -237,6 +246,33 @@ export function VariableForm({
                         </small>
                     )}
                 </div>
+                {mode === 'create' && (
+                    <div className="col-md-6">
+                        <label
+                            htmlFor="var-livevar"
+                            className="form-label small mb-1"
+                        >
+                            Variable name in LiveSplit
+                        </label>
+                        <input
+                            id="var-livevar"
+                            type="text"
+                            className="form-control form-control-sm font-monospace"
+                            value={liveVar}
+                            onChange={(e) => {
+                                setLiveVarTouched(true);
+                                setLiveVar(e.target.value);
+                            }}
+                            placeholder="coop"
+                            disabled={isBusy}
+                        />
+                        <small className="text-muted d-block">
+                            What runners set in their splits — runs are matched
+                            on this. Defaults to the display name; change it
+                            only if the two differ.
+                        </small>
+                    </div>
+                )}
             </div>
 
             <div className="mt-3">

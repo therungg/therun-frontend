@@ -2061,6 +2061,14 @@ function AddVariableForm({
     ) => void;
 }) {
     const [name, setName] = useState(initialName);
+    // The LiveSplit variable name — what runs are matched on (the key). It
+    // auto-follows the display name until the moderator edits it, so the common
+    // case (they're the same) stays one field. A suggestion prefills it from
+    // real submitted data, so it starts "touched" and won't drift.
+    const [liveVar, setLiveVar] = useState(initialName);
+    const [liveVarTouched, setLiveVarTouched] = useState(
+        initialName.trim().length > 0,
+    );
     const [raw, setRaw] = useState(initialRaw);
     const [defaultOption, setDefaultOption] = useState('');
     const [selectedIds, setSelectedIds] = useState<number[]>(
@@ -2095,30 +2103,35 @@ function AddVariableForm({
     // if the chosen one is edited away, which is the same rule the grid uses.
     const defaultIndex = Math.max(0, labels.indexOf(defaultOption));
 
-    // The name the moderator types is the DISPLAY name, shown above the board's
-    // subcategory buttons. The key (nameNormalized) is derived from it the same
-    // way an incoming LiveSplit variable is normalized, so runs match — and,
-    // once set, it stays put when the display name is later edited.
-    const normalizedName = normalizeName(name);
+    // Until the moderator edits the LiveSplit field, it mirrors the display
+    // name — so the common case (the two are the same) is still one field.
+    useEffect(() => {
+        if (!liveVarTouched) setLiveVar(name);
+    }, [name, liveVarTouched]);
+
+    // `name` is the DISPLAY name shown above the board's buttons; the key
+    // (nameNormalized) is the normalized LiveSplit variable runs match on.
+    const normalizedKey = normalizeName(liveVar);
     const collision =
-        normalizedName.length > 0 && takenNames.has(normalizedName)
+        normalizedKey.length > 0 && takenNames.has(normalizedKey)
             ? BUILT_IN_FILTERS.some(
-                  (f) => normalizeName(f) === normalizedName,
-              ) || RESERVED_NAMES.includes(normalizedName)
-                ? `${name.trim()} is already a built-in filter.`
-                : `${name.trim()} already exists on this board.`
+                  (f) => normalizeName(f) === normalizedKey,
+              ) || RESERVED_NAMES.includes(normalizedKey)
+                ? `${liveVar.trim()} is already a built-in filter.`
+                : `${liveVar.trim()} already exists on this board.`
             : null;
 
     // Off-list warning: a variable few runners submit anywhere isn't among the
     // suggestions. Non-blocking — the moderator may know something the data
     // doesn't reflect yet (a new category, an upcoming rule).
     const offList =
-        normalizedName.length > 0 &&
+        normalizedKey.length > 0 &&
         collision === null &&
-        !suggestedNames.has(normalizedName);
+        !suggestedNames.has(normalizedKey);
 
     const ready =
         name.trim().length > 0 &&
+        normalizedKey.length > 0 &&
         options.length > 0 &&
         collision === null &&
         selectedIds.length > 0;
@@ -2128,18 +2141,40 @@ function AddVariableForm({
             <label className={styles.addField}>
                 <span className={styles.addLabel}>
                     {role === 'subcategory'
-                        ? 'Subcategory group name'
-                        : 'Filter name'}
+                        ? 'Subcategory display name'
+                        : 'Filter display name'}
                 </span>
                 <input
                     className={styles.addInput}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder={
-                        role === 'subcategory' ? 'Platform' : 'Controller'
+                        role === 'subcategory' ? 'Solo or Co-op?' : 'Controller'
                     }
                 />
             </label>
+            <p className={styles.addNote}>
+                Shown above the board’s buttons — make it friendly.
+            </p>
+
+            <label className={styles.addField}>
+                <span className={styles.addLabel}>
+                    Variable name in LiveSplit
+                </span>
+                <input
+                    className={styles.addInput}
+                    value={liveVar}
+                    onChange={(e) => {
+                        setLiveVarTouched(true);
+                        setLiveVar(e.target.value);
+                    }}
+                    placeholder={role === 'subcategory' ? 'coop' : 'controller'}
+                />
+            </label>
+            <p className={styles.addNote}>
+                What runners set in their splits — runs are matched on this.
+                Defaults to the display name; change it only if the two differ.
+            </p>
 
             <label className={styles.addField}>
                 <span className={styles.addLabel}>
@@ -2241,7 +2276,7 @@ function AddVariableForm({
                     onClick={() =>
                         onCreate(
                             name.trim(),
-                            normalizedName,
+                            normalizedKey,
                             options,
                             defaultIndex,
                             selectedIds,
