@@ -70,6 +70,7 @@ export const TILE_CONCEPT_IDS = [
     'game-details',
     'categories',
     'groups',
+    'variables',
     'boards',
     'moderators',
     'reassign',
@@ -121,6 +122,10 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
     groups: {
         action: 'Sort categories into groups',
         blurb: 'Bundle related categories so the leaderboard reads in a sensible order.',
+    },
+    variables: {
+        action: 'Structure the boards',
+        blurb: 'Split a category into subcategories, add filters, and decide which values runners pick from.',
     },
     boards: {
         action: 'Curate the boards',

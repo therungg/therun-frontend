@@ -14,6 +14,7 @@ import type {
     VariableRow,
 } from '../../../../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
+import { VariablesGrid } from '../../setup/steps/variables/variables-grid';
 import { BoardCuration } from '../boards/board-curation';
 import { GameTab } from '../game-tab/game-tab';
 import type { ReorderChange } from '../game-tab/reorder-changes';
@@ -154,6 +155,25 @@ export function ContentRouter(props: ContentRouterProps) {
                     onGroupsChange={props.onGroupsChange}
                     onRowGroupChange={props.onRowGroupChange}
                 />
+            );
+        case 'variables':
+            // The wizard's step 4 without the wizard: same grid, same staging
+            // rules (subcategories preview, filters write through). It reads
+            // the game's own categories, not the {id, display} pairs — a
+            // category's featured flag decides whether it is a row.
+            return (
+                <div className={styles.surface}>
+                    <div className={styles.paneHeader}>
+                        <h2 className={styles.paneTitle}>
+                            Subcategories &amp; filters
+                        </h2>
+                    </div>
+                    <VariablesGrid
+                        game={game}
+                        categories={props.boardCategories}
+                        variables={props.variables}
+                    />
+                </div>
             );
         case 'boards':
             return (

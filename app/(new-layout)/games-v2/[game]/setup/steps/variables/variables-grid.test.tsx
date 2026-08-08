@@ -93,8 +93,21 @@ function makeData(): WizardData {
     } as unknown as WizardData;
 }
 
+/**
+ * The grid takes only the three fields it reads, not the whole WizardData —
+ * that is what lets the console mount it as its own pane. The fixture still
+ * builds a WizardData so the wizard's shape stays covered here too.
+ */
+function gridProps(data: WizardData) {
+    return {
+        game: data.game,
+        categories: data.categories,
+        variables: data.variables,
+    };
+}
+
 function renderGrid() {
-    return render(<VariablesGrid data={makeData()} />);
+    return render(<VariablesGrid {...gridProps(makeData())} />);
 }
 
 afterEach(() => {
@@ -151,7 +164,7 @@ describe('VariablesGrid', () => {
         // 120 Star sends unmatched runs to its second option instead.
         data.variables[1].values = [['Nintendo 64', 'n64'], ['Emulator']];
         data.variables[1].defaultValueIndex = 1;
-        render(<VariablesGrid data={data} />);
+        render(<VariablesGrid {...gridProps(data)} />);
 
         expect(
             screen.getByRole('columnheader', { name: 'No Platform given' }),
@@ -229,7 +242,7 @@ describe('VariablesGrid', () => {
             values: [['Yes'], ['No']],
             sortOrder: 1,
         } as WizardData['variables'][number]);
-        render(<VariablesGrid data={data} />);
+        render(<VariablesGrid {...gridProps(data)} />);
 
         // The bar held a reorder pair and a collapse chevron, and the head
         // still drew a leftover chevron of its own from when it was one big
@@ -279,7 +292,7 @@ describe('VariablesGrid', () => {
             values: [['Yes'], ['No']],
             sortOrder: 1,
         } as WizardData['variables'][number]);
-        render(<VariablesGrid data={data} />);
+        render(<VariablesGrid {...gridProps(data)} />);
 
         const titles = screen
             .getAllByRole('button', { name: /^(Platform|Amiibo)$/ })
@@ -486,5 +499,34 @@ describe('VariablesGrid', () => {
                 ]),
             }),
         );
+    });
+});
+
+describe('VariablesGrid — mounted outside the wizard', () => {
+    it('takes the three fields it reads, with no WizardData around it', () => {
+        // The console's `variables` pane mounts this component directly. It
+        // holds a game, its categories and its variables — never a WizardData —
+        // so the grid must not reach for anything else.
+        render(
+            <VariablesGrid
+                game={{ id: 1, name: 'example-game', display: 'Example Game' }}
+                categories={makeData().categories}
+                variables={makeData().variables}
+            />,
+        );
+        expect(screen.getByRole('rowheader', { name: 'Any%' })).toBeTruthy();
+    });
+
+    it('says what to do when no category is featured', () => {
+        // The wizard step used to own this note. It lives in the grid now, so
+        // the console pane shows it too instead of rendering nothing at all.
+        const data = makeData();
+        for (const c of data.categories) c.isMain = false;
+        render(<VariablesGrid {...gridProps(data)} />);
+
+        expect(screen.getByText('No featured categories yet')).toBeTruthy();
+        expect(
+            screen.getByText(/Feature at least one category first/),
+        ).toBeTruthy();
     });
 });

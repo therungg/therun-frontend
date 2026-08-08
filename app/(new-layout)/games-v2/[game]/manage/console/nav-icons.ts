@@ -8,6 +8,7 @@ import {
     Controller,
     ExclamationTriangle,
     Flag,
+    Grid3x3,
     type Icon as IconType,
     ListCheck,
     ListOl,
@@ -28,6 +29,9 @@ export const NAV_ICON: Record<NavItemId, IconType> = {
     'game-details': Controller,
     categories: ListUl,
     groups: Collection,
+    // A grid, because that is literally the surface: categories down, options
+    // across.
+    variables: Grid3x3,
     boards: Trophy,
     moderators: ShieldLock,
     reassign: ArrowLeftRight,
