@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { slugifyVariableKey } from '~src/lib/variables/keys';
 import {
     capitalize,
     ROLE_LABEL,
@@ -13,6 +14,8 @@ import styles from './variables.module.scss';
 
 export interface VariableFormValues {
     name: string;
+    /** The URL/storage key, slugged from the name but independently editable. */
+    nameNormalized: string;
     role: 'subcategory' | 'filter';
     values: string[][];
     defaultValueIndex: number | null;
@@ -76,6 +79,11 @@ export function VariableForm({
     error,
 }: Props) {
     const [name, setName] = useState(editing?.name ?? '');
+    // The key (web address) auto-follows the name via slug until the moderator
+    // edits it directly; after that it stays put. In edit mode it is locked to
+    // the row's existing identity (like the name), so it never auto-follows.
+    const [key, setKey] = useState(editing?.nameNormalized ?? '');
+    const [keyTouched, setKeyTouched] = useState(mode === 'edit');
     const [role, setRole] = useState<'subcategory' | 'filter'>(
         editing?.role ?? 'subcategory',
     );
@@ -100,13 +108,19 @@ export function VariableForm({
         }
     }, [buckets.length, defaultIdx]);
 
+    // Auto-suggest the key from the name until the moderator takes it over.
+    useEffect(() => {
+        if (!keyTouched) setKey(slugifyVariableKey(name));
+    }, [name, keyTouched]);
+
     const reservedLower = useMemo(
         () => new Set(reservedParams.map((r) => r.toLowerCase())),
         [reservedParams],
     );
-    const normalizedName = useMemo(() => normalizeName(name), [name]);
-    const nameCollidesReserved =
-        normalizedName.length > 0 && reservedLower.has(normalizedName);
+    // The stored key is the slug of whatever is in the key field.
+    const normalizedKey = useMemo(() => slugifyVariableKey(key), [key]);
+    const keyCollidesReserved =
+        normalizedKey.length > 0 && reservedLower.has(normalizedKey);
 
     const setBucket = (idx: number, patch: Partial<Bucket>) => {
         setBuckets((prev) =>
@@ -138,15 +152,13 @@ export function VariableForm({
             setLocalError('Name must be 64 characters or fewer.');
             return;
         }
-        if (!/[a-z0-9]/i.test(normalizedName)) {
-            setLocalError(
-                'Name must contain at least one alphanumeric character.',
-            );
+        if (!normalizedKey) {
+            setLocalError('Key must contain at least one letter or number.');
             return;
         }
-        if (nameCollidesReserved) {
+        if (keyCollidesReserved) {
             setLocalError(
-                `"${normalizedName}" is reserved — pick a different name.`,
+                `"${normalizedKey}" is reserved — pick a different key.`,
             );
             return;
         }
@@ -184,6 +196,7 @@ export function VariableForm({
 
         onSubmit({
             name: cleanName,
+            nameNormalized: normalizedKey,
             role,
             values,
             defaultValueIndex: resolvedDefault,
@@ -203,25 +216,52 @@ export function VariableForm({
             <div className="row g-2">
                 <div className="col-md-6">
                     <label htmlFor="var-name" className="form-label small mb-1">
-                        Name
+                        Display name
                     </label>
                     <input
                         id="var-name"
                         type="text"
-                        className={`form-control form-control-sm ${nameCollidesReserved ? 'is-invalid' : ''}`}
+                        className="form-control form-control-sm"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder="Platform"
+                        placeholder="Solo or Co-op?"
                         disabled={isBusy || mode === 'edit'}
                     />
                     <small className="text-muted d-block">
-                        Web address:{' '}
-                        <code>{normalizedName || '(enter a name)'}</code>
+                        Shown to runners. Can be anything.
                     </small>
-                    {nameCollidesReserved && (
+                </div>
+                <div className="col-md-6">
+                    <label htmlFor="var-key" className="form-label small mb-1">
+                        Key (web address)
+                    </label>
+                    <input
+                        id="var-key"
+                        type="text"
+                        className={`form-control form-control-sm font-monospace ${keyCollidesReserved ? 'is-invalid' : ''}`}
+                        value={key}
+                        onChange={(e) => {
+                            setKeyTouched(true);
+                            setKey(e.target.value);
+                        }}
+                        onBlur={() => setKey(normalizedKey)}
+                        placeholder="coop"
+                        disabled={isBusy || mode === 'edit'}
+                    />
+                    <small className="text-muted d-block">
+                        Used in the URL: <code>?{normalizedKey || '…'}=…</code>
+                        {mode === 'create' && (
+                            <>
+                                {' '}
+                                Auto-filled from the name — edit for a cleaner
+                                address. Can’t change later.
+                            </>
+                        )}
+                    </small>
+                    {keyCollidesReserved && (
                         <small className="text-danger d-block">
-                            "{normalizedName}" is reserved — pick a different
-                            name.
+                            "{normalizedKey}" is reserved — pick a different
+                            key.
                         </small>
                     )}
                 </div>
