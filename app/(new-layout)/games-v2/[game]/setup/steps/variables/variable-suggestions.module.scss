@@ -1,0 +1,127 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/board' as board;
+
+// ============================================================
+// VariableSuggestions — the step's lead surface. One row per suggested
+// variable: name + the categories it's relevant in, its observed values, and
+// add-as-subcategory / add-as-filter actions. Presentational; the add form it
+// opens lives in the grid.
+// ============================================================
+
+.panel {
+    @include board.board-surface;
+    margin-bottom: dt.$spacing-lg;
+}
+
+.title {
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0 0 dt.$spacing-xs 0;
+}
+
+.lede {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: 0 0 dt.$spacing-md 0;
+    max-width: 70ch;
+}
+
+.muted {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: 0;
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.row {
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    border-radius: dt.$radius-md;
+    padding: dt.$spacing-sm dt.$spacing-md;
+}
+
+.head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    flex-wrap: wrap;
+}
+
+.name {
+    font-size: dt.$font-size-md;
+    font-weight: 700;
+}
+
+.relevant {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.values {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs;
+    margin: dt.$spacing-xs 0;
+}
+
+.value {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.35em;
+    font-size: dt.$font-size-sm;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    background: rgba(var(--bs-border-color-rgb), 0.25);
+}
+
+.alias {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.count {
+    @include board.mono-time;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.moreValues {
+    align-self: center;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.already {
+    font-size: dt.$font-size-sm;
+    color: dt.$accent-green;
+    margin: dt.$spacing-xs 0 0 0;
+}
+
+.actions {
+    display: flex;
+    gap: dt.$spacing-sm;
+    margin-top: dt.$spacing-sm;
+}
+
+.addBtn {
+    font-size: dt.$font-size-sm;
+    padding: 0.25rem 0.75rem;
+    border-radius: dt.$radius-sm;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    background: transparent;
+    color: var(--bs-body-color);
+    cursor: pointer;
+
+    &:hover {
+        background: rgba(var(--bs-border-color-rgb), 0.2);
+    }
+}
