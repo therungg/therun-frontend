@@ -1,10 +1,13 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import { compareByBoardOrder } from '~src/lib/console/category-order';
-import type { VariableChangeInput } from '~src/lib/leaderboard-variables';
+import type {
+    CategoryVariableSuggestion,
+    VariableChangeInput,
+} from '~src/lib/leaderboard-variables';
 import type { BoardBucket } from '~src/lib/setup/variable-view';
 import {
     categoriesNeedingCombinations,
@@ -29,13 +32,14 @@ import {
     type VariableRoleId,
 } from '~src/lib/variables/language';
 import type { ResolvedCategory } from '../../../../../../../types/leaderboards.types';
-import { ValueSuggestions } from '../../../manage/variables/value-suggestions';
+import { loadVariableSuggestionsAction } from '../../../manage/variables/actions/load-variable-suggestions.action';
 import {
     applyVariableChangesAction,
     previewVariableChangesAction,
 } from '../../actions/apply-variable-changes.action';
 import type { WizardData } from '../../types';
 import { CombinationsBlock } from './combinations-block';
+import { VariableSuggestions } from './variable-suggestions';
 import styles from './variables-grid.module.scss';
 
 /**
@@ -113,6 +117,58 @@ export function VariablesGrid({ data }: { data: WizardData }) {
             ]),
         [groups],
     );
+
+    // Suggestions are loaded once here, on entry, rather than inside the
+    // suggestion list — the manual add form also needs them, to warn when a
+    // moderator adds a variable barely anyone submits. `mainIdsKey` is a stable
+    // primitive so the effect doesn't refire on every render of `mains`.
+    const [suggestions, setSuggestions] = useState<
+        CategoryVariableSuggestion[]
+    >([]);
+    const [suggestionsError, setSuggestionsError] = useState<string | null>(
+        null,
+    );
+    const [suggestionsLoading, startSuggestionsLoad] = useTransition();
+    const mainIdsKey = mains.map((c) => c.id).join(',');
+    useEffect(() => {
+        const ids = mainIdsKey ? mainIdsKey.split(',').map(Number) : [];
+        if (ids.length === 0) {
+            setSuggestions([]);
+            return;
+        }
+        startSuggestionsLoad(async () => {
+            const res = await loadVariableSuggestionsAction({
+                gameSlug: data.game.name,
+                gameId: data.game.id,
+                categoryIds: ids,
+            });
+            if ('error' in res) {
+                setSuggestionsError(res.error);
+                setSuggestions([]);
+            } else {
+                setSuggestionsError(null);
+                setSuggestions(res.result);
+            }
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [mainIdsKey, data.game.name, data.game.id]);
+
+    // Normalized names of every suggested variable — the manual add form warns
+    // when a typed name isn't among them (few runners set it anywhere).
+    const suggestedNames = useMemo(
+        () => new Set(suggestions.map((s) => normalizeName(s.variable))),
+        [suggestions],
+    );
+
+    // A pre-filled add form the suggestion list opens (the mod picked "add as
+    // subcategory/filter" on a suggestion). Owned here so the reused
+    // AddVariableForm renders next to the list without the list importing it.
+    const [pendingAdd, setPendingAdd] = useState<{
+        role: VariableRoleId;
+        name: string;
+        raw: string;
+        selectedIds: number[];
+    } | null>(null);
 
     const buildChanges = (
         group: VariableGroup,
@@ -463,20 +519,51 @@ export function VariablesGrid({ data }: { data: WizardData }) {
         // then opened option by option to add spellings.
         options: string[][],
         defaultIndex: number,
-    ): { changes: VariableChangeInput[]; slugs: string[] } => ({
-        slugs: mains.map((c) => c.name),
-        changes: mains.map((c) => ({
-            categoryId: c.id,
-            input: {
-                name,
-                role,
-                values: options,
-                defaultValueIndex: role === 'subcategory' ? defaultIndex : null,
-                sortOrder: 0,
-                description: null,
-            },
-        })),
-    });
+        // Which featured categories to create it in. Undefined = all of them
+        // (the manual-add default); a suggestion narrows it to the categories
+        // the moderator picked.
+        categoryIds?: number[],
+    ): { changes: VariableChangeInput[]; slugs: string[] } => {
+        const targets = categoryIds
+            ? mains.filter((c) => categoryIds.includes(c.id))
+            : mains;
+        return {
+            slugs: targets.map((c) => c.name),
+            changes: targets.map((c) => ({
+                categoryId: c.id,
+                input: {
+                    name,
+                    role,
+                    values: options,
+                    defaultValueIndex:
+                        role === 'subcategory' ? defaultIndex : null,
+                    sortOrder: 0,
+                    description: null,
+                },
+            })),
+        };
+    };
+
+    // One create path for both the manual add form and the suggestion list.
+    // A subcategory create relocates runs, so it is previewed; a filter create
+    // is additive and applies straight away.
+    const createVariable = (
+        name: string,
+        role: VariableRoleId,
+        options: string[][],
+        defaultIndex: number,
+        categoryIds?: number[],
+    ) => {
+        const built = buildCreateChanges(
+            name,
+            role,
+            options,
+            defaultIndex,
+            categoryIds,
+        );
+        if (role === 'subcategory') openPreview(NEW_KEY, name, built);
+        else applyNow(NEW_KEY, name, built);
+    };
 
     const openPreview = (
         key: string,
@@ -703,27 +790,54 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                 group.name,
                 buildDeleteChanges(group),
             ),
-        onCreate: (name: string, options: string[][], defaultIndex: number) => {
-            const built = buildCreateChanges(name, role, options, defaultIndex);
-            // Creating a split adds boards to every featured category, so it
-            // gets the same preview an edit does. Creating a detail does not.
-            if (role === 'subcategory') openPreview(NEW_KEY, name, built);
-            else applyNow(NEW_KEY, name, built);
-        },
+        onCreate: (
+            name: string,
+            options: string[][],
+            defaultIndex: number,
+            categoryIds?: number[],
+        ) => createVariable(name, role, options, defaultIndex, categoryIds),
+        suggestedNames,
     });
 
     return (
         <>
-            {/* Game-scoped and collapsed: this step configures every featured
-                category at once (no single categoryId), and the whole-game
-                query is the heavy one — so it only runs if the moderator opens
-                it. Sits above both sections because the raw values it lists
-                inform subcategories and filters alike. */}
-            <ValueSuggestions
-                gameSlug={data.game.name}
-                gameId={data.game.id}
-                startCollapsed
+            {/* Suggested variables lead the step: what runners actually submit,
+                per category, so the decision of what to bucket comes before the
+                configuring. Adding one opens the section's add form pre-filled;
+                it also drives the manual-add warning below. */}
+            <VariableSuggestions
+                suggestions={suggestions}
+                loading={suggestionsLoading}
+                error={suggestionsError}
+                categories={mains}
+                existingVariables={data.variables}
+                onAdd={(prefill) => setPendingAdd(prefill)}
             />
+
+            {pendingAdd && (
+                <AddVariableForm
+                    key={`${pendingAdd.role}:${pendingAdd.name}`}
+                    role={pendingAdd.role}
+                    busy={isBusy}
+                    takenNames={takenNames}
+                    categories={mains}
+                    suggestedNames={suggestedNames}
+                    initialName={pendingAdd.name}
+                    initialRaw={pendingAdd.raw}
+                    initialSelectedIds={pendingAdd.selectedIds}
+                    onCancel={() => setPendingAdd(null)}
+                    onCreate={(name, options, defaultIndex, categoryIds) => {
+                        setPendingAdd(null);
+                        createVariable(
+                            name,
+                            pendingAdd.role,
+                            options,
+                            defaultIndex,
+                            categoryIds,
+                        );
+                    }}
+                />
+            )}
 
             <VariableSection {...sectionProps('subcategory')} groups={splits} />
             <VariableSection {...sectionProps('filter')} groups={details} />
@@ -803,7 +917,14 @@ interface SectionProps {
     onAddOption: (group: VariableGroup, bucket: BoardBucket) => void;
     onRename: (group: VariableGroup, nextName: string) => void;
     onDelete: (group: VariableGroup) => void;
-    onCreate: (name: string, options: string[][], defaultIndex: number) => void;
+    onCreate: (
+        name: string,
+        options: string[][],
+        defaultIndex: number,
+        categoryIds?: number[],
+    ) => void;
+    /** Normalized names of suggested variables, for the off-list add warning. */
+    suggestedNames: Set<string>;
 }
 
 function VariableSection({
@@ -829,6 +950,7 @@ function VariableSection({
     onRename,
     onDelete,
     onCreate,
+    suggestedNames,
 }: SectionProps) {
     const [adding, setAdding] = useState(false);
     const copy = SECTION[role];
@@ -942,11 +1064,12 @@ function VariableSection({
                     role={role}
                     busy={busy}
                     takenNames={takenNames}
-                    categoryCount={categories.length}
+                    categories={categories}
+                    suggestedNames={suggestedNames}
                     onCancel={() => setAdding(false)}
-                    onCreate={(name, options, defaultIndex) => {
+                    onCreate={(name, options, defaultIndex, categoryIds) => {
                         setAdding(false);
-                        onCreate(name, options, defaultIndex);
+                        onCreate(name, options, defaultIndex, categoryIds);
                     }}
                 />
             ) : (
@@ -1875,20 +1998,42 @@ function AddVariableForm({
     role,
     busy,
     takenNames,
-    categoryCount,
+    categories,
+    suggestedNames,
+    initialName = '',
+    initialRaw = '',
+    initialSelectedIds,
     onCancel,
     onCreate,
 }: {
     role: VariableRoleId;
     busy: boolean;
     takenNames: Set<string>;
-    categoryCount: number;
+    categories: ResolvedCategory[];
+    suggestedNames: Set<string>;
+    /** Prefill from a suggestion: name, the grouped `label, alias…` lines, and
+     *  the categories the variable is relevant in (checked by default). */
+    initialName?: string;
+    initialRaw?: string;
+    initialSelectedIds?: number[];
     onCancel: () => void;
-    onCreate: (name: string, options: string[][], defaultIndex: number) => void;
+    onCreate: (
+        name: string,
+        options: string[][],
+        defaultIndex: number,
+        categoryIds: number[],
+    ) => void;
 }) {
-    const [name, setName] = useState('');
-    const [raw, setRaw] = useState('');
+    const [name, setName] = useState(initialName);
+    const [raw, setRaw] = useState(initialRaw);
     const [defaultOption, setDefaultOption] = useState('');
+    const [selectedIds, setSelectedIds] = useState<number[]>(
+        initialSelectedIds ?? categories.map((c) => c.id),
+    );
+    const toggleCategory = (id: number) =>
+        setSelectedIds((prev) =>
+            prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+        );
 
     // One option per line, its accepted spellings after a comma:
     //
@@ -1923,8 +2068,19 @@ function AddVariableForm({
                 : `${name.trim()} already exists on this board.`
             : null;
 
+    // Off-list warning: a variable few runners submit anywhere isn't among the
+    // suggestions. Non-blocking — the moderator may know something the data
+    // doesn't reflect yet (a new category, an upcoming rule).
+    const offList =
+        normalized.length > 0 &&
+        collision === null &&
+        !suggestedNames.has(normalized);
+
     const ready =
-        name.trim().length > 0 && options.length > 0 && collision === null;
+        name.trim().length > 0 &&
+        options.length > 0 &&
+        collision === null &&
+        selectedIds.length > 0;
 
     return (
         <div className={styles.addForm}>
@@ -1986,15 +2142,45 @@ function AddVariableForm({
                 </label>
             )}
 
+            <div className={styles.addField}>
+                <span className={styles.addLabel}>
+                    Add to which{' '}
+                    {role === 'subcategory' ? 'boards' : 'categories'}
+                </span>
+                <div className={styles.addCategories}>
+                    {categories.map((c) => (
+                        <label key={c.id} className={styles.addCategory}>
+                            <input
+                                type="checkbox"
+                                checked={selectedIds.includes(c.id)}
+                                disabled={busy}
+                                onChange={() => toggleCategory(c.id)}
+                            />
+                            {c.display}
+                        </label>
+                    ))}
+                </div>
+            </div>
+
             {collision && <p className={styles.addError}>{collision}</p>}
+            {offList && (
+                <p className={styles.addWarning}>
+                    Few runners set &ldquo;{name.trim()}&rdquo; — it isn&rsquo;t
+                    among the suggested variables. You can still add it.
+                </p>
+            )}
 
             <p className={styles.addNote}>
                 {role === 'subcategory'
                     ? options.length > 1
-                        ? `Every featured category is multiplied by ${options.length}. Each one splits into ${options.length} subcategories with their own records.`
+                        ? `Each of the ${selectedIds.length} selected ${
+                              selectedIds.length === 1
+                                  ? 'category is'
+                                  : 'categories are'
+                          } multiplied by ${options.length} — every one splits into ${options.length} subcategories with their own records.`
                         : 'A subcategory group needs at least two options to split anything.'
-                    : `Added to all ${categoryCount} featured ${
-                          categoryCount === 1 ? 'category' : 'categories'
+                    : `Added to ${selectedIds.length} ${
+                          selectedIds.length === 1 ? 'category' : 'categories'
                       }. No subcategories, no effect on records.`}
             </p>
 
@@ -2011,7 +2197,14 @@ function AddVariableForm({
                     type="button"
                     className={styles.pendingApply}
                     disabled={busy || !ready}
-                    onClick={() => onCreate(name.trim(), options, defaultIndex)}
+                    onClick={() =>
+                        onCreate(
+                            name.trim(),
+                            options,
+                            defaultIndex,
+                            selectedIds,
+                        )
+                    }
                 >
                     {role === 'subcategory' ? 'Preview & add' : 'Add'}
                 </button>

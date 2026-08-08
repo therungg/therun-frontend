@@ -828,6 +828,27 @@
     color: var(--bs-danger);
 }
 
+.addWarning {
+    margin: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-warning-text-emphasis, #997404);
+}
+
+.addCategories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs dt.$spacing-md;
+    margin-top: dt.$spacing-xs;
+}
+
+.addCategory {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    font-size: dt.$font-size-sm;
+    cursor: pointer;
+}
+
 .addNote {
     margin: 0;
     font-size: dt.$font-size-sm;

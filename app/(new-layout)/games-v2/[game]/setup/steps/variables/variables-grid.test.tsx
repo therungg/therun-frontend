@@ -18,6 +18,12 @@ vi.mock('../../actions/apply-variable-changes.action', () => ({
 vi.mock('../../actions/set-valid-combinations.action', () => ({
     setValidCombinationsAction: vi.fn(async () => ({ ok: true })),
 }));
+vi.mock(
+    '../../../manage/variables/actions/load-variable-suggestions.action',
+    () => ({
+        loadVariableSuggestionsAction: vi.fn(async () => ({ result: [] })),
+    }),
+);
 vi.mock('next/navigation', () => ({
     useRouter: () => ({ refresh: vi.fn() }),
 }));
