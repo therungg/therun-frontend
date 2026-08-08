@@ -29,6 +29,7 @@ import {
     type VariableRoleId,
 } from '~src/lib/variables/language';
 import type { ResolvedCategory } from '../../../../../../../types/leaderboards.types';
+import { ValueSuggestions } from '../../../manage/variables/value-suggestions';
 import {
     applyVariableChangesAction,
     previewVariableChangesAction,
@@ -713,6 +714,17 @@ export function VariablesGrid({ data }: { data: WizardData }) {
 
     return (
         <>
+            {/* Game-scoped and collapsed: this step configures every featured
+                category at once (no single categoryId), and the whole-game
+                query is the heavy one — so it only runs if the moderator opens
+                it. Sits above both sections because the raw values it lists
+                inform subcategories and filters alike. */}
+            <ValueSuggestions
+                gameSlug={data.game.name}
+                gameId={data.game.id}
+                startCollapsed
+            />
+
             <VariableSection {...sectionProps('subcategory')} groups={splits} />
             <VariableSection {...sectionProps('filter')} groups={details} />
 
