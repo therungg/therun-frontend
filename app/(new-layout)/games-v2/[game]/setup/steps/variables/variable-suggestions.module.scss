@@ -17,14 +17,7 @@
     font-size: dt.$font-size-lg;
     font-weight: 700;
     letter-spacing: -0.01em;
-    margin: 0 0 dt.$spacing-xs 0;
-}
-
-.lede {
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-    margin: 0 0 dt.$spacing-lg 0;
-    max-width: 68ch;
+    margin: 0 0 dt.$spacing-md 0;
 }
 
 .muted {
