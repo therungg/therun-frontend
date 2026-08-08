@@ -84,6 +84,30 @@
     }
 }
 
+// Filter values a moderator opted onto the board (setup step 5's "Show this
+// as a value on the leaderboard row"). A compact secondary column: like the
+// date it yields on narrow screens so rank, runner and time keep priority —
+// and earlier than the date, since it's an extra attribute, not the record.
+.valueHeader {
+    white-space: nowrap;
+    width: 1%;
+
+    @media (max-width: 767.98px) {
+        display: none;
+    }
+}
+
+.value {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+    width: 1%;
+
+    @media (max-width: 767.98px) {
+        display: none;
+    }
+}
+
 .trailing {
     text-align: right;
     white-space: nowrap;

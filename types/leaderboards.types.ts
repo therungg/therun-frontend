@@ -122,6 +122,11 @@ export interface VariableRow {
     defaultValueIndex: number | null;
     sortOrder: number;
     description: string | null;
+    // Filters only: when true, the runner's value for this variable is shown
+    // as its own column on the leaderboard row. Default false. Optional so an
+    // older backend deploy that doesn't return the column doesn't break the
+    // type — consumers must treat a missing value as false.
+    showValueOnBoard?: boolean;
     version: number;
     published: boolean;
 }

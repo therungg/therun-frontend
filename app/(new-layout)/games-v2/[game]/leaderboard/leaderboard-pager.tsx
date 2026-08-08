@@ -97,6 +97,14 @@ export function LeaderboardPager({
     selectedVarFilters,
     rtaFallback = false,
 }: Props) {
+    // Variables (either role) the moderator opted into showing as their own
+    // board column. Keyed by nameNormalized, which is how a runner's value is
+    // stored on each entry (entry.variables[key]). A subcategory's value is
+    // constant on a single split board and only varies on the combined view.
+    const valueColumns = variableDefs
+        .filter((d) => d.showValueOnBoard === true)
+        .map((d) => ({ key: d.nameNormalized, label: d.name }));
+
     // The whole viewed page, response-shaped: entries plus the page/total
     // bookkeeping every control below derives from. Navigation swaps it
     // wholesale, so totals stay honest if the board changes size under us.
@@ -464,6 +472,7 @@ export function LeaderboardPager({
                 canManage={canManage}
                 gameSlug={gameSlug}
                 variableKeys={variableKeys}
+                valueColumns={valueColumns}
                 primaryTiming={primaryTiming}
                 gameTimeLabel={gameTimeLabel}
                 filtersActive={filtersActive}

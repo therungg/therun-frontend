@@ -141,6 +141,7 @@ export function planCategoryCopy(input: {
                         defaultValueIndex: v.defaultValueIndex,
                         sortOrder: v.sortOrder,
                         description: v.description,
+                        showValueOnBoard: v.showValueOnBoard ?? false,
                     },
                 });
             }
