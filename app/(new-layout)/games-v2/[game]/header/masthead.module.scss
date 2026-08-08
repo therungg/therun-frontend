@@ -118,10 +118,31 @@
     .pill {
         @include board.control-pill;
         font-size: dt.$font-size-xs;
+        // The tier is a segmented control, not a quiet action link — resting
+        // options must still read as pressable (SRC-comparison audit). Border
+        // + faint fill here rather than in control-pill, which the rest of
+        // the app uses for genuinely quiet chips (Discord, Manage, errors).
+        border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+        background: rgba(var(--bs-body-color-rgb), 0.04);
+        color: var(--bs-body-color);
+
+        &:hover {
+            border-color: rgba(var(--bs-border-color-rgb), 0.8);
+        }
     }
 
     .pillActive {
-        @include board.control-pill-active;
+        // Pressed state a glance can't miss: solid fill, not a 10% tint. The
+        // tier stays quieter than the category chips through size alone.
+        background: var(--bs-primary);
+        border-color: color-mix(in srgb, var(--bs-primary) 70%, white);
+        color: #fff;
+        font-weight: 600;
+
+        &:hover {
+            background: var(--bs-primary);
+            color: #fff;
+        }
     }
 }
 

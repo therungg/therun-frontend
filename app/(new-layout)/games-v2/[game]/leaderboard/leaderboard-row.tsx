@@ -323,7 +323,15 @@ export function LeaderboardRow({
                         </span>
                     </>
                 )}
-                {displayRank.label.replace(/^=/, '')}
+                {/* Podium ranks get a solid medal badge — a fixed left anchor
+                    that reads at a glance, where a tinted numeral didn't. */}
+                {entry.rank <= 3 ? (
+                    <span className={`${styles.medal} ${rankClass}`}>
+                        {displayRank.label.replace(/^=/, '')}
+                    </span>
+                ) : (
+                    displayRank.label.replace(/^=/, '')
+                )}
             </td>
             <td className={styles.runner}>
                 <span className={styles.runnerCell}>

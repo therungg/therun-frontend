@@ -180,6 +180,32 @@ tr:focus-within .reveal {
     color: dt.$accent-bronze;
 }
 
+// Podium medal: solid circle, dark numeral. The tinted numeral alone was the
+// only per-row anchor besides the spine, and it whispered.
+.medal {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.45rem;
+    height: 1.45rem;
+    border-radius: 50%;
+    font-size: dt.$font-size-2xs;
+    font-weight: 700;
+
+    &.rank1 {
+        background: dt.$accent-gold;
+        color: rgba(0, 0, 0, 0.85);
+    }
+    &.rank2 {
+        background: dt.$accent-silver;
+        color: rgba(0, 0, 0, 0.85);
+    }
+    &.rank3 {
+        background: dt.$accent-bronze;
+        color: rgba(0, 0, 0, 0.85);
+    }
+}
+
 .runner {
     font-weight: 600;
     color: var(--bs-emphasis-color);

@@ -141,6 +141,19 @@ export function LeaderboardTable({
         );
     }
 
+    // A value column where no loaded row has a runner-set value would render a
+    // wall of dashes — hide it entirely, same policy as the secondary time
+    // column below. Recomputed per page, so a page with data re-shows it.
+    const visibleValueColumns = valueColumns.filter((col) =>
+        leaderboard.entries.some(
+            (e) =>
+                e.variables?.[col.key] != null &&
+                e.rawVariables != null &&
+                (e.rawVariables[col.key] !== undefined ||
+                    e.rawVariables[col.altKey] !== undefined),
+        ),
+    );
+
     const { hideRealTime, hideGameTime } = leaderboard;
     const { primary, secondary } = timingColumns(primaryTiming, gameTimeLabel);
     // Every entry in the loaded window has no secondary time at all — hide
@@ -208,7 +221,7 @@ export function LeaderboardTable({
                                 {secondary.label}
                             </th>
                         )}
-                        {valueColumns.map((col) => (
+                        {visibleValueColumns.map((col) => (
                             <th key={col.key} className={styles.valueHeader}>
                                 {col.label}
                             </th>
@@ -235,7 +248,7 @@ export function LeaderboardTable({
                             hideRealTime={rowHideRealTime}
                             hideGameTime={rowHideGameTime}
                             primaryTiming={primaryTiming}
-                            valueColumns={valueColumns}
+                            valueColumns={visibleValueColumns}
                             sessionUsername={sessionUsername}
                             showMilliseconds={showMilliseconds}
                             categorySlug={categorySlug}
