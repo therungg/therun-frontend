@@ -11,6 +11,7 @@ import {
     categoryFactsFromResolved,
     computeCompleteness,
     type SetupStepId,
+    variableFactsFromRows,
 } from '~src/lib/setup/completeness';
 import { resolveSetupStep } from '~src/lib/setup/steps';
 import { defineAbilityFor } from '~src/rbac/ability';
@@ -88,6 +89,7 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         ungroupedMainCount: catData.categories.filter(
             (c) => !c.archived && (c.isMain ?? false) && c.groupId == null,
         ).length,
+        ...variableFactsFromRows(variables),
     });
 
     const data: WizardData = {

@@ -25,6 +25,7 @@ import {
     type BoardCompleteness,
     categoryFactsFromResolved,
     computeCompleteness,
+    variableFactsFromRows,
 } from '~src/lib/setup/completeness';
 import { type BoardHealth, computeBoardHealth } from '~src/lib/setup/health';
 import { defineAbilityFor } from '~src/rbac/ability';
@@ -203,6 +204,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
                     (c) =>
                         !c.archived && (c.isMain ?? false) && c.groupId == null,
                 ).length,
+                ...variableFactsFromRows(variables),
             });
             boardHealth = computeBoardHealth({
                 completeness: setupCompleteness,

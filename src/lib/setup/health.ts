@@ -28,6 +28,7 @@ const STEP_PANE: Partial<Record<SetupStepId, string>> = {
     categories: 'categories',
     groups: 'groups',
     'category-setup': 'categories',
+    variables: 'categories',
 };
 
 // The stale-triage line ("N triage items waiting more than a week") is gone

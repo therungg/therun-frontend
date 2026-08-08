@@ -148,6 +148,7 @@ export const STEP_CONCEPTS: Record<SetupStepId, ConceptId[]> = {
     categories: ['categories'],
     groups: ['groups'],
     'category-setup': ['categories'],
+    variables: ['variables'],
     boards: ['boards'],
 };
 
