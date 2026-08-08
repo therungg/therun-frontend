@@ -42,6 +42,11 @@ export interface UpsertVariableInput {
     defaultValueIndex?: number | null;
     sortOrder?: number;
     description?: string | null;
+    // Filters only: show each runner's value for this variable as its own
+    // leaderboard column. Full-replace upsert, so every write that touches a
+    // row must carry the current value or it resets to the backend default
+    // (false).
+    showValueOnBoard?: boolean;
 }
 
 export interface DeleteVariableInput {

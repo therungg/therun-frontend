@@ -58,6 +58,13 @@ export interface VariableGroup {
     dominantRole: VariableRow['role'];
     /** True when categories disagree about the role. */
     roleDrift: boolean;
+    /**
+     * Board-level: is this variable's value shown as its own leaderboard
+     * column? True when any carrying category has the flag set. The toggle
+     * writes it uniformly across categories, so drift only survives from rows
+     * created before the feature — all of which default false.
+     */
+    showValueOnBoard: boolean;
 }
 
 /**
@@ -85,6 +92,7 @@ export function groupVariables(rows: VariableRow[]): VariableGroup[] {
                 sortOrder: row.sortOrder,
                 dominantRole: row.role,
                 roleDrift: false,
+                showValueOnBoard: false,
             };
             groups.set(row.nameNormalized, group);
             nameCounts.set(row.nameNormalized, new Map());
@@ -118,6 +126,8 @@ export function groupVariables(rows: VariableRow[]): VariableGroup[] {
             row.values[row.defaultValueIndex] !== undefined
                 ? bucketKey(row.values[row.defaultValueIndex])
                 : null;
+
+        if (row.showValueOnBoard) group.showValueOnBoard = true;
 
         group.byCategory.set(row.categoryId, {
             categoryId: row.categoryId,

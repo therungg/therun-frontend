@@ -285,6 +285,9 @@ export function VariablesSection({
                     defaultValueIndex: values.defaultValueIndex,
                     sortOrder: values.sortOrder,
                     description: values.description,
+                    // Not editable in this form, but a full-replace upsert
+                    // would drop it — carry the editing row's value through.
+                    showValueOnBoard: editing.showValueOnBoard ?? false,
                 },
             });
             if ('error' in res) {
@@ -314,6 +317,7 @@ export function VariablesSection({
                     defaultValueIndex: row.defaultValueIndex,
                     sortOrder: newSort,
                     description: row.description,
+                    showValueOnBoard: row.showValueOnBoard ?? false,
                 },
             });
 

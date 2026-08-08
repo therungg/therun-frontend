@@ -69,6 +69,7 @@ export function variableUpsertBody(
         defaultValueIndex: row.defaultValueIndex,
         sortOrder: row.sortOrder,
         description: row.description,
+        showValueOnBoard: row.showValueOnBoard ?? false,
         ...overrides,
     };
 }

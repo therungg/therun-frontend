@@ -124,6 +124,8 @@ interface Props {
     hideRealTime: boolean;
     hideGameTime: boolean;
     primaryTiming: TimingKey;
+    /** Filter variables opted into a board column ({ key: nameNormalized, label }). */
+    valueColumns: { key: string; label: string }[];
     sessionUsername: string | null;
     /** category.showMilliseconds ?? true — precision the board is configured for. */
     showMilliseconds: boolean;
@@ -154,6 +156,7 @@ export function LeaderboardRow({
     hideRealTime,
     hideGameTime,
     primaryTiming,
+    valueColumns,
     sessionUsername,
     showMilliseconds,
     categorySlug,
@@ -363,6 +366,11 @@ export function LeaderboardRow({
                     true,
                     !primaryVisible,
                 )}
+            {valueColumns.map((col) => (
+                <td key={col.key} className={styles.value}>
+                    {entry.variables?.[col.key] ?? '—'}
+                </td>
+            ))}
             <td
                 className={`${styles.meta} ${styles.when}`}
                 title={entry.runDate ? formatRunDate(entry.runDate) : undefined}

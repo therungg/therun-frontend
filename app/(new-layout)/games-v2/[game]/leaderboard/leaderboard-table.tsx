@@ -25,6 +25,8 @@ interface Props {
     canManage: boolean;
     gameSlug: string;
     variableKeys: string[];
+    /** Filter variables opted into a board column ({ key: nameNormalized, label }). */
+    valueColumns: { key: string; label: string }[];
     primaryTiming: TimingKey;
     /** What the board calls its game-time clock. Display only. */
     gameTimeLabel?: 'igt' | 'lrt';
@@ -59,6 +61,7 @@ export function LeaderboardTable({
     canManage,
     gameSlug,
     variableKeys,
+    valueColumns,
     primaryTiming,
     gameTimeLabel = 'igt',
     filtersActive,
@@ -198,6 +201,11 @@ export function LeaderboardTable({
                                 {secondary.label}
                             </th>
                         )}
+                        {valueColumns.map((col) => (
+                            <th key={col.key} className={styles.valueHeader}>
+                                {col.label}
+                            </th>
+                        ))}
                         <th className={styles.when}>When</th>
                         <th aria-label="Video, status and actions" />
                     </tr>
@@ -220,6 +228,7 @@ export function LeaderboardTable({
                             hideRealTime={rowHideRealTime}
                             hideGameTime={rowHideGameTime}
                             primaryTiming={primaryTiming}
+                            valueColumns={valueColumns}
                             sessionUsername={sessionUsername}
                             showMilliseconds={showMilliseconds}
                             categorySlug={categorySlug}

@@ -847,6 +847,7 @@ describe('BoardCuration — reorder mode', () => {
                     defaultValueIndex: 0,
                     sortOrder: 1,
                     description: 'Platform played on',
+                    showValueOnBoard: false,
                 },
             }),
         );

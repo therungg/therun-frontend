@@ -256,6 +256,7 @@ describe('planCategoryCopy', () => {
                     defaultValueIndex: 0,
                     sortOrder: 0,
                     description: 'Which platform the run was played on.',
+                    showValueOnBoard: false,
                 },
             },
         ]);
