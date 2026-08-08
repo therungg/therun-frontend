@@ -31,13 +31,16 @@ import {
     SECTION,
     type VariableRoleId,
 } from '~src/lib/variables/language';
-import type { ResolvedCategory } from '../../../../../../../types/leaderboards.types';
+import type {
+    ResolvedCategory,
+    ResolvedGame,
+    VariableRow,
+} from '../../../../../../../types/leaderboards.types';
 import { loadVariableSuggestionsAction } from '../../../manage/variables/actions/load-variable-suggestions.action';
 import {
     applyVariableChangesAction,
     previewVariableChangesAction,
 } from '../../actions/apply-variable-changes.action';
-import type { WizardData } from '../../types';
 import { CombinationsBlock } from './combinations-block';
 import { VariableSuggestions } from './variable-suggestions';
 import styles from './variables-grid.module.scss';
@@ -76,7 +79,18 @@ import styles from './variables-grid.module.scss';
  * Staging is client-side only — this never writes an unpublished row, because
  * `published` is supersede history here, not a draft flag.
  */
-export function VariablesGrid({ data }: { data: WizardData }) {
+export interface VariablesGridProps {
+    game: ResolvedGame;
+    /** Every category on the game; the grid narrows to the featured ones. */
+    categories: ResolvedCategory[];
+    variables: VariableRow[];
+}
+
+export function VariablesGrid({
+    game,
+    categories,
+    variables,
+}: VariablesGridProps) {
     const router = useRouter();
     const [pending, setPending] = useState<Map<string, PendingToggle[]>>(
         new Map(),
@@ -93,15 +107,12 @@ export function VariablesGrid({ data }: { data: WizardData }) {
 
     const mains = useMemo(
         () =>
-            data.categories
+            categories
                 .filter((c) => !c.archived && (c.isMain ?? false))
                 .sort(compareByBoardOrder),
-        [data.categories],
+        [categories],
     );
-    const groups = useMemo(
-        () => groupVariables(data.variables),
-        [data.variables],
-    );
+    const groups = useMemo(() => groupVariables(variables), [variables]);
     const { splits, details } = useMemo(
         () => partitionGroups(groups),
         [groups],
@@ -138,8 +149,8 @@ export function VariablesGrid({ data }: { data: WizardData }) {
         }
         startSuggestionsLoad(async () => {
             const res = await loadVariableSuggestionsAction({
-                gameSlug: data.game.name,
-                gameId: data.game.id,
+                gameSlug: game.name,
+                gameId: game.id,
                 categoryIds: ids,
             });
             if ('error' in res) {
@@ -151,7 +162,7 @@ export function VariablesGrid({ data }: { data: WizardData }) {
             }
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [mainIdsKey, data.game.name, data.game.id]);
+    }, [mainIdsKey, game.name, game.id]);
 
     // Normalized names of every suggested variable — the manual add form warns
     // when a typed name isn't among them (few runners set it anywhere).
@@ -640,8 +651,8 @@ export function VariablesGrid({ data }: { data: WizardData }) {
         setBusyGroup(key);
         startBusy(async () => {
             const res = await previewVariableChangesAction({
-                gameSlug: data.game.name,
-                gameId: data.game.id,
+                gameSlug: game.name,
+                gameId: game.id,
                 changes: built.changes,
             });
             setBusyGroup(null);
@@ -673,8 +684,8 @@ export function VariablesGrid({ data }: { data: WizardData }) {
         setBusyGroup(key);
         startBusy(async () => {
             const res = await applyVariableChangesAction({
-                gameSlug: data.game.name,
-                gameId: data.game.id,
+                gameSlug: game.name,
+                gameId: game.id,
                 changes: built.changes,
                 touchedCategorySlugs: built.slugs,
             });
@@ -810,8 +821,8 @@ export function VariablesGrid({ data }: { data: WizardData }) {
         setBusyGroup(groupKey);
         startBusy(async () => {
             const res = await applyVariableChangesAction({
-                gameSlug: data.game.name,
-                gameId: data.game.id,
+                gameSlug: game.name,
+                gameId: game.id,
                 changes,
                 touchedCategorySlugs: slugs,
             });
@@ -839,13 +850,27 @@ export function VariablesGrid({ data }: { data: WizardData }) {
         });
     };
 
-    if (mains.length === 0) return null;
+    // Subcategories and filters are configured per featured category, so with
+    // nothing featured there is nothing to structure. The note lives here
+    // rather than in the wizard step so the console pane gets it too.
+    if (mains.length === 0) {
+        return (
+            <div className={styles.empty}>
+                <p className={styles.emptyTitle}>No featured categories yet</p>
+                <p className={styles.emptyNote}>
+                    Feature at least one category first — subcategories and
+                    filters are configured per featured category, so there is
+                    nothing to structure yet.
+                </p>
+            </div>
+        );
+    }
 
     const sectionProps = (role: VariableRoleId) => ({
         role,
-        game: data.game,
+        game: game,
         categories: mains,
-        variables: data.variables,
+        variables: variables,
         busyGroup,
         busy: isBusy,
         takenNames,
@@ -984,7 +1009,7 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                 loading={suggestionsLoading}
                 error={suggestionsError}
                 categories={mains}
-                existingVariables={data.variables}
+                existingVariables={variables}
                 onAdd={(prefill) => setPendingAdd(prefill)}
             />
 
@@ -1100,10 +1125,10 @@ function TriCheckbox({
 
 interface SectionProps {
     role: VariableRoleId;
-    game: WizardData['game'];
+    game: ResolvedGame;
     groups: VariableGroup[];
     categories: ResolvedCategory[];
-    variables: WizardData['variables'];
+    variables: VariableRow[];
     busyGroup: string | null;
     busy: boolean;
     takenNames: Set<string>;

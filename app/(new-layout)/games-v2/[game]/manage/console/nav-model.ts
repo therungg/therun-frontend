@@ -14,6 +14,7 @@ export type NavItemId =
     | 'game-details'
     | 'categories'
     | 'groups'
+    | 'variables'
     | 'boards'
     | 'moderators'
     | 'reassign';
@@ -75,6 +76,11 @@ const ALL_GROUPS: NavGroup[] = [
             // Order matches the wizard: details 1, categories 2, groups 3.
             { id: 'categories', label: CONCEPT_LABEL.categories },
             { id: 'groups', label: CONCEPT_LABEL.groups },
+            // The wizard's step 4, mounted as a pane: the same VariablesGrid,
+            // spanning every featured category. Structure used to be reachable
+            // only by opening a category and scrolling — which meant the one
+            // screen that shows where categories disagree had no door.
+            { id: 'variables', label: CONCEPT_LABEL.variables },
             { id: 'boards', label: CONCEPT_LABEL.boards },
             { id: 'moderators', label: CONCEPT_LABEL.moderators },
             { id: 'reassign', label: CONCEPT_LABEL.reassign },

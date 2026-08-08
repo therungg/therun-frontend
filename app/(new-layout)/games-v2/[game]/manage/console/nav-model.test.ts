@@ -49,13 +49,15 @@ describe('buildNav', () => {
         })
             .flatMap((g) => g.items)
             .map((it) => it.id as string);
+        // `variables` is deliberately absent from this list: it came back as
+        // a board-wide pane (the wizard's grid), not as the per-category
+        // editor these ids used to open.
         for (const retired of [
             'standards',
             'timing',
             'rules',
             'combinations',
             'category-settings',
-            'variables',
         ]) {
             expect(ids, retired).not.toContain(retired);
         }
@@ -241,11 +243,10 @@ describe('nav shape', () => {
         expect(buildNav(ALL).map((g) => g.id)).toEqual(['moderate', 'board']);
     });
 
-    it('shows nine items to a fully privileged viewer', () => {
+    it('shows ten items to a fully privileged viewer', () => {
         // Attention, roster and reports are out of the nav for now (see
-        // ALL_GROUPS in nav-model.ts); variables are category-scoped and
-        // live behind the category index, not in the nav.
-        expect(buildNav(ALL).flatMap((g) => g.items)).toHaveLength(9);
+        // ALL_GROUPS in nav-model.ts).
+        expect(buildNav(ALL).flatMap((g) => g.items)).toHaveLength(10);
     });
 
     it('no longer exposes the pulled triage entries', () => {
@@ -259,11 +260,12 @@ describe('nav shape', () => {
 
     it('orders the board group to match the wizard', () => {
         const board = buildNav(ALL).find((g) => g.id === 'board');
-        expect(board?.items.slice(0, 5).map((i) => i.id)).toEqual([
+        expect(board?.items.slice(0, 6).map((i) => i.id)).toEqual([
             'setup',
             'game-details',
             'categories',
             'groups',
+            'variables',
             'boards',
         ]);
     });
@@ -273,5 +275,29 @@ describe('nav shape', () => {
             .flatMap((g) => g.items)
             .map((it) => it.id);
         expect(ids).toContain('categories');
+    });
+
+    it('keeps subcategories & filters to viewers who can configure', () => {
+        // Editing a bucket relocates existing runs, so this is a configure
+        // surface — a moderator without it gets the category index and
+        // Minimum time, and nothing structural.
+        const modOnly = buildNav({ ...NO_FLAGS, canModerate: true })
+            .flatMap((g) => g.items)
+            .map((it) => it.id);
+        expect(modOnly).not.toContain('variables');
+
+        const configurer = buildNav({ ...NO_FLAGS, canConfigure: true })
+            .flatMap((g) => g.items)
+            .map((it) => it.id);
+        expect(configurer).toContain('variables');
+    });
+
+    it('lets ?pane=variables land, unlike the wizard door beside it', () => {
+        const visible = buildNav(ALL)
+            .flatMap((g) => g.items)
+            .map((it) => it.id);
+        expect(isLandingPaneId('variables', visible)).toBe(true);
+        // The neighbouring Board item leaves the console entirely.
+        expect(isLandingPaneId('setup', visible)).toBe(false);
     });
 });

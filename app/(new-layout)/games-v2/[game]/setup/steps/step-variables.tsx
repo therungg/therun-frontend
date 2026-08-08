@@ -17,27 +17,23 @@ import { VariablesGrid } from './variables/variables-grid';
  * It spans every featured category at once, matching the Category settings
  * step's categories-down-the-rows axis.
  *
+ * The same grid is the console's `variables` pane — this step is the wizard's
+ * frame around it (header + Continue), nothing more. The no-featured-categories
+ * note lives in the grid so both surfaces show it.
+ *
  * Optional: a single-board game skips straight through. The retired
  * `?step=variables` deep link resolves here again (it is a live step id).
  */
 export function StepVariables({ data, onAdvance }: StepProps) {
-    const mains = data.categories.filter(
-        (c) => !c.archived && (c.isMain ?? false),
-    );
-
     return (
         <section>
             <StepHeader step="variables" title="Subcategories & filters" />
 
-            {mains.length === 0 ? (
-                <div className={styles.infoNote}>
-                    Feature at least one category first — subcategories and
-                    filters are configured per featured category, so there is
-                    nothing to structure yet.
-                </div>
-            ) : (
-                <VariablesGrid data={data} />
-            )}
+            <VariablesGrid
+                game={data.game}
+                categories={data.categories}
+                variables={data.variables}
+            />
 
             <button
                 type="button"
