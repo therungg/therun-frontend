@@ -327,6 +327,42 @@
     padding-left: 0 !important;
 }
 
+.rowRemoveCell {
+    text-align: right;
+    white-space: nowrap;
+}
+
+// The per-row "remove this category from the group" control. Hidden until the
+// row is hovered/focused so a grid at rest stays quiet, but always reachable by
+// keyboard.
+.rowRemove {
+    flex: none;
+    font: inherit;
+    font-size: dt.$font-size-2xs;
+    line-height: 1;
+    color: var(--bs-tertiary-color);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: dt.$radius-sm;
+    padding: 0.1rem 0.35rem;
+    cursor: pointer;
+    opacity: 0;
+
+    tr:hover &,
+    &:focus-visible {
+        opacity: 1;
+    }
+
+    &:hover:not(:disabled) {
+        color: var(--bs-danger);
+        border-color: rgba(var(--bs-danger-rgb), 0.4);
+    }
+
+    &:disabled {
+        cursor: default;
+    }
+}
+
 // ---- Adding an option ---------------------------------------
 // A new option is a new column, so the control that makes one stands where the
 // column will be. There was no way to add one at all: an existing option could
