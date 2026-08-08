@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import { compareByBoardOrder } from '~src/lib/console/category-order';
 import type {
@@ -225,6 +225,9 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                         role === 'subcategory' ? keptDefault : null,
                     sortOrder: existing?.row.sortOrder ?? 0,
                     description: existing?.row.description ?? null,
+                    // Carried on every write — a full-replace upsert would
+                    // otherwise reset this filter's board column to off.
+                    showValueOnBoard: existing?.row.showValueOnBoard ?? false,
                 },
             };
         });
@@ -261,6 +264,7 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                                 : null,
                         sortOrder: row?.sortOrder ?? 0,
                         description: row?.description ?? null,
+                        showValueOnBoard: row?.showValueOnBoard ?? false,
                     },
                 };
             },
@@ -302,6 +306,8 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                         defaultValueIndex: r.defaultIndex,
                         sortOrder: existing?.row.sortOrder ?? 0,
                         description: existing?.row.description ?? null,
+                        showValueOnBoard:
+                            existing?.row.showValueOnBoard ?? false,
                     },
                 };
             },
@@ -360,6 +366,7 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                         defaultValueIndex: index,
                         sortOrder: state.row.sortOrder,
                         description: state.row.description,
+                        showValueOnBoard: state.row.showValueOnBoard ?? false,
                     },
                 },
             ],
@@ -405,6 +412,7 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                         defaultValueIndex: state.row.defaultValueIndex,
                         sortOrder: state.row.sortOrder,
                         description: state.row.description,
+                        showValueOnBoard: state.row.showValueOnBoard ?? false,
                     },
                 };
             });
@@ -455,6 +463,7 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                         defaultValueIndex: state.row.defaultValueIndex,
                         sortOrder: index,
                         description: state.row.description,
+                        showValueOnBoard: state.row.showValueOnBoard ?? false,
                     },
                 });
             }
@@ -490,6 +499,7 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                         defaultValueIndex: state.row.defaultValueIndex,
                         sortOrder: state.row.sortOrder,
                         description: state.row.description,
+                        showValueOnBoard: state.row.showValueOnBoard ?? false,
                     },
                 };
             },
@@ -535,6 +545,8 @@ export function VariablesGrid({ data }: { data: WizardData }) {
         // then opened option by option to add spellings.
         options: string[][],
         defaultIndex: number,
+        // Filters only: create it already showing its value as a board column.
+        showValueOnBoard: boolean,
         // Which featured categories to create it in. Undefined = all of them
         // (the manual-add default); a suggestion narrows it to the categories
         // the moderator picked.
@@ -556,6 +568,7 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                         role === 'subcategory' ? defaultIndex : null,
                     sortOrder: 0,
                     description: null,
+                    showValueOnBoard,
                 },
             })),
         };
@@ -570,6 +583,7 @@ export function VariablesGrid({ data }: { data: WizardData }) {
         role: VariableRoleId,
         options: string[][],
         defaultIndex: number,
+        showValueOnBoard: boolean,
         categoryIds?: number[],
     ) => {
         const built = buildCreateChanges(
@@ -578,10 +592,43 @@ export function VariablesGrid({ data }: { data: WizardData }) {
             role,
             options,
             defaultIndex,
+            showValueOnBoard,
             categoryIds,
         );
         if (role === 'subcategory') openPreview(NEW_KEY, name, built);
         else applyNow(NEW_KEY, name, built);
+    };
+
+    /**
+     * Turn a filter's board-value column on or off, on every category that
+     * carries it. Additive and touches no standings, so it writes straight
+     * through like any other filter edit — no preview.
+     */
+    const buildShowValueChanges = (
+        group: VariableGroup,
+        show: boolean,
+    ): { changes: VariableChangeInput[]; slugs: string[] } => {
+        const slugs: string[] = [];
+        const changes = [...group.byCategory.values()]
+            .filter((state) => (state.row.showValueOnBoard ?? false) !== show)
+            .map((state): VariableChangeInput => {
+                const cat = mains.find((c) => c.id === state.categoryId);
+                if (cat) slugs.push(cat.name);
+                return {
+                    categoryId: state.categoryId,
+                    input: {
+                        name: state.row.name,
+                        nameNormalized: group.nameNormalized,
+                        role: state.role,
+                        values: state.row.values,
+                        defaultValueIndex: state.row.defaultValueIndex,
+                        sortOrder: state.row.sortOrder,
+                        description: state.row.description,
+                        showValueOnBoard: show,
+                    },
+                };
+            });
+        return { changes, slugs };
     };
 
     const openPreview = (
@@ -710,6 +757,36 @@ export function VariablesGrid({ data }: { data: WizardData }) {
         }
     };
 
+    /**
+     * Stage a batch of cell toggles as one gesture — a column select-all, a
+     * whole-grid select-all. Same path as a single toggle: filters apply on
+     * the click, subcategories stage for preview. Applying one batch (not one
+     * call per cell) avoids the stale-`pending` bug of looping single toggles.
+     */
+    const toggleCells = (group: VariableGroup, additions: PendingToggle[]) => {
+        if (additions.length === 0) return;
+        const before = pending.get(group.nameNormalized) ?? [];
+        const next = [...before, ...additions];
+        setPending((prev) => {
+            const map = new Map(prev);
+            map.set(group.nameNormalized, next);
+            return map;
+        });
+        if (group.dominantRole === 'filter') {
+            applyNow(
+                group.nameNormalized,
+                group.name,
+                buildChanges(group, next),
+                () =>
+                    setPending((prev) => {
+                        const map = new Map(prev);
+                        map.set(group.nameNormalized, before);
+                        return map;
+                    }),
+            );
+        }
+    };
+
     /** Effective on/off for a cell, staged toggles included. */
     const cellOn = (
         group: VariableGroup,
@@ -775,6 +852,28 @@ export function VariablesGrid({ data }: { data: WizardData }) {
         cellOn,
         onToggle: toggleCell,
         onRemoveCategory: removeCategory,
+        // Column select-all: the option on/off across every featured category.
+        onToggleColumn: (
+            group: VariableGroup,
+            bucketKey: string,
+            on: boolean,
+        ) =>
+            toggleCells(
+                group,
+                mains.map((c) => ({ categoryId: c.id, bucketKey, on })),
+            ),
+        // Whole-grid select-all: every option × every category at once.
+        onToggleAll: (group: VariableGroup, on: boolean) =>
+            toggleCells(
+                group,
+                mains.flatMap((c) =>
+                    group.buckets.map((b) => ({
+                        categoryId: c.id,
+                        bucketKey: b.key,
+                        on,
+                    })),
+                ),
+            ),
         pendingCount,
         onDiscard: discard,
         onStage: (group: VariableGroup) =>
@@ -851,9 +950,26 @@ export function VariablesGrid({ data }: { data: WizardData }) {
             key: string,
             options: string[][],
             defaultIndex: number,
+            showValueOnBoard: boolean,
             categoryIds?: number[],
         ) =>
-            createVariable(name, key, role, options, defaultIndex, categoryIds),
+            createVariable(
+                name,
+                key,
+                role,
+                options,
+                defaultIndex,
+                showValueOnBoard,
+                categoryIds,
+            ),
+        // Filters only: toggling the board-value column is additive, so it
+        // writes straight through with no preview.
+        onShowValue: (group: VariableGroup, show: boolean) =>
+            applyNow(
+                group.nameNormalized,
+                group.name,
+                buildShowValueChanges(group, show),
+            ),
         suggestedNames,
     });
 
@@ -889,6 +1005,7 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                         key,
                         options,
                         defaultIndex,
+                        showValueOnBoard,
                         categoryIds,
                     ) => {
                         setPendingAdd(null);
@@ -898,6 +1015,7 @@ export function VariablesGrid({ data }: { data: WizardData }) {
                             pendingAdd.role,
                             options,
                             defaultIndex,
+                            showValueOnBoard,
                             categoryIds,
                         );
                     }}
@@ -943,6 +1061,43 @@ function normalizeName(name: string): string {
     return name.toLowerCase().replace(/[\s=|]/g, '');
 }
 
+/**
+ * A checkbox that can show the third, "some but not all" state — for the grid's
+ * column and whole-grid select-all controls. `indeterminate` is a DOM property
+ * with no HTML attribute, so it must be set through a ref.
+ */
+function TriCheckbox({
+    checked,
+    indeterminate,
+    disabled,
+    onChange,
+    ariaLabel,
+    className,
+}: {
+    checked: boolean;
+    indeterminate: boolean;
+    disabled?: boolean;
+    onChange: (checked: boolean) => void;
+    ariaLabel: string;
+    className?: string;
+}) {
+    const ref = useRef<HTMLInputElement>(null);
+    useEffect(() => {
+        if (ref.current) ref.current.indeterminate = indeterminate && !checked;
+    }, [indeterminate, checked]);
+    return (
+        <input
+            ref={ref}
+            type="checkbox"
+            className={className}
+            disabled={disabled}
+            checked={checked}
+            aria-label={ariaLabel}
+            onChange={(e) => onChange(e.target.checked)}
+        />
+    );
+}
+
 interface SectionProps {
     role: VariableRoleId;
     game: WizardData['game'];
@@ -964,6 +1119,12 @@ interface SectionProps {
         on: boolean,
     ) => void;
     onRemoveCategory: (group: VariableGroup, categoryId: number) => void;
+    onToggleColumn: (
+        group: VariableGroup,
+        bucketKey: string,
+        on: boolean,
+    ) => void;
+    onToggleAll: (group: VariableGroup, on: boolean) => void;
     pendingCount: (group: VariableGroup) => number;
     onDiscard: (group: VariableGroup) => void;
     onStage: (group: VariableGroup) => void;
@@ -988,8 +1149,11 @@ interface SectionProps {
         key: string,
         options: string[][],
         defaultIndex: number,
+        showValueOnBoard: boolean,
         categoryIds?: number[],
     ) => void;
+    /** Filters only: turn the board-value column on/off for a whole group. */
+    onShowValue: (group: VariableGroup, show: boolean) => void;
     /** Normalized names of suggested variables, for the off-list add warning. */
     suggestedNames: Set<string>;
 }
@@ -1006,6 +1170,8 @@ function VariableSection({
     cellOn,
     onToggle,
     onRemoveCategory,
+    onToggleColumn,
+    onToggleAll,
     pendingCount,
     onDiscard,
     onStage,
@@ -1018,6 +1184,7 @@ function VariableSection({
     onRename,
     onDelete,
     onCreate,
+    onShowValue,
     suggestedNames,
 }: SectionProps) {
     const [adding, setAdding] = useState(false);
@@ -1100,6 +1267,10 @@ function VariableSection({
                         onRemoveCategory={(categoryId) =>
                             onRemoveCategory(group, categoryId)
                         }
+                        onToggleColumn={(bucketKey, on) =>
+                            onToggleColumn(group, bucketKey, on)
+                        }
+                        onToggleAll={(on) => onToggleAll(group, on)}
                         onApply={() => onStage(group)}
                         onDiscard={() => onDiscard(group)}
                         onConvert={(to) => onConvert(group, to)}
@@ -1116,6 +1287,8 @@ function VariableSection({
                         onAddOption={(bucket) => onAddOption(group, bucket)}
                         onRename={(next) => onRename(group, next)}
                         onDelete={() => onDelete(group)}
+                        showValueOnBoard={group.showValueOnBoard}
+                        onShowValue={(show) => onShowValue(group, show)}
                         takenNames={takenNames}
                     />
                 ))
@@ -1143,10 +1316,18 @@ function VariableSection({
                         key,
                         options,
                         defaultIndex,
+                        showValueOnBoard,
                         categoryIds,
                     ) => {
                         setAdding(false);
-                        onCreate(name, key, options, defaultIndex, categoryIds);
+                        onCreate(
+                            name,
+                            key,
+                            options,
+                            defaultIndex,
+                            showValueOnBoard,
+                            categoryIds,
+                        );
                     }}
                 />
             ) : (
@@ -1173,6 +1354,8 @@ function VariablePalette({
     cellOn,
     onToggle,
     onRemoveCategory,
+    onToggleColumn,
+    onToggleAll,
     onApply,
     onDiscard,
     onConvert,
@@ -1185,6 +1368,8 @@ function VariablePalette({
     onAddOption,
     onRename,
     onDelete,
+    showValueOnBoard,
+    onShowValue,
     takenNames,
 }: {
     group: VariableGroup;
@@ -1196,6 +1381,8 @@ function VariablePalette({
     cellOn: (categoryId: number, bucketKey: string) => boolean;
     onToggle: (categoryId: number, bucketKey: string, on: boolean) => void;
     onRemoveCategory: (categoryId: number) => void;
+    onToggleColumn: (bucketKey: string, on: boolean) => void;
+    onToggleAll: (on: boolean) => void;
     onApply: () => void;
     onDiscard: () => void;
     onConvert: (to: VariableRoleId) => void;
@@ -1208,6 +1395,8 @@ function VariablePalette({
     onAddOption: (bucket: BoardBucket) => void;
     onRename: (nextName: string) => void;
     onDelete: () => void;
+    showValueOnBoard: boolean;
+    onShowValue: (show: boolean) => void;
     takenNames: Set<string>;
 }) {
     const [open, setOpen] = useState(true);
@@ -1248,6 +1437,24 @@ function VariablePalette({
     // Category + one per option + the add-an-option column + the default
     // column, when there is one.
     const columnCount = 2 + group.buckets.length + (showsDefaultColumn ? 1 : 0);
+
+    // Bulk-selection state for the matrix. When every option is on for every
+    // category the grid says nothing a one-line summary can't — so it collapses
+    // to that summary until the moderator asks to adjust it.
+    const [adjusting, setAdjusting] = useState(false);
+    const columnOnCount = (bucketKey: string) =>
+        categories.filter((c) => cellOn(c.id, bucketKey)).length;
+    const onCellCount = group.buckets.reduce(
+        (sum, b) => sum + columnOnCount(b.key),
+        0,
+    );
+    const totalCells = categories.length * group.buckets.length;
+    const allOn = group.buckets.length > 0 && onCellCount === totalCells;
+    const someOn = onCellCount > 0;
+    // Collapse to the summary only when the grid truly says nothing more: every
+    // cell on AND no per-category default column to show (that column carries
+    // real meaning even when membership is uniform).
+    const showGrid = !allOn || adjusting || showsDefaultColumn;
 
     return (
         <div className={styles.palette}>
@@ -1305,6 +1512,24 @@ function VariablePalette({
                                 {pendingCount} pending
                             </span>
                         )}
+                        {/* Delete lives with the group's identity in the head,
+                            not buried under the matrix. The two-step confirm
+                            renders as a banner below, so it has room the head
+                            row doesn't. */}
+                        <button
+                            type="button"
+                            className={styles.headDelete}
+                            disabled={busy}
+                            aria-label={`Delete ${group.name}`}
+                            title={`Delete ${group.name}`}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setOpen(true);
+                                setConfirmDelete(true);
+                            }}
+                        >
+                            Delete
+                        </button>
                         <button
                             type="button"
                             className={styles.collapse}
@@ -1321,6 +1546,38 @@ function VariablePalette({
                     </>
                 )}
             </div>
+
+            {/* Destructive confirm as a banner directly under the head, where
+                Delete was clicked — not at the foot of the panel. */}
+            {confirmDelete && (
+                <div className={styles.deleteBanner}>
+                    <span className={styles.deleteWarning}>
+                        Delete {group.name} from all {onCount}{' '}
+                        {onCount === 1 ? 'category' : 'categories'}?
+                        {role === 'subcategory' &&
+                            ' Their subcategories collapse back into one leaderboard each.'}
+                    </span>
+                    <button
+                        type="button"
+                        className={styles.pendingBtn}
+                        disabled={busy}
+                        onClick={() => setConfirmDelete(false)}
+                    >
+                        Keep it
+                    </button>
+                    <button
+                        type="button"
+                        className={styles.deleteConfirm}
+                        disabled={busy}
+                        onClick={() => {
+                            setConfirmDelete(false);
+                            onDelete();
+                        }}
+                    >
+                        Delete
+                    </button>
+                </div>
+            )}
 
             {/* A role disagreement means this makes subcategories on part of
                 the board and only filters the rest. Stated, with both ways
@@ -1362,95 +1619,157 @@ function VariablePalette({
                         that runs arrive without a Platform and where those go.
                         The column comes back below the moment two categories
                         want different answers. */}
-                    {sharedDefault !== null && (
-                        <p className={styles.groupSetting}>
-                            A run that doesn&rsquo;t say which {group.name} it
-                            used goes to{' '}
-                            <select
-                                className={styles.defaultSelect}
-                                value={sharedDefault}
+                    {/* Both group-level settings live together, above the
+                        grid: where unmatched runs land, and whether the value
+                        shows as a board column. Neither is per-category, so
+                        neither belongs in the matrix. */}
+                    <div className={styles.groupSettings}>
+                        {sharedDefault !== null && (
+                            <p className={styles.groupSetting}>
+                                A run that doesn&rsquo;t set this counts as{' '}
+                                <select
+                                    className={styles.defaultSelect}
+                                    value={sharedDefault}
+                                    disabled={busy}
+                                    aria-label={`Where a run with no ${group.name} goes, on all ${carriers.length} categories`}
+                                    onChange={(e) =>
+                                        onDefaultAll(e.target.value)
+                                    }
+                                >
+                                    {group.buckets.map((b) => (
+                                        <option key={b.key} value={b.key}>
+                                            {b.label}
+                                        </option>
+                                    ))}
+                                </select>
+                                .
+                            </p>
+                        )}
+
+                        {/* Set any time, for either role. Display-only, so it
+                            writes straight through (onShowValue → applyNow) and
+                            never stages or moves a run. */}
+                        <label className={styles.showValueRow}>
+                            <input
+                                type="checkbox"
+                                checked={showValueOnBoard}
                                 disabled={busy}
-                                aria-label={`Where a run with no ${group.name} goes, on all ${carriers.length} categories`}
-                                onChange={(e) => onDefaultAll(e.target.value)}
+                                onChange={(e) => onShowValue(e.target.checked)}
+                            />
+                            <span className={styles.showValueText}>
+                                Show this as a value on the leaderboard row
+                                <span className={styles.showValueHint}>
+                                    Adds a {group.name} column to the board with
+                                    each runner&rsquo;s value.
+                                </span>
+                            </span>
+                        </label>
+                    </div>
+
+                    {/* The all-on case is the common one and says nothing a
+                        line can't. Collapse the wall of identical checkboxes to
+                        a summary until the moderator asks to narrow it. */}
+                    {!showGrid && (
+                        <div className={styles.gridSummary}>
+                            <span className={styles.gridSummaryText}>
+                                On all {categories.length}{' '}
+                                {categories.length === 1
+                                    ? 'category'
+                                    : 'categories'}{' '}
+                                · {group.buckets.length}{' '}
+                                {SECTION[role].options.toLowerCase()}
+                            </span>
+                            <button
+                                type="button"
+                                className={styles.gridAdjust}
+                                disabled={busy}
+                                onClick={() => setAdjusting(true)}
                             >
-                                {group.buckets.map((b) => (
-                                    <option key={b.key} value={b.key}>
-                                        {b.label}
-                                    </option>
-                                ))}
-                            </select>
-                            .
-                        </p>
+                                Adjust…
+                            </button>
+                        </div>
                     )}
 
-                    <div className={styles.scroller}>
-                        <table className={styles.grid}>
-                            <thead>
-                                <tr>
-                                    <th className={styles.corner}>Category</th>
-                                    {/* The option's own column header is how
+                    {showGrid && (
+                        <div className={styles.scroller}>
+                            <table className={styles.grid}>
+                                <thead>
+                                    <tr>
+                                        <th className={styles.corner}>
+                                            Category
+                                        </th>
+                                        {/* The option's own column header is how
                                         you edit the option. Same rule as the
                                         category matrix: click the thing to
                                         edit the thing, and never leave the
                                         grid to do it. */}
-                                    {group.buckets.map((bucket) => (
-                                        <th key={bucket.key}>
-                                            <button
-                                                type="button"
-                                                className={styles.optionButton}
-                                                aria-expanded={
-                                                    editing === bucket.key
-                                                }
-                                                onClick={() =>
-                                                    setEditing(
+                                        {group.buckets.map((bucket) => (
+                                            <th key={bucket.key}>
+                                                <button
+                                                    type="button"
+                                                    className={
+                                                        styles.optionButton
+                                                    }
+                                                    aria-expanded={
                                                         editing === bucket.key
-                                                            ? null
-                                                            : bucket.key,
-                                                    )
-                                                }
-                                            >
-                                                {bucket.label}
-                                                {bucket.aliases.length > 0 && (
-                                                    <span
-                                                        className={
-                                                            styles.aliasCount
-                                                        }
-                                                        title={`${bucket.aliases.length} other ${
-                                                            bucket.aliases
-                                                                .length === 1
-                                                                ? 'spelling'
-                                                                : 'spellings'
-                                                        } resolve here: ${bucket.aliases.join(', ')}`}
-                                                    >
-                                                        +{bucket.aliases.length}
-                                                    </span>
-                                                )}
-                                            </button>
-                                        </th>
-                                    ))}
+                                                    }
+                                                    onClick={() =>
+                                                        setEditing(
+                                                            editing ===
+                                                                bucket.key
+                                                                ? null
+                                                                : bucket.key,
+                                                        )
+                                                    }
+                                                >
+                                                    {bucket.label}
+                                                    {bucket.aliases.length >
+                                                        0 && (
+                                                        <span
+                                                            className={
+                                                                styles.aliasCount
+                                                            }
+                                                            title={`${bucket.aliases.length} other ${
+                                                                bucket.aliases
+                                                                    .length ===
+                                                                1
+                                                                    ? 'spelling'
+                                                                    : 'spellings'
+                                                            } resolve here: ${bucket.aliases.join(', ')}`}
+                                                        >
+                                                            +
+                                                            {
+                                                                bucket.aliases
+                                                                    .length
+                                                            }
+                                                        </span>
+                                                    )}
+                                                </button>
+                                            </th>
+                                        ))}
 
-                                    {/* A new option is a new column, so the
+                                        {/* A new option is a new column, so the
                                         control that makes one sits where the
                                         column will appear. There was no way to
                                         add an option at all once the group
                                         existed — you could rename, reorder and
                                         remove them, but never add. */}
-                                    <th className={styles.addOptionHead}>
-                                        <button
-                                            type="button"
-                                            className={styles.addOption}
-                                            disabled={busy}
-                                            aria-expanded={addingOption}
-                                            onClick={() => {
-                                                setEditing(null);
-                                                setAddingOption((v) => !v);
-                                            }}
-                                        >
-                                            + Option
-                                        </button>
-                                    </th>
+                                        <th className={styles.addOptionHead}>
+                                            <button
+                                                type="button"
+                                                className={styles.addOption}
+                                                disabled={busy}
+                                                aria-expanded={addingOption}
+                                                onClick={() => {
+                                                    setEditing(null);
+                                                    setAddingOption((v) => !v);
+                                                }}
+                                            >
+                                                + Option
+                                            </button>
+                                        </th>
 
-                                    {/* Where unmatched runs land — per
+                                        {/* Where unmatched runs land — per
                                         category by nature, so a column beside
                                         the options rather than a value shared
                                         across the board.
@@ -1461,103 +1780,178 @@ function VariablePalette({
                                         — don't say WHAT — and the only place
                                         that ever answered it was a tooltip on
                                         a marker that no longer exists. */}
-                                    {showsDefaultColumn && (
-                                        <th
-                                            className={styles.defaultHead}
-                                            title={`A run submitted without a ${group.name} goes to the subcategory picked here.`}
-                                        >
-                                            No {group.name} given
-                                        </th>
+                                        {showsDefaultColumn && (
+                                            <th
+                                                className={styles.defaultHead}
+                                                title={`A run submitted without a ${group.name} goes to the subcategory picked here.`}
+                                            >
+                                                No {group.name} given
+                                            </th>
+                                        )}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {editingBucket && (
+                                        <tr className={styles.editorRow}>
+                                            <td colSpan={columnCount}>
+                                                <OptionEditor
+                                                    bucket={editingBucket}
+                                                    index={group.buckets.indexOf(
+                                                        editingBucket,
+                                                    )}
+                                                    total={group.buckets.length}
+                                                    role={role}
+                                                    busy={busy}
+                                                    onCancel={() =>
+                                                        setEditing(null)
+                                                    }
+                                                    onApply={(next) => {
+                                                        setEditing(null);
+                                                        onBuckets(next);
+                                                    }}
+                                                    buckets={group.buckets}
+                                                />
+                                            </td>
+                                        </tr>
                                     )}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {editingBucket && (
-                                    <tr className={styles.editorRow}>
-                                        <td colSpan={columnCount}>
-                                            <OptionEditor
-                                                bucket={editingBucket}
-                                                index={group.buckets.indexOf(
-                                                    editingBucket,
-                                                )}
-                                                total={group.buckets.length}
-                                                role={role}
-                                                busy={busy}
-                                                onCancel={() =>
-                                                    setEditing(null)
-                                                }
-                                                onApply={(next) => {
-                                                    setEditing(null);
-                                                    onBuckets(next);
-                                                }}
-                                                buckets={group.buckets}
-                                            />
-                                        </td>
-                                    </tr>
-                                )}
 
-                                {addingOption && (
-                                    <tr className={styles.editorRow}>
-                                        <td colSpan={columnCount}>
-                                            <OptionEditor
-                                                bucket={NEW_BUCKET}
-                                                index={group.buckets.length}
-                                                total={group.buckets.length + 1}
-                                                role={role}
-                                                busy={busy}
-                                                isNew
-                                                onCancel={() =>
-                                                    setAddingOption(false)
-                                                }
-                                                onApply={(next) => {
-                                                    setAddingOption(false);
-                                                    // The editor hands back
-                                                    // the whole list; the new
-                                                    // one is the one it added.
-                                                    onAddOption(
-                                                        next[next.length - 1],
-                                                    );
-                                                }}
-                                                buckets={group.buckets}
-                                            />
-                                        </td>
-                                    </tr>
-                                )}
+                                    {addingOption && (
+                                        <tr className={styles.editorRow}>
+                                            <td colSpan={columnCount}>
+                                                <OptionEditor
+                                                    bucket={NEW_BUCKET}
+                                                    index={group.buckets.length}
+                                                    total={
+                                                        group.buckets.length + 1
+                                                    }
+                                                    role={role}
+                                                    busy={busy}
+                                                    isNew
+                                                    onCancel={() =>
+                                                        setAddingOption(false)
+                                                    }
+                                                    onApply={(next) => {
+                                                        setAddingOption(false);
+                                                        // The editor hands back
+                                                        // the whole list; the new
+                                                        // one is the one it added.
+                                                        onAddOption(
+                                                            next[
+                                                                next.length - 1
+                                                            ],
+                                                        );
+                                                    }}
+                                                    buckets={group.buckets}
+                                                />
+                                            </td>
+                                        </tr>
+                                    )}
 
-                                {categories.map((c) => {
-                                    const state = group.byCategory.get(c.id);
-                                    // Effective membership, staged edits
-                                    // included: a category is in the group when
-                                    // any of its options is on.
-                                    const inGroup = group.buckets.some((b) =>
-                                        cellOn(c.id, b.key),
-                                    );
-                                    return (
-                                        <tr key={c.id}>
+                                    {/* Bulk toggles live in the body, not the
+                                    header: a first row whose checkboxes sit in
+                                    the same columns as the cells they act on,
+                                    so alignment is free and the header stays
+                                    the option's name. Only when there's enough
+                                    grid for "all" to mean something. */}
+                                    {categories.length > 1 && (
+                                        <tr className={styles.allRow}>
                                             <th
                                                 scope="row"
-                                                className={styles.rowName}
+                                                className={styles.allRowName}
                                             >
-                                                {c.display}
+                                                <span
+                                                    className={
+                                                        styles.allRowNameInner
+                                                    }
+                                                >
+                                                    <TriCheckbox
+                                                        className={styles.cell}
+                                                        checked={allOn}
+                                                        indeterminate={someOn}
+                                                        disabled={busy}
+                                                        ariaLabel={`Toggle every option on every category for ${group.name}`}
+                                                        onChange={(on) =>
+                                                            onToggleAll(on)
+                                                        }
+                                                    />
+                                                    <span>All categories</span>
+                                                </span>
                                             </th>
+                                            {group.buckets.map((bucket) => (
+                                                <td key={bucket.key}>
+                                                    <TriCheckbox
+                                                        className={styles.cell}
+                                                        checked={
+                                                            columnOnCount(
+                                                                bucket.key,
+                                                            ) ===
+                                                            categories.length
+                                                        }
+                                                        indeterminate={
+                                                            columnOnCount(
+                                                                bucket.key,
+                                                            ) > 0
+                                                        }
+                                                        disabled={busy}
+                                                        ariaLabel={`Toggle ${bucket.label} on every category`}
+                                                        onChange={(on) =>
+                                                            onToggleColumn(
+                                                                bucket.key,
+                                                                on,
+                                                            )
+                                                        }
+                                                    />
+                                                </td>
+                                            ))}
+                                            <td
+                                                className={styles.rowRemoveCell}
+                                            />
+                                            {showsDefaultColumn && (
+                                                <td
+                                                    className={
+                                                        styles.defaultCell
+                                                    }
+                                                />
+                                            )}
+                                        </tr>
+                                    )}
 
-                                            {group.buckets.map((bucket) => {
-                                                const on = cellOn(
-                                                    c.id,
-                                                    bucket.key,
-                                                );
-                                                // Staged, not yet written:
-                                                // drawn provisional so a grid
-                                                // mid-edit never looks
-                                                // already-applied.
-                                                const isPending =
-                                                    on !==
-                                                    (state?.buckets.has(
+                                    {categories.map((c) => {
+                                        const state = group.byCategory.get(
+                                            c.id,
+                                        );
+                                        // Effective membership, staged edits
+                                        // included: a category is in the group when
+                                        // any of its options is on.
+                                        const inGroup = group.buckets.some(
+                                            (b) => cellOn(c.id, b.key),
+                                        );
+                                        return (
+                                            <tr key={c.id}>
+                                                <th
+                                                    scope="row"
+                                                    className={styles.rowName}
+                                                >
+                                                    {c.display}
+                                                </th>
+
+                                                {group.buckets.map((bucket) => {
+                                                    const on = cellOn(
+                                                        c.id,
                                                         bucket.key,
-                                                    ) ?? false);
-                                                return (
-                                                    <td key={bucket.key}>
-                                                        {/* A checkbox, because
+                                                    );
+                                                    // Staged, not yet written:
+                                                    // drawn provisional so a grid
+                                                    // mid-edit never looks
+                                                    // already-applied.
+                                                    const isPending =
+                                                        on !==
+                                                        (state?.buckets.has(
+                                                            bucket.key,
+                                                        ) ?? false);
+                                                    return (
+                                                        <td key={bucket.key}>
+                                                            {/* A checkbox, because
                                                             a checkbox needs no
                                                             key. These were a
                                                             filled dot and an
@@ -1570,202 +1964,151 @@ function VariablePalette({
                                                             annotated to be
                                                             read is a grid that
                                                             does not read. */}
-                                                        <input
-                                                            type="checkbox"
-                                                            className={`${styles.cell} ${
-                                                                isPending
-                                                                    ? styles.cellPending
-                                                                    : ''
-                                                            }`}
-                                                            disabled={busy}
-                                                            checked={on}
-                                                            aria-label={`${bucket.label} on ${c.display}`}
-                                                            onChange={(e) =>
-                                                                onToggle(
-                                                                    c.id,
-                                                                    bucket.key,
-                                                                    e.target
-                                                                        .checked,
-                                                                )
-                                                            }
-                                                        />
-                                                    </td>
-                                                );
-                                            })}
+                                                            <input
+                                                                type="checkbox"
+                                                                className={`${styles.cell} ${
+                                                                    isPending
+                                                                        ? styles.cellPending
+                                                                        : ''
+                                                                }`}
+                                                                disabled={busy}
+                                                                checked={on}
+                                                                aria-label={`${bucket.label} on ${c.display}`}
+                                                                onChange={(e) =>
+                                                                    onToggle(
+                                                                        c.id,
+                                                                        bucket.key,
+                                                                        e.target
+                                                                            .checked,
+                                                                    )
+                                                                }
+                                                            />
+                                                        </td>
+                                                    );
+                                                })}
 
-                                            {/* Under the "+ Option" head: the
+                                                {/* Under the "+ Option" head: the
                                                 row's own remove control, so a
                                                 category can leave the group in
                                                 one click instead of unticking
                                                 every option. */}
-                                            <td
-                                                className={styles.rowRemoveCell}
-                                            >
-                                                {inGroup && (
-                                                    <button
-                                                        type="button"
-                                                        className={
-                                                            styles.rowRemove
-                                                        }
-                                                        disabled={busy}
-                                                        title={`Remove ${group.name} from ${c.display}`}
-                                                        aria-label={`Remove ${group.name} from ${c.display}`}
-                                                        onClick={() =>
-                                                            onRemoveCategory(
-                                                                c.id,
-                                                            )
-                                                        }
-                                                    >
-                                                        Remove
-                                                    </button>
-                                                )}
-                                            </td>
-
-                                            {showsDefaultColumn && (
                                                 <td
                                                     className={
-                                                        styles.defaultCell
+                                                        styles.rowRemoveCell
                                                     }
                                                 >
-                                                    {state ? (
-                                                        <select
+                                                    {inGroup && (
+                                                        <button
+                                                            type="button"
                                                             className={
-                                                                styles.defaultSelect
-                                                            }
-                                                            value={
-                                                                state.defaultBucket ??
-                                                                ''
+                                                                styles.rowRemove
                                                             }
                                                             disabled={busy}
-                                                            aria-label={`On ${c.display}, a run with no ${group.name} goes to`}
-                                                            onChange={(e) =>
-                                                                onDefault(
+                                                            title={`Remove ${group.name} from ${c.display}`}
+                                                            aria-label={`Remove ${group.name} from ${c.display}`}
+                                                            onClick={() =>
+                                                                onRemoveCategory(
                                                                     c.id,
-                                                                    e.target
-                                                                        .value,
                                                                 )
                                                             }
                                                         >
-                                                            {group.buckets
-                                                                .filter((b) =>
-                                                                    state.buckets.has(
-                                                                        b.key,
-                                                                    ),
-                                                                )
-                                                                .map((b) => (
-                                                                    <option
-                                                                        key={
-                                                                            b.key
-                                                                        }
-                                                                        value={
-                                                                            b.key
-                                                                        }
-                                                                    >
-                                                                        {
-                                                                            b.label
-                                                                        }
-                                                                    </option>
-                                                                ))}
-                                                        </select>
-                                                    ) : (
-                                                        <span
-                                                            className={
-                                                                styles.defaultNone
-                                                            }
-                                                        >
-                                                            —
-                                                        </span>
+                                                            Remove
+                                                        </button>
                                                     )}
                                                 </td>
-                                            )}
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
 
-                    {/* Removing the group. The only way to do this used to be
-                        unticking every option on every category, one cell at a
-                        time, which is not a way to do it. Two steps, because
-                        it deletes leaderboards and the records they hold. */}
-                    <div className={styles.paletteFoot}>
-                        {confirmDelete ? (
-                            <>
-                                <span className={styles.deleteWarning}>
-                                    Delete {group.name} from all {onCount}{' '}
-                                    {onCount === 1 ? 'category' : 'categories'}?
-                                    {role === 'subcategory' &&
-                                        ' Their subcategories collapse back into one leaderboard each.'}
-                                </span>
-                                <button
-                                    type="button"
-                                    className={styles.pendingBtn}
-                                    disabled={busy}
-                                    onClick={() => setConfirmDelete(false)}
-                                >
-                                    Keep it
-                                </button>
-                                <button
-                                    type="button"
-                                    className={styles.deleteConfirm}
-                                    disabled={busy}
-                                    onClick={() => {
-                                        setConfirmDelete(false);
-                                        onDelete();
-                                    }}
-                                >
-                                    Delete
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                {/* Board order, in words. It was a pair of
-                                    arrow buttons in the head, next to the
-                                    collapse triangle — and however differently
-                                    the two were drawn, the bar still had two
-                                    marks pointing down and no way to tell at a
-                                    glance which did what. Nothing in the head
-                                    points anywhere now except the triangle.
+                                                {showsDefaultColumn && (
+                                                    <td
+                                                        className={
+                                                            styles.defaultCell
+                                                        }
+                                                    >
+                                                        {state ? (
+                                                            <select
+                                                                className={
+                                                                    styles.defaultSelect
+                                                                }
+                                                                value={
+                                                                    state.defaultBucket ??
+                                                                    ''
+                                                                }
+                                                                disabled={busy}
+                                                                aria-label={`On ${c.display}, a run with no ${group.name} goes to`}
+                                                                onChange={(e) =>
+                                                                    onDefault(
+                                                                        c.id,
+                                                                        e.target
+                                                                            .value,
+                                                                    )
+                                                                }
+                                                            >
+                                                                {group.buckets
+                                                                    .filter(
+                                                                        (b) =>
+                                                                            state.buckets.has(
+                                                                                b.key,
+                                                                            ),
+                                                                    )
+                                                                    .map(
+                                                                        (b) => (
+                                                                            <option
+                                                                                key={
+                                                                                    b.key
+                                                                                }
+                                                                                value={
+                                                                                    b.key
+                                                                                }
+                                                                            >
+                                                                                {
+                                                                                    b.label
+                                                                                }
+                                                                            </option>
+                                                                        ),
+                                                                    )}
+                                                            </select>
+                                                        ) : (
+                                                            <span
+                                                                className={
+                                                                    styles.defaultNone
+                                                                }
+                                                            >
+                                                                —
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                )}
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
 
-                                    The footer is the right home anyway:
-                                    reordering is rare, collapsing is not, and
-                                    the head should carry the frequent one. */}
-                                {groupTotal > 1 && (
-                                    <>
-                                        <button
-                                            type="button"
-                                            className={styles.orderAction}
-                                            disabled={busy || position === 0}
-                                            onClick={() => onMove(-1)}
-                                        >
-                                            Move up
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className={styles.orderAction}
-                                            disabled={
-                                                busy ||
-                                                position === groupTotal - 1
-                                            }
-                                            onClick={() => onMove(1)}
-                                        >
-                                            Move down
-                                        </button>
-                                    </>
-                                )}
-                                <span className={styles.pendingSpacer} />
-                                <button
-                                    type="button"
-                                    className={styles.deleteAction}
-                                    disabled={busy}
-                                    onClick={() => setConfirmDelete(true)}
-                                >
-                                    Delete this {SECTION[role].noun}
-                                </button>
-                            </>
-                        )}
-                    </div>
+                    {/* Board order, in words. Reordering is rare; the head
+                        carries the frequent controls (rename, delete, collapse)
+                        and this stays at the foot. Only shown when there's more
+                        than one group to order. */}
+                    {groupTotal > 1 && (
+                        <div className={styles.paletteFoot}>
+                            <button
+                                type="button"
+                                className={styles.orderAction}
+                                disabled={busy || position === 0}
+                                onClick={() => onMove(-1)}
+                            >
+                                Move up
+                            </button>
+                            <button
+                                type="button"
+                                className={styles.orderAction}
+                                disabled={busy || position === groupTotal - 1}
+                                onClick={() => onMove(1)}
+                            >
+                                Move down
+                            </button>
+                        </div>
+                    )}
 
                     {/* Only when the categories disagree, because only then is
                         there a column to explain. When they agree the sentence
@@ -1773,8 +2116,8 @@ function VariablePalette({
                     {showsDefaultColumn && (
                         <p className={styles.gridNote}>
                             These categories want different answers for a run
-                            that doesn&rsquo;t say which {group.name} it used,
-                            so each one names its own.
+                            that doesn&rsquo;t set this, so each one names its
+                            own.
                         </p>
                     )}
 
@@ -2132,6 +2475,7 @@ function AddVariableForm({
         key: string,
         options: string[][],
         defaultIndex: number,
+        showValueOnBoard: boolean,
         categoryIds: number[],
     ) => void;
 }) {
@@ -2146,6 +2490,9 @@ function AddVariableForm({
     );
     const [raw, setRaw] = useState(initialRaw);
     const [defaultOption, setDefaultOption] = useState('');
+    // Filters only: create the variable already showing its value as a board
+    // column. Default off — most filters just narrow the board.
+    const [showValueOnBoard, setShowValueOnBoard] = useState(false);
     const [selectedIds, setSelectedIds] = useState<number[]>(
         initialSelectedIds ?? categories.map((c) => c.id),
     );
@@ -2275,8 +2622,7 @@ function AddVariableForm({
             {role === 'subcategory' && options.length > 1 && (
                 <label className={styles.addField}>
                     <span className={styles.addLabel}>
-                        A run that doesn&rsquo;t say which{' '}
-                        {name.trim() || 'option'} it used goes to
+                        A run that doesn&rsquo;t set this counts as
                     </span>
                     <select
                         className={styles.addInput}
@@ -2312,6 +2658,22 @@ function AddVariableForm({
                     ))}
                 </div>
             </div>
+
+            <label className={styles.showValueRow}>
+                <input
+                    type="checkbox"
+                    checked={showValueOnBoard}
+                    disabled={busy}
+                    onChange={(e) => setShowValueOnBoard(e.target.checked)}
+                />
+                <span className={styles.showValueText}>
+                    Show this as a value on the leaderboard row
+                    <span className={styles.showValueHint}>
+                        Adds a {name.trim() || 'variable'} column to the board
+                        with each runner&rsquo;s value.
+                    </span>
+                </span>
+            </label>
 
             {collision && <p className={styles.addError}>{collision}</p>}
             {offList && (
@@ -2354,6 +2716,7 @@ function AddVariableForm({
                             normalizedKey,
                             options,
                             defaultIndex,
+                            showValueOnBoard,
                             selectedIds,
                         )
                     }

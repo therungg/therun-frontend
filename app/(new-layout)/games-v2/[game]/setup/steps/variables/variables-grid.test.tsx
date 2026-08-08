@@ -142,9 +142,7 @@ describe('VariablesGrid', () => {
                 'Where a run with no Platform goes, on all 2 categories',
             ),
         ).toBeTruthy();
-        expect(
-            screen.getByText(/doesn’t say which Platform it used goes to/),
-        ).toBeTruthy();
+        expect(screen.getByText(/doesn’t set this counts as/)).toBeTruthy();
         expect(screen.queryByText('◉')).toBeNull();
     });
 
@@ -243,6 +241,7 @@ describe('VariablesGrid', () => {
         const controls = within(bar).getAllByRole('button');
         expect(controls.map((b) => b.getAttribute('aria-label'))).toEqual([
             null, // the title, which renames
+            'Delete Platform', // destructive, behind a confirm banner
             'Collapse Platform',
         ]);
         expect(within(bar).queryByRole('button', { name: /Move/ })).toBeNull();
@@ -359,7 +358,7 @@ describe('VariablesGrid', () => {
         renderGrid();
         fireEvent.click(
             screen.getByRole('button', {
-                name: 'Delete this subcategory group',
+                name: 'Delete Platform',
             }),
         );
         // Says what it costs before it does it.
@@ -430,7 +429,7 @@ describe('VariablesGrid', () => {
         );
 
         const picker = screen.getByLabelText(
-            /A run that doesn’t say which Region it used goes to/,
+            /A run that doesn’t set this counts as/,
         ) as HTMLSelectElement;
         // It used to be options[0], stated in a note and choosable nowhere.
         fireEvent.change(picker, { target: { value: 'PAL' } });
