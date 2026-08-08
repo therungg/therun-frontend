@@ -758,9 +758,13 @@
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    border: 1px solid transparent;
-    background: transparent;
-    color: var(--bs-secondary-color);
+    // A resting chip must still read as a control. This was transparent on
+    // transparent — unselected options rendered as plain text, and the whole
+    // selector zone read as metadata instead of a machine you operate (the
+    // SRC-comparison audit's core finding).
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.55);
+    background: rgba(var(--bs-body-color-rgb), 0.04);
+    color: var(--bs-body-color);
     font-size: dt.$font-size-sm;
     font-weight: 500;
     padding: dt.$spacing-xs dt.$spacing-md;
@@ -768,10 +772,12 @@
     white-space: nowrap;
     cursor: pointer;
     transition: background-color dt.$transition-fast,
-        color dt.$transition-fast;
+        color dt.$transition-fast,
+        border-color dt.$transition-fast;
 
     &:hover {
-        background: rgba(var(--bs-body-color-rgb), 0.05);
+        background: rgba(var(--bs-body-color-rgb), 0.09);
+        border-color: rgba(var(--bs-border-color-rgb), 0.85);
         color: var(--bs-emphasis-color);
     }
 

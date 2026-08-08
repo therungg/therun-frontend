@@ -202,8 +202,8 @@ export function GameHero({
                     <img
                         src={cover}
                         alt={game.display}
-                        width={variant === 'condensed' ? 40 : 132}
-                        height={variant === 'condensed' ? 53 : 176}
+                        width={variant === 'condensed' ? 64 : 132}
+                        height={variant === 'condensed' ? 85 : 176}
                         className={
                             variant === 'condensed'
                                 ? styles.heroCoverSm
