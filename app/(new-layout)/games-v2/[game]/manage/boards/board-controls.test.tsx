@@ -221,6 +221,7 @@ describe('BoardControls — Set as default view', () => {
                 defaultValueIndex: 1,
                 sortOrder: 1,
                 description: null,
+                showValueOnBoard: false,
             },
         });
         expect(mocks.updateVariableAction).toHaveBeenNthCalledWith(2, {
@@ -234,6 +235,7 @@ describe('BoardControls — Set as default view', () => {
                 defaultValueIndex: 2,
                 sortOrder: 2,
                 description: null,
+                showValueOnBoard: false,
             },
         });
         await vi.waitFor(() =>
