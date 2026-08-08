@@ -51,8 +51,22 @@ describe('mergeBuckets', () => {
         expect(merged).toHaveLength(1);
         expect(merged[0].label).toBe('Nintendo 64');
         expect(merged[0].aliases).toEqual(['Nintendo 64', 'N64']);
+        // Counts sum so the merge shows in the number.
+        expect(merged[0].count).toBe(38);
         // Backend value shape carries every spelling so old runs resolve.
         expect(bucketsToValueGroups(merged)).toEqual([['Nintendo 64', 'N64']]);
+    });
+
+    it('re-sorts so a merged bucket that overtakes keeps its rank', () => {
+        // N64(8)+VC(7) = 15 overtakes Nintendo 64(12) after the merge.
+        const start = bucketsFromValues([
+            v('Nintendo 64', 12),
+            v('N64', 8),
+            v('VC', 7),
+        ]);
+        const merged = mergeBuckets(start, 'VC', 'N64');
+        expect(merged.map((b) => b.label)).toEqual(['N64', 'Nintendo 64']);
+        expect(merged[0].count).toBe(15);
     });
 
     it('is a no-op for an unknown or self merge', () => {

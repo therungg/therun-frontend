@@ -51,9 +51,10 @@ export function bucketsFromValues(
 /**
  * Fold `sourceLabel`'s bucket into `targetLabel`'s — the moderator declaring
  * them the same thing (e.g. "N64" → "Nintendo 64"). The target keeps its label;
- * the source's spellings join its aliases. Count is the max of the two (a safe
- * representative — the true distinct union is unknown and summing would
- * double-count a runner who used both spellings). Returns a new list.
+ * the source's spellings join its aliases and their counts sum, so the merge is
+ * visible in the number (a slight over-count if a runner used both spellings,
+ * which is fine for a discovery hint). The result is re-sorted by count so the
+ * grown bucket keeps its rank. Returns a new list.
  */
 export function mergeBuckets(
     buckets: CandidateBucket[],
@@ -71,10 +72,11 @@ export function mergeBuckets(
                 ? {
                       ...b,
                       aliases: [...b.aliases, ...source.aliases],
-                      count: Math.max(b.count, source.count),
+                      count: b.count + source.count,
                   }
                 : b,
-        );
+        )
+        .sort((a, b) => b.count - a.count);
 }
 
 /**
