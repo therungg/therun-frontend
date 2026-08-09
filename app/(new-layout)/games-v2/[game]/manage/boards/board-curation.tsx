@@ -40,6 +40,7 @@ import { computeDisplayRanks } from '../../leaderboard/display-rank';
 import type { RowSlots } from '../../leaderboard/leaderboard-row';
 import { LeaderboardTable } from '../../leaderboard/leaderboard-table';
 import { relativeDate } from '../../leaderboard/relative-date';
+import { RunInspector } from '../../leaderboard/run-inspector';
 import {
     timingColumnHidden,
     timingColumns,
@@ -60,7 +61,7 @@ import { updateVariableAction } from '../variables/actions/update-variable.actio
 import { AddRunnerRow } from './add-runner-row';
 import { BoardControls } from './board-controls';
 import styles from './board-curation.module.scss';
-import { rosterLeaderboard } from './roster-entry';
+import { rosterEntry, rosterLeaderboard } from './roster-entry';
 import {
     type PendingRemoval,
     primaryValueOf,
@@ -356,6 +357,10 @@ export function BoardCuration({
     const ascending = category?.sortAscending ?? true;
 
     const [showMarkedOnly, setShowMarkedOnly] = useState(false);
+    // Which run the inspector drawer is open on, by id rather than by entry:
+    // a reload rebuilds the rows, and an entry captured by reference would go
+    // stale under the drawer.
+    const [inspectRunId, setInspectRunId] = useState<number | null>(null);
     const [boardPageIndex, setBoardPageIndex] = useState(0);
 
     const { rows, total, markedTotal, loading, error, reload } = useBoardData(
@@ -656,6 +661,26 @@ export function BoardCuration({
             ({ row }) =>
                 rosterTimingValue(row, timingCols.secondary.key) != null,
         );
+
+    /**
+     * The moderator view a row click opens — the same drawer the public board
+     * opens, so a mod who clicks a row gets the verbs rather than a read-only
+     * page. Roster rows are always real runs, so there is no set-time
+     * inspector case to route here.
+     */
+    const inspectIndex =
+        inspectRunId == null
+            ? -1
+            : visibleBoardRows.findIndex(
+                  ({ row }) => row.runId === inspectRunId,
+              );
+    const inspectEntry =
+        inspectIndex >= 0
+            ? rosterEntry(
+                  visibleBoardRows[inspectIndex].row,
+                  visibleBoardRows[inspectIndex].rank,
+              )
+            : null;
 
     /**
      * The board table's own data shape. Curation reads the mod roster
@@ -1198,6 +1223,9 @@ export function BoardCuration({
                             selectedKeys={selectedKeys}
                             onToggleSelect={handleToggleSelect}
                             onToggleAllVisible={handleToggleAllVisible}
+                            onModerate={(entry) =>
+                                setInspectRunId(entry.runId ?? null)
+                            }
                             onBoardRefresh={reload}
                             slots={curationSlots}
                             tbodyFooter={
@@ -1211,6 +1239,41 @@ export function BoardCuration({
                                         onMutated={reload}
                                     />
                                 ) : null
+                            }
+                        />
+                    )}
+                    {inspectEntry != null && category && (
+                        <RunInspector
+                            entry={inspectEntry}
+                            gameSlug={game.name}
+                            categorySlug={category.name}
+                            categoryDisplay={category.display}
+                            requireVideo={category.requireVideo}
+                            primaryTiming={timing}
+                            subcategoryDefKeys={subcatVars.map(
+                                (v) => v.nameNormalized,
+                            )}
+                            gameTimeLabel={category.gameTimeLabel}
+                            showMilliseconds={showMilliseconds}
+                            onClose={() => setInspectRunId(null)}
+                            onMutated={reload}
+                            onPrev={
+                                inspectIndex > 0
+                                    ? () =>
+                                          setInspectRunId(
+                                              visibleBoardRows[inspectIndex - 1]
+                                                  .row.runId,
+                                          )
+                                    : undefined
+                            }
+                            onNext={
+                                inspectIndex < visibleBoardRows.length - 1
+                                    ? () =>
+                                          setInspectRunId(
+                                              visibleBoardRows[inspectIndex + 1]
+                                                  .row.runId,
+                                          )
+                                    : undefined
                             }
                         />
                     )}
