@@ -139,6 +139,8 @@ export function ContentRouter(props: ContentRouterProps) {
                     rows={props.rows}
                     config={props.categoryConfig}
                     groups={props.groups}
+                    boardCategories={props.boardCategories}
+                    boardGroups={props.boardGroups}
                     onRowChange={props.onRowChange}
                     onRowGroupChange={props.onRowGroupChange}
                     onRowsReorder={props.onRowsReorder}
@@ -152,6 +154,8 @@ export function ContentRouter(props: ContentRouterProps) {
                     game={game}
                     rows={props.rows}
                     groups={props.groups}
+                    boardCategories={props.boardCategories}
+                    boardGroups={props.boardGroups}
                     onGroupsChange={props.onGroupsChange}
                     onRowGroupChange={props.onRowGroupChange}
                 />

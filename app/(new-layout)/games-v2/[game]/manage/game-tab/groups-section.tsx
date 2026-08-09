@@ -6,8 +6,12 @@ import { createGroupAction } from '~src/actions/category-group/create-group.acti
 import { deleteGroupAction } from '~src/actions/category-group/delete-group.action';
 import { renameGroupAction } from '~src/actions/category-group/rename-group.action';
 import { reorderGroupsAction } from '~src/actions/category-group/reorder-groups.action';
+import { setGroupHiddenAction } from '~src/actions/category-group/set-group-hidden.action';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
-import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
+import type {
+    ResolvedGame,
+    ResolvedGroup,
+} from '../../../../../../types/leaderboards.types';
 import { ConfirmDialog } from '../../shared/confirm-dialog';
 import styles from './groups-section.module.scss';
 
@@ -15,6 +19,9 @@ interface Props {
     game: ResolvedGame;
     groups: ManageGroup[];
     rows: ManageCategoryRow[];
+    /** Server snapshot, for the one field ManageGroup doesn't carry:
+     *  `hiddenByDefault`. */
+    snapshotGroups: ResolvedGroup[];
     onGroupsChange: (groups: ManageGroup[]) => void;
     onRowGroupChange: (
         categoryId: number,
@@ -27,6 +34,7 @@ export function GroupsSection({
     game,
     groups,
     rows,
+    snapshotGroups,
     onGroupsChange,
     onRowGroupChange,
 }: Props) {
@@ -39,6 +47,45 @@ export function GroupsSection({
     const [confirmDeleteGroup, setConfirmDeleteGroup] =
         useState<ManageGroup | null>(null);
     const [deleteError, setDeleteError] = useState<string | null>(null);
+
+    // The flag lives on ResolvedGroup, not on the console's ManageGroup, so
+    // it is tracked here as a set of ids seeded from the snapshot. Optimistic:
+    // the checkbox flips first and reverts if the write fails, because the
+    // only feedback otherwise is the band preview above redrawing a beat late.
+    const [hidden, setHiddenIds] = useState<Set<number>>(
+        () =>
+            new Set(
+                snapshotGroups
+                    .filter((g) => g.hiddenByDefault)
+                    .map((g) => g.id),
+            ),
+    );
+
+    const setHidden = (group: ManageGroup, hiddenByDefault: boolean) => {
+        setHiddenIds((prev) => {
+            const next = new Set(prev);
+            if (hiddenByDefault) next.add(group.id);
+            else next.delete(group.id);
+            return next;
+        });
+        startTransition(async () => {
+            const res = await setGroupHiddenAction({
+                gameSlug: game.name,
+                gameId: game.id,
+                groupId: group.id,
+                hiddenByDefault,
+            });
+            if ('error' in res) {
+                toast.error(res.error);
+                setHiddenIds((prev) => {
+                    const next = new Set(prev);
+                    if (hiddenByDefault) next.delete(group.id);
+                    else next.add(group.id);
+                    return next;
+                });
+            }
+        });
+    };
 
     const countByGroupId = useMemo(() => {
         const m = new Map<number, number>();
@@ -318,6 +365,24 @@ export function GroupsSection({
                                     {count}{' '}
                                     {count === 1 ? 'category' : 'categories'}
                                 </span>
+
+                                {/* Collapsed-by-default was settable in the
+                                    wizard and nowhere else, so a board set up
+                                    before the wizard existed — or edited after
+                                    it — could not reach the flag at all. It is
+                                    the same action either way. */}
+                                <label className="text-muted small d-flex align-items-center gap-1 mb-0">
+                                    <input
+                                        type="checkbox"
+                                        className="form-check-input mt-0"
+                                        checked={hidden.has(g.id)}
+                                        disabled={pending}
+                                        onChange={(e) =>
+                                            setHidden(g, e.target.checked)
+                                        }
+                                    />
+                                    Collapsed by default
+                                </label>
 
                                 {!isEditing && (
                                     <button

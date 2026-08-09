@@ -2,8 +2,14 @@
 
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type { CategoryConfigRow } from '~src/lib/console/category-rows';
+import { previewCategories } from '~src/lib/console/preview-categories';
 import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
-import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
+import type {
+    ResolvedCategory,
+    ResolvedGame,
+    ResolvedGroup,
+} from '../../../../../../types/leaderboards.types';
+import { CategoryBandPreview } from '../../setup/steps/category-band-preview';
 import { CategoriesTable } from '../game-tab/categories-table';
 import type { ReorderChange } from '../game-tab/reorder-changes';
 import styles from './console.module.scss';
@@ -13,6 +19,10 @@ interface Props {
     rows: ManageCategoryRow[];
     config: CategoryConfigRow[];
     groups: ManageGroup[];
+    /** The server snapshot the band preview renders from — `rows` supplies
+     *  the live flags on top of it. */
+    boardCategories: ResolvedCategory[];
+    boardGroups: ResolvedGroup[];
     onRowChange: (
         categoryId: number,
         patch: { isMain?: boolean; active?: boolean },
@@ -42,12 +52,20 @@ export function CategoriesPane({
     rows,
     config,
     groups,
+    boardCategories,
+    boardGroups,
     onRowChange,
     onRowGroupChange,
     onRowsReorder,
     onGroupsChange,
     onEditCategory,
 }: Props) {
+    // The same live preview the wizard's step 2 shows, off the same renderer
+    // the public band uses. Featuring a category here is a bet about what the
+    // board will look like; the wizard stopped making people place that bet
+    // blind, and the console had no reason to keep asking for it.
+    const previewed = previewCategories(boardCategories, rows);
+
     return (
         <section className={styles.surface}>
             <div className={styles.paneHeader}>
@@ -57,6 +75,7 @@ export function CategoriesPane({
                 Bulk-manage which categories are visible and which are featured.
                 Use "Edit" to open a category for detailed settings.
             </p>
+            <CategoryBandPreview categories={previewed} groups={boardGroups} />
             <CategoriesTable
                 game={game}
                 rows={rows}

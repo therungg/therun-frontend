@@ -9,6 +9,7 @@ import {
     type CategoryConfigRow,
     disagreementsByColumn,
 } from '~src/lib/console/category-rows';
+import { suggestFeaturedIds } from '~src/lib/setup/suggestions';
 import { formatCount, formatHours } from '~src/utils/format-stats';
 import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
 import { effectiveSortKey } from '../../category-sort';
@@ -139,6 +140,23 @@ export function CategoriesTable({
             return next;
         });
     };
+
+    // The wizard's suggested picks, offered only while the board has no
+    // featured category at all. Once a moderator has curated even one, their
+    // judgement beats the heuristic and this goes quiet for good.
+    const suggested = useMemo(() => {
+        if (rows.some((r) => r.isMain && r.active)) return [];
+        const ids = suggestFeaturedIds(
+            rows
+                .filter((r) => r.active)
+                .map((r) => ({
+                    id: r.id,
+                    totalFinishedAttemptCount: r.totalFinishedAttemptCount,
+                    uniqueRunners: r.uniqueRunners,
+                })),
+        );
+        return rows.filter((r) => ids.has(r.id));
+    }, [rows]);
 
     // Applies a single Featured/Archived toggle via updateVisibilityAction —
     // shared by the toggle handler below and its Undo (which just calls this
@@ -433,6 +451,37 @@ export function CategoriesTable({
 
     return (
         <section className="mb-4">
+            {/* A board with nothing featured has an empty public band — the
+                one state where this screen should say something rather than
+                wait. The wizard's step 2 pre-ticks its picks; a live-write
+                screen must not, so it offers them instead. */}
+            {suggested.length > 0 && (
+                <div
+                    className="alert alert-info d-flex flex-wrap align-items-center gap-2 py-2"
+                    role="status"
+                >
+                    <span>
+                        Nothing is featured yet, so the board shows no
+                        categories. Busiest here:{' '}
+                        <strong>
+                            {suggested.map((r) => r.display).join(', ')}
+                        </strong>
+                        .
+                    </span>
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-primary ms-auto"
+                        disabled={pendingIds.size > 0}
+                        onClick={() => {
+                            for (const r of suggested)
+                                toggle(r, 'isMain', true);
+                        }}
+                    >
+                        Feature {suggested.length === 1 ? 'it' : 'these'}
+                    </button>
+                </div>
+            )}
+
             <div className="d-flex flex-wrap gap-2 align-items-center mb-3">
                 <input
                     type="search"
@@ -815,10 +864,14 @@ export function CategoriesTable({
                 </>
             )}
 
+            {/* The top-5-by-playtime fallback this used to describe is gone —
+                non-Featured categories are not publicly viewable at all, which
+                is why an uncurated board shows nothing and gets the prompt
+                above instead. */}
             <p className="text-muted small mb-0">
-                Tip: only "featured" categories appear on the public game page.
-                If no featured categories are set, the top 5 by playtime show as
-                a fallback. Non-featured categories stay accessible to mods
+                Tip: only "featured" categories appear on the public game page,
+                and there is no fallback — a board with none featured shows no
+                categories. Non-featured categories stay accessible to mods
                 here. Archived categories are hidden from the public page along
                 with their boards; runs are kept.
             </p>
