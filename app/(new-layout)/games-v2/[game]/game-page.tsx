@@ -134,7 +134,6 @@ export function GamePage({
                     subcategoryKey={subcategoryKey}
                     rulesOpen={rulesOpen}
                     onToggleRules={() => setRulesOpen((o) => !o)}
-                    view={view}
                 />
                 {rulesOpen &&
                     (data.selectedCategory.rules?.trim() ||

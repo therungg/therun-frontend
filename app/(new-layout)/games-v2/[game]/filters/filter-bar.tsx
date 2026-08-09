@@ -15,7 +15,7 @@ interface Props {
 
 /**
  * One line, however many variables the game defines: the controls flow left,
- * the resolved count and Reset sit against the right edge. The old tier grew
+ * the resolved count sits against the right edge. The old tier grew
  * a full labeled row per variable, so a game with four axes pushed the board
  * itself below the fold before a single run was visible.
  */
@@ -40,12 +40,7 @@ export function FilterBar({
                 />
                 <ActiveFilterChips defs={defs} selected={selectedVarFilters} />
             </div>
-            <TierSummary
-                defs={defs}
-                selectedSubcategoryValues={selectedSubcategoryValues}
-                selectedVarFilters={selectedVarFilters}
-                totalItems={totalItems}
-            />
+            <TierSummary totalItems={totalItems} />
         </div>
     );
 }
