@@ -1,7 +1,8 @@
 # Manage panel ↔ setup parity
 
 **Date:** 2026-08-09
-**Status:** approved, not yet implemented
+**Status:** implemented on branch `manage-setup-parity`. See "What the
+build changed about this plan" at the foot.
 
 ## Problem
 
@@ -160,3 +161,46 @@ that spans groups. The suggestions panel is already a sibling
 - Full suite must stay at its current baseline: 3 known pre-existing
   failures in `manage/boards/row-actions.test.tsx`, nothing new.
 - `npm run typecheck` must stay at the 356-error baseline.
+
+## What the build changed about this plan
+
+The parity check in section 3 answered three of its own questions before any
+deletion, and two of the gaps it was written to catch turned out not to exist:
+
+- **Reserved-param collisions were already covered.** The grid's add form
+  carries the same eight-name list the old form did. It moved to
+  `variable-keys.ts` so the grid and the form share one copy.
+- **Variable reordering was already covered.** `onMoveGroup` / "Move up" /
+  "Move down" exist at the foot of each group panel; the old table's per-row
+  nudges had nothing the grid lacked.
+- **The mod-facing note was the one real gap.** `description` is stored per
+  row and the retired form was its only editor, so it came over as
+  `group-note.tsx` — board-level, written straight through, since it moves no
+  runs.
+
+Section 4 also over-planned:
+
+- **Activity columns already existed** in `CategoriesTable` (Runs / Runners /
+  Playtime). What the console genuinely lacked was the *band preview*, which
+  now renders in both panes off `previewCategories()` — a pure merge of the
+  live-edited rows over the server snapshot, so the preview reflects an
+  unsaved Featured toggle.
+- **`GroupBuilder` needed no persistence rework** — it already commits
+  immediately, so nothing had to be lifted. The console's own
+  `GroupsSection` was instead missing `hiddenByDefault` entirely: settable in
+  the wizard and nowhere else. It has the toggle now.
+- **Added, not planned:** an offer of the wizard's suggested picks while a
+  board features nothing at all (it writes on click rather than pre-ticking,
+  because this screen writes live), and a correction to the tip beneath the
+  table, which still promised a top-5-by-playtime fallback that no longer
+  exists.
+
+Section 5 split further than planned — five modules, not two:
+`consequence-dialog`, `option-editor`, `add-variable-form`, `tri-checkbox`
+and `variable-palette` (the per-variable editor), plus `variable-keys.ts`.
+`variables-grid.tsx` went from 2808 lines to 1363.
+
+One incidental fix: `option-editor.tsx` used two **literal NUL bytes** as a
+join separator (inherited from the grid). Git and grep both classified the
+file as binary because of them — which is why text searches over the grid
+returned nothing. They are backslash-u escapes now, same runtime value.
