@@ -974,6 +974,9 @@ export function RunInspector({
                                                   categoryId: modCategory.id,
                                                   categoryDisplay:
                                                       categoryDisplay,
+                                                  subcategoryKey:
+                                                      entrySubcategoryKey,
+                                                  primaryTiming,
                                               }
                                             : undefined,
                                 }}

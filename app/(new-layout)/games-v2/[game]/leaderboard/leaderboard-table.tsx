@@ -272,6 +272,7 @@ export function LeaderboardTable({
                             onModerate={onModerate}
                             onBoardRefresh={onBoardRefresh}
                             category={category}
+                            subcategoryDefKeys={subcategoryDefKeys}
                             slots={slots}
                         />
                     ))}
