@@ -19,6 +19,8 @@ interface Props {
     groups: ResolvedGroup[];
     selectedCategoryName: string;
     variableKeys: string[];
+    /** Board population per category slug; see GamePageData.categoryBoardCounts. */
+    boardCounts?: Record<string, number>;
 }
 
 export function CategoryRail({
@@ -26,6 +28,7 @@ export function CategoryRail({
     groups,
     selectedCategoryName,
     variableKeys,
+    boardCounts,
 }: Props) {
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -131,7 +134,13 @@ export function CategoryRail({
                                     section.pills.map((c) => {
                                         const active =
                                             c.name === optimisticSelectedName;
-                                        const runners = c.uniqueRunners ?? null;
+                                        // Board rows, not the category stats
+                                        // row's uniqueRunners: the number
+                                        // above the subcategory values has to
+                                        // be the total those values add up
+                                        // to. See categoryBoardCounts.
+                                        const runners =
+                                            boardCounts?.[c.name] ?? null;
                                         return (
                                             <button
                                                 key={c.id}

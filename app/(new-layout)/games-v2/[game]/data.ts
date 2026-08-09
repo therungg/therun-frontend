@@ -28,6 +28,14 @@ const DEFAULT_PAGE_SIZE = 25;
  * number is a smaller failure than a slow board.
  */
 const MAX_VALUE_COUNT_PROBES = 16;
+
+/**
+ * Same ceiling for the per-category board sizes. Over it, the category chips
+ * carry no count at all rather than falling back to `uniqueRunners` — a
+ * number that means something different (see loadCategoryBoardCounts) must
+ * not quietly take the place of one that's merely missing.
+ */
+const MAX_CATEGORY_COUNT_PROBES = 24;
 const RESERVED_LOWER = new Set([
     'category',
     'combined',
@@ -86,6 +94,7 @@ export async function loadGamePageData(
             yourRuns: [],
             sessionUsername,
             subcategoryValueCounts: {},
+            categoryBoardCounts: {},
             activeFilters: emptyFilters(),
         };
     }
@@ -174,11 +183,14 @@ export async function loadGamePageData(
         ? null
         : { validCombinations: boardResult.validCombinations };
 
-    const subcategoryValueCounts = await loadSubcategoryValueCounts(
-        { ...baseQuery, timing: selected.primaryTiming },
-        varsResp.variables,
-        boardResult.ok && !combined ? leaderboard.totalItems : null,
-    );
+    const [subcategoryValueCounts, categoryBoardCounts] = await Promise.all([
+        loadSubcategoryValueCounts(
+            { ...baseQuery, timing: selected.primaryTiming },
+            varsResp.variables,
+            boardResult.ok && !combined ? leaderboard.totalItems : null,
+        ),
+        loadCategoryBoardCounts(game.name, categories),
+    ]);
 
     return {
         game,
@@ -196,6 +208,7 @@ export async function loadGamePageData(
         yourRuns,
         sessionUsername,
         subcategoryValueCounts,
+        categoryBoardCounts,
         activeFilters: {
             subcategoryValues,
             varFilters,
@@ -280,6 +293,51 @@ async function loadSubcategoryValueCounts(
         (counts[r.key] ??= {})[r.value] = r.count;
     }
     return counts;
+}
+
+/**
+ * Board population per category, keyed by category slug.
+ *
+ * The category chips used to show `unique_runners` off the category stats row
+ * — everyone with a finished run in the category, board-eligible or not. The
+ * subcategory values below them show board rows. On LEGO Star Wars Any% that
+ * read as 98 on top of 90 + 1, and the seven missing runners are simply runs
+ * that never made a board (below the minimum, rejected, no required video, a
+ * value outside the defined buckets).
+ *
+ * Two measures, both labelled "runners", stacked in one header, is a puzzle
+ * the reader is invited to solve by subtracting. So the chips count boards
+ * too: `combined=1` is the whole category across its subcategories, which is
+ * exactly the total its own values partition.
+ */
+async function loadCategoryBoardCounts(
+    gameSlug: string,
+    categories: { name: string; primaryTiming: 'rt' | 'gt' }[],
+): Promise<Record<string, number>> {
+    if (categories.length === 0) return {};
+    if (categories.length > MAX_CATEGORY_COUNT_PROBES) return {};
+
+    const results = await Promise.all(
+        categories.map(async (c) => {
+            try {
+                const r = await getLeaderboard({
+                    gameSlug,
+                    categorySlug: c.name,
+                    timing: c.primaryTiming,
+                    combined: true,
+                    page: 1,
+                    pageSize: 1,
+                });
+                return r.ok ? ([c.name, r.result.totalItems] as const) : null;
+            } catch {
+                return null;
+            }
+        }),
+    );
+
+    return Object.fromEntries(
+        results.filter((r): r is readonly [string, number] => r !== null),
+    );
 }
 
 function emptyBoard() {

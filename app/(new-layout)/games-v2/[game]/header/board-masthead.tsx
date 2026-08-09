@@ -143,6 +143,7 @@ export function BoardMasthead({
                             groups={data.groups}
                             selectedCategoryName={category.name}
                             variableKeys={variableKeys}
+                            boardCounts={data.categoryBoardCounts}
                         />
                     </div>
                 )}
