@@ -88,9 +88,13 @@ export interface RecentPb {
     endedAt: string;
     isPb: boolean;
     /**
-     * The runner's previous PB on this board (RT / GT), straight from
-     * `FINISHED_RUN_SELECT.previousPb` — null for a first-ever PB. Optional
-     * for the same cast-without-mapping reason as `runId` below.
+     * The runner's previous PB on this board, null for a first-ever PB.
+     * Optional for the same cast-without-mapping reason as `runId` below.
+     *
+     * These are two separate backend columns and they pair with two separate
+     * time fields: `previousPb` with `time` (real time), `previousPbGameTime`
+     * with `gameTime`. A delta must compare within one pair — crossing them
+     * subtracts a game time from a real time and prints nonsense.
      */
     previousPb?: number | null;
     previousPbGameTime?: number | null;

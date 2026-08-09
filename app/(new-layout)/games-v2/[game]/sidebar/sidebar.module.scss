@@ -127,6 +127,19 @@
     }
 }
 
+// Which clock this time is on. Shown only when the row is NOT plain RTA —
+// the panel is game-wide, so a game-time board's PB sitting next to a
+// real-time board's PB has to say which is which.
+.pbTiming {
+    // Steps out of .pbTime's mono — this is a word, not a number.
+    font-family: var(--bs-body-font-family);
+    font-size: dt.$font-size-2xs;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--bs-tertiary-color);
+    margin-left: 0.3rem;
+}
+
 .pbMeta {
     font-size: dt.$font-size-xs;
     color: var(--bs-tertiary-color);

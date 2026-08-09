@@ -7,6 +7,7 @@ import {
     ChevronUp,
     PlayBtn,
 } from 'react-bootstrap-icons';
+import { createPortal } from 'react-dom';
 import { toast } from 'react-toastify';
 import type { ModVerb } from '~app/(new-layout)/games-v2/[game]/manage/moderation/shared/action-model';
 import {
@@ -91,6 +92,11 @@ export function ManualInspector({
 }: Props) {
     const manualTimeId = entry.manualTimeId as number;
     const panelRef = useRef<HTMLDivElement>(null);
+    // Portal target isn't available during SSR — mount client-side only.
+    const [portalReady, setPortalReady] = useState(false);
+    useEffect(() => {
+        setPortalReady(true);
+    }, []);
     const [activeVerb, setActiveVerb] = useState<ModVerb | null>(null);
     const [editOpen, setEditOpen] = useState(false);
 
@@ -220,7 +226,10 @@ export function ManualInspector({
         onMutated();
     };
 
-    return (
+    if (!portalReady) return null;
+
+    // Portalled for the same reason as RunInspector — see the note there.
+    return createPortal(
         <>
             <button
                 type="button"
@@ -459,6 +468,7 @@ export function ManualInspector({
                     onClose={() => setEditOpen(false)}
                 />
             )}
-        </>
+        </>,
+        document.body,
     );
 }

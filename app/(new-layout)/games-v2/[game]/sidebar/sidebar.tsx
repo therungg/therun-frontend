@@ -35,6 +35,11 @@ interface Props {
     board?: ResolvedCategory | null;
     /** Entry count of the board as currently viewed (leaderboard totalItems). */
     boardSize?: number | null;
+    /**
+     * Every Featured category, so the game-wide Recent PBs panel can show each
+     * PB in its own board's primary timing instead of always in RTA.
+     */
+    categories?: ResolvedCategory[];
 }
 
 export function Sidebar({
@@ -48,6 +53,7 @@ export function Sidebar({
     activeRaces,
     board,
     boardSize,
+    categories,
 }: Props) {
     return (
         <>
@@ -57,7 +63,11 @@ export function Sidebar({
                 <BoardStatsPanel category={board} boardSize={boardSize} />
             )}
             <YourRunsPanel rankings={yourRuns} gameSlug={game.name} />
-            <RecentPbsPanel pbs={recentPbs} gameSlug={game.name} />
+            <RecentPbsPanel
+                pbs={recentPbs}
+                gameSlug={game.name}
+                categories={categories}
+            />
             {series && (
                 <SeriesPanel
                     seriesDisplay={series.display}
