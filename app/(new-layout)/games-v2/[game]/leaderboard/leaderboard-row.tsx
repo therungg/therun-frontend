@@ -13,7 +13,6 @@ import type { DisplayRank } from './display-rank';
 import styles from './leaderboard.module.scss';
 import { QuickVerifyButton } from './quick-verify-button';
 import { relativeDate } from './relative-date';
-import { RowActionsMenu } from './row-actions-menu';
 import { RunnerAvatar } from './runner-avatar';
 import { type BoardSelectionKey, entrySelectionKey } from './selection';
 import {
@@ -133,13 +132,8 @@ interface Props {
         label: string;
         display: Record<string, string>;
     }[];
-    sessionUsername: string | null;
     /** category.showMilliseconds ?? true — precision the board is configured for. */
     showMilliseconds: boolean;
-    /** Active category slug — this row's own category (a board is single-category). */
-    categorySlug: string;
-    /** Subcategory-role variable names, for building this row's own subcategory key from `entry.variables`. */
-    subcategoryDefKeys: string[];
     /** category.rtaFallback — an entry with no game time on a GT board is
      * ranked by its real time; the ranked cell shows it with an RTA marker. */
     rtaFallback?: boolean;
@@ -148,7 +142,7 @@ interface Props {
     selected?: boolean;
     /** Shift-click extends a range — the click handler forwards the native event's shiftKey. */
     onToggleSelect?: (key: BoardSelectionKey, shiftKey: boolean) => void;
-    /** Kebab's "Moderate…" — opens the run inspector drawer on this entry. */
+    /** Row's "Moderate" — opens the run inspector drawer on this entry. */
     onModerate?: (entry: LeaderboardEntry) => void;
     /** Board page refetch for row-level mutations (quick Verify + its undo). */
     onBoardRefresh?: () => void;
@@ -164,10 +158,7 @@ export function LeaderboardRow({
     hideGameTime,
     primaryTiming,
     valueColumns,
-    sessionUsername,
     showMilliseconds,
-    categorySlug,
-    subcategoryDefKeys,
     rtaFallback = false,
     selected = false,
     onToggleSelect,
@@ -180,7 +171,7 @@ export function LeaderboardRow({
     const isAnonymous = entry.anonymized === true;
     const selectionKey = entrySelectionKey(entry);
     // One-click Verify for the queue-clearing common case; every other mod
-    // verb goes through the inspector drawer (kebab → Moderate…).
+    // verb goes through the inspector drawer (the row's Moderate button).
     const showQuickVerify =
         canManage &&
         entry.runId != null &&
@@ -446,13 +437,13 @@ export function LeaderboardRow({
                             Moderate
                         </button>
                     )}
-                    <RowActionsMenu
-                        entry={entry}
-                        sessionUsername={sessionUsername}
-                        gameSlug={gameSlug}
-                        categorySlug={categorySlug}
-                        subcategoryDefKeys={subcategoryDefKeys}
-                    />
+                    {/* The per-row kebab is gone. Everything it held — run
+                        history, Report run, Correct this time, Hide/Restore my
+                        run, Appeal rejection — lives on the run page
+                        (run-view/run-actions.tsx), which this row's time
+                        already links to. A second surface for the same verbs
+                        cost every row a control that opened a menu to say
+                        "go to the run page". */}
                 </span>
             </td>
         </tr>
