@@ -2,7 +2,10 @@ import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { formatRunDate } from '~src/lib/format-run-date';
-import type { RecentPb } from '../../../../../types/leaderboards.types';
+import type {
+    RecentPb,
+    ResolvedCategory,
+} from '../../../../../types/leaderboards.types';
 import { relativeDate } from '../leaderboard/relative-date';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
 import { formatImprovement } from './format-improvement';
@@ -11,9 +14,40 @@ import styles from './sidebar.module.scss';
 interface Props {
     pbs: RecentPb[];
     gameSlug: string;
+    /** Featured categories, for resolving each PB's board timing. */
+    categories?: ResolvedCategory[];
 }
 
-export function RecentPbsPanel({ pbs, gameSlug }: Props) {
+/**
+ * Which time to print for a PB, and what to call it.
+ *
+ * The panel is game-wide, and a game's boards don't share a timing — a
+ * game-time board's rows are ranked on game time, so printing every PB's RTA
+ * here made those rows disagree with the board they came from. Each PB is
+ * shown in its own category's primary timing instead.
+ *
+ * Game-time boards fall back to RTA when a run carries no game time (the same
+ * COALESCE the board ranks on), so the label follows the value actually shown
+ * rather than the board's setting.
+ */
+function pbTiming(
+    pb: RecentPb,
+    category: ResolvedCategory | undefined,
+): { time: number; previous?: number | null; label: string | null } {
+    if (category?.primaryTiming !== 'gt') {
+        return { time: pb.time, previous: pb.previousPb, label: null };
+    }
+    if (typeof pb.gameTime !== 'number' || pb.gameTime <= 0) {
+        return { time: pb.time, previous: pb.previousPb, label: 'RTA' };
+    }
+    return {
+        time: pb.gameTime,
+        previous: pb.previousPbGameTime,
+        label: category.gameTimeLabel === 'lrt' ? 'LRT' : 'IGT',
+    };
+}
+
+export function RecentPbsPanel({ pbs, gameSlug, categories }: Props) {
     if (pbs.length === 0) {
         return (
             <section className={styles.panel}>
@@ -25,6 +59,10 @@ export function RecentPbsPanel({ pbs, gameSlug }: Props) {
         );
     }
 
+    // categoryId is the row's resolved category (optional — see RecentPb);
+    // an unmatched PB keeps the RTA reading it always had.
+    const byId = new Map((categories ?? []).map((c) => [c.id, c]));
+
     return (
         <section className={styles.panel}>
             {/* "all boards": this panel is game-wide — without the scope the
@@ -33,18 +71,25 @@ export function RecentPbsPanel({ pbs, gameSlug }: Props) {
                 Recent PBs · all boards
             </span>
             <ul className="list-unstyled mb-0">
-                {pbs.slice(0, 5).map((p) => (
-                    <li key={p.id} className={styles.pbRow}>
-                        <div className={styles.pbTop}>
-                            <span className={styles.rowUser}>
-                                <RunnerAvatar name={p.username} size="xs" />
-                                <UserLink
-                                    username={p.username}
-                                    url={undefined}
-                                />
-                            </span>
-                            <span className={styles.pbTime}>
-                                {/*
+                {pbs.slice(0, 5).map((p) => {
+                    const timing = pbTiming(
+                        p,
+                        p.categoryId == null
+                            ? undefined
+                            : byId.get(p.categoryId),
+                    );
+                    return (
+                        <li key={p.id} className={styles.pbRow}>
+                            <div className={styles.pbTop}>
+                                <span className={styles.rowUser}>
+                                    <RunnerAvatar name={p.username} size="xs" />
+                                    <UserLink
+                                        username={p.username}
+                                        url={undefined}
+                                    />
+                                </span>
+                                <span className={styles.pbTime}>
+                                    {/*
                                     RecentPb.id is the finished_run row id
                                     (from /v1/finished-runs), not the run id
                                     getRunById/`/games-v2/[game]/run/[runId]`
@@ -59,29 +104,37 @@ export function RecentPbsPanel({ pbs, gameSlug }: Props) {
                                     runner's profile (same destination the
                                     UserLink above points at) when it isn't.
                                 */}
-                                <Link
-                                    href={
-                                        typeof p.runId === 'number'
-                                            ? `/games-v2/${encodeURIComponent(gameSlug)}/run/${p.runId}`
-                                            : `/${p.username}`
-                                    }
-                                >
-                                    <DurationToFormatted duration={p.time} />
-                                </Link>
-                            </span>
-                        </div>
-                        <div className={styles.pbMeta}>
-                            {p.category} ·{' '}
-                            <span title={formatRunDate(p.endedAt)}>
-                                {relativeDate(p.endedAt)}
-                            </span>
-                            <PbImprovement
-                                time={p.time}
-                                previousPb={p.previousPb}
-                            />
-                        </div>
-                    </li>
-                ))}
+                                    <Link
+                                        href={
+                                            typeof p.runId === 'number'
+                                                ? `/games-v2/${encodeURIComponent(gameSlug)}/run/${p.runId}`
+                                                : `/${p.username}`
+                                        }
+                                    >
+                                        <DurationToFormatted
+                                            duration={timing.time}
+                                        />
+                                        {timing.label && (
+                                            <span className={styles.pbTiming}>
+                                                {timing.label}
+                                            </span>
+                                        )}
+                                    </Link>
+                                </span>
+                            </div>
+                            <div className={styles.pbMeta}>
+                                {p.category} ·{' '}
+                                <span title={formatRunDate(p.endedAt)}>
+                                    {relativeDate(p.endedAt)}
+                                </span>
+                                <PbImprovement
+                                    time={timing.time}
+                                    previousPb={timing.previous}
+                                />
+                            </div>
+                        </li>
+                    );
+                })}
             </ul>
         </section>
     );

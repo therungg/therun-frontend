@@ -255,6 +255,7 @@ export function GamePage({
                             }}
                             board={data.selectedCategory}
                             boardSize={data.leaderboard?.totalItems ?? null}
+                            categories={data.categories}
                             about={
                                 data.gameMeta.summaryOverride ??
                                 data.gameMeta.summary

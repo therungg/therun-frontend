@@ -8,6 +8,7 @@ import {
     ChevronUp,
     PlayBtn,
 } from 'react-bootstrap-icons';
+import { createPortal } from 'react-dom';
 import { toast } from 'react-toastify';
 import type { ModVerb } from '~app/(new-layout)/games-v2/[game]/manage/moderation/shared/action-model';
 import {
@@ -169,6 +170,12 @@ export function RunInspector({
 }: Props) {
     const runId = entry.runId as number;
     const panelRef = useRef<HTMLDivElement>(null);
+    // Portal target isn't available during SSR — mount client-side only,
+    // same guard board-dialog.tsx uses.
+    const [portalReady, setPortalReady] = useState(false);
+    useEffect(() => {
+        setPortalReady(true);
+    }, []);
     const [activeVerb, setActiveVerb] = useState<ModVerb | null>(null);
 
     const [history, setHistory] = useState<HistoryEvent[] | null>(null);
@@ -346,7 +353,18 @@ export function RunInspector({
         runnerRuns?.filter((r) => r.verificationStatus === 'rejected').length ??
         0;
 
-    return (
+    if (!portalReady) return null;
+
+    // Portalled to <body>, and this is not cosmetic. The site shell puts
+    // `.main` at `position: relative; z-index: 1` under a `.background` at
+    // `z-index: 0` (layout.module.scss), so everything the board page renders
+    // is sealed inside `.main`'s stacking context. A drawer left in that
+    // subtree cannot out-stack anything outside it at any z-index — the
+    // header at z-index 10 covers it outright, and it competes with the
+    // sidebar rail (position: sticky, its own stacking context) on terms it
+    // never asked for. Dialogs already escape this way (board-dialog.tsx);
+    // the drawer was the outlier.
+    return createPortal(
         <>
             <button
                 type="button"
@@ -696,6 +714,7 @@ export function RunInspector({
                     />
                 </>
             )}
-        </>
+        </>,
+        document.body,
     );
 }
