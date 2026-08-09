@@ -2,7 +2,7 @@ import moment from 'moment';
 import type React from 'react';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
-import { Vod, youtubeParser } from '~src/components/run/dashboard/vod';
+import { Vod } from '~src/components/run/dashboard/vod';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import {
     buildBoardHref,
@@ -10,6 +10,7 @@ import {
     rankToPage,
 } from '~src/lib/board-url';
 import { formatRunDate } from '~src/lib/format-run-date';
+import { isEmbeddableVod } from '~src/lib/vod-url';
 import type {
     ResolvedGame,
     RunOrigin,
@@ -60,10 +61,6 @@ export interface RunViewModel {
     verifiedBy: RunOriginRef | null;
     rejectionReason: string | null;
     boardStanding: RunBoardStanding | null;
-}
-
-function isEmbeddableVod(url: string): boolean {
-    return Boolean(youtubeParser(url)) || url.includes('twitch');
 }
 
 export function RunView({

@@ -110,7 +110,30 @@
     word-break: break-all;
 }
 
-// No video is a fact the moderator has to weigh, not an absence to hide.
+.vodActions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    width: 100%;
+}
+
+.vodEditBtn {
+    border: none;
+    background: none;
+    padding: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+
+    &:hover {
+        color: var(--bs-primary);
+        text-decoration: underline;
+    }
+}
+
+// No video is a fact the moderator has to weigh, not an absence to hide —
+// and it's the button that fixes it, because "the run has no VOD" is the
+// most common reason a run sits in the queue.
 .noVod {
     display: flex;
     align-items: center;
@@ -121,6 +144,26 @@
     border-radius: dt.$radius-md;
     color: var(--bs-secondary-color);
     font-size: dt.$font-size-sm;
+    text-align: left;
+    background: none;
+    transition:
+        border-color dt.$transition-fast,
+        background-color dt.$transition-fast;
+
+    &:hover {
+        border-color: var(--bs-primary);
+        background: rgba(var(--bs-primary-rgb), 0.06);
+    }
+}
+
+.noVodText {
+    flex: 1 1 auto;
+}
+
+.noVodCta {
+    flex: 0 0 auto;
+    font-weight: 600;
+    color: var(--bs-primary);
 }
 
 .noVodRequired {
@@ -129,6 +172,59 @@
     background: rgba(var(--bs-danger-rgb), 0.08);
     color: var(--bs-danger-text-emphasis, var(--bs-danger));
     font-weight: 500;
+
+    &:hover {
+        border-color: var(--bs-danger);
+        background: rgba(var(--bs-danger-rgb), 0.14);
+    }
+}
+
+// ---------- attach / change the video link ----------
+
+.vodForm {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    width: 100%;
+}
+
+.vodFormLabel {
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+}
+
+.vodFormRow {
+    display: flex;
+    gap: dt.$spacing-sm;
+    align-items: center;
+}
+
+.vodInput {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.vodHint {
+    margin: 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.vodRemove {
+    align-self: flex-start;
+    border: none;
+    background: none;
+    padding: 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-danger);
+
+    &:hover:not(:disabled) {
+        text-decoration: underline;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
 }
 
 // ---------- the time ----------
