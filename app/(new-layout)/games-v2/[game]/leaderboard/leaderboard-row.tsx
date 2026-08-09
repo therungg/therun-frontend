@@ -11,6 +11,7 @@ import { usePopoverFocus } from '../shared/use-popover-focus';
 import { CountryFlag } from './country-flag';
 import type { DisplayRank } from './display-rank';
 import styles from './leaderboard.module.scss';
+import { QuickRemoveButton } from './quick-remove-button';
 import { QuickVerifyButton } from './quick-verify-button';
 import { relativeDate } from './relative-date';
 import { RunnerAvatar } from './runner-avatar';
@@ -146,6 +147,9 @@ interface Props {
     onModerate?: (entry: LeaderboardEntry) => void;
     /** Board page refetch for row-level mutations (quick Verify + its undo). */
     onBoardRefresh?: () => void;
+    /** The board's category — the row's Remove offers a runner-scoped
+     *  option, which is a rule written against a category. */
+    category?: { id: number; display: string };
     /** Curation-only additions; absent on the public board. See `RowSlots`. */
     slots?: RowSlots;
 }
@@ -186,6 +190,7 @@ export function LeaderboardRow({
     onToggleSelect,
     onModerate,
     onBoardRefresh,
+    category,
     slots,
 }: Props) {
     // Anonymized rows arrive already redacted from the backend: placeholder
@@ -200,6 +205,15 @@ export function LeaderboardRow({
         entry.runId != null &&
         entry.source !== 'manual' &&
         entry.verificationStatus === 'pending' &&
+        onBoardRefresh != null;
+    // Unlike Verify, Remove applies at any verification status — a verified
+    // run is exactly the kind that turns out to be wrong later. Set times are
+    // still excluded: they are deleted, not removed, and that verb lives in
+    // the drawer.
+    const showQuickRemove =
+        canManage &&
+        entry.runId != null &&
+        entry.source !== 'manual' &&
         onBoardRefresh != null;
     const detailHref =
         entry.source === 'manual' && entry.manualTimeId != null
@@ -477,6 +491,21 @@ export function LeaderboardRow({
                             gameSlug={gameSlug}
                             runId={entry.runId as number}
                             runnerName={entry.runnerName}
+                            onMutated={onBoardRefresh as () => void}
+                        />
+                    )}
+                    {/* The other half of the same judgement as Verify, and
+                        it was the only one that made you open the drawer
+                        first. Opens the same Remove dialog, reason gate and
+                        undo as everywhere else. */}
+                    {showQuickRemove && (
+                        <QuickRemoveButton
+                            gameSlug={gameSlug}
+                            runId={entry.runId as number}
+                            runnerName={entry.runnerName}
+                            userId={entry.userId ?? null}
+                            categoryId={category?.id}
+                            categoryDisplay={category?.display ?? ''}
                             onMutated={onBoardRefresh as () => void}
                         />
                     )}

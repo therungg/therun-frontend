@@ -229,6 +229,7 @@ export function GamePage({
                                         categoryDisplay={
                                             data.selectedCategory.display
                                         }
+                                        categoryId={data.selectedCategory.id}
                                         requireVideo={
                                             data.selectedCategory
                                                 .requireVideo ?? false

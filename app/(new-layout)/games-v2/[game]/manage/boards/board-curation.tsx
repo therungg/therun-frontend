@@ -1183,6 +1183,14 @@ export function BoardCuration({
                                 setInspectRunId(entry.runId ?? null)
                             }
                             onBoardRefresh={reload}
+                            category={
+                                category
+                                    ? {
+                                          id: category.id,
+                                          display: category.display,
+                                      }
+                                    : undefined
+                            }
                             slots={curationSlots}
                             tbodyFooter={
                                 category ? (
