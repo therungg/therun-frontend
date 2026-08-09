@@ -29,37 +29,36 @@ export function ActiveFilterChips({ defs, selected }: Props) {
 
     if (chips.length === 0) return null;
 
+    // No label column: an active filter chip already says its own variable
+    // name, so an "ACTIVE" endcap in front of it was a whole grid gutter
+    // spent restating the obvious. The chips join the tier's control flow.
     return (
         <div
-            className={styles.block}
+            className={styles.control}
             role="group"
-            aria-labelledby="active-filters-cap"
+            aria-label="Active filters"
         >
-            <span className={styles.endcap} id="active-filters-cap">
-                Active
-            </span>
-            <div className={styles.well}>
-                <div className={styles.chips}>
-                    {chips.map(({ def, value, values }) => (
-                        <button
-                            key={`${def.nameNormalized}-${value}`}
-                            type="button"
-                            disabled={isPending}
-                            onClick={() =>
-                                setVarFilter(
-                                    def.nameNormalized,
-                                    removeFilterValue(values, value),
-                                )
-                            }
-                            className={`${styles.pill} ${styles.pillActive}`}
-                            aria-label={`Remove ${def.name}: ${value} filter`}
-                        >
-                            {def.name}: {value}
-                            <span aria-hidden="true"> ×</span>
-                        </button>
-                    ))}
-                </div>
-            </div>
+            {chips.map(({ def, value, values }) => (
+                <button
+                    key={`${def.nameNormalized}-${value}`}
+                    type="button"
+                    disabled={isPending}
+                    onClick={() =>
+                        setVarFilter(
+                            def.nameNormalized,
+                            removeFilterValue(values, value),
+                        )
+                    }
+                    className={styles.activeChip}
+                    aria-label={`Remove ${def.name}: ${value} filter`}
+                >
+                    <span className={styles.activeChipKey}>{def.name}</span>
+                    {value}
+                    <span aria-hidden="true" className={styles.activeChipX}>
+                        ×
+                    </span>
+                </button>
+            ))}
         </div>
     );
 }

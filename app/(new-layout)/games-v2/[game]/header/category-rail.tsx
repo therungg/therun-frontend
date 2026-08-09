@@ -78,31 +78,28 @@ export function CategoryRail({
     const open = sections.filter(isOpen);
     const collapsed = sections.filter((s) => !isOpen(s));
 
-    // Collapsed groups render as ghost chips appended to the LAST open row
-    // (density: one dashed chip must not own a whole plate row). They sit in
-    // their own well, outside the row's labeled group semantics.
-    const ghostWell =
-        collapsed.length > 0 ? (
-            <div className={styles.ghostWell}>
-                <div className={styles.chips}>
-                    {collapsed.map((section) => (
-                        <button
-                            key={`collapsed-${section.id}`}
-                            type="button"
-                            aria-expanded={false}
-                            onClick={() => toggle(section.id as number)}
-                            className={`${styles.chip} ${styles.chipGhost}`}
-                        >
-                            <CaretRightFill size={9} aria-hidden />
-                            {section.name}
-                            <span aria-hidden className={styles.chipCount}>
-                                {section.pills.length}
-                            </span>
-                        </button>
-                    ))}
-                </div>
-            </div>
-        ) : null;
+    // Collapsed groups render as ghost chips trailing the LAST open row's own
+    // chips (density: one dashed chip must not own a whole rail row). They are
+    // siblings of that row's category chips rather than a nested well, because
+    // the rail is a two-column grid now — a third child would open a phantom
+    // row. `.chipGhostLead` floats the first one to the right edge instead.
+    const ghostChips = collapsed.map((section, i) => (
+        <button
+            key={`collapsed-${section.id}`}
+            type="button"
+            aria-expanded={false}
+            onClick={() => toggle(section.id as number)}
+            className={`${styles.chip} ${styles.chipGhost} ${
+                i === 0 ? styles.chipGhostLead : ''
+            }`}
+        >
+            <CaretRightFill size={9} aria-hidden />
+            {section.name}
+            <span aria-hidden className={styles.chipCount}>
+                {section.pills.length}
+            </span>
+        </button>
+    ));
 
     return (
         <nav
@@ -154,7 +151,7 @@ export function CategoryRail({
                                                         ? undefined
                                                         : `${runners.toLocaleString()} runners`
                                                 }
-                                                className={`${styles.chip} ${active ? styles.chipActive : ''}`}
+                                                className={`${styles.chip} ${styles.chipCategory} ${active ? styles.chipActive : ''}`}
                                             >
                                                 {withEmblems && c.imageUrl && (
                                                     // eslint-disable-next-line @next/next/no-img-element
@@ -185,17 +182,21 @@ export function CategoryRail({
                                         );
                                     })
                                 )}
+                                {idx === open.length - 1 && ghostChips}
                             </div>
                         </div>
-                        {idx === open.length - 1 && ghostWell}
                     </div>
                 );
             })}
 
             {/* No open rows at all (every group collapsed): the ghosts still
                 need somewhere to live. */}
-            {open.length === 0 && collapsed.length > 0 && (
-                <div className={styles.block}>{ghostWell}</div>
+            {open.length === 0 && ghostChips.length > 0 && (
+                <div className={styles.block}>
+                    <div className={`${styles.well} ${styles.wellSolo}`}>
+                        <div className={styles.chips}>{ghostChips}</div>
+                    </div>
+                </div>
             )}
         </nav>
     );

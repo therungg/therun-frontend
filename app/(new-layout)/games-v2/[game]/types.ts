@@ -44,6 +44,18 @@ export interface GamePageData {
      */
     yourRuns: UserRanking[];
     sessionUsername: string | null;
+    /**
+     * Runner counts per subcategory value, keyed
+     * `nameNormalized -> canonicalValue -> count`. Each number is the size of
+     * the board you'd land on by picking that value while every *other*
+     * subcategory stays where it is — the same "what am I about to open"
+     * promise the category chips' counts make.
+     *
+     * Empty when the fan-out would be too wide to be worth it (see
+     * MAX_VALUE_COUNT_PROBES in data.ts); consumers must render the value
+     * with no count rather than a zero.
+     */
+    subcategoryValueCounts: Record<string, Record<string, number>>;
     activeFilters: {
         subcategoryValues: Record<string, string>;
         varFilters: Record<string, string>;

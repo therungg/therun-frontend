@@ -207,6 +207,10 @@ export function BoardMasthead({
                                 selectedVarFilters={
                                     data.activeFilters.varFilters
                                 }
+                                subcategoryValueCounts={
+                                    data.subcategoryValueCounts
+                                }
+                                totalItems={data.leaderboard.totalItems}
                             />
                         )}
                         {showRules && (
