@@ -1,9 +1,15 @@
 'use client';
 
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
+import { previewCategories } from '~src/lib/console/preview-categories';
 import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
-import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
+import type {
+    ResolvedCategory,
+    ResolvedGame,
+    ResolvedGroup,
+} from '../../../../../../types/leaderboards.types';
 import { InvalidateCacheButton } from '../../header/invalidate-cache-button';
+import { CategoryBandPreview } from '../../setup/steps/category-band-preview';
 import styles from '../console/console.module.scss';
 import { GroupsSection } from './groups-section';
 
@@ -15,6 +21,9 @@ interface Props {
     game: ResolvedGame;
     rows: ManageCategoryRow[];
     groups: ManageGroup[];
+    /** Server snapshot for the band preview; `rows` carries the live flags. */
+    boardCategories: ResolvedCategory[];
+    boardGroups: ResolvedGroup[];
     onGroupsChange: (groups: ManageGroup[]) => void;
     onRowGroupChange: (
         categoryId: number,
@@ -27,6 +36,8 @@ export function GameTab({
     game,
     rows,
     groups,
+    boardCategories,
+    boardGroups,
     onGroupsChange,
     onRowGroupChange,
 }: Props) {
@@ -35,10 +46,18 @@ export function GameTab({
             <div className={styles.paneHeader}>
                 <h2 className={styles.paneTitle}>{CONCEPT_LABEL.groups}</h2>
             </div>
+            {/* Grouping is the one edit whose whole point is what the band
+                looks like afterwards — the wizard's step 3 shows it, so this
+                does too. */}
+            <CategoryBandPreview
+                categories={previewCategories(boardCategories, rows)}
+                groups={boardGroups}
+            />
             <GroupsSection
                 game={game}
                 groups={groups}
                 rows={rows}
+                snapshotGroups={boardGroups}
                 onGroupsChange={onGroupsChange}
                 onRowGroupChange={onRowGroupChange}
             />
