@@ -476,20 +476,21 @@ tr:focus-within .reveal {
 // Direct "Moderate" affordance — the mod's primary path into the run
 // inspector, so it's a first-class filled button on the row rather than an
 // item buried in the kebab.
-// Remove, beside Verify. Quiet by default and only red on approach: it sits
-// in a hover-revealed cluster next to a one-click Verify, and a permanently
-// red button next to a green one turns every row into a decision.
+// Remove, beside Verify — always drawn, never hover-revealed. A moderator
+// should be able to see which rows they can act on by reading the table,
+// not by sweeping it with the mouse.
 .quickRemove {
     @include board.control-pill;
     display: inline-flex;
     align-items: center;
     padding: dt.$spacing-xs dt.$spacing-sm;
-    color: var(--bs-secondary-color);
+    border-color: var(--bs-danger);
+    color: var(--bs-danger);
 
     &:hover,
     &:focus-visible {
-        border-color: var(--bs-danger);
-        color: var(--bs-danger);
+        background: var(--bs-danger);
+        color: #fff;
     }
 
     @media (pointer: coarse) {
