@@ -819,13 +819,29 @@
 }
 
 // Collapsed-group chip: present but not yet expanded.
+//
+// This is a STEP DOWN from board-chip, and has to say so explicitly. When the
+// base chip committed to a real fill and emphasis-coloured text for the SRC
+// contrast audit, this inherited both — and a hidden-by-default group's
+// disclosure ended up louder than the section heading it sits under, which is
+// exactly backwards: the group is hidden by default because it matters less.
+//
+// So: no fill, secondary text, the dashed border alone carrying the
+// affordance. Hover is where it comes up to meet the reader.
 @mixin board-chip-ghost {
     border-style: dashed;
     border-color: rgba(var(--bs-border-color-rgb), 0.45);
+    background: none;
+    color: var(--bs-secondary-color);
     font-size: dt.$font-size-2xs;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.09em;
+
+    &:hover {
+        background: rgba(var(--bs-body-color-rgb), 0.09);
+        color: var(--bs-emphasis-color);
+    }
 }
 
 @mixin board-chip-count {
