@@ -953,6 +953,29 @@ export function RunInspector({
                                     kind: 'runs',
                                     runIds: [runId],
                                     label: `${entry.runnerName}'s run`,
+                                    // Unlocks Remove's "every run on this
+                                    // board" option. This is the path most
+                                    // moderators take — a row click opens
+                                    // the drawer, and `x` opens Remove from
+                                    // inside it — so without this the fork
+                                    // would only exist on the curation row's
+                                    // own Remove… button.
+                                    //
+                                    // Needs the category ID, which only
+                                    // arrives with the mod context, so the
+                                    // choice appears once that resolves
+                                    // rather than being absent for good.
+                                    runner:
+                                        entry.userId != null &&
+                                        modCategory != null
+                                            ? {
+                                                  id: entry.userId,
+                                                  name: entry.runnerName,
+                                                  categoryId: modCategory.id,
+                                                  categoryDisplay:
+                                                      categoryDisplay,
+                                              }
+                                            : undefined,
                                 }}
                                 onDone={verbDone}
                                 onClose={() => setActiveVerb(null)}
