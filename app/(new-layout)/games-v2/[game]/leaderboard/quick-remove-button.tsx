@@ -18,6 +18,10 @@ interface Props {
      *  option needs it, the per-run removal doesn't. */
     categoryId?: number;
     categoryDisplay: string;
+    /** Which board exactly, and the clock it ranks on — the dialog lists the
+     *  runner's other times from these. */
+    subcategoryKey: string;
+    primaryTiming: 'rt' | 'gt';
     /** Board page refetch — also runs after an Undo from the toast. */
     onMutated: () => void;
 }
@@ -39,6 +43,8 @@ export function QuickRemoveButton({
     userId,
     categoryId,
     categoryDisplay,
+    subcategoryKey,
+    primaryTiming,
     onMutated,
 }: Props) {
     const [open, setOpen] = useState(false);
@@ -80,6 +86,8 @@ export function QuickRemoveButton({
                                       name: runnerName,
                                       categoryId,
                                       categoryDisplay,
+                                      subcategoryKey,
+                                      primaryTiming,
                                   }
                                 : undefined,
                     }}

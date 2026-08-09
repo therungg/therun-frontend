@@ -148,6 +148,10 @@ export type RunActionTarget =
               name: string;
               categoryId: number;
               categoryDisplay: string;
+              /** Which board exactly — their other times are listed from it. */
+              subcategoryKey: string;
+              /** The clock this board ranks on, for ordering those times. */
+              primaryTiming: 'rt' | 'gt';
           };
       }
     | {

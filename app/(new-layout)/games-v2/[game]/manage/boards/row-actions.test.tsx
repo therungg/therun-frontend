@@ -12,16 +12,8 @@ import type {
     ResolvedCategory,
     VariableRow,
 } from '../../../../../../types/leaderboards.types';
-import type {
-    LeaderboardRosterRow,
-    UserEligibleRunRow,
-} from '../../../../../../types/moderation.types';
-import {
-    type PendingRemoval,
-    RemovedNote,
-    RowActions,
-    type RowActionsProps,
-} from './row-actions';
+import type { LeaderboardRosterRow } from '../../../../../../types/moderation.types';
+import { RowActions, type RowActionsProps } from './row-actions';
 
 // vi.mock factories are hoisted above these imports, so the mock fns
 // themselves must be created through vi.hoisted rather than referenced as
@@ -236,6 +228,8 @@ describe('RowActions — Remove (shared dialog)', () => {
                 name: 'runner',
                 categoryId: CATEGORY.id,
                 categoryDisplay: CATEGORY.display,
+                subcategoryKey: '',
+                primaryTiming: CATEGORY.primaryTiming,
             },
         });
     });
@@ -539,66 +533,5 @@ describe('RowActions — Move', () => {
         expect(
             await screen.findByRole('button', { name: 'Apply' }),
         ).toBeTruthy();
-    });
-});
-
-const CANDIDATE: UserEligibleRunRow = {
-    runId: 2,
-    categoryId: CATEGORY.id,
-    categoryName: 'Any%',
-    subcategoryKey: '',
-    time: 15_000,
-    gameTime: null,
-    primaryTiming: 'realtime',
-    verificationStatus: 'verified',
-    vodUrl: null,
-    endedAt: '2026-01-01T00:00:00.000Z',
-    isLeaderboardEntry: false,
-    isLeaderboardEntryGt: false,
-    rank: null,
-    totalRunners: null,
-};
-
-function pendingRemoval(overrides: Partial<PendingRemoval>): PendingRemoval {
-    return {
-        row: rosterRow({}),
-        timeMs: 20_000,
-        nextRunLoading: false,
-        ...overrides,
-    };
-}
-
-function renderPendingCells(overrides: Partial<PendingRemoval> = {}) {
-    render(
-        <table>
-            <tbody>
-                <tr>
-                    <td>
-                        <RemovedNote pending={pendingRemoval(overrides)} />
-                    </td>
-                </tr>
-            </tbody>
-        </table>,
-    );
-}
-
-describe('RemovedNote', () => {
-    it('states the removal landed', () => {
-        renderPendingCells({ nextRunLoading: false });
-        expect(screen.getByText('Removed.')).toBeTruthy();
-    });
-
-    it("says it is checking while the runner's other times load", () => {
-        renderPendingCells({ nextRunLoading: true });
-        expect(screen.getByText('Checking their other times…')).toBeTruthy();
-    });
-
-    // The next-run slip (one guessed candidate, Keep it / Remove too) is
-    // gone: BoardCuration opens AdjustDialog instead, which lists every time
-    // the runner has on this board. Covered in the curation integration test.
-    it('never offers a guessed replacement inline', () => {
-        renderPendingCells({ nextRunLoading: false });
-        expect(screen.queryByText(/next:/)).toBeNull();
-        expect(screen.queryByRole('button', { name: 'Keep it' })).toBeNull();
     });
 });

@@ -63,13 +63,7 @@ import { AdjustDialog } from './adjust-dialog';
 import { BoardControls } from './board-controls';
 import styles from './board-curation.module.scss';
 import { rosterEntry, rosterLeaderboard } from './roster-entry';
-import {
-    type PendingRemoval,
-    primaryValueOf,
-    RemovedNote,
-    RowActions,
-    rosterTimingValue,
-} from './row-actions';
+import { RowActions, rosterTimingValue } from './row-actions';
 import {
     defaultCanonicalOf,
     SubcategoryBands,
@@ -362,10 +356,6 @@ export function BoardCuration({
     // a reload rebuilds the rows, and an entry captured by reference would go
     // stale under the drawer.
     const [inspectRunId, setInspectRunId] = useState<number | null>(null);
-    // The row whose removal just landed and whose runner still has other
-    // times on this board — drives the pick-the-right-time step.
-    const [adjustAfterRemoval, setAdjustAfterRemoval] =
-        useState<LeaderboardRosterRow | null>(null);
     const [boardPageIndex, setBoardPageIndex] = useState(0);
 
     const { rows, total, markedTotal, loading, error, reload } = useBoardData(
@@ -400,10 +390,6 @@ export function BoardCuration({
     // otherwise drop this run from `boardRows` (and unmount its slip) before
     // the user has resolved it. Cleared on category/subcategory change; each
     // entry's own lifecycle (Keep it / Remove too / Undo) also clears it.
-    const [pendingRemovals, setPendingRemovals] = useState<
-        Map<number, PendingRemoval>
-    >(new Map());
-
     // Runs currently clearing a board-override via the "moved here" tag's
     // (×) — tracked separately from `RowActions`' own busy state since
     // clearing a move isn't part of that action cluster.
@@ -417,7 +403,6 @@ export function BoardCuration({
     );
 
     useEffect(() => {
-        setPendingRemovals(new Map());
         setSelectedRunIds(new Set());
     }, [category?.id, subcategoryKey, boardPageIndex, showMarkedOnly]);
 
@@ -464,108 +449,25 @@ export function BoardCuration({
         })();
     };
 
-    const dropPending = (runId: number) => {
-        setPendingRemovals((prev) => {
-            if (!prev.has(runId)) return prev;
-            const next = new Map(prev);
-            next.delete(runId);
-            return next;
-        });
-    };
-
     // The removal itself (reason category, notify toggle, preview, undo
     // toast) happens in `RowActions`' shared Remove dialog — this only owns
     // what happens to the row afterwards: pin the frozen snapshot and look
     // up the next-run slip.
-    const handleRemoved = (
-        row: LeaderboardRosterRow,
-        rowTimeMs: number | null,
-    ) => {
-        (async () => {
-            // A removed row can't be part of a bulk Accept/Ban selection
-            // anymore — without this, a stale runId rides along in
-            // `selectedRunIds` and a subsequent bulk action fires against a
-            // run that's no longer on the board.
-            setSelectedRunIds((prev) => {
-                if (!prev.has(row.runId)) return prev;
-                const next = new Set(prev);
-                next.delete(row.runId);
-                return next;
-            });
-
-            // Pin the overlay snapshot in place regardless of what future
-            // reloads (this row's own, or a sibling's) do to `rows`.
-            setPendingRemovals((prev) => {
-                const next = new Map(prev);
-                next.set(row.runId, {
-                    row,
-                    timeMs: rowTimeMs,
-                    nextRunLoading: row.userId != null,
-                });
-                return next;
-            });
-
-            if (row.userId == null) {
-                // Guests have no userId to query eligible runs for — no slip
-                // to show, so resync now.
-                dropPending(row.runId);
-                reload();
-                return;
-            }
-
-            const userId = row.userId;
-            const eligible = await loadUserEligibleRunsAction(
-                game.name,
-                userId,
-            );
-            if (!('ok' in eligible)) {
-                // Couldn't check for a replacement — nothing left to keep
-                // this row pinned for.
-                dropPending(row.runId);
-                reload();
-                return;
-            }
-            const candidates: UserEligibleRunRow[] = eligible.rows
-                .filter(
-                    (r) =>
-                        r.categoryId === category?.id &&
-                        r.subcategoryKey === subcategoryKey &&
-                        r.runId !== row.runId,
-                )
-                .sort((a, b) => {
-                    const at = primaryValueOf(a, timing);
-                    const bt = primaryValueOf(b, timing);
-                    if (at == null && bt == null) return 0;
-                    if (at == null) return 1;
-                    if (bt == null) return -1;
-                    return at - bt;
-                });
-            if (candidates.length === 0) {
-                // No same-board replacement to offer — nothing to pick from,
-                // safe to resync now.
-                dropPending(row.runId);
-                reload();
-                return;
-            }
-            // A category/subcategory switch (or Undo) may have already
-            // dropped this entry while the query above was in flight.
-            setPendingRemovals((prev) => {
-                if (!prev.has(row.runId)) return prev;
-                const next = new Map(prev);
-                const existing = prev.get(row.runId);
-                if (existing) {
-                    next.set(row.runId, { ...existing, nextRunLoading: false });
-                }
-                return next;
-            });
-            // The runner still has times on this board, so ask which one is
-            // the right one rather than silently promoting whichever is
-            // fastest. AdjustDialog already lists them (and excludes anything
-            // faster than the pick), so it IS the picker — the old flow
-            // guessed `candidates[0]` and offered Keep it / Remove too, which
-            // could only ever walk the list one run at a time.
-            setAdjustAfterRemoval(row);
-        })();
+    /**
+     * After a Remove lands. The dialog already asked which of the runner's
+     * times was legit and removed everything faster than it, so there is no
+     * follow-up left to hold the row on screen for — deselect and resync.
+     */
+    const handleRemoved = (row: LeaderboardRosterRow) => {
+        // A removed row can't stay in a bulk selection: a stale runId would
+        // ride along into the next bulk action.
+        setSelectedRunIds((prev) => {
+            if (!prev.has(row.runId)) return prev;
+            const next = new Set(prev);
+            next.delete(row.runId);
+            return next;
+        });
+        reload();
     };
 
     const minMs = useMemo(() => {
@@ -576,22 +478,14 @@ export function BoardCuration({
         return minMsFromPolicy(policy, timing);
     }, [category, policies, timing]);
 
-    // The board arrives filtered, ordered, and ranked server-side (see
-    // getBoardPage); the merge here only re-inserts pending-removal overlay
-    // snapshots (rows a Remove already excluded server-side, pinned visible
-    // until their slip is resolved) at their old positions.
+    // The board arrives filtered, ordered and ranked server-side (see
+    // getBoardPage); this only narrows to the rows actually on the board and
+    // stamps each one's rank and below-minimum flag.
     const boardRows: RankedRow[] = useMemo(() => {
         const pageOffset = boardPageIndex * BOARD_PAGE_SIZE;
-        const live = rows
-            .filter(
-                (r) => isOnBoard(r, timing) && !pendingRemovals.has(r.runId),
-            )
+        const merged = rows
+            .filter((r) => isOnBoard(r, timing))
             .map((row) => ({ row, timeMs: primaryTimeOf(row, timing) }));
-        const overlay = Array.from(pendingRemovals.values()).map((p) => ({
-            row: p.row,
-            timeMs: p.timeMs,
-        }));
-        const merged = [...live, ...overlay];
         merged.sort((a, b) => {
             if (a.timeMs == null && b.timeMs == null) return 0;
             if (a.timeMs == null) return 1;
@@ -609,7 +503,7 @@ export function BoardCuration({
             belowMinimum:
                 minMs != null && entry.timeMs != null && entry.timeMs < minMs,
         }));
-    }, [rows, timing, minMs, pendingRemovals, ascending, boardPageIndex]);
+    }, [rows, timing, minMs, ascending, boardPageIndex]);
 
     const visibleBoardRows = boardRows;
 
@@ -693,10 +587,6 @@ export function BoardCuration({
      * instead of maintaining a second one.
      */
     const curationSlots: RowSlots = {
-        rowClassName: (entry) =>
-            entry.runId != null && pendingRemovals.has(entry.runId)
-                ? styles.rowRemoved
-                : '',
         timeBadges: (entry) =>
             entry.runId != null && byRunId.get(entry.runId)?.belowMinimum ? (
                 <span className={styles.belowMinTag}>Below minimum</span>
@@ -705,7 +595,6 @@ export function BoardCuration({
             const found = entry.runId != null ? byRunId.get(entry.runId) : null;
             if (!found) return null;
             const { row } = found;
-            const pending = pendingRemovals.has(row.runId);
             return (
                 <>
                     {row.markedForLater && (
@@ -718,7 +607,7 @@ export function BoardCuration({
                     {row.userId == null && (
                         <span className={styles.guestTag}>guest</span>
                     )}
-                    {!pending && row.boardOverride != null && category && (
+                    {row.boardOverride != null && category && (
                         <span className={styles.movedTag}>
                             moved here
                             <button
@@ -744,10 +633,6 @@ export function BoardCuration({
             const found = entry.runId != null ? byRunId.get(entry.runId) : null;
             if (!found || !category) return null;
             const { row, timeMs, belowMinimum } = found;
-            const pending = pendingRemovals.get(row.runId);
-            if (pending) {
-                return <RemovedNote pending={pending} />;
-            }
             return (
                 <RowActions
                     row={row}
@@ -758,11 +643,8 @@ export function BoardCuration({
                     gameSlug={game.name}
                     timeMs={timeMs}
                     belowMinimum={belowMinimum}
-                    onRemoved={() => handleRemoved(row, timeMs)}
-                    onRemoveUndone={() => {
-                        dropPending(row.runId);
-                        reload();
-                    }}
+                    onRemoved={() => handleRemoved(row)}
+                    onRemoveUndone={reload}
                     onMutated={reload}
                     canSiteBan={canSiteBan}
                 />
@@ -1204,35 +1086,6 @@ export function BoardCuration({
                                     />
                                 ) : null
                             }
-                        />
-                    )}
-                    {/* Step two of a single-run removal: which of the
-                        runner's remaining times is the right one. Closing
-                        without picking is a valid answer — the board then
-                        surfaces their best remaining run on its own. */}
-                    {adjustAfterRemoval && category && (
-                        <AdjustDialog
-                            open
-                            row={adjustAfterRemoval}
-                            category={category}
-                            gameSlug={game.name}
-                            subcategoryKey={subcategoryKey}
-                            timeMs={
-                                pendingRemovals.get(adjustAfterRemoval.runId)
-                                    ?.timeMs ?? null
-                            }
-                            onClose={() => {
-                                const runId = adjustAfterRemoval.runId;
-                                setAdjustAfterRemoval(null);
-                                dropPending(runId);
-                                reload();
-                            }}
-                            onMutated={() => {
-                                const runId = adjustAfterRemoval.runId;
-                                setAdjustAfterRemoval(null);
-                                dropPending(runId);
-                                reload();
-                            }}
                         />
                     )}
                     {inspectEntry != null && category && (

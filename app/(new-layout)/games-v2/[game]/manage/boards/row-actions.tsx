@@ -43,11 +43,9 @@ export interface RowActionsProps {
     canSiteBan?: boolean;
     /**
      * Fires after the shared Remove dialog's mutation lands. The dialog owns
-     * the removal itself (reason category, notify toggle, preview, min-10 —
-     * the same Remove as everywhere else); `BoardCuration` owns what happens
-     * to the ROW afterwards: it pins a frozen snapshot in place and offers
-     * the next-run slip, which must survive sibling-row reloads — see
-     * `PendingRemoval`/`PendingRemovalCells` below.
+     * the removal itself — reason category, notify toggle, preview, min-10,
+     * and the choice between this run and every run the runner has on this
+     * board — so all `BoardCuration` does afterwards is resync.
      */
     onRemoved: () => void;
     /** Fires after the Remove undo toast's restore lands — unpins the row. */
@@ -141,6 +139,8 @@ export function RowActions({
                   name: row.runnerName,
                   categoryId: category.id,
                   categoryDisplay: category.display,
+                  subcategoryKey,
+                  primaryTiming: category.primaryTiming,
               },
     };
 
@@ -293,43 +293,5 @@ export function RowActions({
                 onMutated={onMutated}
             />
         </>
-    );
-}
-
-/**
- * A row `BoardCuration` has pinned in place after a successful Remove —
- * rendered from this frozen snapshot rather than the live roster data,
- * specifically so a *sibling* row's reload can't unmount it before the
- * pick-the-right-time step has been answered. See the `onRemoved` doc on
- * `RowActionsProps` above for why this can't live inside `RowActions`.
- */
-export interface PendingRemoval {
-    row: LeaderboardRosterRow;
-    timeMs: number | null;
-    /** True while the runner's other times on this board are being fetched,
-     *  which decides whether the picker opens at all. */
-    nextRunLoading: boolean;
-}
-
-/**
- * "Removed." in place of the action cluster for a pending removal. The
- * frozen row itself is still `LeaderboardRow`; only the trailing cell
- * changes.
- *
- * This used to carry a next-run slip — one guessed candidate with Keep it /
- * Remove too. `BoardCuration` now opens `AdjustDialog` instead, which lists
- * every time the runner has on this board, so the mod picks the right one
- * rather than walking the list one guess at a time.
- */
-export function RemovedNote({ pending }: { pending: PendingRemoval }) {
-    return (
-        <div className={styles.removedNote}>
-            <span>Removed.</span>
-            {pending.nextRunLoading && (
-                <span className={styles.slipLoading}>
-                    Checking their other times…
-                </span>
-            )}
-        </div>
     );
 }

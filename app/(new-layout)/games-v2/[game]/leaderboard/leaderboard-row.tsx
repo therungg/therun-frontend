@@ -8,6 +8,7 @@ import { DurationToFormatted } from '~src/components/util/datetime';
 import { formatRunDate } from '~src/lib/format-run-date';
 import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
 import { usePopoverFocus } from '../shared/use-popover-focus';
+import { buildSubcategoryKey } from '../submit/subcategory-key';
 import { CountryFlag } from './country-flag';
 import type { DisplayRank } from './display-rank';
 import styles from './leaderboard.module.scss';
@@ -150,6 +151,10 @@ interface Props {
     /** The board's category — the row's Remove offers a runner-scoped
      *  option, which is a rule written against a category. */
     category?: { id: number; display: string };
+    /** Subcategory-role variable names, for deriving THIS entry's own board
+     *  key. Derived per entry rather than taken from the table so a combined
+     *  view — where rows span slices — lists the right runs. */
+    subcategoryDefKeys?: string[];
     /** Curation-only additions; absent on the public board. See `RowSlots`. */
     slots?: RowSlots;
 }
@@ -191,6 +196,7 @@ export function LeaderboardRow({
     onModerate,
     onBoardRefresh,
     category,
+    subcategoryDefKeys,
     slots,
 }: Props) {
     // Anonymized rows arrive already redacted from the backend: placeholder
@@ -507,6 +513,16 @@ export function LeaderboardRow({
                             userId={entry.userId ?? null}
                             categoryId={category?.id}
                             categoryDisplay={category?.display ?? ''}
+                            subcategoryKey={buildSubcategoryKey(
+                                Object.fromEntries(
+                                    Object.entries(
+                                        entry.variables ?? {},
+                                    ).filter(([k]) =>
+                                        (subcategoryDefKeys ?? []).includes(k),
+                                    ),
+                                ),
+                            )}
+                            primaryTiming={primaryTiming}
                             onMutated={onBoardRefresh as () => void}
                         />
                     )}
