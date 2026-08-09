@@ -229,6 +229,14 @@ describe('RowActions — Remove (shared dialog)', () => {
             kind: 'runs',
             runIds: [1],
             label: "runner's run",
+            // Carries who and where, which is what unlocks Remove's
+            // "every run on this board" option.
+            runner: {
+                id: 5,
+                name: 'runner',
+                categoryId: CATEGORY.id,
+                categoryDisplay: CATEGORY.display,
+            },
         });
     });
 
@@ -555,57 +563,42 @@ function pendingRemoval(overrides: Partial<PendingRemoval>): PendingRemoval {
     return {
         row: rosterRow({}),
         timeMs: 20_000,
-        nextRun: null,
         nextRunLoading: false,
         ...overrides,
     };
 }
 
 function renderPendingCells(overrides: Partial<PendingRemoval> = {}) {
-    const onKeepIt = vi.fn();
-    const onRemoveToo = vi.fn();
     render(
         <table>
             <tbody>
                 <tr>
-                    <RemovedNote
-                        pending={pendingRemoval(overrides)}
-                        timing="rt"
-                        showMilliseconds
-                        onKeepIt={onKeepIt}
-                        onRemoveToo={onRemoveToo}
-                    />
+                    <td>
+                        <RemovedNote pending={pendingRemoval(overrides)} />
+                    </td>
                 </tr>
             </tbody>
         </table>,
     );
-    return { onKeepIt, onRemoveToo };
 }
 
-describe('PendingRemovalCells', () => {
-    it('shows "Removed." with no slip when there is no candidate yet', () => {
-        renderPendingCells({ nextRun: null, nextRunLoading: false });
+describe('RemovedNote', () => {
+    it('states the removal landed', () => {
+        renderPendingCells({ nextRunLoading: false });
         expect(screen.getByText('Removed.')).toBeTruthy();
-        expect(screen.queryByText(/next:/)).toBeNull();
     });
 
-    it('shows a loading note while checking for a replacement', () => {
+    it("says it is checking while the runner's other times load", () => {
         renderPendingCells({ nextRunLoading: true });
-        expect(screen.getByText('Checking for a replacement…')).toBeTruthy();
+        expect(screen.getByText('Checking their other times…')).toBeTruthy();
     });
 
-    it('shows the slip and wires Keep it / Remove too to the callbacks', () => {
-        const { onKeepIt, onRemoveToo } = renderPendingCells({
-            nextRun: CANDIDATE,
-            nextRunLoading: false,
-        });
-
-        expect(screen.getByText(/next:/)).toBeTruthy();
-
-        fireEvent.click(screen.getByRole('button', { name: 'Keep it' }));
-        expect(onKeepIt).toHaveBeenCalledTimes(1);
-
-        fireEvent.click(screen.getByRole('button', { name: 'Remove too' }));
-        expect(onRemoveToo).toHaveBeenCalledTimes(1);
+    // The next-run slip (one guessed candidate, Keep it / Remove too) is
+    // gone: BoardCuration opens AdjustDialog instead, which lists every time
+    // the runner has on this board. Covered in the curation integration test.
+    it('never offers a guessed replacement inline', () => {
+        renderPendingCells({ nextRunLoading: false });
+        expect(screen.queryByText(/next:/)).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Keep it' })).toBeNull();
     });
 });

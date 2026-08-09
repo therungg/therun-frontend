@@ -131,6 +131,17 @@ export function RowActions({
         kind: 'runs' as const,
         runIds: [row.runId],
         label: `${row.runnerName}'s run`,
+        // Present only for a registered runner: it unlocks Remove's
+        // "every run on this board" option, which needs an account to
+        // write a rule against.
+        runner: isGuest
+            ? undefined
+            : {
+                  id: row.userId as number,
+                  name: row.runnerName,
+                  categoryId: category.id,
+                  categoryDisplay: category.display,
+              },
     };
 
     // Only the action cluster: the row's cells belong to `LeaderboardRow`,
@@ -288,68 +299,35 @@ export function RowActions({
 /**
  * A row `BoardCuration` has pinned in place after a successful Remove —
  * rendered from this frozen snapshot rather than the live roster data,
- * specifically so a *sibling* row's reload can't unmount it (or discard its
- * next-run slip) before the user has resolved it. See the `onRemoved` doc on
+ * specifically so a *sibling* row's reload can't unmount it before the
+ * pick-the-right-time step has been answered. See the `onRemoved` doc on
  * `RowActionsProps` above for why this can't live inside `RowActions`.
  */
 export interface PendingRemoval {
     row: LeaderboardRosterRow;
     timeMs: number | null;
-    nextRun: UserEligibleRunRow | null;
+    /** True while the runner's other times on this board are being fetched,
+     *  which decides whether the picker opens at all. */
     nextRunLoading: boolean;
 }
 
 /**
- * "Removed." note + next-run slip, in place of the action cluster for a
- * pending removal. The frozen row itself is still `LeaderboardRow` — only
- * the trailing cell's contents change.
+ * "Removed." in place of the action cluster for a pending removal. The
+ * frozen row itself is still `LeaderboardRow`; only the trailing cell
+ * changes.
+ *
+ * This used to carry a next-run slip — one guessed candidate with Keep it /
+ * Remove too. `BoardCuration` now opens `AdjustDialog` instead, which lists
+ * every time the runner has on this board, so the mod picks the right one
+ * rather than walking the list one guess at a time.
  */
-export function RemovedNote({
-    pending,
-    timing,
-    showMilliseconds,
-    onKeepIt,
-    onRemoveToo,
-}: {
-    pending: PendingRemoval;
-    timing: 'rt' | 'gt';
-    /** Same precision as the live row above it — a frozen row is still the
-     *  same run, and a row that changed format on removal read as a bug. */
-    showMilliseconds: boolean;
-    onKeepIt: () => void;
-    onRemoveToo: () => void;
-}) {
+export function RemovedNote({ pending }: { pending: PendingRemoval }) {
     return (
         <div className={styles.removedNote}>
             <span>Removed.</span>
             {pending.nextRunLoading && (
                 <span className={styles.slipLoading}>
-                    Checking for a replacement…
-                </span>
-            )}
-            {pending.nextRun && (
-                <span className={styles.slip}>
-                    next:{' '}
-                    <DurationToFormatted
-                        duration={primaryValueOf(pending.nextRun, timing) ?? 0}
-                        withMillis={showMilliseconds}
-                    />{' '}
-                    ·{' '}
-                    <button
-                        type="button"
-                        className={styles.slipAction}
-                        onClick={onKeepIt}
-                    >
-                        Keep it
-                    </button>{' '}
-                    /{' '}
-                    <button
-                        type="button"
-                        className={styles.slipAction}
-                        onClick={onRemoveToo}
-                    >
-                        Remove too
-                    </button>
+                    Checking their other times…
                 </span>
             )}
         </div>
