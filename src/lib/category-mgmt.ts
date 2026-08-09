@@ -1,5 +1,6 @@
 'use server';
 
+import type { CategoryDisplayMode } from '../../types/leaderboards.types';
 import { apiFetch } from './api-client';
 
 export type PrimaryTiming = 'realtime' | 'gametime';
@@ -37,14 +38,25 @@ interface GameCategoryRow {
 }
 
 interface GamePageData {
-    game?: { id: number };
+    game?: { id: number; categoryDisplayMode?: string | null };
     ungroupedCategories?: GameCategoryRow[];
     groups?: {
         id: number;
         name: string;
         sortOrder?: number;
+        hiddenByDefault?: boolean;
+        displayMode?: string | null;
         categories?: GameCategoryRow[];
     }[];
+}
+
+/** Anything the UI cannot draw reads as "no override stated". */
+function asDisplayMode(
+    value: string | null | undefined,
+): CategoryDisplayMode | null {
+    return value === 'auto' || value === 'pills' || value === 'dropdown'
+        ? value
+        : null;
 }
 
 async function loadPageData(gameId: number): Promise<GamePageData> {
@@ -198,6 +210,9 @@ export interface ManageGroup {
     id: number;
     name: string;
     sortOrder: number;
+    hiddenByDefault: boolean;
+    /** `null` = no override; the group follows `gameCategoryDisplayMode`. */
+    displayMode: CategoryDisplayMode | null;
 }
 
 export async function listManageGroups(gameId: number): Promise<ManageGroup[]> {
@@ -207,6 +222,8 @@ export async function listManageGroups(gameId: number): Promise<ManageGroup[]> {
             id: g.id,
             name: g.name,
             sortOrder: g.sortOrder ?? 0,
+            hiddenByDefault: g.hiddenByDefault ?? false,
+            displayMode: asDisplayMode(g.displayMode),
         }))
         .sort((a, b) => a.sortOrder - b.sortOrder);
 }
@@ -215,12 +232,15 @@ export interface CreateGroupBody {
     name: string;
     sortOrder?: number;
     hiddenByDefault?: boolean;
+    displayMode?: CategoryDisplayMode | null;
 }
 
 export interface UpdateGroupBody {
     name?: string;
     sortOrder?: number;
     hiddenByDefault?: boolean;
+    /** `null` clears the override and returns the group to the game default. */
+    displayMode?: CategoryDisplayMode | null;
 }
 
 export async function createGroup(

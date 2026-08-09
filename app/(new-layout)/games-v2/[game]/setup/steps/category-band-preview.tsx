@@ -13,6 +13,8 @@ interface Props {
     /** Draft categories the mod has ticked — what the public band would list. */
     categories: ResolvedCategory[];
     groups: ResolvedGroup[];
+    /** Draft board-wide selector default, so the preview follows the picker. */
+    gameDisplayMode?: string | null;
 }
 
 /**
@@ -31,8 +33,16 @@ interface Props {
  *
  * Chips are inert spans — this is a picture of the board, not the board.
  */
-export function CategoryBandPreview({ categories, groups }: Props) {
-    const { sections } = computeCategoryVisibility(categories, groups);
+export function CategoryBandPreview({
+    categories,
+    groups,
+    gameDisplayMode,
+}: Props) {
+    const { sections } = computeCategoryVisibility(
+        categories,
+        groups,
+        gameDisplayMode,
+    );
     // Read the flatten out of the real output rather than re-deriving the
     // rule — one source of truth for when headings appear.
     const flattened = groups.length > 0 && sections.length === 1;
@@ -76,6 +86,20 @@ export function CategoryBandPreview({ categories, groups }: Props) {
                                     {section.pills.length === 0 ? (
                                         <span className={band.emptyGroup}>
                                             No categories in this group.
+                                        </span>
+                                    ) : section.displayMode === 'dropdown' ? (
+                                        // Inert like the chips: a picture of
+                                        // the control, not the control.
+                                        <span
+                                            className={`${band.categorySelect} ${styles.previewChip}`}
+                                        >
+                                            {section.pills[0].display}
+                                            <span
+                                                aria-hidden
+                                                className={band.chipCount}
+                                            >
+                                                {section.pills.length}
+                                            </span>
                                         </span>
                                     ) : (
                                         section.pills.map((c) => (

@@ -152,6 +152,27 @@
     flex-shrink: 0;
 }
 
+// The dropdown the rail falls back to when pills would wrap for rows, or when
+// a moderator picks one outright. It carries the active chip's weight rather
+// than a resting chip's: whatever the form, the current category is the one
+// thing in this header that has to read as chosen.
+.categorySelect {
+    @include board.board-chip;
+    @include board.board-chip-active;
+
+    font-size: dt.$font-size-base;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    // The band is a flex row; without a floor the select collapses to its
+    // longest option on some engines and to nothing on others.
+    min-width: 14rem;
+    max-width: 100%;
+    cursor: pointer;
+
+    @media (pointer: coarse) {
+        padding-block: dt.$spacing-md;
+    }
+}
+
 .emptyGroup {
     font-size: dt.$font-size-xs;
     color: var(--bs-tertiary-color);

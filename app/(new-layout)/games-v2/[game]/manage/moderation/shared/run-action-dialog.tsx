@@ -12,6 +12,7 @@ import { toast } from 'react-toastify';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type {
     PreviewExcludeResult,
+    UserEligibleRunRow,
     UserExclusionRuleInput,
     VerdictAction,
     VerdictPreviewResult,
@@ -31,6 +32,7 @@ import {
     UNDO_VERIFY_REASON,
     undoReason,
 } from './action-model';
+import { loadUserEligibleRunsAction } from './actions/eligible-runs.action';
 import { excludeAction, previewExcludeAction } from './actions/exclude.action';
 import { manualTimesBulkAction } from './actions/manual-times.action';
 import { restoreRunsAction } from './actions/restore.action';
@@ -42,6 +44,10 @@ import styles from './run-action-dialog.module.scss';
 import { fireUndoToast } from './undo-toast';
 
 const MIN_REASON = 10;
+
+/** An eligible run's time on the board's ranking clock. */
+const runTime = (r: UserEligibleRunRow, timing: 'rt' | 'gt'): number | null =>
+    timing === 'gt' ? r.gameTime : r.time;
 
 // approve/restore are fast triage: Confirm doesn't wait on the preview
 // round-trip — the affected-run summary streams into the body as
@@ -147,6 +153,52 @@ export function RunActionForm({
         removeReasonMeta('cheating').defaultNotify,
     );
     const [scope, setScope] = useState<BanScope>(defaultBanScope ?? 'category');
+    /**
+     * Remove's first question: this run, or this runner's whole presence on
+     * the board? A moderator looking at one bad run of seventy had to remove
+     * it, notice the next one, remove that, and so on — or leave the board
+     * and find the runner tool. Asking up front turns seventy destructive
+     * actions into one reversible rule.
+     *
+     * Only offered when the target says who the runner is (see
+     * RunActionTarget) — a guest or a multi-run selection has no such choice.
+     */
+    const removeRunner =
+        verb === 'remove' && target.kind === 'runs'
+            ? (target.runner ?? null)
+            : null;
+    const [removeScope, setRemoveScope] = useState<'run' | 'runner'>('run');
+    // 'runner' means an exclusion rule on the runner scoped to this board —
+    // exactly what the Runner… dialog writes, reached from where the mod
+    // already is. Guests and multi-run selections can never reach it.
+    const removesRunner = removeRunner != null && removeScope === 'runner';
+    const removeRunnerRule: UserExclusionRuleInput | null = removesRunner
+        ? {
+              type: 'user',
+              targetId: removeRunner.id,
+              categoryId: removeRunner.categoryId,
+          }
+        : null;
+
+    /**
+     * The runner's other times on this exact board, for the "which of these
+     * is legit?" step. Loaded only while the per-run option is selected —
+     * removing the runner outright makes the question moot.
+     */
+    const [otherRuns, setOtherRuns] = useState<UserEligibleRunRow[] | null>(
+        null,
+    );
+    /**
+     * The run the moderator says IS legit. Everything faster than it goes
+     * with the removal, because a board always surfaces a runner's best
+     * eligible run — leaving a faster invalid one behind would just promote
+     * it into the slot being cleared.
+     *
+     * Null means "just this one": remove the target and let the board
+     * surface whatever it surfaces.
+     */
+    const [legitRunId, setLegitRunId] = useState<number | null>(null);
+
     const [reason, setReason] = useState('');
     const [preview, setPreview] = useState<PreviewState | null>(null);
     const [previewError, setPreviewError] = useState<string | null>(null);
@@ -163,7 +215,66 @@ export function RunActionForm({
         onBusyChange?.(isConfirming);
     }, [isConfirming, onBusyChange]);
 
-    const runIds = target.kind === 'runs' ? target.runIds : [];
+    const targetRunIds = target.kind === 'runs' ? target.runIds : [];
+
+    // Load the runner's other times on this board once, when the per-run
+    // option is live. Never for the runner-scoped option: that removes all
+    // of them, so there is nothing to choose between.
+    useEffect(() => {
+        if (!removeRunner || removesRunner) return;
+        if (otherRuns != null) return;
+        let cancelled = false;
+        (async () => {
+            const res = await loadUserEligibleRunsAction(
+                gameSlug,
+                removeRunner.id,
+            );
+            if (cancelled) return;
+            if (!('ok' in res)) return setOtherRuns([]);
+            setOtherRuns(
+                res.rows
+                    .filter(
+                        (r) =>
+                            r.categoryId === removeRunner.categoryId &&
+                            r.subcategoryKey === removeRunner.subcategoryKey &&
+                            !targetRunIds.includes(r.runId) &&
+                            runTime(r, removeRunner.primaryTiming) != null,
+                    )
+                    .sort(
+                        (a, b) =>
+                            (runTime(a, removeRunner.primaryTiming) ?? 0) -
+                            (runTime(b, removeRunner.primaryTiming) ?? 0),
+                    ),
+            );
+        })();
+        return () => {
+            cancelled = true;
+        };
+        // targetRunIds is stable for a given dialog instance.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [gameSlug, removeRunner, removesRunner, otherRuns]);
+
+    /**
+     * Everything the confirm actually removes: the run the moderator opened
+     * this on, plus anything faster than the one they called legit.
+     */
+    const fasterThanLegit =
+        legitRunId != null && otherRuns != null && removeRunner
+            ? (() => {
+                  const legit = otherRuns.find((r) => r.runId === legitRunId);
+                  const cutoff = legit
+                      ? runTime(legit, removeRunner.primaryTiming)
+                      : null;
+                  if (cutoff == null) return [];
+                  return otherRuns
+                      .filter((r) => {
+                          const t = runTime(r, removeRunner.primaryTiming);
+                          return t != null && t < cutoff;
+                      })
+                      .map((r) => r.runId);
+              })()
+            : [];
+    const runIds = [...targetRunIds, ...fasterThanLegit];
     const manualTimeIds =
         target.kind === 'runs' ? (target.manualTimeIds ?? []) : [];
     // How this verb lands on the selection's manual set times (if any):
@@ -201,6 +312,7 @@ export function RunActionForm({
               : verb === 'restore'
                 ? 'unreject'
                 : verb === 'remove' &&
+                    !removesRunner &&
                     resolveRemoveMechanism(notify) === 'reject'
                   ? 'reject'
                   : null;
@@ -212,6 +324,15 @@ export function RunActionForm({
     const loadPreview = useCallback(() => {
         startPreview(async () => {
             setPreviewError(null);
+            // Removing the runner previews the RULE, not the one run — the
+            // count the mod needs to see is "70 runs", not "1".
+            if (removeRunnerRule) {
+                const res = await previewExcludeAction(gameSlug, {
+                    rule: removeRunnerRule,
+                });
+                if ('error' in res) return setPreviewError(res.error);
+                return setPreview({ kind: 'exclude', data: res.preview });
+            }
             if (verb === 'ban' && banRule) {
                 const res = await previewExcludeAction(gameSlug, {
                     rule: banRule,
@@ -238,7 +359,7 @@ export function RunActionForm({
         });
         // banRule/verdictAction are derived from the deps below.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [gameSlug, verb, notify, scope]);
+    }, [gameSlug, verb, notify, scope, removeScope, legitRunId]);
 
     // Reload whenever routing-relevant inputs change (notify flips reject↔exclude;
     // scope flips category↔game rule — each yields a different preview).
@@ -285,6 +406,35 @@ export function RunActionForm({
                 trimmed.length > 0
                     ? trimmed
                     : (DEFAULT_REASON[verb] ?? trimmed);
+            // Remove-the-runner writes one board-scoped rule instead of N
+            // per-run removals: reversible in one place, and it catches the
+            // runs they submit tomorrow as well as the seventy already here.
+            if (removeRunnerRule && removeRunner) {
+                const res = await excludeAction(gameSlug, {
+                    rule: removeRunnerRule,
+                    reason: finalReason,
+                });
+                if ('error' in res) return setError(res.error);
+                const message = `${removeRunner.name} removed from ${removeRunner.categoryDisplay}.`;
+                if ('ruleId' in res.result && isBanUndoable(res.result)) {
+                    const ruleId = res.result.ruleId;
+                    fireUndoToast(
+                        message,
+                        () =>
+                            deleteRuleAction(
+                                gameSlug,
+                                ruleId,
+                                undoReason(verb),
+                            ),
+                        refreshAfterUndo,
+                    );
+                } else {
+                    // Already-existing rule: nothing new to undo, and
+                    // deleting the pre-existing one would be a surprise.
+                    toast.success(message);
+                }
+                return onDone();
+            }
             if (verb === 'ban' && banRule) {
                 const res = await excludeAction(gameSlug, {
                     rule: banRule,
@@ -438,6 +588,149 @@ export function RunActionForm({
     return (
         <>
             <div className={styles.body}>
+                {/* Asked before the reason, because it changes what the
+                    reason is for: one run, or this runner's whole presence
+                    on the board. */}
+                {removeRunner && (
+                    <fieldset className="mb-3">
+                        <legend className={styles.fieldLabel}>
+                            What are you removing?
+                        </legend>
+                        <div className="form-check">
+                            <input
+                                className="form-check-input"
+                                type="radio"
+                                name="remove-scope"
+                                id="remove-scope-run"
+                                checked={removeScope === 'run'}
+                                disabled={isConfirming}
+                                onChange={() => setRemoveScope('run')}
+                            />
+                            <label
+                                className="form-check-label"
+                                htmlFor="remove-scope-run"
+                            >
+                                Only this{' '}
+                                {target.kind === 'runs' && target.label}
+                            </label>
+                        </div>
+                        <div className="form-check">
+                            <input
+                                className="form-check-input"
+                                type="radio"
+                                name="remove-scope"
+                                id="remove-scope-runner"
+                                checked={removeScope === 'runner'}
+                                disabled={isConfirming}
+                                onChange={() => setRemoveScope('runner')}
+                            />
+                            <label
+                                className="form-check-label"
+                                htmlFor="remove-scope-runner"
+                            >
+                                Every run {removeRunner.name} has on{' '}
+                                {removeRunner.categoryDisplay}
+                            </label>
+                        </div>
+                    </fieldset>
+                )}
+
+                {/* Removing the runner needs no per-run detail — say plainly
+                    what it does and let the count in the preview carry the
+                    scale. */}
+                {removesRunner && removeRunner && (
+                    <p className={styles.scopeNote}>
+                        This removes <strong>{removeRunner.name}</strong> from{' '}
+                        {removeRunner.categoryDisplay} completely — every run
+                        they have on it, and any they submit later. One
+                        reversible rule, not one removal per run. Their account
+                        is unaffected.
+                    </p>
+                )}
+
+                {/* Per-run: the board surfaces a runner's best eligible run,
+                    so removing one just promotes the next. Asking which is
+                    legit turns that into a single decision instead of a
+                    remove-check-remove loop. */}
+                {removeRunner && !removesRunner && otherRuns != null && (
+                    <fieldset className="mb-3">
+                        <legend className={styles.fieldLabel}>
+                            {otherRuns.length === 0
+                                ? 'Their other times'
+                                : `Which of ${removeRunner.name}'s other times is legit?`}
+                        </legend>
+                        {otherRuns.length === 0 ? (
+                            <p className="form-text mb-0">
+                                They have no other times on this board — it
+                                leaves nothing behind.
+                            </p>
+                        ) : (
+                            <>
+                                <div className="form-check">
+                                    <input
+                                        className="form-check-input"
+                                        type="radio"
+                                        name="legit-run"
+                                        id="legit-none"
+                                        checked={legitRunId == null}
+                                        disabled={isConfirming}
+                                        onChange={() => setLegitRunId(null)}
+                                    />
+                                    <label
+                                        className="form-check-label"
+                                        htmlFor="legit-none"
+                                    >
+                                        Just remove this one — I haven&apos;t
+                                        checked the others
+                                    </label>
+                                </div>
+                                {otherRuns.map((r) => (
+                                    <div className="form-check" key={r.runId}>
+                                        <input
+                                            className="form-check-input"
+                                            type="radio"
+                                            name="legit-run"
+                                            id={`legit-${r.runId}`}
+                                            checked={legitRunId === r.runId}
+                                            disabled={isConfirming}
+                                            onChange={() =>
+                                                setLegitRunId(r.runId)
+                                            }
+                                        />
+                                        <label
+                                            className="form-check-label"
+                                            htmlFor={`legit-${r.runId}`}
+                                        >
+                                            <DurationToFormatted
+                                                duration={
+                                                    runTime(
+                                                        r,
+                                                        removeRunner.primaryTiming,
+                                                    ) ?? 0
+                                                }
+                                            />{' '}
+                                            <span className="text-body-secondary small">
+                                                {r.verificationStatus}
+                                            </span>
+                                        </label>
+                                    </div>
+                                ))}
+                                {fasterThanLegit.length > 0 && (
+                                    <div className="form-text">
+                                        Everything faster than that goes too —{' '}
+                                        {fasterThanLegit.length} more{' '}
+                                        {fasterThanLegit.length === 1
+                                            ? 'run'
+                                            : 'runs'}
+                                        . A board always shows a runner&apos;s
+                                        best eligible run, so leaving a faster
+                                        one behind would just promote it.
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </fieldset>
+                )}
                 {verb === 'remove' && (
                     <div className="mb-3">
                         <label
@@ -466,23 +759,31 @@ export function RunActionForm({
                         <div className="form-text">
                             {removeReasonMeta(reasonCat).blurb}
                         </div>
-                        <div className="form-check form-switch mt-2">
-                            <input
-                                className="form-check-input"
-                                type="checkbox"
-                                role="switch"
-                                id="remove-notify"
-                                checked={notify}
-                                onChange={(e) => setNotify(e.target.checked)}
-                                disabled={isConfirming}
-                            />
-                            <label
-                                className="form-check-label small"
-                                htmlFor="remove-notify"
-                            >
-                                Notify the runner and allow an appeal
-                            </label>
-                        </div>
+                        {/* The runner-scoped removal is an exclusion rule,
+                            which has no verdict to appeal against — offering
+                            the toggle there would promise a notification
+                            nothing sends. */}
+                        {!removesRunner && (
+                            <div className="form-check form-switch mt-2">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    role="switch"
+                                    id="remove-notify"
+                                    checked={notify}
+                                    onChange={(e) =>
+                                        setNotify(e.target.checked)
+                                    }
+                                    disabled={isConfirming}
+                                />
+                                <label
+                                    className="form-check-label small"
+                                    htmlFor="remove-notify"
+                                >
+                                    Notify the runner and allow an appeal
+                                </label>
+                            </div>
+                        )}
                     </div>
                 )}
 

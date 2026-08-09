@@ -135,6 +135,24 @@ export type RunActionTarget =
           runIds: number[];
           manualTimeIds?: number[];
           label: string;
+          /**
+           * Who and where, when the selection is one run by one known runner.
+           * Present only then, because it unlocks a choice that only makes
+           * sense then: Remove can ask whether the mod means this run or
+           * every run this runner has on this board. A guest (no account) or
+           * a multi-run selection leaves this absent and Remove stays
+           * per-run.
+           */
+          runner?: {
+              id: number;
+              name: string;
+              categoryId: number;
+              categoryDisplay: string;
+              /** Which board exactly — their other times are listed from it. */
+              subcategoryKey: string;
+              /** The clock this board ranks on, for ordering those times. */
+              primaryTiming: 'rt' | 'gt';
+          };
       }
     | {
           kind: 'runner';

@@ -31,6 +31,12 @@ interface Props {
     defaults: BoardDefaults;
     policies: BoardPolicyRow[];
     columnCount: number;
+    /**
+     * Whether the matrix is drawing its two RTA columns. They only exist on a
+     * board with a game-time category, and row zero has to match the header it
+     * sits under.
+     */
+    showsRtaColumns: boolean;
     /** Featured categories, for the "apply to the rest?" offer. */
     categories: ResolvedCategory[];
     onApplyToCategories: (
@@ -70,6 +76,7 @@ export function DefaultsRow({
     defaults,
     policies,
     columnCount,
+    showsRtaColumns,
     categories,
     onApplyToCategories,
 }: Props) {
@@ -255,30 +262,34 @@ export function DefaultsRow({
                     </select>
                 </td>
 
-                <td>
-                    <select
-                        className={styles.defaultsControl}
-                        value={defaults.showOtherTime ? 'on' : 'off'}
-                        disabled={isSaving}
-                        aria-label={`Board default show ${otherLabel}`}
-                        onChange={(e) =>
-                            save(
-                                otherTimeField(
-                                    defaults.primaryTiming ?? 'rt',
-                                    e.target.value === 'on',
-                                ),
-                            )
-                        }
-                    >
-                        <option value="on">Show {otherLabel}</option>
-                        <option value="off">Hide {otherLabel}</option>
-                    </select>
-                </td>
+                {showsRtaColumns && (
+                    <>
+                        <td>
+                            <select
+                                className={styles.defaultsControl}
+                                value={defaults.showOtherTime ? 'on' : 'off'}
+                                disabled={isSaving}
+                                aria-label={`Board default show ${otherLabel}`}
+                                onChange={(e) =>
+                                    save(
+                                        otherTimeField(
+                                            defaults.primaryTiming ?? 'rt',
+                                            e.target.value === 'on',
+                                        ),
+                                    )
+                                }
+                            >
+                                <option value="on">Show {otherLabel}</option>
+                                <option value="off">Hide {otherLabel}</option>
+                            </select>
+                        </td>
 
-                {/* RTA fallback has no board-wide default on purpose: ranking
+                        {/* RTA fallback has no board-wide default on purpose: ranking
                     RTA against IGT is a per-category judgment call, so row
                     zero holds the same em dash as any other unset value. */}
-                <td title="No board default — set per category">—</td>
+                        <td title="No board default — set per category">—</td>
+                    </>
+                )}
 
                 <td>
                     <input

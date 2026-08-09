@@ -5,6 +5,8 @@ export interface ResolvedGame {
     image?: string | null;
     defaultVerified?: boolean;
     primaryTiming?: 'rt' | 'gt';
+    /** Board-wide default for the category selector; groups may override. */
+    categoryDisplayMode?: CategoryDisplayMode | null;
     redirectedToGameId?: number | null;
     redirectedToSlug?: string | null;
 }
@@ -19,7 +21,19 @@ export interface ResolvedGroup {
      * category_groups.hidden_by_default.
      */
     hiddenByDefault?: boolean;
+    /**
+     * How this group draws its categories on the board. Absent/null inherits
+     * the game's `categoryDisplayMode`, which itself falls back to 'auto'.
+     * Backed by category_groups.display_mode.
+     */
+    displayMode?: CategoryDisplayMode | null;
 }
+
+/**
+ * The category selector's presentation. 'auto' picks from the category count
+ * — pills while they fit on a row or two, dropdown once they do not.
+ */
+export type CategoryDisplayMode = 'auto' | 'pills' | 'dropdown';
 
 /**
  * What a board calls its game-time clock. Display vocabulary only — an LRT

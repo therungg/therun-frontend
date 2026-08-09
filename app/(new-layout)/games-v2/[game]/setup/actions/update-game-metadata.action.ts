@@ -10,6 +10,7 @@ import {
 } from '~src/lib/game-mgmt';
 import { confirmPermission } from '~src/rbac/confirm-permission';
 import { normalizeDiscordInvite } from '~src/utils/discord-invite';
+import type { CategoryDisplayMode } from '../../../../../../types/leaderboards.types';
 
 interface Input {
     gameSlug: string;
@@ -33,6 +34,8 @@ interface Input {
      *  twins are not. */
     sortAscending?: boolean | null;
     showMilliseconds?: boolean | null;
+    /** Board-wide default for how the category selector draws. */
+    categoryDisplayMode?: CategoryDisplayMode | null;
 }
 
 export async function updateGameMetadataAction(
@@ -128,6 +131,8 @@ export async function updateGameMetadataAction(
         body.sortAscending = input.sortAscending;
     if (input.showMilliseconds !== undefined)
         body.showMilliseconds = input.showMilliseconds;
+    if (input.categoryDisplayMode !== undefined)
+        body.categoryDisplayMode = input.categoryDisplayMode;
 
     if (Object.keys(body).length === 0) {
         return { result: { updated: false } };

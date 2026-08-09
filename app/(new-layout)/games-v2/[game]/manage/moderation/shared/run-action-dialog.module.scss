@@ -31,6 +31,15 @@
     @include board.board-dialog-field-label;
 }
 
+// Stands in for the per-run detail when Remove is scoped to the runner:
+// there is nothing to choose between, so the body states the consequence
+// in a sentence and lets the preview's count carry the scale.
+.scopeNote {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
+    margin-bottom: dt.$spacing-md;
+}
+
 // ---- Preview summary ----------------------------------------
 .previewSummary {
     font-size: dt.$font-size-sm;

@@ -51,6 +51,16 @@ interface Props {
     showMilliseconds: boolean;
     /** Active category slug — carried into entry-point submit/claim links. */
     categorySlug: string;
+    /** The category's display name — what a human calls this board. The mod
+     * drawer shows it, and matches the runner's other runs against it (the
+     * eligible-runs read keys categories by display, not slug). */
+    categoryDisplay: string;
+    /** The category's id — the row's Remove needs it to offer "every run this
+     *  runner has on this board", which is a rule written against a category. */
+    categoryId?: number;
+    /** category.requireVideo — a run with no VOD on such a board is a
+     * blocking fact the mod drawer states outright. */
+    requireVideo?: boolean;
     /** Active subcategory key — carried into entry-point submit/claim links. */
     subcategoryKey: string;
     /** Subcategory-role variable names, for building a row's own subcategory key from `entry.variables`. */
@@ -92,6 +102,9 @@ export function LeaderboardPager({
     filtersActive,
     showMilliseconds,
     categorySlug,
+    categoryDisplay,
+    categoryId,
+    requireVideo = false,
     subcategoryKey,
     subcategoryDefKeys,
     variableDefs,
@@ -509,12 +522,20 @@ export function LeaderboardPager({
                 onToggleAllVisible={toggleAllVisible}
                 onModerate={canManage ? openModerate : undefined}
                 onBoardRefresh={canManage ? boardRefresh : undefined}
+                category={
+                    categoryId != null
+                        ? { id: categoryId, display: categoryDisplay }
+                        : undefined
+                }
             />
             {canManage && inspectEntry != null && (
                 <RunInspector
                     entry={inspectEntry}
                     gameSlug={gameSlug}
                     categorySlug={categorySlug}
+                    categoryDisplay={categoryDisplay}
+                    requireVideo={requireVideo}
+                    primaryTiming={primaryTiming}
                     subcategoryDefKeys={subcategoryDefKeys}
                     gameTimeLabel={gameTimeLabel}
                     showMilliseconds={showMilliseconds}

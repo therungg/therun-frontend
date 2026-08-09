@@ -72,6 +72,24 @@ export function CategoryMatrix({
     const rulesCategory = mains.find((c) => c.id === rulesFor) ?? null;
     const grouped = sections.length > 1;
 
+    /**
+     * Both RTA columns ask questions only a game-time board has: what the
+     * other clock is, and whether RTA may stand in when the game time is
+     * missing. An RTA-ranked category has neither — RTA *is* its clock — so a
+     * board with no game-time category drops the pair rather than printing a
+     * column of em dashes nobody can ever fill.
+     */
+    const gameTimeCategories = mains.filter((c) => c.primaryTiming === 'gt');
+    const showsRtaColumns =
+        gameTimeCategories.length > 0 || defaults.primaryTiming === 'gt';
+    /**
+     * Only an all-game-time board can name the columns after RTA. On a mixed
+     * board the other clock is IGT above the RTA rows, so the headers stay
+     * neutral rather than lying about half the table.
+     */
+    const rtaHeaders =
+        showsRtaColumns && gameTimeCategories.length === mains.length;
+
     const applyToCategories = (
         categoryIds: number[],
         fields: Parameters<typeof bulkUpdateCategoriesAction>[0]['fields'],
@@ -134,9 +152,9 @@ export function CategoryMatrix({
     const dotted = (c: ResolvedCategory, column: MatrixColumn) =>
         rendersAsDot(column) && cellState(c, column) === 'quiet';
 
-    // name (icon included), timing, other time, RTA fallback, minimum,
+    // name (icon included), timing, [other time, RTA fallback,] minimum,
     // rules, ranking, ms
-    const columnCount = 8;
+    const columnCount = showsRtaColumns ? 8 : 6;
 
     return (
         <div className={styles.panel}>
@@ -152,10 +170,20 @@ export function CategoryMatrix({
                         <tr>
                             <th>Category</th>
                             <th>Timing</th>
-                            <th>Other timing</th>
-                            <th title="Put RTA in leaderboard if IGT is not available">
-                                RTA fallback
-                            </th>
+                            {showsRtaColumns && (
+                                <>
+                                    <th>
+                                        {rtaHeaders
+                                            ? 'Show RTA'
+                                            : 'Other timing'}
+                                    </th>
+                                    <th title="Put RTA in leaderboard if IGT is not available">
+                                        {rtaHeaders
+                                            ? 'Accept RTA as fallback'
+                                            : 'RTA fallback'}
+                                    </th>
+                                </>
+                            )}
                             <th>Min. time</th>
                             <th>Rules</th>
                             <th>Ranking</th>
@@ -172,6 +200,7 @@ export function CategoryMatrix({
                             defaults={defaults}
                             policies={data.policies}
                             columnCount={columnCount}
+                            showsRtaColumns={showsRtaColumns}
                             categories={mains}
                             onApplyToCategories={applyToCategories}
                         />
@@ -242,117 +271,133 @@ export function CategoryMatrix({
                                                 </Cell>
                                             </td>
 
-                                            {/* The ranking clock can never
+                                            {showsRtaColumns && (
+                                                <>
+                                                    {/* The ranking clock can never
                                                     be hidden, so the only
                                                     decision is whether the
                                                     OTHER one shows — one
                                                     column instead of the pair
                                                     of hide flags it is stored
                                                     as. */}
-                                            <td>
-                                                <Cell
-                                                    dot={dotted(c, 'otherTime')}
-                                                >
-                                                    <select
-                                                        className={cellClass(
-                                                            c,
-                                                            'otherTime',
-                                                        )}
-                                                        value={
-                                                            showsOtherTime(c)
-                                                                ? 'on'
-                                                                : 'off'
-                                                        }
-                                                        disabled={isSaving}
-                                                        aria-label={`Show ${timingLabel(
-                                                            otherTiming(
-                                                                c.primaryTiming,
-                                                            ),
-                                                            c.gameTimeLabel,
-                                                        )} for ${c.display}`}
-                                                        onChange={(e) =>
-                                                            applyToCategories(
-                                                                [c.id],
-                                                                otherTimeField(
-                                                                    c.primaryTiming,
-                                                                    e.target
-                                                                        .value ===
-                                                                        'on',
-                                                                ),
-                                                            )
-                                                        }
-                                                    >
-                                                        <option value="on">
-                                                            Show{' '}
-                                                            {timingLabel(
-                                                                otherTiming(
-                                                                    c.primaryTiming,
-                                                                ),
-                                                                c.gameTimeLabel,
+                                                    <td>
+                                                        <Cell
+                                                            dot={dotted(
+                                                                c,
+                                                                'otherTime',
                                                             )}
-                                                        </option>
-                                                        <option value="off">
-                                                            Hide{' '}
-                                                            {timingLabel(
-                                                                otherTiming(
-                                                                    c.primaryTiming,
-                                                                ),
-                                                                c.gameTimeLabel,
-                                                            )}
-                                                        </option>
-                                                    </select>
-                                                </Cell>
-                                            </td>
+                                                        >
+                                                            <select
+                                                                className={cellClass(
+                                                                    c,
+                                                                    'otherTime',
+                                                                )}
+                                                                value={
+                                                                    showsOtherTime(
+                                                                        c,
+                                                                    )
+                                                                        ? 'on'
+                                                                        : 'off'
+                                                                }
+                                                                disabled={
+                                                                    isSaving
+                                                                }
+                                                                aria-label={`Show ${timingLabel(
+                                                                    otherTiming(
+                                                                        c.primaryTiming,
+                                                                    ),
+                                                                    c.gameTimeLabel,
+                                                                )} for ${c.display}`}
+                                                                onChange={(e) =>
+                                                                    applyToCategories(
+                                                                        [c.id],
+                                                                        otherTimeField(
+                                                                            c.primaryTiming,
+                                                                            e
+                                                                                .target
+                                                                                .value ===
+                                                                                'on',
+                                                                        ),
+                                                                    )
+                                                                }
+                                                            >
+                                                                <option value="on">
+                                                                    Show{' '}
+                                                                    {timingLabel(
+                                                                        otherTiming(
+                                                                            c.primaryTiming,
+                                                                        ),
+                                                                        c.gameTimeLabel,
+                                                                    )}
+                                                                </option>
+                                                                <option value="off">
+                                                                    Hide{' '}
+                                                                    {timingLabel(
+                                                                        otherTiming(
+                                                                            c.primaryTiming,
+                                                                        ),
+                                                                        c.gameTimeLabel,
+                                                                    )}
+                                                                </option>
+                                                            </select>
+                                                        </Cell>
+                                                    </td>
 
-                                            {/* Only meaningful where the
+                                                    {/* Only meaningful where the
                                                 board carries IGT at all —
                                                 RTA-primary categories that
                                                 hide IGT get the same em dash
                                                 as every other unset cell. No
                                                 board default exists: On is
                                                 always a deliberate mark. */}
-                                            <td>
-                                                {c.primaryTiming === 'gt' ||
-                                                showsOtherTime(c) ? (
-                                                    <select
-                                                        className={`${styles.cellControl} ${
-                                                            (c.rtaFallback ??
-                                                            false)
-                                                                ? styles.cellDeviates
-                                                                : styles.cellNoDefault
-                                                        }`}
-                                                        value={
-                                                            (c.rtaFallback ??
-                                                            false)
-                                                                ? 'on'
-                                                                : 'off'
-                                                        }
-                                                        disabled={isSaving}
-                                                        title={`Put RTA in leaderboard if ${timingLabel('gt', c.gameTimeLabel)} is not available`}
-                                                        aria-label={`RTA fallback for ${c.display}`}
-                                                        onChange={(e) =>
-                                                            applyToCategories(
-                                                                [c.id],
-                                                                {
-                                                                    rtaFallback:
-                                                                        e.target
-                                                                            .value ===
-                                                                        'on',
-                                                                },
-                                                            )
-                                                        }
-                                                    >
-                                                        <option value="off">
-                                                            Off
-                                                        </option>
-                                                        <option value="on">
-                                                            On
-                                                        </option>
-                                                    </select>
-                                                ) : (
-                                                    '\u2014'
-                                                )}
-                                            </td>
+                                                    <td>
+                                                        {c.primaryTiming ===
+                                                            'gt' ||
+                                                        showsOtherTime(c) ? (
+                                                            <select
+                                                                className={`${styles.cellControl} ${
+                                                                    (c.rtaFallback ??
+                                                                    false)
+                                                                        ? styles.cellDeviates
+                                                                        : styles.cellNoDefault
+                                                                }`}
+                                                                value={
+                                                                    (c.rtaFallback ??
+                                                                    false)
+                                                                        ? 'on'
+                                                                        : 'off'
+                                                                }
+                                                                disabled={
+                                                                    isSaving
+                                                                }
+                                                                title={`Put RTA in leaderboard if ${timingLabel('gt', c.gameTimeLabel)} is not available`}
+                                                                aria-label={`RTA fallback for ${c.display}`}
+                                                                onChange={(e) =>
+                                                                    applyToCategories(
+                                                                        [c.id],
+                                                                        {
+                                                                            rtaFallback:
+                                                                                e
+                                                                                    .target
+                                                                                    .value ===
+                                                                                'on',
+                                                                        },
+                                                                    )
+                                                                }
+                                                            >
+                                                                <option value="off">
+                                                                    Off
+                                                                </option>
+                                                                <option value="on">
+                                                                    On
+                                                                </option>
+                                                            </select>
+                                                        ) : (
+                                                            '\u2014'
+                                                        )}
+                                                    </td>
+                                                </>
+                                            )}
 
                                             <td>
                                                 <Cell
