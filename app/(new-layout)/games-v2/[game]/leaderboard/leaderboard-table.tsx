@@ -60,6 +60,8 @@ interface Props {
     onModerate?: (entry: LeaderboardEntry) => void;
     /** Board page refetch for row-level mutations (quick Verify + undo). */
     onBoardRefresh?: () => void;
+    /** The board's category, forwarded to each row's Remove. */
+    category?: { id: number; display: string };
     /** Curation-only per-row additions, forwarded to every row. */
     slots?: RowSlots;
     /** Appended inside `<tbody>` after the rows — curation's Add-runner ghost
@@ -87,6 +89,7 @@ export function LeaderboardTable({
     onToggleAllVisible,
     onModerate,
     onBoardRefresh,
+    category,
     slots,
     tbodyFooter,
 }: Props) {
@@ -268,6 +271,7 @@ export function LeaderboardTable({
                             onToggleSelect={onToggleSelect}
                             onModerate={onModerate}
                             onBoardRefresh={onBoardRefresh}
+                            category={category}
                             slots={slots}
                         />
                     ))}

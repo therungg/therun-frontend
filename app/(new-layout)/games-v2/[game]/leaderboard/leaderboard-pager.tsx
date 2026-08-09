@@ -55,6 +55,9 @@ interface Props {
      * drawer shows it, and matches the runner's other runs against it (the
      * eligible-runs read keys categories by display, not slug). */
     categoryDisplay: string;
+    /** The category's id — the row's Remove needs it to offer "every run this
+     *  runner has on this board", which is a rule written against a category. */
+    categoryId?: number;
     /** category.requireVideo — a run with no VOD on such a board is a
      * blocking fact the mod drawer states outright. */
     requireVideo?: boolean;
@@ -100,6 +103,7 @@ export function LeaderboardPager({
     showMilliseconds,
     categorySlug,
     categoryDisplay,
+    categoryId,
     requireVideo = false,
     subcategoryKey,
     subcategoryDefKeys,
@@ -518,6 +522,11 @@ export function LeaderboardPager({
                 onToggleAllVisible={toggleAllVisible}
                 onModerate={canManage ? openModerate : undefined}
                 onBoardRefresh={canManage ? boardRefresh : undefined}
+                category={
+                    categoryId != null
+                        ? { id: categoryId, display: categoryDisplay }
+                        : undefined
+                }
             />
             {canManage && inspectEntry != null && (
                 <RunInspector
