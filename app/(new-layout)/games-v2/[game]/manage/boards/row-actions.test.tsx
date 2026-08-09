@@ -12,16 +12,8 @@ import type {
     ResolvedCategory,
     VariableRow,
 } from '../../../../../../types/leaderboards.types';
-import type {
-    LeaderboardRosterRow,
-    UserEligibleRunRow,
-} from '../../../../../../types/moderation.types';
-import {
-    type PendingRemoval,
-    PendingRemovalCells,
-    RowActions,
-    type RowActionsProps,
-} from './row-actions';
+import type { LeaderboardRosterRow } from '../../../../../../types/moderation.types';
+import { RowActions, type RowActionsProps } from './row-actions';
 
 // vi.mock factories are hoisted above these imports, so the mock fns
 // themselves must be created through vi.hoisted rather than referenced as
@@ -229,6 +221,16 @@ describe('RowActions — Remove (shared dialog)', () => {
             kind: 'runs',
             runIds: [1],
             label: "runner's run",
+            // Carries who and where, which is what unlocks Remove's
+            // "every run on this board" option.
+            runner: {
+                id: 5,
+                name: 'runner',
+                categoryId: CATEGORY.id,
+                categoryDisplay: CATEGORY.display,
+                subcategoryKey: '',
+                primaryTiming: CATEGORY.primaryTiming,
+            },
         });
     });
 
@@ -531,80 +533,5 @@ describe('RowActions — Move', () => {
         expect(
             await screen.findByRole('button', { name: 'Apply' }),
         ).toBeTruthy();
-    });
-});
-
-const CANDIDATE: UserEligibleRunRow = {
-    runId: 2,
-    categoryId: CATEGORY.id,
-    categoryName: 'Any%',
-    subcategoryKey: '',
-    time: 15_000,
-    gameTime: null,
-    primaryTiming: 'realtime',
-    verificationStatus: 'verified',
-    vodUrl: null,
-    endedAt: '2026-01-01T00:00:00.000Z',
-    isLeaderboardEntry: false,
-    isLeaderboardEntryGt: false,
-    rank: null,
-    totalRunners: null,
-};
-
-function pendingRemoval(overrides: Partial<PendingRemoval>): PendingRemoval {
-    return {
-        row: rosterRow({}),
-        timeMs: 20_000,
-        nextRun: null,
-        nextRunLoading: false,
-        ...overrides,
-    };
-}
-
-function renderPendingCells(overrides: Partial<PendingRemoval> = {}) {
-    const onKeepIt = vi.fn();
-    const onRemoveToo = vi.fn();
-    render(
-        <table>
-            <tbody>
-                <tr>
-                    <PendingRemovalCells
-                        pending={pendingRemoval(overrides)}
-                        timing="rt"
-                        onKeepIt={onKeepIt}
-                        onRemoveToo={onRemoveToo}
-                    />
-                </tr>
-            </tbody>
-        </table>,
-    );
-    return { onKeepIt, onRemoveToo };
-}
-
-describe('PendingRemovalCells', () => {
-    it('shows "Removed." with no slip when there is no candidate yet', () => {
-        renderPendingCells({ nextRun: null, nextRunLoading: false });
-        expect(screen.getByText('Removed.')).toBeTruthy();
-        expect(screen.queryByText(/next:/)).toBeNull();
-    });
-
-    it('shows a loading note while checking for a replacement', () => {
-        renderPendingCells({ nextRunLoading: true });
-        expect(screen.getByText('Checking for a replacement…')).toBeTruthy();
-    });
-
-    it('shows the slip and wires Keep it / Remove too to the callbacks', () => {
-        const { onKeepIt, onRemoveToo } = renderPendingCells({
-            nextRun: CANDIDATE,
-            nextRunLoading: false,
-        });
-
-        expect(screen.getByText(/next:/)).toBeTruthy();
-
-        fireEvent.click(screen.getByRole('button', { name: 'Keep it' }));
-        expect(onKeepIt).toHaveBeenCalledTimes(1);
-
-        fireEvent.click(screen.getByRole('button', { name: 'Remove too' }));
-        expect(onRemoveToo).toHaveBeenCalledTimes(1);
     });
 });

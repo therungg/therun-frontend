@@ -67,6 +67,9 @@ export interface AddRunnerRowProps {
     /** The board's currently-loaded roster (not just on-board rows) — the
      * pool `resolveRunnerRef`/`findMatchedRunner` match typed names against. */
     knownRunners: KnownRunner[];
+    /** Whether the table is drawing the non-ranked clock, so this row keeps
+     *  the same column count as the rows above it. */
+    showSecondary: boolean;
     onMutated: () => void;
 }
 
@@ -85,6 +88,7 @@ export function AddRunnerRow({
     subcategoryKey,
     gameSlug,
     knownRunners,
+    showSecondary,
     onMutated,
 }: AddRunnerRowProps) {
     const [name, setName] = useState('');
@@ -136,7 +140,7 @@ export function AddRunnerRow({
         <tr className={styles.ghostRow}>
             <td className={styles.selectCell} aria-hidden="true" />
             <td className={styles.rank} aria-hidden="true" />
-            <td colSpan={2}>
+            <td>
                 <input
                     type="text"
                     className={styles.ghostInput}
@@ -177,6 +181,10 @@ export function AddRunnerRow({
                 />
                 {error && <span className={styles.timeError}>{error}</span>}
             </td>
+            {/* A new entry has one time and no date yet; these hold the
+                table's shape so the Add button stays under Actions. */}
+            {showSecondary && <td aria-hidden="true" />}
+            <td className={styles.when} aria-hidden="true" />
             <td className={styles.actionsCell}>
                 <button
                     type="button"

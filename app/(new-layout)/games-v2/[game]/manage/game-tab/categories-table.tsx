@@ -349,6 +349,8 @@ export function CategoriesTable({
             id: newGroupId,
             name,
             sortOrder: (groups[groups.length - 1]?.sortOrder ?? 0) + 1,
+            hiddenByDefault: false,
+            displayMode: null,
         });
 
         if (groupPrompt.kind === 'row') {

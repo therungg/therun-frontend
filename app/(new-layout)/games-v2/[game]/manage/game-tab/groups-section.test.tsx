@@ -34,7 +34,15 @@ function renderSection(hiddenByDefault: boolean) {
     return render(
         <GroupsSection
             game={GAME}
-            groups={[{ id: 5, name: 'Main', sortOrder: 1 }]}
+            groups={[
+                {
+                    id: 5,
+                    name: 'Main',
+                    sortOrder: 1,
+                    hiddenByDefault,
+                    displayMode: null,
+                },
+            ]}
             rows={[]}
             snapshotGroups={
                 [

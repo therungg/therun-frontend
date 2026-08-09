@@ -250,6 +250,23 @@ tr:focus-within .reveal {
     }
 }
 
+// A moderator's row opens the inspector rather than the run page, so the
+// stretched target is a button. It has to be indistinguishable from the
+// anchor above it — same type, same hover — because the difference is in
+// what it opens, not in what it is.
+.inspectButton {
+    @include board.mono-time;
+    background: none;
+    border: 0;
+    padding: 0;
+    color: inherit;
+    cursor: pointer;
+
+    &:hover {
+        color: var(--bs-primary);
+    }
+}
+
 // Non-ranking time column: same tabular mono treatment, de-emphasized
 // so the eye lands on the ranked column first.
 .timeSecondary {
@@ -459,6 +476,33 @@ tr:focus-within .reveal {
 // Direct "Moderate" affordance — the mod's primary path into the run
 // inspector, so it's a first-class filled button on the row rather than an
 // item buried in the kebab.
+// Remove is Verify's twin — same pill, same neutral resting border, same
+// hover, differing only in the colour that says which way the judgement
+// goes. Keep the two rules in step; they are one control in two directions.
+.quickRemove {
+    @include board.control-pill;
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    background: none;
+    padding: dt.$spacing-xs dt.$spacing-md;
+    color: var(--bs-danger);
+
+    &:hover:not(:disabled) {
+        border-color: var(--bs-danger);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+
+    // Touch-target pass: guarantee a ≥44px hit area.
+    @media (pointer: coarse) {
+        padding: dt.$spacing-lg;
+    }
+}
+
 .moderateBtn {
     @include board.control-pill;
     border: 1px solid var(--bs-primary);

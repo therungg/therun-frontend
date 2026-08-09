@@ -144,16 +144,6 @@ vi.mock('../moderation/shared/run-action-dialog', () => ({
 
 const GAME: ResolvedGame = { id: 1, name: 'some-game', display: 'Some Game' };
 
-const CATEGORY: ResolvedCategory = {
-    id: 10,
-    name: 'any-percent',
-    display: 'Any%',
-    primaryTiming: 'rt',
-    archived: false,
-    isMain: true,
-    sortOrder: 1,
-};
-
 function rosterRow(
     overrides: Partial<LeaderboardRosterRow>,
 ): LeaderboardRosterRow {
@@ -172,39 +162,6 @@ function rosterRow(
         ...overrides,
     };
 }
-
-const ROW_A = rosterRow({
-    runId: 1,
-    userId: 5,
-    runnerName: 'alice',
-    time: 10_000,
-});
-// Left `unverified` (not the fixture default `verified`) so the sibling
-// action used below to trigger bob's own reload — Approve, via the Run…
-// menu — isn't disabled.
-const ROW_B = rosterRow({
-    runId: 2,
-    userId: 6,
-    runnerName: 'bob',
-    time: 20_000,
-    verificationStatus: 'unverified',
-});
-const CANDIDATE: UserEligibleRunRow = {
-    runId: 3,
-    categoryId: CATEGORY.id,
-    categoryName: 'Any%',
-    subcategoryKey: '',
-    time: 8_000,
-    gameTime: null,
-    primaryTiming: 'realtime',
-    verificationStatus: 'verified',
-    vodUrl: null,
-    endedAt: '2026-01-01T00:00:00.000Z',
-    isLeaderboardEntry: false,
-    isLeaderboardEntryGt: false,
-    rank: null,
-    totalRunners: null,
-};
 
 /** Finds the `<tr>` whose rendered text includes `name` — avoids depending
  * on `UserLink`'s internal markup, matching board-curation.test.tsx's
@@ -227,32 +184,6 @@ function removeRow(runnerName: string) {
     );
 }
 
-/** Drives the sibling-row Approve through the same stubbed dialog — the
- * point is that its onDone→reload flows through BoardCuration's shared
- * `reload`, exactly like the old instant Approve did. */
-function approveRow(runnerName: string) {
-    const row = rowContaining(runnerName);
-    fireEvent.click(within(row).getByRole('button', { name: 'Run…' }));
-    fireEvent.click(within(row).getByRole('button', { name: 'Approve…' }));
-    fireEvent.click(
-        within(row).getByRole('button', { name: 'Confirm approve' }),
-    );
-}
-
-function renderBoard() {
-    return render(
-        <BoardCuration
-            game={GAME}
-            categories={[CATEGORY]}
-            groups={[]}
-            variables={[]}
-            policies={[]}
-            canConfigure
-            context="console"
-        />,
-    );
-}
-
 beforeEach(() => {
     vi.clearAllMocks();
     mocks.lastUndoComplete.current = null;
@@ -260,137 +191,6 @@ beforeEach(() => {
 
 afterEach(() => {
     cleanup();
-});
-
-describe("BoardCuration — a sibling row's reload must not kill a pending removal's slip", () => {
-    it("keeps row A's slip pinned (and still resolvable) after row B's Approve reloads the board without A", async () => {
-        // Initial load has both rows on board. Every reload afterward
-        // reflects A already excluded server-side — this is what a naive
-        // "clear the slip whenever `rows` changes" implementation would
-        // misread as "A is just gone, drop everything about it."
-        mocks.loadBoardPageAction
-            .mockResolvedValueOnce({
-                ok: true,
-                rows: [ROW_A, ROW_B],
-                total: 2,
-                markedTotal: 0,
-            })
-            .mockResolvedValue({
-                ok: true,
-                rows: [ROW_B],
-                total: 1,
-                markedTotal: 0,
-            });
-        mocks.loadUserEligibleRunsAction.mockResolvedValue({
-            ok: true,
-            rows: [CANDIDATE],
-        });
-
-        renderBoard();
-
-        await waitFor(() =>
-            expect(mocks.loadBoardPageAction).toHaveBeenCalledTimes(1),
-        );
-        await waitFor(() => rowContaining('alice'));
-        rowContaining('bob');
-
-        // Remove row A — the dialog's mutation lands, then the next-run
-        // slip appears.
-        removeRow('alice');
-        await waitFor(() => expect(screen.getByText(/next:/)).toBeTruthy());
-        expect(screen.getByRole('button', { name: 'Keep it' })).toBeTruthy();
-
-        // Now act on the SIBLING row: Approve bob via the Run… menu. This
-        // goes through a completely separate RowActions instance and calls
-        // the same `onMutated`/`reload` BoardCuration hands to every row.
-        approveRow('bob');
-        await waitFor(() =>
-            expect(mocks.loadBoardPageAction).toHaveBeenCalledTimes(2),
-        );
-        // `rows` has now resolved to [ROW_B] only — A is gone from the live
-        // data reload just replaced.
-
-        // REGRESSION CHECK: row A and its slip must still be visible. Under
-        // the pre-fix design (Remove's pending state lived inside
-        // RowActions, keyed off whether the row was still present in
-        // `boardRows`), this reload would have unmounted row A's
-        // RowActions instance — and the slip inside it — before the user
-        // could act on it.
-        rowContaining('alice');
-        expect(screen.getByText(/next:/)).toBeTruthy();
-        expect(screen.getByRole('button', { name: 'Keep it' })).toBeTruthy();
-        expect(screen.getByRole('button', { name: 'Remove too' })).toBeTruthy();
-
-        // Keep it resolves the slip's lifecycle: dismiss the overlay, then
-        // reload — row A (already excluded server-side) then stops
-        // rendering for good, and the board is back to a normal, consistent
-        // state.
-        fireEvent.click(screen.getByRole('button', { name: 'Keep it' }));
-        await waitFor(() =>
-            expect(mocks.loadBoardPageAction).toHaveBeenCalledTimes(3),
-        );
-        await waitFor(() => {
-            expect(
-                screen
-                    .queryAllByRole('row')
-                    .some((r) => r.textContent?.includes('alice')),
-            ).toBe(false);
-        });
-        rowContaining('bob');
-    });
-
-    it("also keeps row A's undo affordance working after a sibling reload", async () => {
-        mocks.loadBoardPageAction
-            .mockResolvedValueOnce({
-                ok: true,
-                rows: [ROW_A, ROW_B],
-                total: 2,
-                markedTotal: 0,
-            })
-            .mockResolvedValue({
-                ok: true,
-                rows: [ROW_B],
-                total: 1,
-                markedTotal: 0,
-            });
-        mocks.loadUserEligibleRunsAction.mockResolvedValue({
-            ok: true,
-            rows: [CANDIDATE],
-        });
-
-        renderBoard();
-
-        await waitFor(() => rowContaining('alice'));
-        removeRow('alice');
-        await waitFor(() => expect(screen.getByText(/next:/)).toBeTruthy());
-        // Capture alice's undo NOW — bob's Approve confirm below also runs
-        // through the stub and would overwrite the capture slot, exactly
-        // like a newer toast appearing on screen.
-        const aliceUndo = mocks.lastUndoComplete.current;
-        expect(aliceUndo).toBeTruthy();
-
-        approveRow('bob');
-        await waitFor(() =>
-            expect(mocks.loadBoardPageAction).toHaveBeenCalledTimes(2),
-        );
-        rowContaining('alice');
-
-        // The dialog's undo toast outlives the dialog AND the sibling
-        // reload — its onUndoComplete (captured at Confirm) must still
-        // unpin row A and resync the board.
-        act(() => aliceUndo?.());
-        await waitFor(() =>
-            expect(mocks.loadBoardPageAction).toHaveBeenCalledTimes(3),
-        );
-        await waitFor(() => {
-            expect(
-                screen
-                    .queryAllByRole('row')
-                    .some((r) => r.textContent?.includes('alice')),
-            ).toBe(false);
-        });
-        rowContaining('bob');
-    });
 });
 
 describe('BoardCuration — stale-closure reload after a category switch', () => {

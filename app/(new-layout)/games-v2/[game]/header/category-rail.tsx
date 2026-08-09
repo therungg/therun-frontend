@@ -21,6 +21,8 @@ interface Props {
     variableKeys: string[];
     /** Board population per category slug; see GamePageData.categoryBoardCounts. */
     boardCounts?: Record<string, number>;
+    /** Board-wide selector default; groups override it one by one. */
+    gameDisplayMode?: string | null;
 }
 
 export function CategoryRail({
@@ -29,6 +31,7 @@ export function CategoryRail({
     selectedCategoryName,
     variableKeys,
     boardCounts,
+    gameDisplayMode,
 }: Props) {
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -40,8 +43,8 @@ export function CategoryRail({
     const [opened, setOpened] = useState<Set<number>>(new Set());
 
     const { sections } = useMemo(
-        () => computeCategoryVisibility(categories, groups),
-        [categories, groups],
+        () => computeCategoryVisibility(categories, groups, gameDisplayMode),
+        [categories, groups, gameDisplayMode],
     );
 
     const onSelect = (name: string) => {
@@ -130,6 +133,63 @@ export function CategoryRail({
                                     <span className={styles.emptyGroup}>
                                         No categories enabled for this group.
                                     </span>
+                                ) : section.displayMode === 'dropdown' ? (
+                                    // One control instead of a wrapping band.
+                                    // Deliberately a native select: it is the
+                                    // one picker that is already correct with a
+                                    // keyboard, a screen reader and a thumb,
+                                    // and the rail has no room for a popover
+                                    // that would have to reimplement all three.
+                                    <select
+                                        className={styles.categorySelect}
+                                        value={
+                                            section.pills.some(
+                                                (c) =>
+                                                    c.name ===
+                                                    optimisticSelectedName,
+                                            )
+                                                ? optimisticSelectedName
+                                                : ''
+                                        }
+                                        onChange={(e) =>
+                                            onSelect(e.target.value)
+                                        }
+                                        aria-label={
+                                            section.name
+                                                ? `Category in ${section.name}`
+                                                : 'Category'
+                                        }
+                                    >
+                                        {/* A group that does not hold the
+                                            selected board has no value of its
+                                            own to show — without this the
+                                            select would lie and display its
+                                            first category as chosen. */}
+                                        {!section.pills.some(
+                                            (c) =>
+                                                c.name ===
+                                                optimisticSelectedName,
+                                        ) && (
+                                            <option value="" disabled>
+                                                Pick a category…
+                                            </option>
+                                        )}
+                                        {section.pills.map((c) => {
+                                            const runners =
+                                                boardCounts?.[c.name] ?? null;
+                                            return (
+                                                <option
+                                                    key={c.id}
+                                                    value={c.name}
+                                                >
+                                                    {c.display}
+                                                    {runners == null
+                                                        ? ''
+                                                        : ` · ${runners.toLocaleString()} runners`}
+                                                </option>
+                                            );
+                                        })}
+                                    </select>
                                 ) : (
                                     section.pills.map((c) => {
                                         const active =

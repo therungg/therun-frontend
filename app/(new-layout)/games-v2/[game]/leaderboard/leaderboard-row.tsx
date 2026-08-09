@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { PlayBtn } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
@@ -8,9 +8,11 @@ import { DurationToFormatted } from '~src/components/util/datetime';
 import { formatRunDate } from '~src/lib/format-run-date';
 import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
 import { usePopoverFocus } from '../shared/use-popover-focus';
+import { buildSubcategoryKey } from '../submit/subcategory-key';
 import { CountryFlag } from './country-flag';
 import type { DisplayRank } from './display-rank';
 import styles from './leaderboard.module.scss';
+import { QuickRemoveButton } from './quick-remove-button';
 import { QuickVerifyButton } from './quick-verify-button';
 import { relativeDate } from './relative-date';
 import { RunnerAvatar } from './runner-avatar';
@@ -146,6 +148,35 @@ interface Props {
     onModerate?: (entry: LeaderboardEntry) => void;
     /** Board page refetch for row-level mutations (quick Verify + its undo). */
     onBoardRefresh?: () => void;
+    /** The board's category — the row's Remove offers a runner-scoped
+     *  option, which is a rule written against a category. */
+    category?: { id: number; display: string };
+    /** Subcategory-role variable names, for deriving THIS entry's own board
+     *  key. Derived per entry rather than taken from the table so a combined
+     *  view — where rows span slices — lists the right runs. */
+    subcategoryDefKeys?: string[];
+    /** Curation-only additions; absent on the public board. See `RowSlots`. */
+    slots?: RowSlots;
+}
+
+/**
+ * Optional per-row content the moderator curation view adds and the public
+ * board does not have.
+ *
+ * These exist so curation can render THIS row rather than a copy of it. The
+ * copy drifted — different column order, different milliseconds default,
+ * ranks that hid ties — so anything curation needs on top is injected here
+ * instead of duplicating the row to add it.
+ */
+export interface RowSlots {
+    /** Beside the runner name: the mark-for-later pin, the "moved here" tag. */
+    runnerBadges?: (entry: LeaderboardEntry) => ReactNode;
+    /** In the ranked time cell: the below-minimum tag. */
+    timeBadges?: (entry: LeaderboardEntry) => ReactNode;
+    /** Trailing cell, before the public controls: Remove… / Run…. */
+    actions?: (entry: LeaderboardEntry) => ReactNode;
+    /** Extra class on the `<tr>` — curation greys a pending-removal row. */
+    rowClassName?: (entry: LeaderboardEntry) => string;
 }
 
 export function LeaderboardRow({
@@ -164,6 +195,9 @@ export function LeaderboardRow({
     onToggleSelect,
     onModerate,
     onBoardRefresh,
+    category,
+    subcategoryDefKeys,
+    slots,
 }: Props) {
     // Anonymized rows arrive already redacted from the backend: placeholder
     // name, `userId`/`picture`/`country` nulled, `isGuest: false`. Always key
@@ -177,6 +211,14 @@ export function LeaderboardRow({
         entry.runId != null &&
         entry.source !== 'manual' &&
         entry.verificationStatus === 'pending' &&
+        onBoardRefresh != null;
+    // Unlike Verify, Remove applies at any verification status — a verified
+    // run is exactly the kind that turns out to be wrong later — and to set
+    // times as well as runs. The form already maps remove onto the
+    // manual-time delete endpoint, so the row is just a shorter way in.
+    const showQuickRemove =
+        canManage &&
+        (entry.runId != null || entry.manualTimeId != null) &&
         onBoardRefresh != null;
     const detailHref =
         entry.source === 'manual' && entry.manualTimeId != null
@@ -209,16 +251,41 @@ export function LeaderboardRow({
     // cmd/ctrl-click, middle-click and long-press all work natively. Other
     // interactive cells (runner link, VOD link, kebab/manage) sit above it
     // via z-index — see leaderboard.module.scss.
+    //
+    // For a moderator the row is a button instead: clicking a row while
+    // moderating means "look at this run", and the inspector is where every
+    // verb lives, so routing to the read-only detail page put a navigation
+    // between the mod and the thing they opened the row to do. The detail
+    // page stays reachable from inside the inspector. This is the one case
+    // where the row is deliberately NOT a link — a mod loses cmd-click to a
+    // new tab and gains the drawer, which is the trade they want.
+    const opensInspector = canManage && onModerate != null;
     const time = (
         value: number | null,
         dimmed: boolean,
         stretched: boolean,
         rtaTag = false,
+        /** The ranking column — the only one curation's badges belong in. */
+        ranked = false,
     ) => (
         <td className={dimmed ? styles.timeSecondary : styles.time}>
             {value != null ? (
                 <>
-                    {detailHref ? (
+                    {opensInspector ? (
+                        <button
+                            type="button"
+                            className={`${styles.inspectButton} ${
+                                stretched ? 'stretched-link' : ''
+                            }`}
+                            onClick={() => onModerate?.(entry)}
+                            title={`Open the moderator view for ${entry.runnerName}'s run`}
+                        >
+                            <DurationToFormatted
+                                duration={value}
+                                withMillis={showMilliseconds}
+                            />
+                        </button>
+                    ) : detailHref ? (
                         <Link
                             href={detailHref}
                             className={stretched ? 'stretched-link' : undefined}
@@ -246,6 +313,7 @@ export function LeaderboardRow({
             ) : (
                 '—'
             )}
+            {ranked && slots?.timeBadges?.(entry)}
         </td>
     );
 
@@ -276,7 +344,7 @@ export function LeaderboardRow({
             // -1: focusable programmatically (Find me scrolls here and
             // focuses it) without joining the natural tab order.
             tabIndex={isCurrentUser ? -1 : undefined}
-            className={`${styles.row} ${podiumClass} ${isCurrentUser ? styles.youRow : ''} ${selected ? styles.rowSelected : ''} ${isAnonymous ? styles.anonRow : ''}`}
+            className={`${styles.row} ${podiumClass} ${isCurrentUser ? styles.youRow : ''} ${selected ? styles.rowSelected : ''} ${isAnonymous ? styles.anonRow : ''} ${slots?.rowClassName?.(entry) ?? ''}`}
         >
             {canManage && (
                 <td className={styles.checkCell}>
@@ -352,6 +420,7 @@ export function LeaderboardRow({
                     {/* No rank-1 chip: the gold spine and gold rank numeral
                         already mark the row, and any label here overclaims —
                         we only know the board's best submitted time. */}
+                    {slots?.runnerBadges?.(entry)}
                 </span>
             </td>
             {primaryVisible &&
@@ -362,6 +431,7 @@ export function LeaderboardRow({
                     false,
                     true,
                     isRtaFallbackEntry,
+                    true,
                 )}
             {secondaryVisible &&
                 time(
@@ -401,6 +471,7 @@ export function LeaderboardRow({
                 {entry.runDate ? relativeDate(entry.runDate) : '—'}
             </td>
             <td className={styles.trailing}>
+                {slots?.actions?.(entry)}
                 {entry.source === 'manual' && (
                     <InfoPill
                         label="set time"
@@ -425,6 +496,33 @@ export function LeaderboardRow({
                             gameSlug={gameSlug}
                             runId={entry.runId as number}
                             runnerName={entry.runnerName}
+                            onMutated={onBoardRefresh as () => void}
+                        />
+                    )}
+                    {/* The other half of the same judgement, in the same
+                        cluster and the same pill — Verify green, Remove
+                        red. Opens the shared Remove dialog rather than
+                        acting on click: Verify has a true inverse and can
+                        ride an undo toast, Remove needs a reason. */}
+                    {showQuickRemove && (
+                        <QuickRemoveButton
+                            gameSlug={gameSlug}
+                            runId={entry.runId ?? null}
+                            manualTimeId={entry.manualTimeId ?? null}
+                            runnerName={entry.runnerName}
+                            userId={entry.userId ?? null}
+                            categoryId={category?.id}
+                            categoryDisplay={category?.display ?? ''}
+                            subcategoryKey={buildSubcategoryKey(
+                                Object.fromEntries(
+                                    Object.entries(
+                                        entry.variables ?? {},
+                                    ).filter(([k]) =>
+                                        (subcategoryDefKeys ?? []).includes(k),
+                                    ),
+                                ),
+                            )}
+                            primaryTiming={primaryTiming}
                             onMutated={onBoardRefresh as () => void}
                         />
                     )}

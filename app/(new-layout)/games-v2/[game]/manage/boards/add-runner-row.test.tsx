@@ -82,6 +82,7 @@ describe('AddRunnerRow', () => {
                         subcategoryKey=""
                         gameSlug="some-game"
                         knownRunners={knownRunners}
+                        showSecondary={false}
                         onMutated={onMutated}
                     />
                 </tbody>

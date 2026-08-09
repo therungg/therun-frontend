@@ -4,8 +4,10 @@ import { useState, useTransition } from 'react';
 import { createGroupAction } from '~src/actions/category-group/create-group.action';
 import { deleteGroupAction } from '~src/actions/category-group/delete-group.action';
 import { renameGroupAction } from '~src/actions/category-group/rename-group.action';
+import { setGroupDisplayModeAction } from '~src/actions/category-group/set-group-display-mode.action';
 import { setGroupHiddenAction } from '~src/actions/category-group/set-group-hidden.action';
 import type {
+    CategoryDisplayMode,
     ResolvedGame,
     ResolvedGroup,
 } from '../../../../../../types/leaderboards.types';
@@ -145,6 +147,33 @@ export function GroupBuilder({
         });
     };
 
+    const setDisplayMode = (
+        group: ResolvedGroup,
+        displayMode: CategoryDisplayMode | null,
+    ) => {
+        const previous = group.displayMode ?? null;
+        onGroupsChange(
+            groups.map((g) => (g.id === group.id ? { ...g, displayMode } : g)),
+        );
+        startPending(async () => {
+            setError(null);
+            const res = await setGroupDisplayModeAction({
+                gameSlug: game.name,
+                gameId: game.id,
+                groupId: group.id,
+                displayMode,
+            });
+            if ('error' in res) {
+                setError(res.error);
+                onGroupsChange(
+                    groups.map((g) =>
+                        g.id === group.id ? { ...g, displayMode: previous } : g,
+                    ),
+                );
+            }
+        });
+    };
+
     // Deleting an empty group is trivially undoable (make it again); deleting
     // one with categories in it silently ungroups them, so that one asks.
     const requestRemove = (group: ResolvedGroup) => {
@@ -236,6 +265,35 @@ export function GroupBuilder({
                                         }
                                     />
                                     Collapsed by default
+                                </label>
+                                <label className="text-muted small d-flex align-items-center gap-1 mb-0">
+                                    <span className="visually-hidden">
+                                        Selector for {g.name}
+                                    </span>
+                                    <select
+                                        className="form-select form-select-sm"
+                                        style={{ width: 'auto' }}
+                                        value={g.displayMode ?? ''}
+                                        disabled={pending}
+                                        onChange={(e) =>
+                                            setDisplayMode(
+                                                g,
+                                                e.target.value === ''
+                                                    ? null
+                                                    : (e.target
+                                                          .value as CategoryDisplayMode),
+                                            )
+                                        }
+                                    >
+                                        <option value="">Follow board</option>
+                                        <option value="auto">
+                                            Auto (by count)
+                                        </option>
+                                        <option value="pills">Pills</option>
+                                        <option value="dropdown">
+                                            Dropdown
+                                        </option>
+                                    </select>
                                 </label>
                                 <span className={styles.spacer} />
                                 {editingId !== g.id && (

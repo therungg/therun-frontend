@@ -1,6 +1,7 @@
 'use server';
 
 import { cacheLife, cacheTag } from 'next/cache';
+import type { CategoryDisplayMode } from '../../types/leaderboards.types';
 import { apiFetch } from './api-client';
 
 export interface GameLink {
@@ -50,6 +51,8 @@ export interface UpdateGameBody {
      *  categories by the wizard, never resolved through — see GameMetadata. */
     sortAscending?: boolean | null;
     showMilliseconds?: boolean | null;
+    /** Board-wide default for the category selector; groups may override. */
+    categoryDisplayMode?: CategoryDisplayMode | null;
 }
 
 export interface GameCompanyMeta {

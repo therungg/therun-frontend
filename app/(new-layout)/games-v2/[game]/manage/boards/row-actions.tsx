@@ -11,6 +11,7 @@ import type {
     LeaderboardRosterRow,
     UserEligibleRunRow,
 } from '../../../../../../types/moderation.types';
+import type { TimingColumn, TimingKey } from '../../leaderboard/timing-columns';
 import { usePopoverFocus } from '../../shared/use-popover-focus';
 import { RunActionDialog } from '../moderation/shared/run-action-dialog';
 import { AdjustDialog } from './adjust-dialog';
@@ -31,6 +32,8 @@ export interface RowActionsProps {
      * category's primary timing by BoardCuration) — read-mode display, and
      * the seed value `AdjustDialog` uses for its set-time input. */
     timeMs: number | null;
+    /** Drives nothing here any more — the below-minimum tag moved into the
+     *  row's ranked time cell — but `AdjustDialog` still reads it. */
     belowMinimum: boolean;
     /** Viewer may file a SITE-WIDE anonymize ban — admins only
      * (`ability.can('moderate', 'admins')`), never game moderators. Fed
@@ -40,11 +43,9 @@ export interface RowActionsProps {
     canSiteBan?: boolean;
     /**
      * Fires after the shared Remove dialog's mutation lands. The dialog owns
-     * the removal itself (reason category, notify toggle, preview, min-10 —
-     * the same Remove as everywhere else); `BoardCuration` owns what happens
-     * to the ROW afterwards: it pins a frozen snapshot in place and offers
-     * the next-run slip, which must survive sibling-row reloads — see
-     * `PendingRemoval`/`PendingRemovalCells` below.
+     * the removal itself — reason category, notify toggle, preview, min-10,
+     * and the choice between this run and every run the runner has on this
+     * board — so all `BoardCuration` does afterwards is resync.
      */
     onRemoved: () => void;
     /** Fires after the Remove undo toast's restore lands — unpins the row. */
@@ -61,6 +62,15 @@ export function primaryValueOf(
     timing: 'rt' | 'gt',
 ): number | null {
     return timing === 'gt' ? row.gameTime : row.time;
+}
+
+/** `timingValue()`'s twin for the roster shape, which names its real time
+ *  `time` rather than `realTime`. */
+export function rosterTimingValue(
+    row: { time: number | null; gameTime: number | null },
+    key: TimingKey,
+): number | null {
+    return key === 'rt' ? row.time : row.gameTime;
 }
 
 /**
@@ -119,108 +129,109 @@ export function RowActions({
         kind: 'runs' as const,
         runIds: [row.runId],
         label: `${row.runnerName}'s run`,
+        // Present only for a registered runner: it unlocks Remove's
+        // "every run on this board" option, which needs an account to
+        // write a rule against.
+        runner: isGuest
+            ? undefined
+            : {
+                  id: row.userId as number,
+                  name: row.runnerName,
+                  categoryId: category.id,
+                  categoryDisplay: category.display,
+                  subcategoryKey,
+                  primaryTiming: category.primaryTiming,
+              },
     };
 
+    // Only the action cluster: the row's cells belong to `LeaderboardRow`,
+    // which curation now renders instead of a copy. This lands in that row's
+    // trailing cell through `RowSlots.actions`.
     return (
         <>
-            <td className={styles.time}>
-                {timeMs != null ? (
-                    <DurationToFormatted
-                        duration={timeMs}
-                        withMillis={category.showMilliseconds ?? false}
-                    />
-                ) : (
-                    '—'
-                )}
-                {belowMinimum && (
-                    <span className={styles.belowMinTag}>Below minimum</span>
-                )}
-            </td>
-            <td className={styles.actionsCell}>
-                <div className={styles.actionCluster}>
+            <div className={styles.actionCluster}>
+                {/* No VOD link here: `LeaderboardRow` already renders one in
+                    this same trailing cell, for every board. */}
+                <button
+                    type="button"
+                    className={styles.actionBtn}
+                    onClick={() => setRemoveOpen(true)}
+                >
+                    Remove…
+                </button>
+                <div className={styles.menuRoot} ref={menuRootRef}>
                     <button
                         type="button"
                         className={styles.actionBtn}
-                        onClick={() => setRemoveOpen(true)}
+                        aria-haspopup="dialog"
+                        aria-expanded={menuOpen}
+                        onClick={() => setMenuOpen((v) => !v)}
                     >
-                        Remove…
+                        Run…
                     </button>
-                    <div className={styles.menuRoot} ref={menuRootRef}>
+                    {menuOpen && (
+                        <div
+                            ref={menuRef}
+                            role="dialog"
+                            aria-modal="true"
+                            aria-label={`Run actions for ${row.runnerName}`}
+                            className={styles.menuPanel}
+                        >
+                            <button
+                                type="button"
+                                className={styles.menuItem}
+                                onClick={() => {
+                                    setMenuOpen(false);
+                                    setApproveOpen(true);
+                                }}
+                                disabled={row.verificationStatus === 'verified'}
+                            >
+                                {row.verificationStatus === 'verified'
+                                    ? 'Approved'
+                                    : 'Approve…'}
+                            </button>
+                            <button
+                                type="button"
+                                className={styles.menuItem}
+                                onClick={() => {
+                                    setMenuOpen(false);
+                                    setMoveOpen(true);
+                                }}
+                            >
+                                Move…
+                            </button>
+                            <button
+                                type="button"
+                                className={styles.menuItem}
+                                onClick={() => {
+                                    setMenuOpen(false);
+                                    setAdjustOpen(true);
+                                }}
+                            >
+                                {isGuest ? 'Set time…' : 'Adjust…'}
+                            </button>
+                        </div>
+                    )}
+                </div>
+                {!isGuest && (
+                    <>
                         <button
                             type="button"
                             className={styles.actionBtn}
-                            aria-haspopup="dialog"
-                            aria-expanded={menuOpen}
-                            onClick={() => setMenuOpen((v) => !v)}
+                            onClick={() => setRunnerOpen(true)}
                         >
-                            Run…
+                            Runner…
                         </button>
-                        {menuOpen && (
-                            <div
-                                ref={menuRef}
-                                role="dialog"
-                                aria-modal="true"
-                                aria-label={`Run actions for ${row.runnerName}`}
-                                className={styles.menuPanel}
-                            >
-                                <button
-                                    type="button"
-                                    className={styles.menuItem}
-                                    onClick={() => {
-                                        setMenuOpen(false);
-                                        setApproveOpen(true);
-                                    }}
-                                    disabled={
-                                        row.verificationStatus === 'verified'
-                                    }
-                                >
-                                    {row.verificationStatus === 'verified'
-                                        ? 'Approved'
-                                        : 'Approve…'}
-                                </button>
-                                <button
-                                    type="button"
-                                    className={styles.menuItem}
-                                    onClick={() => {
-                                        setMenuOpen(false);
-                                        setMoveOpen(true);
-                                    }}
-                                >
-                                    Move…
-                                </button>
-                                <button
-                                    type="button"
-                                    className={styles.menuItem}
-                                    onClick={() => {
-                                        setMenuOpen(false);
-                                        setAdjustOpen(true);
-                                    }}
-                                >
-                                    {isGuest ? 'Set time…' : 'Adjust…'}
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                    {!isGuest && (
-                        <>
-                            <button
-                                type="button"
-                                className={styles.actionBtn}
-                                onClick={() => setRunnerOpen(true)}
-                            >
-                                Runner…
-                            </button>
-                            <Link
-                                className={styles.actionBtn}
-                                href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${row.userId}?from=boards`}
-                                title={`Open ${row.runnerName}'s runner page — runs, bans, history`}
-                            >
-                                View
-                            </Link>
-                        </>
-                    )}
-                </div>
-            </td>
+                        <Link
+                            className={styles.actionBtn}
+                            href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${row.userId}?from=boards`}
+                            title={`Open ${row.runnerName}'s runner page — runs, bans, history`}
+                        >
+                            View
+                        </Link>
+                    </>
+                )}
+            </div>
 
             {removeOpen && (
                 <RunActionDialog
@@ -281,82 +292,6 @@ export function RowActions({
                 timeMs={timeMs}
                 onMutated={onMutated}
             />
-        </>
-    );
-}
-
-/**
- * A row `BoardCuration` has pinned in place after a successful Remove —
- * rendered from this frozen snapshot rather than the live roster data,
- * specifically so a *sibling* row's reload can't unmount it (or discard its
- * next-run slip) before the user has resolved it. See the `onRemoved` doc on
- * `RowActionsProps` above for why this can't live inside `RowActions`.
- */
-export interface PendingRemoval {
-    row: LeaderboardRosterRow;
-    timeMs: number | null;
-    nextRun: UserEligibleRunRow | null;
-    nextRunLoading: boolean;
-}
-
-/** Time cell (frozen) + "Removed." note / next-run slip, in place of
- * `RowActions`'s time + action-cluster cells for a pending removal. */
-export function PendingRemovalCells({
-    pending,
-    timing,
-    onKeepIt,
-    onRemoveToo,
-}: {
-    pending: PendingRemoval;
-    timing: 'rt' | 'gt';
-    onKeepIt: () => void;
-    onRemoveToo: () => void;
-}) {
-    return (
-        <>
-            <td className={styles.time}>
-                {pending.timeMs != null ? (
-                    <DurationToFormatted duration={pending.timeMs} />
-                ) : (
-                    '—'
-                )}
-            </td>
-            <td className={styles.actionsCell}>
-                <div className={styles.removedNote}>
-                    <span>Removed.</span>
-                    {pending.nextRunLoading && (
-                        <span className={styles.slipLoading}>
-                            Checking for a replacement…
-                        </span>
-                    )}
-                    {pending.nextRun && (
-                        <span className={styles.slip}>
-                            next:{' '}
-                            <DurationToFormatted
-                                duration={
-                                    primaryValueOf(pending.nextRun, timing) ?? 0
-                                }
-                            />{' '}
-                            ·{' '}
-                            <button
-                                type="button"
-                                className={styles.slipAction}
-                                onClick={onKeepIt}
-                            >
-                                Keep it
-                            </button>{' '}
-                            /{' '}
-                            <button
-                                type="button"
-                                className={styles.slipAction}
-                                onClick={onRemoveToo}
-                            >
-                                Remove too
-                            </button>
-                        </span>
-                    )}
-                </div>
-            </td>
         </>
     );
 }

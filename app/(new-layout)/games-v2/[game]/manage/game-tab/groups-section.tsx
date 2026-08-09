@@ -6,9 +6,11 @@ import { createGroupAction } from '~src/actions/category-group/create-group.acti
 import { deleteGroupAction } from '~src/actions/category-group/delete-group.action';
 import { renameGroupAction } from '~src/actions/category-group/rename-group.action';
 import { reorderGroupsAction } from '~src/actions/category-group/reorder-groups.action';
+import { setGroupDisplayModeAction } from '~src/actions/category-group/set-group-display-mode.action';
 import { setGroupHiddenAction } from '~src/actions/category-group/set-group-hidden.action';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type {
+    CategoryDisplayMode,
     ResolvedGame,
     ResolvedGroup,
 } from '../../../../../../types/leaderboards.types';
@@ -87,6 +89,34 @@ export function GroupsSection({
         });
     };
 
+    // Optimistic for the same reason the hidden flag is: the only other
+    // feedback is the band preview redrawing a beat later.
+    const setDisplayMode = (
+        group: ManageGroup,
+        displayMode: CategoryDisplayMode | null,
+    ) => {
+        const previous = group.displayMode;
+        onGroupsChange(
+            groups.map((x) => (x.id === group.id ? { ...x, displayMode } : x)),
+        );
+        startTransition(async () => {
+            const res = await setGroupDisplayModeAction({
+                gameSlug: game.name,
+                gameId: game.id,
+                groupId: group.id,
+                displayMode,
+            });
+            if ('error' in res) {
+                toast.error(res.error);
+                onGroupsChange(
+                    groups.map((x) =>
+                        x.id === group.id ? { ...x, displayMode: previous } : x,
+                    ),
+                );
+            }
+        });
+    };
+
     const countByGroupId = useMemo(() => {
         const m = new Map<number, number>();
         for (const r of rows) {
@@ -117,6 +147,8 @@ export function GroupsSection({
                     id: res.result.id,
                     name,
                     sortOrder: (groups[groups.length - 1]?.sortOrder ?? 0) + 1,
+                    hiddenByDefault: false,
+                    displayMode: null,
                 },
             ];
             onGroupsChange(next);
@@ -382,6 +414,40 @@ export function GroupsSection({
                                         }
                                     />
                                     Collapsed by default
+                                </label>
+
+                                {/* "Follow board" is the first option and the
+                                    normal answer: a per-group override earns
+                                    its place only where one group genuinely
+                                    differs from the rest. */}
+                                <label className="text-muted small d-flex align-items-center gap-1 mb-0">
+                                    <span className="visually-hidden">
+                                        Selector for {g.name}
+                                    </span>
+                                    <select
+                                        className="form-select form-select-sm"
+                                        value={g.displayMode ?? ''}
+                                        disabled={pending}
+                                        style={{ width: 'auto' }}
+                                        onChange={(e) =>
+                                            setDisplayMode(
+                                                g,
+                                                e.target.value === ''
+                                                    ? null
+                                                    : (e.target
+                                                          .value as CategoryDisplayMode),
+                                            )
+                                        }
+                                    >
+                                        <option value="">Follow board</option>
+                                        <option value="auto">
+                                            Auto (by count)
+                                        </option>
+                                        <option value="pills">Pills</option>
+                                        <option value="dropdown">
+                                            Dropdown
+                                        </option>
+                                    </select>
                                 </label>
 
                                 {!isEditing && (

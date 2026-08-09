@@ -5,6 +5,10 @@
 // RunInspector — the board's single-run moderation drawer. Same
 // slide-in presentation + motion vocabulary as the console's
 // HistoryDrawer; content styling stays board-native.
+//
+// Reading order top to bottom is the decision order: evidence,
+// then the time and what to judge it against, then the record,
+// then history, then the verbs.
 // ============================================================
 
 .backdrop {
@@ -15,25 +19,296 @@
 
 .panel {
     z-index: dt.$z-drawer;
-    width: min(33rem, 100%);
+    // Wide enough that the embedded VOD is actually watchable — a
+    // moderator shouldn't have to leave the drawer to see the run.
+    width: min(38rem, 100%);
     @include board.board-overlay-enter(slide-right);
+}
+
+// ---------- header ----------
+
+.header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-lg;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.headerMain {
+    min-width: 0;
+}
+
+.headerTop {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    flex-wrap: wrap;
 }
 
 .runnerName {
     font-weight: 600;
-    font-size: 1.05rem;
+    font-size: dt.$font-size-md;
 }
 
-.timesLine {
+.headerSub {
+    margin-top: dt.$spacing-xs;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+// ---------- evidence ----------
+
+.evidence {
+    padding: dt.$spacing-lg;
+    border-bottom: 1px solid var(--bs-border-color);
     display: flex;
-    gap: dt.$spacing-lg;
-    margin-top: dt.$spacing-sm;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    align-items: flex-start;
+}
+
+.vodFrame {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: dt.$radius-md;
+    overflow: hidden;
+    background: #000;
+
+    iframe {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+}
+
+// A VOD on a host the embed doesn't speak. Still evidence — make it a
+// full-width target rather than a stray link.
+.vodLinkCard {
+    display: flex;
+    align-items: flex-start;
+    gap: dt.$spacing-sm;
+    width: 100%;
+    padding: dt.$spacing-md;
+    border: 1px solid var(--bs-border-color);
+    border-radius: dt.$radius-md;
+    color: var(--bs-body-color);
+    text-decoration: none;
+    font-size: dt.$font-size-sm;
+
+    &:hover {
+        border-color: var(--bs-primary);
+        color: var(--bs-primary);
+    }
+}
+
+.vodUrl {
+    display: block;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+    word-break: break-all;
+}
+
+.vodActions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    width: 100%;
+}
+
+.vodEditBtn {
+    border: none;
+    background: none;
+    padding: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+
+    &:hover {
+        color: var(--bs-primary);
+        text-decoration: underline;
+    }
+}
+
+// No video is a fact the moderator has to weigh, not an absence to hide —
+// and it's the button that fixes it, because "the run has no VOD" is the
+// most common reason a run sits in the queue.
+.noVod {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    width: 100%;
+    padding: dt.$spacing-md;
+    border: 1px dashed var(--bs-border-color);
+    border-radius: dt.$radius-md;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+    text-align: left;
+    background: none;
+    transition:
+        border-color dt.$transition-fast,
+        background-color dt.$transition-fast;
+
+    &:hover {
+        border-color: var(--bs-primary);
+        background: rgba(var(--bs-primary-rgb), 0.06);
+    }
+}
+
+.noVodText {
+    flex: 1 1 auto;
+}
+
+.noVodCta {
+    flex: 0 0 auto;
+    font-weight: 600;
+    color: var(--bs-primary);
+}
+
+.noVodRequired {
+    border-style: solid;
+    border-color: rgba(var(--bs-danger-rgb), 0.5);
+    background: rgba(var(--bs-danger-rgb), 0.08);
+    color: var(--bs-danger-text-emphasis, var(--bs-danger));
+    font-weight: 500;
+
+    &:hover {
+        border-color: var(--bs-danger);
+        background: rgba(var(--bs-danger-rgb), 0.14);
+    }
+}
+
+// ---------- attach / change the video link ----------
+
+.vodForm {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    width: 100%;
+}
+
+.vodFormLabel {
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+}
+
+.vodFormRow {
+    display: flex;
+    gap: dt.$spacing-sm;
+    align-items: center;
+}
+
+.vodInput {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.vodHint {
+    margin: 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.vodRemove {
+    align-self: flex-start;
+    border: none;
+    background: none;
+    padding: 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-danger);
+
+    &:hover:not(:disabled) {
+        text-decoration: underline;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
+
+// ---------- the time ----------
+
+.timeBlock {
+    padding: dt.$spacing-lg;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.primaryTimeRow {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-md;
+    flex-wrap: wrap;
+}
+
+.primaryTime {
+    font-size: dt.$font-size-xl;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+}
+
+.rankChip {
+    @include board.control-pill;
+    background: rgba(var(--bs-primary-rgb), 0.12);
+    color: var(--bs-primary);
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
 }
 
-.timeLabel {
-    color: var(--bs-secondary-color);
+.primaryTimeLabel {
+    margin-top: dt.$spacing-xs;
     font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.secondaryTime {
+    margin-top: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    font-variant-numeric: tabular-nums;
+}
+
+.record {
+    margin-top: dt.$spacing-md;
+    padding-top: dt.$spacing-md;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    font-size: dt.$font-size-sm;
+    font-variant-numeric: tabular-nums;
+}
+
+.deltaFaster {
+    color: var(--bs-success);
+    font-weight: 600;
+}
+
+.deltaSlower {
+    color: var(--bs-secondary-color);
+}
+
+// A prompt to look closer, not an accusation — amber, not red.
+.outlier {
+    display: flex;
+    align-items: flex-start;
+    gap: dt.$spacing-sm;
+    margin-top: dt.$spacing-md;
+    padding: dt.$spacing-md;
+    border-radius: dt.$radius-md;
+    background: rgba(var(--bs-warning-rgb), 0.1);
+    color: var(--bs-warning-text-emphasis, dt.$accent-amber);
+    font-size: dt.$font-size-sm;
+}
+
+// ---------- runner strip ----------
+
+.runnerStrip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    flex-wrap: wrap;
+    padding: dt.$spacing-md dt.$spacing-lg;
+    border-bottom: 1px solid var(--bs-border-color);
 }
 
 .factLink {
@@ -48,6 +323,12 @@
     &:hover {
         color: var(--bs-primary);
     }
+}
+
+// ---------- history ----------
+
+.historyBlock {
+    padding: dt.$spacing-lg;
 }
 
 .sectionTitle {
@@ -101,9 +382,11 @@
     font-style: italic;
 }
 
-// The drawer's primary action bar. The verbs are the whole point of the
-// inspector, so they read as full-size buttons that share the width evenly;
-// the trailing secondary control (More / Change time) stays compact.
+// ---------- footer ----------
+
+// The drawer's primary action bar. The constructive verb takes the width;
+// removal sits beside it as an outline — same reach, different weight, so a
+// destructive click is never the one you make by muscle memory.
 .actionBar {
     display: flex;
     gap: dt.$spacing-sm;
@@ -113,15 +396,33 @@
 
 .verbBtn {
     flex: 1 1 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: dt.$spacing-sm;
     font-weight: 600;
     padding-top: dt.$spacing-md;
     padding-bottom: dt.$spacing-md;
     white-space: nowrap;
 }
 
-// Secondary actions (Move / Adjust / Hide identity / Mark / Change time) —
-// always visible, never hidden behind a menu, but visually quieter than the
-// primary verbs above them.
+.verbPrimary {
+    flex: 2 1 0;
+}
+
+.verbKey {
+    font-size: 0.7rem;
+    line-height: 1;
+    padding: 0.15em 0.35em;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.18);
+    color: inherit;
+    opacity: 0.8;
+}
+
+// Secondary actions — always visible, never hidden behind a menu, but
+// visually quieter than the primary verbs above them. "…" here means what
+// it says: these open a separate dialog, the verbs above expand in place.
 .secondaryBar {
     display: flex;
     flex-wrap: wrap;
@@ -131,8 +432,8 @@
 
 .secondaryBtn {
     @include board.control-pill;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
-    background: none;
+    border: 1px solid var(--bs-border-color);
+    background: var(--bs-tertiary-bg);
     padding: dt.$spacing-xs dt.$spacing-md;
     color: var(--bs-body-color);
 
@@ -154,23 +455,41 @@
     padding: dt.$spacing-md dt.$spacing-lg 0;
 }
 
+.stepBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-sm;
+    padding: 0 dt.$spacing-lg dt.$spacing-lg;
+}
+
 .stepBtn {
     @include board.control-pill;
     display: inline-flex;
     align-items: center;
     gap: dt.$spacing-xs;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-    background: none;
+    border: 1px solid var(--bs-border-color);
+    background: var(--bs-tertiary-bg);
+    color: var(--bs-body-color);
+
+    &:hover {
+        border-color: var(--bs-primary);
+        color: var(--bs-primary);
+    }
 
     kbd {
         font-size: 0.7rem;
-        background: var(--bs-tertiary-bg);
+        background: var(--bs-body-bg);
         color: var(--bs-secondary-color);
         border-radius: 3px;
         padding: 0 0.3em;
     }
+}
 
-    &:disabled {
-        opacity: 0.4;
-    }
+// The end of the list is stated, not implied by a greyed-out button that
+// looks the same as a quiet enabled one.
+.stepEdge {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    opacity: 0.7;
 }
