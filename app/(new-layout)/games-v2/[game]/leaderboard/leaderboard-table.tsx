@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { type ReactNode, useEffect, useRef } from 'react';
 import { Funnel, Trophy } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import { buildSubmitHref } from '~src/lib/board-url';
@@ -10,7 +10,7 @@ import { ClearFiltersButton } from '../filters/clear-filters-button';
 import { isSameRunner } from '../shared/is-same-runner';
 import { computeDisplayRanks } from './display-rank';
 import styles from './leaderboard.module.scss';
-import { LeaderboardRow } from './leaderboard-row';
+import { LeaderboardRow, type RowSlots } from './leaderboard-row';
 import { type BoardSelectionKey, entrySelectionKey } from './selection';
 import {
     type TimingKey,
@@ -60,6 +60,11 @@ interface Props {
     onModerate?: (entry: LeaderboardEntry) => void;
     /** Board page refetch for row-level mutations (quick Verify + undo). */
     onBoardRefresh?: () => void;
+    /** Curation-only per-row additions, forwarded to every row. */
+    slots?: RowSlots;
+    /** Appended inside `<tbody>` after the rows — curation's Add-runner ghost
+     *  row, which is not an entry and so cannot come through `entries`. */
+    tbodyFooter?: ReactNode;
 }
 
 export function LeaderboardTable({
@@ -82,6 +87,8 @@ export function LeaderboardTable({
     onToggleAllVisible,
     onModerate,
     onBoardRefresh,
+    slots,
+    tbodyFooter,
 }: Props) {
     const selectableKeys = leaderboard.entries
         .map(entrySelectionKey)
@@ -261,8 +268,10 @@ export function LeaderboardTable({
                             onToggleSelect={onToggleSelect}
                             onModerate={onModerate}
                             onBoardRefresh={onBoardRefresh}
+                            slots={slots}
                         />
                     ))}
+                    {tbodyFooter}
                 </tbody>
             </table>
         </div>

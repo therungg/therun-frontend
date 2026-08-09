@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { PlayBtn } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
@@ -146,6 +146,28 @@ interface Props {
     onModerate?: (entry: LeaderboardEntry) => void;
     /** Board page refetch for row-level mutations (quick Verify + its undo). */
     onBoardRefresh?: () => void;
+    /** Curation-only additions; absent on the public board. See `RowSlots`. */
+    slots?: RowSlots;
+}
+
+/**
+ * Optional per-row content the moderator curation view adds and the public
+ * board does not have.
+ *
+ * These exist so curation can render THIS row rather than a copy of it. The
+ * copy drifted — different column order, different milliseconds default,
+ * ranks that hid ties — so anything curation needs on top is injected here
+ * instead of duplicating the row to add it.
+ */
+export interface RowSlots {
+    /** Beside the runner name: the mark-for-later pin, the "moved here" tag. */
+    runnerBadges?: (entry: LeaderboardEntry) => ReactNode;
+    /** In the ranked time cell: the below-minimum tag. */
+    timeBadges?: (entry: LeaderboardEntry) => ReactNode;
+    /** Trailing cell, before the public controls: Remove… / Run…. */
+    actions?: (entry: LeaderboardEntry) => ReactNode;
+    /** Extra class on the `<tr>` — curation greys a pending-removal row. */
+    rowClassName?: (entry: LeaderboardEntry) => string;
 }
 
 export function LeaderboardRow({
@@ -164,6 +186,7 @@ export function LeaderboardRow({
     onToggleSelect,
     onModerate,
     onBoardRefresh,
+    slots,
 }: Props) {
     // Anonymized rows arrive already redacted from the backend: placeholder
     // name, `userId`/`picture`/`country` nulled, `isGuest: false`. Always key
@@ -214,6 +237,8 @@ export function LeaderboardRow({
         dimmed: boolean,
         stretched: boolean,
         rtaTag = false,
+        /** The ranking column — the only one curation's badges belong in. */
+        ranked = false,
     ) => (
         <td className={dimmed ? styles.timeSecondary : styles.time}>
             {value != null ? (
@@ -246,6 +271,7 @@ export function LeaderboardRow({
             ) : (
                 '—'
             )}
+            {ranked && slots?.timeBadges?.(entry)}
         </td>
     );
 
@@ -276,7 +302,7 @@ export function LeaderboardRow({
             // -1: focusable programmatically (Find me scrolls here and
             // focuses it) without joining the natural tab order.
             tabIndex={isCurrentUser ? -1 : undefined}
-            className={`${styles.row} ${podiumClass} ${isCurrentUser ? styles.youRow : ''} ${selected ? styles.rowSelected : ''} ${isAnonymous ? styles.anonRow : ''}`}
+            className={`${styles.row} ${podiumClass} ${isCurrentUser ? styles.youRow : ''} ${selected ? styles.rowSelected : ''} ${isAnonymous ? styles.anonRow : ''} ${slots?.rowClassName?.(entry) ?? ''}`}
         >
             {canManage && (
                 <td className={styles.checkCell}>
@@ -352,6 +378,7 @@ export function LeaderboardRow({
                     {/* No rank-1 chip: the gold spine and gold rank numeral
                         already mark the row, and any label here overclaims —
                         we only know the board's best submitted time. */}
+                    {slots?.runnerBadges?.(entry)}
                 </span>
             </td>
             {primaryVisible &&
@@ -362,6 +389,7 @@ export function LeaderboardRow({
                     false,
                     true,
                     isRtaFallbackEntry,
+                    true,
                 )}
             {secondaryVisible &&
                 time(
@@ -401,6 +429,7 @@ export function LeaderboardRow({
                 {entry.runDate ? relativeDate(entry.runDate) : '—'}
             </td>
             <td className={styles.trailing}>
+                {slots?.actions?.(entry)}
                 {entry.source === 'manual' && (
                     <InfoPill
                         label="set time"

@@ -1,5 +1,16 @@
-import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
 import { type TimingKey, timingValue } from './timing-columns';
+
+/**
+ * The minimum an entry has to carry to be ranked. Structural rather than
+ * `LeaderboardEntry` so the moderator curation table — whose rows come from
+ * the roster endpoint with a different shape — can rank by the same rule
+ * instead of printing raw row numbers.
+ */
+export interface RankableEntry {
+    rank: number;
+    realTime: number | null;
+    gameTime: number | null;
+}
 
 export interface DisplayRank {
     /** What to render in the rank cell, e.g. "1" or "=1". */
@@ -17,7 +28,7 @@ export interface DisplayRank {
  * which is the honest behavior given only a windowed view of the board.
  */
 export function computeDisplayRanks(
-    entries: LeaderboardEntry[],
+    entries: RankableEntry[],
     primaryTiming: TimingKey,
 ): DisplayRank[] {
     const out: DisplayRank[] = [];

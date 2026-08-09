@@ -18,7 +18,7 @@ import type {
 } from '../../../../../../types/moderation.types';
 import {
     type PendingRemoval,
-    PendingRemovalCells,
+    RemovedNote,
     RowActions,
     type RowActionsProps,
 } from './row-actions';
@@ -568,9 +568,10 @@ function renderPendingCells(overrides: Partial<PendingRemoval> = {}) {
         <table>
             <tbody>
                 <tr>
-                    <PendingRemovalCells
+                    <RemovedNote
                         pending={pendingRemoval(overrides)}
                         timing="rt"
+                        showMilliseconds
                         onKeepIt={onKeepIt}
                         onRemoveToo={onRemoveToo}
                     />

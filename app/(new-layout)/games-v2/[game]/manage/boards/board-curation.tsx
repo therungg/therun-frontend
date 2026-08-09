@@ -36,7 +36,14 @@ import type {
     PreviewExcludeResult,
     UserEligibleRunRow,
 } from '../../../../../../types/moderation.types';
+import { computeDisplayRanks } from '../../leaderboard/display-rank';
+import type { RowSlots } from '../../leaderboard/leaderboard-row';
+import { LeaderboardTable } from '../../leaderboard/leaderboard-table';
 import { relativeDate } from '../../leaderboard/relative-date';
+import {
+    timingColumnHidden,
+    timingColumns,
+} from '../../leaderboard/timing-columns';
 import { BoardDialog } from '../../shared/board-dialog';
 import { reorderCategoriesAction } from '../game-tab/actions/reorder-categories.action';
 import { computeReorderChanges } from '../game-tab/reorder-changes';
@@ -53,11 +60,13 @@ import { updateVariableAction } from '../variables/actions/update-variable.actio
 import { AddRunnerRow } from './add-runner-row';
 import { BoardControls } from './board-controls';
 import styles from './board-curation.module.scss';
+import { rosterLeaderboard } from './roster-entry';
 import {
     type PendingRemoval,
-    PendingRemovalCells,
     primaryValueOf,
+    RemovedNote,
     RowActions,
+    rosterTimingValue,
 } from './row-actions';
 import {
     defaultCanonicalOf,
@@ -332,6 +341,12 @@ export function BoardCuration({
     }, [context, categorySlug, subcategoryKey, router]);
 
     const timing: 'rt' | 'gt' = category?.primaryTiming === 'gt' ? 'gt' : 'rt';
+
+    // Same modules the public table uses, so the two cannot drift: the
+    // ranking clock leads, the other one follows and hides when the category
+    // hides it or no loaded row has a value for it.
+    const timingCols = timingColumns(timing, category?.gameTimeLabel ?? 'igt');
+    const showMilliseconds = category?.showMilliseconds ?? true;
 
     // Defaults to ascending (lower time = better), same default the Display
     // popover uses (board-controls.tsx) and the same fallback categoryMgmt
@@ -625,6 +640,154 @@ export function BoardCuration({
     }, [rows, timing, minMs, pendingRemovals, ascending, boardPageIndex]);
 
     const visibleBoardRows = boardRows;
+
+    /**
+     * The non-ranked clock earns its column only if the category shows it AND
+     * some loaded row actually has one — the same two-part rule
+     * `LeaderboardTable` applies, so a board that renders one time column
+     * publicly does not sprout a second one full of dashes in here.
+     */
+    const showSecondaryTiming =
+        !timingColumnHidden(timingCols.secondary.key, {
+            hideRealTime: category?.hideRealTime ?? false,
+            hideGameTime: category?.hideGameTime ?? false,
+        }) &&
+        visibleBoardRows.some(
+            ({ row }) =>
+                rosterTimingValue(row, timingCols.secondary.key) != null,
+        );
+
+    /**
+     * The board table's own data shape. Curation reads the mod roster
+     * endpoint, the public page reads the board endpoint; `rosterEntry` is
+     * the only place that knows they describe the same runs.
+     */
+    const curationLeaderboard = rosterLeaderboard(
+        visibleBoardRows.map(({ row, rank }) => ({ row, rank })),
+        category,
+        boardPageIndex + 1,
+        BOARD_PAGE_SIZE,
+        showMarkedOnly ? markedTotal : total,
+    );
+
+    // The table keys selection by `r:<runId>` so runs and manual times can
+    // share one Set; curation tracks bare run ids. Translate at the boundary
+    // rather than changing either side's vocabulary.
+    const selectedKeys = new Set(
+        Array.from(selectedRunIds).map((id) => `r:${id}`),
+    );
+    const handleToggleSelect = (key: string) => {
+        const id = Number(key.slice(2));
+        if (Number.isFinite(id)) toggleSelected(id);
+    };
+    const handleToggleAllVisible = () => {
+        const ids = visibleBoardRows.map(({ row }) => row.runId);
+        const allSelected = ids.every((id) => selectedRunIds.has(id));
+        for (const id of ids) {
+            if (allSelected === selectedRunIds.has(id)) toggleSelected(id);
+        }
+    };
+
+    const byRunId = new Map(
+        visibleBoardRows.map(({ row, belowMinimum, timeMs }) => [
+            row.runId,
+            { row, belowMinimum, timeMs },
+        ]),
+    );
+
+    /**
+     * Everything curation shows that the public board does not. Rendered by
+     * `LeaderboardRow` through its slots, so curation extends the real row
+     * instead of maintaining a second one.
+     */
+    const curationSlots: RowSlots = {
+        rowClassName: (entry) =>
+            entry.runId != null && pendingRemovals.has(entry.runId)
+                ? styles.rowRemoved
+                : '',
+        timeBadges: (entry) =>
+            entry.runId != null && byRunId.get(entry.runId)?.belowMinimum ? (
+                <span className={styles.belowMinTag}>Below minimum</span>
+            ) : null,
+        runnerBadges: (entry) => {
+            const found = entry.runId != null ? byRunId.get(entry.runId) : null;
+            if (!found) return null;
+            const { row } = found;
+            const pending = pendingRemovals.has(row.runId);
+            return (
+                <>
+                    {row.markedForLater && (
+                        <PinAngleFill
+                            size={12}
+                            className={styles.pin}
+                            aria-label="Marked for later"
+                        />
+                    )}
+                    {row.userId == null && (
+                        <span className={styles.guestTag}>guest</span>
+                    )}
+                    {!pending && row.boardOverride != null && category && (
+                        <span className={styles.movedTag}>
+                            moved here
+                            <button
+                                type="button"
+                                className={styles.movedClear}
+                                aria-label={`Clear move for ${row.runnerName}`}
+                                onClick={() =>
+                                    handleClearMove(row, {
+                                        categoryId: category.id,
+                                        subcategoryKey,
+                                    })
+                                }
+                                disabled={clearingMoveRunIds.has(row.runId)}
+                            >
+                                &times;
+                            </button>
+                        </span>
+                    )}
+                </>
+            );
+        },
+        actions: (entry) => {
+            const found = entry.runId != null ? byRunId.get(entry.runId) : null;
+            if (!found || !category) return null;
+            const { row, timeMs, belowMinimum } = found;
+            const pending = pendingRemovals.get(row.runId);
+            if (pending) {
+                return (
+                    <RemovedNote
+                        pending={pending}
+                        timing={timing}
+                        showMilliseconds={showMilliseconds}
+                        onKeepIt={() => handleKeepIt(row.runId)}
+                        onRemoveToo={() =>
+                            pending.nextRun &&
+                            handleRemoveToo(row.runId, pending.nextRun)
+                        }
+                    />
+                );
+            }
+            return (
+                <RowActions
+                    row={row}
+                    category={category}
+                    categories={featured}
+                    variables={variables}
+                    subcategoryKey={subcategoryKey}
+                    gameSlug={game.name}
+                    timeMs={timeMs}
+                    belowMinimum={belowMinimum}
+                    onRemoved={() => handleRemoved(row, timeMs)}
+                    onRemoveUndone={() => {
+                        dropPending(row.runId);
+                        reload();
+                    }}
+                    onMutated={reload}
+                    canSiteBan={canSiteBan}
+                />
+            );
+        },
+    };
 
     // ---- Bulk accept ----------------------------------------------------
     const [isBulkAccepting, startBulkAccept] = useTransition();
@@ -1017,207 +1180,39 @@ export function BoardCuration({
                         <p className={styles.loadingNote}>Loading board…</p>
                     )}
                     {!error && (!loading || rows.length > 0) && (
-                        <table
-                            className={`${styles.table} ${selectedRunIds.size > 0 ? styles.tableSelecting : ''}`}
-                        >
-                            <thead>
-                                <tr>
-                                    <th
-                                        className={styles.selectHeader}
-                                        aria-label="Select"
+                        <LeaderboardTable
+                            leaderboard={curationLeaderboard}
+                            sessionUsername={null}
+                            canManage
+                            gameSlug={game.name}
+                            variableKeys={[]}
+                            valueColumns={[]}
+                            primaryTiming={timing}
+                            gameTimeLabel={category?.gameTimeLabel ?? 'igt'}
+                            filtersActive={showMarkedOnly}
+                            showMilliseconds={showMilliseconds}
+                            categorySlug={category?.name ?? ''}
+                            subcategoryKey={subcategoryKey}
+                            subcategoryDefKeys={[]}
+                            rtaFallback={category?.rtaFallback ?? false}
+                            selectedKeys={selectedKeys}
+                            onToggleSelect={handleToggleSelect}
+                            onToggleAllVisible={handleToggleAllVisible}
+                            onBoardRefresh={reload}
+                            slots={curationSlots}
+                            tbodyFooter={
+                                category ? (
+                                    <AddRunnerRow
+                                        category={category}
+                                        subcategoryKey={subcategoryKey}
+                                        gameSlug={game.name}
+                                        knownRunners={rows}
+                                        showSecondary={showSecondaryTiming}
+                                        onMutated={reload}
                                     />
-                                    <th className={styles.rank}>#</th>
-                                    <th>Runner</th>
-                                    <th className={styles.when}>When</th>
-                                    <th>
-                                        {timing === 'gt'
-                                            ? 'Game time'
-                                            : 'Real time'}
-                                    </th>
-                                    <th
-                                        className={styles.actionsHeader}
-                                        aria-label="Actions"
-                                    />
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {visibleBoardRows.length === 0 && (
-                                    <tr>
-                                        <td
-                                            colSpan={6}
-                                            className={styles.emptyCell}
-                                        >
-                                            {showMarkedOnly
-                                                ? 'No marked runs.'
-                                                : 'No runs on this board yet.'}
-                                        </td>
-                                    </tr>
-                                )}
-                                {visibleBoardRows.map(
-                                    ({ row, rank, timeMs, belowMinimum }) => {
-                                        const isGuest = row.userId == null;
-                                        const pending = pendingRemovals.get(
-                                            row.runId,
-                                        );
-                                        return (
-                                            <tr
-                                                key={row.runId}
-                                                className={`${styles.row} ${pending ? styles.rowRemoved : ''}`}
-                                            >
-                                                <td
-                                                    className={
-                                                        styles.selectCell
-                                                    }
-                                                >
-                                                    {!pending && (
-                                                        <input
-                                                            type="checkbox"
-                                                            aria-label={`Select ${row.runnerName}`}
-                                                            checked={selectedRunIds.has(
-                                                                row.runId,
-                                                            )}
-                                                            onChange={() =>
-                                                                toggleSelected(
-                                                                    row.runId,
-                                                                )
-                                                            }
-                                                        />
-                                                    )}
-                                                </td>
-                                                <td className={styles.rank}>
-                                                    {rank}
-                                                </td>
-                                                <td className={styles.runner}>
-                                                    {row.markedForLater && (
-                                                        <PinAngleFill
-                                                            size={12}
-                                                            className={
-                                                                styles.pin
-                                                            }
-                                                            aria-label="Marked for later"
-                                                        />
-                                                    )}
-                                                    {isGuest ? (
-                                                        <span>
-                                                            {row.runnerName}{' '}
-                                                            <span
-                                                                className={
-                                                                    styles.guestTag
-                                                                }
-                                                            >
-                                                                guest
-                                                            </span>
-                                                        </span>
-                                                    ) : (
-                                                        <UserLink
-                                                            username={
-                                                                row.runnerName
-                                                            }
-                                                            url={undefined}
-                                                        />
-                                                    )}
-                                                    {!pending &&
-                                                        row.boardOverride !=
-                                                            null && (
-                                                            <span
-                                                                className={
-                                                                    styles.movedTag
-                                                                }
-                                                            >
-                                                                moved here
-                                                                <button
-                                                                    type="button"
-                                                                    className={
-                                                                        styles.movedClear
-                                                                    }
-                                                                    aria-label={`Clear move for ${row.runnerName}`}
-                                                                    onClick={() =>
-                                                                        handleClearMove(
-                                                                            row,
-                                                                            {
-                                                                                categoryId:
-                                                                                    category.id,
-                                                                                subcategoryKey,
-                                                                            },
-                                                                        )
-                                                                    }
-                                                                    disabled={clearingMoveRunIds.has(
-                                                                        row.runId,
-                                                                    )}
-                                                                >
-                                                                    &times;
-                                                                </button>
-                                                            </span>
-                                                        )}
-                                                </td>
-                                                <td
-                                                    className={styles.when}
-                                                    title={formatRunDate(
-                                                        row.endedAt,
-                                                    )}
-                                                >
-                                                    {relativeDate(row.endedAt)}
-                                                </td>
-                                                {pending ? (
-                                                    <PendingRemovalCells
-                                                        pending={pending}
-                                                        timing={timing}
-                                                        onKeepIt={() =>
-                                                            handleKeepIt(
-                                                                row.runId,
-                                                            )
-                                                        }
-                                                        onRemoveToo={() =>
-                                                            pending.nextRun &&
-                                                            handleRemoveToo(
-                                                                row.runId,
-                                                                pending.nextRun,
-                                                            )
-                                                        }
-                                                    />
-                                                ) : (
-                                                    <RowActions
-                                                        row={row}
-                                                        category={category}
-                                                        categories={featured}
-                                                        variables={variables}
-                                                        subcategoryKey={
-                                                            subcategoryKey
-                                                        }
-                                                        gameSlug={game.name}
-                                                        timeMs={timeMs}
-                                                        belowMinimum={
-                                                            belowMinimum
-                                                        }
-                                                        onRemoved={() =>
-                                                            handleRemoved(
-                                                                row,
-                                                                timeMs,
-                                                            )
-                                                        }
-                                                        onRemoveUndone={() => {
-                                                            dropPending(
-                                                                row.runId,
-                                                            );
-                                                            reload();
-                                                        }}
-                                                        onMutated={reload}
-                                                        canSiteBan={canSiteBan}
-                                                    />
-                                                )}
-                                            </tr>
-                                        );
-                                    },
-                                )}
-                                <AddRunnerRow
-                                    category={category}
-                                    subcategoryKey={subcategoryKey}
-                                    gameSlug={game.name}
-                                    knownRunners={rows}
-                                    onMutated={reload}
-                                />
-                            </tbody>
-                        </table>
+                                ) : null
+                            }
+                        />
                     )}
                     {!error && pageCount > 1 && (
                         <nav className={styles.pager} aria-label="Board pages">

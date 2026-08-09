@@ -480,8 +480,8 @@ describe('BoardCuration — bulk selection', () => {
             />,
         );
 
-        fireEvent.click(screen.getByLabelText('Select alice'));
-        fireEvent.click(screen.getByLabelText('Select bob'));
+        fireEvent.click(screen.getByLabelText("Select alice's run"));
+        fireEvent.click(screen.getByLabelText("Select bob's run"));
         expect(screen.getByText('2 selected')).toBeTruthy();
 
         removeRow('alice');
@@ -623,8 +623,8 @@ describe('BoardCuration — multi-select bulk actions', () => {
         mocks.markRunsAction.mockResolvedValue({ ok: true, updated: 2 });
         renderTwoRunners();
 
-        fireEvent.click(screen.getByLabelText('Select alice'));
-        fireEvent.click(screen.getByLabelText('Select guestbob'));
+        fireEvent.click(screen.getByLabelText("Select alice's run"));
+        fireEvent.click(screen.getByLabelText("Select guestbob's run"));
         expect(screen.getByText('2 selected')).toBeTruthy();
 
         fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
@@ -656,8 +656,8 @@ describe('BoardCuration — multi-select bulk actions', () => {
         });
         renderTwoRunners();
 
-        fireEvent.click(screen.getByLabelText('Select alice'));
-        fireEvent.click(screen.getByLabelText('Select guestbob'));
+        fireEvent.click(screen.getByLabelText("Select alice's run"));
+        fireEvent.click(screen.getByLabelText("Select guestbob's run"));
         fireEvent.click(screen.getByRole('button', { name: 'Ban…' }));
 
         await waitFor(() =>
