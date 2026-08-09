@@ -7,7 +7,10 @@ import styles from './leaderboard.module.scss';
 
 interface Props {
     gameSlug: string;
-    runId: number;
+    /** Null for a set time, which has no backing run. */
+    runId: number | null;
+    /** Set only for a set time — Remove maps to delete for these. */
+    manualTimeId: number | null;
     runnerName: string;
     /** Null for a guest — Remove then has no runner-scoped option to offer. */
     userId: number | null;
@@ -31,6 +34,7 @@ interface Props {
 export function QuickRemoveButton({
     gameSlug,
     runId,
+    manualTimeId,
     runnerName,
     userId,
     categoryId,
@@ -44,7 +48,9 @@ export function QuickRemoveButton({
             <button
                 type="button"
                 className={styles.quickRemove}
-                aria-label={`Remove ${runnerName}'s run`}
+                aria-label={`Remove ${runnerName}'s ${
+                    manualTimeId != null ? 'set time' : 'run'
+                }`}
                 title="Remove…"
                 onClick={() => setOpen(true)}
             >
@@ -56,10 +62,22 @@ export function QuickRemoveButton({
                     verb="remove"
                     target={{
                         kind: 'runs',
-                        runIds: [runId],
-                        label: `${runnerName}'s run`,
+                        runIds: runId != null ? [runId] : [],
+                        manualTimeIds:
+                            manualTimeId != null ? [manualTimeId] : undefined,
+                        label:
+                            manualTimeId != null
+                                ? `${runnerName}'s set time`
+                                : `${runnerName}'s run`,
+                        // Offered on real runs only. An exclusion rule flips
+                        // `excluded` on runs; manual_times has no such column
+                        // and propagateExclusion never touches it, so on a
+                        // set-time row "every run on this board" would leave
+                        // the very row the mod is looking at standing.
                         runner:
-                            userId != null && categoryId != null
+                            manualTimeId == null &&
+                            userId != null &&
+                            categoryId != null
                                 ? {
                                       id: userId,
                                       name: runnerName,
