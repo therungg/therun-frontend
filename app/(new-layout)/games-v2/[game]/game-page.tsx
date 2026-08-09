@@ -226,6 +226,13 @@ export function GamePage({
                                         categorySlug={
                                             data.selectedCategory.name
                                         }
+                                        categoryDisplay={
+                                            data.selectedCategory.display
+                                        }
+                                        requireVideo={
+                                            data.selectedCategory
+                                                .requireVideo ?? false
+                                        }
                                         subcategoryKey={subcategoryKey}
                                         subcategoryDefKeys={subcategoryDefKeys}
                                         rtaFallback={

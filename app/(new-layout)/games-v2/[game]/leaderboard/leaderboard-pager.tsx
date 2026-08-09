@@ -51,6 +51,13 @@ interface Props {
     showMilliseconds: boolean;
     /** Active category slug — carried into entry-point submit/claim links. */
     categorySlug: string;
+    /** The category's display name — what a human calls this board. The mod
+     * drawer shows it, and matches the runner's other runs against it (the
+     * eligible-runs read keys categories by display, not slug). */
+    categoryDisplay: string;
+    /** category.requireVideo — a run with no VOD on such a board is a
+     * blocking fact the mod drawer states outright. */
+    requireVideo?: boolean;
     /** Active subcategory key — carried into entry-point submit/claim links. */
     subcategoryKey: string;
     /** Subcategory-role variable names, for building a row's own subcategory key from `entry.variables`. */
@@ -92,6 +99,8 @@ export function LeaderboardPager({
     filtersActive,
     showMilliseconds,
     categorySlug,
+    categoryDisplay,
+    requireVideo = false,
     subcategoryKey,
     subcategoryDefKeys,
     variableDefs,
@@ -515,6 +524,9 @@ export function LeaderboardPager({
                     entry={inspectEntry}
                     gameSlug={gameSlug}
                     categorySlug={categorySlug}
+                    categoryDisplay={categoryDisplay}
+                    requireVideo={requireVideo}
+                    primaryTiming={primaryTiming}
                     subcategoryDefKeys={subcategoryDefKeys}
                     gameTimeLabel={gameTimeLabel}
                     showMilliseconds={showMilliseconds}
