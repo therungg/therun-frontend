@@ -1102,7 +1102,7 @@
     list-style: none;
     display: inline-flex;
     align-items: center;
-    gap: dt.$spacing-2xs;
+    gap: dt.$spacing-xs;
 
     &::-webkit-details-marker {
         display: none;
