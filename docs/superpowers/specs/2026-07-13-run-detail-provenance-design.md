@@ -8,7 +8,7 @@
 
 ## 1. Goal
 
-A public, shareable detail page for every leaderboard entry, with a **provenance view** answering "how did this run get on the board?" — ingestion path, who submitted it (when not the runner), original game/category before reassignment, identity merges. Public visitors get a summary; game moderators get the full chain. This exists because therun.gg has multiple ingestion paths (timer sync, guest submit, manual times, reassignment moves, identity merges) where speedrun.com has one.
+A public, shareable detail page for every leaderboard entry, with a **provenance view** answering "how did this run get on the board?" — ingestion path, who submitted it (when not the runner), original game/category before reassignment, identity merges. Public visitors get a summary; game moderators get the full chain. This exists because therun.gg has multiple ingestion paths (timer sync, guest submit, manual times, reassignment moves, identity merges), so "where did this run come from" is a real question here.
 
 Decisions already made with Joey:
 

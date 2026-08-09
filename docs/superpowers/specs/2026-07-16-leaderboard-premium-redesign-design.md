@@ -31,11 +31,11 @@ Depends on: board visual unification (implemented 2026-07-15, `tier1-console-com
 ## Problem
 
 The unified board is clean but sterile. It reads as "well-organized admin
-table", not "the home of a game's speedrunning community". speedrun.com — for
-all its clutter — gives every game *identity*: themed backgrounds, trophy
-icons, color, a sense of place. Our board is the same monochrome
-token-Bootstrap surface for every game on the site. Runners will not abandon
-SRC for a tidier spreadsheet.
+table", not "the home of a game's speedrunning community". The boards
+runners already use — for all their clutter — give every game *identity*:
+themed backgrounds, trophy icons, color, a sense of place. Our board is the
+same monochrome token-Bootstrap surface for every game on the site. Nobody
+switches boards for a tidier spreadsheet.
 
 Goal: the leaderboard must look like Apple designed it — material depth,
 monumental typography, per-game identity, motion with restraint — while
@@ -54,8 +54,8 @@ impression, disciplined data below it.
 4. **Identity from content.** Apple Music derives each album page's ambiance
    from the artwork. We do the same with IGDB cover art — every game's board
    is automatically its own place, with zero moderator effort. This is the
-   direct answer to SRC's hand-built themes, and it works for all ~30k games
-   on day one.
+   direct answer to hand-built per-game themes, and it works for all ~30k
+   games on day one.
 5. **Motion as confirmation, not decoration.** One orchestrated load-in, a
    crossfade when the category changes, nothing else. `prefers-reduced-motion`
    respected throughout.
@@ -166,7 +166,7 @@ Apple-signature material:
 - Row 1: main category pills (existing active treatment, slightly larger hit
   areas). Row 2 renders only when the category has **subcategory** variables:
   subcategory pills stay visible — board structure must stay discoverable at
-  a glance (hiding it is SRC's weakness, not a virtue).
+  a glance (hiding it is a weakness elsewhere, not a virtue).
 - **Filter-type variables + the verified toggle move into a single "Filters"
   popover** at the band's right end, with a count badge when active
   ("Filters · 2"). Boards without filter variables never show it. The
@@ -256,7 +256,7 @@ load-in sequence.
 ## Backend asks (documented handoff, not built here)
 
 Per-entry `avatarUrl` and `countryCode` on `LeaderboardResponse.entries`
-would unlock phase 2 (real avatars, flags — SRC parity where it matters).
+would unlock phase 2 (real avatars, flags — parity where it matters).
 Frontend ships monograms first; no blocking dependency.
 
 ## Non-goals

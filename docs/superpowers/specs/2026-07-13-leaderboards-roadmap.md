@@ -1,4 +1,4 @@
-# Leaderboards vs speedrun.com — Gap Analysis & Roadmap
+# Leaderboards — Gap Analysis & Roadmap
 
 **Date:** 2026-07-13
 **Status:** North-star roadmap. Each item gets its own design + plan before code.
@@ -7,11 +7,11 @@
 
 ## Where we stand
 
-The v2 leaderboards (`games-v2`) are structurally strong: variables/subcategories with alias buckets, managed combinations, category groups, rules, timing config, a full moderation stack (triage inbox, bulk verdicts, manual times, exclusions, policies/standards, reports, appeals, notifications, audit + undo), and reassignment. That moderation depth already *exceeds* speedrun.com's tooling.
+The v2 leaderboards (`games-v2`) are structurally strong: variables/subcategories with alias buckets, managed combinations, category groups, rules, timing config, a full moderation stack (triage inbox, bulk verdicts, manual times, exclusions, policies/standards, reports, appeals, notifications, audit + undo), and reassignment. That moderation depth already exceeds what boards elsewhere give their mods.
 
-What's missing is everything around the board: the entire surface is admin-gated and unlinked, runners can't submit runs properly, profiles don't show ranks, there are no ILs/platforms/co-op, and there's zero community layer (guides, resources, comments, themes). SRC wins today on completeness and community, not on tech.
+What's missing is everything around the board: the entire surface is admin-gated and unlinked, runners can't submit runs properly, profiles don't show ranks, there are no ILs/platforms/co-op, and there's zero community layer (guides, resources, comments, themes). Established boards win today on completeness and community, not on tech.
 
-Our structural advantages to press: **auto-ingestion from timers** (zero-friction entries, real attempt counts), **live data**, and **splits-level stats** SRC cannot show.
+Our structural advantages to press: **auto-ingestion from timers** (zero-friction entries, real attempt counts), **live data**, and **splits-level stats** nobody else has the data to show.
 
 ---
 
@@ -26,7 +26,7 @@ Our structural advantages to press: **auto-ingestion from timers** (zero-frictio
 
 5. **Game setup wizard.** Guided first-run flow when someone claims/creates a board. Steps:
    - **Claim & metadata** — cover art, platforms, release year, abbreviation/slug (identifiers exist).
-   - **Categories** — *suggest from already-ingested runs* (we have the data; SRC starts blank). Mark main category, ordering, groups.
+   - **Categories** — *suggest from already-ingested runs* (we have the data; a new board elsewhere starts blank). Mark main category, ordering, groups.
    - **Timing** — primary timing, RT/GT visibility, milliseconds.
    - **Variables** — offer templates (Platform, Version, Difficulty, Character) instead of the blank form; explain subcategory vs filter in plain language.
    - **Rules** — per-category, with a starter template.
@@ -35,49 +35,49 @@ Our structural advantages to press: **auto-ingestion from timers** (zero-frictio
    - **Review & publish** — checklist summary, board goes live.
    Wizard is a sequenced front over existing console sections — each step writes through the same actions the console uses.
 6. **Board readiness / health score.** On the console: "Rules missing on 2 categories · no minimum set · 14 runs pending > 7 days · no video requirement." Same checks the wizard runs, ongoing. Nudges mods toward complete boards; gives us a quality signal for discovery ranking.
-7. **Moderator management.** Console pane is a "coming later" stub. Need: list/add/remove per-game mods, role tiers (verifier vs super-mod), transfer ownership, activity stats (verifications this month), and a **mod application / game request flow** — how does a new game get a moderator at all? SRC's request queue is slow and hated; a fast path here is a real wedge.
+7. **Moderator management.** Console pane is a "coming later" stub. Need: list/add/remove per-game mods, role tiers (verifier vs super-mod), transfer ownership, activity stats (verifications this month), and a **mod application / game request flow** — how does a new game get a moderator at all? The usual request queue is slow and disliked; a fast path here is a real wedge.
 8. **Game details & metadata pane.** Also stubbed. Cover, platforms, release date, IGDB link/overrides, discord link.
 9. **Setup debt cleanup.** Fold or delete the orphaned `manage/minimums/` section (superseded by Standards); surface game-wide (`categoryId=null`) policies in Standards; delete legacy `manage-page.tsx` tab shell.
 
-## Tier 2 — Data model gaps vs SRC
+## Tier 2 — Data model gaps
 
-10. **Individual levels (ILs).** No level concept exists. SRC games with IL boards are a large share of activity. Needs: level entity per game, level leaderboards, level-grid view ("all levels × categories" table), IL runs in submission + moderation.
+10. **Individual levels (ILs).** No level concept exists. Games with IL boards are a large share of activity. Needs: level entity per game, level leaderboards, level-grid view ("all levels × categories" table), IL runs in submission + moderation.
 11. **Platforms / regions / emulator as first-class presets.** Modeling them as variables is fine mechanically, but we should ship them as canonical, cross-game presets (shared platform list, emu flag) so filters are consistent, discoverable, and usable for site-wide browse ("all N64 boards"). Wizard offers them as one-click template variables backed by the shared lists.
-12. **Co-op / multi-runner entries.** SRC supports multiple players per run. Boards, submission, and profiles all need `runners[]` instead of one runner.
+12. **Co-op / multi-runner entries.** A run can have multiple players. Boards, submission, and profiles all need `runners[]` instead of one runner.
 13. **Load-removed time (LRT).** Only RT/GT exist. Many PC communities rank on LRT as a third method. Verify backend appetite; at minimum let a category label GT as "LRT" for display.
-14. **Obsolete runs.** SRC shows a runner's full history per board (beaten PBs), not just current best. We *have* every run via ingestion — expose "show obsolete" toggle and per-runner progression (sparkline of PBs over time — SRC can't do this well).
+14. **Obsolete runs.** A board should show a runner's full history (beaten PBs), not just their current best. We *have* every run via ingestion — expose "show obsolete" toggle and per-runner progression (sparkline of PBs over time, which needs exactly the data we already hold).
 15. **Guest → account claiming.** `move-user` exists mod-side; add a runner-facing "claim these runs" flow with mod confirmation.
 
 ## Tier 3 — Page improvements
 
 16. **Game page.** Theme/branding (see 21), IL grid tab, stats tab (aggregate attempt counts, completion rates, gold splits — our data, unfair advantage), WR progression chart front-and-center (drawer exists), streams-live row, obsolete toggle, per-row expand with run history, better empty states for unconfigured boards.
 17. **Games directory (v2).** Current browse is v1 stats-cards. Need a real directory: search-as-you-type, filter by platform/genre/recently-active, sort by runner count, "new boards", "recently verified WRs" feed.
-18. **Series pages.** No series/franchise concept. Series page = shared moderators, aggregated boards, cross-game rules inheritance. SRC series mods are a real organizational unit.
-19. **Frontpage feeds.** Latest verified WRs, recently verified runs, trending boards — the "what's happening in speedrunning" loop SRC's frontpage barely does.
+18. **Series pages.** No series/franchise concept. Series page = shared moderators, aggregated boards, cross-game rules inheritance. Series mods are a real organizational unit.
+19. **Frontpage feeds.** Latest verified WRs, recently verified runs, trending boards — the "what's happening in speedrunning" loop no frontpage does well today.
 20. **SEO + share cards.** Per-board and per-run OG images (rank, time, game art). Runs shared on socials should look great — free acquisition.
 
-## Tier 4 — Community layer (SRC's real moat)
+## Tier 4 — Community layer (the real moat)
 
 21. **Game theming.** Per-game background, accent colors, logo, trophy icons (1st–4th). Mods deeply care; it's cheap identity investment that locks communities in.
 22. **Run comments.** Comments on run pages. Moderated by game mods, rate-limited by trust tier (reuse moderation trust model).
-23. **Guides & resources.** Per-game guides (rich text, versioned) and resources (files/links: save files, splits templates, practice hacks, trackers). Splits templates integrate with our timer ecosystem — SRC can't do that.
+23. **Guides & resources.** Per-game guides (rich text, versioned) and resources (files/links: save files, splits templates, practice hacks, trackers). Splits templates integrate with our timer ecosystem, which nothing else can do.
 24. **Game news/announcements.** Mod-posted announcements ("rules change", "leaderboard reset"), surfaced on game page + follower notifications.
 25. **Forums — deliberately skip.** Full forums are a swamp; comments + announcements + Discord links cover the need. Revisit only if demand is loud.
 26. **Followers.** Follow games and runners → notification feed (bell exists) for new WRs, verified runs, announcements.
 
 ## Tier 5 — Growth & ecosystem
 
-27. **Public leaderboards API.** SRC's API is the reason every tool/bot/overlay integrates with them. Documented public read API (we have `docs/openapi/leaderboards.yaml` as the seed) + embeddable board widgets.
-28. **Import from SRC.** One-time importer (game config + historical runs, credited) to de-risk migration for communities. Politically sensitive — design carefully, but it's how boards actually move.
+27. **Public leaderboards API.** A public API is the reason tools, bots and overlays integrate with a board at all. Documented public read API (we have `docs/openapi/leaderboards.yaml` as the seed) + embeddable board widgets.
+28. **Import existing boards.** One-time importer (game config + historical runs, credited) to de-risk migration for communities. Politically sensitive — design carefully, but it's how boards actually move.
 29. **Global/site-wide runner stats.** Cross-game rank summaries, "most verified runs", per-country boards (we already have country on entries).
 
 ---
 
-## What NOT to copy from SRC
+## What NOT to copy
 
 - Forums (see 25).
-- Their verification-lag culture — our auto-ingestion + triage queue is the pitch: *your run is on the board the moment you finish it; moderation curates instead of gatekeeping*.
-- Their static boards — live data (who's running now, live splits) should be visible on every board.
+- Verification-lag culture — our auto-ingestion + triage queue is the pitch: *your run is on the board the moment you finish it; moderation curates instead of gatekeeping*.
+- Static boards — live data (who's running now, live splits) should be visible on every board.
 
 ## Suggested attack order
 

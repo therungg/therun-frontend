@@ -46,7 +46,7 @@ name** (Joey, 2026-08-05) rather than by its consequence:
 
 Earlier drafts used "Separate leaderboards" and "Run details" — descriptions of
 the consequence, which read as euphemisms for words the community already uses.
-"Subcategory" is the runner's word and matches SRC, so the risk of it colliding
+"Subcategory" is the word runners already use, so the risk of it colliding
 with *category* is smaller than the cost of inventing a synonym.
 
 The one word that stays banned is **variable**: it is the word that spans both

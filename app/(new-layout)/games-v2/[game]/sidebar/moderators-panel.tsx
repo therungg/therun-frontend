@@ -5,9 +5,9 @@ import styles from './sidebar.module.scss';
 const MAX_SHOWN = 8;
 
 /**
- * Who runs this board — the trust signal speedrun.com carries at the foot
- * of every leaderboard. Renders nothing on unmoderated games (the claim
- * CTA covers that state).
+ * Who runs this board — the trust signal a leaderboard needs at its foot:
+ * runs are only as credible as the people verifying them. Renders nothing on
+ * unmoderated games (the claim CTA covers that state).
  */
 export function ModeratorsPanel({
     moderators,

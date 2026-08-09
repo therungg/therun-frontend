@@ -119,8 +119,8 @@
         @include board.control-pill;
         font-size: dt.$font-size-xs;
         // The tier is a segmented control, not a quiet action link — resting
-        // options must read as pressable buttons (SRC-comparison audit; the
-        // first-pass faint values didn't register). Styled here rather than
+        // options must read as pressable buttons (the first-pass faint values
+        // didn't register). Styled here rather than
         // in control-pill, which the rest of the app uses for genuinely
         // quiet chips (Discord, Manage, errors).
         border: 1px solid rgba(var(--bs-border-color-rgb), 0.9);

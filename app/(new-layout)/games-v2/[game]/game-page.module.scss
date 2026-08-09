@@ -91,8 +91,8 @@
 
 .heroCoverSm {
     // 64×85 (3:4): the game is still context, not subject, but 40px read as
-    // a favicon next to the title (SRC-comparison audit) — the identity zone
-    // is allowed scale, just never washes.
+    // a favicon next to the title — the identity zone is allowed scale, just
+    // never washes.
     width: 64px;
     height: 85px;
     border-radius: dt.$radius-md;

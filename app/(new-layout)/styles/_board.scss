@@ -760,8 +760,8 @@
     gap: 0.4rem;
     // A resting chip must read as a raised button, not text. First pass at
     // this used 0.55-alpha borders and a 4% fill — invisible on a dark
-    // ground, and the SRC comparison stayed lost. Committed values instead:
-    // a real fill step, a real border, emphasis text at button weight.
+    // ground, so the control stayed lost. Committed values instead: a real
+    // fill step, a real border, emphasis text at button weight.
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.9);
     background: rgba(var(--bs-body-color-rgb), 0.09);
     color: var(--bs-emphasis-color);
@@ -821,8 +821,8 @@
 // Collapsed-group chip: present but not yet expanded.
 //
 // This is a STEP DOWN from board-chip, and has to say so explicitly. When the
-// base chip committed to a real fill and emphasis-coloured text for the SRC
-// contrast audit, this inherited both — and a hidden-by-default group's
+// base chip committed to a real fill and emphasis-coloured text in the
+// contrast pass, this inherited both — and a hidden-by-default group's
 // disclosure ended up louder than the section heading it sits under, which is
 // exactly backwards: the group is hidden by default because it matters less.
 //
