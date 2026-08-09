@@ -328,10 +328,6 @@
     }
 }
 
-.tierReset {
-    @include board.board-quiet-link;
-    font-size: dt.$font-size-xs;
-}
 
 // ---- The plate ------------------------------------------------------
 // Game identity + category selector: ONE surface. Hero up top (`.plateTop`),
@@ -543,50 +539,4 @@
     gap: dt.$spacing-xs;
 }
 
-// ---- Board / Moderation view tabs ----------------------------------
-// Same anatomy as the game root's Categories/Standings tabs
-// (header/view-tabs.module.scss) — a hairline rail with the active tab's
-// underline — but scoped inside a plateSection so it sits with the rest of
-// the plate's rows instead of the page-level tab strip.
-.viewTabs {
-    display: flex;
-    gap: dt.$spacing-lg;
-}
-
-.viewTab,
-.viewTabOn {
-    @include board.board-eyebrow;
-    position: relative;
-    padding: dt.$spacing-xs 0;
-    text-decoration: none;
-    background: none;
-    border: 0;
-    transition: color dt.$transition-fast;
-
-    &::after {
-        content: '';
-        position: absolute;
-        inset: auto 0 -1px;
-        height: 2px;
-        background: transparent;
-        transition: background-color dt.$transition-fast;
-    }
-
-    &:hover {
-        color: var(--bs-emphasis-color);
-        text-decoration: none;
-    }
-
-    &:focus-visible {
-        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
-        outline-offset: 2px;
-    }
-}
-
-.viewTabOn {
-    color: var(--bs-emphasis-color);
-
-    &::after {
-        background: var(--bs-primary);
-    }
 }
