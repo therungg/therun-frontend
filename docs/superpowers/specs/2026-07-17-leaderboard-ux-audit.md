@@ -3,15 +3,15 @@
 **Date:** 2026-07-17
 **Scope:** `app/(new-layout)/games-v2/**` (public board, run view, submit) and `…/manage/**` (console, moderation).
 **Method:** three parallel code audits — viewer journey, moderation journey, design-system compliance against `.interface-design/system.md`. All high-severity findings spot-verified against source.
-**Bar:** better than speedrun.com; Apple-grade clarity.
+**Bar:** better than any board runners use today; Apple-grade clarity.
 
 ---
 
 ## Verdict
 
-**Viewing: 8/10 architecture, 6/10 execution.** The bones are genuinely better than speedrun.com: fully URL-driven state (shareable filtered views, honest back button), the crown answers "who's fastest" in one glance, the three-tier grouping (categories → subcategory pills → filter popover) is the right structure, and motion/empty states are considered. What drags it down is the last mile: raw machine strings leak into UI, actions vanish on touch, and stock Bootstrap chrome survives on the flagship surface.
+**Viewing: 8/10 architecture, 6/10 execution.** The bones are genuinely strong: fully URL-driven state (shareable filtered views, honest back button), the crown answers "who's fastest" in one glance, the three-tier grouping (categories → subcategory pills → filter popover) is the right structure, and motion/empty states are considered. What drags it down is the last mile: raw machine strings leak into UI, actions vanish on touch, and stock Bootstrap chrome survives on the flagship surface.
 
-**Moderation: 7/10 concept, 5/10 coherence.** The unified attention inbox (flags + reports + appeals + self-claims deduped per runner, severity-sorted) and the preview-before-commit dialogs are better than speedrun.com's siloed queues — genuinely Apple-grade consequence design. But two competing "moderation homes" coexist, the sidebar is named in system language, the triage loop is slower than SRC's per run, and a backend failure renders as a celebratory "All clear".
+**Moderation: 7/10 concept, 5/10 coherence.** The unified attention inbox (flags + reports + appeals + self-claims deduped per runner, severity-sorted) and the preview-before-commit dialogs beat the siloed queues this replaces — genuinely Apple-grade consequence design. But two competing "moderation homes" coexist, the sidebar is named in system language, the triage loop is slower per run than what mods are used to, and a backend failure renders as a celebratory "All clear".
 
 **Design system: 7/10.** Depth/spacing discipline is real. Erosion comes from hand-copied recipes instead of composing `_board.scss` (pills, empty states, steppers exist as 3–5 drifted clones) and three different reds / two different greens across surfaces.
 
@@ -34,7 +34,7 @@
 
 ### Friction
 
-8. **Approve requires a ≥10-char typed reason** (`run-action-dialog.tsx:40,149`), same as Remove/Ban. The 95% action costs 2 clicks + a sentence; mods will type garbage. No keyboard shortcuts, no batch verify. SRC verifies in ~2 clicks; we must beat that, not lose to it.
+8. **Approve requires a ≥10-char typed reason** (`run-action-dialog.tsx:40,149`), same as Remove/Ban. The 95% action costs 2 clicks + a sentence; mods will type garbage. No keyboard shortcuts, no batch verify. Mods elsewhere verify in ~2 clicks; we must beat that, not lose to it.
 9. **Two competing moderation homes.** `/manage` (console) and `/manage/moderation` (legacy `ModerationTabs`) render the same panes in different chrome with different names; roster/runner sub-route "Back to moderation" links exit the console into the legacy page.
 10. **Self-claim asks users to type a machine string.** "Subcategory key (leave blank if none)" expects `name=value|name=value` matching the canonical fragment exactly (`self-claim-button.tsx:160`). It also competes with "Submit a run" as an undifferentiated second CTA.
 
@@ -93,7 +93,7 @@ Ordered by leverage. Phases 1–2 are the "it must be fantastic" core; 3–5 are
 17. **Settle the palette**: one red (`$accent-red`), one green (decide and encode in system.md), one mono-time mixin. Fix the off-grid spacing literals while touching each file.
 18. **Uniform pane conventions**: save-button placement, inline-error vs toast policy, category picker (Standards consumes the shell's picker), split or anchor-scroll the triple-entry GameTab pane.
 
-### Phase 5 — Polish that beats SRC
+### Phase 5 — Polish that wins the comparison
 
 19. **"Find me" jump** when the signed-in user has an entry beyond page 1; persistent "Showing 51–75 of 312" range indicator; crown fetches the real WR on deep-linked pages.
 20. **Filter chips in the band** echoing active variable filters ("Filters · Glitchless"); surface the verified toggle at band level.

@@ -17,7 +17,7 @@ The moderation feature works, but the experience is fragmented to the point of b
 - **Three different "exclusions"** a moderator must choose between, all of which produce the same visible result ("the run is off the board") but mean different things internally: a **reject verdict** (changes verification status, notifies the runner, appealable), an **ad-hoc run exclusion** (silent, no status change), and a **standing user rule** (hides all of a runner's runs).
 - **Admin/configuration jargon.** Setting a minimum time lives on an abstract "policies" page divorced from the board it governs, exposing raw fields like `min_time`, `require_video_top_n`, `auto_flag_pb_jump_pct`.
 
-The result: too many places, too many menus, and a decision ("which kind of removal?") the moderator should never have had to make. The bar is **speedrun.com**; the goal is an experience with the clarity of something Apple would ship.
+The result: too many places, too many menus, and a decision ("which kind of removal?") the moderator should never have had to make. The goal is an experience with the clarity of something Apple would ship.
 
 ## 2. Goals & non-goals
 

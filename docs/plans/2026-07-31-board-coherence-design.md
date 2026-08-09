@@ -6,7 +6,7 @@ Scope: everything under `/games-v2/[game]` public views — overview, board, sta
 
 ## Problem
 
-The game page reads as incoherent and random compared to speedrun.com's game
+The game page reads as incoherent and random compared to a mature game
 pages. Joey's named pain points, all confirmed by code inventory:
 
 - Sections don't line up (masthead, table, sidebar feel like separate widgets).

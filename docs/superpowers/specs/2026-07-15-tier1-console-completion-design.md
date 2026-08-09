@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-15
 **Status:** Implemented (autonomous — Joey delegated 2026-07-15: "proceed with the next tier... you can just go")
-**Roadmap:** Tier 1 items 6 (board health score), 7-remainder (moderator management pane), 8 (game details pane), 9 (setup debt cleanup) from `2026-07-13-leaderboards-vs-src-roadmap.md`
+**Roadmap:** Tier 1 items 6 (board health score), 7-remainder (moderator management pane), 8 (game details pane), 9 (setup debt cleanup) from `2026-07-13-leaderboards-roadmap.md`
 **Branch:** `tier1-console-completion` stacked on `game-setup-wizard`
 
 ## Problem

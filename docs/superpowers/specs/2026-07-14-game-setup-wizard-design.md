@@ -2,13 +2,13 @@
 
 **Date:** 2026-07-14
 **Status:** Implemented (frontend; backend contract in docs/frontend-guide-board-claims-and-setup.md pending)
-**Roadmap:** Tier 1 items 5 (wizard) and part of 7 (mod application flow) from `2026-07-13-leaderboards-vs-src-roadmap.md`
+**Roadmap:** Tier 1 items 5 (wizard) and part of 7 (mod application flow) from `2026-07-13-leaderboards-roadmap.md`
 
 ---
 
 ## Problem
 
-Boards auto-exist from timer ingestion, but nobody owns them: there is no way for a user to become a game's moderator, and a mod who does get access (today: backend-set `moderatedGames`) lands in the raw management console with a dozen dense panes and no guidance. SRC's equivalent (game request queue) is slow and hated — a fast claim path plus a guided setup is a real wedge.
+Boards auto-exist from timer ingestion, but nobody owns them: there is no way for a user to become a game's moderator, and a mod who does get access (today: backend-set `moderatedGames`) lands in the raw management console with a dozen dense panes and no guidance. The usual alternative — a game request queue someone eventually gets to — is slow and disliked; a fast claim path plus a guided setup is a real wedge.
 
 Grounding facts from code exploration:
 

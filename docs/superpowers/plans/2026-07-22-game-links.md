@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax.
 
-**Goal:** Let game moderators add misc links (Twitch, wiki, speedrun.com, …) to a game via the console; render them as quiet chips in the GameHero next to Discord.
+**Goal:** Let game moderators add misc links (Twitch, wiki, community sites, …) to a game via the console; render them as quiet chips in the GameHero next to Discord.
 
 **Architecture:** `links: { label, url }[]` jsonb column on `games_pg` (backend repo `../therun`, mirroring the `platforms` jsonb + `discordUrl` patterns end-to-end: schema → drizzle migration → `updateGame` validation → `rebuildGamePageData` → PUT whitelist). Frontend threads the field through `GameMetadata`, the setup form (repeatable label+URL editor), and the hero chips. Field is optional everywhere → frontend ships before backend deploys.
 
