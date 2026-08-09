@@ -249,10 +249,7 @@ export function LeaderboardTable({
                             hideGameTime={rowHideGameTime}
                             primaryTiming={primaryTiming}
                             valueColumns={visibleValueColumns}
-                            sessionUsername={sessionUsername}
                             showMilliseconds={showMilliseconds}
-                            categorySlug={categorySlug}
-                            subcategoryDefKeys={subcategoryDefKeys}
                             rtaFallback={rtaFallback}
                             selected={(() => {
                                 const key = entrySelectionKey(entry);
