@@ -56,6 +56,15 @@ export interface GamePageData {
      * with no count rather than a zero.
      */
     subcategoryValueCounts: Record<string, Record<string, number>>;
+    /**
+     * Board population per category, keyed by category slug — the same measure
+     * `subcategoryValueCounts` uses, so a category's number is the total its
+     * own subcategory values partition. Deliberately NOT the category stats
+     * row's `uniqueRunners`, which counts everyone with a finished run whether
+     * or not it made a board. Empty above MAX_CATEGORY_COUNT_PROBES; a chip
+     * with no entry renders with no count.
+     */
+    categoryBoardCounts: Record<string, number>;
     activeFilters: {
         subcategoryValues: Record<string, string>;
         varFilters: Record<string, string>;
