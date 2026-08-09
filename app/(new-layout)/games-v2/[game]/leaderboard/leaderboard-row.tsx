@@ -232,6 +232,15 @@ export function LeaderboardRow({
     // cmd/ctrl-click, middle-click and long-press all work natively. Other
     // interactive cells (runner link, VOD link, kebab/manage) sit above it
     // via z-index — see leaderboard.module.scss.
+    //
+    // For a moderator the row is a button instead: clicking a row while
+    // moderating means "look at this run", and the inspector is where every
+    // verb lives, so routing to the read-only detail page put a navigation
+    // between the mod and the thing they opened the row to do. The detail
+    // page stays reachable from inside the inspector. This is the one case
+    // where the row is deliberately NOT a link — a mod loses cmd-click to a
+    // new tab and gains the drawer, which is the trade they want.
+    const opensInspector = canManage && onModerate != null;
     const time = (
         value: number | null,
         dimmed: boolean,
@@ -243,7 +252,21 @@ export function LeaderboardRow({
         <td className={dimmed ? styles.timeSecondary : styles.time}>
             {value != null ? (
                 <>
-                    {detailHref ? (
+                    {opensInspector ? (
+                        <button
+                            type="button"
+                            className={`${styles.inspectButton} ${
+                                stretched ? 'stretched-link' : ''
+                            }`}
+                            onClick={() => onModerate?.(entry)}
+                            title={`Open the moderator view for ${entry.runnerName}'s run`}
+                        >
+                            <DurationToFormatted
+                                duration={value}
+                                withMillis={showMilliseconds}
+                            />
+                        </button>
+                    ) : detailHref ? (
                         <Link
                             href={detailHref}
                             className={stretched ? 'stretched-link' : undefined}

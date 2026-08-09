@@ -250,6 +250,23 @@ tr:focus-within .reveal {
     }
 }
 
+// A moderator's row opens the inspector rather than the run page, so the
+// stretched target is a button. It has to be indistinguishable from the
+// anchor above it — same type, same hover — because the difference is in
+// what it opens, not in what it is.
+.inspectButton {
+    @include board.mono-time;
+    background: none;
+    border: 0;
+    padding: 0;
+    color: inherit;
+    cursor: pointer;
+
+    &:hover {
+        color: var(--bs-primary);
+    }
+}
+
 // Non-ranking time column: same tabular mono treatment, de-emphasized
 // so the eye lands on the ranked column first.
 .timeSecondary {
