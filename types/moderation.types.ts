@@ -366,6 +366,11 @@ export interface LeaderboardRosterRow {
     boardOverride?: { categoryId: number; subcategoryKey: string } | null;
     /** Only present on board-page reads (`BoardRow`), absent on roster reads. */
     boardRank?: number;
+    /** Runner metadata, batch-joined by the backend the same way the public
+     *  board joins it. Null for guests, absent on older backend deploys —
+     *  the curation runner cell degrades to no avatar / no flag. */
+    picture?: string | null;
+    country?: string | null;
 }
 
 export interface UserExclusionRuleInput {

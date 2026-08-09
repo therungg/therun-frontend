@@ -719,6 +719,17 @@
     font-size: dt.$font-size-sm;
 }
 
+// The way out of an empty filtered view, inline in the sentence that
+// explains it — the public board's ClearFiltersButton in miniature.
+.emptyAction {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: var(--bs-primary);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
 .errorNote {
     @include board.board-error-alert;
 }
