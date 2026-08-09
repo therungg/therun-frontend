@@ -1,20 +1,35 @@
 @use '../../../styles/design-tokens' as dt;
 @use '../../../styles/board' as board;
 
-.rail {
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-sm;
-}
-
 // Flat rail rows: the plate is the only surface. A group is one row —
 // eyebrow label + chips — separated by hairlines, no recessed boxes
 // (the engraved-well treatment read as a stack of disabled inputs and
 // cost ~60px of chrome; the audit's "grey on grey on grey").
+//
+// The rail is a two-column GRID, not a stack of flex rows, because the label
+// gutter has to be one column shared by every row. Sized per-row it wasn't:
+// `min-width` on the endcap held short labels in line and let a long one
+// ("Secondary categories") push its own chips ~40px right of the row above,
+// so four rows sat on three different left edges. `max-content` measures the
+// longest label once and every row hangs off it.
+.rail {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    align-items: start;
+
+    // Narrow screens can't spare the label gutter: label above chips.
+    @media (max-width: 767.98px) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+// Standalone: the setup wizard's band preview renders blocks outside a rail,
+// where there is no grid to be a cell of. One row, label then chips.
 .block {
     display: flex;
-    align-items: baseline;
-    gap: dt.$spacing-lg;
+    align-items: start;
+    // No gap: the endcap carries the gutter as padding-right, so the labeled
+    // and unlabeled rows share one left edge here too.
 
     & + & {
         margin-top: dt.$spacing-sm;
@@ -22,20 +37,52 @@
         border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
     }
 
-    // Narrow screens can't spare the label gutter: label above chips.
     @media (max-width: 767.98px) {
         flex-direction: column;
         gap: dt.$spacing-xs;
     }
 }
 
+// Inside the rail a block is not a box — it dissolves so its label and its
+// chips become cells of the shared grid, and the label column is measured
+// once for every row instead of per-row.
+.rail > .block {
+    display: contents;
+}
+
+// One rhythm, applied once. The old row seam was margin-top + padding-top +
+// border on the block, and `.tier` then added its own margin + padding + border
+// under it — so the gaps down the header measured 47 / 33 / 49px. Every seam in
+// the rail is now this single rule, and the tier's own seam is the plate
+// section divider it already sits behind.
+.rail > .block:not(:first-child) > * {
+    margin-top: dt.$spacing-sm;
+    padding-top: dt.$spacing-sm;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+}
+
 .endcap {
     @include board.board-eyebrow;
     flex-shrink: 0;
-    min-width: 7.5rem;
+    // Optical alignment with the first line of chips rather than the top of
+    // the cell — chips carry ~5px of border+padding above their cap height.
+    padding-top: 0.4rem;
+    padding-right: dt.$spacing-lg;
 
     @media (max-width: 767.98px) {
-        min-width: 0;
+        padding-top: 0;
+        padding-right: 0;
+        padding-bottom: dt.$spacing-xs;
+    }
+}
+
+// Inside the grid the endcap's seam padding has to stack on top of that
+// optical offset instead of replacing it.
+.rail > .block:not(:first-child) > .endcap {
+    padding-top: calc(#{dt.$spacing-sm} + 0.4rem);
+
+    @media (max-width: 767.98px) {
+        padding-top: dt.$spacing-sm;
     }
 }
 
@@ -48,30 +95,41 @@
     }
 }
 
+// No label column — the chips take the whole rail width rather than
+// indenting themselves past an empty gutter.
 .wellSolo {
-    // No label column — chips span the full row.
-}
-
-// Collapsed-group ghost chips, appended to the end of the last open rail
-// row (a lone dashed chip must not own a whole plate row). The open well's
-// flex: 1 pushes this to the row's right edge.
-.ghostWell {
-    flex: 0 0 auto;
-    min-width: 0;
-
-    @media (max-width: 767.98px) {
-        width: 100%;
-    }
+    grid-column: 1 / -1;
 }
 
 .chips {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: dt.$spacing-xs;
 }
 
 .chip {
     @include board.board-chip;
+}
+
+// Picking a category is the one decision this header exists for, so the
+// category chips are the only control in it at body size. Everything below
+// them — subcategories, filters, rules — steps down from here, which is what
+// makes the tier read as narrowing rather than as three more category bands.
+.chipCategory {
+    font-size: dt.$font-size-base;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+
+    @media (pointer: coarse) {
+        padding-block: dt.$spacing-md;
+    }
+}
+
+// First collapsed-group ghost in a row full of category chips: hold the right
+// edge so the disclosures read as an appendix to the row, not as two more
+// categories someone forgot to style.
+.chipGhostLead {
+    margin-left: auto;
 }
 
 .chipActive {
@@ -100,53 +158,179 @@
     padding: dt.$spacing-xs dt.$spacing-sm;
 }
 
-// The subcategory tier narrows the board rather than choosing it — filter
-// vocabulary, visually distinct from the category chips above: smaller,
-// squarer, outlined instead of filled, quieter active state.
+// ---- The filter tier -------------------------------------------------
+// The tier narrows the board; the rail above chooses it. That difference has
+// to be legible at a glance, and it wasn't: each variable owned a labeled rail
+// row with detached chips and a solid-green active pill, identical in form to
+// the category band, so three green fills competed in one header and none of
+// them read as the primary one.
+//
+// Now: one wrapping line of inline segmented controls. Joined segments in a
+// track are unmistakably "one of these", visually nothing like the free-
+// standing chips above, and the tier costs one row no matter how many
+// variables a game defines.
 .tier {
     display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-sm;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-xs dt.$spacing-lg;
+    // Stand-alone contexts only (setup preview); inside the plate the section
+    // divider already draws this seam and neutralizes it — see .plateSection.
     margin-top: dt.$spacing-sm;
     padding-top: dt.$spacing-sm;
     border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+}
 
-    .endcap {
-        color: var(--bs-tertiary-color);
+.tierControls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-xs dt.$spacing-lg;
+    flex: 1;
+    min-width: 0;
+}
+
+// One variable: its caption and its values, kept together when the line wraps.
+.control {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs dt.$spacing-sm;
+}
+
+.controlCap {
+    @include board.board-eyebrow;
+    color: var(--bs-tertiary-color);
+}
+
+.segTrack {
+    display: inline-flex;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.8);
+    border-radius: dt.$radius-md;
+    background: rgba(var(--bs-body-color-rgb), 0.05);
+    overflow: hidden;
+}
+
+.seg {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    border: 0;
+    background: none;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
+    padding: dt.$spacing-xs dt.$spacing-md;
+    cursor: pointer;
+    transition: background-color dt.$transition-fast,
+        color dt.$transition-fast;
+
+    & + & {
+        border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.8);
     }
 
-    .pill {
-        @include board.control-pill;
-        font-size: dt.$font-size-xs;
-        // The tier is a segmented control, not a quiet action link — resting
-        // options must read as pressable buttons (the first-pass faint values
-        // didn't register). Styled here rather than
-        // in control-pill, which the rest of the app uses for genuinely
-        // quiet chips (Discord, Manage, errors).
-        border: 1px solid rgba(var(--bs-border-color-rgb), 0.9);
-        background: rgba(var(--bs-body-color-rgb), 0.09);
+    &:hover {
+        background: rgba(var(--bs-body-color-rgb), 0.1);
         color: var(--bs-emphasis-color);
-        font-weight: 600;
-
-        &:hover {
-            background: rgba(var(--bs-body-color-rgb), 0.16);
-            border-color: var(--bs-border-color);
-        }
     }
 
-    .pillActive {
-        // Pressed state a glance can't miss: solid fill, not a 10% tint. The
-        // tier stays quieter than the category chips through size alone.
-        background: var(--bs-primary);
-        border-color: color-mix(in srgb, var(--bs-primary) 70%, white);
-        color: #fff;
-        font-weight: 600;
-
-        &:hover {
-            background: var(--bs-primary);
-            color: #fff;
-        }
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: -2px;
     }
+
+    @media (pointer: coarse) {
+        padding-block: dt.$spacing-sm;
+    }
+}
+
+// Selected value: raised out of the track and lit from below by the accent,
+// NOT filled with it. Solid green belongs to exactly one control in this
+// header — the category you are on. A second and third green fill is why the
+// three tiers read as peers.
+.segOn {
+    background: rgba(var(--bs-emphasis-color-rgb), 0.1);
+    color: var(--bs-emphasis-color);
+    box-shadow: inset 0 -2px 0 var(--bs-primary);
+
+    &:hover {
+        background: rgba(var(--bs-emphasis-color-rgb), 0.14);
+        color: var(--bs-emphasis-color);
+    }
+}
+
+// Runners behind this value, with the rest of the selection held still.
+.segCount {
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    font-size: dt.$font-size-2xs;
+    opacity: 0.55;
+}
+
+// An active variable filter, as a removable chip. Carries its own key so it
+// needs no label gutter in front of it.
+.activeChip {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.45);
+    border-radius: dt.$radius-md;
+    background: rgba(var(--bs-primary-rgb), 0.1);
+    color: var(--bs-emphasis-color);
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    cursor: pointer;
+    transition: background-color dt.$transition-fast;
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.18);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
+}
+
+.activeChipKey {
+    @include board.board-eyebrow;
+    color: var(--bs-tertiary-color);
+}
+
+.activeChipX {
+    opacity: 0.6;
+}
+
+// What the selection resolved to, against the right edge — and the way out.
+.tierEnd {
+    display: inline-flex;
+    align-items: baseline;
+    gap: dt.$spacing-md;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.tierCount {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+
+    strong {
+        font-family: dt.$font-mono;
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+        color: var(--bs-emphasis-color);
+    }
+}
+
+.tierReset {
+    @include board.board-quiet-link;
+    font-size: dt.$font-size-xs;
 }
 
 // ---- The plate ------------------------------------------------------
