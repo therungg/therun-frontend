@@ -1,7 +1,7 @@
 'use client';
 
 import moment from 'moment';
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { useEffect, useId, useRef, useState, useTransition } from 'react';
 import {
     BoxArrowUpRight,
     CameraVideoOff,
@@ -22,6 +22,7 @@ import { Vod } from '~src/components/run/dashboard/vod';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { formatRunDate } from '~src/lib/format-run-date';
 import { describeEvent } from '~src/lib/run-view/describe-event';
+import { isEmbeddableVod } from '~src/lib/vod-url';
 import type {
     GameTimeLabel,
     LeaderboardEntry,
@@ -41,6 +42,7 @@ import { restoreRunsAction } from '../manage/moderation/shared/actions/restore.a
 import { applyVerdictsAction } from '../manage/moderation/shared/actions/verdicts.action';
 import { useDialogBehavior } from '../shared/board-dialog';
 import { buildSubcategoryKey } from '../submit/subcategory-key';
+import { attachVodAction } from './actions/attach-vod.action';
 import { loadModBoardContextAction } from './actions/load-mod-board-context.action';
 import { HideIdentityDialog } from './hide-identity-dialog';
 import {
@@ -168,9 +170,194 @@ const VERB_KEY: Partial<Record<ModVerb, string>> = {
     remove: 'x',
 };
 
-/** The embed only speaks YouTube and Twitch; anything else gets a link. */
-function isEmbeddable(url: string): boolean {
-    return url.includes('youtu') || url.includes('twitch');
+/**
+ * The evidence block — the video, or the fact that there isn't one, and in
+ * either case a way to fix that from here.
+ *
+ * A moderator who finds a run with no VOD used to have to go somewhere else
+ * to attach one (or bounce it back to the runner). Missing evidence is the
+ * single most common reason a run stalls, so the "no video" state is itself
+ * the control: click it, paste a link, done. No reason field — the mod log
+ * records who attached what, and the server action stamps the sentence.
+ */
+function EvidenceSection({
+    vodUrl,
+    requireVideo,
+    gameSlug,
+    runId,
+    categorySlug,
+    subcategoryKey,
+    onMutated,
+}: {
+    vodUrl: string | null;
+    requireVideo: boolean;
+    gameSlug: string;
+    runId: number;
+    categorySlug: string;
+    subcategoryKey: string;
+    onMutated: () => void;
+}) {
+    // What we last saved, held locally so the block updates the instant the
+    // action returns rather than waiting on the board refetch behind it.
+    // Remounted per run (`key={runId}`), so it never leaks across rows.
+    const [saved, setSaved] = useState<string | null | undefined>(undefined);
+    const url = saved === undefined ? vodUrl : saved;
+
+    const [editing, setEditing] = useState(false);
+    const [text, setText] = useState('');
+    const [error, setError] = useState<string | null>(null);
+    const [isPending, startTransition] = useTransition();
+    const inputId = useId();
+
+    const openEditor = () => {
+        setText(url ?? '');
+        setError(null);
+        setEditing(true);
+    };
+
+    const save = (next: string | null) => {
+        setError(null);
+        startTransition(async () => {
+            const res = await attachVodAction(gameSlug, runId, next, {
+                categorySlug,
+                subcategoryKey,
+            });
+            if ('error' in res) {
+                setError(res.error);
+                return;
+            }
+            setSaved(res.url);
+            setEditing(false);
+            toast.success(res.url ? 'Video attached.' : 'Video link removed.');
+            onMutated();
+        });
+    };
+
+    if (editing) {
+        return (
+            <div className={styles.evidence}>
+                <form
+                    className={styles.vodForm}
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        save(text);
+                    }}
+                >
+                    <label className={styles.vodFormLabel} htmlFor={inputId}>
+                        Video link
+                    </label>
+                    <div className={styles.vodFormRow}>
+                        {/* autoFocus is safe here: the field only mounts on
+                            an explicit click asking to type into it. */}
+                        <input
+                            id={inputId}
+                            type="url"
+                            className={`form-control ${styles.vodInput}`}
+                            placeholder="https://twitch.tv/videos/…"
+                            value={text}
+                            autoFocus
+                            disabled={isPending}
+                            onChange={(e) => setText(e.target.value)}
+                        />
+                        <button
+                            type="submit"
+                            className="btn btn-primary"
+                            disabled={isPending || text.trim() === ''}
+                        >
+                            {isPending ? 'Saving…' : 'Attach'}
+                        </button>
+                        <button
+                            type="button"
+                            className={styles.secondaryBtn}
+                            disabled={isPending}
+                            onClick={() => setEditing(false)}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                    {error != null && (
+                        <p className="text-danger small mb-0">{error}</p>
+                    )}
+                    <p className={styles.vodHint}>
+                        YouTube and Twitch links play inline here. Anything else
+                        is saved as a link.
+                    </p>
+                    {url != null && (
+                        <button
+                            type="button"
+                            className={styles.vodRemove}
+                            disabled={isPending}
+                            onClick={() => save(null)}
+                        >
+                            Remove the current link
+                        </button>
+                    )}
+                </form>
+            </div>
+        );
+    }
+
+    if (url == null) {
+        return (
+            <div className={styles.evidence}>
+                <button
+                    type="button"
+                    className={`${styles.noVod} ${
+                        requireVideo ? styles.noVodRequired : ''
+                    }`}
+                    onClick={openEditor}
+                >
+                    <CameraVideoOff size={16} aria-hidden />
+                    <span className={styles.noVodText}>
+                        {requireVideo
+                            ? 'No video attached — this board requires one.'
+                            : 'No video attached.'}
+                    </span>
+                    <span className={styles.noVodCta}>Add a link</span>
+                </button>
+            </div>
+        );
+    }
+
+    return (
+        <div className={styles.evidence}>
+            {isEmbeddableVod(url) ? (
+                <div className={styles.vodFrame}>
+                    <Vod vod={url} />
+                </div>
+            ) : (
+                <a
+                    href={url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={styles.vodLinkCard}
+                >
+                    <BoxArrowUpRight size={14} aria-hidden />
+                    <span>
+                        Video attached — opens on another host
+                        <span className={styles.vodUrl}>{url}</span>
+                    </span>
+                </a>
+            )}
+            <div className={styles.vodActions}>
+                <a
+                    href={url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={styles.factLink}
+                >
+                    <BoxArrowUpRight size={12} aria-hidden /> Open in a new tab
+                </a>
+                <button
+                    type="button"
+                    className={styles.vodEditBtn}
+                    onClick={openEditor}
+                >
+                    Change link
+                </button>
+            </div>
+        </div>
+    );
 }
 
 /**
@@ -478,52 +665,16 @@ export function RunInspector({
                 <div className="flex-grow-1 overflow-auto">
                     {/* Evidence. Verification means watching the run, so the
                         video (or the fact that there isn't one) leads. */}
-                    <div className={styles.evidence}>
-                        {entry.vodUrl && isEmbeddable(entry.vodUrl) ? (
-                            <>
-                                <div className={styles.vodFrame}>
-                                    <Vod vod={entry.vodUrl} />
-                                </div>
-                                <a
-                                    href={entry.vodUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className={styles.factLink}
-                                >
-                                    <BoxArrowUpRight size={12} aria-hidden />{' '}
-                                    Open video in a new tab
-                                </a>
-                            </>
-                        ) : entry.vodUrl ? (
-                            <a
-                                href={entry.vodUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className={styles.vodLinkCard}
-                            >
-                                <BoxArrowUpRight size={14} aria-hidden />
-                                <span>
-                                    Video attached — opens on another host
-                                    <span className={styles.vodUrl}>
-                                        {entry.vodUrl}
-                                    </span>
-                                </span>
-                            </a>
-                        ) : (
-                            <div
-                                className={`${styles.noVod} ${
-                                    requireVideo ? styles.noVodRequired : ''
-                                }`}
-                            >
-                                <CameraVideoOff size={16} aria-hidden />
-                                <span>
-                                    {requireVideo
-                                        ? 'No video attached — this board requires one.'
-                                        : 'No video attached.'}
-                                </span>
-                            </div>
-                        )}
-                    </div>
+                    <EvidenceSection
+                        key={runId}
+                        vodUrl={entry.vodUrl ?? null}
+                        requireVideo={requireVideo}
+                        gameSlug={gameSlug}
+                        runId={runId}
+                        categorySlug={categorySlug}
+                        subcategoryKey={entrySubcategoryKey}
+                        onMutated={onMutated}
+                    />
 
                     {/* The time, in the clock this board ranks on, with what
                         it takes to judge it: its rank, and the runner's own
