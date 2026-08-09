@@ -476,25 +476,30 @@ tr:focus-within .reveal {
 // Direct "Moderate" affordance — the mod's primary path into the run
 // inspector, so it's a first-class filled button on the row rather than an
 // item buried in the kebab.
-// Remove, beside Verify — always drawn, never hover-revealed. A moderator
-// should be able to see which rows they can act on by reading the table,
-// not by sweeping it with the mouse.
+// Remove is Verify's twin — same pill, same neutral resting border, same
+// hover, differing only in the colour that says which way the judgement
+// goes. Keep the two rules in step; they are one control in two directions.
 .quickRemove {
     @include board.control-pill;
     display: inline-flex;
     align-items: center;
-    padding: dt.$spacing-xs dt.$spacing-sm;
-    border-color: var(--bs-danger);
+    gap: dt.$spacing-xs;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    background: none;
+    padding: dt.$spacing-xs dt.$spacing-md;
     color: var(--bs-danger);
 
-    &:hover,
-    &:focus-visible {
-        background: var(--bs-danger);
-        color: #fff;
+    &:hover:not(:disabled) {
+        border-color: var(--bs-danger);
     }
 
+    &:disabled {
+        opacity: 0.6;
+    }
+
+    // Touch-target pass: guarantee a ≥44px hit area.
     @media (pointer: coarse) {
-        padding: dt.$spacing-md;
+        padding: dt.$spacing-lg;
     }
 }
 

@@ -484,29 +484,29 @@ export function LeaderboardRow({
                         <PlayBtn size={16} />
                     </a>
                 )}
-                {/* Outside `.reveal`: the other half of the same judgement
-                    as Verify, and hiding it until hover made a moderator
-                    sweep the table with the mouse to find out which rows
-                    they could act on. Opens the same Remove dialog, reason
-                    gate and undo as everywhere else. */}
-                {showQuickRemove && (
-                    <QuickRemoveButton
-                        gameSlug={gameSlug}
-                        runId={entry.runId ?? null}
-                        manualTimeId={entry.manualTimeId ?? null}
-                        runnerName={entry.runnerName}
-                        userId={entry.userId ?? null}
-                        categoryId={category?.id}
-                        categoryDisplay={category?.display ?? ''}
-                        onMutated={onBoardRefresh as () => void}
-                    />
-                )}
                 <span className={styles.reveal}>
                     {showQuickVerify && (
                         <QuickVerifyButton
                             gameSlug={gameSlug}
                             runId={entry.runId as number}
                             runnerName={entry.runnerName}
+                            onMutated={onBoardRefresh as () => void}
+                        />
+                    )}
+                    {/* The other half of the same judgement, in the same
+                        cluster and the same pill — Verify green, Remove
+                        red. Opens the shared Remove dialog rather than
+                        acting on click: Verify has a true inverse and can
+                        ride an undo toast, Remove needs a reason. */}
+                    {showQuickRemove && (
+                        <QuickRemoveButton
+                            gameSlug={gameSlug}
+                            runId={entry.runId ?? null}
+                            manualTimeId={entry.manualTimeId ?? null}
+                            runnerName={entry.runnerName}
+                            userId={entry.userId ?? null}
+                            categoryId={category?.id}
+                            categoryDisplay={category?.display ?? ''}
                             onMutated={onBoardRefresh as () => void}
                         />
                     )}

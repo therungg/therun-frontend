@@ -42,19 +42,19 @@ export function QuickRemoveButton({
     onMutated,
 }: Props) {
     const [open, setOpen] = useState(false);
+    const subject = manualTimeId != null ? 'set time' : 'run';
 
     return (
         <>
             <button
                 type="button"
                 className={styles.quickRemove}
-                aria-label={`Remove ${runnerName}'s ${
-                    manualTimeId != null ? 'set time' : 'run'
-                }`}
-                title="Remove…"
+                aria-label={`Remove ${runnerName}'s ${subject}`}
+                title={`Remove ${runnerName}'s ${subject}`}
                 onClick={() => setOpen(true)}
             >
                 <XLg size={14} aria-hidden />
+                Remove
             </button>
             {open && (
                 <RunActionDialog
@@ -65,10 +65,7 @@ export function QuickRemoveButton({
                         runIds: runId != null ? [runId] : [],
                         manualTimeIds:
                             manualTimeId != null ? [manualTimeId] : undefined,
-                        label:
-                            manualTimeId != null
-                                ? `${runnerName}'s set time`
-                                : `${runnerName}'s run`,
+                        label: `${runnerName}'s ${subject}`,
                         // Offered on real runs only. An exclusion rule flips
                         // `excluded` on runs; manual_times has no such column
                         // and propagateExclusion never touches it, so on a
