@@ -207,13 +207,12 @@ export function LeaderboardRow({
         entry.verificationStatus === 'pending' &&
         onBoardRefresh != null;
     // Unlike Verify, Remove applies at any verification status — a verified
-    // run is exactly the kind that turns out to be wrong later. Set times are
-    // still excluded: they are deleted, not removed, and that verb lives in
-    // the drawer.
+    // run is exactly the kind that turns out to be wrong later — and to set
+    // times as well as runs. The form already maps remove onto the
+    // manual-time delete endpoint, so the row is just a shorter way in.
     const showQuickRemove =
         canManage &&
-        entry.runId != null &&
-        entry.source !== 'manual' &&
+        (entry.runId != null || entry.manualTimeId != null) &&
         onBoardRefresh != null;
     const detailHref =
         entry.source === 'manual' && entry.manualTimeId != null
@@ -501,7 +500,8 @@ export function LeaderboardRow({
                     {showQuickRemove && (
                         <QuickRemoveButton
                             gameSlug={gameSlug}
-                            runId={entry.runId as number}
+                            runId={entry.runId ?? null}
+                            manualTimeId={entry.manualTimeId ?? null}
                             runnerName={entry.runnerName}
                             userId={entry.userId ?? null}
                             categoryId={category?.id}
