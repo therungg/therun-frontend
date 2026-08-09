@@ -3,7 +3,10 @@ import type {
     ResolvedCategory,
     ResolvedGroup,
 } from '../../../../../types/leaderboards.types';
-import { computeCategoryVisibility } from './category-visibility';
+import {
+    AUTO_PILL_LIMIT,
+    computeCategoryVisibility,
+} from './category-visibility';
 
 function cat(
     overrides: Partial<ResolvedCategory> & { id: number },
@@ -40,6 +43,7 @@ describe('computeCategoryVisibility', () => {
                 name: null,
                 pills: categories,
                 collapsedByDefault: false,
+                displayMode: 'pills',
             },
         ]);
     });
@@ -141,6 +145,7 @@ describe('computeCategoryVisibility', () => {
                 name: null,
                 pills: [categories[0], categories[1]],
                 collapsedByDefault: false,
+                displayMode: 'pills',
             },
         ]);
     });
@@ -189,5 +194,59 @@ describe('computeCategoryVisibility', () => {
             name: null,
             collapsedByDefault: false,
         });
+    });
+});
+
+describe('computeCategoryVisibility — display mode', () => {
+    const many = (n: number, groupId: number | null = null) =>
+        Array.from({ length: n }, (_, i) => cat({ id: i + 1, groupId }));
+
+    it('auto stays on pills while the band still fits', () => {
+        const result = computeCategoryVisibility(many(AUTO_PILL_LIMIT), []);
+        expect(result.sections[0].displayMode).toBe('pills');
+    });
+
+    it('auto reaches for a dropdown one past the limit', () => {
+        const result = computeCategoryVisibility(many(AUTO_PILL_LIMIT + 1), []);
+        expect(result.sections[0].displayMode).toBe('dropdown');
+    });
+
+    it('the game default carries the flat case, which has no group row', () => {
+        const result = computeCategoryVisibility(many(2), [], 'dropdown');
+        expect(result.sections[0].displayMode).toBe('dropdown');
+    });
+
+    it('a group overrides the game default', () => {
+        const groups: ResolvedGroup[] = [
+            { id: 10, name: 'Main Game', sortOrder: 0, displayMode: 'pills' },
+            { id: 20, name: 'DLC', sortOrder: 1 },
+        ];
+        const categories = [
+            cat({ id: 1, groupId: 10 }),
+            cat({ id: 2, groupId: 20 }),
+        ];
+        const result = computeCategoryVisibility(
+            categories,
+            groups,
+            'dropdown',
+        );
+        expect(result.sections.map((s) => s.displayMode)).toEqual([
+            'pills',
+            'dropdown',
+        ]);
+    });
+
+    it('a stated auto beats an inherited dropdown, then counts', () => {
+        const groups: ResolvedGroup[] = [
+            { id: 10, name: 'Main Game', sortOrder: 0, displayMode: 'auto' },
+            { id: 20, name: 'DLC', sortOrder: 1 },
+        ];
+        const categories = [...many(2, 10), cat({ id: 99, groupId: 20 })];
+        const result = computeCategoryVisibility(
+            categories,
+            groups,
+            'dropdown',
+        );
+        expect(result.sections[0].displayMode).toBe('pills');
     });
 });
