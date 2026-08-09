@@ -147,6 +147,33 @@ export function RunActionForm({
         removeReasonMeta('cheating').defaultNotify,
     );
     const [scope, setScope] = useState<BanScope>(defaultBanScope ?? 'category');
+    /**
+     * Remove's first question: this run, or this runner's whole presence on
+     * the board? A moderator looking at one bad run of seventy had to remove
+     * it, notice the next one, remove that, and so on — or leave the board
+     * and find the runner tool. Asking up front turns seventy destructive
+     * actions into one reversible rule.
+     *
+     * Only offered when the target says who the runner is (see
+     * RunActionTarget) — a guest or a multi-run selection has no such choice.
+     */
+    const removeRunner =
+        verb === 'remove' && target.kind === 'runs'
+            ? (target.runner ?? null)
+            : null;
+    const [removeScope, setRemoveScope] = useState<'run' | 'runner'>('run');
+    // 'runner' means an exclusion rule on the runner scoped to this board —
+    // exactly what the Runner… dialog writes, reached from where the mod
+    // already is. Guests and multi-run selections can never reach it.
+    const removesRunner = removeRunner != null && removeScope === 'runner';
+    const removeRunnerRule: UserExclusionRuleInput | null = removesRunner
+        ? {
+              type: 'user',
+              targetId: removeRunner.id,
+              categoryId: removeRunner.categoryId,
+          }
+        : null;
+
     const [reason, setReason] = useState('');
     const [preview, setPreview] = useState<PreviewState | null>(null);
     const [previewError, setPreviewError] = useState<string | null>(null);
@@ -201,6 +228,7 @@ export function RunActionForm({
               : verb === 'restore'
                 ? 'unreject'
                 : verb === 'remove' &&
+                    !removesRunner &&
                     resolveRemoveMechanism(notify) === 'reject'
                   ? 'reject'
                   : null;
@@ -212,6 +240,15 @@ export function RunActionForm({
     const loadPreview = useCallback(() => {
         startPreview(async () => {
             setPreviewError(null);
+            // Removing the runner previews the RULE, not the one run — the
+            // count the mod needs to see is "70 runs", not "1".
+            if (removeRunnerRule) {
+                const res = await previewExcludeAction(gameSlug, {
+                    rule: removeRunnerRule,
+                });
+                if ('error' in res) return setPreviewError(res.error);
+                return setPreview({ kind: 'exclude', data: res.preview });
+            }
             if (verb === 'ban' && banRule) {
                 const res = await previewExcludeAction(gameSlug, {
                     rule: banRule,
@@ -238,7 +275,7 @@ export function RunActionForm({
         });
         // banRule/verdictAction are derived from the deps below.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [gameSlug, verb, notify, scope]);
+    }, [gameSlug, verb, notify, scope, removeScope]);
 
     // Reload whenever routing-relevant inputs change (notify flips reject↔exclude;
     // scope flips category↔game rule — each yields a different preview).
@@ -285,6 +322,35 @@ export function RunActionForm({
                 trimmed.length > 0
                     ? trimmed
                     : (DEFAULT_REASON[verb] ?? trimmed);
+            // Remove-the-runner writes one board-scoped rule instead of N
+            // per-run removals: reversible in one place, and it catches the
+            // runs they submit tomorrow as well as the seventy already here.
+            if (removeRunnerRule && removeRunner) {
+                const res = await excludeAction(gameSlug, {
+                    rule: removeRunnerRule,
+                    reason: finalReason,
+                });
+                if ('error' in res) return setError(res.error);
+                const message = `${removeRunner.name} removed from ${removeRunner.categoryDisplay}.`;
+                if ('ruleId' in res.result && isBanUndoable(res.result)) {
+                    const ruleId = res.result.ruleId;
+                    fireUndoToast(
+                        message,
+                        () =>
+                            deleteRuleAction(
+                                gameSlug,
+                                ruleId,
+                                undoReason(verb),
+                            ),
+                        refreshAfterUndo,
+                    );
+                } else {
+                    // Already-existing rule: nothing new to undo, and
+                    // deleting the pre-existing one would be a surprise.
+                    toast.success(message);
+                }
+                return onDone();
+            }
             if (verb === 'ban' && banRule) {
                 const res = await excludeAction(gameSlug, {
                     rule: banRule,
@@ -438,6 +504,57 @@ export function RunActionForm({
     return (
         <>
             <div className={styles.body}>
+                {/* Asked before the reason, because it changes what the
+                    reason is for: one run, or this runner's whole presence
+                    on the board. */}
+                {removeRunner && (
+                    <fieldset className="mb-3">
+                        <legend className={styles.fieldLabel}>
+                            What are you removing?
+                        </legend>
+                        <div className="form-check">
+                            <input
+                                className="form-check-input"
+                                type="radio"
+                                name="remove-scope"
+                                id="remove-scope-run"
+                                checked={removeScope === 'run'}
+                                disabled={isConfirming}
+                                onChange={() => setRemoveScope('run')}
+                            />
+                            <label
+                                className="form-check-label"
+                                htmlFor="remove-scope-run"
+                            >
+                                Only this{' '}
+                                {target.kind === 'runs' && target.label}
+                            </label>
+                        </div>
+                        <div className="form-check">
+                            <input
+                                className="form-check-input"
+                                type="radio"
+                                name="remove-scope"
+                                id="remove-scope-runner"
+                                checked={removeScope === 'runner'}
+                                disabled={isConfirming}
+                                onChange={() => setRemoveScope('runner')}
+                            />
+                            <label
+                                className="form-check-label"
+                                htmlFor="remove-scope-runner"
+                            >
+                                Every run {removeRunner.name} has on{' '}
+                                {removeRunner.categoryDisplay}
+                            </label>
+                            <div className="form-text">
+                                Writes one reversible rule rather than removing
+                                each run, and keeps their future runs off this
+                                board too. Their account is unaffected.
+                            </div>
+                        </div>
+                    </fieldset>
+                )}
                 {verb === 'remove' && (
                     <div className="mb-3">
                         <label
@@ -466,23 +583,31 @@ export function RunActionForm({
                         <div className="form-text">
                             {removeReasonMeta(reasonCat).blurb}
                         </div>
-                        <div className="form-check form-switch mt-2">
-                            <input
-                                className="form-check-input"
-                                type="checkbox"
-                                role="switch"
-                                id="remove-notify"
-                                checked={notify}
-                                onChange={(e) => setNotify(e.target.checked)}
-                                disabled={isConfirming}
-                            />
-                            <label
-                                className="form-check-label small"
-                                htmlFor="remove-notify"
-                            >
-                                Notify the runner and allow an appeal
-                            </label>
-                        </div>
+                        {/* The runner-scoped removal is an exclusion rule,
+                            which has no verdict to appeal against — offering
+                            the toggle there would promise a notification
+                            nothing sends. */}
+                        {!removesRunner && (
+                            <div className="form-check form-switch mt-2">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    role="switch"
+                                    id="remove-notify"
+                                    checked={notify}
+                                    onChange={(e) =>
+                                        setNotify(e.target.checked)
+                                    }
+                                    disabled={isConfirming}
+                                />
+                                <label
+                                    className="form-check-label small"
+                                    htmlFor="remove-notify"
+                                >
+                                    Notify the runner and allow an appeal
+                                </label>
+                            </div>
+                        )}
                     </div>
                 )}
 

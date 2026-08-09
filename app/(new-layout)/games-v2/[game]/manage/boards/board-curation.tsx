@@ -59,6 +59,7 @@ import { restoreRunsAction } from '../moderation/shared/actions/restore.action';
 import { fireUndoToast } from '../moderation/shared/undo-toast';
 import { updateVariableAction } from '../variables/actions/update-variable.action';
 import { AddRunnerRow } from './add-runner-row';
+import { AdjustDialog } from './adjust-dialog';
 import { BoardControls } from './board-controls';
 import styles from './board-curation.module.scss';
 import { rosterEntry, rosterLeaderboard } from './roster-entry';
@@ -361,6 +362,10 @@ export function BoardCuration({
     // a reload rebuilds the rows, and an entry captured by reference would go
     // stale under the drawer.
     const [inspectRunId, setInspectRunId] = useState<number | null>(null);
+    // The row whose removal just landed and whose runner still has other
+    // times on this board — drives the pick-the-right-time step.
+    const [adjustAfterRemoval, setAdjustAfterRemoval] =
+        useState<LeaderboardRosterRow | null>(null);
     const [boardPageIndex, setBoardPageIndex] = useState(0);
 
     const { rows, total, markedTotal, loading, error, reload } = useBoardData(
@@ -495,7 +500,6 @@ export function BoardCuration({
                 next.set(row.runId, {
                     row,
                     timeMs: rowTimeMs,
-                    nextRun: null,
                     nextRunLoading: row.userId != null,
                 });
                 return next;
@@ -536,9 +540,8 @@ export function BoardCuration({
                     if (bt == null) return -1;
                     return at - bt;
                 });
-            const best = candidates[0] ?? null;
-            if (best == null) {
-                // No same-board replacement to offer — nothing left to show,
+            if (candidates.length === 0) {
+                // No same-board replacement to offer — nothing to pick from,
                 // safe to resync now.
                 dropPending(row.runId);
                 reload();
@@ -547,57 +550,21 @@ export function BoardCuration({
             // A category/subcategory switch (or Undo) may have already
             // dropped this entry while the query above was in flight.
             setPendingRemovals((prev) => {
-                const existing = prev.get(row.runId);
-                if (!existing) return prev;
+                if (!prev.has(row.runId)) return prev;
                 const next = new Map(prev);
-                next.set(row.runId, {
-                    ...existing,
-                    nextRun: best,
-                    nextRunLoading: false,
-                });
+                const existing = prev.get(row.runId);
+                if (existing) {
+                    next.set(row.runId, { ...existing, nextRunLoading: false });
+                }
                 return next;
             });
-        })();
-    };
-
-    const handleKeepIt = (runId: number) => {
-        dropPending(runId);
-        reload();
-    };
-
-    const handleRemoveToo = (runId: number, candidate: UserEligibleRunRow) => {
-        (async () => {
-            const res = await excludeAction(game.name, {
-                runIds: [candidate.runId],
-                // Canned (min-10) — the follow-up removal of the same
-                // runner's replacement run from the next-run slip.
-                reason: "Removed together with the runner's removed run",
-            });
-            if ('error' in res) {
-                // Nothing changed — the original run's overlay entry is
-                // still intact, so there's nothing to resync yet. Dropping
-                // it here (as a prior version did, unconditionally and
-                // before this call even started) meant a failed "Remove
-                // too" silently discarded the Keep it/Remove too slip with
-                // no way back to it, and forced a same-tick reload purely
-                // to paper over that self-inflicted gap.
-                toast.error(res.error);
-                return;
-            }
-            // Drop the original's overlay entry and reload together, once
-            // the outcome is actually known — one settle, one reload.
-            dropPending(runId);
-            fireUndoToast(
-                'Removed.',
-                () =>
-                    restoreRunsAction(
-                        game.name,
-                        [candidate.runId],
-                        'Undo of remove',
-                    ),
-                reload,
-            );
-            reload();
+            // The runner still has times on this board, so ask which one is
+            // the right one rather than silently promoting whichever is
+            // fastest. AdjustDialog already lists them (and excludes anything
+            // faster than the pick), so it IS the picker — the old flow
+            // guessed `candidates[0]` and offered Keep it / Remove too, which
+            // could only ever walk the list one run at a time.
+            setAdjustAfterRemoval(row);
         })();
     };
 
@@ -779,18 +746,7 @@ export function BoardCuration({
             const { row, timeMs, belowMinimum } = found;
             const pending = pendingRemovals.get(row.runId);
             if (pending) {
-                return (
-                    <RemovedNote
-                        pending={pending}
-                        timing={timing}
-                        showMilliseconds={showMilliseconds}
-                        onKeepIt={() => handleKeepIt(row.runId)}
-                        onRemoveToo={() =>
-                            pending.nextRun &&
-                            handleRemoveToo(row.runId, pending.nextRun)
-                        }
-                    />
-                );
+                return <RemovedNote pending={pending} />;
             }
             return (
                 <RowActions
@@ -1240,6 +1196,35 @@ export function BoardCuration({
                                     />
                                 ) : null
                             }
+                        />
+                    )}
+                    {/* Step two of a single-run removal: which of the
+                        runner's remaining times is the right one. Closing
+                        without picking is a valid answer — the board then
+                        surfaces their best remaining run on its own. */}
+                    {adjustAfterRemoval && category && (
+                        <AdjustDialog
+                            open
+                            row={adjustAfterRemoval}
+                            category={category}
+                            gameSlug={game.name}
+                            subcategoryKey={subcategoryKey}
+                            timeMs={
+                                pendingRemovals.get(adjustAfterRemoval.runId)
+                                    ?.timeMs ?? null
+                            }
+                            onClose={() => {
+                                const runId = adjustAfterRemoval.runId;
+                                setAdjustAfterRemoval(null);
+                                dropPending(runId);
+                                reload();
+                            }}
+                            onMutated={() => {
+                                const runId = adjustAfterRemoval.runId;
+                                setAdjustAfterRemoval(null);
+                                dropPending(runId);
+                                reload();
+                            }}
                         />
                     )}
                     {inspectEntry != null && category && (

@@ -262,8 +262,8 @@ afterEach(() => {
     cleanup();
 });
 
-describe("BoardCuration — a sibling row's reload must not kill a pending removal's slip", () => {
-    it("keeps row A's slip pinned (and still resolvable) after row B's Approve reloads the board without A", async () => {
+describe("BoardCuration — a sibling row's reload must not kill a pending removal", () => {
+    it("keeps row A pinned, with its time picker open, after row B's Approve reloads the board without A", async () => {
         // Initial load has both rows on board. Every reload afterward
         // reflects A already excluded server-side — this is what a naive
         // "clear the slip whenever `rows` changes" implementation would
@@ -294,11 +294,13 @@ describe("BoardCuration — a sibling row's reload must not kill a pending remov
         await waitFor(() => rowContaining('alice'));
         rowContaining('bob');
 
-        // Remove row A — the dialog's mutation lands, then the next-run
-        // slip appears.
+        // Remove row A — the dialog's mutation lands, and because alice
+        // still has other times on this board the picker opens.
         removeRow('alice');
-        await waitFor(() => expect(screen.getByText(/next:/)).toBeTruthy());
-        expect(screen.getByRole('button', { name: 'Keep it' })).toBeTruthy();
+        await waitFor(() =>
+            expect(mocks.loadUserEligibleRunsAction).toHaveBeenCalled(),
+        );
+        await waitFor(() => expect(screen.getByText('Removed.')).toBeTruthy());
 
         // Now act on the SIBLING row: Approve bob via the Run… menu. This
         // goes through a completely separate RowActions instance and calls
@@ -310,32 +312,13 @@ describe("BoardCuration — a sibling row's reload must not kill a pending remov
         // `rows` has now resolved to [ROW_B] only — A is gone from the live
         // data reload just replaced.
 
-        // REGRESSION CHECK: row A and its slip must still be visible. Under
-        // the pre-fix design (Remove's pending state lived inside
-        // RowActions, keyed off whether the row was still present in
-        // `boardRows`), this reload would have unmounted row A's
-        // RowActions instance — and the slip inside it — before the user
-        // could act on it.
+        // REGRESSION CHECK: row A must still be visible. Under the pre-fix
+        // design (Remove's pending state lived inside RowActions, keyed off
+        // whether the row was still present in `boardRows`), this reload
+        // would have unmounted row A's RowActions instance before the user
+        // could resolve it.
         rowContaining('alice');
-        expect(screen.getByText(/next:/)).toBeTruthy();
-        expect(screen.getByRole('button', { name: 'Keep it' })).toBeTruthy();
-        expect(screen.getByRole('button', { name: 'Remove too' })).toBeTruthy();
-
-        // Keep it resolves the slip's lifecycle: dismiss the overlay, then
-        // reload — row A (already excluded server-side) then stops
-        // rendering for good, and the board is back to a normal, consistent
-        // state.
-        fireEvent.click(screen.getByRole('button', { name: 'Keep it' }));
-        await waitFor(() =>
-            expect(mocks.loadBoardPageAction).toHaveBeenCalledTimes(3),
-        );
-        await waitFor(() => {
-            expect(
-                screen
-                    .queryAllByRole('row')
-                    .some((r) => r.textContent?.includes('alice')),
-            ).toBe(false);
-        });
+        expect(screen.getByText('Removed.')).toBeTruthy();
         rowContaining('bob');
     });
 
@@ -362,7 +345,7 @@ describe("BoardCuration — a sibling row's reload must not kill a pending remov
 
         await waitFor(() => rowContaining('alice'));
         removeRow('alice');
-        await waitFor(() => expect(screen.getByText(/next:/)).toBeTruthy());
+        await waitFor(() => expect(screen.getByText('Removed.')).toBeTruthy());
         // Capture alice's undo NOW — bob's Approve confirm below also runs
         // through the stub and would overwrite the capture slot, exactly
         // like a newer toast appearing on screen.
