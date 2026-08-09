@@ -4,9 +4,10 @@ import moment from 'moment';
 import { useEffect, useRef, useState, useTransition } from 'react';
 import {
     BoxArrowUpRight,
+    CameraVideoOff,
     ChevronDown,
     ChevronUp,
-    PlayBtn,
+    ExclamationTriangle,
 } from 'react-bootstrap-icons';
 import { createPortal } from 'react-dom';
 import { toast } from 'react-toastify';
@@ -17,6 +18,7 @@ import {
 } from '~app/(new-layout)/games-v2/[game]/manage/moderation/shared/run-action-dialog';
 import { loadRunHistoryAction } from '~src/actions/run-user-actions.action';
 import Link from '~src/components/link';
+import { Vod } from '~src/components/run/dashboard/vod';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { formatRunDate } from '~src/lib/format-run-date';
 import { describeEvent } from '~src/lib/run-view/describe-event';
@@ -48,13 +50,22 @@ import {
 } from './history-undo';
 import { entryToRosterRow } from './mod-row';
 import { relativeDate } from './relative-date';
+import { isOutlierImprovement, runBoardContext } from './run-context';
 import styles from './run-inspector.module.scss';
+import type { TimingKey } from './timing-columns';
 
 interface Props {
     /** The inspected row — always a real run (runId != null). */
     entry: LeaderboardEntry;
     gameSlug: string;
     categorySlug: string;
+    /** Human name for this board — shown, and used to match the runner's
+     * other runs (eligible-runs rows key categories by display name). */
+    categoryDisplay: string;
+    /** category.requireVideo — turns a missing VOD into a stated blocker. */
+    requireVideo?: boolean;
+    /** Which clock this board ranks on. Decides which time reads primary. */
+    primaryTiming: TimingKey;
     /** Subcategory-role variable names — builds this run's own subcategory
      * key for the Move/Adjust/Hide-identity dialogs. */
     subcategoryDefKeys: string[];
@@ -138,7 +149,8 @@ const STATUS_BADGE: Record<string, { label: string; className: string }> = {
     rejected: { label: 'Rejected', className: 'text-bg-danger' },
 };
 
-/** The verbs the footer offers for a run in this verification state. */
+/** The verbs the footer offers for a run in this verification state. The
+ * first is the constructive one (and takes the primary button). */
 export function verbsForStatus(
     status: LeaderboardEntry['verificationStatus'],
 ): ModVerb[] {
@@ -149,17 +161,34 @@ export function verbsForStatus(
     return verbs;
 }
 
+/** Keyboard shortcut per verb, shown on the button and bound below. */
+const VERB_KEY: Partial<Record<ModVerb, string>> = {
+    approve: 'v',
+    restore: 'v',
+    remove: 'x',
+};
+
+/** The embed only speaks YouTube and Twitch; anything else gets a link. */
+function isEmbeddable(url: string): boolean {
+    return url.includes('youtu') || url.includes('twitch');
+}
+
 /**
  * Run inspector — the board's single-run moderation surface. A right-side
- * drawer over the table: run facts up top, the runner's track record and the
- * moderation-history timeline as context, and the state-driven verb footer
- * at the bottom. Verbs expand into the shared RunActionForm inline; j/k (and
- * the footer arrows) step through the page's run rows without closing.
+ * drawer over the table, ordered the way the decision is actually made:
+ * the evidence (VOD, or its stated absence) first, then the time in the
+ * board's own clock with the rank and the runner's own history to judge it
+ * against, then the moderation timeline, then the verbs. Verbs expand into
+ * the shared RunActionForm inline; v/x fire them, j/k (and the footer
+ * arrows) step through the page's run rows without closing.
  */
 export function RunInspector({
     entry,
     gameSlug,
     categorySlug,
+    categoryDisplay,
+    requireVideo = false,
+    primaryTiming,
     subcategoryDefKeys,
     gameTimeLabel = 'igt',
     showMilliseconds,
@@ -244,11 +273,6 @@ export function RunInspector({
         });
     };
 
-    const modTimeMs =
-        modCategory?.primaryTiming === 'gt'
-            ? (rosterRow?.gameTime ?? null)
-            : (rosterRow?.time ?? null);
-
     const onModDialogMutated = () => {
         setModDialog(null);
         setHistoryReload((n) => n + 1);
@@ -263,9 +287,10 @@ export function RunInspector({
         (dir === 'prev' ? onPrev : onNext)?.();
     };
 
-    // j/k row navigation. Inert while a verb form is open (typed reasons
-    // must not be lost to a stray key) and while focus sits in any text
-    // field.
+    // j/k row navigation and v/x verbs. All inert while a verb form is open
+    // (typed reasons must not be lost to a stray key), while a stacked
+    // dialog owns the keyboard, and while focus sits in any text field.
+    const verbs = verbsForStatus(entry.verificationStatus);
     useEffect(() => {
         const onKeyDown = (e: KeyboardEvent) => {
             if (activeVerb != null || modDialog != null) return;
@@ -286,13 +311,19 @@ export function RunInspector({
             } else if (e.key === 'k' && onPrev) {
                 e.preventDefault();
                 step('prev');
+            } else {
+                const hit = verbs.find((v) => VERB_KEY[v] === e.key);
+                if (hit) {
+                    e.preventDefault();
+                    setActiveVerb(hit);
+                }
             }
         };
         document.addEventListener('keydown', onKeyDown);
         return () => document.removeEventListener('keydown', onKeyDown);
         // step is stable enough — it only wraps the two props below.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeVerb, modDialog, onNext, onPrev]);
+    }, [activeVerb, modDialog, onNext, onPrev, entry.verificationStatus]);
 
     // History reloads on run change and after a verdict lands (the parent's
     // refetch hands back an entry whose status reflects the action).
@@ -334,24 +365,52 @@ export function RunInspector({
     const variableValues = Object.values(entry.variables ?? {});
     const gtLabel = gameTimeLabel === 'lrt' ? 'Load-removed time' : 'Game time';
 
+    // Which number this board actually ranks on reads primary; the other
+    // clock stays as a quiet cross-check. On a game-time board a run with no
+    // game time ranks by its real time (rtaFallback) — say so rather than
+    // showing an unlabelled number in the primary slot.
+    const rankedOnFallback =
+        primaryTiming === 'gt' &&
+        entry.gameTime == null &&
+        entry.realTime != null;
+    const primaryMs =
+        primaryTiming === 'gt'
+            ? (entry.gameTime ?? entry.realTime)
+            : entry.realTime;
+    const primaryLabel =
+        primaryTiming === 'gt'
+            ? rankedOnFallback
+                ? `Real time — ranked in place of ${gtLabel.toLowerCase()}`
+                : gtLabel
+            : 'Real time';
+    const secondaryMs =
+        primaryTiming === 'gt'
+            ? rankedOnFallback
+                ? null
+                : entry.realTime
+            : entry.gameTime;
+    const secondaryLabel = primaryTiming === 'gt' ? 'Real time' : gtLabel;
+
+    const ctx = runBoardContext(runnerRuns, {
+        runId,
+        categoryDisplay,
+        subcategoryKey: entrySubcategoryKey,
+        timing: primaryTiming,
+        timeMs: primaryMs,
+        runDate: entry.runDate,
+    });
+    const rank = ctx.rank ?? entry.rank;
+    const outlier = isOutlierImprovement(ctx);
+
+    const modCategoryTimeMs =
+        modCategory?.primaryTiming === 'gt'
+            ? (rosterRow?.gameTime ?? null)
+            : (rosterRow?.time ?? null);
+
     const verbDone = () => {
         setActiveVerb(null);
         onMutated();
     };
-
-    // A board shows one run per user, so the runner's game-wide run tally is
-    // noise here (it was reading "471 runs · 471 pending"). What a moderator
-    // actually wants is: how many boards in this game they hold a slot on,
-    // and whether they carry prior rejections. `isLeaderboardEntry(Gt)` marks
-    // the runs that are actually ON a board (one per category), so counting
-    // those gives the honest small number.
-    const boardCount =
-        runnerRuns?.filter(
-            (r) => r.isLeaderboardEntry || r.isLeaderboardEntryGt,
-        ).length ?? 0;
-    const rejectedCount =
-        runnerRuns?.filter((r) => r.verificationStatus === 'rejected').length ??
-        0;
 
     if (!portalReady) return null;
 
@@ -379,8 +438,35 @@ export function RunInspector({
                 aria-modal="true"
                 aria-label={`Moderate ${entry.runnerName}'s run`}
             >
-                <div className="d-flex align-items-center justify-content-between p-3 border-bottom">
-                    <h2 className="h5 mb-0">Moderate run</h2>
+                {/* The header carries the run's identity — a static
+                    "Moderate run" title spent a whole bar saying what the
+                    footer's buttons already say. */}
+                <div className={styles.header}>
+                    <div className={styles.headerMain}>
+                        <div className={styles.headerTop}>
+                            <span className={styles.runnerName}>
+                                {entry.runnerName}
+                            </span>
+                            {badge && (
+                                <span className={`badge ${badge.className}`}>
+                                    {badge.label}
+                                </span>
+                            )}
+                        </div>
+                        <div className={styles.headerSub}>
+                            {categoryDisplay}
+                            {variableValues.length > 0 &&
+                                ` · ${variableValues.join(' / ')}`}
+                            {entry.runDate && (
+                                <>
+                                    {' · '}
+                                    <span title={formatRunDate(entry.runDate)}>
+                                        {relativeDate(entry.runDate)}
+                                    </span>
+                                </>
+                            )}
+                        </div>
+                    </div>
                     <button
                         type="button"
                         className="btn-close"
@@ -390,99 +476,162 @@ export function RunInspector({
                 </div>
 
                 <div className="flex-grow-1 overflow-auto">
-                    {/* Run facts */}
-                    <div className="p-3 border-bottom">
-                        <div className="d-flex align-items-center gap-2 flex-wrap">
-                            <span className={styles.runnerName}>
-                                {entry.runnerName}
-                            </span>
-                            {badge && (
-                                <span className={`badge ${badge.className}`}>
-                                    {badge.label}
-                                </span>
-                            )}
-                            {entry.runDate && (
-                                <span
-                                    className="text-muted small"
-                                    title={formatRunDate(entry.runDate)}
-                                >
-                                    {relativeDate(entry.runDate)}
-                                </span>
-                            )}
-                        </div>
-                        <div className="text-muted small mt-1">
-                            {categorySlug}
-                            {variableValues.length > 0 &&
-                                ` — ${variableValues.join(' / ')}`}
-                        </div>
-                        <div className={styles.timesLine}>
-                            {entry.realTime != null && (
-                                <span>
-                                    <span className={styles.timeLabel}>
-                                        Real time
-                                    </span>{' '}
-                                    <DurationToFormatted
-                                        duration={entry.realTime}
-                                        withMillis={showMilliseconds}
-                                    />
-                                </span>
-                            )}
-                            {entry.gameTime != null && (
-                                <span>
-                                    <span className={styles.timeLabel}>
-                                        {gtLabel}
-                                    </span>{' '}
-                                    <DurationToFormatted
-                                        duration={entry.gameTime}
-                                        withMillis={showMilliseconds}
-                                    />
-                                </span>
-                            )}
-                        </div>
-                        <div className="d-flex gap-3 mt-2">
-                            {entry.vodUrl && (
+                    {/* Evidence. Verification means watching the run, so the
+                        video (or the fact that there isn't one) leads. */}
+                    <div className={styles.evidence}>
+                        {entry.vodUrl && isEmbeddable(entry.vodUrl) ? (
+                            <>
+                                <div className={styles.vodFrame}>
+                                    <Vod vod={entry.vodUrl} />
+                                </div>
                                 <a
                                     href={entry.vodUrl}
                                     target="_blank"
                                     rel="noreferrer"
                                     className={styles.factLink}
                                 >
-                                    <PlayBtn size={14} aria-hidden /> Watch VOD
+                                    <BoxArrowUpRight size={12} aria-hidden />{' '}
+                                    Open video in a new tab
                                 </a>
-                            )}
-                            <Link
-                                href={`/games-v2/${encodeURIComponent(gameSlug)}/run/${runId}`}
-                                className={styles.factLink}
+                            </>
+                        ) : entry.vodUrl ? (
+                            <a
+                                href={entry.vodUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className={styles.vodLinkCard}
                             >
-                                <BoxArrowUpRight size={12} aria-hidden /> Run
-                                page
-                            </Link>
+                                <BoxArrowUpRight size={14} aria-hidden />
+                                <span>
+                                    Video attached — opens on another host
+                                    <span className={styles.vodUrl}>
+                                        {entry.vodUrl}
+                                    </span>
+                                </span>
+                            </a>
+                        ) : (
+                            <div
+                                className={`${styles.noVod} ${
+                                    requireVideo ? styles.noVodRequired : ''
+                                }`}
+                            >
+                                <CameraVideoOff size={16} aria-hidden />
+                                <span>
+                                    {requireVideo
+                                        ? 'No video attached — this board requires one.'
+                                        : 'No video attached.'}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* The time, in the clock this board ranks on, with what
+                        it takes to judge it: its rank, and the runner's own
+                        previous best. */}
+                    <div className={styles.timeBlock}>
+                        <div className={styles.primaryTimeRow}>
+                            <span className={styles.primaryTime}>
+                                {primaryMs != null ? (
+                                    <DurationToFormatted
+                                        duration={primaryMs}
+                                        withMillis={showMilliseconds}
+                                    />
+                                ) : (
+                                    '—'
+                                )}
+                            </span>
+                            {rank != null && rank > 0 && (
+                                <span className={styles.rankChip}>
+                                    #{rank}
+                                    {ctx.totalRunners != null &&
+                                        ctx.totalRunners > 0 &&
+                                        ` of ${ctx.totalRunners}`}
+                                </span>
+                            )}
                         </div>
+                        <div className={styles.primaryTimeLabel}>
+                            {primaryLabel}
+                        </div>
+
+                        {secondaryMs != null && (
+                            <div className={styles.secondaryTime}>
+                                {secondaryLabel}{' '}
+                                <DurationToFormatted
+                                    duration={secondaryMs}
+                                    withMillis={showMilliseconds}
+                                />
+                            </div>
+                        )}
+
+                        <div className={styles.record}>
+                            {runnerRuns == null ? (
+                                <span className="text-muted">
+                                    Loading the runner's history…
+                                </span>
+                            ) : ctx.previousBestMs == null ? (
+                                <span className="text-muted">
+                                    First run by this runner on this board.
+                                </span>
+                            ) : (
+                                <>
+                                    <span className="text-muted">
+                                        Previous best{' '}
+                                    </span>
+                                    <DurationToFormatted
+                                        duration={ctx.previousBestMs}
+                                        withMillis={showMilliseconds}
+                                    />
+                                    {ctx.deltaMs != null && (
+                                        <span
+                                            className={
+                                                ctx.deltaMs < 0
+                                                    ? styles.deltaFaster
+                                                    : styles.deltaSlower
+                                            }
+                                        >
+                                            {' '}
+                                            {ctx.deltaMs < 0 ? '−' : '+'}
+                                            <DurationToFormatted
+                                                duration={Math.abs(ctx.deltaMs)}
+                                                withMillis={showMilliseconds}
+                                            />
+                                        </span>
+                                    )}
+                                    <span className="text-muted">
+                                        {` · ${ctx.previousRunCount} earlier run${
+                                            ctx.previousRunCount === 1
+                                                ? ''
+                                                : 's'
+                                        } here`}
+                                    </span>
+                                </>
+                            )}
+                        </div>
+
+                        {outlier && (
+                            <div className={styles.outlier}>
+                                <ExclamationTriangle size={14} aria-hidden />
+                                <span>
+                                    Cuts more than 15% off this runner's own
+                                    best on this board. Worth watching before
+                                    verifying.
+                                </span>
+                            </div>
+                        )}
                     </div>
 
                     {/* Runner strip — context only. Runner-scoped verbs (ban,
                         anonymize lifting, …) live on the runner page, not
                         here. */}
-                    <div className="p-3 border-bottom">
+                    <div className={styles.runnerStrip}>
                         {entry.userId != null ? (
-                            <div className="d-flex align-items-center justify-content-between gap-2">
-                                <span className="small">
-                                    {runnerRuns == null ? (
-                                        <span className="text-muted">
-                                            Loading runner record…
-                                        </span>
-                                    ) : (
-                                        <>
-                                            On {boardCount} board
-                                            {boardCount === 1 ? '' : 's'} in
-                                            this game
-                                            {rejectedCount > 0 && (
-                                                <span className="text-danger">
-                                                    {` · ${rejectedCount} prior rejection${rejectedCount === 1 ? '' : 's'}`}
-                                                </span>
-                                            )}
-                                        </>
-                                    )}
+                            <>
+                                <span className="small text-muted">
+                                    {runnerRuns == null
+                                        ? ' '
+                                        : `On ${ctx.boardCount} board${
+                                              ctx.boardCount === 1 ? '' : 's'
+                                          } in this game`}
                                 </span>
                                 <Link
                                     href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${entry.userId}?from=board`}
@@ -490,7 +639,7 @@ export function RunInspector({
                                 >
                                     Runner page →
                                 </Link>
-                            </div>
+                            </>
                         ) : (
                             <span className="text-muted small">
                                 {entry.isGuest
@@ -498,11 +647,19 @@ export function RunInspector({
                                     : 'Runner identity is hidden.'}
                             </span>
                         )}
+                        <Link
+                            href={`/games-v2/${encodeURIComponent(gameSlug)}/run/${runId}`}
+                            className={styles.factLink}
+                        >
+                            <BoxArrowUpRight size={12} aria-hidden /> Run page
+                        </Link>
                     </div>
 
                     {/* History timeline */}
-                    <div className="p-3">
-                        <h3 className={styles.sectionTitle}>History</h3>
+                    <div className={styles.historyBlock}>
+                        <h3 className={styles.sectionTitle}>
+                            Moderation history
+                        </h3>
                         {historyError != null && (
                             <p className="text-danger small mb-0">
                                 {historyError}
@@ -513,7 +670,7 @@ export function RunInspector({
                         )}
                         {history !== null && history.length === 0 && (
                             <p className="text-muted small mb-0">
-                                No moderation history for this run.
+                                Nothing yet — this run has never been actioned.
                             </p>
                         )}
                         {history !== null && history.length > 0 && (
@@ -576,30 +733,35 @@ export function RunInspector({
                 </div>
 
                 {/* Verb footer — buttons for the run's state; picking one
-                    expands the shared action form in place. */}
+                    expands the shared action form in place. The constructive
+                    verb leads and takes the width; removal is deliberately
+                    quieter than the thing it undoes. "…" is reserved for the
+                    controls that open a separate dialog. */}
                 <div className="border-top">
                     {activeVerb == null ? (
                         <>
                             <div className={styles.actionBar}>
-                                {verbsForStatus(entry.verificationStatus).map(
-                                    (verb) => (
-                                        <button
-                                            key={verb}
-                                            type="button"
-                                            className={`btn ${styles.verbBtn} ${
-                                                verb === 'approve'
-                                                    ? 'btn-success'
-                                                    : verb === 'remove'
-                                                      ? 'btn-danger'
-                                                      : 'btn-outline-secondary'
-                                            }`}
-                                            onClick={() => setActiveVerb(verb)}
-                                        >
-                                            {VERB_TITLE[verb]}
-                                            {verb === 'remove' && '…'}
-                                        </button>
-                                    ),
-                                )}
+                                {verbs.map((verb, i) => (
+                                    <button
+                                        key={verb}
+                                        type="button"
+                                        className={`btn ${styles.verbBtn} ${
+                                            i === 0 && verb !== 'remove'
+                                                ? `btn-success ${styles.verbPrimary}`
+                                                : verb === 'remove'
+                                                  ? 'btn-outline-danger'
+                                                  : 'btn-outline-secondary'
+                                        }`}
+                                        onClick={() => setActiveVerb(verb)}
+                                    >
+                                        {VERB_TITLE[verb]}
+                                        {VERB_KEY[verb] && (
+                                            <kbd className={styles.verbKey}>
+                                                {VERB_KEY[verb]}
+                                            </kbd>
+                                        )}
+                                    </button>
+                                ))}
                             </div>
                             <div className={styles.secondaryBar}>
                                 <button
@@ -649,25 +811,35 @@ export function RunInspector({
                         </div>
                     )}
                     {(onPrev || onNext) && activeVerb == null && (
-                        <div className="d-flex justify-content-between align-items-center px-3 pb-3">
-                            <button
-                                type="button"
-                                className={styles.stepBtn}
-                                disabled={!onPrev}
-                                onClick={() => step('prev')}
-                            >
-                                <ChevronUp size={14} aria-hidden /> Previous run{' '}
-                                <kbd>k</kbd>
-                            </button>
-                            <button
-                                type="button"
-                                className={styles.stepBtn}
-                                disabled={!onNext}
-                                onClick={() => step('next')}
-                            >
-                                Next run <kbd>j</kbd>{' '}
-                                <ChevronDown size={14} aria-hidden />
-                            </button>
+                        <div className={styles.stepBar}>
+                            {onPrev ? (
+                                <button
+                                    type="button"
+                                    className={styles.stepBtn}
+                                    onClick={() => step('prev')}
+                                >
+                                    <ChevronUp size={14} aria-hidden /> Previous
+                                    run <kbd>k</kbd>
+                                </button>
+                            ) : (
+                                <span className={styles.stepEdge}>
+                                    First run on this page
+                                </span>
+                            )}
+                            {onNext ? (
+                                <button
+                                    type="button"
+                                    className={styles.stepBtn}
+                                    onClick={() => step('next')}
+                                >
+                                    Next run <kbd>j</kbd>{' '}
+                                    <ChevronDown size={14} aria-hidden />
+                                </button>
+                            ) : (
+                                <span className={styles.stepEdge}>
+                                    Last run on this page
+                                </span>
+                            )}
                         </div>
                     )}
                 </div>
@@ -696,7 +868,7 @@ export function RunInspector({
                         category={modCategory}
                         gameSlug={gameSlug}
                         subcategoryKey={entrySubcategoryKey}
-                        timeMs={modTimeMs}
+                        timeMs={modCategoryTimeMs}
                         onMutated={onModDialogMutated}
                     />
                     <HideIdentityDialog
