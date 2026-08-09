@@ -1085,3 +1085,77 @@
 .dialogMoved {
     @include board.mono-time;
 }
+
+// ---- The group's mod-facing note ------------------------------
+//
+// Collapsed unless the group already carries one. It sits at the foot with
+// the other rare controls: the grid is the subject of this panel, and a
+// permanently open textarea under every group would out-shout it.
+
+.noteBlock {
+    padding: 0 dt.$spacing-lg dt.$spacing-md;
+}
+
+.noteSummary {
+    @include board.board-section-count;
+    cursor: pointer;
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-2xs;
+
+    &::-webkit-details-marker {
+        display: none;
+    }
+
+    &::before {
+        content: '▸';
+        font-size: dt.$font-size-2xs;
+    }
+
+    &:hover {
+        color: var(--bs-emphasis-color);
+    }
+}
+
+details[open] > .noteSummary::before {
+    content: '▾';
+}
+
+.noteTextarea {
+    font: inherit;
+    font-size: dt.$font-size-sm;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    border-radius: dt.$radius-sm;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    display: block;
+    width: 100%;
+    max-width: 34rem;
+    margin-top: dt.$spacing-sm;
+    resize: vertical;
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+}
+
+.noteActions {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin-top: dt.$spacing-sm;
+}
+
+.noteSave,
+.noteCancel {
+    @include board.board-chip;
+    font-size: dt.$font-size-2xs;
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: default;
+    }
+}

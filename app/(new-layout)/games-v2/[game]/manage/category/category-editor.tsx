@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Link from '~src/components/link';
 import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 import type {
     ResolvedCategory,
@@ -15,7 +16,6 @@ import {
     type GameTimingDefaults,
     TimingSettingsSection,
 } from '../timing/timing-settings-section';
-import { VariablesSection } from '../variables/variables-section';
 import styles from './category-editor.module.scss';
 import { CopyFromControl } from './copy-from-control';
 
@@ -43,10 +43,14 @@ interface Props {
 
 /**
  * Section order is the reader's job order, basics first: what every category
- * needs to be presentable (timing, rules, minimum, settings), then the
- * advanced structure most categories never touch. Sub-boards is no longer a
- * section of its own — it renders inside the variables section, as the
- * consequence of the subcategory variables it belongs to.
+ * needs to be presentable (timing, rules, minimum, settings).
+ *
+ * Structure — subcategories, filters and the sub-boards they produce — is NOT
+ * a section here any more. It moved to the console's `variables` pane, which
+ * is the wizard's grid: every featured category at once, so the place where
+ * two categories disagree is visible instead of being something you find by
+ * opening them one at a time. Two editors over the same rows is also two
+ * full-replace upsert paths, and each one that forgets a field drops it.
  */
 const SECTIONS = [
     { id: 'timing', requires: 'configure' },
@@ -55,7 +59,6 @@ const SECTIONS = [
     // used to live in nav-model's itemVisible for the `standards` nav item.
     { id: 'standards', requires: 'moderate' },
     { id: 'category-settings', requires: 'configure' },
-    { id: 'variables', requires: 'configure' },
 ] as const;
 
 type SectionId = (typeof SECTIONS)[number]['id'];
@@ -109,13 +112,6 @@ export function CategoryEditor({
     }, []);
 
     const body: Record<SectionId, React.ReactNode> = {
-        variables: (
-            <VariablesSection
-                gameSlug={game.name}
-                gameId={game.id}
-                selectedCategory={category}
-            />
-        ),
         timing: (
             <TimingSettingsSection
                 gameSlug={game.name}
@@ -212,6 +208,24 @@ export function CategoryEditor({
                             {body[s.id]}
                         </section>
                     ))}
+
+                    {/* Where structure went. Without this the pane is
+                        findable only from the sidebar, and a moderator who
+                        came here looking for subcategories would conclude the
+                        feature was removed. */}
+                    {canConfigure && (
+                        <p className={styles.structureLink}>
+                            <Link
+                                href={`/games-v2/${encodeURIComponent(
+                                    game.name,
+                                )}/manage?pane=variables`}
+                            >
+                                {CONCEPT_LABEL.variables}
+                            </Link>{' '}
+                            are set for every featured category at once, not per
+                            category.
+                        </p>
+                    )}
                 </div>
             </div>
         </div>

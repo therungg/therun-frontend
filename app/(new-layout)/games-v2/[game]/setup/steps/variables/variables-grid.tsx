@@ -42,6 +42,7 @@ import {
     previewVariableChangesAction,
 } from '../../actions/apply-variable-changes.action';
 import { CombinationsBlock } from './combinations-block';
+import { GroupNote } from './group-note';
 import { VariableSuggestions } from './variable-suggestions';
 import styles from './variables-grid.module.scss';
 
@@ -519,6 +520,40 @@ export function VariablesGrid({
     };
 
     /**
+     * The group's mod-facing note, on every category that carries it.
+     *
+     * Board-level for the same reason the name is: a note that drifts per
+     * category is a note nobody trusts. Every other field rides through
+     * unchanged, because the upsert is a full replace.
+     */
+    const buildNoteChanges = (
+        group: VariableGroup,
+        note: string | null,
+    ): { changes: VariableChangeInput[]; slugs: string[] } => {
+        const slugs: string[] = [];
+        const changes = [...group.byCategory.values()].map(
+            (state): VariableChangeInput => {
+                const cat = mains.find((c) => c.id === state.categoryId);
+                if (cat) slugs.push(cat.name);
+                return {
+                    categoryId: state.categoryId,
+                    input: {
+                        name: state.row.name,
+                        nameNormalized: group.nameNormalized,
+                        role: state.role,
+                        values: state.row.values,
+                        defaultValueIndex: state.row.defaultValueIndex,
+                        sortOrder: state.row.sortOrder,
+                        description: note,
+                        showValueOnBoard: state.row.showValueOnBoard ?? false,
+                    },
+                };
+            },
+        );
+        return { changes, slugs };
+    };
+
+    /**
      * Removing the group from the board — one null write per category that
      * carries it, which is the same removal an emptied grid produces.
      *
@@ -962,6 +997,14 @@ export function VariablesGrid({
                 applyNow(group.nameNormalized, nextName, built);
             }
         },
+        // The note touches no standings and moves no runs, so it writes
+        // straight through in both sections — there is nothing to preview.
+        onNote: (group: VariableGroup, note: string | null) =>
+            applyNow(
+                group.nameNormalized,
+                group.name,
+                buildNoteChanges(group, note),
+            ),
         // Always previewed, whichever section it is in: this is the one action
         // here that destroys rather than edits.
         onDelete: (group: VariableGroup) =>
@@ -1067,6 +1110,18 @@ export function VariablesGrid({
 const NEW_KEY = '__new__';
 
 /**
+ * The group's note, read board-level: the first category that has one wins.
+ * Writes always fan out to every carrier, so a disagreement here can only
+ * come from rows written before the note became board-level.
+ */
+function noteOf(group: VariableGroup): string | null {
+    for (const state of group.byCategory.values()) {
+        if (state.row.description) return state.row.description;
+    }
+    return null;
+}
+
+/**
  * Reserved query params that cannot become variable names. Kept alongside the
  * built-in filter labels so the collision is caught in the form rather than by
  * a 400 on save.
@@ -1168,6 +1223,7 @@ interface SectionProps {
     ) => void;
     onAddOption: (group: VariableGroup, bucket: BoardBucket) => void;
     onRename: (group: VariableGroup, nextName: string) => void;
+    onNote: (group: VariableGroup, note: string | null) => void;
     onDelete: (group: VariableGroup) => void;
     onCreate: (
         name: string,
@@ -1207,6 +1263,7 @@ function VariableSection({
     onMoveGroup,
     onAddOption,
     onRename,
+    onNote,
     onDelete,
     onCreate,
     onShowValue,
@@ -1311,6 +1368,7 @@ function VariableSection({
                         total={groups.length}
                         onAddOption={(bucket) => onAddOption(group, bucket)}
                         onRename={(next) => onRename(group, next)}
+                        onNote={(next) => onNote(group, next)}
                         onDelete={() => onDelete(group)}
                         showValueOnBoard={group.showValueOnBoard}
                         onShowValue={(show) => onShowValue(group, show)}
@@ -1392,6 +1450,7 @@ function VariablePalette({
     total: groupTotal,
     onAddOption,
     onRename,
+    onNote,
     onDelete,
     showValueOnBoard,
     onShowValue,
@@ -1419,6 +1478,7 @@ function VariablePalette({
     total: number;
     onAddOption: (bucket: BoardBucket) => void;
     onRename: (nextName: string) => void;
+    onNote: (note: string | null) => void;
     onDelete: () => void;
     showValueOnBoard: boolean;
     onShowValue: (show: boolean) => void;
@@ -2134,6 +2194,15 @@ function VariablePalette({
                             </button>
                         </div>
                     )}
+
+                    {/* The mod-facing note. It came over when the per-category
+                        variable form was retired — the field is stored per row
+                        and had nowhere else left to be written. */}
+                    <GroupNote
+                        note={noteOf(group)}
+                        busy={busy}
+                        onSave={onNote}
+                    />
 
                     {/* Only when the categories disagree, because only then is
                         there a column to explain. When they agree the sentence

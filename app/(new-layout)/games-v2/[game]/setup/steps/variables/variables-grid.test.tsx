@@ -530,3 +530,62 @@ describe('VariablesGrid — mounted outside the wizard', () => {
         ).toBeTruthy();
     });
 });
+
+describe('VariablesGrid — the group note', () => {
+    it('writes the mod-facing note to every category the group is on', async () => {
+        // The per-category variable form used to be the only editor for
+        // `description`. It is gone; the field is not, so the grid owns it —
+        // board-level, like the name, and written straight through because it
+        // moves no runs.
+        renderGrid();
+
+        fireEvent.change(screen.getByPlaceholderText(/Why this exists/), {
+            target: { value: 'Emulator runs need video.' },
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'Save note' }));
+
+        expect(applyVariableChangesAction).toHaveBeenCalledWith(
+            expect.objectContaining({
+                changes: [
+                    expect.objectContaining({
+                        categoryId: 10,
+                        input: expect.objectContaining({
+                            description: 'Emulator runs need video.',
+                            // Full-replace upsert: everything else has to ride
+                            // along or it is dropped.
+                            nameNormalized: 'platform',
+                            showValueOnBoard: false,
+                        }),
+                    }),
+                    expect.objectContaining({
+                        categoryId: 20,
+                        input: expect.objectContaining({
+                            description: 'Emulator runs need video.',
+                        }),
+                    }),
+                ],
+            }),
+        );
+    });
+
+    it('clears the note back to null rather than storing an empty string', () => {
+        const data = makeData();
+        for (const v of data.variables) v.description = 'old note';
+        render(<VariablesGrid {...gridProps(data)} />);
+
+        fireEvent.change(screen.getByPlaceholderText(/Why this exists/), {
+            target: { value: '   ' },
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'Save note' }));
+
+        expect(applyVariableChangesAction).toHaveBeenCalledWith(
+            expect.objectContaining({
+                changes: expect.arrayContaining([
+                    expect.objectContaining({
+                        input: expect.objectContaining({ description: null }),
+                    }),
+                ]),
+            }),
+        );
+    });
+});

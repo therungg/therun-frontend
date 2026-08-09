@@ -143,3 +143,13 @@ $header-offset: 5rem;
         outline: none;
     }
 }
+
+// The door to the console's structure pane, at the foot of the sections it
+// used to be one of.
+.structureLink {
+    margin: 0;
+    padding-top: dt.$spacing-md;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
