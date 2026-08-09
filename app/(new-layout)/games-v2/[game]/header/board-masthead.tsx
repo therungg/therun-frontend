@@ -144,6 +144,7 @@ export function BoardMasthead({
                             selectedCategoryName={category.name}
                             variableKeys={variableKeys}
                             boardCounts={data.categoryBoardCounts}
+                            gameDisplayMode={data.game.categoryDisplayMode}
                         />
                     </div>
                 )}

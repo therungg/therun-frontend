@@ -2,6 +2,7 @@
 
 import { cacheLife, cacheTag } from 'next/cache';
 import type {
+    CategoryDisplayMode,
     QuickStats,
     RecentPb,
     ResolvedCategory,
@@ -134,12 +135,26 @@ interface PageDataGroup {
     name: string;
     sortOrder?: number;
     hiddenByDefault?: boolean;
+    displayMode?: string | null;
     categories?: PageDataCategoryFlags[];
 }
 
 interface PageDataForCats {
     ungroupedCategories?: PageDataCategoryFlags[];
     groups?: PageDataGroup[];
+    game?: { categoryDisplayMode?: string | null };
+}
+
+/**
+ * The wire carries whatever the column holds; anything the UI does not know
+ * how to draw degrades to 'auto' rather than to a blank band.
+ */
+function asCategoryDisplayMode(
+    value: string | null | undefined,
+): CategoryDisplayMode | null {
+    return value === 'auto' || value === 'pills' || value === 'dropdown'
+        ? value
+        : null;
 }
 
 // /v1/runs/categories hard-caps `limit` at 100 server-side (parseLimit's
@@ -190,6 +205,8 @@ export async function resolveCategory(
     categories: ResolvedCategory[];
     selected: ResolvedCategory | null;
     groups: ResolvedGroup[];
+    /** Board-wide selector default; the flat case has nowhere else to get one. */
+    categoryDisplayMode: CategoryDisplayMode | null;
 }> {
     'use cache';
     cacheLife('minutes');
@@ -241,6 +258,7 @@ export async function resolveCategory(
             name: g.name,
             sortOrder: g.sortOrder ?? 0,
             hiddenByDefault: g.hiddenByDefault ?? false,
+            displayMode: asCategoryDisplayMode(g.displayMode),
         }))
         .sort((a, b) => a.sortOrder - b.sortOrder);
 
@@ -295,7 +313,14 @@ export async function resolveCategory(
     }
     if (!selected) selected = categories[0] ?? null;
 
-    return { categories, selected, groups };
+    return {
+        categories,
+        selected,
+        groups,
+        categoryDisplayMode: asCategoryDisplayMode(
+            pageDataResp.result?.game?.categoryDisplayMode,
+        ),
+    };
 }
 
 /**

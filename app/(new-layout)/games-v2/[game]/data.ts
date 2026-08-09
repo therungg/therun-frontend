@@ -57,6 +57,12 @@ export async function loadGamePageData(
     if (!game) return null;
 
     const resolved = await resolveCategory(game.id, sp.category);
+    // resolveGame reads the lookup endpoint, which has no board config on it;
+    // the selector default rides the same pageData call the groups come from.
+    const gameWithConfig = {
+        ...game,
+        categoryDisplayMode: resolved.categoryDisplayMode,
+    };
     const categories = resolved.categories.filter(
         (c) => !c.archived && c.isMain,
     );
@@ -72,7 +78,7 @@ export async function loadGamePageData(
             getGameMetadata(game.id).catch(() => EMPTY_GAME_METADATA),
         ]);
         return {
-            game,
+            game: gameWithConfig,
             selectedCategory: {
                 id: -1,
                 name: '',
@@ -193,7 +199,7 @@ export async function loadGamePageData(
     ]);
 
     return {
-        game,
+        game: gameWithConfig,
         selectedCategory: selected,
         categories,
         groups: resolved.groups,
