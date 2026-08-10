@@ -2,7 +2,7 @@
 
 import { Discord } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
-import { buildCurationHref, buildSubmitHref } from '~src/lib/board-url';
+import { buildSubmitHref } from '~src/lib/board-url';
 import type { GameMetadata } from '~src/lib/game-mgmt';
 import { formatCount, formatHours } from '~src/utils/format-stats';
 import type {
@@ -287,21 +287,6 @@ export function GameHero({
                             className={styles.quietChip}
                         >
                             Manage
-                        </Link>
-                    )}
-                    {/* On a board view (categorySlug set), the one-click door
-                        to curating exactly this board — category and
-                        subcategory ride along. The wall has no board slice,
-                        so no chip. */}
-                    {(canManage || canModerate) && categorySlug && (
-                        <Link
-                            href={buildCurationHref(game.name, {
-                                categorySlug,
-                                subcategoryKey,
-                            })}
-                            className={styles.quietChip}
-                        >
-                            Curate board
                         </Link>
                     )}
                     {/* Primary action last — the rightmost slot in the
