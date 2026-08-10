@@ -44,6 +44,9 @@ interface Props {
     onMutated: () => void;
     onPrev?: () => void;
     onNext?: () => void;
+    /** Open with this verb form already expanded — the row's Remove/`x`
+     * routes here instead of a standalone dialog. */
+    initialVerb?: ModVerb;
 }
 
 interface ModBoardContext {
@@ -89,6 +92,7 @@ export function ManualInspector({
     onMutated,
     onPrev,
     onNext,
+    initialVerb,
 }: Props) {
     const manualTimeId = entry.manualTimeId as number;
     const panelRef = useRef<HTMLDivElement>(null);
@@ -97,7 +101,14 @@ export function ManualInspector({
     useEffect(() => {
         setPortalReady(true);
     }, []);
-    const [activeVerb, setActiveVerb] = useState<ModVerb | null>(null);
+    const [activeVerb, setActiveVerb] = useState<ModVerb | null>(
+        initialVerb ?? null,
+    );
+    // Same contract as RunInspector: re-applies when another row's Remove
+    // is clicked while the drawer is open; stepping clears the parent verb.
+    useEffect(() => {
+        if (initialVerb) setActiveVerb(initialVerb);
+    }, [initialVerb, manualTimeId]);
     const [editOpen, setEditOpen] = useState(false);
 
     // Board context (categories) for the Change-time dialog's categoryId —

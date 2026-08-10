@@ -79,6 +79,10 @@ interface Props {
     /** Step to the adjacent run row without closing — j/k also bind to these. */
     onPrev?: () => void;
     onNext?: () => void;
+    /** Open with this verb form already expanded (the row's Remove/`x`
+     * routes here instead of a standalone dialog, so the board stays
+     * visible behind the judgement). */
+    initialVerb?: ModVerb;
 }
 
 interface ModBoardContext {
@@ -387,6 +391,7 @@ export function RunInspector({
     onMutated,
     onPrev,
     onNext,
+    initialVerb,
 }: Props) {
     const runId = entry.runId as number;
     const panelRef = useRef<HTMLDivElement>(null);
@@ -396,7 +401,16 @@ export function RunInspector({
     useEffect(() => {
         setPortalReady(true);
     }, []);
-    const [activeVerb, setActiveVerb] = useState<ModVerb | null>(null);
+    const [activeVerb, setActiveVerb] = useState<ModVerb | null>(
+        initialVerb ?? null,
+    );
+    // A row's Remove/`x` opens the drawer straight onto the verb form; the
+    // effect also covers clicking another row's Remove while the drawer is
+    // already open (new runId, same verb). Stepping j/k never re-applies —
+    // the parent clears its verb on prev/next.
+    useEffect(() => {
+        if (initialVerb) setActiveVerb(initialVerb);
+    }, [initialVerb, runId]);
 
     const [history, setHistory] = useState<HistoryEvent[] | null>(null);
     const [historyError, setHistoryError] = useState<string | null>(null);
@@ -469,6 +483,28 @@ export function RunInspector({
         setHistoryReload((n) => n + 1);
         onMutated();
     };
+
+    // Remove's scope question ("this run, or every run by them?") and its
+    // custom-time option need the category id, which only lives in the mod
+    // context. Load it the moment the remove form opens instead of leaving
+    // those options to silently not exist until some dialog happened to
+    // fetch it. Other verbs don't need it, so the drawer itself stays cheap.
+    useEffect(() => {
+        if (activeVerb !== 'remove' || modCtx != null) return;
+        let cancelled = false;
+        (async () => {
+            const res = await loadModBoardContextAction(gameSlug);
+            if (cancelled || 'error' in res) return;
+            setModCtx({
+                gameDisplay: res.gameDisplay,
+                categories: res.categories,
+                variables: res.variables,
+            });
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, [activeVerb, modCtx, gameSlug]);
 
     // Stepping to another row abandons a half-open verb form — that's the
     // point of the guard in the key handler below, and the explicit arrows
