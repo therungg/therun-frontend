@@ -2,7 +2,12 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { UserEligibleRunRow } from '../../../../../../types/moderation.types';
-import { AffectedSummary, CutoffPicker, ScopeCards } from './run-action-parts';
+import {
+    AffectedSummary,
+    CutoffPicker,
+    ReasonZone,
+    ScopeCards,
+} from './run-action-parts';
 
 afterEach(cleanup);
 
@@ -144,5 +149,91 @@ describe('CutoffPicker', () => {
             />,
         );
         expect(screen.queryByText(/goes with it/)).toBeNull();
+    });
+});
+
+describe('ReasonZone', () => {
+    it('shows calm labels: "Reason" + helper text when required', () => {
+        render(
+            <ReasonZone
+                reason=""
+                onReasonChange={vi.fn()}
+                required
+                minLength={10}
+            />,
+        );
+        expect(screen.getByLabelText('Reason')).toBeTruthy();
+        expect(
+            screen.getByText('Required — min 10 characters. Audit-logged.'),
+        ).toBeTruthy();
+    });
+
+    it('labels the field "Note" when optional', () => {
+        render(
+            <ReasonZone
+                reason=""
+                onReasonChange={vi.fn()}
+                required={false}
+                minLength={10}
+            />,
+        );
+        expect(screen.getByLabelText('Note')).toBeTruthy();
+        expect(screen.getByText('Optional. Audit-logged.')).toBeTruthy();
+    });
+
+    it('shows the shortfall count for a too-short required reason', () => {
+        render(
+            <ReasonZone
+                reason="short"
+                onReasonChange={vi.fn()}
+                required
+                minLength={10}
+            />,
+        );
+        expect(screen.getByText('5 more needed.')).toBeTruthy();
+    });
+
+    it('renders category select + notify switch when given', () => {
+        const onNotifyChange = vi.fn();
+        render(
+            <ReasonZone
+                category={{
+                    value: 'cheating',
+                    onChange: vi.fn(),
+                    notify: true,
+                    onNotifyChange,
+                }}
+                reason=""
+                onReasonChange={vi.fn()}
+                required
+                minLength={10}
+            />,
+        );
+        expect(
+            screen.getByLabelText('Why are you removing this?'),
+        ).toBeTruthy();
+        const toggle = screen.getByLabelText(
+            'Notify the runner and allow an appeal',
+        );
+        fireEvent.click(toggle);
+        expect(onNotifyChange).toHaveBeenCalledWith(false);
+    });
+
+    it('hides the notify switch when notify is null', () => {
+        render(
+            <ReasonZone
+                category={{
+                    value: 'cheating',
+                    onChange: vi.fn(),
+                    notify: null,
+                    onNotifyChange: vi.fn(),
+                }}
+                reason=""
+                onReasonChange={vi.fn()}
+                required
+                minLength={10}
+            />,
+        );
+        expect(screen.queryByLabelText(/Notify the runner/)).toBeNull();
     });
 });
