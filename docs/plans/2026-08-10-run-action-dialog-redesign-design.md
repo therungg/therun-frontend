@@ -1,6 +1,6 @@
 # Run-action dialog redesign (Remove flow + shared restyle)
 
-Date: 2026-08-10 · Branch: `remove-flow-redesign` · Status: approved design
+Date: 2026-08-10 · Branch: `remove-flow-redesign` · Status: implemented 2026-08-10
 
 ## Problem
 
