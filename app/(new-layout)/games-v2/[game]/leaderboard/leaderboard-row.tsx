@@ -7,7 +7,6 @@ import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { formatRunDate } from '~src/lib/format-run-date';
 import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
-import { usePopoverFocus } from '../shared/use-popover-focus';
 import { buildSubcategoryKey } from '../submit/subcategory-key';
 import { CountryFlag } from './country-flag';
 import type { DisplayRank } from './display-rank';
@@ -23,94 +22,6 @@ import {
     timingColumnHidden,
     timingColumns,
 } from './timing-columns';
-
-/**
- * "Set time" pill that opens a small info popover on click/tap
- * instead of relying on a hover-only `title` tooltip (inaccessible to touch
- * and keyboard-only users). The panel is `position: fixed`, positioned from
- * the trigger's bounding rect on open, and closes on scroll/resize rather
- * than tracking — see the `.infoPopoverPanel` comment in
- * leaderboard.module.scss for why (escaping the table wrapper's
- * `overflow-y: hidden`).
- */
-function InfoPill({
-    label,
-    explanation,
-}: {
-    label: string;
-    explanation: string;
-}) {
-    const [open, setOpen] = useState(false);
-    const [coords, setCoords] = useState<{ top: number; left: number } | null>(
-        null,
-    );
-    const btnRef = useRef<HTMLButtonElement>(null);
-    const panelRef = useRef<HTMLDivElement>(null);
-
-    const close = () => setOpen(false);
-
-    usePopoverFocus({ open, onClose: close, panelRef });
-
-    useEffect(() => {
-        if (!open) return;
-        const rect = btnRef.current?.getBoundingClientRect();
-        if (rect) {
-            setCoords({ top: rect.bottom + 6, left: rect.left });
-        }
-        window.addEventListener('scroll', close, true);
-        window.addEventListener('resize', close);
-        return () => {
-            window.removeEventListener('scroll', close, true);
-            window.removeEventListener('resize', close);
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [open]);
-
-    useEffect(() => {
-        if (!open) return;
-        const onDown = (e: MouseEvent) => {
-            if (
-                !btnRef.current?.contains(e.target as Node) &&
-                !panelRef.current?.contains(e.target as Node)
-            ) {
-                close();
-            }
-        };
-        document.addEventListener('mousedown', onDown);
-        return () => document.removeEventListener('mousedown', onDown);
-    }, [open]);
-
-    return (
-        <span className={styles.infoPopoverWrap}>
-            <button
-                ref={btnRef}
-                type="button"
-                className={styles.setPill}
-                aria-haspopup="dialog"
-                aria-expanded={open}
-                onClick={() => setOpen((o) => !o)}
-            >
-                {label}
-            </button>
-            {open && coords && (
-                <div
-                    ref={panelRef}
-                    role="dialog"
-                    aria-modal="true"
-                    aria-label={label}
-                    className={styles.infoPopoverPanel}
-                    style={{
-                        position: 'fixed',
-                        top: coords.top,
-                        left: coords.left,
-                    }}
-                >
-                    {explanation}
-                </div>
-            )}
-        </span>
-    );
-}
 
 // Find-me scrolls to and focuses this id. At most one row ever carries it
 // (the current session user's own entry), so a fixed id is safe.
@@ -537,12 +448,6 @@ export function LeaderboardRow({
             </td>
             <td className={styles.trailing}>
                 {slots?.actions?.(entry)}
-                {entry.source === 'manual' && (
-                    <InfoPill
-                        label="set time"
-                        explanation="A moderator-set leaderboard time"
-                    />
-                )}
                 {entry.vodUrl && (
                     <a
                         href={entry.vodUrl}
