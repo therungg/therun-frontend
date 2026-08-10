@@ -1089,6 +1089,7 @@ export function BoardCuration({
                             gameSlug={game.name}
                             categorySlug={category.name}
                             categoryDisplay={category.display}
+                            categoryId={category.id}
                             requireVideo={category.requireVideo}
                             primaryTiming={timing}
                             subcategoryDefKeys={subcatVars.map(

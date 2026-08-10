@@ -534,6 +534,7 @@ export function LeaderboardPager({
                     gameSlug={gameSlug}
                     categorySlug={categorySlug}
                     categoryDisplay={categoryDisplay}
+                    categoryId={categoryId}
                     requireVideo={requireVideo}
                     primaryTiming={primaryTiming}
                     subcategoryDefKeys={subcategoryDefKeys}

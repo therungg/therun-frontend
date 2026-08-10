@@ -64,6 +64,10 @@ interface Props {
     /** Human name for this board — shown, and used to match the runner's
      * other runs (eligible-runs rows key categories by display name). */
     categoryDisplay: string;
+    /** The board's category id — Remove's runner-scope and custom-time
+     * options are built from it. A prop, not the lazily-fetched mod
+     * context: the choices must exist the instant the form opens. */
+    categoryId?: number;
     /** category.requireVideo — turns a missing VOD into a stated blocker. */
     requireVideo?: boolean;
     /** Which clock this board ranks on. Decides which time reads primary. */
@@ -382,6 +386,7 @@ export function RunInspector({
     gameSlug,
     categorySlug,
     categoryDisplay,
+    categoryId,
     requireVideo = false,
     primaryTiming,
     subcategoryDefKeys,
@@ -483,28 +488,6 @@ export function RunInspector({
         setHistoryReload((n) => n + 1);
         onMutated();
     };
-
-    // Remove's scope question ("this run, or every run by them?") and its
-    // custom-time option need the category id, which only lives in the mod
-    // context. Load it the moment the remove form opens instead of leaving
-    // those options to silently not exist until some dialog happened to
-    // fetch it. Other verbs don't need it, so the drawer itself stays cheap.
-    useEffect(() => {
-        if (activeVerb !== 'remove' || modCtx != null) return;
-        let cancelled = false;
-        (async () => {
-            const res = await loadModBoardContextAction(gameSlug);
-            if (cancelled || 'error' in res) return;
-            setModCtx({
-                gameDisplay: res.gameDisplay,
-                categories: res.categories,
-                variables: res.variables,
-            });
-        })();
-        return () => {
-            cancelled = true;
-        };
-    }, [activeVerb, modCtx, gameSlug]);
 
     // Stepping to another row abandons a half-open verb form — that's the
     // point of the guard in the key handler below, and the explicit arrows
@@ -1002,24 +985,20 @@ export function RunInspector({
                                     runTimeMs: primaryMs,
                                     runDate: entry.runDate ?? null,
                                     // Unlocks Remove's "every run on this
-                                    // board" option. This is the path most
-                                    // moderators take — a row click opens
-                                    // the drawer, and `x` opens Remove from
-                                    // inside it — so without this the fork
-                                    // would only exist on the curation row's
-                                    // own Remove… button.
-                                    //
-                                    // Needs the category ID, which only
-                                    // arrives with the mod context, so the
-                                    // choice appears once that resolves
-                                    // rather than being absent for good.
+                                    // board" option and its custom-time
+                                    // replacement. Built from props the
+                                    // board page already holds — never from
+                                    // the lazily-loaded mod context, so the
+                                    // choices render the instant the form
+                                    // opens instead of arriving after a
+                                    // fetch and reshaping the form.
                                     runner:
                                         entry.userId != null &&
-                                        modCategory != null
+                                        categoryId != null
                                             ? {
                                                   id: entry.userId,
                                                   name: entry.runnerName,
-                                                  categoryId: modCategory.id,
+                                                  categoryId,
                                                   categoryDisplay:
                                                       categoryDisplay,
                                                   subcategoryKey:
