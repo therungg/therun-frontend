@@ -236,6 +236,35 @@
     margin: dt.$spacing-xs 0 0;
 }
 
+// ---- Remove's replacement set time ---------------------------
+// One quiet checkbox under the cutoff table; the inputs only mount while
+// it's ticked. Bootstrap sizes the inputs — this block only owns layout.
+.replaceToggle {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin: dt.$spacing-md 0 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
+    cursor: pointer;
+}
+
+.replaceFields {
+    display: flex;
+    gap: dt.$spacing-sm;
+    margin-top: dt.$spacing-xs;
+
+    input {
+        max-width: 11rem;
+    }
+}
+
+.replaceHint {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+    margin: dt.$spacing-xs 0 0;
+}
+
 // ---- Reason zone ---------------------------------------------
 .reasonRow {
     display: flex;
