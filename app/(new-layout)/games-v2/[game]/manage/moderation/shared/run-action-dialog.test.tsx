@@ -7,7 +7,7 @@ import {
     waitFor,
 } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { UserEligibleRunRow } from '../../../../../../types/moderation.types';
+import type { UserEligibleRunRow } from '../../../../../../../types/moderation.types';
 
 const mocks = vi.hoisted(() => ({
     loadUserEligibleRunsAction: vi.fn(),
@@ -56,7 +56,7 @@ const eligible = (runId: number, time: number): UserEligibleRunRow => ({
     subcategoryKey: '',
     time,
     gameTime: null,
-    primaryTiming: 'rt',
+    primaryTiming: 'realtime',
     verificationStatus: 'pending',
     vodUrl: null,
     endedAt: '2026-08-01T00:00:00Z',

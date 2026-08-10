@@ -3,7 +3,7 @@
 import type { RefObject } from 'react';
 import { useId } from 'react';
 import { DurationToFormatted } from '~src/components/util/datetime';
-import type { UserEligibleRunRow } from '../../../../../../types/moderation.types';
+import type { UserEligibleRunRow } from '../../../../../../../types/moderation.types';
 import {
     REMOVE_REASONS,
     type RemoveReason,
