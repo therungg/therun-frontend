@@ -261,12 +261,15 @@ describe('remove step flow', () => {
             target: { value: 'garbage' },
         });
         expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled();
+        // 1:40:00 is slower than the runner's 1:35:25 other run — that
+        // faster run goes with the removal (it would outrank the set time).
         fireEvent.change(screen.getByLabelText('Custom time'), {
-            target: { value: '35:48' },
+            target: { value: '1:40:00' },
         });
         fireEvent.change(screen.getByLabelText('Date achieved (optional)'), {
             target: { value: '2026-08-01' },
         });
+        expect(screen.getByText(/Their 1 faster run goes too/)).toBeTruthy();
         fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
         expect(
             screen.getByText(
@@ -301,11 +304,18 @@ describe('remove step flow', () => {
                     categoryId: 10,
                     subcategoryKey: '',
                     timing: 'realtime',
-                    timeMs: 35 * 60_000 + 48_000,
+                    timeMs: 100 * 60_000,
                     runDate: '2026-08-01',
                     reason: 'spliced VOD, checked frames',
                 },
             );
         });
+        // The removal covers the target AND the faster run.
+        expect(mocks.applyVerdictsAction).toHaveBeenCalledWith(
+            'mario64',
+            'reject',
+            [99, 1],
+            'spliced VOD, checked frames',
+        );
     });
 });

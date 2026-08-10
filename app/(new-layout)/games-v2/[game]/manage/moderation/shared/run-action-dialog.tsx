@@ -298,26 +298,46 @@ export function RunActionForm({
     const needsDecideStep = verb === 'remove' && removeRunner != null;
     const showDecide = needsDecideStep && !pastDecide;
 
+    const replaceOffered =
+        verb === 'remove' && removeRunner != null && !removesRunner;
+    const replaceActive = replaceOffered && replaceEnabled;
+    const replaceMs = replaceActive ? parseTimeInput(replaceTimeText) : null;
+    const replaceValid =
+        !replaceActive || (replaceMs != null && !Number.isNaN(replaceMs));
+
+    // The runner's other runs faster than a given cutoff time. A board
+    // always surfaces the best eligible run, so leaving a faster invalid one
+    // behind would just promote it into the slot being cleared.
+    const fasterThan = (cutoff: number | null): number[] => {
+        if (cutoff == null || otherRuns == null || !removeRunner) return [];
+        return otherRuns
+            .filter((r) => {
+                const t = runTime(r, removeRunner.primaryTiming);
+                return t != null && t < cutoff;
+            })
+            .map((r) => r.runId);
+    };
     /**
      * Everything the confirm actually removes: the run the moderator opened
-     * this on, plus anything faster than the one they called legit.
+     * this on, plus anything faster than the cutoff — the existing run they
+     * called legit, or the custom set time standing in for one (a set time
+     * slower than a surviving run would never surface).
      */
     const fasterThanLegit =
         legitRunId != null && otherRuns != null && removeRunner
-            ? (() => {
-                  const legit = otherRuns.find((r) => r.runId === legitRunId);
-                  const cutoff = legit
-                      ? runTime(legit, removeRunner.primaryTiming)
-                      : null;
-                  if (cutoff == null) return [];
-                  return otherRuns
-                      .filter((r) => {
-                          const t = runTime(r, removeRunner.primaryTiming);
-                          return t != null && t < cutoff;
-                      })
-                      .map((r) => r.runId);
-              })()
-            : [];
+            ? fasterThan(
+                  (() => {
+                      const legit = otherRuns.find(
+                          (r) => r.runId === legitRunId,
+                      );
+                      return legit
+                          ? runTime(legit, removeRunner.primaryTiming)
+                          : null;
+                  })(),
+              )
+            : replaceActive
+              ? fasterThan(replaceMs)
+              : [];
     const runIds = [...targetRunIds, ...fasterThanLegit];
     // The legit-cutoff run itself, for the Confirm-screen context line
     // (restates the decision made on Decide in terms of its time).
@@ -344,13 +364,6 @@ export function RunActionForm({
               : verb === 'remove'
                 ? 'delete'
                 : null;
-    const replaceOffered =
-        verb === 'remove' && removeRunner != null && !removesRunner;
-    const replaceActive = replaceOffered && replaceEnabled;
-    const replaceMs = replaceActive ? parseTimeInput(replaceTimeText) : null;
-    const replaceValid =
-        !replaceActive || (replaceMs != null && !Number.isNaN(replaceMs));
-
     const banRule: UserExclusionRuleInput | null =
         target.kind === 'runner'
             ? {
@@ -421,9 +434,20 @@ export function RunActionForm({
             if ('error' in res) return setPreviewError(res.error);
             setPreview({ kind: 'exclude', data: res.preview });
         });
-        // banRule/verdictAction are derived from the deps below.
+        // banRule/verdictAction are derived from the deps below. The joined
+        // faster-run ids stand in for the custom-time cutoff: retyping the
+        // time only refetches when the set of removed runs actually changes.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [gameSlug, verb, notify, scope, removeScope, legitRunId]);
+    }, [
+        gameSlug,
+        verb,
+        notify,
+        scope,
+        removeScope,
+        legitRunId,
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        fasterThanLegit.join(','),
+    ]);
 
     // Reload whenever routing-relevant inputs change (notify flips reject↔exclude;
     // scope flips category↔game rule — each yields a different preview).
@@ -864,6 +888,8 @@ export function RunActionForm({
                                         Files a verified set time for{' '}
                                         {removeRunner.name} on this board, with
                                         the same reason as the removal.
+                                        {fasterThanLegit.length > 0 &&
+                                            ` Their ${fasterThanLegit.length} faster run${fasterThanLegit.length === 1 ? ' goes' : 's go'} too — a surviving faster run would outrank it.`}
                                     </p>
                                     {replaceTimeText.length > 0 &&
                                         !replaceValid && (
@@ -943,6 +969,11 @@ export function RunActionForm({
                                     you called legit.
                                 </>
                             )
+                        ) : replaceActive && runIds.length > 1 ? (
+                            <>
+                                Removing {runIds.length} runs — this one and
+                                everything faster than the set time.
+                            </>
                         ) : (
                             'Removing this run only.'
                         )}
