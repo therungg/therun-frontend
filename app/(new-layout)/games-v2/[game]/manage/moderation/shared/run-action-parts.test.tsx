@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { AffectedSummary, ScopeCards } from './run-action-parts';
+import type { UserEligibleRunRow } from '../../../../../../types/moderation.types';
+import { AffectedSummary, CutoffPicker, ScopeCards } from './run-action-parts';
 
 afterEach(cleanup);
 
@@ -69,5 +70,79 @@ describe('AffectedSummary', () => {
                     el?.textContent === '4 runs affected across 1 leaderboard.',
             ),
         ).toBeTruthy();
+    });
+});
+
+const row = (runId: number, time: number): UserEligibleRunRow => ({
+    runId,
+    categoryId: 10,
+    categoryName: 'any-percent',
+    subcategoryKey: '',
+    time,
+    gameTime: null,
+    primaryTiming: 'rt',
+    verificationStatus: 'pending',
+    vodUrl: null,
+    endedAt: '2026-08-01T00:00:00Z',
+    isLeaderboardEntry: true,
+    isLeaderboardEntryGt: false,
+    rank: null,
+    totalRunners: null,
+});
+
+describe('CutoffPicker', () => {
+    it('pins a None row and lists each run with its status', () => {
+        render(
+            <CutoffPicker
+                runs={[row(1, 5_725_000), row(2, 5_728_000)]}
+                timing="rt"
+                value={null}
+                onChange={vi.fn()}
+                fasterCount={0}
+            />,
+        );
+        const radios = screen.getAllByRole('radio');
+        expect(radios).toHaveLength(3); // None + 2 runs
+        expect(radios[0].textContent).toContain('None — just remove this one');
+        expect(radios[0].getAttribute('aria-checked')).toBe('true');
+        expect(screen.getAllByText('pending')).toHaveLength(2);
+    });
+
+    it('selects a run row and reports it', () => {
+        const onChange = vi.fn();
+        render(
+            <CutoffPicker
+                runs={[row(1, 5_725_000)]}
+                timing="rt"
+                value={null}
+                onChange={onChange}
+                fasterCount={0}
+            />,
+        );
+        fireEvent.click(screen.getAllByRole('radio')[1]);
+        expect(onChange).toHaveBeenCalledWith(1);
+    });
+
+    it('shows the faster-runs consequence line only when a cutoff catches runs', () => {
+        const { rerender } = render(
+            <CutoffPicker
+                runs={[row(1, 5_725_000), row(2, 5_728_000)]}
+                timing="rt"
+                value={2}
+                onChange={vi.fn()}
+                fasterCount={1}
+            />,
+        );
+        expect(screen.getByText(/1 faster run goes with it/)).toBeTruthy();
+        rerender(
+            <CutoffPicker
+                runs={[row(1, 5_725_000), row(2, 5_728_000)]}
+                timing="rt"
+                value={1}
+                onChange={vi.fn()}
+                fasterCount={0}
+            />,
+        );
+        expect(screen.queryByText(/goes with it/)).toBeNull();
     });
 });
