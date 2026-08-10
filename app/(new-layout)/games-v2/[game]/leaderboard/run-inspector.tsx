@@ -963,6 +963,8 @@ export function RunInspector({
                                     kind: 'runs',
                                     runIds: [runId],
                                     label: `${entry.runnerName}'s run`,
+                                    runTimeMs: primaryMs,
+                                    runDate: entry.runDate ?? null,
                                     // Unlocks Remove's "every run on this
                                     // board" option. This is the path most
                                     // moderators take — a row click opens

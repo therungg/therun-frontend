@@ -599,6 +599,12 @@ export function LeaderboardRow({
                                 ),
                             )}
                             primaryTiming={primaryTiming}
+                            timeMs={
+                                isRtaFallbackEntry
+                                    ? entry.realTime
+                                    : timingValue(primary.key)
+                            }
+                            runDate={entry.runDate ?? null}
                             onMutated={onBoardRefresh as () => void}
                         />
                     )}

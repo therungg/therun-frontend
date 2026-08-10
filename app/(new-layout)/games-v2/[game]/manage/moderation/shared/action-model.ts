@@ -144,6 +144,11 @@ export type RunActionTarget =
           runIds: number[];
           manualTimeIds?: number[];
           label: string;
+          /** The target's board time (ms on the board's primary clock) and
+           *  run date, shown on Remove's "This run" card so the question is
+           *  answerable without leaving the dialog. */
+          runTimeMs?: number | null;
+          runDate?: string | null;
           /**
            * Who and where, when the selection is one run by one known runner.
            * Present only then, because it unlocks a choice that only makes

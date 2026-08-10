@@ -144,17 +144,18 @@ describe('remove step flow', () => {
         ).toBeTruthy();
     });
 
-    it('single screen when the runner has no other times', async () => {
+    it('asks the scope question immediately even with no other times', async () => {
         renderRemove([]);
-        // Straight to the confirm form: reason present, no Continue.
-        await screen.findByLabelText('Reason');
-        expect(screen.queryByRole('button', { name: 'Continue' })).toBeNull();
-        expect(
-            screen.getByText('They have no other times on this board.'),
-        ).toBeTruthy();
+        // Decide screen renders without waiting on the other-times fetch:
+        // the question is up right away, the cutoff area resolves to a note.
         expect(
             screen.getByRole('radiogroup', { name: 'What are you removing?' }),
         ).toBeTruthy();
+        expect(screen.queryByLabelText('Reason')).toBeNull();
+        await screen.findByText('They have no other times on this board.');
+        fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+        expect(screen.getByText('Removing this run only.')).toBeTruthy();
+        expect(screen.getByLabelText('Reason')).toBeTruthy();
     });
 
     it('singular context line when the legit run is the fastest other run', async () => {
