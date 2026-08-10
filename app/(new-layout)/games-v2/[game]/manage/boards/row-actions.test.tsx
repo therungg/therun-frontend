@@ -221,6 +221,10 @@ describe('RowActions — Remove (shared dialog)', () => {
             kind: 'runs',
             runIds: [1],
             label: "runner's run",
+            // The row's displayed time and date — the dialog's "This run"
+            // card names the run being judged.
+            runTimeMs: 20000,
+            runDate: '2026-01-01T00:00:00.000Z',
             // Carries who and where, which is what unlocks Remove's
             // "every run on this board" option.
             runner: {

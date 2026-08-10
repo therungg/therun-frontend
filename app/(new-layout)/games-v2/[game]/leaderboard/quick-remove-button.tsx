@@ -22,6 +22,10 @@ interface Props {
      *  runner's other times from these. */
     subcategoryKey: string;
     primaryTiming: 'rt' | 'gt';
+    /** The row's board time and date — shown on the dialog's "This run"
+     *  card so the scope question identifies the run being judged. */
+    timeMs: number | null;
+    runDate: string | null;
     /** Board page refetch — also runs after an Undo from the toast. */
     onMutated: () => void;
     /** The row's hover shortcut (`x`) clicks the button through this. */
@@ -47,6 +51,8 @@ export function QuickRemoveButton({
     categoryDisplay,
     subcategoryKey,
     primaryTiming,
+    timeMs,
+    runDate,
     onMutated,
     ref,
 }: Props) {
@@ -77,6 +83,8 @@ export function QuickRemoveButton({
                         manualTimeIds:
                             manualTimeId != null ? [manualTimeId] : undefined,
                         label: `${runnerName}'s ${subject}`,
+                        runTimeMs: timeMs,
+                        runDate,
                         // Offered on real runs only. An exclusion rule flips
                         // `excluded` on runs; manual_times has no such column
                         // and propagateExclusion never touches it, so on a

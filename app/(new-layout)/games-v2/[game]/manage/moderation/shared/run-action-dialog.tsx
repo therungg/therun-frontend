@@ -9,7 +9,11 @@ import {
     useTransition,
 } from 'react';
 import { toast } from 'react-toastify';
-import { DurationToFormatted } from '~src/components/util/datetime';
+import {
+    DurationToFormatted,
+    getFormattedString,
+} from '~src/components/util/datetime';
+import { formatRunDate } from '~src/lib/format-run-date';
 import type {
     PreviewExcludeResult,
     UserEligibleRunRow,
@@ -268,17 +272,12 @@ export function RunActionForm({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [gameSlug, removeRunner, removesRunner, otherRuns]);
 
-    // otherRuns fetch in flight — the layout choice (one screen vs. two)
-    // waits for it rather than flashing the single-screen form and then
-    // replacing it with the two-step Decide/Confirm once it resolves.
-    const otherTimesPending =
-        verb === 'remove' && removeRunner != null && otherRuns == null;
-    // Two-step Decide->Confirm only when there's an actual decision to make:
-    // a remove target whose runner has other times on this board.
-    const needsDecideStep =
-        verb === 'remove' &&
-        removeRunner != null &&
-        (otherRuns?.length ?? 0) > 0;
+    // Two-step Decide->Confirm whenever the target names a runner: the
+    // scope question ("this run, or every run by them?") renders the moment
+    // the dialog opens, and the other-times fetch fills the cutoff table in
+    // underneath it rather than gating the whole screen behind a loading
+    // interstitial.
+    const needsDecideStep = verb === 'remove' && removeRunner != null;
     const showDecide = needsDecideStep && !pastDecide;
 
     /**
@@ -649,40 +648,16 @@ export function RunActionForm({
         });
     };
 
-    // While the runner's other times are still loading, the layout choice
-    // (one screen vs. Decide/Confirm) waits — nothing else renders yet.
-    if (otherTimesPending) {
-        return (
-            <>
-                <div className={styles.body}>
-                    <p className={styles.previewLoading}>
-                        Loading their other times…
-                    </p>
-                </div>
-                <div className={styles.footer}>
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-outline-secondary"
-                        onClick={onClose}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-danger"
-                        disabled
-                    >
-                        Confirm remove
-                    </button>
-                </div>
-            </>
-        );
-    }
-
     // Decide: scope (this run vs. this runner) + which of the runner's
-    // other times is legit. Only reached when there's an actual decision —
-    // a runner with other times on this board.
+    // other times is legit. The scope question renders immediately; the
+    // cutoff table streams in below it once the other-times fetch lands.
     if (showDecide && removeRunner) {
+        const targetTime =
+            target.kind === 'runs' ? (target.runTimeMs ?? null) : null;
+        const targetDate =
+            target.kind === 'runs' && target.runDate
+                ? formatRunDate(target.runDate)
+                : null;
         return (
             <>
                 <div className={styles.body}>
@@ -692,7 +667,13 @@ export function RunActionForm({
                             {
                                 value: 'run',
                                 title: 'This run',
-                                detail: `Only ${target.kind === 'runs' ? target.label : 'this run'}`,
+                                // The time and date identify the run being
+                                // judged — the question is answerable without
+                                // cross-checking the board behind the dialog.
+                                detail:
+                                    targetTime != null
+                                        ? `${getFormattedString(String(targetTime))}${targetDate ? ` on ${targetDate}` : ''}`
+                                        : `Only ${target.kind === 'runs' ? target.label : 'this run'}`,
                             },
                             {
                                 value: 'runner',
@@ -712,9 +693,17 @@ export function RunActionForm({
                             later. One reversible rule, not one removal per run.
                             Their account is unaffected.
                         </p>
+                    ) : otherRuns == null ? (
+                        <p className={styles.previewLoading}>
+                            Checking their other times on this board…
+                        </p>
+                    ) : otherRuns.length === 0 ? (
+                        <p className={styles.scopeNote}>
+                            They have no other times on this board.
+                        </p>
                     ) : (
                         <CutoffPicker
-                            runs={otherRuns ?? []}
+                            runs={otherRuns}
                             timing={removeRunner.primaryTiming}
                             value={legitRunId}
                             onChange={setLegitRunId}
@@ -736,7 +725,13 @@ export function RunActionForm({
                         type="button"
                         className="btn btn-sm btn-primary"
                         onClick={() => setPastDecide(true)}
-                        disabled={isConfirming}
+                        // Per-run scope waits for the other-times fetch —
+                        // continuing before it lands would silently skip the
+                        // cutoff choice. Runner scope makes it moot.
+                        disabled={
+                            isConfirming ||
+                            (!removesRunner && otherRuns == null)
+                        }
                     >
                         Continue
                     </button>
@@ -785,47 +780,6 @@ export function RunActionForm({
                             'Removing this run only.'
                         )}
                     </p>
-                )}
-
-                {/* A runner target with no other times on this board never
-                    goes through Decide — the scope choice and its
-                    consequence both belong on the single screen. */}
-                {!needsDecideStep && removeRunner && (
-                    <>
-                        <ScopeCards
-                            label="What are you removing?"
-                            options={[
-                                {
-                                    value: 'run',
-                                    title: 'This run',
-                                    detail: `Only ${target.kind === 'runs' ? target.label : 'this run'}`,
-                                },
-                                {
-                                    value: 'runner',
-                                    title: `Every run by ${removeRunner.name}`,
-                                    detail: `Their whole presence on ${removeRunner.categoryDisplay}`,
-                                },
-                            ]}
-                            value={removeScope}
-                            onChange={(v) => setRemoveScope(v)}
-                            disabled={isConfirming}
-                        />
-                        <p className={styles.scopeNote}>
-                            {removesRunner ? (
-                                <>
-                                    This removes{' '}
-                                    <strong>{removeRunner.name}</strong> from{' '}
-                                    {removeRunner.categoryDisplay} completely —
-                                    every run they have on it, and any they
-                                    submit later. One reversible rule, not one
-                                    removal per run. Their account is
-                                    unaffected.
-                                </>
-                            ) : (
-                                'They have no other times on this board.'
-                            )}
-                        </p>
-                    </>
                 )}
 
                 {verb === 'ban' && target.kind === 'runner' && (
