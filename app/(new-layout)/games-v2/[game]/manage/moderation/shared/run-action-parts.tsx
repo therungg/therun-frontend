@@ -1,6 +1,6 @@
 'use client';
 
-import type { RefObject } from 'react';
+import type { KeyboardEvent, RefObject } from 'react';
 import { useId } from 'react';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { UserEligibleRunRow } from '../../../../../../../types/moderation.types';
@@ -18,9 +18,38 @@ export interface ScopeCardOption<V extends string> {
 }
 
 /**
+ * Roving-tabindex helper for a radiogroup laid out as a flat array of
+ * options: the selected option (or the first, when none is selected) is
+ * the sole tab stop; ArrowDown/ArrowRight and ArrowUp/ArrowLeft move both
+ * focus and selection to the next/previous option, wrapping at the ends —
+ * matching native radio-button behavior (selection follows focus).
+ */
+function rovingRadioKeyDown<V>(
+    e: KeyboardEvent<HTMLButtonElement>,
+    values: readonly V[],
+    currentIndex: number,
+    onChange: (v: V) => void,
+) {
+    let nextIndex: number | null = null;
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+        nextIndex = (currentIndex + 1) % values.length;
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+        nextIndex = (currentIndex - 1 + values.length) % values.length;
+    }
+    if (nextIndex == null) return;
+    e.preventDefault();
+    onChange(values[nextIndex]);
+    const group = e.currentTarget.closest('[role="radiogroup"]');
+    const target =
+        group?.querySelectorAll<HTMLButtonElement>('[role="radio"]')[nextIndex];
+    target?.focus();
+}
+
+/**
  * Segmented cards standing in for scope radios (remove run/runner, ban
  * category/game): one card per option, title + optional detail line,
- * radiogroup semantics so arrow-key users aren't worse off than before.
+ * full radiogroup semantics — roving tabindex (selected option is the only
+ * tab stop) plus arrow-key navigation that moves selection with focus.
  */
 export function ScopeCards<V extends string>({
     label,
@@ -36,6 +65,11 @@ export function ScopeCards<V extends string>({
     disabled?: boolean;
 }) {
     const labelId = useId();
+    const values = options.map((opt) => opt.value);
+    const selectedIndex = Math.max(
+        0,
+        values.findIndex((v) => v === value),
+    );
     return (
         <div className={styles.zone}>
             <span id={labelId} className={styles.fieldLabel}>
@@ -46,12 +80,13 @@ export function ScopeCards<V extends string>({
                 role="radiogroup"
                 aria-labelledby={labelId}
             >
-                {options.map((opt) => (
+                {options.map((opt, i) => (
                     <button
                         key={opt.value}
                         type="button"
                         role="radio"
                         aria-checked={opt.value === value}
+                        tabIndex={i === selectedIndex ? 0 : -1}
                         disabled={disabled}
                         className={
                             opt.value === value
@@ -59,6 +94,9 @@ export function ScopeCards<V extends string>({
                                 : styles.scopeCard
                         }
                         onClick={() => onChange(opt.value)}
+                        onKeyDown={(e) =>
+                            rovingRadioKeyDown(e, values, i, onChange)
+                        }
                     >
                         <span className={styles.scopeCardTitle}>
                             {opt.title}
@@ -115,6 +153,12 @@ export function CutoffPicker({
     disabled?: boolean;
 }) {
     const labelId = useId();
+    // Option order matches render order: None first, then runs.
+    const values: (number | null)[] = [null, ...runs.map((r) => r.runId)];
+    const selectedIndex = Math.max(
+        0,
+        values.findIndex((v) => v === value),
+    );
     return (
         <div className={styles.zone}>
             <span id={labelId} className={styles.fieldLabel}>
@@ -129,6 +173,7 @@ export function CutoffPicker({
                     type="button"
                     role="radio"
                     aria-checked={value == null}
+                    tabIndex={selectedIndex === 0 ? 0 : -1}
                     disabled={disabled}
                     className={
                         value == null
@@ -136,16 +181,20 @@ export function CutoffPicker({
                             : `${styles.cutoffRow} ${styles.cutoffNone}`
                     }
                     onClick={() => onChange(null)}
+                    onKeyDown={(e) =>
+                        rovingRadioKeyDown(e, values, 0, onChange)
+                    }
                 >
                     None — just remove this one
                 </button>
                 <div className={styles.cutoffScroll}>
-                    {runs.map((r) => (
+                    {runs.map((r, i) => (
                         <button
                             key={r.runId}
                             type="button"
                             role="radio"
                             aria-checked={value === r.runId}
+                            tabIndex={i + 1 === selectedIndex ? 0 : -1}
                             disabled={disabled}
                             className={
                                 value === r.runId
@@ -153,6 +202,9 @@ export function CutoffPicker({
                                     : styles.cutoffRow
                             }
                             onClick={() => onChange(r.runId)}
+                            onKeyDown={(e) =>
+                                rovingRadioKeyDown(e, values, i + 1, onChange)
+                            }
                         >
                             <span className={styles.cutoffTime}>
                                 <DurationToFormatted
@@ -212,7 +264,10 @@ export function ReasonZone({
     const selectId = useId();
     const notifyId = useId();
     const textId = useId();
+    const hintId = useId();
+    const errorId = useId();
     const shortfall = minLength - reason.trim().length;
+    const showError = required && shortfall > 0 && reason.length > 0;
     return (
         <div className={styles.zone}>
             {category && (
@@ -278,14 +333,15 @@ export function ReasonZone({
                 value={reason}
                 onChange={(e) => onReasonChange(e.target.value)}
                 disabled={disabled}
+                aria-describedby={showError ? `${hintId} ${errorId}` : hintId}
             />
-            <div className={styles.reasonHint}>
+            <div id={hintId} className={styles.reasonHint}>
                 {required
                     ? `Required — min ${minLength} characters. Audit-logged.`
                     : 'Optional. Audit-logged.'}
             </div>
-            {required && shortfall > 0 && reason.length > 0 && (
-                <div className={styles.reasonError}>
+            {showError && (
+                <div id={errorId} className={styles.reasonError}>
                     {shortfall} more needed.
                 </div>
             )}

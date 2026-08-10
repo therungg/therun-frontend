@@ -63,6 +63,91 @@ describe('ScopeCards', () => {
             expect((r as HTMLButtonElement).disabled).toBe(true);
         }
     });
+
+    it('gives the selected option the only tab stop', () => {
+        render(
+            <ScopeCards
+                label="What are you removing?"
+                options={[...options]}
+                value="runner"
+                onChange={vi.fn()}
+            />,
+        );
+        const radios = screen.getAllByRole('radio');
+        expect(radios[0].getAttribute('tabindex')).toBe('-1');
+        expect(radios[1].getAttribute('tabindex')).toBe('0');
+    });
+
+    it('defaults the tab stop to the first option when none is selected', () => {
+        render(
+            <ScopeCards
+                label="Scope"
+                options={[...options]}
+                value={
+                    'neither' as unknown as (typeof options)[number]['value']
+                }
+                onChange={vi.fn()}
+            />,
+        );
+        const radios = screen.getAllByRole('radio');
+        expect(radios[0].getAttribute('tabindex')).toBe('0');
+        expect(radios[1].getAttribute('tabindex')).toBe('-1');
+    });
+
+    it('ArrowRight/ArrowDown moves selection and focus to the next option, wrapping', () => {
+        const onChange = vi.fn();
+        const { rerender } = render(
+            <ScopeCards
+                label="What are you removing?"
+                options={[...options]}
+                value="run"
+                onChange={onChange}
+            />,
+        );
+        let radios = screen.getAllByRole('radio');
+        radios[0].focus();
+        fireEvent.keyDown(radios[0], { key: 'ArrowRight' });
+        expect(onChange).toHaveBeenCalledWith('runner');
+        // Reflect the selection change (the real component would re-render
+        // via its own state) so focus moves onto the now-current DOM node.
+        rerender(
+            <ScopeCards
+                label="What are you removing?"
+                options={[...options]}
+                value="runner"
+                onChange={onChange}
+            />,
+        );
+        radios = screen.getAllByRole('radio');
+        expect(radios[1]).toBe(document.activeElement);
+
+        onChange.mockClear();
+        fireEvent.keyDown(radios[1], { key: 'ArrowDown' });
+        // Wraps from the last option back to the first.
+        expect(onChange).toHaveBeenCalledWith('run');
+    });
+
+    it('ArrowLeft/ArrowUp moves selection and focus to the previous option, wrapping', () => {
+        const onChange = vi.fn();
+        render(
+            <ScopeCards
+                label="What are you removing?"
+                options={[...options]}
+                value="run"
+                onChange={onChange}
+            />,
+        );
+        const radios = screen.getAllByRole('radio');
+        radios[0].focus();
+        // Wraps from the first option back to the last.
+        fireEvent.keyDown(radios[0], { key: 'ArrowLeft' });
+        expect(onChange).toHaveBeenCalledWith('runner');
+        expect(radios[1]).toBe(document.activeElement);
+
+        onChange.mockClear();
+        fireEvent.keyDown(radios[1], { key: 'ArrowUp' });
+        expect(onChange).toHaveBeenCalledWith('run');
+    });
 });
 
 describe('AffectedSummary', () => {
@@ -149,6 +234,84 @@ describe('CutoffPicker', () => {
             />,
         );
         expect(screen.queryByText(/goes with it/)).toBeNull();
+    });
+
+    it('gives the selected option (None) the only tab stop', () => {
+        render(
+            <CutoffPicker
+                runs={[row(1, 5_725_000), row(2, 5_728_000)]}
+                timing="rt"
+                value={null}
+                onChange={vi.fn()}
+                fasterCount={0}
+            />,
+        );
+        const radios = screen.getAllByRole('radio');
+        expect(radios[0].getAttribute('tabindex')).toBe('0');
+        expect(radios[1].getAttribute('tabindex')).toBe('-1');
+        expect(radios[2].getAttribute('tabindex')).toBe('-1');
+    });
+
+    it('gives a selected run row the only tab stop', () => {
+        render(
+            <CutoffPicker
+                runs={[row(1, 5_725_000), row(2, 5_728_000)]}
+                timing="rt"
+                value={2}
+                onChange={vi.fn()}
+                fasterCount={1}
+            />,
+        );
+        const radios = screen.getAllByRole('radio');
+        expect(radios[0].getAttribute('tabindex')).toBe('-1');
+        expect(radios[1].getAttribute('tabindex')).toBe('-1');
+        expect(radios[2].getAttribute('tabindex')).toBe('0');
+    });
+
+    it('ArrowDown moves selection and focus from None onto the first run, wrapping past the last run back to None', () => {
+        const onChange = vi.fn();
+        render(
+            <CutoffPicker
+                runs={[row(1, 5_725_000), row(2, 5_728_000)]}
+                timing="rt"
+                value={null}
+                onChange={onChange}
+                fasterCount={0}
+            />,
+        );
+        const radios = screen.getAllByRole('radio');
+        radios[0].focus();
+        fireEvent.keyDown(radios[0], { key: 'ArrowDown' });
+        expect(onChange).toHaveBeenCalledWith(1);
+        expect(radios[1]).toBe(document.activeElement);
+
+        fireEvent.keyDown(radios[1], { key: 'ArrowDown' });
+        expect(onChange).toHaveBeenCalledWith(2);
+        expect(radios[2]).toBe(document.activeElement);
+
+        onChange.mockClear();
+        fireEvent.keyDown(radios[2], { key: 'ArrowDown' });
+        // Wraps from the last run back to the pinned None row.
+        expect(onChange).toHaveBeenCalledWith(null);
+        expect(radios[0]).toBe(document.activeElement);
+    });
+
+    it('ArrowUp wraps from None back onto the last run', () => {
+        const onChange = vi.fn();
+        render(
+            <CutoffPicker
+                runs={[row(1, 5_725_000), row(2, 5_728_000)]}
+                timing="rt"
+                value={null}
+                onChange={onChange}
+                fasterCount={0}
+            />,
+        );
+        const radios = screen.getAllByRole('radio');
+        radios[0].focus();
+        fireEvent.keyDown(radios[0], { key: 'ArrowUp' });
+        expect(onChange).toHaveBeenCalledWith(2);
+        expect(radios[2]).toBe(document.activeElement);
     });
 });
 

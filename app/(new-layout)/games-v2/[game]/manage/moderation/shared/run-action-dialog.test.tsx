@@ -157,6 +157,27 @@ describe('remove step flow', () => {
         ).toBeTruthy();
     });
 
+    it('singular context line when the legit run is the fastest other run', async () => {
+        renderRemove([eligible(1, 5_725_000), eligible(2, 5_728_000)]);
+        await screen.findByRole('radiogroup', {
+            name: "Fastest time you've verified as legit",
+        });
+        // Call the FASTEST run (id 1) legit -> nothing is faster than it,
+        // so only the target run itself is removed.
+        fireEvent.click(screen.getByRole('radio', { name: /1:35:25/ }));
+        fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+        expect(
+            screen.getByText(
+                (_, el) =>
+                    el?.tagName === 'P' &&
+                    (el?.textContent ?? '').startsWith(
+                        'Removing this run only — nothing faster than the',
+                    ) &&
+                    (el?.textContent ?? '').endsWith('you called legit.'),
+            ),
+        ).toBeTruthy();
+    });
+
     it('cutoff selection carries into the confirm payload', async () => {
         renderRemove([eligible(1, 5_725_000), eligible(2, 5_728_000)]);
         await screen.findByRole('radiogroup', {
