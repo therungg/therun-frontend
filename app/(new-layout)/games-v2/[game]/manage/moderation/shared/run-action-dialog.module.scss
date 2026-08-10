@@ -40,6 +40,16 @@
     margin-bottom: dt.$spacing-md;
 }
 
+// ---- Step context (Confirm screen, after a Decide step) -----
+.stepContext {
+    background: var(--bs-tertiary-bg);
+    border-left: 2px solid var(--bs-primary);
+    border-radius: dt.$radius-sm;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    margin-bottom: dt.$spacing-lg;
+    font-size: dt.$font-size-sm;
+}
+
 // ---- Preview summary ----------------------------------------
 .previewSummary {
     font-size: dt.$font-size-sm;

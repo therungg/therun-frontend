@@ -24,7 +24,6 @@ import {
     hasTrueInverse,
     isBanUndoable,
     type ModVerb,
-    REMOVE_REASONS,
     type RemoveReason,
     type RunActionTarget,
     removeReasonMeta,
@@ -41,6 +40,12 @@ import {
     previewVerdictsAction,
 } from './actions/verdicts.action';
 import styles from './run-action-dialog.module.scss';
+import {
+    AffectedSummary,
+    CutoffPicker,
+    ReasonZone,
+    ScopeCards,
+} from './run-action-parts';
 import { fireUndoToast } from './undo-toast';
 
 const MIN_REASON = 10;
@@ -172,6 +177,11 @@ export function RunActionForm({
             ? (target.runner ?? null)
             : null;
     const [removeScope, setRemoveScope] = useState<'run' | 'runner'>('run');
+    // Whether the moderator has clicked past the Decide screen (scope +
+    // cutoff) into Confirm. Only meaningful when needsDecideStep is true —
+    // a runner with no other times, or a non-remove verb, skips straight to
+    // the single Confirm screen and this stays false/unused.
+    const [pastDecide, setPastDecide] = useState(false);
     // 'runner' means an exclusion rule on the runner scoped to this board —
     // exactly what the Runner… dialog writes, reached from where the mod
     // already is. Guests and multi-run selections can never reach it.
@@ -258,6 +268,19 @@ export function RunActionForm({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [gameSlug, removeRunner, removesRunner, otherRuns]);
 
+    // otherRuns fetch in flight — the layout choice (one screen vs. two)
+    // waits for it rather than flashing the single-screen form and then
+    // replacing it with the two-step Decide/Confirm once it resolves.
+    const otherTimesPending =
+        verb === 'remove' && removeRunner != null && otherRuns == null;
+    // Two-step Decide->Confirm only when there's an actual decision to make:
+    // a remove target whose runner has other times on this board.
+    const needsDecideStep =
+        verb === 'remove' &&
+        removeRunner != null &&
+        (otherRuns?.length ?? 0) > 0;
+    const showDecide = needsDecideStep && !pastDecide;
+
     /**
      * Everything the confirm actually removes: the run the moderator opened
      * this on, plus anything faster than the one they called legit.
@@ -279,6 +302,16 @@ export function RunActionForm({
               })()
             : [];
     const runIds = [...targetRunIds, ...fasterThanLegit];
+    // The legit-cutoff run itself, for the Confirm-screen context line
+    // (restates the decision made on Decide in terms of its time).
+    const legitRun =
+        legitRunId != null
+            ? (otherRuns?.find((r) => r.runId === legitRunId) ?? null)
+            : null;
+    const legitRunTime =
+        legitRun && removeRunner
+            ? runTime(legitRun, removeRunner.primaryTiming)
+            : null;
     const manualTimeIds =
         target.kind === 'runs' ? (target.manualTimeIds ?? []) : [];
     // How this verb lands on the selection's manual set times (if any):
@@ -607,245 +640,182 @@ export function RunActionForm({
         });
     };
 
+    // While the runner's other times are still loading, the layout choice
+    // (one screen vs. Decide/Confirm) waits — nothing else renders yet.
+    if (otherTimesPending) {
+        return (
+            <>
+                <div className={styles.body}>
+                    <p className={styles.previewLoading}>
+                        Loading their other times…
+                    </p>
+                </div>
+                <div className={styles.footer}>
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={onClose}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-danger"
+                        disabled
+                    >
+                        Confirm remove
+                    </button>
+                </div>
+            </>
+        );
+    }
+
+    // Decide: scope (this run vs. this runner) + which of the runner's
+    // other times is legit. Only reached when there's an actual decision —
+    // a runner with other times on this board.
+    if (showDecide && removeRunner) {
+        return (
+            <>
+                <div className={styles.body}>
+                    <ScopeCards
+                        label="What are you removing?"
+                        options={[
+                            {
+                                value: 'run',
+                                title: 'This run',
+                                detail: `Only ${target.kind === 'runs' ? target.label : 'this run'}`,
+                            },
+                            {
+                                value: 'runner',
+                                title: `Every run by ${removeRunner.name}`,
+                                detail: `Their whole presence on ${removeRunner.categoryDisplay}`,
+                            },
+                        ]}
+                        value={removeScope}
+                        onChange={(v) => setRemoveScope(v)}
+                        disabled={isConfirming}
+                    />
+                    {removesRunner ? (
+                        <p className={styles.scopeNote}>
+                            This removes <strong>{removeRunner.name}</strong>{' '}
+                            from {removeRunner.categoryDisplay} completely —
+                            every run they have on it, and any they submit
+                            later. One reversible rule, not one removal per run.
+                            Their account is unaffected.
+                        </p>
+                    ) : (
+                        <CutoffPicker
+                            runs={otherRuns ?? []}
+                            timing={removeRunner.primaryTiming}
+                            value={legitRunId}
+                            onChange={setLegitRunId}
+                            fasterCount={fasterThanLegit.length}
+                            disabled={isConfirming}
+                        />
+                    )}
+                </div>
+                <div className={styles.footer}>
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={onClose}
+                        disabled={isConfirming}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-primary"
+                        onClick={() => setPastDecide(true)}
+                        disabled={isConfirming}
+                    >
+                        Continue
+                    </button>
+                </div>
+            </>
+        );
+    }
+
+    // Confirm: used by every verb. When it follows a Decide step, a context
+    // line restates the decision instead of re-showing the scope/cutoff
+    // controls; otherwise (a runner with no other times, or a non-remove
+    // verb) the relevant controls render inline here.
     return (
         <>
             <div className={styles.body}>
-                {/* Asked before the reason, because it changes what the
-                    reason is for: one run, or this runner's whole presence
-                    on the board. */}
-                {removeRunner && (
-                    <fieldset className="mb-3">
-                        <legend className={styles.fieldLabel}>
-                            What are you removing?
-                        </legend>
-                        <div className="form-check">
-                            <input
-                                className="form-check-input"
-                                type="radio"
-                                name="remove-scope"
-                                id="remove-scope-run"
-                                checked={removeScope === 'run'}
-                                disabled={isConfirming}
-                                onChange={() => setRemoveScope('run')}
-                            />
-                            <label
-                                className="form-check-label"
-                                htmlFor="remove-scope-run"
-                            >
-                                Only this{' '}
-                                {target.kind === 'runs' && target.label}
-                            </label>
-                        </div>
-                        <div className="form-check">
-                            <input
-                                className="form-check-input"
-                                type="radio"
-                                name="remove-scope"
-                                id="remove-scope-runner"
-                                checked={removeScope === 'runner'}
-                                disabled={isConfirming}
-                                onChange={() => setRemoveScope('runner')}
-                            />
-                            <label
-                                className="form-check-label"
-                                htmlFor="remove-scope-runner"
-                            >
-                                Every run {removeRunner.name} has on{' '}
-                                {removeRunner.categoryDisplay}
-                            </label>
-                        </div>
-                    </fieldset>
-                )}
-
-                {/* Removing the runner needs no per-run detail — say plainly
-                    what it does and let the count in the preview carry the
-                    scale. */}
-                {removesRunner && removeRunner && (
-                    <p className={styles.scopeNote}>
-                        This removes <strong>{removeRunner.name}</strong> from{' '}
-                        {removeRunner.categoryDisplay} completely — every run
-                        they have on it, and any they submit later. One
-                        reversible rule, not one removal per run. Their account
-                        is unaffected.
+                {needsDecideStep && removeRunner && (
+                    <p className={styles.stepContext}>
+                        {removesRunner ? (
+                            `Removing ${removeRunner.name} from ${removeRunner.categoryDisplay} entirely.`
+                        ) : legitRunId != null ? (
+                            <>
+                                Removing {runIds.length} runs — everything
+                                faster than the{' '}
+                                {legitRunTime != null && (
+                                    <DurationToFormatted
+                                        duration={legitRunTime}
+                                    />
+                                )}{' '}
+                                you called legit.
+                            </>
+                        ) : (
+                            'Removing this run only.'
+                        )}
                     </p>
                 )}
 
-                {/* Per-run: the board surfaces a runner's best eligible run,
-                    so removing one just promotes the next. Asking which is
-                    legit turns that into a single decision instead of a
-                    remove-check-remove loop. */}
-                {removeRunner && !removesRunner && otherRuns != null && (
-                    <fieldset className="mb-3">
-                        <legend className={styles.fieldLabel}>
-                            {otherRuns.length === 0
-                                ? 'Their other times'
-                                : `Which of ${removeRunner.name}'s other times is legit?`}
-                        </legend>
-                        {otherRuns.length === 0 ? (
-                            <p className="form-text mb-0">
-                                They have no other times on this board — it
-                                leaves nothing behind.
-                            </p>
-                        ) : (
-                            <>
-                                <div className="form-check">
-                                    <input
-                                        className="form-check-input"
-                                        type="radio"
-                                        name="legit-run"
-                                        id="legit-none"
-                                        checked={legitRunId == null}
-                                        disabled={isConfirming}
-                                        onChange={() => setLegitRunId(null)}
-                                    />
-                                    <label
-                                        className="form-check-label"
-                                        htmlFor="legit-none"
-                                    >
-                                        Just remove this one — I haven&apos;t
-                                        checked the others
-                                    </label>
-                                </div>
-                                {otherRuns.map((r) => (
-                                    <div className="form-check" key={r.runId}>
-                                        <input
-                                            className="form-check-input"
-                                            type="radio"
-                                            name="legit-run"
-                                            id={`legit-${r.runId}`}
-                                            checked={legitRunId === r.runId}
-                                            disabled={isConfirming}
-                                            onChange={() =>
-                                                setLegitRunId(r.runId)
-                                            }
-                                        />
-                                        <label
-                                            className="form-check-label"
-                                            htmlFor={`legit-${r.runId}`}
-                                        >
-                                            <DurationToFormatted
-                                                duration={
-                                                    runTime(
-                                                        r,
-                                                        removeRunner.primaryTiming,
-                                                    ) ?? 0
-                                                }
-                                            />{' '}
-                                            <span className="text-body-secondary small">
-                                                {r.verificationStatus}
-                                            </span>
-                                        </label>
-                                    </div>
-                                ))}
-                                {fasterThanLegit.length > 0 && (
-                                    <div className="form-text">
-                                        Everything faster than that goes too —{' '}
-                                        {fasterThanLegit.length} more{' '}
-                                        {fasterThanLegit.length === 1
-                                            ? 'run'
-                                            : 'runs'}
-                                        . A board always shows a runner&apos;s
-                                        best eligible run, so leaving a faster
-                                        one behind would just promote it.
-                                    </div>
-                                )}
-                            </>
-                        )}
-                    </fieldset>
-                )}
-                {verb === 'remove' && (
-                    <div className="mb-3">
-                        <label
-                            htmlFor="remove-reason-cat"
-                            className={styles.fieldLabel}
-                        >
-                            Why are you removing this?
-                        </label>
-                        <select
-                            id="remove-reason-cat"
-                            className="form-select form-select-sm"
-                            value={reasonCat}
-                            onChange={(e) =>
-                                onReasonCatChange(
-                                    e.target.value as RemoveReason,
-                                )
-                            }
+                {/* A runner target with no other times on this board never
+                    goes through Decide — the scope choice and its
+                    consequence both belong on the single screen. */}
+                {!needsDecideStep && removeRunner && (
+                    <>
+                        <ScopeCards
+                            label="What are you removing?"
+                            options={[
+                                {
+                                    value: 'run',
+                                    title: 'This run',
+                                    detail: `Only ${target.kind === 'runs' ? target.label : 'this run'}`,
+                                },
+                                {
+                                    value: 'runner',
+                                    title: `Every run by ${removeRunner.name}`,
+                                    detail: `Their whole presence on ${removeRunner.categoryDisplay}`,
+                                },
+                            ]}
+                            value={removeScope}
+                            onChange={(v) => setRemoveScope(v)}
                             disabled={isConfirming}
-                        >
-                            {REMOVE_REASONS.map((r) => (
-                                <option key={r.value} value={r.value}>
-                                    {r.label}
-                                </option>
-                            ))}
-                        </select>
-                        <div className="form-text">
-                            {removeReasonMeta(reasonCat).blurb}
-                        </div>
-                        {/* The runner-scoped removal is an exclusion rule,
-                            which has no verdict to appeal against — offering
-                            the toggle there would promise a notification
-                            nothing sends. */}
-                        {!removesRunner && (
-                            <div className="form-check form-switch mt-2">
-                                <input
-                                    className="form-check-input"
-                                    type="checkbox"
-                                    role="switch"
-                                    id="remove-notify"
-                                    checked={notify}
-                                    onChange={(e) =>
-                                        setNotify(e.target.checked)
-                                    }
-                                    disabled={isConfirming}
-                                />
-                                <label
-                                    className="form-check-label small"
-                                    htmlFor="remove-notify"
-                                >
-                                    Notify the runner and allow an appeal
-                                </label>
-                            </div>
-                        )}
-                    </div>
+                        />
+                        <p className={styles.scopeNote}>
+                            {removesRunner ? (
+                                <>
+                                    This removes{' '}
+                                    <strong>{removeRunner.name}</strong> from{' '}
+                                    {removeRunner.categoryDisplay} completely —
+                                    every run they have on it, and any they
+                                    submit later. One reversible rule, not one
+                                    removal per run. Their account is
+                                    unaffected.
+                                </>
+                            ) : (
+                                'They have no other times on this board.'
+                            )}
+                        </p>
+                    </>
                 )}
 
                 {verb === 'ban' && target.kind === 'runner' && (
-                    <div className="mb-3 d-flex gap-3">
-                        <div className="form-check">
-                            <input
-                                type="radio"
-                                className="form-check-input"
-                                id="ban-scope-category"
-                                name="ban-scope"
-                                checked={scope === 'category'}
-                                onChange={() => changeScope('category')}
-                                disabled={isConfirming}
-                            />
-                            <label
-                                htmlFor="ban-scope-category"
-                                className="form-check-label small"
-                            >
-                                From this category
-                            </label>
-                        </div>
-                        <div className="form-check">
-                            <input
-                                type="radio"
-                                className="form-check-input"
-                                id="ban-scope-game"
-                                name="ban-scope"
-                                checked={scope === 'game'}
-                                onChange={() => changeScope('game')}
-                                disabled={isConfirming}
-                            />
-                            <label
-                                htmlFor="ban-scope-game"
-                                className="form-check-label small"
-                            >
-                                From the entire game
-                            </label>
-                        </div>
-                    </div>
+                    <ScopeCards
+                        label="Ban scope"
+                        options={[
+                            { value: 'category', title: 'From this category' },
+                            { value: 'game', title: 'From the entire game' },
+                        ]}
+                        value={scope}
+                        onChange={changeScope}
+                        disabled={isConfirming}
+                    />
                 )}
 
                 {isPreviewing && (
@@ -871,19 +841,12 @@ export function RunActionForm({
                 )}
 
                 {preview && (
-                    <p className={styles.previewSummary}>
-                        <strong>{preview.data.affectedRunCount}</strong> run
-                        {preview.data.affectedRunCount === 1 ? '' : 's'}{' '}
-                        affected across{' '}
-                        <strong>
-                            {preview.data.affectedLeaderboards.length}
-                        </strong>{' '}
-                        leaderboard
-                        {preview.data.affectedLeaderboards.length === 1
-                            ? ''
-                            : 's'}
-                        .
-                    </p>
+                    <AffectedSummary
+                        runCount={preview.data.affectedRunCount}
+                        leaderboardCount={
+                            preview.data.affectedLeaderboards.length
+                        }
+                    />
                 )}
 
                 {preview?.kind === 'verdict' &&
@@ -955,30 +918,24 @@ export function RunActionForm({
                         </ul>
                     )}
 
-                <div className="mt-3">
-                    <label
-                        htmlFor="run-action-reason"
-                        className={styles.fieldLabel}
-                    >
-                        {reasonRequired
-                            ? `Reason — required, min ${MIN_REASON} characters, audit-logged`
-                            : 'Note — optional, audit-logged'}
-                    </label>
-                    <textarea
-                        id="run-action-reason"
-                        ref={reasonFieldRef}
-                        className={styles.reasonTextarea}
-                        rows={3}
-                        value={reason}
-                        onChange={(e) => setReason(e.target.value)}
-                        disabled={isConfirming}
-                    />
-                    {reasonRequired && !reasonOk && reason.length > 0 && (
-                        <div className={styles.reasonError}>
-                            {MIN_REASON - reason.trim().length} more needed.
-                        </div>
-                    )}
-                </div>
+                <ReasonZone
+                    category={
+                        verb === 'remove'
+                            ? {
+                                  value: reasonCat,
+                                  onChange: onReasonCatChange,
+                                  notify: removesRunner ? null : notify,
+                                  onNotifyChange: setNotify,
+                              }
+                            : undefined
+                    }
+                    reason={reason}
+                    onReasonChange={setReason}
+                    required={reasonRequired}
+                    minLength={MIN_REASON}
+                    fieldRef={reasonFieldRef}
+                    disabled={isConfirming}
+                />
 
                 {error && (
                     <div className={styles.errorAlert} role="alert">
@@ -988,6 +945,16 @@ export function RunActionForm({
             </div>
 
             <div className={styles.footer}>
+                {needsDecideStep && (
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={() => setPastDecide(false)}
+                        disabled={isConfirming}
+                    >
+                        Back
+                    </button>
+                )}
                 <button
                     type="button"
                     className="btn btn-sm btn-outline-secondary"
