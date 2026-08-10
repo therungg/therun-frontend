@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { type Ref, useState } from 'react';
 import { XLg } from 'react-bootstrap-icons';
 import { RunActionDialog } from '../manage/moderation/shared/run-action-dialog';
 import styles from './leaderboard.module.scss';
@@ -24,6 +24,8 @@ interface Props {
     primaryTiming: 'rt' | 'gt';
     /** Board page refetch — also runs after an Undo from the toast. */
     onMutated: () => void;
+    /** The row's hover shortcut (`x`) clicks the button through this. */
+    ref?: Ref<HTMLButtonElement>;
 }
 
 /**
@@ -46,6 +48,7 @@ export function QuickRemoveButton({
     subcategoryKey,
     primaryTiming,
     onMutated,
+    ref,
 }: Props) {
     const [open, setOpen] = useState(false);
     const subject = manualTimeId != null ? 'set time' : 'run';
@@ -53,14 +56,16 @@ export function QuickRemoveButton({
     return (
         <>
             <button
+                ref={ref}
                 type="button"
                 className={styles.quickRemove}
                 aria-label={`Remove ${runnerName}'s ${subject}`}
-                title={`Remove ${runnerName}'s ${subject}`}
+                title={`Remove ${runnerName}'s ${subject} (x)`}
                 onClick={() => setOpen(true)}
             >
                 <XLg size={14} aria-hidden />
                 Remove
+                <kbd className={styles.shortcutKey}>x</kbd>
             </button>
             {open && (
                 <RunActionDialog

@@ -518,6 +518,23 @@ tr:focus-within .reveal {
     @media (pointer: coarse) {
         padding: dt.$spacing-lg;
     }
+
+    // Not a flex button like the two pills — space the hint by hand.
+    .shortcutKey {
+        margin-left: dt.$spacing-xs;
+    }
+}
+
+// Hover-shortcut hint on the row verbs — same treatment as the drawer's
+// .verbKey (run-inspector.module.scss); keep the two in step.
+.shortcutKey {
+    font-size: 0.7rem;
+    line-height: 1;
+    padding: 0.15em 0.35em;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.18);
+    color: inherit;
+    opacity: 0.8;
 }
 
 // ---- Empty state (calm pattern: icon + title + action) ------
