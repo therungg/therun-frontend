@@ -33,6 +33,12 @@ export async function revalidateAffectedBoards(
         for (const { categoryId, subcategoryKey } of affected) {
             const categorySlug = slugById.get(categoryId);
             if (!categorySlug) continue;
+            // The coarse per-category tag is the one that actually guarantees
+            // read-your-writes: a view's cache fragment is URL-derived, so a
+            // board viewed with defaulted subcategory values caches under an
+            // empty fragment that the run's materialized subcategoryKey can
+            // never name. See the cacheTag comment in getLeaderboard.
+            updateTag(`lb:${gameSlug}:${categorySlug}`);
             for (const timing of ['rt', 'gt'] as const) {
                 for (const v of ['v', 'a'] as const) {
                     updateTag(

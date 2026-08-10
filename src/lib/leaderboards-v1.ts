@@ -77,8 +77,15 @@ export async function getLeaderboard(
 ): Promise<LeaderboardResultOk | LeaderboardResultInvalidCombination> {
     'use cache';
     cacheLife('minutes');
+    // Two tags: the exact slice, plus a coarse per-category tag. The slice
+    // fragment is URL-derived (defaulted subcategory values omitted), while
+    // writers only know a run's stored subcategoryKey (defaults materialized)
+    // — so a write can't enumerate every fragment a view may be cached under.
+    // Writers bust the coarse tag for read-your-writes across all of a
+    // category's views (default selection, partial selections, combined).
     cacheTag(
         `lb:${q.gameSlug}:${q.categorySlug}:${canonicalSubcategoryFragment(q.subcategoryValues, q.combined)}:${q.timing}:${q.verified ? 'v' : 'a'}`,
+        `lb:${q.gameSlug}:${q.categorySlug}`,
     );
 
     const game = encodeURIComponent(q.gameSlug);
