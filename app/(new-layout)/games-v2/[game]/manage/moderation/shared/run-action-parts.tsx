@@ -3,6 +3,7 @@
 import type { KeyboardEvent, RefObject } from 'react';
 import { useId } from 'react';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { formatRunDate } from '~src/lib/format-run-date';
 import type { UserEligibleRunRow } from '../../../../../../../types/moderation.types';
 import {
     REMOVE_REASONS,
@@ -215,6 +216,11 @@ export function CutoffPicker({
                                     }
                                 />
                             </span>
+                            {r.endedAt && (
+                                <span className={styles.cutoffDate}>
+                                    {formatRunDate(r.endedAt)}
+                                </span>
+                            )}
                             <span className={styles.cutoffStatus}>
                                 {r.verificationStatus}
                             </span>

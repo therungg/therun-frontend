@@ -223,6 +223,11 @@
     min-width: 5.5rem;
 }
 
+.cutoffDate {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+}
+
 .cutoffStatus {
     font-size: dt.$font-size-2xs;
     color: var(--bs-tertiary-color);
