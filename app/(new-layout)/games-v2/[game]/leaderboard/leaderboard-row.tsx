@@ -13,6 +13,7 @@ import { CountryFlag } from './country-flag';
 import type { DisplayRank } from './display-rank';
 import styles from './leaderboard.module.scss';
 import { QuickRemoveButton } from './quick-remove-button';
+import { QuickUnverifyButton } from './quick-unverify-button';
 import { QuickVerifyButton } from './quick-verify-button';
 import { relativeDate } from './relative-date';
 import { RunnerAvatar } from './runner-avatar';
@@ -209,6 +210,8 @@ export function LeaderboardRow({
     // through the buttons' DOM nodes rather than duplicated handlers, which
     // also inherits their render conditions: no button, no shortcut.
     const [hovered, setHovered] = useState(false);
+    // Verify and Unverify are mutually exclusive (pending vs verified), so
+    // they share the ref — `v` clicks whichever the row shows.
     const verifyRef = useRef<HTMLButtonElement>(null);
     const removeRef = useRef<HTMLButtonElement>(null);
     const selectionKey = entrySelectionKey(entry);
@@ -219,6 +222,14 @@ export function LeaderboardRow({
         entry.runId != null &&
         entry.source !== 'manual' &&
         entry.verificationStatus === 'pending' &&
+        onBoardRefresh != null;
+    // Verify's mirror on already-verified rows: unset the verification
+    // (back to pending) without removing the run.
+    const showQuickUnverify =
+        canManage &&
+        entry.runId != null &&
+        entry.source !== 'manual' &&
+        entry.verificationStatus === 'verified' &&
         onBoardRefresh != null;
     // Unlike Verify, Remove applies at any verification status — a verified
     // run is exactly the kind that turns out to be wrong later — and to set
@@ -547,6 +558,15 @@ export function LeaderboardRow({
                 <span className={styles.reveal}>
                     {showQuickVerify && (
                         <QuickVerifyButton
+                            ref={verifyRef}
+                            gameSlug={gameSlug}
+                            runId={entry.runId as number}
+                            runnerName={entry.runnerName}
+                            onMutated={onBoardRefresh as () => void}
+                        />
+                    )}
+                    {showQuickUnverify && (
+                        <QuickUnverifyButton
                             ref={verifyRef}
                             gameSlug={gameSlug}
                             runId={entry.runId as number}

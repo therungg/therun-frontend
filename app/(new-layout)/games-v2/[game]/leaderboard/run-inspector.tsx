@@ -158,14 +158,18 @@ export function verbsForStatus(
 ): ModVerb[] {
     const verbs: ModVerb[] = [];
     if (status === 'pending') verbs.push('approve');
+    if (status === 'verified') verbs.push('unverify');
     if (status === 'rejected') verbs.push('restore');
     verbs.push('remove');
     return verbs;
 }
 
-/** Keyboard shortcut per verb, shown on the button and bound below. */
+/** Keyboard shortcut per verb, shown on the button and bound below. `v` is
+ * the verification key in both directions — the statuses make approve and
+ * unverify mutually exclusive, so it never means both at once. */
 const VERB_KEY: Partial<Record<ModVerb, string>> = {
     approve: 'v',
+    unverify: 'v',
     restore: 'v',
     remove: 'x',
 };
@@ -897,7 +901,13 @@ export function RunInspector({
                                         key={verb}
                                         type="button"
                                         className={`btn ${styles.verbBtn} ${
-                                            i === 0 && verb !== 'remove'
+                                            // Unverify never takes the green
+                                            // primary slot even when it leads:
+                                            // it's a neutral "back to the
+                                            // queue", not an endorsement.
+                                            i === 0 &&
+                                            verb !== 'remove' &&
+                                            verb !== 'unverify'
                                                 ? `btn-success ${styles.verbPrimary}`
                                                 : verb === 'remove'
                                                   ? 'btn-outline-danger'

@@ -6,8 +6,8 @@ describe('verbsForStatus', () => {
         expect(verbsForStatus('pending')).toEqual(['approve', 'remove']);
     });
 
-    it('verified → Remove only', () => {
-        expect(verbsForStatus('verified')).toEqual(['remove']);
+    it('verified → Unverify + Remove', () => {
+        expect(verbsForStatus('verified')).toEqual(['unverify', 'remove']);
     });
 
     it('rejected → Restore + Remove', () => {
