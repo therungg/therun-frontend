@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition } from 'react';
+import { type Ref, useTransition } from 'react';
 import { Check2 } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import { UNDO_VERIFY_REASON } from '../manage/moderation/shared/action-model';
@@ -14,6 +14,8 @@ interface Props {
     runnerName: string;
     /** Board page refetch — also runs after an Undo from the toast. */
     onMutated: () => void;
+    /** The row's hover shortcut (`v`) clicks the button through this. */
+    ref?: Ref<HTMLButtonElement>;
 }
 
 // Same canned note the action form sends for a blank optional reason —
@@ -30,6 +32,7 @@ export function QuickVerifyButton({
     runId,
     runnerName,
     onMutated,
+    ref,
 }: Props) {
     const [isPending, startTransition] = useTransition();
 
@@ -62,15 +65,17 @@ export function QuickVerifyButton({
 
     return (
         <button
+            ref={ref}
             type="button"
             className={styles.quickVerify}
             disabled={isPending}
             onClick={verify}
             aria-label={`Verify ${runnerName}'s run`}
-            title={`Verify ${runnerName}'s run`}
+            title={`Verify ${runnerName}'s run (v)`}
         >
             <Check2 size={14} aria-hidden />
             {isPending ? 'Verifying…' : 'Verify'}
+            <kbd className={styles.shortcutKey}>v</kbd>
         </button>
     );
 }

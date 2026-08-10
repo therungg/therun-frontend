@@ -203,6 +203,14 @@ export function LeaderboardRow({
     // name, `userId`/`picture`/`country` nulled, `isGuest: false`. Always key
     // the treatment off this flag, never off the name string.
     const isAnonymous = entry.anonymized === true;
+    // Hover shortcuts: with the pointer on a row, `v`/`x`/`m` fire that row's
+    // Verify / Remove / Moderate — same keys the inspector drawer binds to the
+    // same verbs, so one vocabulary covers both surfaces. `v` and `x` go
+    // through the buttons' DOM nodes rather than duplicated handlers, which
+    // also inherits their render conditions: no button, no shortcut.
+    const [hovered, setHovered] = useState(false);
+    const verifyRef = useRef<HTMLButtonElement>(null);
+    const removeRef = useRef<HTMLButtonElement>(null);
     const selectionKey = entrySelectionKey(entry);
     // One-click Verify for the queue-clearing common case; every other mod
     // verb goes through the inspector drawer (the row's Moderate button).
@@ -220,6 +228,50 @@ export function LeaderboardRow({
         canManage &&
         (entry.runId != null || entry.manualTimeId != null) &&
         onBoardRefresh != null;
+    // Bound only while this row is hovered by a moderator, so at most one
+    // row's listener is live. Inert while any dialog or the inspector drawer
+    // is open (they own the keyboard — the drawer binds these same keys
+    // itself) and while focus sits in a text field.
+    const shortcutsActive = hovered && canManage;
+    useEffect(() => {
+        if (!shortcutsActive) return;
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (e.metaKey || e.ctrlKey || e.altKey) return;
+            const t = e.target as HTMLElement | null;
+            if (
+                t &&
+                (t.tagName === 'INPUT' ||
+                    t.tagName === 'TEXTAREA' ||
+                    t.tagName === 'SELECT' ||
+                    t.isContentEditable)
+            ) {
+                return;
+            }
+            // An OPEN dialog owns the keyboard. Must be the aria-modal="true"
+            // pair, not bare role="dialog": the topbar's MobileMenu keeps a
+            // closed dialog mounted (aria-modal="false"), which the bare
+            // selector matched on every page — deadening these shortcuts.
+            if (
+                document.querySelector('[role="dialog"][aria-modal="true"]') !=
+                null
+            ) {
+                return;
+            }
+            if (e.key === 'v' && verifyRef.current != null) {
+                e.preventDefault();
+                verifyRef.current.click();
+            } else if (e.key === 'x' && removeRef.current != null) {
+                e.preventDefault();
+                removeRef.current.click();
+            } else if (e.key === 'm' && onModerate != null) {
+                e.preventDefault();
+                onModerate(entry);
+            }
+        };
+        document.addEventListener('keydown', onKeyDown);
+        return () => document.removeEventListener('keydown', onKeyDown);
+    }, [shortcutsActive, onModerate, entry]);
+
     const detailHref =
         entry.source === 'manual' && entry.manualTimeId != null
             ? `/games-v2/${encodeURIComponent(gameSlug)}/manual/${entry.manualTimeId}`
@@ -345,6 +397,8 @@ export function LeaderboardRow({
             // focuses it) without joining the natural tab order.
             tabIndex={isCurrentUser ? -1 : undefined}
             className={`${styles.row} ${podiumClass} ${isCurrentUser ? styles.youRow : ''} ${selected ? styles.rowSelected : ''} ${isAnonymous ? styles.anonRow : ''} ${slots?.rowClassName?.(entry) ?? ''}`}
+            onMouseEnter={canManage ? () => setHovered(true) : undefined}
+            onMouseLeave={canManage ? () => setHovered(false) : undefined}
         >
             {canManage && (
                 <td className={styles.checkCell}>
@@ -493,6 +547,7 @@ export function LeaderboardRow({
                 <span className={styles.reveal}>
                     {showQuickVerify && (
                         <QuickVerifyButton
+                            ref={verifyRef}
                             gameSlug={gameSlug}
                             runId={entry.runId as number}
                             runnerName={entry.runnerName}
@@ -506,6 +561,7 @@ export function LeaderboardRow({
                         ride an undo toast, Remove needs a reason. */}
                     {showQuickRemove && (
                         <QuickRemoveButton
+                            ref={removeRef}
                             gameSlug={gameSlug}
                             runId={entry.runId ?? null}
                             manualTimeId={entry.manualTimeId ?? null}
@@ -531,8 +587,10 @@ export function LeaderboardRow({
                             type="button"
                             className={styles.moderateBtn}
                             onClick={() => onModerate(entry)}
+                            title={`Moderate ${entry.runnerName}'s entry (m)`}
                         >
                             Moderate
+                            <kbd className={styles.shortcutKey}>m</kbd>
                         </button>
                     )}
                     {/* The per-row kebab is gone. Everything it held — run
