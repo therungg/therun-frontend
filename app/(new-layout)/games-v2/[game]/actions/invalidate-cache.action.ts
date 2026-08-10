@@ -56,6 +56,10 @@ export async function invalidateGameCacheAction(
         if (game) {
             const { categories } = await resolveCategory(game.id);
             for (const cat of categories) {
+                // Coarse per-category tag — covers every cached view of the
+                // category regardless of which URL fragment it cached under
+                // (see the cacheTag comment in getLeaderboard).
+                revalidateTag(`lb:${game.name}:${cat.name}`, 'minutes');
                 for (const timing of ['rt', 'gt'] as const) {
                     for (const v of ['v', 'a'] as const) {
                         revalidateTag(
