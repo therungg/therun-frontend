@@ -225,3 +225,20 @@
     color: var(--bs-secondary-color);
     margin: dt.$spacing-xs 0 0;
 }
+
+// ---- Reason zone ---------------------------------------------
+.reasonRow {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-lg;
+
+    select {
+        max-width: 18rem;
+    }
+}
+
+.reasonBlurb {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+    margin: dt.$spacing-xs 0 dt.$spacing-md;
+}
