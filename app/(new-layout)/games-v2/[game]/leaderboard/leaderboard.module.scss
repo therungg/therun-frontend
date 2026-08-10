@@ -473,6 +473,33 @@ tr:focus-within .reveal {
     }
 }
 
+// Unverify: Verify's mirror on already-verified rows — same pill, same slot,
+// but neutral rather than green or red: unsetting a verification sends the
+// run back to the queue, it doesn't judge it.
+.quickUnverify {
+    @include board.control-pill;
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    background: none;
+    padding: dt.$spacing-xs dt.$spacing-md;
+    color: var(--bs-secondary-color);
+
+    &:hover:not(:disabled) {
+        border-color: var(--bs-secondary-color);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+
+    // Touch-target pass: guarantee a ≥44px hit area.
+    @media (pointer: coarse) {
+        padding: dt.$spacing-lg;
+    }
+}
+
 // Direct "Moderate" affordance — the mod's primary path into the run
 // inspector, so it's a first-class filled button on the row rather than an
 // item buried in the kebab.

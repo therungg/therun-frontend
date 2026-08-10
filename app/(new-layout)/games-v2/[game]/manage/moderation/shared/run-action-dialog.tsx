@@ -57,6 +57,7 @@ const runTime = (r: UserEligibleRunRow, timing: 'rt' | 'gt'): number | null =>
 // reverse action, so Confirm stays disabled until it resolves.
 const PREVIEW_GATES_CONFIRM: Record<ModVerb, boolean> = {
     approve: false,
+    unverify: false,
     restore: false,
     reject: true,
     remove: true,
@@ -68,6 +69,7 @@ const PREVIEW_GATES_CONFIRM: Record<ModVerb, boolean> = {
 // stay gated at MIN_REASON since they're consequential for the runner.
 const REASON_REQUIRED: Record<ModVerb, boolean> = {
     approve: false,
+    unverify: false,
     restore: false,
     reject: true,
     remove: true,
@@ -80,6 +82,7 @@ const REASON_REQUIRED: Record<ModVerb, boolean> = {
 // required (min 10 characters)"), so these stand in rather than sending "".
 const DEFAULT_REASON: Partial<Record<ModVerb, string>> = {
     approve: 'Approved — no issues found.',
+    unverify: 'Verification unset — back to pending.',
     restore: 'Restored after review.',
 };
 
@@ -89,6 +92,7 @@ type PreviewState =
 
 export const VERB_TITLE: Record<ModVerb, string> = {
     approve: 'Verify',
+    unverify: 'Unverify',
     reject: 'Reject',
     remove: 'Remove',
     restore: 'Restore',
@@ -280,7 +284,8 @@ export function RunActionForm({
     // How this verb lands on the selection's manual set times (if any):
     // verdicts map to the manual-time verdict endpoint, remove maps to
     // delete (manual times have no exclude machinery — delete IS their
-    // removal). `restore`/`ban` have no manual equivalent and skip them.
+    // removal). `unverify`/`restore`/`ban` have no manual equivalent and
+    // skip them.
     const manualOp: 'verify' | 'reject' | 'delete' | null =
         verb === 'approve'
             ? 'verify'
@@ -307,15 +312,17 @@ export function RunActionForm({
     const previewVerdictAction: VerdictAction | null =
         verb === 'approve'
             ? 'verify'
-            : verb === 'reject'
-              ? 'reject'
-              : verb === 'restore'
-                ? 'unreject'
-                : verb === 'remove' &&
-                    !removesRunner &&
-                    resolveRemoveMechanism(notify) === 'reject'
-                  ? 'reject'
-                  : null;
+            : verb === 'unverify'
+              ? 'unverify'
+              : verb === 'reject'
+                ? 'reject'
+                : verb === 'restore'
+                  ? 'unreject'
+                  : verb === 'remove' &&
+                      !removesRunner &&
+                      resolveRemoveMechanism(notify) === 'reject'
+                    ? 'reject'
+                    : null;
 
     // For CONFIRM, restore is NOT a plain verdict apply — exclude it here.
     const confirmVerdictAction: VerdictAction | null =
@@ -542,6 +549,21 @@ export function RunActionForm({
                                 'unverify',
                                 runIds,
                                 UNDO_VERIFY_REASON,
+                            ),
+                        refreshAfterUndo,
+                    );
+                } else if (verb === 'unverify') {
+                    // Mirror of the approve branch: unverify's true inverse
+                    // is re-verifying, not restoreRunsAction (include +
+                    // unreject both no-op against a pending run).
+                    fireUndoToast(
+                        message,
+                        () =>
+                            applyVerdictsAction(
+                                gameSlug,
+                                'verify',
+                                runIds,
+                                undoReason(verb),
                             ),
                         refreshAfterUndo,
                     );
@@ -977,7 +999,15 @@ export function RunActionForm({
                 <button
                     type="button"
                     ref={confirmRef}
-                    className={`btn btn-sm ${verb === 'approve' ? 'btn-success' : 'btn-danger'}`}
+                    className={`btn btn-sm ${
+                        verb === 'approve'
+                            ? 'btn-success'
+                            : verb === 'unverify'
+                              ? // Neither an endorsement nor a strike — just
+                                // back to the queue.
+                                'btn-secondary'
+                              : 'btn-danger'
+                    }`}
                     onClick={handleConfirm}
                     disabled={busy || !reasonOk || !!previewError}
                 >

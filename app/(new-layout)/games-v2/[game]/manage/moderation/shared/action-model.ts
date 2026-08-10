@@ -10,7 +10,16 @@
 // side-by-side per the approved bulk-bar mock, matching the design's
 // verb table (verify/reject/restore → mod-verdicts-handler; remove/restore
 // → exclude/include).
-export type ModVerb = 'approve' | 'reject' | 'remove' | 'restore' | 'ban';
+// `unverify` unsets a verification (verified → pending) without removing the
+// run — the standing offer on a verified run beside Remove, for "this
+// shouldn't have been verified (yet)" without any judgement on the run itself.
+export type ModVerb =
+    | 'approve'
+    | 'unverify'
+    | 'reject'
+    | 'remove'
+    | 'restore'
+    | 'ban';
 
 export type RemoveReason = 'cheating' | 'breaks_rules' | 'doesnt_belong';
 
