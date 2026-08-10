@@ -221,14 +221,41 @@ describe('remove step flow', () => {
         expect(mocks.createManualTimeAction).not.toHaveBeenCalled();
     });
 
+    it('cutoff pick and custom time are mutually exclusive', async () => {
+        renderRemove([eligible(1, 5_725_000)]);
+        await screen.findByRole('radiogroup', {
+            name: "Fastest time you've verified as legit",
+        });
+        // Pick a cutoff row, then tick the custom time: the pick clears.
+        fireEvent.click(screen.getByRole('radio', { name: /1:35:25/ }));
+        expect(
+            (
+                screen.getByRole('radio', { name: /1:35:25/ }) as HTMLElement
+            ).getAttribute('aria-checked'),
+        ).toBe('true');
+        fireEvent.click(screen.getByLabelText('Set a custom time instead'));
+        expect(
+            (
+                screen.getByRole('radio', { name: /1:35:25/ }) as HTMLElement
+            ).getAttribute('aria-checked'),
+        ).toBe('false');
+        // Re-picking a cutoff row unticks the custom time.
+        fireEvent.click(screen.getByRole('radio', { name: /1:35:25/ }));
+        expect(
+            (
+                screen.getByLabelText(
+                    'Set a custom time instead',
+                ) as HTMLInputElement
+            ).checked,
+        ).toBe(false);
+    });
+
     it('a ticked custom time files a set time alongside the removal', async () => {
         renderRemove([eligible(1, 5_725_000)]);
         await screen.findByRole('radiogroup', {
             name: "Fastest time you've verified as legit",
         });
-        fireEvent.click(
-            screen.getByLabelText('Set a custom time in its place'),
-        );
+        fireEvent.click(screen.getByLabelText('Set a custom time instead'));
         // Invalid time blocks Continue; a valid one unblocks it.
         fireEvent.change(screen.getByLabelText('Custom time'), {
             target: { value: 'garbage' },

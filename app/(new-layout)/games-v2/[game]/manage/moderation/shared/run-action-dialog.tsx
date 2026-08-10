@@ -798,7 +798,14 @@ export function RunActionForm({
                             runs={otherRuns}
                             timing={removeRunner.primaryTiming}
                             value={legitRunId}
-                            onChange={setLegitRunId}
+                            // One answer to "what stands in for the removed
+                            // run": an existing time OR a custom one. Picking
+                            // a cutoff row unticks the custom time; ticking
+                            // the custom time clears the cutoff (below).
+                            onChange={(id) => {
+                                setLegitRunId(id);
+                                if (id != null) setReplaceEnabled(false);
+                            }}
                             fasterCount={fasterThanLegit.length}
                             disabled={isConfirming}
                         />
@@ -809,12 +816,19 @@ export function RunActionForm({
                                 <input
                                     type="checkbox"
                                     checked={replaceEnabled}
-                                    onChange={(e) =>
-                                        setReplaceEnabled(e.target.checked)
-                                    }
+                                    onChange={(e) => {
+                                        setReplaceEnabled(e.target.checked);
+                                        // Either/or with the cutoff table
+                                        // above — a custom time replaces the
+                                        // "which existing time is legit"
+                                        // answer, not adds to it.
+                                        if (e.target.checked) {
+                                            setLegitRunId(null);
+                                        }
+                                    }}
                                     disabled={isConfirming}
                                 />
-                                Set a custom time in its place
+                                Set a custom time instead
                             </label>
                             {replaceEnabled && (
                                 <>
