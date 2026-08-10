@@ -434,6 +434,15 @@ export function RunActionForm({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // Entering Confirm from a Decide step: the reason field only mounts
+    // here (Decide has no reason field, just scope + cutoff), so the
+    // mount-only effect above ran too early and focused nothing for inline
+    // hosts. Re-focus it the moment pastDecide flips true.
+    useEffect(() => {
+        if (!autoFocus || !pastDecide) return;
+        reasonFieldRef.current?.focus();
+    }, [autoFocus, pastDecide, reasonFieldRef]);
+
     const handleConfirm = () => {
         if (!reasonOk) return;
         setError(null);
@@ -748,16 +757,30 @@ export function RunActionForm({
                         {removesRunner ? (
                             `Removing ${removeRunner.name} from ${removeRunner.categoryDisplay} entirely.`
                         ) : legitRunId != null ? (
-                            <>
-                                Removing {runIds.length} runs — everything
-                                faster than the{' '}
-                                {legitRunTime != null && (
-                                    <DurationToFormatted
-                                        duration={legitRunTime}
-                                    />
-                                )}{' '}
-                                you called legit.
-                            </>
+                            runIds.length === 1 ? (
+                                <>
+                                    Removing this run only — nothing faster than
+                                    the{' '}
+                                    {legitRunTime != null && (
+                                        <DurationToFormatted
+                                            duration={legitRunTime}
+                                        />
+                                    )}{' '}
+                                    you called legit.
+                                </>
+                            ) : (
+                                <>
+                                    Removing {runIds.length} run
+                                    {runIds.length === 1 ? '' : 's'} —
+                                    everything faster than the{' '}
+                                    {legitRunTime != null && (
+                                        <DurationToFormatted
+                                            duration={legitRunTime}
+                                        />
+                                    )}{' '}
+                                    you called legit.
+                                </>
+                            )
                         ) : (
                             'Removing this run only.'
                         )}
@@ -864,7 +887,10 @@ export function RunActionForm({
                     )}
 
                 {preview?.kind === 'verdict' &&
-                    preview.data.sampleRuns.length > 0 && (
+                    preview.data.sampleRuns.length > 0 &&
+                    (removesRunner ||
+                        verb === 'ban' ||
+                        preview.data.affectedLeaderboards.length > 1) && (
                         <div className="table-responsive">
                             <table className="table table-sm align-middle mb-0">
                                 <thead>
@@ -898,7 +924,10 @@ export function RunActionForm({
                     )}
 
                 {preview?.kind === 'exclude' &&
-                    preview.data.sampleRuns.length > 0 && (
+                    preview.data.sampleRuns.length > 0 &&
+                    (removesRunner ||
+                        verb === 'ban' ||
+                        preview.data.affectedLeaderboards.length > 1) && (
                         <ul className={styles.previewList}>
                             {preview.data.sampleRuns.map((s) => (
                                 <li key={s.runId}>
