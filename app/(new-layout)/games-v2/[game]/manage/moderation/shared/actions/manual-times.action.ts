@@ -83,6 +83,7 @@ export async function createManualTimeAction(
         timing: ModTiming;
         timeMs: number;
         evidenceUrl?: string | null;
+        runDate?: string | null;
         reason: string;
     },
 ): Promise<{ ok: true; result: CreateManualTimeResult } | Fail> {
@@ -105,7 +106,12 @@ export async function createManualTimeAction(
 export async function updateManualTimeAction(
     gameSlug: string,
     id: number,
-    input: { reason: string; timeMs?: number; evidenceUrl?: string | null },
+    input: {
+        reason: string;
+        timeMs?: number;
+        evidenceUrl?: string | null;
+        runDate?: string | null;
+    },
 ): Promise<{ ok: true } | Fail> {
     const g = await requireMod(gameSlug);
     if ('error' in g) return g;

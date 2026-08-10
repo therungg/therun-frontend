@@ -327,6 +327,9 @@ export interface ManualTimeDetail {
     timeMs: number;
     evidenceUrl: string | null;
     verificationStatus: 'pending' | 'verified' | 'rejected';
+    /** Mod-asserted achievement date; null when never set (origin.ingestedAt
+     *  remains the system clock). */
+    runDate: string | null;
     origin: RunOrigin;
 }
 
