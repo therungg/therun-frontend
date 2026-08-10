@@ -93,6 +93,8 @@ export function AddRunnerRow({
 }: AddRunnerRowProps) {
     const [name, setName] = useState('');
     const [timeText, setTimeText] = useState('');
+    // Optional achievement date; empty => the entry shows its created-at.
+    const [dateText, setDateText] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [isAdding, startAdding] = useTransition();
 
@@ -122,6 +124,7 @@ export function AddRunnerRow({
                 subcategoryKey,
                 timing: modTiming,
                 timeMs: parsed,
+                runDate: dateText || null,
                 reason: 'Added during board curation',
             });
             if ('error' in res) {
@@ -130,6 +133,7 @@ export function AddRunnerRow({
             }
             setName('');
             setTimeText('');
+            setDateText('');
             setError(null);
             toast.success('Runner added.');
             onMutated();
@@ -181,10 +185,20 @@ export function AddRunnerRow({
                 />
                 {error && <span className={styles.timeError}>{error}</span>}
             </td>
-            {/* A new entry has one time and no date yet; these hold the
-                table's shape so the Add button stays under Actions. */}
+            {/* A new entry has one time; this holds the table's shape so
+                the Add button stays under Actions. */}
             {showSecondary && <td aria-hidden="true" />}
-            <td className={styles.when} aria-hidden="true" />
+            <td className={styles.when}>
+                <input
+                    type="date"
+                    className={styles.ghostInput}
+                    value={dateText}
+                    onChange={(e) => setDateText(e.target.value)}
+                    disabled={isAdding}
+                    aria-label="Date achieved (optional)"
+                    title="Date achieved (optional)"
+                />
+            </td>
             <td className={styles.actionsCell}>
                 <button
                     type="button"

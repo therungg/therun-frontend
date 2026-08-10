@@ -27,8 +27,15 @@ interface Props {
     /** Present => edit an existing manual time (timing is then fixed).
      * Only the fields the edit path actually reads — callers that don't
      * hold a full ManualTimeRow (e.g. the board kebab, which adapts a
-     * LeaderboardEntry) can supply just these. */
-    existing?: Pick<ManualTimeRow, 'id' | 'timing' | 'timeMs' | 'evidenceUrl'>;
+     * LeaderboardEntry) can supply just these. `runDate` is optional even
+     * here: a caller that doesn't know the stored date omits it, and the
+     * save then leaves the stored date untouched. */
+    existing?: Pick<
+        ManualTimeRow,
+        'id' | 'timing' | 'timeMs' | 'evidenceUrl'
+    > & {
+        runDate?: string | null;
+    };
     onDone: () => void;
     onClose: () => void;
 }
@@ -52,6 +59,12 @@ export function ManualTimeDialog({
     );
     const [timeText, setTimeText] = useState(msToTimeInput(existing?.timeMs));
     const [evidenceUrl, setEvidenceUrl] = useState(existing?.evidenceUrl ?? '');
+    // yyyy-mm-dd for the date input; '' = no asserted date. Tracked against
+    // its initial value so an edit that never touched the field sends
+    // nothing — a caller that couldn't supply the stored date must not have
+    // an untouched save wipe it.
+    const initialDate = existing?.runDate ? existing.runDate.slice(0, 10) : '';
+    const [dateText, setDateText] = useState(initialDate);
     const [reason, setReason] = useState('');
     const [preview, setPreview] = useState<ManualTimePreviewResult | null>(
         null,
@@ -94,6 +107,9 @@ export function ManualTimeDialog({
                       reason: reason.trim(),
                       timeMs: timeMs as number,
                       evidenceUrl: evidenceUrl.trim() || null,
+                      ...(dateText !== initialDate
+                          ? { runDate: dateText || null }
+                          : {}),
                   })
                 : await createManualTimeAction(gameSlug, {
                       runnerRef,
@@ -102,6 +118,7 @@ export function ManualTimeDialog({
                       timing,
                       timeMs: timeMs as number,
                       evidenceUrl: evidenceUrl.trim() || null,
+                      runDate: dateText || null,
                       reason: reason.trim(),
                   });
             if ('error' in res) {
@@ -210,6 +227,23 @@ export function ManualTimeDialog({
                         m:ss.SSS).
                     </small>
                 )}
+
+                <div className="mt-2">
+                    <label
+                        htmlFor="mt-date"
+                        className="form-label small text-muted mb-1"
+                    >
+                        Date achieved (optional — shown as the entry's date)
+                    </label>
+                    <input
+                        id="mt-date"
+                        type="date"
+                        className="form-control form-control-sm"
+                        value={dateText}
+                        onChange={(e) => setDateText(e.target.value)}
+                        disabled={busy}
+                    />
+                </div>
 
                 <div className="mt-2">
                     <label
