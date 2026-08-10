@@ -10,6 +10,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { UserEligibleRunRow } from '../../../../../../../types/moderation.types';
 
 const mocks = vi.hoisted(() => ({
+    createManualTimeAction: vi.fn(),
+    deleteManualTimeAction: vi.fn(),
     loadUserEligibleRunsAction: vi.fn(),
     excludeAction: vi.fn(),
     previewExcludeAction: vi.fn(),
@@ -37,6 +39,8 @@ vi.mock('./actions/restore.action', () => ({
     restoreRunsAction: mocks.restoreRunsAction,
 }));
 vi.mock('./actions/manual-times.action', () => ({
+    createManualTimeAction: mocks.createManualTimeAction,
+    deleteManualTimeAction: mocks.deleteManualTimeAction,
     manualTimesBulkAction: mocks.manualTimesBulkAction,
 }));
 vi.mock('../rules/actions/delete-rule.action', () => ({
@@ -211,6 +215,69 @@ describe('remove step flow', () => {
                 'reject',
                 [99, 1],
                 'spliced VOD, checked frames',
+            );
+        });
+        // Checkbox untouched -> no set time filed.
+        expect(mocks.createManualTimeAction).not.toHaveBeenCalled();
+    });
+
+    it('a ticked custom time files a set time alongside the removal', async () => {
+        renderRemove([eligible(1, 5_725_000)]);
+        await screen.findByRole('radiogroup', {
+            name: "Fastest time you've verified as legit",
+        });
+        fireEvent.click(
+            screen.getByLabelText('Set a custom time in its place'),
+        );
+        // Invalid time blocks Continue; a valid one unblocks it.
+        fireEvent.change(screen.getByLabelText('Custom time'), {
+            target: { value: 'garbage' },
+        });
+        expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled();
+        fireEvent.change(screen.getByLabelText('Custom time'), {
+            target: { value: '35:48' },
+        });
+        fireEvent.change(screen.getByLabelText('Date achieved (optional)'), {
+            target: { value: '2026-08-01' },
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+        expect(
+            screen.getByText(
+                (_, el) =>
+                    el?.tagName === 'P' &&
+                    (el?.textContent ?? '').includes(
+                        'set time takes its place.',
+                    ),
+            ),
+        ).toBeTruthy();
+        fireEvent.change(screen.getByLabelText('Reason'), {
+            target: { value: 'spliced VOD, checked frames' },
+        });
+        mocks.applyVerdictsAction.mockResolvedValue({
+            result: { affectedRunCount: 1 },
+        });
+        mocks.createManualTimeAction.mockResolvedValue({
+            ok: true,
+            result: { id: 42, affectedLeaderboards: [] },
+        });
+        await waitFor(() => {
+            expect(
+                screen.getByRole('button', { name: 'Confirm remove' }),
+            ).not.toBeDisabled();
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'Confirm remove' }));
+        await waitFor(() => {
+            expect(mocks.createManualTimeAction).toHaveBeenCalledWith(
+                'mario64',
+                {
+                    runnerRef: { userId: 1 },
+                    categoryId: 10,
+                    subcategoryKey: '',
+                    timing: 'realtime',
+                    timeMs: 35 * 60_000 + 48_000,
+                    runDate: '2026-08-01',
+                    reason: 'spliced VOD, checked frames',
+                },
             );
         });
     });

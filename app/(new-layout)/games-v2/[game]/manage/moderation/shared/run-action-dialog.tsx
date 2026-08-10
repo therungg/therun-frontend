@@ -37,7 +37,11 @@ import {
 } from './action-model';
 import { loadUserEligibleRunsAction } from './actions/eligible-runs.action';
 import { excludeAction, previewExcludeAction } from './actions/exclude.action';
-import { manualTimesBulkAction } from './actions/manual-times.action';
+import {
+    createManualTimeAction,
+    deleteManualTimeAction,
+    manualTimesBulkAction,
+} from './actions/manual-times.action';
 import { restoreRunsAction } from './actions/restore.action';
 import {
     applyVerdictsAction,
@@ -50,6 +54,7 @@ import {
     ReasonZone,
     ScopeCards,
 } from './run-action-parts';
+import { parseTimeInput } from './time-format';
 import { fireUndoToast } from './undo-toast';
 
 const MIN_REASON = 10;
@@ -217,6 +222,19 @@ export function RunActionForm({
      */
     const [legitRunId, setLegitRunId] = useState<number | null>(null);
 
+    /**
+     * Remove's optional replacement: file a set time for the runner in the
+     * same confirm. Just a manual time — the same one the Adjust dialog
+     * writes — reached from where the mod already is: they've judged the
+     * run bad and often know what the real time should be. Offered only on
+     * the per-run scope (a runner-wide rule would hide every run but leave
+     * the set time standing, which is its own deliberate combo, not this
+     * checkbox's job).
+     */
+    const [replaceEnabled, setReplaceEnabled] = useState(false);
+    const [replaceTimeText, setReplaceTimeText] = useState('');
+    const [replaceDateText, setReplaceDateText] = useState('');
+
     const [reason, setReason] = useState('');
     const [preview, setPreview] = useState<PreviewState | null>(null);
     const [previewError, setPreviewError] = useState<string | null>(null);
@@ -326,6 +344,13 @@ export function RunActionForm({
               : verb === 'remove'
                 ? 'delete'
                 : null;
+    const replaceOffered =
+        verb === 'remove' && removeRunner != null && !removesRunner;
+    const replaceActive = replaceOffered && replaceEnabled;
+    const replaceMs = replaceActive ? parseTimeInput(replaceTimeText) : null;
+    const replaceValid =
+        !replaceActive || (replaceMs != null && !Number.isNaN(replaceMs));
+
     const banRule: UserExclusionRuleInput | null =
         target.kind === 'runner'
             ? {
@@ -443,7 +468,7 @@ export function RunActionForm({
     }, [autoFocus, pastDecide, reasonFieldRef]);
 
     const handleConfirm = () => {
-        if (!reasonOk) return;
+        if (!reasonOk || !replaceValid) return;
         setError(null);
         startConfirm(async () => {
             const trimmed = reason.trim();
@@ -534,6 +559,36 @@ export function RunActionForm({
                 );
                 return onDone();
             }
+            // Remove's replacement set time, filed after the removal lands.
+            // Returns the created id (for the undo path), null when the
+            // checkbox is off, or an error string when the removal applied
+            // but the set time didn't — surfaced as the dialog error so the
+            // mod sees exactly what's left to do by hand.
+            const applyReplacement = async (): Promise<
+                { id: number | null } | { error: string }
+            > => {
+                if (!replaceActive || replaceMs == null || !removeRunner) {
+                    return { id: null };
+                }
+                const res = await createManualTimeAction(gameSlug, {
+                    runnerRef: { userId: removeRunner.id },
+                    categoryId: removeRunner.categoryId,
+                    subcategoryKey: removeRunner.subcategoryKey,
+                    timing:
+                        removeRunner.primaryTiming === 'gt'
+                            ? 'gametime'
+                            : 'realtime',
+                    timeMs: replaceMs,
+                    runDate: replaceDateText || null,
+                    reason: finalReason,
+                });
+                if ('error' in res) {
+                    return {
+                        error: `Removed, but the set time failed: ${res.error}`,
+                    };
+                }
+                return { id: res.result.id };
+            };
             // The manual portion of a mixed selection. Runs first, manual
             // second; a manual failure surfaces as the dialog error even if
             // the runs part already applied (the toast/refresh only fire on
@@ -573,8 +628,14 @@ export function RunActionForm({
                 }
                 const manualError = await applyManualTimes();
                 if (manualError) return setError(manualError);
+                const replaced = await applyReplacement();
+                if ('error' in replaced) return setError(replaced.error);
+                const replacementId = replaced.id;
                 const total = n + manualTimeIds.length;
-                const message = `${VERB_TITLE[verb]} — ${total} run${total === 1 ? '' : 's'} updated.`;
+                const message =
+                    replacementId != null
+                        ? `${VERB_TITLE[verb]} — ${total} run${total === 1 ? '' : 's'} updated, set time filed.`
+                        : `${VERB_TITLE[verb]} — ${total} run${total === 1 ? '' : 's'} updated.`;
                 // Verify's inverse is `unverify` (verified → pending), not
                 // restoreRunsAction's include+unreject — unreject is a no-op
                 // against an already-verified run, so that generic undo path
@@ -611,12 +672,24 @@ export function RunActionForm({
                 } else if (hasTrueInverse(verb)) {
                     fireUndoToast(
                         message,
-                        () =>
-                            restoreRunsAction(
+                        // A replacement set time rides the same undo: it was
+                        // created by this confirm, so undoing the removal
+                        // deletes it too rather than leaving it standing.
+                        async () => {
+                            if (replacementId != null) {
+                                const del = await deleteManualTimeAction(
+                                    gameSlug,
+                                    replacementId,
+                                    undoReason(verb),
+                                );
+                                if ('error' in del) return del;
+                            }
+                            return restoreRunsAction(
                                 gameSlug,
                                 runIds,
                                 undoReason(verb),
-                            ),
+                            );
+                        },
                         refreshAfterUndo,
                     );
                 } else {
@@ -635,12 +708,31 @@ export function RunActionForm({
                 const manualError = await applyManualTimes();
                 if (manualError) return setError(manualError);
             }
+            const replaced = await applyReplacement();
+            if ('error' in replaced) return setError(replaced.error);
+            const replacementId = replaced.id;
+            const message =
+                replacementId != null ? 'Removed, set time filed.' : 'Removed.';
             if (manualInvolved || runIds.length === 0) {
-                toast.success('Removed.');
+                toast.success(message);
             } else {
                 fireUndoToast(
-                    'Removed.',
-                    () => restoreRunsAction(gameSlug, runIds, undoReason(verb)),
+                    message,
+                    async () => {
+                        if (replacementId != null) {
+                            const del = await deleteManualTimeAction(
+                                gameSlug,
+                                replacementId,
+                                undoReason(verb),
+                            );
+                            if ('error' in del) return del;
+                        }
+                        return restoreRunsAction(
+                            gameSlug,
+                            runIds,
+                            undoReason(verb),
+                        );
+                    },
                     refreshAfterUndo,
                 );
             }
@@ -711,6 +803,65 @@ export function RunActionForm({
                             disabled={isConfirming}
                         />
                     )}
+                    {!removesRunner && (
+                        <div>
+                            <label className={styles.replaceToggle}>
+                                <input
+                                    type="checkbox"
+                                    checked={replaceEnabled}
+                                    onChange={(e) =>
+                                        setReplaceEnabled(e.target.checked)
+                                    }
+                                    disabled={isConfirming}
+                                />
+                                Set a custom time in its place
+                            </label>
+                            {replaceEnabled && (
+                                <>
+                                    <div className={styles.replaceFields}>
+                                        <input
+                                            type="text"
+                                            className="form-control form-control-sm"
+                                            value={replaceTimeText}
+                                            onChange={(e) =>
+                                                setReplaceTimeText(
+                                                    e.target.value,
+                                                )
+                                            }
+                                            placeholder="e.g. 35:48 or 1:23:45"
+                                            aria-label="Custom time"
+                                            disabled={isConfirming}
+                                        />
+                                        <input
+                                            type="date"
+                                            className="form-control form-control-sm"
+                                            value={replaceDateText}
+                                            onChange={(e) =>
+                                                setReplaceDateText(
+                                                    e.target.value,
+                                                )
+                                            }
+                                            aria-label="Date achieved (optional)"
+                                            title="Date achieved (optional)"
+                                            disabled={isConfirming}
+                                        />
+                                    </div>
+                                    <p className={styles.replaceHint}>
+                                        Files a verified set time for{' '}
+                                        {removeRunner.name} on this board, with
+                                        the same reason as the removal.
+                                    </p>
+                                    {replaceTimeText.length > 0 &&
+                                        !replaceValid && (
+                                            <p className={styles.reasonError}>
+                                                Enter a valid time (h:mm:ss,
+                                                m:ss, or m:ss.SSS).
+                                            </p>
+                                        )}
+                                </>
+                            )}
+                        </div>
+                    )}
                 </div>
                 <div className={styles.footer}>
                     <button
@@ -727,10 +878,12 @@ export function RunActionForm({
                         onClick={() => setPastDecide(true)}
                         // Per-run scope waits for the other-times fetch —
                         // continuing before it lands would silently skip the
-                        // cutoff choice. Runner scope makes it moot.
+                        // cutoff choice. Runner scope makes it moot. A ticked
+                        // custom time must parse before moving on.
                         disabled={
                             isConfirming ||
-                            (!removesRunner && otherRuns == null)
+                            (!removesRunner && otherRuns == null) ||
+                            !replaceValid
                         }
                     >
                         Continue
@@ -778,6 +931,13 @@ export function RunActionForm({
                             )
                         ) : (
                             'Removing this run only.'
+                        )}
+                        {replaceActive && replaceMs != null && (
+                            <>
+                                {' '}
+                                A <DurationToFormatted duration={replaceMs} />{' '}
+                                set time takes its place.
+                            </>
                         )}
                     </p>
                 )}
@@ -959,7 +1119,9 @@ export function RunActionForm({
                               : 'btn-danger'
                     }`}
                     onClick={handleConfirm}
-                    disabled={busy || !reasonOk || !!previewError}
+                    disabled={
+                        busy || !reasonOk || !!previewError || !replaceValid
+                    }
                 >
                     {isConfirming
                         ? 'Working…'
