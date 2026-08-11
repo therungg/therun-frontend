@@ -25,7 +25,7 @@ export interface ScopeCardOption<V extends string> {
  * focus and selection to the next/previous option, wrapping at the ends —
  * matching native radio-button behavior (selection follows focus).
  */
-function rovingRadioKeyDown<V>(
+export function rovingRadioKeyDown<V>(
     e: KeyboardEvent<HTMLButtonElement>,
     values: readonly V[],
     currentIndex: number,
