@@ -212,6 +212,9 @@ export interface LeaderboardResponse {
     totalPages: number;
     hideRealTime: boolean;
     hideGameTime: boolean;
+    // Present only on findRunner queries: true means `page` is the page
+    // containing that runner's visible row.
+    findRunnerFound?: boolean;
 }
 
 // Backend: GET /mod/v1/leaderboards/{game}/{category}/export — the whole

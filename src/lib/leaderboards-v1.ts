@@ -136,6 +136,49 @@ export async function getLeaderboard(
 }
 
 /**
+ * "Find me": one request that returns the page containing the runner's row
+ * (findRunnerFound: true) or, when the runner isn't visible on this board,
+ * the requested page with findRunnerFound: false. Deliberately UNCACHED —
+ * the result varies per runner and a find is a one-shot jump, so caching it
+ * would only fragment the board cache.
+ */
+export async function findRunnerOnBoard(
+    q: LeaderboardQuery,
+    runnerName: string,
+): Promise<LeaderboardResponse | null> {
+    const game = encodeURIComponent(q.gameSlug);
+    const category = encodeURIComponent(q.categorySlug);
+    const qs = buildLeaderboardQS(q);
+    const path =
+        `/v1/leaderboards/${game}/${category}?${qs}` +
+        `${qs ? '&' : ''}findRunner=${encodeURIComponent(runnerName)}`;
+    try {
+        const raw = await v1Fetch<{
+            items: LeaderboardResponse['entries'];
+            totalItems: number;
+            page: number;
+            pageSize: number;
+            totalPages: number;
+            hideRealTime?: boolean;
+            hideGameTime?: boolean;
+            findRunnerFound?: boolean;
+        }>(path);
+        return {
+            entries: raw.items ?? [],
+            page: raw.page,
+            pageSize: raw.pageSize,
+            totalItems: raw.totalItems,
+            totalPages: raw.totalPages,
+            hideRealTime: raw.hideRealTime ?? false,
+            hideGameTime: raw.hideGameTime ?? false,
+            findRunnerFound: raw.findRunnerFound ?? false,
+        };
+    } catch {
+        return null;
+    }
+}
+
+/**
  * Full-board export: unpaginated, with the per-run enrichment fields the
  * paginated endpoint omits. Deliberately uncached — an export should reflect
  * the board as it is right now. Rides the `/mod` base-path mapping like
