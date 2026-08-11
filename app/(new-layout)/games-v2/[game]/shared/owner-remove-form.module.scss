@@ -1,0 +1,166 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+// ============================================================
+// OwnerRemoveForm — the runner's own "remove my run" wizard.
+// Same visual language as the moderator RunActionDialog body,
+// scaled down: no reason zone, no preview table. Overlay/panel
+// chrome lives in the shared BoardDialog primitive.
+// ============================================================
+.header {
+    @include board.board-dialog-header;
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+}
+
+.title {
+    @include board.board-dialog-title;
+    flex: 1;
+}
+
+.body {
+    @include board.board-dialog-body;
+}
+
+.footer {
+    @include board.board-dialog-footer;
+}
+
+.zone {
+    margin-bottom: dt.$spacing-lg;
+}
+
+.fieldLabel {
+    @include board.board-dialog-field-label;
+}
+
+.fieldError {
+    @include board.board-dialog-field-error;
+}
+
+// Muted consequence/asides — loading state, empty state, cascade note,
+// the "you can put it back" reassurance.
+.note {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+    margin-top: dt.$spacing-xs;
+    margin-bottom: 0;
+}
+
+// Confirm step's one-sentence outcome, set off like the mod wizard's
+// step-context line.
+.summary {
+    background: var(--bs-tertiary-bg);
+    border-left: 2px solid var(--bs-primary);
+    border-radius: dt.$radius-sm;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    margin-bottom: dt.$spacing-lg;
+    font-size: dt.$font-size-sm;
+}
+
+// ---- Other-runs picker ---------------------------------------
+.picker {
+    border: 1px solid var(--bs-border-color);
+    border-radius: dt.$radius-md;
+    overflow: hidden;
+    max-height: 13.5rem; // ~6 rows
+    overflow-y: auto;
+}
+
+.pickerRow {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-md;
+    width: 100%;
+    padding: dt.$spacing-xs dt.$spacing-md;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--bs-border-color-translucent);
+    text-align: left;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
+    cursor: pointer;
+
+    &:last-child {
+        border-bottom: 0;
+    }
+
+    &:hover:not(:disabled) {
+        background: var(--bs-tertiary-bg);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
+}
+
+.pickerRowActive {
+    background: var(--bs-primary-bg-subtle);
+
+    &:hover:not(:disabled) {
+        background: var(--bs-primary-bg-subtle);
+    }
+}
+
+.pickerTime {
+    @include board.mono-time;
+    font-size: dt.$font-size-sm;
+    min-width: 5.5rem;
+}
+
+.pickerDate {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+}
+
+// ---- Confirm step: exactly what comes off the board ----------
+.hideList {
+    list-style: none;
+    padding: 0;
+    margin: dt.$spacing-xs 0 0;
+    border: 1px solid var(--bs-border-color);
+    border-radius: dt.$radius-md;
+    overflow: hidden;
+
+    li {
+        display: flex;
+        align-items: baseline;
+        gap: dt.$spacing-md;
+        padding: dt.$spacing-xs dt.$spacing-md;
+        border-bottom: 1px solid var(--bs-border-color-translucent);
+        font-size: dt.$font-size-sm;
+
+        &:last-child {
+            border-bottom: 0;
+        }
+    }
+}
+
+.hideTime {
+    @include board.mono-time;
+    font-size: dt.$font-size-sm;
+    min-width: 5.5rem;
+}
+
+.hideDate {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+}
+
+.hideTag {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    margin-left: auto;
+}
+
+.errorAlert {
+    @include board.board-error-alert;
+    margin-top: dt.$spacing-md;
+    margin-bottom: 0;
+}
+
+.btnDanger {
+    @include board.board-dialog-btn-danger;
+}
