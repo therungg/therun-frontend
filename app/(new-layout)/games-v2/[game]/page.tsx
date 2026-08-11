@@ -6,6 +6,7 @@ import { getMyBoardClaim } from '~src/lib/board-claims';
 import { listGameModerators } from '~src/lib/game-moderators';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { getPublicModLog } from '~src/lib/moderation/public-mod-log';
+import { selfAnonymizeState } from '~src/lib/moderation/self-service';
 import {
     getAllActiveRacesByGame,
     getRaceGameStatsByGame,
@@ -134,6 +135,17 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
               )
             : null;
 
+    // "Am I hidden on this game's boards?" — read here, not in
+    // `loadGamePageData`, because it is a per-session read (bearer token) and
+    // that loader is a public, cache-shared one. Fails soft: a board must
+    // still render if `/v1/me/anonymize` is down, it just can't offer the
+    // un-hide control (see LeaderboardPager's `selfHidden`).
+    const selfHidden = session?.id
+        ? await selfAnonymizeState(session.id, resolvedGame.id).catch(
+              () => null,
+          )
+        : null;
+
     return (
         <GamePage
             data={data}
@@ -145,6 +157,7 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
             activeRaces={activeRaces}
             view={boardView}
             initialModLog={initialModLog}
+            selfHidden={selfHidden}
         />
     );
 }

@@ -552,6 +552,29 @@ tr:focus-within .reveal {
     }
 }
 
+// The runner's own "Manage" on their own row. Quieter than .moderateBtn —
+// it is one control on one row, not a moderator's working surface — but
+// always visible: it sits outside `.reveal`, so it must read as a control
+// at rest rather than borrow the row's hover state.
+.ownManageBtn {
+    @include board.control-pill;
+    position: relative;
+    z-index: 2;
+    border: 1px solid var(--bs-border-color);
+    padding: dt.$spacing-xs dt.$spacing-md;
+    background: transparent;
+    color: var(--bs-secondary-color);
+
+    &:hover {
+        border-color: var(--bs-primary);
+        color: var(--bs-primary);
+    }
+
+    @media (pointer: coarse) {
+        padding: dt.$spacing-lg;
+    }
+}
+
 // Hover-shortcut hint on the row verbs — same treatment as the drawer's
 // .verbKey (run-inspector.module.scss); keep the two in step.
 .shortcutKey {
@@ -737,6 +760,28 @@ tr:focus-within .reveal {
 .pendingNote {
     font-size: dt.$font-size-xs;
     color: var(--bs-tertiary-color);
+}
+
+// "You're shown on this board as …" — a statement of fact about the board,
+// muted like the other meta-bar notes, with the lift as an inline link-ish
+// control rather than another outlined pill (it is not a board control).
+.selfHiddenNote {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+}
+
+.selfHiddenBtn {
+    @include board.control-pill;
+    padding: 0;
+    text-decoration: underline;
+    color: var(--bs-secondary-color);
+
+    &:hover {
+        color: var(--bs-primary);
+    }
 }
 
 .notFoundNote {

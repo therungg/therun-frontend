@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useTransition } from 'react';
+import { selfAnonymizeStateAction } from '~src/actions/run-user-actions.action';
 import type { LeaderboardQuery } from '~src/lib/leaderboards-v1';
 import { normalizeVariableName } from '~src/lib/variables/keys';
 import type {
@@ -8,6 +9,7 @@ import type {
     LeaderboardResponse,
     VariableRow,
 } from '../../../../../types/leaderboards.types';
+import type { SelfAnonymizeState } from '../../../../../types/moderation.types';
 import {
     fetchLeaderboardPage,
     findRunnerPage,
@@ -15,6 +17,7 @@ import {
 import { FiltersPopover } from '../filters/filters-popover';
 import { VerifiedToggle } from '../filters/verified-toggle';
 import { isSameRunner } from '../shared/is-same-runner';
+import { OwnerHideIdentityDialog } from '../shared/owner-hide-identity-dialog';
 import { computeBoardRange } from './board-range';
 import { BoardBulkBar } from './bulk-bar';
 import { ExportButton } from './export-button';
@@ -34,6 +37,21 @@ interface Props {
     canManage: boolean;
     canSiteBan?: boolean;
     gameSlug: string;
+    /** Numeric game id — the owner-mode verbs are game-scoped `/v1/me/*` calls. */
+    gameId: number;
+    /** Human game name, for the owner hide-identity copy. */
+    gameDisplay: string;
+    /**
+     * The signed-in visitor's own anonymize state in this game, read
+     * server-side (`GET /v1/me/anonymize`). Null when signed out.
+     *
+     * This is the ONLY carrier of the un-hide path. A hidden runner's row
+     * comes back from the backend redacted — placeholder name, `userId`
+     * nulled — so `isSameRunner` can't recognise it and the row's own
+     * "Manage" button is gone. Without a board-level affordance, hiding your
+     * identity would be a one-way door from this page.
+     */
+    selfHidden?: SelfAnonymizeState | null;
     variableKeys: string[];
     primaryTiming: TimingKey;
     /** What the board calls its game-time clock. Display only. */
@@ -88,6 +106,9 @@ export function LeaderboardPager({
     canManage,
     canSiteBan = false,
     gameSlug,
+    gameId,
+    gameDisplay,
+    selfHidden = null,
     variableKeys,
     primaryTiming,
     gameTimeLabel = 'igt',
@@ -176,6 +197,13 @@ export function LeaderboardPager({
     // close and on j/k stepping — a stale 'remove' must not re-expand the
     // form on every step.
     const [inspectVerb, setInspectVerb] = useState<'remove' | null>(null);
+    // Board-level "you are hidden here" state, seeded server-side and
+    // re-read after the dialog acts. Lives here rather than on the row
+    // because a hidden runner has no recognisable row — see the prop doc.
+    const [hiddenState, setHiddenState] = useState<SelfAnonymizeState | null>(
+        selfHidden,
+    );
+    const [hideIdentityOpen, setHideIdentityOpen] = useState(false);
 
     const [entryClass] = useState(() => {
         if (typeof window === 'undefined') return styles.boardStagger;
@@ -272,9 +300,22 @@ export function LeaderboardPager({
 
     const boardRefresh = () => startRefetch(refetchCurrentPage);
 
+    /** Is this row the signed-in visitor's own? Drives owner mode. */
+    const isOwnEntry = (entry: LeaderboardEntry) =>
+        isSameRunner(sessionUsername, entry.runnerName);
+    // Which surface the drawer opens with. A moderator always gets the mod
+    // one — including on their own run, since it is a superset of the
+    // owner's and downgrading it would take verbs away from someone who has
+    // them.
+    const inspectorMode = canManage ? 'mod' : 'owner';
+
     // Route the row's Moderate/Remove to the matching inspector, and never
     // open both at once. `verb` pre-expands that verb's form in the drawer.
     const openModerate = (entry: LeaderboardEntry, verb?: 'remove') => {
+        // Non-mods reach this only through their own row's Manage button.
+        // Re-checked here rather than trusted from the row: this callback is
+        // handed to every row, and the drawer it opens performs mutations.
+        if (!canManage && (!isOwnEntry(entry) || entry.runId == null)) return;
         setInspectVerb(verb ?? null);
         if (entry.runId != null) {
             setInspectManualId(null);
@@ -450,6 +491,30 @@ export function LeaderboardPager({
                         )}
                     </span>
                     <span className={styles.metaControls}>
+                        {/* The un-hide path. Stated as a fact about this
+                            board ("you're shown as …") rather than a verb,
+                            because the runner may be looking straight at the
+                            placeholder row and not know it is theirs. The
+                            button only appears for a rule the runner applied
+                            themselves — a moderator's rule is not theirs to
+                            lift, and the dialog says so. */}
+                        {hiddenState?.hidden && (
+                            <span className={styles.selfHiddenNote}>
+                                You&apos;re shown on this board as{' '}
+                                {hiddenState.displayName ?? 'an anonymous run'}
+                                {hiddenState.selfApplied && (
+                                    <button
+                                        type="button"
+                                        className={styles.selfHiddenBtn}
+                                        onClick={() =>
+                                            setHideIdentityOpen(true)
+                                        }
+                                    >
+                                        Unhide…
+                                    </button>
+                                )}
+                            </span>
+                        )}
                         {showFindMe && (
                             <button
                                 type="button"
@@ -495,51 +560,92 @@ export function LeaderboardPager({
                 selectedKeys={selectedKeys}
                 onToggleSelect={toggleSelect}
                 onToggleAllVisible={toggleAllVisible}
-                onModerate={canManage ? openModerate : undefined}
+                // Handed to signed-in visitors too: every row gets the
+                // callback, but only the visitor's own row renders a control
+                // that calls it (and `openModerate` re-checks anyway).
+                onModerate={
+                    canManage || sessionUsername != null
+                        ? openModerate
+                        : undefined
+                }
                 onBoardRefresh={canManage ? boardRefresh : undefined}
             />
-            {canManage && inspectEntry != null && (
-                <RunInspector
-                    entry={inspectEntry}
-                    gameSlug={gameSlug}
-                    categorySlug={categorySlug}
-                    categoryDisplay={categoryDisplay}
-                    categoryId={categoryId}
-                    requireVideo={requireVideo}
-                    primaryTiming={primaryTiming}
-                    subcategoryDefKeys={subcategoryDefKeys}
-                    gameTimeLabel={gameTimeLabel}
-                    showMilliseconds={showMilliseconds}
-                    onClose={() => {
-                        setInspectRunId(null);
-                        setInspectVerb(null);
+            {/* Un-hide lives out here, not on a row: a hidden runner's row is
+                a placeholder nobody can recognise as theirs. */}
+            {/* Mounted on open, not on `hidden`: a successful lift flips
+                `hiddenState.hidden` to false, and a `hidden`-keyed guard
+                would tear the dialog off screen mid-read — including the
+                case where it has to say the runner is still hidden by a
+                moderator's overlapping rule. */}
+            {hideIdentityOpen && (
+                <OwnerHideIdentityDialog
+                    open
+                    onClose={() => setHideIdentityOpen(false)}
+                    onDone={() => {
+                        // Re-read rather than assume: a lift can leave an
+                        // overlapping moderator rule standing, in which case
+                        // the runner is still hidden and the note must stay.
+                        selfAnonymizeStateAction(gameId).then((res) => {
+                            if ('ok' in res) setHiddenState(res.state);
+                        });
+                        boardRefresh();
                     }}
-                    onMutated={boardRefresh}
-                    initialVerb={inspectVerb ?? undefined}
-                    onPrev={
-                        inspectIndex > 0
-                            ? () => {
-                                  setInspectVerb(null);
-                                  setInspectRunId(
-                                      runEntries[inspectIndex - 1].runId ??
-                                          null,
-                                  );
-                              }
-                            : undefined
-                    }
-                    onNext={
-                        inspectIndex < runEntries.length - 1
-                            ? () => {
-                                  setInspectVerb(null);
-                                  setInspectRunId(
-                                      runEntries[inspectIndex + 1].runId ??
-                                          null,
-                                  );
-                              }
-                            : undefined
-                    }
+                    gameId={gameId}
+                    gameSlug={gameSlug}
+                    gameDisplay={gameDisplay}
                 />
             )}
+            {(canManage ||
+                (inspectEntry != null && isOwnEntry(inspectEntry))) &&
+                inspectEntry != null && (
+                    <RunInspector
+                        entry={inspectEntry}
+                        gameSlug={gameSlug}
+                        gameId={gameId}
+                        gameDisplay={gameDisplay}
+                        mode={inspectorMode}
+                        categorySlug={categorySlug}
+                        categoryDisplay={categoryDisplay}
+                        categoryId={categoryId}
+                        requireVideo={requireVideo}
+                        primaryTiming={primaryTiming}
+                        subcategoryDefKeys={subcategoryDefKeys}
+                        gameTimeLabel={gameTimeLabel}
+                        showMilliseconds={showMilliseconds}
+                        onClose={() => {
+                            setInspectRunId(null);
+                            setInspectVerb(null);
+                        }}
+                        onMutated={boardRefresh}
+                        initialVerb={inspectVerb ?? undefined}
+                        // Stepping is a moderator's sweep through a page of other
+                        // people's runs. An owner has exactly one run in scope —
+                        // j/k would walk them straight onto a stranger's row with
+                        // owner verbs pointed at it.
+                        onPrev={
+                            canManage && inspectIndex > 0
+                                ? () => {
+                                      setInspectVerb(null);
+                                      setInspectRunId(
+                                          runEntries[inspectIndex - 1].runId ??
+                                              null,
+                                      );
+                                  }
+                                : undefined
+                        }
+                        onNext={
+                            canManage && inspectIndex < runEntries.length - 1
+                                ? () => {
+                                      setInspectVerb(null);
+                                      setInspectRunId(
+                                          runEntries[inspectIndex + 1].runId ??
+                                              null,
+                                      );
+                                  }
+                                : undefined
+                        }
+                    />
+                )}
             {canManage && inspectManualEntry != null && (
                 <ManualInspector
                     entry={inspectManualEntry}

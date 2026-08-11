@@ -5,7 +5,10 @@ import type { Race } from '~app/(new-layout)/races/races.types';
 import Link from '~src/components/link';
 import { buildBoardHref } from '~src/lib/board-url';
 import type { GameModerator } from '../../../../types/board-claims.types';
-import type { PublicModLogPage } from '../../../../types/moderation.types';
+import type {
+    PublicModLogPage,
+    SelfAnonymizeState,
+} from '../../../../types/moderation.types';
 import type { ClaimCtaState } from './claim/claim-cta';
 import { BoardNavProvider, useBoardNavState } from './filters/use-board-nav';
 import styles from './game-page.module.scss';
@@ -32,6 +35,15 @@ interface Props {
     view?: 'board' | 'moderation';
     /** First page of the public mod-log, fetched only when `view === 'moderation'`. */
     initialModLog?: PublicModLogPage | null;
+    /**
+     * The signed-in visitor's own anonymize state in this game (null when
+     * signed out). Read in `page.tsx` rather than `loadGamePageData` because
+     * it needs the session's bearer token, which the page data loader — a
+     * public, cache-shared read keyed only by slug + filters — deliberately
+     * never sees. Threaded straight to the pager, which owns the un-hide
+     * affordance; see its `selfHidden` prop for why that can't live on a row.
+     */
+    selfHidden?: SelfAnonymizeState | null;
 }
 
 export function GamePage({
@@ -44,6 +56,7 @@ export function GamePage({
     activeRaces,
     view = 'board',
     initialModLog,
+    selfHidden = null,
 }: Props) {
     const variableKeys = useMemo(
         () => data.variables.map((v) => v.nameNormalized),
@@ -213,6 +226,9 @@ export function GamePage({
                                         canManage={canManageRuns}
                                         canSiteBan={canSiteBan}
                                         gameSlug={data.game.name}
+                                        gameId={data.game.id}
+                                        gameDisplay={data.game.display}
+                                        selfHidden={selfHidden}
                                         variableKeys={variableKeys}
                                         primaryTiming={
                                             data.selectedCategory.primaryTiming
