@@ -16,7 +16,11 @@ import {
     RunActionForm,
     VERB_TITLE,
 } from '~app/(new-layout)/games-v2/[game]/manage/moderation/shared/run-action-dialog';
-import { loadRunHistoryAction } from '~src/actions/run-user-actions.action';
+import {
+    loadRunHistoryAction,
+    loadSelfEligibleRunsAction,
+    selfMoveRunAction,
+} from '~src/actions/run-user-actions.action';
 import Link from '~src/components/link';
 import { Vod } from '~src/components/run/dashboard/vod';
 import { DurationToFormatted } from '~src/components/util/datetime';
@@ -41,9 +45,16 @@ import { markRunsAction } from '../manage/moderation/shared/actions/marks.action
 import { restoreRunsAction } from '../manage/moderation/shared/actions/restore.action';
 import { applyVerdictsAction } from '../manage/moderation/shared/actions/verdicts.action';
 import { useDialogBehavior } from '../shared/board-dialog';
+import { OwnerHideIdentityDialog } from '../shared/owner-hide-identity-dialog';
+import { OwnerRemoveForm } from '../shared/owner-remove-form';
+import {
+    SelfRunVerdictDialog,
+    useSelfRunVerdict,
+} from '../shared/self-run-verdict';
 import { buildSubcategoryKey } from '../submit/subcategory-key';
 import { attachVodAction } from './actions/attach-vod.action';
 import { loadModBoardContextAction } from './actions/load-mod-board-context.action';
+import { loadOwnerBoardContextAction } from './actions/load-owner-board-context.action';
 import { HideIdentityDialog } from './hide-identity-dialog';
 import {
     type HistoryUndoPlan,
@@ -56,10 +67,23 @@ import { isOutlierImprovement, runBoardContext } from './run-context';
 import styles from './run-inspector.module.scss';
 import type { TimingKey } from './timing-columns';
 
+/**
+ * Who is looking. `'mod'` is the full moderation surface; `'owner'` is the
+ * reduced one a runner gets on their OWN row and nobody else's. A moderator
+ * keeps `'mod'` even on their own run — the mod surface is a superset of the
+ * owner's, so downgrading it would take verbs away from someone who has them.
+ */
+export type InspectorMode = 'mod' | 'owner';
+
 interface Props {
     /** The inspected row — always a real run (runId != null). */
     entry: LeaderboardEntry;
     gameSlug: string;
+    /** Numeric game id — the owner verbs are all game-scoped `/v1/me/*` calls. */
+    gameId: number;
+    /** Human game name, for the owner's hide-identity copy ("across {game}"). */
+    gameDisplay?: string;
+    mode?: InspectorMode;
     categorySlug: string;
     /** Human name for this board — shown, and used to match the runner's
      * other runs (eligible-runs rows key categories by display name). */
@@ -172,6 +196,34 @@ export function verbsForStatus(
     return verbs;
 }
 
+/**
+ * The verbs the footer offers, given who is looking.
+ *
+ * The owner gets exactly one, and it is never a judgement on the run: a
+ * rejected run of yours can be brought back, anything else can be taken off
+ * the board. Approve/Unverify are moderator verdicts on someone's work and
+ * have no owner-facing meaning — a runner verifying their own run is the
+ * thing verification exists to prevent.
+ */
+export function inspectorVerbs(
+    mode: InspectorMode,
+    status: LeaderboardEntry['verificationStatus'],
+): ModVerb[] {
+    if (mode === 'owner') {
+        return [status === 'rejected' ? 'restore' : 'remove'];
+    }
+    return verbsForStatus(status);
+}
+
+/** Owner-facing labels for the two verbs `inspectorVerbs` can return. The
+ * vocabulary is "hide", not "remove" — it matches the wizard this button
+ * expands (`OwnerRemoveForm`) and its sibling `SelfRunVerdictDialog`, and it
+ * is the truthful word: a hidden run is restorable, it is not deleted. */
+const OWNER_VERB_TITLE: Partial<Record<ModVerb, string>> = {
+    restore: 'Restore my run',
+    remove: 'Hide my run…',
+};
+
 /** Keyboard shortcut per verb, shown on the button and bound below. `v` is
  * the verification key in both directions — the statuses make approve and
  * unverify mutually exclusive, so it never means both at once. */
@@ -200,6 +252,7 @@ function EvidenceSection({
     categorySlug,
     subcategoryKey,
     onMutated,
+    editable = true,
 }: {
     vodUrl: string | null;
     requireVideo: boolean;
@@ -208,6 +261,10 @@ function EvidenceSection({
     categorySlug: string;
     subcategoryKey: string;
     onMutated: () => void;
+    /** False in owner mode: `attachVodAction` is moderator-gated, so the
+     * paste-a-link affordances would offer a 403. The evidence still shows;
+     * only the editing controls go. */
+    editable?: boolean;
 }) {
     // What we last saved, held locally so the block updates the instant the
     // action returns rather than waiting on the board refetch behind it.
@@ -245,7 +302,7 @@ function EvidenceSection({
         });
     };
 
-    if (editing) {
+    if (editing && editable) {
         return (
             <div className={styles.evidence}>
                 <form
@@ -310,6 +367,20 @@ function EvidenceSection({
     }
 
     if (url == null) {
+        if (!editable) {
+            return (
+                <div className={styles.evidence}>
+                    <span className={styles.noVod}>
+                        <CameraVideoOff size={16} aria-hidden />
+                        <span className={styles.noVodText}>
+                            {requireVideo
+                                ? 'No video attached — this board requires one.'
+                                : 'No video attached.'}
+                        </span>
+                    </span>
+                </div>
+            );
+        }
         return (
             <div className={styles.evidence}>
                 <button
@@ -360,13 +431,15 @@ function EvidenceSection({
                 >
                     <BoxArrowUpRight size={12} aria-hidden /> Open in a new tab
                 </a>
-                <button
-                    type="button"
-                    className={styles.vodEditBtn}
-                    onClick={openEditor}
-                >
-                    Change link
-                </button>
+                {editable && (
+                    <button
+                        type="button"
+                        className={styles.vodEditBtn}
+                        onClick={openEditor}
+                    >
+                        Change link
+                    </button>
+                )}
             </div>
         </div>
     );
@@ -384,6 +457,9 @@ function EvidenceSection({
 export function RunInspector({
     entry,
     gameSlug,
+    gameId,
+    gameDisplay,
+    mode = 'mod',
     categorySlug,
     categoryDisplay,
     categoryId,
@@ -398,6 +474,7 @@ export function RunInspector({
     onNext,
     initialVerb,
 }: Props) {
+    const ownerMode = mode === 'owner';
     const runId = entry.runId as number;
     const panelRef = useRef<HTMLDivElement>(null);
     // Portal target isn't available during SSR — mount client-side only,
@@ -438,10 +515,43 @@ export function RunInspector({
     const [modDialog, setModDialog] = useState<ModDialogKind | null>(null);
     const [_ctxPending, startCtxLoad] = useTransition();
 
+    // Owner mode's "Restore my run" — the same confirm + mutation the run
+    // page uses, so the two surfaces can't drift. Unused in mod mode (which
+    // restores through the shared RunActionForm), but hooks are
+    // unconditional, so it is created either way.
+    const selfVerdict = useSelfRunVerdict();
+    const selfConfirmOpen = selfVerdict.confirmState != null;
+    // The hook closes its confirmation on success and calls router.refresh(),
+    // which re-renders the route but does NOT reseed the pager's client-side
+    // `board` state — so the drawer would keep showing the run it just
+    // restored. Watch the confirmation close and run the board refetch too.
+    // Cancel closes it the same way, hence the flag: only a non-cancelled
+    // close is a landed mutation.
+    const selfCancelled = useRef(false);
+    const prevSelfConfirm = useRef(selfVerdict.confirmState);
+    useEffect(() => {
+        const was = prevSelfConfirm.current;
+        prevSelfConfirm.current = selfVerdict.confirmState;
+        if (was == null || selfVerdict.confirmState != null) return;
+        if (selfCancelled.current) {
+            selfCancelled.current = false;
+            return;
+        }
+        onMutated();
+        // onMutated is the parent's refetch closure and is recreated per
+        // render — depending on it would re-run this on every render.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selfVerdict.confirmState]);
+
     // While a Move/Adjust/Hide-identity dialog is stacked on top, hand the
     // focus trap + Escape + scroll lock over to it — two live traps on
-    // `document` would fight, and the drawer's Escape would close both.
-    useDialogBehavior({ open: modDialog == null, onClose, panelRef });
+    // `document` would fight, and the drawer's Escape would close both. The
+    // owner's restore confirmation is the same kind of stacked dialog.
+    useDialogBehavior({
+        open: modDialog == null && !selfConfirmOpen,
+        onClose,
+        panelRef,
+    });
 
     const entrySubcategoryKey = buildSubcategoryKey(
         Object.fromEntries(
@@ -455,6 +565,13 @@ export function RunInspector({
         modCtx?.categories.find((c) => c.name === categorySlug) ?? null;
 
     const openModDialog = (kind: ModDialogKind) => {
+        // The owner's hide-identity dialog is game-scoped and reads its own
+        // state from `/v1/me/anonymize` — it needs no board context at all,
+        // so don't make the runner wait on (or fail on) a categories load.
+        if (ownerMode && kind === 'hide-identity') {
+            setModDialog(kind);
+            return;
+        }
         if (modCtx != null) {
             if (modCategory == null) {
                 toast.error("Could not resolve this board's category.");
@@ -464,7 +581,12 @@ export function RunInspector({
             return;
         }
         startCtxLoad(async () => {
-            const res = await loadModBoardContextAction(gameSlug);
+            // Same shape, different authority: the mod loader 403s for a
+            // non-mod, so owner mode reads the public per-category variables
+            // instead (see load-owner-board-context.action.ts).
+            const res = ownerMode
+                ? await loadOwnerBoardContextAction(gameSlug, categorySlug)
+                : await loadModBoardContextAction(gameSlug);
             if ('error' in res) {
                 toast.error(res.error);
                 return;
@@ -500,10 +622,21 @@ export function RunInspector({
     // j/k row navigation and v/x verbs. All inert while a verb form is open
     // (typed reasons must not be lost to a stray key), while a stacked
     // dialog owns the keyboard, and while focus sits in any text field.
-    const verbs = verbsForStatus(entry.verificationStatus);
+    const verbs = inspectorVerbs(mode, entry.verificationStatus);
+    // Owner "restore" is a confirm dialog, not an inline form — the button
+    // and the `v` key both route here instead of through `activeVerb`.
+    const startVerb = (verb: ModVerb) => {
+        if (ownerMode && verb === 'restore') {
+            selfCancelled.current = false;
+            selfVerdict.requestVerdict(runId, 'unreject');
+            return;
+        }
+        setActiveVerb(verb);
+    };
     useEffect(() => {
         const onKeyDown = (e: KeyboardEvent) => {
-            if (activeVerb != null || modDialog != null) return;
+            if (activeVerb != null || modDialog != null || selfConfirmOpen)
+                return;
             if (e.metaKey || e.ctrlKey || e.altKey) return;
             const t = e.target as HTMLElement | null;
             if (
@@ -525,7 +658,7 @@ export function RunInspector({
                 const hit = verbs.find((v) => VERB_KEY[v] === e.key);
                 if (hit) {
                     e.preventDefault();
-                    setActiveVerb(hit);
+                    startVerb(hit);
                 }
             }
         };
@@ -533,7 +666,15 @@ export function RunInspector({
         return () => document.removeEventListener('keydown', onKeyDown);
         // step is stable enough — it only wraps the two props below.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeVerb, modDialog, onNext, onPrev, entry.verificationStatus]);
+    }, [
+        activeVerb,
+        modDialog,
+        selfConfirmOpen,
+        onNext,
+        onPrev,
+        entry.verificationStatus,
+        mode,
+    ]);
 
     // History reloads on run change and after a verdict lands (the parent's
     // refetch hands back an entry whose status reflects the action).
@@ -551,22 +692,29 @@ export function RunInspector({
         };
     }, [runId, entry.verificationStatus, historyReload]);
 
+    // The same roster, read through whichever route the viewer is entitled
+    // to: the mod one takes an arbitrary userId and is moderator-gated; the
+    // owner one is scoped to the caller. In owner mode the inspected run IS
+    // the caller's, so the two return the same rows.
     useEffect(() => {
         const userId = entry.userId;
-        if (userId == null) {
+        if (!ownerMode && userId == null) {
             setRunnerRuns(null);
             return;
         }
         let stale = false;
         setRunnerRuns(null);
-        loadUserEligibleRunsAction(gameSlug, userId).then((res) => {
+        const load = ownerMode
+            ? loadSelfEligibleRunsAction(gameId)
+            : loadUserEligibleRunsAction(gameSlug, userId as number);
+        load.then((res) => {
             if (stale || 'error' in res) return;
             setRunnerRuns(res.rows);
         });
         return () => {
             stale = true;
         };
-    }, [gameSlug, entry.userId]);
+    }, [gameSlug, gameId, ownerMode, entry.userId]);
 
     const badge =
         entry.source === 'manual'
@@ -646,7 +794,11 @@ export function RunInspector({
                 className={`position-fixed top-0 end-0 h-100 bg-body shadow-lg d-flex flex-column ${styles.panel}`}
                 role="dialog"
                 aria-modal="true"
-                aria-label={`Moderate ${entry.runnerName}'s run`}
+                aria-label={
+                    ownerMode
+                        ? 'Manage your run'
+                        : `Moderate ${entry.runnerName}'s run`
+                }
             >
                 {/* The header carries the run's identity — a static
                     "Moderate run" title spent a whole bar saying what the
@@ -697,6 +849,7 @@ export function RunInspector({
                         categorySlug={categorySlug}
                         subcategoryKey={entrySubcategoryKey}
                         onMutated={onMutated}
+                        editable={!ownerMode}
                     />
 
                     {/* The time, in the clock this board ranks on, with what
@@ -807,12 +960,16 @@ export function RunInspector({
                                               ctx.boardCount === 1 ? '' : 's'
                                           } in this game`}
                                 </span>
-                                <Link
-                                    href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${entry.userId}?from=board`}
-                                    className={styles.factLink}
-                                >
-                                    Runner page →
-                                </Link>
+                                {/* Moderator-only route — an owner following
+                                    it would land on a 403. */}
+                                {!ownerMode && (
+                                    <Link
+                                        href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${entry.userId}?from=board`}
+                                        className={styles.factLink}
+                                    >
+                                        Runner page →
+                                    </Link>
+                                )}
                             </>
                         ) : (
                             <span className="text-muted small">
@@ -870,7 +1027,10 @@ export function RunInspector({
                                                 >
                                                     {describeEvent(event)}
                                                 </span>
-                                                {plan && (
+                                                {/* Undo runs moderator
+                                                    verbs — never offered to
+                                                    an owner. */}
+                                                {plan && !ownerMode && (
                                                     <TimelineUndoButton
                                                         gameSlug={gameSlug}
                                                         runId={runId}
@@ -932,9 +1092,12 @@ export function RunInspector({
                                                   ? 'btn-outline-danger'
                                                   : 'btn-outline-secondary'
                                         }`}
-                                        onClick={() => setActiveVerb(verb)}
+                                        onClick={() => startVerb(verb)}
                                     >
-                                        {VERB_TITLE[verb]}
+                                        {ownerMode
+                                            ? (OWNER_VERB_TITLE[verb] ??
+                                              VERB_TITLE[verb])
+                                            : VERB_TITLE[verb]}
                                         {VERB_KEY[verb] && (
                                             <kbd className={styles.verbKey}>
                                                 {VERB_KEY[verb]}
@@ -951,13 +1114,19 @@ export function RunInspector({
                                 >
                                     Move…
                                 </button>
-                                <button
-                                    type="button"
-                                    className={styles.secondaryBtn}
-                                    onClick={() => openModDialog('adjust')}
-                                >
-                                    Adjust time…
-                                </button>
+                                {/* Correcting a time is a moderator edit
+                                    (`editRun`); a runner's own route to the
+                                    same outcome is the hide wizard's "set a
+                                    time instead". */}
+                                {!ownerMode && (
+                                    <button
+                                        type="button"
+                                        className={styles.secondaryBtn}
+                                        onClick={() => openModDialog('adjust')}
+                                    >
+                                        Adjust time…
+                                    </button>
+                                )}
                                 <button
                                     type="button"
                                     className={styles.secondaryBtn}
@@ -972,46 +1141,68 @@ export function RunInspector({
                     ) : (
                         <div className={styles.verbForm}>
                             <div className={styles.verbFormTitle}>
-                                {VERB_TITLE[activeVerb]} — {entry.runnerName}
-                                ’s run
+                                {ownerMode
+                                    ? 'Hide my run'
+                                    : `${VERB_TITLE[activeVerb]} — ${entry.runnerName}’s run`}
                             </div>
-                            <RunActionForm
-                                gameSlug={gameSlug}
-                                verb={activeVerb}
-                                target={{
-                                    kind: 'runs',
-                                    runIds: [runId],
-                                    label: `${entry.runnerName}'s run`,
-                                    runTimeMs: primaryMs,
-                                    runDate: entry.runDate ?? null,
-                                    // Unlocks Remove's "every run on this
-                                    // board" option and its custom-time
-                                    // replacement. Built from props the
-                                    // board page already holds — never from
-                                    // the lazily-loaded mod context, so the
-                                    // choices render the instant the form
-                                    // opens instead of arriving after a
-                                    // fetch and reshaping the form.
-                                    runner:
-                                        entry.userId != null &&
-                                        categoryId != null
-                                            ? {
-                                                  id: entry.userId,
-                                                  name: entry.runnerName,
-                                                  categoryId,
-                                                  categoryDisplay:
-                                                      categoryDisplay,
-                                                  subcategoryKey:
-                                                      entrySubcategoryKey,
-                                                  primaryTiming,
-                                              }
-                                            : undefined,
-                                }}
-                                onDone={verbDone}
-                                onClose={() => setActiveVerb(null)}
-                                onUndoComplete={onMutated}
-                                autoFocus
-                            />
+                            {ownerMode ? (
+                                <OwnerRemoveForm
+                                    gameId={gameId}
+                                    gameSlug={gameSlug}
+                                    runId={runId}
+                                    // The board's own category — the wizard
+                                    // filters the runner's other times to
+                                    // exactly this board. Falls back to the
+                                    // lazily-loaded context only if the page
+                                    // didn't pass one.
+                                    categoryId={
+                                        categoryId ?? modCategory?.id ?? 0
+                                    }
+                                    subcategoryKey={entrySubcategoryKey}
+                                    primaryTiming={primaryTiming}
+                                    runTimeMs={primaryMs}
+                                    onDone={verbDone}
+                                    onClose={() => setActiveVerb(null)}
+                                />
+                            ) : (
+                                <RunActionForm
+                                    gameSlug={gameSlug}
+                                    verb={activeVerb}
+                                    target={{
+                                        kind: 'runs',
+                                        runIds: [runId],
+                                        label: `${entry.runnerName}'s run`,
+                                        runTimeMs: primaryMs,
+                                        runDate: entry.runDate ?? null,
+                                        // Unlocks Remove's "every run on this
+                                        // board" option and its custom-time
+                                        // replacement. Built from props the
+                                        // board page already holds — never from
+                                        // the lazily-loaded mod context, so the
+                                        // choices render the instant the form
+                                        // opens instead of arriving after a
+                                        // fetch and reshaping the form.
+                                        runner:
+                                            entry.userId != null &&
+                                            categoryId != null
+                                                ? {
+                                                      id: entry.userId,
+                                                      name: entry.runnerName,
+                                                      categoryId,
+                                                      categoryDisplay:
+                                                          categoryDisplay,
+                                                      subcategoryKey:
+                                                          entrySubcategoryKey,
+                                                      primaryTiming,
+                                                  }
+                                                : undefined,
+                                    }}
+                                    onDone={verbDone}
+                                    onClose={() => setActiveVerb(null)}
+                                    onUndoComplete={onMutated}
+                                    autoFocus
+                                />
+                            )}
                         </div>
                     )}
                     {(onPrev || onNext) && activeVerb == null && (
@@ -1053,43 +1244,98 @@ export function RunInspector({
                 is open the drawer's dialog behavior is suspended — see the
                 useDialogBehavior call above. */}
             {modCtx != null && modCategory != null && rosterRow != null && (
-                <>
-                    <MoveDialog
-                        open={modDialog === 'move'}
-                        onClose={() => setModDialog(null)}
-                        row={rosterRow}
-                        category={modCategory}
-                        categories={modCtx.categories}
-                        variables={modCtx.variables}
-                        subcategoryKey={entrySubcategoryKey}
-                        gameSlug={gameSlug}
-                        onMutated={onModDialogMutated}
-                    />
-                    <AdjustDialog
-                        open={modDialog === 'adjust'}
-                        onClose={() => setModDialog(null)}
-                        row={rosterRow}
-                        category={modCategory}
-                        gameSlug={gameSlug}
-                        subcategoryKey={entrySubcategoryKey}
-                        timeMs={modCategoryTimeMs}
-                        onMutated={onModDialogMutated}
-                    />
-                    <HideIdentityDialog
-                        open={modDialog === 'hide-identity'}
-                        onClose={() => setModDialog(null)}
-                        onDone={onModDialogMutated}
-                        gameSlug={gameSlug}
-                        gameDisplay={modCtx.gameDisplay}
-                        runnerName={entry.runnerName}
-                        runId={runId}
-                        userId={entry.userId ?? null}
-                        categoryId={modCategory.id}
-                        categoryDisplay={modCategory.display}
-                        subcategoryKey={entrySubcategoryKey}
-                    />
-                </>
+                <MoveDialog
+                    open={modDialog === 'move'}
+                    onClose={() => setModDialog(null)}
+                    row={rosterRow}
+                    category={modCategory}
+                    categories={modCtx.categories}
+                    variables={modCtx.variables}
+                    subcategoryKey={entrySubcategoryKey}
+                    gameSlug={gameSlug}
+                    onMutated={onModDialogMutated}
+                    ownerMode={ownerMode}
+                    // The dialog doesn't thread the run's current board, so
+                    // the origin side of the cache bust is closed over here
+                    // — same pair the mod path passes to `moveRunAction`.
+                    onSubmitOwner={
+                        ownerMode
+                            ? (target) =>
+                                  selfMoveRunAction(
+                                      gameSlug,
+                                      gameId,
+                                      runId,
+                                      {
+                                          categoryId:
+                                              categoryId ?? modCategory.id,
+                                          subcategoryKey: entrySubcategoryKey,
+                                      },
+                                      target,
+                                  )
+                            : undefined
+                    }
+                />
             )}
+            {ownerMode && (
+                <OwnerHideIdentityDialog
+                    open={modDialog === 'hide-identity'}
+                    onClose={() => setModDialog(null)}
+                    // Deliberately NOT onModDialogMutated: the dialog reports
+                    // the resulting state in place (a lift can still leave a
+                    // moderator's rule standing), so closing it on `onDone`
+                    // would tear that answer off the screen. The runner
+                    // closes it.
+                    onDone={() => {
+                        setHistoryReload((n) => n + 1);
+                        onMutated();
+                    }}
+                    gameId={gameId}
+                    gameSlug={gameSlug}
+                    gameDisplay={gameDisplay ?? modCtx?.gameDisplay ?? gameSlug}
+                />
+            )}
+            {ownerMode && (
+                <SelfRunVerdictDialog
+                    confirmState={selfVerdict.confirmState}
+                    pending={selfVerdict.pending}
+                    error={selfVerdict.error}
+                    onCancel={() => {
+                        selfCancelled.current = true;
+                        selfVerdict.cancel();
+                    }}
+                    onConfirm={selfVerdict.confirm}
+                />
+            )}
+            {!ownerMode &&
+                modCtx != null &&
+                modCategory != null &&
+                rosterRow != null && (
+                    <>
+                        <AdjustDialog
+                            open={modDialog === 'adjust'}
+                            onClose={() => setModDialog(null)}
+                            row={rosterRow}
+                            category={modCategory}
+                            gameSlug={gameSlug}
+                            subcategoryKey={entrySubcategoryKey}
+                            timeMs={modCategoryTimeMs}
+                            onMutated={onModDialogMutated}
+                        />
+                        <HideIdentityDialog
+                            open={modDialog === 'hide-identity'}
+                            onClose={() => setModDialog(null)}
+                            onDone={onModDialogMutated}
+                            gameSlug={gameSlug}
+                            gameDisplay={modCtx.gameDisplay}
+                            runnerName={entry.runnerName}
+                            runId={runId}
+                            userId={entry.userId ?? null}
+                            categoryId={modCategory.id}
+                            categoryDisplay={modCategory.display}
+                            subcategoryKey={entrySubcategoryKey}
+                        />
+                    </>
+                )}
         </>,
         document.body,
     );

@@ -1087,6 +1087,8 @@ export function BoardCuration({
                         <RunInspector
                             entry={inspectEntry}
                             gameSlug={game.name}
+                            gameId={game.id}
+                            gameDisplay={game.display}
                             categorySlug={category.name}
                             categoryDisplay={category.display}
                             categoryId={category.id}

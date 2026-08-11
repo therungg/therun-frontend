@@ -450,6 +450,37 @@ export function LeaderboardRow({
                         <PlayBtn size={16} />
                     </a>
                 )}
+                {/* The runner's own way into the same drawer, in its reduced
+                    owner form. A moderator never sees this — they get
+                    Moderate below, whose surface is a superset, even on their
+                    own run.
+
+                    Outside `.reveal` on purpose: that cluster is hidden until
+                    the row is hovered, which is right for a moderator sweeping
+                    a board full of rows and wrong for the one control a runner
+                    has on the one row that is theirs.
+
+                    `runId == null` is a pure manual set time — the owner path
+                    for those is the manual-times endpoints, not this drawer.
+
+                    Note what this cannot do: once a runner hides their
+                    identity their row arrives redacted, `isCurrentUser` goes
+                    false, and this button disappears. Un-hiding therefore
+                    lives in the pager's header, not here (see
+                    leaderboard-pager.tsx). */}
+                {!canManage &&
+                    isCurrentUser &&
+                    entry.runId != null &&
+                    onModerate && (
+                        <button
+                            type="button"
+                            className={styles.ownManageBtn}
+                            onClick={() => onModerate(entry)}
+                            title="Manage your entry"
+                        >
+                            Manage
+                        </button>
+                    )}
                 <span className={styles.reveal}>
                     {showQuickVerify && (
                         <QuickVerifyButton
