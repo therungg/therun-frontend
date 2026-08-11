@@ -182,6 +182,10 @@ export function LeaderboardPager({
     // reference, so a page refetch after a verdict re-derives the fresh row.
     const [inspectRunId, setInspectRunId] = useState<number | null>(null);
     const [inspectManualId, setInspectManualId] = useState<number | null>(null);
+    // Verb the inspector opens onto (the row's Remove/`x` path). Cleared on
+    // close and on j/k stepping — a stale 'remove' must not re-expand the
+    // form on every step.
+    const [inspectVerb, setInspectVerb] = useState<'remove' | null>(null);
 
     const [entryClass] = useState(() => {
         if (typeof window === 'undefined') return styles.boardStagger;
@@ -278,9 +282,10 @@ export function LeaderboardPager({
 
     const boardRefresh = () => startRefetch(refetchCurrentPage);
 
-    // Route the kebab's Moderate… to the matching inspector, and never open
-    // both at once.
-    const openModerate = (entry: LeaderboardEntry) => {
+    // Route the row's Moderate/Remove to the matching inspector, and never
+    // open both at once. `verb` pre-expands that verb's form in the drawer.
+    const openModerate = (entry: LeaderboardEntry, verb?: 'remove') => {
+        setInspectVerb(verb ?? null);
         if (entry.runId != null) {
             setInspectManualId(null);
             setInspectRunId(entry.runId);
@@ -522,11 +527,6 @@ export function LeaderboardPager({
                 onToggleAllVisible={toggleAllVisible}
                 onModerate={canManage ? openModerate : undefined}
                 onBoardRefresh={canManage ? boardRefresh : undefined}
-                category={
-                    categoryId != null
-                        ? { id: categoryId, display: categoryDisplay }
-                        : undefined
-                }
             />
             {canManage && inspectEntry != null && (
                 <RunInspector
@@ -534,29 +534,38 @@ export function LeaderboardPager({
                     gameSlug={gameSlug}
                     categorySlug={categorySlug}
                     categoryDisplay={categoryDisplay}
+                    categoryId={categoryId}
                     requireVideo={requireVideo}
                     primaryTiming={primaryTiming}
                     subcategoryDefKeys={subcategoryDefKeys}
                     gameTimeLabel={gameTimeLabel}
                     showMilliseconds={showMilliseconds}
-                    onClose={() => setInspectRunId(null)}
+                    onClose={() => {
+                        setInspectRunId(null);
+                        setInspectVerb(null);
+                    }}
                     onMutated={boardRefresh}
+                    initialVerb={inspectVerb ?? undefined}
                     onPrev={
                         inspectIndex > 0
-                            ? () =>
+                            ? () => {
+                                  setInspectVerb(null);
                                   setInspectRunId(
                                       runEntries[inspectIndex - 1].runId ??
                                           null,
-                                  )
+                                  );
+                              }
                             : undefined
                     }
                     onNext={
                         inspectIndex < runEntries.length - 1
-                            ? () =>
+                            ? () => {
+                                  setInspectVerb(null);
                                   setInspectRunId(
                                       runEntries[inspectIndex + 1].runId ??
                                           null,
-                                  )
+                                  );
+                              }
                             : undefined
                     }
                 />
@@ -569,24 +578,32 @@ export function LeaderboardPager({
                     subcategoryDefKeys={subcategoryDefKeys}
                     gameTimeLabel={gameTimeLabel}
                     showMilliseconds={showMilliseconds}
-                    onClose={() => setInspectManualId(null)}
+                    onClose={() => {
+                        setInspectManualId(null);
+                        setInspectVerb(null);
+                    }}
                     onMutated={boardRefresh}
+                    initialVerb={inspectVerb ?? undefined}
                     onPrev={
                         inspectManualIndex > 0
-                            ? () =>
+                            ? () => {
+                                  setInspectVerb(null);
                                   setInspectManualId(
                                       manualEntries[inspectManualIndex - 1]
                                           .manualTimeId ?? null,
-                                  )
+                                  );
+                              }
                             : undefined
                     }
                     onNext={
                         inspectManualIndex < manualEntries.length - 1
-                            ? () =>
+                            ? () => {
+                                  setInspectVerb(null);
                                   setInspectManualId(
                                       manualEntries[inspectManualIndex + 1]
                                           .manualTimeId ?? null,
-                                  )
+                                  );
+                              }
                             : undefined
                     }
                 />

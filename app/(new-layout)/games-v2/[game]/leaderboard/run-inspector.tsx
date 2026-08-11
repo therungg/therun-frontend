@@ -64,6 +64,10 @@ interface Props {
     /** Human name for this board — shown, and used to match the runner's
      * other runs (eligible-runs rows key categories by display name). */
     categoryDisplay: string;
+    /** The board's category id — Remove's runner-scope and custom-time
+     * options are built from it. A prop, not the lazily-fetched mod
+     * context: the choices must exist the instant the form opens. */
+    categoryId?: number;
     /** category.requireVideo — turns a missing VOD into a stated blocker. */
     requireVideo?: boolean;
     /** Which clock this board ranks on. Decides which time reads primary. */
@@ -79,6 +83,10 @@ interface Props {
     /** Step to the adjacent run row without closing — j/k also bind to these. */
     onPrev?: () => void;
     onNext?: () => void;
+    /** Open with this verb form already expanded (the row's Remove/`x`
+     * routes here instead of a standalone dialog, so the board stays
+     * visible behind the judgement). */
+    initialVerb?: ModVerb;
 }
 
 interface ModBoardContext {
@@ -378,6 +386,7 @@ export function RunInspector({
     gameSlug,
     categorySlug,
     categoryDisplay,
+    categoryId,
     requireVideo = false,
     primaryTiming,
     subcategoryDefKeys,
@@ -387,6 +396,7 @@ export function RunInspector({
     onMutated,
     onPrev,
     onNext,
+    initialVerb,
 }: Props) {
     const runId = entry.runId as number;
     const panelRef = useRef<HTMLDivElement>(null);
@@ -396,7 +406,16 @@ export function RunInspector({
     useEffect(() => {
         setPortalReady(true);
     }, []);
-    const [activeVerb, setActiveVerb] = useState<ModVerb | null>(null);
+    const [activeVerb, setActiveVerb] = useState<ModVerb | null>(
+        initialVerb ?? null,
+    );
+    // A row's Remove/`x` opens the drawer straight onto the verb form; the
+    // effect also covers clicking another row's Remove while the drawer is
+    // already open (new runId, same verb). Stepping j/k never re-applies —
+    // the parent clears its verb on prev/next.
+    useEffect(() => {
+        if (initialVerb) setActiveVerb(initialVerb);
+    }, [initialVerb, runId]);
 
     const [history, setHistory] = useState<HistoryEvent[] | null>(null);
     const [historyError, setHistoryError] = useState<string | null>(null);
@@ -963,25 +982,23 @@ export function RunInspector({
                                     kind: 'runs',
                                     runIds: [runId],
                                     label: `${entry.runnerName}'s run`,
+                                    runTimeMs: primaryMs,
+                                    runDate: entry.runDate ?? null,
                                     // Unlocks Remove's "every run on this
-                                    // board" option. This is the path most
-                                    // moderators take — a row click opens
-                                    // the drawer, and `x` opens Remove from
-                                    // inside it — so without this the fork
-                                    // would only exist on the curation row's
-                                    // own Remove… button.
-                                    //
-                                    // Needs the category ID, which only
-                                    // arrives with the mod context, so the
-                                    // choice appears once that resolves
-                                    // rather than being absent for good.
+                                    // board" option and its custom-time
+                                    // replacement. Built from props the
+                                    // board page already holds — never from
+                                    // the lazily-loaded mod context, so the
+                                    // choices render the instant the form
+                                    // opens instead of arriving after a
+                                    // fetch and reshaping the form.
                                     runner:
                                         entry.userId != null &&
-                                        modCategory != null
+                                        categoryId != null
                                             ? {
                                                   id: entry.userId,
                                                   name: entry.runnerName,
-                                                  categoryId: modCategory.id,
+                                                  categoryId,
                                                   categoryDisplay:
                                                       categoryDisplay,
                                                   subcategoryKey:

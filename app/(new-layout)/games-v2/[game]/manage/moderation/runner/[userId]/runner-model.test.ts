@@ -59,6 +59,7 @@ function manual(
         timing: 'realtime',
         timeMs: 5000,
         evidenceUrl: null,
+        runDate: null,
         verificationStatus: 'verified',
         source: 'mod',
         createdBy: 1,

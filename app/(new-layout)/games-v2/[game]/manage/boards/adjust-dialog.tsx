@@ -64,6 +64,9 @@ export function AdjustDialog({
 
     // ---- Set a time instead ---------------------------------------------
     const [timeText, setTimeText] = useState('');
+    // Optional "when was this achieved" (yyyy-mm-dd). Empty => the board
+    // shows the manual time's created-at.
+    const [dateText, setDateText] = useState('');
     const [reasonText, setReasonText] = useState('');
     const [timeError, setTimeError] = useState<string | null>(null);
 
@@ -78,6 +81,7 @@ export function AdjustDialog({
         setSelectedTarget(row.runId);
         setPickError(null);
         setTimeText(msToTimeInput(timeMs));
+        setDateText('');
         setReasonText('');
         setTimeError(null);
         setEligibleRuns(null);
@@ -188,6 +192,7 @@ export function AdjustDialog({
                 timing:
                     category.primaryTiming === 'gt' ? 'gametime' : 'realtime',
                 timeMs: parsed,
+                runDate: dateText || null,
                 reason: reasonText,
             });
             if ('error' in res) {
@@ -367,6 +372,20 @@ export function AdjustDialog({
                     {timeError && (
                         <span className={styles.timeError}>{timeError}</span>
                     )}
+                    <label
+                        htmlFor="adjust-time-date"
+                        className={styles.fieldLabel}
+                    >
+                        Date achieved — optional
+                    </label>
+                    <input
+                        id="adjust-time-date"
+                        type="date"
+                        className={styles.timeInput}
+                        value={dateText}
+                        onChange={(e) => setDateText(e.target.value)}
+                        disabled={isPending}
+                    />
                     <label
                         htmlFor="adjust-time-reason"
                         className={styles.fieldLabel}

@@ -30,6 +30,8 @@ export interface ManualTimeRow {
     timing: ModTiming;
     timeMs: number;
     evidenceUrl: string | null;
+    /** Mod-asserted achievement date; null => createdAt stands in. */
+    runDate: string | null;
     verificationStatus: VerificationStatus;
     source: ManualTimeSource;
     createdBy: number;
@@ -79,6 +81,9 @@ export interface CreateManualTimeInput {
     timing: ModTiming;
     timeMs: number;
     evidenceUrl?: string | null;
+    /** Mod-asserted date the time was achieved (ISO date); omitted/null =>
+     *  the board shows the manual time's created-at instead. */
+    runDate?: string | null;
     reason: string;
 }
 
@@ -101,6 +106,8 @@ export interface UpdateManualTimeInput {
     reason: string;
     timeMs?: number;
     evidenceUrl?: string | null;
+    /** Explicit null clears the date (created-at stands in again). */
+    runDate?: string | null;
 }
 
 export interface UpdateManualTimeResult {
