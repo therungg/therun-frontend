@@ -606,12 +606,14 @@ export interface SelfDeleteManualTimeResult {
 }
 
 /** Body for POST /v1/me/runs/{runId}/move (owner self-move, §E4). */
-export interface SelfMoveRunInput {
-    categoryId: number;
-    subcategoryKey: string;
-    /** Optional; backend defaults to "Moved by the runner" when omitted/blank. */
-    reason?: string;
-}
+/**
+ * `AffectedLeaderboard`-shaped (categoryId + subcategoryKey) — matches what
+ * `selfMoveRunAction`'s `target` parameter carries. No `reason` field: the
+ * action's `target` is a plain `AffectedLeaderboard` with no way for a
+ * caller to supply one, so the backend's "Moved by the runner" default
+ * always applies for self-moves.
+ */
+export type SelfMoveRunInput = AffectedLeaderboard;
 
 export interface SelfMoveRunResult {
     moved: true;
