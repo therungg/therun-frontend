@@ -12,7 +12,10 @@ vi.mock('../public-mod-log', () => ({
 
 import { updateTag } from 'next/cache';
 import { resolveCategory } from '~src/lib/games-v1';
-import { revalidateAffectedBoards } from '../revalidate-boards';
+import {
+    revalidateAffectedBoards,
+    revalidateBoardsForRuleScope,
+} from '../revalidate-boards';
 
 const updateTagMock = vi.mocked(updateTag);
 const resolveCategoryMock = vi.mocked(resolveCategory);
@@ -54,5 +57,39 @@ describe('revalidateAffectedBoards', () => {
     it('is a no-op when no boards were affected (callers use revalidateModLog for that)', async () => {
         await revalidateAffectedBoards(7, 'Super Mario 64', []);
         expect(updateTagMock).not.toHaveBeenCalled();
+    });
+});
+
+describe('revalidateBoardsForRuleScope', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        resolveCategoryMock.mockResolvedValue({
+            categories: [
+                { id: 12, name: '120 Star' },
+                { id: 13, name: '70 Star' },
+            ],
+        } as Awaited<ReturnType<typeof resolveCategory>>);
+    });
+
+    it('busts the coarse tag for a category-scoped rule, plus the mod log', async () => {
+        await revalidateBoardsForRuleScope(7, 'Super Mario 64', 12);
+        const tags = updateTagMock.mock.calls.map(([t]) => t);
+        expect(tags).toContain('lb:Super Mario 64:120 Star');
+        expect(tags).not.toContain('lb:Super Mario 64:70 Star');
+        expect(tags).toContain('mod-log:7');
+    });
+
+    it('busts every category for a game-wide rule', async () => {
+        await revalidateBoardsForRuleScope(7, 'Super Mario 64', null);
+        const tags = updateTagMock.mock.calls.map(([t]) => t);
+        expect(tags).toContain('lb:Super Mario 64:120 Star');
+        expect(tags).toContain('lb:Super Mario 64:70 Star');
+    });
+
+    it('still busts the mod log when category resolution fails', async () => {
+        resolveCategoryMock.mockRejectedValue(new Error('backend down'));
+        await revalidateBoardsForRuleScope(7, 'Super Mario 64', 12);
+        const tags = updateTagMock.mock.calls.map(([t]) => t);
+        expect(tags).toEqual(['mod-log:7']);
     });
 });

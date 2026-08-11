@@ -56,6 +56,34 @@ export async function revalidateAffectedBoards(
     updateTag(modLogTag(gameId));
 }
 
+/**
+ * Rule-scoped variant: a user-exclusion rule (remove-the-runner, ban) knows
+ * its category scope but not the affected (category, subcategoryKey) pairs —
+ * the backend's CreateRuleResult carries no affectedLeaderboards. Bust the
+ * coarse per-category tag for the rule's category (every category when the
+ * rule is game-wide); the coarse tag is the one that guarantees
+ * read-your-writes across all of a category's cached views anyway.
+ */
+export async function revalidateBoardsForRuleScope(
+    gameId: number,
+    gameSlug: string,
+    categoryId: number | null,
+): Promise<void> {
+    try {
+        const { categories } = await resolveCategory(gameId);
+        const targets =
+            categoryId === null
+                ? categories
+                : categories.filter((c) => c.id === categoryId);
+        for (const c of targets) {
+            updateTag(`lb:${gameSlug}:${c.name}`);
+        }
+    } catch {
+        // Best-effort cache invalidation; the TTL will catch up regardless.
+    }
+    updateTag(modLogTag(gameId));
+}
+
 // Run/manual detail pages cache under run:{id} / manual-time:{id} (minutes profile).
 // Call after any verdict/exclude/restore/manual-time mutation so the detail page
 // reflects the action immediately.

@@ -7,6 +7,7 @@ import { exclude, previewExclude } from '~src/lib/moderation/mass-mgmt';
 import { ModError } from '~src/lib/moderation/mod-fetch';
 import {
     revalidateAffectedBoards,
+    revalidateBoardsForRuleScope,
     revalidateRunDetails,
 } from '~src/lib/moderation/revalidate-boards';
 import type {
@@ -72,6 +73,17 @@ export async function excludeAction(
                 result.affectedLeaderboards,
             );
             if ('runIds' in input) revalidateRunDetails(input.runIds);
+        } else if ('rule' in input) {
+            // Rule creation (remove-the-runner, ban) returns CreateRuleResult
+            // — no affectedLeaderboards — but it just pulled every run of a
+            // runner off the board(s) in its scope. Without this, the mod's
+            // instant refetch reads the still-cached board and the removal
+            // only shows up after the TTL: read-your-writes applies here too.
+            await revalidateBoardsForRuleScope(
+                game.id,
+                game.name,
+                input.rule.categoryId ?? null,
+            );
         }
         return { ok: true, result };
     } catch (e) {
