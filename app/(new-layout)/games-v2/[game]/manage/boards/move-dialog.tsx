@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState, useTransition } from 'react';
+import { toast } from 'react-toastify';
 import {
     buildSubcategoryKey,
     parseSubcategoryKey,
@@ -35,6 +36,18 @@ export interface MoveDialogProps {
     subcategoryKey: string;
     gameSlug: string;
     onMutated: () => void;
+    /** Runner-facing self-move: hides the reason field (the backend defaults
+     * it), routes submit through `onSubmitOwner` instead of `moveRunAction`,
+     * and shows a standing notice about losing verified status. Absent
+     * (default) keeps the moderator path byte-for-byte unchanged. */
+    ownerMode?: boolean;
+    /** Required when `ownerMode` is set. Mirrors the mod path's target shape
+     * but has no reason/undo — the backend defaults the reason and an owner
+     * self-move isn't undo-toast material. */
+    onSubmitOwner?: (target: {
+        categoryId: number;
+        subcategoryKey: string;
+    }) => Promise<{ ok: true; reverify: boolean } | { error: string }>;
 }
 
 /**
@@ -54,6 +67,8 @@ export function MoveDialog({
     subcategoryKey,
     gameSlug,
     onMutated,
+    ownerMode = false,
+    onSubmitOwner,
 }: MoveDialogProps) {
     // Only boards runners can actually see: featured, non-archived. The
     // row's current category rides along even if it isn't (so a
@@ -127,12 +142,33 @@ export function MoveDialog({
         targetKey === subcategoryKey;
 
     const confirmMove = () => {
-        if (targetCategory == null || isNoOpMove || !reasonOk) return;
-        const source = { categoryId: category.id, subcategoryKey };
+        if (targetCategory == null || isNoOpMove || (!ownerMode && !reasonOk))
+            return;
         const target = {
             categoryId: targetCategory.id,
             subcategoryKey: targetKey,
         };
+
+        if (ownerMode) {
+            if (!onSubmitOwner) return;
+            startMove(async () => {
+                const res = await onSubmitOwner(target);
+                if ('error' in res) {
+                    setError(res.error);
+                    return;
+                }
+                onClose();
+                onMutated();
+                toast.success(
+                    res.reverify
+                        ? 'Run moved — awaiting verification on its new board.'
+                        : 'Run moved.',
+                );
+            });
+            return;
+        }
+
+        const source = { categoryId: category.id, subcategoryKey };
         const finalReason = reason.trim();
         startMove(async () => {
             // Source loses the run, target gains it — both leaderboard reads
@@ -223,21 +259,35 @@ export function MoveDialog({
                 {isNoOpMove && (
                     <p className={styles.moveNote}>Already placed here.</p>
                 )}
-                <label htmlFor="move-reason" className={styles.fieldLabel}>
-                    Reason — required, min {MIN_REASON} characters
-                </label>
-                <textarea
-                    id="move-reason"
-                    className={styles.dialogTextarea}
-                    rows={2}
-                    value={reason}
-                    onChange={(e) => setReason(e.target.value)}
-                    disabled={isMoving}
-                />
-                {!reasonOk && reason.length > 0 && (
-                    <span className={styles.timeError}>
-                        {MIN_REASON - reason.trim().length} more needed.
-                    </span>
+                {!ownerMode && (
+                    <>
+                        <label
+                            htmlFor="move-reason"
+                            className={styles.fieldLabel}
+                        >
+                            Reason — required, min {MIN_REASON} characters
+                        </label>
+                        <textarea
+                            id="move-reason"
+                            className={styles.dialogTextarea}
+                            rows={2}
+                            value={reason}
+                            onChange={(e) => setReason(e.target.value)}
+                            disabled={isMoving}
+                        />
+                        {!reasonOk && reason.length > 0 && (
+                            <span className={styles.timeError}>
+                                {MIN_REASON - reason.trim().length} more needed.
+                            </span>
+                        )}
+                    </>
+                )}
+                {ownerMode && (
+                    <p className={styles.moveNote}>
+                        Moving your run takes it off this board and submits it
+                        for verification on the new one — it will not carry its
+                        verified status over.
+                    </p>
                 )}
                 {error && (
                     <div className={styles.errorAlert} role="alert">
@@ -262,7 +312,7 @@ export function MoveDialog({
                         isMoving ||
                         targetCategory == null ||
                         isNoOpMove ||
-                        !reasonOk
+                        (!ownerMode && !reasonOk)
                     }
                 >
                     {isMoving ? 'Moving…' : 'Apply'}
