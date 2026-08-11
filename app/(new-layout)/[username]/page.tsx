@@ -19,6 +19,7 @@ import {
     formatPlaytime,
 } from '~src/utils/json-ld';
 import buildMetadata, { getUserProfilePhoto } from '~src/utils/metadata';
+import { safeDecodeURI } from '~src/utils/uri';
 
 interface PageProps {
     params: Promise<{ username: string }>;
@@ -148,9 +149,14 @@ async function UserProfilePage({ username }: { username: string }) {
                     games,
                 })}
             />
+            {/* userData.user must be decoded before it becomes the client's
+                canonical username: the CASL owner checks compare it against
+                the (decoded) session username, and the delete/edit URLs are
+                built by replacing it inside run.url, which stores the decoded
+                form. Non-ASCII usernames otherwise arrive percent-encoded. */}
             <UserProfile
                 runs={runs}
-                username={userData.user}
+                username={safeDecodeURI(userData.user)}
                 hasGameTime={hasGameTime}
                 defaultGameTime={defaultGameTime}
                 liveData={liveData}
