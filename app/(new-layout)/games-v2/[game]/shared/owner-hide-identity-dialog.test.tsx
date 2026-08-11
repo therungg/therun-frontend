@@ -216,12 +216,116 @@ describe('OwnerHideIdentityDialog', () => {
         await screen.findByText(/A moderator hid your identity here/);
         await waitFor(() =>
             expect(mocks.toastSuccess).toHaveBeenCalledWith(
-                expect.stringContaining(
-                    'a moderator still hides your identity',
-                ),
+                expect.stringContaining('still hides your identity here'),
             ),
         );
         await waitFor(() => expect(onDone).toHaveBeenCalled());
+    });
+
+    it('non-overlap unhide: DELETE reports fully visible, and the toast describes the change as in progress, not instant/total', async () => {
+        mocks.selfAnonymizeStateAction.mockResolvedValue({
+            ok: true,
+            state: {
+                hidden: true,
+                selfApplied: true,
+                ruleId: 21,
+                displayName: 'Anonymous runner #7',
+            },
+        });
+        mocks.selfAnonymizeLiftAction.mockResolvedValue({
+            ok: true,
+            state: {
+                hidden: false,
+                selfApplied: false,
+                ruleId: null,
+                displayName: null,
+            },
+        });
+        const { onDone } = renderDialog();
+        fireEvent.click(await screen.findByRole('button', { name: 'Unhide' }));
+        await waitFor(() => {
+            expect(mocks.selfAnonymizeLiftAction).toHaveBeenCalledWith(
+                'mario64',
+                5,
+            );
+        });
+        await screen.findByText(/Hide who you are across Super Mario 64/);
+        await waitFor(() =>
+            expect(mocks.toastSuccess).toHaveBeenCalledWith(
+                expect.stringMatching(/unhiding.*may take a moment/i),
+            ),
+        );
+        // Never claim instant/total effect — the contract's cache-invalidation
+        // has no success signal.
+        expect(mocks.toastSuccess).not.toHaveBeenCalledWith(
+            expect.stringMatching(/visible here again/i),
+        );
+        await waitFor(() => expect(onDone).toHaveBeenCalled());
+    });
+
+    it('unknown ownership: apply succeeds but the follow-up GET fails — renders neutral copy, no moderator attribution, no Unhide button', async () => {
+        mocks.selfAnonymizeStateAction
+            .mockResolvedValueOnce({
+                ok: true,
+                state: {
+                    hidden: false,
+                    selfApplied: false,
+                    ruleId: null,
+                    displayName: null,
+                },
+            })
+            .mockResolvedValueOnce({ error: 'Something went wrong.' });
+        mocks.selfAnonymizeApplyAction.mockResolvedValue({
+            ok: true,
+            displayName: 'Anonymous runner #8',
+        });
+        const { onDone } = renderDialog();
+        fireEvent.click(
+            await screen.findByRole('button', { name: 'Hide my identity' }),
+        );
+        await waitFor(() => {
+            expect(mocks.selfAnonymizeStateAction).toHaveBeenCalledTimes(2);
+        });
+        await screen.findByText(
+            /couldn't confirm whether you can undo it here/,
+        );
+        // Must NOT tell the runner a moderator did this — they just did it
+        // themselves; the follow-up GET merely failed to confirm it.
+        expect(
+            screen.queryByText(/A moderator hid your identity here/),
+        ).toBeNull();
+        expect(screen.queryByText(/only a site admin can lift it/i)).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Unhide' })).toBeNull();
+        await waitFor(() => expect(onDone).toHaveBeenCalled());
+    });
+
+    it('load-error phase: initial GET fails, "Try again" retries and renders the resolved state', async () => {
+        mocks.selfAnonymizeStateAction
+            .mockResolvedValueOnce({ error: 'Something went wrong.' })
+            .mockResolvedValueOnce({
+                ok: true,
+                state: {
+                    hidden: false,
+                    selfApplied: false,
+                    ruleId: null,
+                    displayName: null,
+                },
+            });
+        renderDialog();
+        const retry = await screen.findByRole('button', {
+            name: 'Try again',
+        });
+        expect(
+            screen.queryByRole('button', { name: 'Hide my identity' }),
+        ).toBeNull();
+        fireEvent.click(retry);
+        await waitFor(() => {
+            expect(mocks.selfAnonymizeStateAction).toHaveBeenCalledTimes(2);
+        });
+        await screen.findByText(/Hide who you are across Super Mario 64/);
+        expect(
+            screen.getByRole('button', { name: 'Hide my identity' }),
+        ).toBeTruthy();
     });
 
     it('surfaces the no-runs-in-game error inline and keeps the dialog open', async () => {
