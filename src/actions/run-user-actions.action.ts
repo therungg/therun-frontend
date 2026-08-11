@@ -18,6 +18,7 @@ import {
     selfRunVerdict,
 } from '~src/lib/moderation/self-service';
 import type {
+    AffectedLeaderboard,
     HistoryEvent,
     SelfAnonymizeState,
     UserEligibleRunRow,
@@ -111,12 +112,24 @@ export async function loadSelfEligibleRunsAction(
  * Takes `gameId`/`gameSlug` (not part of the backend's request body) because
  * the board cache invalidation below needs both — mirrors the mod board-move
  * pattern in `submit-run.action.ts` (`revalidateAffectedBoards`).
+ *
+ * `from` is the run's board *before* the move — required so the origin
+ * board's cache gets busted too on a cross-category move (same-category
+ * moves are already covered by the destination's coarse per-category tag,
+ * but a cross-category move leaves the origin board showing a stale entry
+ * until the cache's natural `minutes`-profile expiry otherwise). The caller
+ * already has this — `UserEligibleRunRow` (from `loadSelfEligibleRunsAction`)
+ * carries `categoryId`/`subcategoryKey` for the run being moved. Only
+ * `from.categoryId` is actually load-bearing here, but the whole
+ * `AffectedLeaderboard` is taken to match `revalidateAffectedBoards`'s
+ * existing parameter shape.
  */
 export async function selfMoveRunAction(
     gameSlug: string,
     gameId: number,
     runId: number,
-    target: { categoryId: number; subcategoryKey: string },
+    from: AffectedLeaderboard,
+    target: AffectedLeaderboard,
 ): Promise<Result<{ reverify: boolean }>> {
     const s = await getSession();
     if (!s?.username || !s.id) {
@@ -126,7 +139,7 @@ export async function selfMoveRunAction(
         const r = await selfMoveRun(s.id, runId, target);
         revalidateRunDetails([runId]);
         try {
-            await revalidateAffectedBoards(gameId, gameSlug, [target]);
+            await revalidateAffectedBoards(gameId, gameSlug, [from, target]);
         } catch {
             // Best-effort cache invalidation; the move already succeeded.
         }
@@ -156,6 +169,12 @@ export async function selfAnonymizeStateAction(
  * Apply the caller's own game-wide "hide my identity" rule. The response's
  * `alreadyExists` does not prove ownership of the resulting rule — callers
  * that need to know should follow up with `selfAnonymizeStateAction`.
+ *
+ * Note: this only busts the board tags above. Hiding an identity also
+ * changes the runner's displayed name on `run:{id}` detail pages and
+ * `user-rankings:*` — this action does not invalidate those, since it has
+ * no way to enumerate every run id the caller has in this game, and the
+ * backend runs its own (separate, best-effort) cache invalidation for them.
  */
 export async function selfAnonymizeApplyAction(
     gameSlug: string,
@@ -185,6 +204,11 @@ export async function selfAnonymizeApplyAction(
  * Lift the caller's own self-applied "hide my identity" rule for a game.
  * The resulting state may still report `hidden: true` (with
  * `selfApplied: false`) if a moderator's overlapping rule survives.
+ *
+ * Note: this only busts the board tags above. Un-hiding also changes the
+ * runner's displayed name on `run:{id}` detail pages and `user-rankings:*`
+ * — this action does not invalidate those, for the same reason as
+ * `selfAnonymizeApplyAction` above.
  */
 export async function selfAnonymizeLiftAction(
     gameSlug: string,
