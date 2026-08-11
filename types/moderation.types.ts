@@ -605,6 +605,44 @@ export interface SelfDeleteManualTimeResult {
     deleted: true;
 }
 
+/** Body for POST /v1/me/runs/{runId}/move (owner self-move, §E4). */
+export interface SelfMoveRunInput {
+    categoryId: number;
+    subcategoryKey: string;
+    /** Optional; backend defaults to "Moved by the runner" when omitted/blank. */
+    reason?: string;
+}
+
+export interface SelfMoveRunResult {
+    moved: true;
+    reverify: boolean;
+}
+
+/**
+ * Shape shared by GET and DELETE /v1/me/anonymize — reports the caller's
+ * ACTUAL resulting hidden state (which may still be true after a DELETE if a
+ * moderator's overlapping rule survives). Not a bare `{ hidden: false }` on
+ * DELETE — see docs/frontend-guide-self-moderation.md §3.
+ */
+export interface SelfAnonymizeState {
+    hidden: boolean;
+    selfApplied: boolean;
+    ruleId: number | null;
+    displayName: string | null;
+}
+
+/**
+ * POST /v1/me/anonymize response. No `ruleId`/`selfApplied` — and
+ * `alreadyExists: true` does NOT prove the caller owns the resulting rule
+ * (it may be a moderator's pre-existing game-scope rule). Callers needing
+ * ownership must re-GET afterward.
+ */
+export interface SelfAnonymizeApplyResult {
+    hidden: true;
+    displayName: string;
+    alreadyExists: boolean;
+}
+
 // ── §F Reports ───────────────────────────────────────────────────────────────
 
 export interface CreateReportInput {
