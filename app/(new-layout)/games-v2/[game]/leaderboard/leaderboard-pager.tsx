@@ -8,14 +8,16 @@ import type {
     LeaderboardResponse,
     VariableRow,
 } from '../../../../../types/leaderboards.types';
-import { fetchLeaderboardPage } from '../actions/fetch-page.action';
+import {
+    fetchLeaderboardPage,
+    findRunnerPage,
+} from '../actions/fetch-page.action';
 import { FiltersPopover } from '../filters/filters-popover';
 import { VerifiedToggle } from '../filters/verified-toggle';
 import { isSameRunner } from '../shared/is-same-runner';
 import { computeBoardRange } from './board-range';
 import { BoardBulkBar } from './bulk-bar';
 import { ExportButton } from './export-button';
-import { planFindMeSearch } from './find-me-plan';
 import styles from './leaderboard.module.scss';
 import { YOU_ROW_ID } from './leaderboard-row';
 import { LeaderboardTable } from './leaderboard-table';
@@ -24,16 +26,6 @@ import { paginationItems } from './pagination-items';
 import { RunInspector } from './run-inspector';
 import { type BoardSelectionKey, entrySelectionKey } from './selection';
 import type { TimingKey } from './timing-columns';
-
-// "Find me" fallback: the board API has no rank/user lookup that accounts
-// for the current filter state (subcategory, varFilters, verified,
-// combined — see getUserRankingsByName in src/lib/leaderboards-v1.ts,
-// which only returns a fixed default-board rank), so we page forward from
-// the current page, then (if still not found and budget remains) backward
-// toward page 1, looking for the session user's row instead of jumping
-// straight there. Capped so a genuinely-absent user doesn't trigger
-// unbounded fetching — see find-me-plan.ts.
-const MAX_FIND_ME_PAGES = 10;
 
 interface Props {
     initial: LeaderboardResponse;
@@ -153,15 +145,13 @@ export function LeaderboardPager({
     // Page whose fetch last failed, if any — drives the inline error under
     // the pagination bar and lets Retry redo the same navigation.
     const [navError, setNavError] = useState<number | null>(null);
-    // 'searching' drives the Find me button's in-flight label. A miss
-    // resolves to one of two sticky notes (so it doesn't invite endless
-    // re-clicking) depending on how much of the board was actually
-    // searched: 'not-found' when the search covered the *entire* board
-    // (honest "not on this board"), 'partial-miss' when the budget ran
-    // out before every page was checked (honest "couldn't find in the
-    // pages searched" — the user's row may still be further out).
+    // 'searching' drives the Find me button's in-flight label. A miss is
+    // authoritative — the backend locates the runner against the whole
+    // board for the current view — so it resolves to one sticky note
+    // (rather than resetting to idle, which would invite endless
+    // re-clicking of a button that will keep saying no).
     const [findMeStatus, setFindMeStatus] = useState<
-        'idle' | 'searching' | 'not-found' | 'partial-miss'
+        'idle' | 'searching' | 'not-found'
     >('idle');
     // Bumped after a successful find to (re-)trigger the scroll+focus
     // effect even if the row was already on-screen from a prior search.
@@ -360,7 +350,6 @@ export function LeaderboardPager({
         sessionUsername !== null &&
         !isCurrentUserVisible &&
         findMeStatus !== 'not-found' &&
-        findMeStatus !== 'partial-miss' &&
         board.totalItems > 0;
 
     const findMe = () => {
@@ -372,37 +361,23 @@ export function LeaderboardPager({
             return;
         setFindMeStatus('searching');
         startTransition(async () => {
-            const plan = planFindMeSearch(
-                board.page,
-                board.page,
-                board.totalPages,
-                MAX_FIND_ME_PAGES,
-            );
-            for (const page of plan) {
-                const res = await fetchLeaderboardPage({ ...query, page });
-                if (!res) {
-                    setNavError(page);
-                    setFindMeStatus('idle');
-                    return;
-                }
-                if (
-                    res.entries.some((e) =>
-                        isSameRunner(e.runnerName, sessionUsername),
-                    )
-                ) {
-                    // Found: real pagination means we JUMP to that page
-                    // rather than growing a window toward it.
-                    showPage(res, page);
-                    setFindMeStatus('idle');
-                    setHighlightToken((t) => t + 1);
-                    return;
-                }
+            // One round trip: the backend locates the runner on the current
+            // view (same filters/verified/timing) and returns their page.
+            const res = await findRunnerPage(query, sessionUsername);
+            if (!res) {
+                setNavError(board.page);
+                setFindMeStatus('idle');
+                return;
             }
             setNavError(null);
-            // The plan covers every page but the current one when it fits
-            // the budget — only then is a miss a verdict about the board.
-            const searchedWholeBoard = plan.length >= board.totalPages - 1;
-            setFindMeStatus(searchedWholeBoard ? 'not-found' : 'partial-miss');
+            if (!res.findRunnerFound) {
+                // Authoritative: the backend scanned the whole board.
+                setFindMeStatus('not-found');
+                return;
+            }
+            showPage(res, res.page);
+            setFindMeStatus('idle');
+            setHighlightToken((t) => t + 1);
         });
     };
 
@@ -471,11 +446,6 @@ export function LeaderboardPager({
                                 {query.verified
                                     ? 'Not on this board — pending runs are hidden by the Verified filter.'
                                     : 'Not on this board yet'}
-                            </span>
-                        )}
-                        {findMeStatus === 'partial-miss' && (
-                            <span className={styles.notFoundNote}>
-                                Couldn't find your run in the pages searched
                             </span>
                         )}
                     </span>
