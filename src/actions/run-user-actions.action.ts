@@ -104,17 +104,26 @@ export async function selfRunVerdictAction(
  * Uses `revalidateAffectedBoards`, which is `updateTag`-based (read-your-
  * writes), same as `selfMoveRunAction`. Best-effort: a failure here never
  * fails the caller, since the mutations it follows already succeeded.
+ *
+ * Signed-in only, like every other action in this file. It grants no read or
+ * write capability an anonymous board visit doesn't already have — the guard
+ * is there so a script can't churn the cache of arbitrary boards for free.
  */
 export async function revalidateSelfBoardsAction(
     gameSlug: string,
     gameId: number,
     boards: AffectedLeaderboard[],
-): Promise<void> {
+): Promise<Result> {
+    const s = await getSession();
+    if (!s?.username || !s.id) {
+        return { error: 'You must be signed in.' };
+    }
     try {
         await revalidateAffectedBoards(gameId, gameSlug, boards);
     } catch {
         // Best-effort; the cache TTL catches up regardless.
     }
+    return { ok: true };
 }
 
 /** Your own eligible-runs roster in a game — owner counterpart of the mod route. */

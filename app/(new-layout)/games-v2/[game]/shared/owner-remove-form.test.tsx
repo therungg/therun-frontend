@@ -30,6 +30,7 @@ vi.mock('react-toastify', () => ({
 }));
 
 import {
+    OwnerRemoveDialog,
     OwnerRemoveForm,
     type OwnerRemoveFormProps,
 } from './owner-remove-form';
@@ -281,6 +282,55 @@ describe('OwnerRemoveForm', () => {
         expect(
             screen.queryByText('You will no longer have a time on this board.'),
         ).toBeNull();
+    });
+
+    it('ignores Escape and the close button while the batch is in flight', async () => {
+        mocks.loadSelfEligibleRunsAction.mockResolvedValue({
+            ok: true,
+            rows: [],
+        });
+        // Hold the first hide open so the dialog is genuinely busy.
+        let releaseHide: (v: unknown) => void = () => {
+            // Replaced synchronously by the promise executor below.
+        };
+        mocks.selfRunVerdictAction.mockReturnValue(
+            new Promise((resolve) => {
+                releaseHide = resolve;
+            }),
+        );
+        const onClose = vi.fn();
+        render(
+            <OwnerRemoveDialog
+                gameId={5}
+                gameSlug="mario64"
+                runId={RUN_ID}
+                categoryId={10}
+                subcategoryKey=""
+                primaryTiming="rt"
+                runTimeMs={RUN_TIME}
+                onDone={vi.fn()}
+                onClose={onClose}
+            />,
+        );
+        await screen.findByText('You have no other times on this board.');
+        fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Hide my run' }));
+        await screen.findByRole('button', { name: 'Working…' });
+        // Escape and the header close button are both inert while the
+        // mutation runs — closing here would leave it nowhere to report a
+        // failure. (Cancel is disabled by the form for the same reason.)
+        fireEvent.keyDown(document, { key: 'Escape' });
+        fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+        expect(onClose).not.toHaveBeenCalled();
+        expect(screen.getByRole('dialog')).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+        // Once it settles, Escape closes normally again. Retried: the host's
+        // mirrored busy flag clears a tick after the form's own.
+        releaseHide({ ok: true, applied: 'instant' });
+        await waitFor(() => {
+            fireEvent.keyDown(document, { key: 'Escape' });
+            expect(onClose).toHaveBeenCalled();
+        });
     });
 
     it('lets the keyboard reach every run in the picker', async () => {
