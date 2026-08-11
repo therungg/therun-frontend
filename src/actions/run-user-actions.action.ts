@@ -88,6 +88,35 @@ export async function selfRunVerdictAction(
     }
 }
 
+/**
+ * Expire the cached leaderboard reads for one board after a batch of
+ * self-service mutations.
+ *
+ * The owner verbs each invalidate only what they own: `selfRunVerdictAction`
+ * expires `run:{id}` detail tags, `selfClaimTimeAction` expires nothing at
+ * all. Neither touches the `lb:*` tags the board itself is cached under, so a
+ * wizard that composes them (the owner remove wizard) has to ask for the
+ * board once the whole batch has landed — otherwise the runner returns to a
+ * board still showing the run they just hid. `router.refresh()` does not
+ * cover this: it re-renders the route but leaves the `'use cache'` entries
+ * intact.
+ *
+ * Uses `revalidateAffectedBoards`, which is `updateTag`-based (read-your-
+ * writes), same as `selfMoveRunAction`. Best-effort: a failure here never
+ * fails the caller, since the mutations it follows already succeeded.
+ */
+export async function revalidateSelfBoardsAction(
+    gameSlug: string,
+    gameId: number,
+    boards: AffectedLeaderboard[],
+): Promise<void> {
+    try {
+        await revalidateAffectedBoards(gameId, gameSlug, boards);
+    } catch {
+        // Best-effort; the cache TTL catches up regardless.
+    }
+}
+
 /** Your own eligible-runs roster in a game — owner counterpart of the mod route. */
 export async function loadSelfEligibleRunsAction(
     gameId: number,
