@@ -171,7 +171,10 @@ export async function findRunnerOnBoard(
             totalPages: raw.totalPages,
             hideRealTime: raw.hideRealTime ?? false,
             hideGameTime: raw.hideGameTime ?? false,
-            findRunnerFound: raw.findRunnerFound ?? false,
+            // Deliberately NOT defaulted: undefined means the backend didn't
+            // answer the question (deploy gap, older API) — the caller must
+            // treat that as "no verdict", never as "not on this board".
+            findRunnerFound: raw.findRunnerFound,
         };
     } catch {
         return null;

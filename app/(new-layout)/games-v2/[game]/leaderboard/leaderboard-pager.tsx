@@ -370,6 +370,13 @@ export function LeaderboardPager({
                 return;
             }
             setNavError(null);
+            if (res.findRunnerFound === undefined) {
+                // The backend didn't answer the question (deploy gap, older
+                // API): no verdict — stay idle so the button stays usable
+                // instead of showing a false "not on this board".
+                setFindMeStatus('idle');
+                return;
+            }
             if (!res.findRunnerFound) {
                 // Authoritative: the backend scanned the whole board.
                 setFindMeStatus('not-found');
