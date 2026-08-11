@@ -189,7 +189,10 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
         minMs == null
             ? []
             : roster.filter((r) => {
-                  const t = timing === 'gt' ? r.gameTime : r.time;
+                  // Mirrors backend checkMinimumEligibility: a run without
+                  // game time is held to a game-time minimum via its RTA
+                  // (IGT never exceeds RTA), so RTA-fallback entries count.
+                  const t = timing === 'gt' ? (r.gameTime ?? r.time) : r.time;
                   return t != null && t < minMs;
               });
 
@@ -265,7 +268,7 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
                                         {belowMin.slice(0, 50).map((r) => {
                                             const t =
                                                 timing === 'gt'
-                                                    ? r.gameTime
+                                                    ? (r.gameTime ?? r.time)
                                                     : r.time;
                                             return (
                                                 <li key={r.runId}>
@@ -279,7 +282,10 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
                                                         '—'
                                                     )}{' '}
                                                     <span className="text-muted">
-                                                        (below minimum)
+                                                        {timing === 'gt' &&
+                                                        r.gameTime == null
+                                                            ? '(RTA, below minimum)'
+                                                            : '(below minimum)'}
                                                     </span>
                                                 </li>
                                             );
