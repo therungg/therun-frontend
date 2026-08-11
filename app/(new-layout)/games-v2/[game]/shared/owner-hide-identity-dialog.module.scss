@@ -1,0 +1,41 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+// ============================================================
+// OwnerHideIdentityDialog — the runner's own game-wide privacy
+// toggle. Overlay/panel chrome lives in the shared BoardDialog
+// primitive (./board-dialog.module.scss).
+// ============================================================
+.header {
+    @include board.board-dialog-header;
+}
+
+.title {
+    @include board.board-dialog-title;
+}
+
+.body {
+    @include board.board-dialog-body;
+}
+
+.message {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: 0;
+}
+
+.note {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+    margin: 0;
+}
+
+.errorAlert {
+    @include board.board-error-alert;
+    margin-top: dt.$spacing-sm;
+    margin-bottom: 0;
+}
+
+.footer {
+    @include board.board-dialog-footer;
+}
