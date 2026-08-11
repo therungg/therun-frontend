@@ -69,6 +69,16 @@ export function OwnerHideIdentityDialog({
     const [phase, setPhase] = useState<Phase>('loading');
     const [data, setData] = useState<SelfAnonymizeState | null>(null);
     const [error, setError] = useState<string | null>(null);
+    /**
+     * True only in the narrow post-apply window where our own POST
+     * succeeded but the mandatory follow-up GET failed, so we genuinely
+     * don't know whether the resulting rule is ours. This is its own
+     * tri-state value, never encoded as `selfApplied: false` — that would
+     * render the moderator-attribution copy (state c) for a rule the
+     * runner just applied themselves, which is false. Reset whenever the
+     * dialog (re)loads fresh state.
+     */
+    const [unknownOwnership, setUnknownOwnership] = useState(false);
     const [pending, startTransition] = useTransition();
 
     /** Fetches current state; returns it, or `'error'` on failure. Does not
@@ -84,6 +94,7 @@ export function OwnerHideIdentityDialog({
         setPhase('loading');
         setData(null);
         setError(null);
+        setUnknownOwnership(false);
         (async () => {
             const r = await loadState();
             if (cancelled) return;
@@ -103,6 +114,7 @@ export function OwnerHideIdentityDialog({
     const retryLoad = () => {
         setPhase('loading');
         setError(null);
+        setUnknownOwnership(false);
         startTransition(async () => {
             const r = await loadState();
             if (r === 'error') {
@@ -126,21 +138,22 @@ export function OwnerHideIdentityDialog({
             // alreadyExists:true doesn't prove this rule is ours.
             const refreshed = await loadState();
             if (refreshed === 'error') {
-                // Applied, but we can't confirm who owns the resulting rule.
-                // Render as moderator-owned (no Unhide) rather than guess.
+                // Applied, but we can't confirm who owns the resulting
+                // rule. Keep suppressing Unhide, but render this as its own
+                // "unknown" state — NOT the moderator-attribution copy,
+                // which would tell the runner someone else did this.
                 setData({
                     hidden: true,
                     selfApplied: false,
                     ruleId: null,
                     displayName: res.displayName,
                 });
-                setError(
-                    'Your identity is hidden, but we could not confirm whether you can undo it yourself. Close and reopen this to check.',
-                );
+                setUnknownOwnership(true);
             } else {
                 setData(refreshed);
+                setUnknownOwnership(false);
                 toast.success(
-                    `Your identity is hidden here — you're shown as ${refreshed.displayName ?? res.displayName}.`,
+                    `Hiding your identity across ${gameDisplay} — you're shown as ${refreshed.displayName ?? res.displayName}. Some pages may take a moment to catch up.`,
                 );
             }
             onDone();
@@ -158,8 +171,8 @@ export function OwnerHideIdentityDialog({
             setData(res.state);
             toast.success(
                 res.state.hidden
-                    ? 'Your rule was lifted, but a moderator still hides your identity here — only a site admin can remove that.'
-                    : 'Your identity is visible here again.',
+                    ? 'Your own rule was lifted, but a moderator’s rule still hides your identity here — only a site admin can remove that.'
+                    : 'Unhiding your identity here. Some pages may take a moment to catch up.',
             );
             onDone();
         });
@@ -210,28 +223,43 @@ export function OwnerHideIdentityDialog({
                     </p>
                 )}
 
-                {phase === 'ready' && data?.hidden && data.selfApplied && (
+                {phase === 'ready' &&
+                    data?.hidden &&
+                    data.selfApplied &&
+                    !unknownOwnership && (
+                        <p className={styles.message}>
+                            You&apos;re shown here as{' '}
+                            <strong>{data.displayName}</strong>. Your times,
+                            ranks and history stay visible — only your name is
+                            replaced. You can unhide yourself at any time.
+                        </p>
+                    )}
+
+                {phase === 'ready' && data?.hidden && unknownOwnership && (
                     <p className={styles.message}>
-                        You&apos;re shown here as{' '}
-                        <strong>{data.displayName}</strong>. Your times, ranks
-                        and history stay visible — only your name is replaced.
-                        You can unhide yourself at any time.
+                        Your identity is hidden across {gameDisplay}. We
+                        couldn&apos;t confirm whether you can undo it here —
+                        reopen this to check.
                     </p>
                 )}
 
-                {phase === 'ready' && data?.hidden && !data.selfApplied && (
-                    <p className={styles.message}>
-                        A moderator hid your identity here
-                        {data.displayName ? (
-                            <>
-                                {' '}
-                                — you&apos;re shown as{' '}
-                                <strong>{data.displayName}</strong>
-                            </>
-                        ) : null}
-                        . Only a site admin can lift it.
-                    </p>
-                )}
+                {phase === 'ready' &&
+                    data?.hidden &&
+                    !data.selfApplied &&
+                    !unknownOwnership && (
+                        <p className={styles.message}>
+                            A moderator hid your identity here
+                            {data.displayName ? (
+                                <>
+                                    {' '}
+                                    — you&apos;re shown as{' '}
+                                    <strong>{data.displayName}</strong>
+                                </>
+                            ) : null}
+                            . Only a site admin can lift it. Your times, ranks
+                            and history stay visible — only your name is hidden.
+                        </p>
+                    )}
 
                 {error && phase === 'ready' && (
                     <div className={styles.errorAlert} role="alert">
@@ -241,6 +269,7 @@ export function OwnerHideIdentityDialog({
             </div>
             <div className={styles.footer}>
                 <button
+                    ref={closeRef}
                     type="button"
                     className="btn btn-sm btn-outline-secondary"
                     onClick={onClose}
@@ -258,16 +287,19 @@ export function OwnerHideIdentityDialog({
                         {pending ? 'Working…' : 'Hide my identity'}
                     </button>
                 )}
-                {phase === 'ready' && data?.hidden && data.selfApplied && (
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-primary"
-                        onClick={handleUnhide}
-                        disabled={pending}
-                    >
-                        {pending ? 'Working…' : 'Unhide'}
-                    </button>
-                )}
+                {phase === 'ready' &&
+                    data?.hidden &&
+                    data.selfApplied &&
+                    !unknownOwnership && (
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-primary"
+                            onClick={handleUnhide}
+                            disabled={pending}
+                        >
+                            {pending ? 'Working…' : 'Unhide'}
+                        </button>
+                    )}
             </div>
         </BoardDialog>
     );
