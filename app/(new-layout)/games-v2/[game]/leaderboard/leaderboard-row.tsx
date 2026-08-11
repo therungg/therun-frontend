@@ -1,18 +1,15 @@
 'use client';
 
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { PlayBtn } from 'react-bootstrap-icons';
+import { PlayBtn, XLg } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { formatRunDate } from '~src/lib/format-run-date';
 import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
-import { usePopoverFocus } from '../shared/use-popover-focus';
-import { buildSubcategoryKey } from '../submit/subcategory-key';
 import { CountryFlag } from './country-flag';
 import type { DisplayRank } from './display-rank';
 import styles from './leaderboard.module.scss';
-import { QuickRemoveButton } from './quick-remove-button';
 import { QuickUnverifyButton } from './quick-unverify-button';
 import { QuickVerifyButton } from './quick-verify-button';
 import { relativeDate } from './relative-date';
@@ -23,94 +20,6 @@ import {
     timingColumnHidden,
     timingColumns,
 } from './timing-columns';
-
-/**
- * "Set time" pill that opens a small info popover on click/tap
- * instead of relying on a hover-only `title` tooltip (inaccessible to touch
- * and keyboard-only users). The panel is `position: fixed`, positioned from
- * the trigger's bounding rect on open, and closes on scroll/resize rather
- * than tracking — see the `.infoPopoverPanel` comment in
- * leaderboard.module.scss for why (escaping the table wrapper's
- * `overflow-y: hidden`).
- */
-function InfoPill({
-    label,
-    explanation,
-}: {
-    label: string;
-    explanation: string;
-}) {
-    const [open, setOpen] = useState(false);
-    const [coords, setCoords] = useState<{ top: number; left: number } | null>(
-        null,
-    );
-    const btnRef = useRef<HTMLButtonElement>(null);
-    const panelRef = useRef<HTMLDivElement>(null);
-
-    const close = () => setOpen(false);
-
-    usePopoverFocus({ open, onClose: close, panelRef });
-
-    useEffect(() => {
-        if (!open) return;
-        const rect = btnRef.current?.getBoundingClientRect();
-        if (rect) {
-            setCoords({ top: rect.bottom + 6, left: rect.left });
-        }
-        window.addEventListener('scroll', close, true);
-        window.addEventListener('resize', close);
-        return () => {
-            window.removeEventListener('scroll', close, true);
-            window.removeEventListener('resize', close);
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [open]);
-
-    useEffect(() => {
-        if (!open) return;
-        const onDown = (e: MouseEvent) => {
-            if (
-                !btnRef.current?.contains(e.target as Node) &&
-                !panelRef.current?.contains(e.target as Node)
-            ) {
-                close();
-            }
-        };
-        document.addEventListener('mousedown', onDown);
-        return () => document.removeEventListener('mousedown', onDown);
-    }, [open]);
-
-    return (
-        <span className={styles.infoPopoverWrap}>
-            <button
-                ref={btnRef}
-                type="button"
-                className={styles.setPill}
-                aria-haspopup="dialog"
-                aria-expanded={open}
-                onClick={() => setOpen((o) => !o)}
-            >
-                {label}
-            </button>
-            {open && coords && (
-                <div
-                    ref={panelRef}
-                    role="dialog"
-                    aria-modal="true"
-                    aria-label={label}
-                    className={styles.infoPopoverPanel}
-                    style={{
-                        position: 'fixed',
-                        top: coords.top,
-                        left: coords.left,
-                    }}
-                >
-                    {explanation}
-                </div>
-            )}
-        </span>
-    );
-}
 
 // Find-me scrolls to and focuses this id. At most one row ever carries it
 // (the current session user's own entry), so a fixed id is safe.
@@ -145,17 +54,11 @@ interface Props {
     selected?: boolean;
     /** Shift-click extends a range — the click handler forwards the native event's shiftKey. */
     onToggleSelect?: (key: BoardSelectionKey, shiftKey: boolean) => void;
-    /** Row's "Moderate" — opens the run inspector drawer on this entry. */
-    onModerate?: (entry: LeaderboardEntry) => void;
+    /** Opens the run inspector drawer on this entry; `verb` pre-expands
+     * that form in it (the row's Remove/`x` path). */
+    onModerate?: (entry: LeaderboardEntry, verb?: 'remove') => void;
     /** Board page refetch for row-level mutations (quick Verify + its undo). */
     onBoardRefresh?: () => void;
-    /** The board's category — the row's Remove offers a runner-scoped
-     *  option, which is a rule written against a category. */
-    category?: { id: number; display: string };
-    /** Subcategory-role variable names, for deriving THIS entry's own board
-     *  key. Derived per entry rather than taken from the table so a combined
-     *  view — where rows span slices — lists the right runs. */
-    subcategoryDefKeys?: string[];
     /** Curation-only additions; absent on the public board. See `RowSlots`. */
     slots?: RowSlots;
 }
@@ -196,8 +99,6 @@ export function LeaderboardRow({
     onToggleSelect,
     onModerate,
     onBoardRefresh,
-    category,
-    subcategoryDefKeys,
     slots,
 }: Props) {
     // Anonymized rows arrive already redacted from the backend: placeholder
@@ -537,12 +438,6 @@ export function LeaderboardRow({
             </td>
             <td className={styles.trailing}>
                 {slots?.actions?.(entry)}
-                {entry.source === 'manual' && (
-                    <InfoPill
-                        label="set time"
-                        explanation="A moderator-set leaderboard time"
-                    />
-                )}
                 {entry.vodUrl && (
                     <a
                         href={entry.vodUrl}
@@ -576,31 +471,24 @@ export function LeaderboardRow({
                     )}
                     {/* The other half of the same judgement, in the same
                         cluster and the same pill — Verify green, Remove
-                        red. Opens the shared Remove dialog rather than
-                        acting on click: Verify has a true inverse and can
-                        ride an undo toast, Remove needs a reason. */}
-                    {showQuickRemove && (
-                        <QuickRemoveButton
+                        red. Opens the inspector drawer with the remove form
+                        already expanded, rather than a standalone dialog:
+                        the board stays visible behind the judgement (the
+                        cutoff and custom-time questions are answered by
+                        looking at it). */}
+                    {showQuickRemove && onModerate && (
+                        <button
                             ref={removeRef}
-                            gameSlug={gameSlug}
-                            runId={entry.runId ?? null}
-                            manualTimeId={entry.manualTimeId ?? null}
-                            runnerName={entry.runnerName}
-                            userId={entry.userId ?? null}
-                            categoryId={category?.id}
-                            categoryDisplay={category?.display ?? ''}
-                            subcategoryKey={buildSubcategoryKey(
-                                Object.fromEntries(
-                                    Object.entries(
-                                        entry.variables ?? {},
-                                    ).filter(([k]) =>
-                                        (subcategoryDefKeys ?? []).includes(k),
-                                    ),
-                                ),
-                            )}
-                            primaryTiming={primaryTiming}
-                            onMutated={onBoardRefresh as () => void}
-                        />
+                            type="button"
+                            className={styles.quickRemove}
+                            aria-label={`Remove ${entry.runnerName}'s ${entry.manualTimeId != null ? 'set time' : 'run'}`}
+                            title={`Remove ${entry.runnerName}'s ${entry.manualTimeId != null ? 'set time' : 'run'} (x)`}
+                            onClick={() => onModerate(entry, 'remove')}
+                        >
+                            <XLg size={14} aria-hidden />
+                            Remove
+                            <kbd className={styles.shortcutKey}>x</kbd>
+                        </button>
                     )}
                     {canManage && onModerate && (
                         <button

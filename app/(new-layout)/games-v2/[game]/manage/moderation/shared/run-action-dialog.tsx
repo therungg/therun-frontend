@@ -9,7 +9,11 @@ import {
     useTransition,
 } from 'react';
 import { toast } from 'react-toastify';
-import { DurationToFormatted } from '~src/components/util/datetime';
+import {
+    DurationToFormatted,
+    getFormattedString,
+} from '~src/components/util/datetime';
+import { formatRunDate } from '~src/lib/format-run-date';
 import type {
     PreviewExcludeResult,
     UserEligibleRunRow,
@@ -24,7 +28,6 @@ import {
     hasTrueInverse,
     isBanUndoable,
     type ModVerb,
-    REMOVE_REASONS,
     type RemoveReason,
     type RunActionTarget,
     removeReasonMeta,
@@ -34,13 +37,24 @@ import {
 } from './action-model';
 import { loadUserEligibleRunsAction } from './actions/eligible-runs.action';
 import { excludeAction, previewExcludeAction } from './actions/exclude.action';
-import { manualTimesBulkAction } from './actions/manual-times.action';
+import {
+    createManualTimeAction,
+    deleteManualTimeAction,
+    manualTimesBulkAction,
+} from './actions/manual-times.action';
 import { restoreRunsAction } from './actions/restore.action';
 import {
     applyVerdictsAction,
     previewVerdictsAction,
 } from './actions/verdicts.action';
 import styles from './run-action-dialog.module.scss';
+import {
+    AffectedSummary,
+    CutoffPicker,
+    ReasonZone,
+    ScopeCards,
+} from './run-action-parts';
+import { parseTimeInput } from './time-format';
 import { fireUndoToast } from './undo-toast';
 
 const MIN_REASON = 10;
@@ -172,6 +186,11 @@ export function RunActionForm({
             ? (target.runner ?? null)
             : null;
     const [removeScope, setRemoveScope] = useState<'run' | 'runner'>('run');
+    // Whether the moderator has clicked past the Decide screen (scope +
+    // cutoff) into Confirm. Only meaningful when needsDecideStep is true —
+    // a runner with no other times, or a non-remove verb, skips straight to
+    // the single Confirm screen and this stays false/unused.
+    const [pastDecide, setPastDecide] = useState(false);
     // 'runner' means an exclusion rule on the runner scoped to this board —
     // exactly what the Runner… dialog writes, reached from where the mod
     // already is. Guests and multi-run selections can never reach it.
@@ -202,6 +221,19 @@ export function RunActionForm({
      * surface whatever it surfaces.
      */
     const [legitRunId, setLegitRunId] = useState<number | null>(null);
+
+    /**
+     * Remove's optional replacement: file a set time for the runner in the
+     * same confirm. Just a manual time — the same one the Adjust dialog
+     * writes — reached from where the mod already is: they've judged the
+     * run bad and often know what the real time should be. Offered only on
+     * the per-run scope (a runner-wide rule would hide every run but leave
+     * the set time standing, which is its own deliberate combo, not this
+     * checkbox's job).
+     */
+    const [replaceEnabled, setReplaceEnabled] = useState(false);
+    const [replaceTimeText, setReplaceTimeText] = useState('');
+    const [replaceDateText, setReplaceDateText] = useState('');
 
     const [reason, setReason] = useState('');
     const [preview, setPreview] = useState<PreviewState | null>(null);
@@ -258,27 +290,65 @@ export function RunActionForm({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [gameSlug, removeRunner, removesRunner, otherRuns]);
 
+    // Two-step Decide->Confirm whenever the target names a runner: the
+    // scope question ("this run, or every run by them?") renders the moment
+    // the dialog opens, and the other-times fetch fills the cutoff table in
+    // underneath it rather than gating the whole screen behind a loading
+    // interstitial.
+    const needsDecideStep = verb === 'remove' && removeRunner != null;
+    const showDecide = needsDecideStep && !pastDecide;
+
+    const replaceOffered =
+        verb === 'remove' && removeRunner != null && !removesRunner;
+    const replaceActive = replaceOffered && replaceEnabled;
+    const replaceMs = replaceActive ? parseTimeInput(replaceTimeText) : null;
+    const replaceValid =
+        !replaceActive || (replaceMs != null && !Number.isNaN(replaceMs));
+
+    // The runner's other runs faster than a given cutoff time. A board
+    // always surfaces the best eligible run, so leaving a faster invalid one
+    // behind would just promote it into the slot being cleared.
+    const fasterThan = (cutoff: number | null): number[] => {
+        if (cutoff == null || otherRuns == null || !removeRunner) return [];
+        return otherRuns
+            .filter((r) => {
+                const t = runTime(r, removeRunner.primaryTiming);
+                return t != null && t < cutoff;
+            })
+            .map((r) => r.runId);
+    };
     /**
      * Everything the confirm actually removes: the run the moderator opened
-     * this on, plus anything faster than the one they called legit.
+     * this on, plus anything faster than the cutoff — the existing run they
+     * called legit, or the custom set time standing in for one (a set time
+     * slower than a surviving run would never surface).
      */
     const fasterThanLegit =
         legitRunId != null && otherRuns != null && removeRunner
-            ? (() => {
-                  const legit = otherRuns.find((r) => r.runId === legitRunId);
-                  const cutoff = legit
-                      ? runTime(legit, removeRunner.primaryTiming)
-                      : null;
-                  if (cutoff == null) return [];
-                  return otherRuns
-                      .filter((r) => {
-                          const t = runTime(r, removeRunner.primaryTiming);
-                          return t != null && t < cutoff;
-                      })
-                      .map((r) => r.runId);
-              })()
-            : [];
+            ? fasterThan(
+                  (() => {
+                      const legit = otherRuns.find(
+                          (r) => r.runId === legitRunId,
+                      );
+                      return legit
+                          ? runTime(legit, removeRunner.primaryTiming)
+                          : null;
+                  })(),
+              )
+            : replaceActive
+              ? fasterThan(replaceMs)
+              : [];
     const runIds = [...targetRunIds, ...fasterThanLegit];
+    // The legit-cutoff run itself, for the Confirm-screen context line
+    // (restates the decision made on Decide in terms of its time).
+    const legitRun =
+        legitRunId != null
+            ? (otherRuns?.find((r) => r.runId === legitRunId) ?? null)
+            : null;
+    const legitRunTime =
+        legitRun && removeRunner
+            ? runTime(legitRun, removeRunner.primaryTiming)
+            : null;
     const manualTimeIds =
         target.kind === 'runs' ? (target.manualTimeIds ?? []) : [];
     // How this verb lands on the selection's manual set times (if any):
@@ -364,9 +434,20 @@ export function RunActionForm({
             if ('error' in res) return setPreviewError(res.error);
             setPreview({ kind: 'exclude', data: res.preview });
         });
-        // banRule/verdictAction are derived from the deps below.
+        // banRule/verdictAction are derived from the deps below. The joined
+        // faster-run ids stand in for the custom-time cutoff: retyping the
+        // time only refetches when the set of removed runs actually changes.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [gameSlug, verb, notify, scope, removeScope, legitRunId]);
+    }, [
+        gameSlug,
+        verb,
+        notify,
+        scope,
+        removeScope,
+        legitRunId,
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        fasterThanLegit.join(','),
+    ]);
 
     // Reload whenever routing-relevant inputs change (notify flips reject↔exclude;
     // scope flips category↔game rule — each yields a different preview).
@@ -401,8 +482,17 @@ export function RunActionForm({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // Entering Confirm from a Decide step: the reason field only mounts
+    // here (Decide has no reason field, just scope + cutoff), so the
+    // mount-only effect above ran too early and focused nothing for inline
+    // hosts. Re-focus it the moment pastDecide flips true.
+    useEffect(() => {
+        if (!autoFocus || !pastDecide) return;
+        reasonFieldRef.current?.focus();
+    }, [autoFocus, pastDecide, reasonFieldRef]);
+
     const handleConfirm = () => {
-        if (!reasonOk) return;
+        if (!reasonOk || !replaceValid) return;
         setError(null);
         startConfirm(async () => {
             const trimmed = reason.trim();
@@ -493,6 +583,36 @@ export function RunActionForm({
                 );
                 return onDone();
             }
+            // Remove's replacement set time, filed after the removal lands.
+            // Returns the created id (for the undo path), null when the
+            // checkbox is off, or an error string when the removal applied
+            // but the set time didn't — surfaced as the dialog error so the
+            // mod sees exactly what's left to do by hand.
+            const applyReplacement = async (): Promise<
+                { id: number | null } | { error: string }
+            > => {
+                if (!replaceActive || replaceMs == null || !removeRunner) {
+                    return { id: null };
+                }
+                const res = await createManualTimeAction(gameSlug, {
+                    runnerRef: { userId: removeRunner.id },
+                    categoryId: removeRunner.categoryId,
+                    subcategoryKey: removeRunner.subcategoryKey,
+                    timing:
+                        removeRunner.primaryTiming === 'gt'
+                            ? 'gametime'
+                            : 'realtime',
+                    timeMs: replaceMs,
+                    runDate: replaceDateText || null,
+                    reason: finalReason,
+                });
+                if ('error' in res) {
+                    return {
+                        error: `Removed, but the set time failed: ${res.error}`,
+                    };
+                }
+                return { id: res.result.id };
+            };
             // The manual portion of a mixed selection. Runs first, manual
             // second; a manual failure surfaces as the dialog error even if
             // the runs part already applied (the toast/refresh only fire on
@@ -532,8 +652,14 @@ export function RunActionForm({
                 }
                 const manualError = await applyManualTimes();
                 if (manualError) return setError(manualError);
+                const replaced = await applyReplacement();
+                if ('error' in replaced) return setError(replaced.error);
+                const replacementId = replaced.id;
                 const total = n + manualTimeIds.length;
-                const message = `${VERB_TITLE[verb]} — ${total} run${total === 1 ? '' : 's'} updated.`;
+                const message =
+                    replacementId != null
+                        ? `${VERB_TITLE[verb]} — ${total} run${total === 1 ? '' : 's'} updated, set time filed.`
+                        : `${VERB_TITLE[verb]} — ${total} run${total === 1 ? '' : 's'} updated.`;
                 // Verify's inverse is `unverify` (verified → pending), not
                 // restoreRunsAction's include+unreject — unreject is a no-op
                 // against an already-verified run, so that generic undo path
@@ -570,12 +696,24 @@ export function RunActionForm({
                 } else if (hasTrueInverse(verb)) {
                     fireUndoToast(
                         message,
-                        () =>
-                            restoreRunsAction(
+                        // A replacement set time rides the same undo: it was
+                        // created by this confirm, so undoing the removal
+                        // deletes it too rather than leaving it standing.
+                        async () => {
+                            if (replacementId != null) {
+                                const del = await deleteManualTimeAction(
+                                    gameSlug,
+                                    replacementId,
+                                    undoReason(verb),
+                                );
+                                if ('error' in del) return del;
+                            }
+                            return restoreRunsAction(
                                 gameSlug,
                                 runIds,
                                 undoReason(verb),
-                            ),
+                            );
+                        },
                         refreshAfterUndo,
                     );
                 } else {
@@ -594,12 +732,31 @@ export function RunActionForm({
                 const manualError = await applyManualTimes();
                 if (manualError) return setError(manualError);
             }
+            const replaced = await applyReplacement();
+            if ('error' in replaced) return setError(replaced.error);
+            const replacementId = replaced.id;
+            const message =
+                replacementId != null ? 'Removed, set time filed.' : 'Removed.';
             if (manualInvolved || runIds.length === 0) {
-                toast.success('Removed.');
+                toast.success(message);
             } else {
                 fireUndoToast(
-                    'Removed.',
-                    () => restoreRunsAction(gameSlug, runIds, undoReason(verb)),
+                    message,
+                    async () => {
+                        if (replacementId != null) {
+                            const del = await deleteManualTimeAction(
+                                gameSlug,
+                                replacementId,
+                                undoReason(verb),
+                            );
+                            if ('error' in del) return del;
+                        }
+                        return restoreRunsAction(
+                            gameSlug,
+                            runIds,
+                            undoReason(verb),
+                        );
+                    },
                     refreshAfterUndo,
                 );
             }
@@ -607,245 +764,240 @@ export function RunActionForm({
         });
     };
 
+    // Decide: scope (this run vs. this runner) + which of the runner's
+    // other times is legit. The scope question renders immediately; the
+    // cutoff table streams in below it once the other-times fetch lands.
+    if (showDecide && removeRunner) {
+        const targetTime =
+            target.kind === 'runs' ? (target.runTimeMs ?? null) : null;
+        const targetDate =
+            target.kind === 'runs' && target.runDate
+                ? formatRunDate(target.runDate)
+                : null;
+        return (
+            <>
+                <div className={styles.body}>
+                    <ScopeCards
+                        label="What are you removing?"
+                        options={[
+                            {
+                                value: 'run',
+                                title: 'This run',
+                                // The time and date identify the run being
+                                // judged — the question is answerable without
+                                // cross-checking the board behind the dialog.
+                                detail:
+                                    targetTime != null
+                                        ? `${getFormattedString(String(targetTime))}${targetDate ? ` on ${targetDate}` : ''}`
+                                        : `Only ${target.kind === 'runs' ? target.label : 'this run'}`,
+                            },
+                            {
+                                value: 'runner',
+                                title: `Every run by ${removeRunner.name}`,
+                                detail: `Their whole presence on ${removeRunner.categoryDisplay}`,
+                            },
+                        ]}
+                        value={removeScope}
+                        onChange={(v) => setRemoveScope(v)}
+                        disabled={isConfirming}
+                    />
+                    {removesRunner ? (
+                        <p className={styles.scopeNote}>
+                            This removes <strong>{removeRunner.name}</strong>{' '}
+                            from {removeRunner.categoryDisplay} completely —
+                            every run they have on it, and any they submit
+                            later. One reversible rule, not one removal per run.
+                            Their account is unaffected.
+                        </p>
+                    ) : otherRuns == null ? (
+                        <p className={styles.previewLoading}>
+                            Checking their other times on this board…
+                        </p>
+                    ) : otherRuns.length === 0 ? (
+                        <p className={styles.scopeNote}>
+                            They have no other times on this board.
+                        </p>
+                    ) : (
+                        <CutoffPicker
+                            runs={otherRuns}
+                            timing={removeRunner.primaryTiming}
+                            value={legitRunId}
+                            // One answer to "what stands in for the removed
+                            // run": an existing time OR a custom one. Picking
+                            // a cutoff row unticks the custom time; ticking
+                            // the custom time clears the cutoff (below).
+                            onChange={(id) => {
+                                setLegitRunId(id);
+                                if (id != null) setReplaceEnabled(false);
+                            }}
+                            fasterCount={fasterThanLegit.length}
+                            disabled={isConfirming}
+                        />
+                    )}
+                    {!removesRunner && (
+                        <div>
+                            <label className={styles.replaceToggle}>
+                                <input
+                                    type="checkbox"
+                                    checked={replaceEnabled}
+                                    onChange={(e) => {
+                                        setReplaceEnabled(e.target.checked);
+                                        // Either/or with the cutoff table
+                                        // above — a custom time replaces the
+                                        // "which existing time is legit"
+                                        // answer, not adds to it.
+                                        if (e.target.checked) {
+                                            setLegitRunId(null);
+                                        }
+                                    }}
+                                    disabled={isConfirming}
+                                />
+                                Set a custom time instead
+                            </label>
+                            {replaceEnabled && (
+                                <>
+                                    <div className={styles.replaceFields}>
+                                        <input
+                                            type="text"
+                                            className="form-control form-control-sm"
+                                            value={replaceTimeText}
+                                            onChange={(e) =>
+                                                setReplaceTimeText(
+                                                    e.target.value,
+                                                )
+                                            }
+                                            placeholder="e.g. 35:48 or 1:23:45"
+                                            aria-label="Custom time"
+                                            disabled={isConfirming}
+                                        />
+                                        <input
+                                            type="date"
+                                            className="form-control form-control-sm"
+                                            value={replaceDateText}
+                                            onChange={(e) =>
+                                                setReplaceDateText(
+                                                    e.target.value,
+                                                )
+                                            }
+                                            aria-label="Date achieved (optional)"
+                                            title="Date achieved (optional)"
+                                            disabled={isConfirming}
+                                        />
+                                    </div>
+                                    <p className={styles.replaceHint}>
+                                        Files a verified set time for{' '}
+                                        {removeRunner.name} on this board, with
+                                        the same reason as the removal.
+                                        {fasterThanLegit.length > 0 &&
+                                            ` Their ${fasterThanLegit.length} faster run${fasterThanLegit.length === 1 ? ' goes' : 's go'} too — a surviving faster run would outrank it.`}
+                                    </p>
+                                    {replaceTimeText.length > 0 &&
+                                        !replaceValid && (
+                                            <p className={styles.reasonError}>
+                                                Enter a valid time (h:mm:ss,
+                                                m:ss, or m:ss.SSS).
+                                            </p>
+                                        )}
+                                </>
+                            )}
+                        </div>
+                    )}
+                </div>
+                <div className={styles.footer}>
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={onClose}
+                        disabled={isConfirming}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-primary"
+                        onClick={() => setPastDecide(true)}
+                        // Per-run scope waits for the other-times fetch —
+                        // continuing before it lands would silently skip the
+                        // cutoff choice. Runner scope makes it moot. A ticked
+                        // custom time must parse before moving on.
+                        disabled={
+                            isConfirming ||
+                            (!removesRunner && otherRuns == null) ||
+                            !replaceValid
+                        }
+                    >
+                        Continue
+                    </button>
+                </div>
+            </>
+        );
+    }
+
+    // Confirm: used by every verb. When it follows a Decide step, a context
+    // line restates the decision instead of re-showing the scope/cutoff
+    // controls; otherwise (a runner with no other times, or a non-remove
+    // verb) the relevant controls render inline here.
     return (
         <>
             <div className={styles.body}>
-                {/* Asked before the reason, because it changes what the
-                    reason is for: one run, or this runner's whole presence
-                    on the board. */}
-                {removeRunner && (
-                    <fieldset className="mb-3">
-                        <legend className={styles.fieldLabel}>
-                            What are you removing?
-                        </legend>
-                        <div className="form-check">
-                            <input
-                                className="form-check-input"
-                                type="radio"
-                                name="remove-scope"
-                                id="remove-scope-run"
-                                checked={removeScope === 'run'}
-                                disabled={isConfirming}
-                                onChange={() => setRemoveScope('run')}
-                            />
-                            <label
-                                className="form-check-label"
-                                htmlFor="remove-scope-run"
-                            >
-                                Only this{' '}
-                                {target.kind === 'runs' && target.label}
-                            </label>
-                        </div>
-                        <div className="form-check">
-                            <input
-                                className="form-check-input"
-                                type="radio"
-                                name="remove-scope"
-                                id="remove-scope-runner"
-                                checked={removeScope === 'runner'}
-                                disabled={isConfirming}
-                                onChange={() => setRemoveScope('runner')}
-                            />
-                            <label
-                                className="form-check-label"
-                                htmlFor="remove-scope-runner"
-                            >
-                                Every run {removeRunner.name} has on{' '}
-                                {removeRunner.categoryDisplay}
-                            </label>
-                        </div>
-                    </fieldset>
-                )}
-
-                {/* Removing the runner needs no per-run detail — say plainly
-                    what it does and let the count in the preview carry the
-                    scale. */}
-                {removesRunner && removeRunner && (
-                    <p className={styles.scopeNote}>
-                        This removes <strong>{removeRunner.name}</strong> from{' '}
-                        {removeRunner.categoryDisplay} completely — every run
-                        they have on it, and any they submit later. One
-                        reversible rule, not one removal per run. Their account
-                        is unaffected.
+                {needsDecideStep && removeRunner && (
+                    <p className={styles.stepContext}>
+                        {removesRunner ? (
+                            `Removing ${removeRunner.name} from ${removeRunner.categoryDisplay} entirely.`
+                        ) : legitRunId != null ? (
+                            runIds.length === 1 ? (
+                                <>
+                                    Removing this run only — nothing faster than
+                                    the{' '}
+                                    {legitRunTime != null && (
+                                        <DurationToFormatted
+                                            duration={legitRunTime}
+                                        />
+                                    )}{' '}
+                                    you called legit.
+                                </>
+                            ) : (
+                                <>
+                                    Removing {runIds.length} run
+                                    {runIds.length === 1 ? '' : 's'} —
+                                    everything faster than the{' '}
+                                    {legitRunTime != null && (
+                                        <DurationToFormatted
+                                            duration={legitRunTime}
+                                        />
+                                    )}{' '}
+                                    you called legit.
+                                </>
+                            )
+                        ) : replaceActive && runIds.length > 1 ? (
+                            <>
+                                Removing {runIds.length} runs — this one and
+                                everything faster than the set time.
+                            </>
+                        ) : (
+                            'Removing this run only.'
+                        )}
+                        {replaceActive && replaceMs != null && (
+                            <>
+                                {' '}
+                                A <DurationToFormatted duration={replaceMs} />{' '}
+                                set time takes its place.
+                            </>
+                        )}
                     </p>
                 )}
 
-                {/* Per-run: the board surfaces a runner's best eligible run,
-                    so removing one just promotes the next. Asking which is
-                    legit turns that into a single decision instead of a
-                    remove-check-remove loop. */}
-                {removeRunner && !removesRunner && otherRuns != null && (
-                    <fieldset className="mb-3">
-                        <legend className={styles.fieldLabel}>
-                            {otherRuns.length === 0
-                                ? 'Their other times'
-                                : `Which of ${removeRunner.name}'s other times is legit?`}
-                        </legend>
-                        {otherRuns.length === 0 ? (
-                            <p className="form-text mb-0">
-                                They have no other times on this board — it
-                                leaves nothing behind.
-                            </p>
-                        ) : (
-                            <>
-                                <div className="form-check">
-                                    <input
-                                        className="form-check-input"
-                                        type="radio"
-                                        name="legit-run"
-                                        id="legit-none"
-                                        checked={legitRunId == null}
-                                        disabled={isConfirming}
-                                        onChange={() => setLegitRunId(null)}
-                                    />
-                                    <label
-                                        className="form-check-label"
-                                        htmlFor="legit-none"
-                                    >
-                                        Just remove this one — I haven&apos;t
-                                        checked the others
-                                    </label>
-                                </div>
-                                {otherRuns.map((r) => (
-                                    <div className="form-check" key={r.runId}>
-                                        <input
-                                            className="form-check-input"
-                                            type="radio"
-                                            name="legit-run"
-                                            id={`legit-${r.runId}`}
-                                            checked={legitRunId === r.runId}
-                                            disabled={isConfirming}
-                                            onChange={() =>
-                                                setLegitRunId(r.runId)
-                                            }
-                                        />
-                                        <label
-                                            className="form-check-label"
-                                            htmlFor={`legit-${r.runId}`}
-                                        >
-                                            <DurationToFormatted
-                                                duration={
-                                                    runTime(
-                                                        r,
-                                                        removeRunner.primaryTiming,
-                                                    ) ?? 0
-                                                }
-                                            />{' '}
-                                            <span className="text-body-secondary small">
-                                                {r.verificationStatus}
-                                            </span>
-                                        </label>
-                                    </div>
-                                ))}
-                                {fasterThanLegit.length > 0 && (
-                                    <div className="form-text">
-                                        Everything faster than that goes too —{' '}
-                                        {fasterThanLegit.length} more{' '}
-                                        {fasterThanLegit.length === 1
-                                            ? 'run'
-                                            : 'runs'}
-                                        . A board always shows a runner&apos;s
-                                        best eligible run, so leaving a faster
-                                        one behind would just promote it.
-                                    </div>
-                                )}
-                            </>
-                        )}
-                    </fieldset>
-                )}
-                {verb === 'remove' && (
-                    <div className="mb-3">
-                        <label
-                            htmlFor="remove-reason-cat"
-                            className={styles.fieldLabel}
-                        >
-                            Why are you removing this?
-                        </label>
-                        <select
-                            id="remove-reason-cat"
-                            className="form-select form-select-sm"
-                            value={reasonCat}
-                            onChange={(e) =>
-                                onReasonCatChange(
-                                    e.target.value as RemoveReason,
-                                )
-                            }
-                            disabled={isConfirming}
-                        >
-                            {REMOVE_REASONS.map((r) => (
-                                <option key={r.value} value={r.value}>
-                                    {r.label}
-                                </option>
-                            ))}
-                        </select>
-                        <div className="form-text">
-                            {removeReasonMeta(reasonCat).blurb}
-                        </div>
-                        {/* The runner-scoped removal is an exclusion rule,
-                            which has no verdict to appeal against — offering
-                            the toggle there would promise a notification
-                            nothing sends. */}
-                        {!removesRunner && (
-                            <div className="form-check form-switch mt-2">
-                                <input
-                                    className="form-check-input"
-                                    type="checkbox"
-                                    role="switch"
-                                    id="remove-notify"
-                                    checked={notify}
-                                    onChange={(e) =>
-                                        setNotify(e.target.checked)
-                                    }
-                                    disabled={isConfirming}
-                                />
-                                <label
-                                    className="form-check-label small"
-                                    htmlFor="remove-notify"
-                                >
-                                    Notify the runner and allow an appeal
-                                </label>
-                            </div>
-                        )}
-                    </div>
-                )}
-
                 {verb === 'ban' && target.kind === 'runner' && (
-                    <div className="mb-3 d-flex gap-3">
-                        <div className="form-check">
-                            <input
-                                type="radio"
-                                className="form-check-input"
-                                id="ban-scope-category"
-                                name="ban-scope"
-                                checked={scope === 'category'}
-                                onChange={() => changeScope('category')}
-                                disabled={isConfirming}
-                            />
-                            <label
-                                htmlFor="ban-scope-category"
-                                className="form-check-label small"
-                            >
-                                From this category
-                            </label>
-                        </div>
-                        <div className="form-check">
-                            <input
-                                type="radio"
-                                className="form-check-input"
-                                id="ban-scope-game"
-                                name="ban-scope"
-                                checked={scope === 'game'}
-                                onChange={() => changeScope('game')}
-                                disabled={isConfirming}
-                            />
-                            <label
-                                htmlFor="ban-scope-game"
-                                className="form-check-label small"
-                            >
-                                From the entire game
-                            </label>
-                        </div>
-                    </div>
+                    <ScopeCards
+                        label="Ban scope"
+                        options={[
+                            { value: 'category', title: 'From this category' },
+                            { value: 'game', title: 'From the entire game' },
+                        ]}
+                        value={scope}
+                        onChange={changeScope}
+                        disabled={isConfirming}
+                    />
                 )}
 
                 {isPreviewing && (
@@ -871,19 +1023,12 @@ export function RunActionForm({
                 )}
 
                 {preview && (
-                    <p className={styles.previewSummary}>
-                        <strong>{preview.data.affectedRunCount}</strong> run
-                        {preview.data.affectedRunCount === 1 ? '' : 's'}{' '}
-                        affected across{' '}
-                        <strong>
-                            {preview.data.affectedLeaderboards.length}
-                        </strong>{' '}
-                        leaderboard
-                        {preview.data.affectedLeaderboards.length === 1
-                            ? ''
-                            : 's'}
-                        .
-                    </p>
+                    <AffectedSummary
+                        runCount={preview.data.affectedRunCount}
+                        leaderboardCount={
+                            preview.data.affectedLeaderboards.length
+                        }
+                    />
                 )}
 
                 {preview?.kind === 'verdict' &&
@@ -901,7 +1046,10 @@ export function RunActionForm({
                     )}
 
                 {preview?.kind === 'verdict' &&
-                    preview.data.sampleRuns.length > 0 && (
+                    preview.data.sampleRuns.length > 0 &&
+                    (removesRunner ||
+                        verb === 'ban' ||
+                        preview.data.affectedLeaderboards.length > 1) && (
                         <div className="table-responsive">
                             <table className="table table-sm align-middle mb-0">
                                 <thead>
@@ -935,7 +1083,10 @@ export function RunActionForm({
                     )}
 
                 {preview?.kind === 'exclude' &&
-                    preview.data.sampleRuns.length > 0 && (
+                    preview.data.sampleRuns.length > 0 &&
+                    (removesRunner ||
+                        verb === 'ban' ||
+                        preview.data.affectedLeaderboards.length > 1) && (
                         <ul className={styles.previewList}>
                             {preview.data.sampleRuns.map((s) => (
                                 <li key={s.runId}>
@@ -955,30 +1106,24 @@ export function RunActionForm({
                         </ul>
                     )}
 
-                <div className="mt-3">
-                    <label
-                        htmlFor="run-action-reason"
-                        className={styles.fieldLabel}
-                    >
-                        {reasonRequired
-                            ? `Reason — required, min ${MIN_REASON} characters, audit-logged`
-                            : 'Note — optional, audit-logged'}
-                    </label>
-                    <textarea
-                        id="run-action-reason"
-                        ref={reasonFieldRef}
-                        className={styles.reasonTextarea}
-                        rows={3}
-                        value={reason}
-                        onChange={(e) => setReason(e.target.value)}
-                        disabled={isConfirming}
-                    />
-                    {reasonRequired && !reasonOk && reason.length > 0 && (
-                        <div className={styles.reasonError}>
-                            {MIN_REASON - reason.trim().length} more needed.
-                        </div>
-                    )}
-                </div>
+                <ReasonZone
+                    category={
+                        verb === 'remove'
+                            ? {
+                                  value: reasonCat,
+                                  onChange: onReasonCatChange,
+                                  notify: removesRunner ? null : notify,
+                                  onNotifyChange: setNotify,
+                              }
+                            : undefined
+                    }
+                    reason={reason}
+                    onReasonChange={setReason}
+                    required={reasonRequired}
+                    minLength={MIN_REASON}
+                    fieldRef={reasonFieldRef}
+                    disabled={isConfirming}
+                />
 
                 {error && (
                     <div className={styles.errorAlert} role="alert">
@@ -988,6 +1133,16 @@ export function RunActionForm({
             </div>
 
             <div className={styles.footer}>
+                {needsDecideStep && (
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={() => setPastDecide(false)}
+                        disabled={isConfirming}
+                    >
+                        Back
+                    </button>
+                )}
                 <button
                     type="button"
                     className="btn btn-sm btn-outline-secondary"
@@ -1009,7 +1164,9 @@ export function RunActionForm({
                               : 'btn-danger'
                     }`}
                     onClick={handleConfirm}
-                    disabled={busy || !reasonOk || !!previewError}
+                    disabled={
+                        busy || !reasonOk || !!previewError || !replaceValid
+                    }
                 >
                     {isConfirming
                         ? 'Working…'

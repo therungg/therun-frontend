@@ -26,8 +26,9 @@ export interface MoveDialogProps {
     row: LeaderboardRosterRow;
     /** The row's current placement. */
     category: ResolvedCategory;
-    /** Move-to target choices — the board's featured categories (self
-     * included, so a mod can change only the subcategory). */
+    /** Move-to target choices. Filtered to featured (non-archived) below —
+     * a run moved to a hidden category disappears from every public board,
+     * which is Remove's job, not Move's. Callers may pass the full list. */
     categories: ResolvedCategory[];
     variables: VariableRow[];
     /** The row's current subcategory key. */
@@ -54,6 +55,19 @@ export function MoveDialog({
     gameSlug,
     onMutated,
 }: MoveDialogProps) {
+    // Only boards runners can actually see: featured, non-archived. The
+    // row's current category rides along even if it isn't (so a
+    // subcategory-only move on an oddly-placed run still works).
+    const moveTargets = useMemo(
+        () =>
+            categories.filter(
+                (c) =>
+                    (!c.archived && (c.isMain ?? false)) ||
+                    c.id === category.id,
+            ),
+        [categories, category.id],
+    );
+
     const [targetCategoryId, setTargetCategoryId] = useState<number | ''>('');
     const [selectedValues, setSelectedValues] = useState<
         Record<string, string>
@@ -86,7 +100,7 @@ export function MoveDialog({
     };
 
     const targetCategory =
-        categories.find((c) => c.id === targetCategoryId) ?? null;
+        moveTargets.find((c) => c.id === targetCategoryId) ?? null;
     const targetSubcatVars = useMemo(
         () =>
             targetCategory
@@ -189,7 +203,7 @@ export function MoveDialog({
                     }}
                     disabled={isMoving}
                 >
-                    {categories.map((c) => (
+                    {moveTargets.map((c) => (
                         <option key={c.id} value={c.id}>
                             {c.display}
                         </option>

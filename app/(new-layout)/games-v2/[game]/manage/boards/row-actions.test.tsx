@@ -221,6 +221,10 @@ describe('RowActions — Remove (shared dialog)', () => {
             kind: 'runs',
             runIds: [1],
             label: "runner's run",
+            // The row's displayed time and date — the dialog's "This run"
+            // card names the run being judged.
+            runTimeMs: 20000,
+            runDate: '2026-01-01T00:00:00.000Z',
             // Carries who and where, which is what unlocks Remove's
             // "every run on this board" option.
             runner: {
@@ -403,6 +407,32 @@ describe('RowActions — Adjust… dialog', () => {
 });
 
 describe('RowActions — Move', () => {
+    it('offers only featured categories as move targets', () => {
+        renderRowActions({
+            categories: [
+                CATEGORY,
+                CATEGORY_ALT,
+                { ...CATEGORY_ALT, id: 30, display: 'Hidden%', isMain: false },
+                {
+                    ...CATEGORY_ALT,
+                    id: 40,
+                    display: 'Old%',
+                    archived: true,
+                },
+            ],
+            variables: [NG_PLUS_VAR],
+            subcategoryKey: 'ngplus=no',
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Run…' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Move…' }));
+
+        expect(screen.getByRole('option', { name: 'Any%' })).toBeTruthy();
+        expect(screen.getByRole('option', { name: 'All Bosses' })).toBeTruthy();
+        expect(screen.queryByRole('option', { name: 'Hidden%' })).toBeNull();
+        expect(screen.queryByRole('option', { name: 'Old%' })).toBeNull();
+    });
+
     it('opens (via Run… → Move…) with the current placement selected and Apply disabled (no-op)', () => {
         renderRowActions({
             categories: [CATEGORY, CATEGORY_ALT],

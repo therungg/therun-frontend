@@ -356,6 +356,8 @@ export function BoardCuration({
     // a reload rebuilds the rows, and an entry captured by reference would go
     // stale under the drawer.
     const [inspectRunId, setInspectRunId] = useState<number | null>(null);
+    // Verb the drawer opens onto (a row's Remove/`x`); cleared on close/step.
+    const [inspectVerb, setInspectVerb] = useState<'remove' | null>(null);
     const [boardPageIndex, setBoardPageIndex] = useState(0);
 
     const { rows, total, markedTotal, loading, error, reload } = useBoardData(
@@ -1061,18 +1063,11 @@ export function BoardCuration({
                             selectedKeys={selectedKeys}
                             onToggleSelect={handleToggleSelect}
                             onToggleAllVisible={handleToggleAllVisible}
-                            onModerate={(entry) =>
-                                setInspectRunId(entry.runId ?? null)
-                            }
+                            onModerate={(entry, verb) => {
+                                setInspectVerb(verb ?? null);
+                                setInspectRunId(entry.runId ?? null);
+                            }}
                             onBoardRefresh={reload}
-                            category={
-                                category
-                                    ? {
-                                          id: category.id,
-                                          display: category.display,
-                                      }
-                                    : undefined
-                            }
                             slots={curationSlots}
                             tbodyFooter={
                                 category ? (
@@ -1094,6 +1089,7 @@ export function BoardCuration({
                             gameSlug={game.name}
                             categorySlug={category.name}
                             categoryDisplay={category.display}
+                            categoryId={category.id}
                             requireVideo={category.requireVideo}
                             primaryTiming={timing}
                             subcategoryDefKeys={subcatVars.map(
@@ -1101,24 +1097,32 @@ export function BoardCuration({
                             )}
                             gameTimeLabel={category.gameTimeLabel}
                             showMilliseconds={showMilliseconds}
-                            onClose={() => setInspectRunId(null)}
+                            onClose={() => {
+                                setInspectRunId(null);
+                                setInspectVerb(null);
+                            }}
                             onMutated={reload}
+                            initialVerb={inspectVerb ?? undefined}
                             onPrev={
                                 inspectIndex > 0
-                                    ? () =>
+                                    ? () => {
+                                          setInspectVerb(null);
                                           setInspectRunId(
                                               visibleBoardRows[inspectIndex - 1]
                                                   .row.runId,
-                                          )
+                                          );
+                                      }
                                     : undefined
                             }
                             onNext={
                                 inspectIndex < visibleBoardRows.length - 1
-                                    ? () =>
+                                    ? () => {
+                                          setInspectVerb(null);
                                           setInspectRunId(
                                               visibleBoardRows[inspectIndex + 1]
                                                   .row.runId,
-                                          )
+                                          );
+                                      }
                                     : undefined
                             }
                         />

@@ -582,50 +582,6 @@ tr:focus-within .reveal {
     margin-top: dt.$spacing-xs;
 }
 
-.setPill {
-    @include board.board-pill;
-    text-transform: none;
-    border: 0;
-    cursor: pointer;
-
-    &:focus-visible {
-        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
-        outline-offset: 1px;
-    }
-}
-
-// Info popover anchored to a .setPill trigger (set time). The
-// panel is `position: fixed`, coordinates computed from the trigger's
-// bounding rect on open — this escapes .wrapper's overflow-y: hidden
-// (see .wrapper above), which an absolutely-positioned panel would get
-// clipped by for rows near the bottom of a tall table.
-.infoPopoverWrap {
-    display: inline-flex;
-    position: relative;
-    z-index: 2;
-
-    // Same stacking-context trap as .reveal above — the panel's own
-    // $z-popover only ranks it inside this wrapper. The panel is mounted
-    // only while open, so its presence is the open signal.
-    &:has(.infoPopoverPanel) {
-        z-index: dt.$z-popover;
-    }
-}
-
-.infoPopoverPanel {
-    @include board.board-surface(dt.$spacing-sm dt.$spacing-md);
-    background: var(--board-surface-bg, var(--bs-body-bg));
-    box-shadow: dt.$shadow-md;
-    max-width: 18rem;
-    font-size: dt.$font-size-sm;
-    font-weight: 400;
-    text-transform: none;
-    letter-spacing: normal;
-    color: var(--bs-emphasis-color);
-    z-index: dt.$z-popover;
-    @include board.board-overlay-enter(rise);
-}
-
 // ---- Pagination ----------------------------------------------
 // Real numbered pages under the table. Same pill vocabulary as every other
 // board control; the current page is the one filled-in pill.

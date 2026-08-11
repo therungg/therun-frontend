@@ -115,6 +115,7 @@ describe('AddRunnerRow', () => {
                     subcategoryKey: '',
                     timing: 'realtime',
                     timeMs: 35 * 60_000 + 48_000,
+                    runDate: null,
                     reason: 'Added during board curation',
                 },
             ),

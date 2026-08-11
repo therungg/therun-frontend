@@ -55,6 +55,19 @@ export function BulkMoveDialog({
     gameSlug,
     onMutated,
 }: BulkMoveDialogProps) {
+    // Same featured-only rule as MoveDialog: only boards runners can
+    // actually see, plus the runs' own current category for
+    // subcategory-only moves.
+    const moveTargets = useMemo(
+        () =>
+            categories.filter(
+                (c) =>
+                    (!c.archived && (c.isMain ?? false)) ||
+                    c.id === category.id,
+            ),
+        [categories, category.id],
+    );
+
     const [targetCategoryId, setTargetCategoryId] = useState<number | ''>('');
     const [selectedValues, setSelectedValues] = useState<
         Record<string, string>
@@ -77,7 +90,7 @@ export function BulkMoveDialog({
     };
 
     const targetCategory =
-        categories.find((c) => c.id === targetCategoryId) ?? null;
+        moveTargets.find((c) => c.id === targetCategoryId) ?? null;
     const targetSubcatVars = useMemo(
         () =>
             targetCategory
@@ -181,7 +194,7 @@ export function BulkMoveDialog({
                     }}
                     disabled={isMoving}
                 >
-                    {categories.map((c) => (
+                    {moveTargets.map((c) => (
                         <option key={c.id} value={c.id}>
                             {c.display}
                         </option>

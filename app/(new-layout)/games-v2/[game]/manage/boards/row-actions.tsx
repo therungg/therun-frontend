@@ -129,6 +129,8 @@ export function RowActions({
         kind: 'runs' as const,
         runIds: [row.runId],
         label: `${row.runnerName}'s run`,
+        runTimeMs: timeMs,
+        runDate: row.endedAt ?? null,
         // Present only for a registered runner: it unlocks Remove's
         // "every run on this board" option, which needs an account to
         // write a rule against.
