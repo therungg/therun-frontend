@@ -1,14 +1,9 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import type { Race } from '~app/(new-layout)/races/races.types';
 import Link from '~src/components/link';
-import {
-    buildBoardHref,
-    buildSubmitHref,
-    SUBMIT_PARAM,
-} from '~src/lib/board-url';
+import { buildBoardHref, buildSubmitHref } from '~src/lib/board-url';
 import type { GameModerator } from '../../../../types/board-claims.types';
 import type {
     PublicModLogPage,
@@ -25,7 +20,7 @@ import { LeaderboardPager } from './leaderboard/leaderboard-pager';
 import { ModerationLogView } from './leaderboard/moderation/moderation-log-view';
 import { RulesBody } from './rules/rules-panel';
 import { Sidebar } from './sidebar/sidebar';
-import { SubmitRunDialog } from './submit-dialog/submit-run-dialog';
+import { SubmitDialogMount } from './submit-dialog/submit-dialog-mount';
 import type { GamePageData } from './types';
 
 interface Props {
@@ -75,12 +70,23 @@ export function GamePage({
     // Hooks run unconditionally, so this is created even on the
     // no-categories-yet branch below, where nothing consumes it.
     const boardNav = useBoardNavState();
-    const searchParams = useSearchParams();
-    const router = useRouter();
 
     if (data.categories.length === 0) {
         return (
             <div>
+                {/* Mounted on this branch too: "Submit the first run" below
+                    links to `?submit=1`, and without the dialog the button
+                    would do nothing. With no categories the dialog says so,
+                    which is the honest answer rather than silence. */}
+                <SubmitDialogMount
+                    game={data.game}
+                    categories={[]}
+                    groups={data.groups}
+                    gameRules={data.gameMeta.gameRules}
+                    emulatorPolicy={data.gameMeta.emulatorPolicy}
+                    canModerate={canManageRuns}
+                    sessionUsername={data.sessionUsername}
+                />
                 <GameHero
                     game={data.game}
                     stats={data.quickStats}
@@ -136,19 +142,6 @@ export function GamePage({
     // yet"). Mirrors exactly what ClearFiltersButton would clear from the URL
     // (page included — a deep link to page 99 of an otherwise-unfiltered
     // board is still a filtered view, not an honestly-empty one).
-    // The submit dialog is opened by a query param (see buildSubmitHref), so
-    // every entry point — including the ones on other routes, like a run
-    // page's "Correct this time" — can link straight into it.
-    const submitOpen = searchParams.get(SUBMIT_PARAM) === '1';
-    // Closing drops the param, with replace rather than push so open/closed
-    // don't become two history entries the Back button walks through.
-    const closeSubmit = () => {
-        const next = new URLSearchParams(searchParams.toString());
-        next.delete(SUBMIT_PARAM);
-        const qs = next.toString();
-        router.replace(qs ? `?${qs}` : '?', { scroll: false });
-    };
-
     const filtersActive =
         data.activeFilters.verified ||
         data.activeFilters.combined ||
@@ -159,7 +152,7 @@ export function GamePage({
     return (
         <BoardNavProvider value={boardNav}>
             <div>
-                <SubmitRunDialog
+                <SubmitDialogMount
                     game={data.game}
                     categories={data.categories}
                     groups={data.groups}
@@ -171,8 +164,6 @@ export function GamePage({
                     initialSubcategoryValues={
                         data.activeFilters.subcategoryValues
                     }
-                    open={submitOpen}
-                    onClose={closeSubmit}
                 />
                 <BoardMasthead
                     data={data}
