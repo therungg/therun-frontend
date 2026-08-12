@@ -174,9 +174,10 @@ Creating an entry already revalidates boards through
 set, so the dialog's own "already has a run" answer does not go stale after a
 submission.
 
-## Open item
+## Open item — resolved
 
-Whether a manual-time-backed entry links at `/games-v2/[game]/run/{id}` or
-`/games-v2/[game]/manual/{id}` decides the "view their existing entry" href.
-`RunnerGameEntry.source` carries the discriminator so the frontend can pick;
-confirm the two route shapes during implementation.
+Both route shapes exist (`app/(new-layout)/games-v2/[game]/run/[runId]` and
+`.../manual/[manualTimeId]`), so `RunnerGameEntry.source` picks between them:
+`'run'` → `/games-v2/{game}/run/{runId}`, `'manual'` →
+`/games-v2/{game}/manual/{manualTimeId}`. Implemented in `step-runner.tsx`'s
+`entryHref`.
