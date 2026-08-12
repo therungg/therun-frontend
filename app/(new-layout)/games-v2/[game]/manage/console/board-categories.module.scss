@@ -1,0 +1,107 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/board' as board;
+
+// The "odd one out" marker in the configuration columns. Deliberately quiet:
+// it flags a difference, it does not assert a problem. Moved here from the
+// old all-categories table — on a featured-only list it finally reads, since
+// "the rest of the board" is eight rows, not nine hundred.
+.outlier {
+    color: var(--bs-warning-text-emphasis, #997404);
+    font-size: 0.7em;
+    vertical-align: middle;
+}
+
+// Coverage footer: the same statement setup's step 2 closes with, so the
+// console and the wizard describe a board in one vocabulary.
+.coverageRow {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    flex-wrap: wrap;
+    margin-top: dt.$spacing-md;
+}
+
+.meter {
+    flex: 1 1 12rem;
+    height: 0.4rem;
+    border-radius: 999px;
+    background: rgba(var(--bs-body-color-rgb), 0.12);
+    overflow: hidden;
+}
+
+.meterFill {
+    height: 100%;
+    background: var(--bs-primary);
+}
+
+.activityBar {
+    width: 4rem;
+    height: 0.35rem;
+    border-radius: 999px;
+    background: rgba(var(--bs-body-color-rgb), 0.12);
+    overflow: hidden;
+}
+
+.activityFill {
+    height: 100%;
+    background: rgba(var(--bs-body-color-rgb), 0.45);
+}
+
+// Archived categories live behind a disclosure, not a filter tab: they are a
+// footnote to the board, not one of its states.
+.archivedToggle {
+    background: none;
+    border: 0;
+    padding: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+
+.archivedList {
+    list-style: none;
+    margin: dt.$spacing-sm 0 0;
+    padding: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.archivedItem {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-xs 0;
+}
+
+.archivedName {
+    margin-right: auto;
+}
+
+// Picker rows in the add-to-board dialog.
+.pickerRow {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto auto;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    border-radius: dt.$radius-sm;
+    cursor: pointer;
+
+    &:hover {
+        background: rgba(var(--bs-body-color-rgb), 0.05);
+    }
+}
+
+.pickerStat {
+    @include board.mono-time;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    min-width: 4.5rem;
+    text-align: right;
+}
+
+.pickerList {
+    max-height: 24rem;
+    overflow-y: auto;
+}

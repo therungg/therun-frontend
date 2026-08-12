@@ -20,14 +20,14 @@ vi.mock('~src/actions/category-group/assign-category-group.action', () => ({
 vi.mock('~src/actions/category-group/create-group.action', () => ({
     createGroupAction: vi.fn(async () => ({ ok: true })),
 }));
-vi.mock('./actions/reorder-categories.action', () => ({
+vi.mock('../game-tab/actions/reorder-categories.action', () => ({
     reorderCategoriesAction: vi.fn(async () => ({ ok: true })),
 }));
 vi.mock('react-toastify', () => ({
     toast: { error: vi.fn(), success: vi.fn() },
 }));
 
-import { CategoriesTable } from './categories-table';
+import { BoardCategoriesTable } from './board-categories-table';
 
 const GAME = { id: 1, name: 'example-game', display: 'Example Game' } as never;
 
@@ -50,7 +50,7 @@ function row(patch: Partial<ManageCategoryRow>): ManageCategoryRow {
 
 function renderTable(rows: ManageCategoryRow[]) {
     return render(
-        <CategoriesTable
+        <BoardCategoriesTable
             game={GAME}
             rows={rows}
             config={[]}
@@ -90,27 +90,80 @@ afterEach(() => {
     vi.clearAllMocks();
 });
 
-describe('CategoriesTable — featured suggestions', () => {
-    it('offers the busiest categories while the board features nothing', () => {
-        // The public band lists Featured categories only, so a board with none
-        // renders empty. The wizard pre-ticks its picks; this screen writes on
-        // click, so it offers them instead of deciding.
+describe('BoardCategoriesTable — the board only', () => {
+    it('lists featured categories and leaves the rest to the add dialog', () => {
+        // The pool behind the add dialog is hundreds of rows on a big game;
+        // this table is the board, so an unfeatured category must not appear
+        // in it at all.
+        renderTable([
+            row({ id: 1, display: 'Any%', isMain: true }),
+            row({ id: 2, display: 'Junk split', isMain: false }),
+        ]);
+
+        expect(screen.getByText('Any%')).toBeTruthy();
+        expect(screen.queryByText('Junk split')).toBeNull();
+    });
+
+    it('hides archived categories behind a disclosure, not a filter', () => {
+        renderTable([
+            row({ id: 1, display: 'Any%', isMain: true }),
+            row({ id: 2, display: 'Old route', isMain: true, active: false }),
+        ]);
+
+        expect(screen.queryByText('Old route')).toBeNull();
+        fireEvent.click(screen.getByRole('button', { name: /1 archived/ }));
+        expect(screen.getByText('Old route')).toBeTruthy();
+    });
+
+    it('restores an archived category in place', () => {
+        renderTable([
+            row({ id: 2, display: 'Old route', isMain: true, active: false }),
+        ]);
+        fireEvent.click(screen.getByRole('button', { name: /1 archived/ }));
+        fireEvent.click(screen.getByRole('button', { name: 'Restore' }));
+
+        expect(mocks.updateVisibilityAction).toHaveBeenCalledWith(
+            expect.objectContaining({ categoryId: 2, active: true }),
+        );
+    });
+
+    it('removes a category from the board without archiving it', () => {
+        // Remove and Archive are different acts: one takes a category off the
+        // public board, the other hides it everywhere.
+        renderTable([row({ id: 1, display: 'Any%', isMain: true })]);
+        fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
+
+        expect(mocks.updateVisibilityAction).toHaveBeenCalledWith(
+            expect.objectContaining({ categoryId: 1, isMain: false }),
+        );
+        expect(mocks.updateVisibilityAction).not.toHaveBeenCalledWith(
+            expect.objectContaining({ active: false }),
+        );
+    });
+});
+
+describe('BoardCategoriesTable — empty board', () => {
+    it('offers the busiest categories while the board has none', () => {
+        // An empty board renders an empty public band. The wizard pre-ticks
+        // its picks; this screen writes on click, so it offers them instead.
         renderTable(BUSY);
 
-        expect(screen.getByText(/board shows no categories/)).toBeTruthy();
+        expect(
+            screen.getByText(/public page shows no categories/),
+        ).toBeTruthy();
         expect(screen.getByText('Any%, 120 Star')).toBeTruthy();
     });
 
-    it('goes quiet as soon as one category is featured', () => {
-        // A moderator's own curation beats the heuristic — one pick means they
-        // are done being helped.
+    it('goes quiet as soon as one category is on the board', () => {
         renderTable([row({ id: 1, isMain: true }), ...BUSY.slice(1)]);
-        expect(screen.queryByText(/board shows no categories/)).toBeNull();
+        expect(
+            screen.queryByText(/public page shows no categories/),
+        ).toBeNull();
     });
 
-    it('features every suggestion in one click', () => {
+    it('adds every suggestion in one click', () => {
         renderTable(BUSY);
-        fireEvent.click(screen.getByRole('button', { name: 'Feature these' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Add them' }));
 
         expect(mocks.updateVisibilityAction).toHaveBeenCalledTimes(2);
         expect(mocks.updateVisibilityAction).toHaveBeenCalledWith(

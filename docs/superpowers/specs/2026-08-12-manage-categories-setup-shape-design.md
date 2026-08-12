@@ -49,7 +49,11 @@ featured rows only — that cut is what makes ▲ mean something ("this one
 category is on IGT while the rest of the board is RTA") instead of drowning in
 860 uncurated rows.
 
-Per-row `⋯` menu: Edit settings → · Move to group · Remove from board · Archive.
+Per-row actions: `Edit →` · `Remove` · `Archive`, as three plain link buttons
+in the last cell. The design called for a `⋯` overflow menu; at eight rows the
+buttons are calmer than they sound and, more to the point, an overflow menu
+inside `.table-responsive` (`overflow: auto`) gets clipped, which is a real bug
+this screen does not need.
 
 Footer: the coverage meter from setup step 2 (`activityShare`).
 
