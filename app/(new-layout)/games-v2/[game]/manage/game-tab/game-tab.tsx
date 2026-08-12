@@ -12,6 +12,7 @@ import { InvalidateCacheButton } from '../../header/invalidate-cache-button';
 import { CategoryBandPreview } from '../../setup/steps/category-band-preview';
 import styles from '../console/console.module.scss';
 import { GroupsSection } from './groups-section';
+import groupStyles from './groups-section.module.scss';
 
 // Cache has no sidebar item of its own — it rides along under Groups, so it
 // still needs a stable, direct-linkable anchor.
@@ -62,11 +63,13 @@ export function GameTab({
                 onRowGroupChange={onRowGroupChange}
             />
 
-            <section id={CACHE_ANCHOR} className="mb-4">
-                <h2 className="h5 mb-2">Cache</h2>
-                <p className="text-muted small mb-2">
-                    Clear the cached leaderboards for this game. Next read of
-                    each board will re-warm from Postgres.
+            <section id={CACHE_ANCHOR} className={groupStyles.subSection}>
+                <div className={groupStyles.subHead}>
+                    <h3 className={groupStyles.subTitle}>Cache</h3>
+                </div>
+                <p className={groupStyles.lede}>
+                    Clear the cached leaderboards for this game. The next read
+                    of each board re-warms from Postgres.
                 </p>
                 <InvalidateCacheButton gameSlug={game.name} gameId={game.id} />
             </section>

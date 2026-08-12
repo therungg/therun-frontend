@@ -1,6 +1,15 @@
 'use client';
 
 import { useMemo, useState, useTransition } from 'react';
+import {
+    CaretDownFill,
+    CaretUpFill,
+    Collection,
+    GripVertical,
+    Pencil,
+    Plus,
+    Trash,
+} from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import { createGroupAction } from '~src/actions/category-group/create-group.action';
 import { deleteGroupAction } from '~src/actions/category-group/delete-group.action';
@@ -282,199 +291,225 @@ export function GroupsSection({
     };
 
     return (
-        <section className="mb-4">
-            <h2 className="h5 mb-2">Category groups</h2>
-            <p className="text-muted small mb-2">
-                Organize categories on the public game page. When more than one
-                group exists, the category pills are split into labeled
-                sections.
+        <section>
+            <p className={styles.lede}>
+                Organize categories on the public game page. With more than one
+                group, the category rail splits into labeled sections in this
+                order.
             </p>
 
-            <div className="d-flex gap-2 align-items-center mb-3">
-                <input
-                    type="text"
-                    className="form-control form-control-sm"
-                    placeholder="New group name"
-                    value={createName}
-                    onChange={(e) => setCreateName(e.target.value)}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter') submitCreate();
-                    }}
-                    disabled={pending}
-                    style={{ maxWidth: 280 }}
-                />
-                <button
-                    type="button"
-                    className="btn btn-sm btn-primary"
-                    onClick={submitCreate}
-                    disabled={pending || !createName.trim()}
-                >
-                    Create
-                </button>
+            <div className={styles.panel}>
+                <div className={styles.createRow}>
+                    <input
+                        type="text"
+                        className={`form-control form-control-sm ${styles.createInput}`}
+                        placeholder="New group name"
+                        aria-label="New group name"
+                        value={createName}
+                        onChange={(e) => setCreateName(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') submitCreate();
+                        }}
+                        disabled={pending}
+                    />
+                    <button
+                        type="button"
+                        className={styles.primaryAction}
+                        onClick={submitCreate}
+                        disabled={pending || !createName.trim()}
+                    >
+                        <Plus size={14} aria-hidden="true" />
+                        Create group
+                    </button>
+                </div>
+
+                {groups.length === 0 ? (
+                    <div className={styles.empty}>
+                        <Collection
+                            size={26}
+                            className={styles.emptyIcon}
+                            aria-hidden="true"
+                        />
+                        <p className={styles.emptyTitle}>No groups yet</p>
+                        <p className="mb-0">
+                            Every category sits in one flat rail until you make
+                            one.
+                        </p>
+                    </div>
+                ) : (
+                    <ul className={styles.list}>
+                        {groups.map((g, i) => {
+                            const count = countByGroupId.get(g.id) ?? 0;
+                            const isEditing = editingId === g.id;
+                            return (
+                                <li
+                                    key={g.id}
+                                    className={`${styles.item} ${
+                                        dragId === g.id
+                                            ? styles.itemDragging
+                                            : ''
+                                    }`}
+                                    draggable={!isEditing && !pending}
+                                    onDragStart={() => onDragStart(g.id)}
+                                    onDragOver={(e) => onDragOver(e, g.id)}
+                                    onDrop={() => onDrop(g.id)}
+                                    onDragEnd={() => setDragId(null)}
+                                >
+                                    <span
+                                        aria-hidden="true"
+                                        title="Drag to reorder"
+                                        className={styles.grip}
+                                    >
+                                        <GripVertical size={14} />
+                                    </span>
+                                    <span className={styles.order}>
+                                        <button
+                                            type="button"
+                                            className={styles.orderBtn}
+                                            onClick={() => moveBy(g.id, -1)}
+                                            disabled={pending || i === 0}
+                                            aria-label={`Move ${g.name} up`}
+                                        >
+                                            <CaretUpFill size={9} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={styles.orderBtn}
+                                            onClick={() => moveBy(g.id, 1)}
+                                            disabled={
+                                                pending ||
+                                                i === groups.length - 1
+                                            }
+                                            aria-label={`Move ${g.name} down`}
+                                        >
+                                            <CaretDownFill size={9} />
+                                        </button>
+                                    </span>
+
+                                    <span className={styles.identity}>
+                                        {isEditing ? (
+                                            <input
+                                                type="text"
+                                                className={`form-control form-control-sm ${styles.nameInput}`}
+                                                value={editName}
+                                                aria-label={`Rename ${g.name}`}
+                                                autoFocus
+                                                onChange={(e) =>
+                                                    setEditName(e.target.value)
+                                                }
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter')
+                                                        submitEdit(g);
+                                                    else if (e.key === 'Escape')
+                                                        cancelEdit();
+                                                }}
+                                                onBlur={() => submitEdit(g)}
+                                                disabled={pending}
+                                            />
+                                        ) : (
+                                            <>
+                                                <span className={styles.name}>
+                                                    {g.name}
+                                                </span>
+                                                <span className={styles.count}>
+                                                    {count}{' '}
+                                                    {count === 1
+                                                        ? 'category'
+                                                        : 'categories'}
+                                                </span>
+                                            </>
+                                        )}
+                                    </span>
+
+                                    <span className={styles.controls}>
+                                        {/* Collapsed-by-default was settable in
+                                            the wizard and nowhere else, so a
+                                            board set up before the wizard
+                                            existed — or edited after it — could
+                                            not reach the flag at all. It is the
+                                            same action either way. */}
+                                        <label
+                                            className={styles.toggle}
+                                            title="Collapsed by default on the public page"
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                className="form-check-input mt-0"
+                                                checked={hidden.has(g.id)}
+                                                disabled={pending}
+                                                // The visible word is short so
+                                                // the control row stays calm;
+                                                // the accessible name says the
+                                                // whole thing.
+                                                aria-label="Collapsed by default"
+                                                onChange={(e) =>
+                                                    setHidden(
+                                                        g,
+                                                        e.target.checked,
+                                                    )
+                                                }
+                                            />
+                                            Collapsed
+                                        </label>
+
+                                        {/* "Follow board" is the first option
+                                            and the normal answer: a per-group
+                                            override earns its place only where
+                                            one group genuinely differs. */}
+                                        <select
+                                            className={styles.modeSelect}
+                                            value={g.displayMode ?? ''}
+                                            disabled={pending}
+                                            aria-label={`Selector for ${g.name}`}
+                                            onChange={(e) =>
+                                                setDisplayMode(
+                                                    g,
+                                                    e.target.value === ''
+                                                        ? null
+                                                        : (e.target
+                                                              .value as CategoryDisplayMode),
+                                                )
+                                            }
+                                        >
+                                            <option value="">
+                                                Follow board
+                                            </option>
+                                            <option value="auto">
+                                                Auto (by count)
+                                            </option>
+                                            <option value="pills">Pills</option>
+                                            <option value="dropdown">
+                                                Dropdown
+                                            </option>
+                                        </select>
+
+                                        {!isEditing && (
+                                            <button
+                                                type="button"
+                                                className={styles.iconBtn}
+                                                onClick={() => beginEdit(g)}
+                                                disabled={pending}
+                                                aria-label={`Rename ${g.name}`}
+                                            >
+                                                <Pencil size={13} />
+                                            </button>
+                                        )}
+                                        <button
+                                            type="button"
+                                            className={styles.deleteBtn}
+                                            onClick={() => submitDelete(g)}
+                                            disabled={pending}
+                                            aria-label={`Delete ${g.name}`}
+                                        >
+                                            <Trash size={13} />
+                                        </button>
+                                    </span>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                )}
             </div>
-
-            {groups.length === 0 ? (
-                <p className="text-muted small">
-                    No groups yet — create one to organize categories on the
-                    public page.
-                </p>
-            ) : (
-                <ul className="list-group" style={{ maxWidth: 560 }}>
-                    {groups.map((g, i) => {
-                        const count = countByGroupId.get(g.id) ?? 0;
-                        const isEditing = editingId === g.id;
-                        return (
-                            <li
-                                key={g.id}
-                                className={`list-group-item d-flex align-items-center gap-2 ${
-                                    dragId === g.id ? 'opacity-50' : ''
-                                }`}
-                                draggable={!isEditing && !pending}
-                                onDragStart={() => onDragStart(g.id)}
-                                onDragOver={(e) => onDragOver(e, g.id)}
-                                onDrop={() => onDrop(g.id)}
-                                onDragEnd={() => setDragId(null)}
-                            >
-                                <span
-                                    aria-hidden="true"
-                                    title="Drag to reorder"
-                                    style={{ cursor: 'grab' }}
-                                >
-                                    ⠿
-                                </span>
-                                <div
-                                    className="btn-group btn-group-sm"
-                                    role="group"
-                                    aria-label="Reorder"
-                                >
-                                    <button
-                                        type="button"
-                                        className="btn btn-outline-secondary"
-                                        onClick={() => moveBy(g.id, -1)}
-                                        disabled={pending || i === 0}
-                                        aria-label="Move up"
-                                    >
-                                        ▲
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="btn btn-outline-secondary"
-                                        onClick={() => moveBy(g.id, 1)}
-                                        disabled={
-                                            pending || i === groups.length - 1
-                                        }
-                                        aria-label="Move down"
-                                    >
-                                        ▼
-                                    </button>
-                                </div>
-
-                                {isEditing ? (
-                                    <input
-                                        type="text"
-                                        className="form-control form-control-sm flex-grow-1"
-                                        value={editName}
-                                        autoFocus
-                                        onChange={(e) =>
-                                            setEditName(e.target.value)
-                                        }
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter')
-                                                submitEdit(g);
-                                            else if (e.key === 'Escape')
-                                                cancelEdit();
-                                        }}
-                                        onBlur={() => submitEdit(g)}
-                                        disabled={pending}
-                                    />
-                                ) : (
-                                    <span className="flex-grow-1">
-                                        {g.name}
-                                    </span>
-                                )}
-
-                                <span className="text-muted small">
-                                    {count}{' '}
-                                    {count === 1 ? 'category' : 'categories'}
-                                </span>
-
-                                {/* Collapsed-by-default was settable in the
-                                    wizard and nowhere else, so a board set up
-                                    before the wizard existed — or edited after
-                                    it — could not reach the flag at all. It is
-                                    the same action either way. */}
-                                <label className="text-muted small d-flex align-items-center gap-1 mb-0">
-                                    <input
-                                        type="checkbox"
-                                        className="form-check-input mt-0"
-                                        checked={hidden.has(g.id)}
-                                        disabled={pending}
-                                        onChange={(e) =>
-                                            setHidden(g, e.target.checked)
-                                        }
-                                    />
-                                    Collapsed by default
-                                </label>
-
-                                {/* "Follow board" is the first option and the
-                                    normal answer: a per-group override earns
-                                    its place only where one group genuinely
-                                    differs from the rest. */}
-                                <label className="text-muted small d-flex align-items-center gap-1 mb-0">
-                                    <span className="visually-hidden">
-                                        Selector for {g.name}
-                                    </span>
-                                    <select
-                                        className="form-select form-select-sm"
-                                        value={g.displayMode ?? ''}
-                                        disabled={pending}
-                                        style={{ width: 'auto' }}
-                                        onChange={(e) =>
-                                            setDisplayMode(
-                                                g,
-                                                e.target.value === ''
-                                                    ? null
-                                                    : (e.target
-                                                          .value as CategoryDisplayMode),
-                                            )
-                                        }
-                                    >
-                                        <option value="">Follow board</option>
-                                        <option value="auto">
-                                            Auto (by count)
-                                        </option>
-                                        <option value="pills">Pills</option>
-                                        <option value="dropdown">
-                                            Dropdown
-                                        </option>
-                                    </select>
-                                </label>
-
-                                {!isEditing && (
-                                    <button
-                                        type="button"
-                                        className="btn btn-sm btn-link"
-                                        onClick={() => beginEdit(g)}
-                                        disabled={pending}
-                                        aria-label="Rename"
-                                    >
-                                        ✎
-                                    </button>
-                                )}
-                                <button
-                                    type="button"
-                                    className={styles.deleteBtn}
-                                    onClick={() => submitDelete(g)}
-                                    disabled={pending}
-                                    aria-label="Delete"
-                                >
-                                    🗑
-                                </button>
-                            </li>
-                        );
-                    })}
-                </ul>
-            )}
             <ConfirmDialog
                 open={confirmDeleteGroup != null}
                 onClose={closeConfirmDeleteGroup}
