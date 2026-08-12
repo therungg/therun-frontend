@@ -1,12 +1,13 @@
 import type { CSSProperties } from 'react';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
-import { buildBoardHref, buildSubmitHref } from '~src/lib/board-url';
+import { buildBoardHref } from '~src/lib/board-url';
 import { formatRunDate } from '~src/lib/format-run-date';
 import { formatCount } from '~src/utils/format-stats';
 import { CountryFlag } from '../leaderboard/country-flag';
 import { relativeDate } from '../leaderboard/relative-date';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
+import { SubmitLink } from '../submit-dialog/submit-link';
 import { splitCardEntries } from './card-entries';
 import { CategoryEmblem } from './category-emblem';
 import type { OverviewCardData } from './data';
@@ -142,14 +143,13 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
                         <span className={styles.recordTimeEmpty}>—</span>
                         <span className={styles.plaqueEmpty}>
                             No runs yet ·{' '}
-                            <Link
-                                href={buildSubmitHref(gameSlug, {
-                                    categorySlug: category.name,
-                                })}
+                            <SubmitLink
+                                gameSlug={gameSlug}
+                                categorySlug={category.name}
                                 className={styles.plaqueEmptyLink}
                             >
                                 submit the first run
-                            </Link>
+                            </SubmitLink>
                         </span>
                     </div>
                 )}

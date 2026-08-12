@@ -2,7 +2,6 @@
 
 import { Discord } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
-import { buildSubmitHref } from '~src/lib/board-url';
 import type { GameMetadata } from '~src/lib/game-mgmt';
 import { formatCount, formatHours } from '~src/utils/format-stats';
 import type {
@@ -13,6 +12,7 @@ import { ClaimCta, type ClaimCtaState } from '../claim/claim-cta';
 import styles from '../game-page.module.scss';
 import { BackLink } from '../shared/back-link';
 import { gameLinkIcon } from '../shared/game-link-icon';
+import { SubmitLink } from '../submit-dialog/submit-link';
 import {
     deriveDeveloper,
     deriveGenres,
@@ -112,12 +112,6 @@ export function GameHero({
     variant = 'full',
     activity,
 }: Props) {
-    // Carries the current board context (category + subcategory) into the
-    // submit form so it preselects both — see submit/page.tsx requirement 1.
-    const submitHref = buildSubmitHref(game.name, {
-        categorySlug: categorySlug ?? undefined,
-        subcategoryKey,
-    });
     // Moderator-set cover beats the auto-matched IGDB cover.
     const cover = gameMeta.coverUrl ?? game.image;
     const facts = [
@@ -291,9 +285,14 @@ export function GameHero({
                     )}
                     {/* Primary action last — the rightmost slot in the
                         cluster, so quiet chips lead into it. */}
-                    <Link href={submitHref} className={styles.primaryAction}>
+                    <SubmitLink
+                        gameSlug={game.name}
+                        categorySlug={categorySlug}
+                        subcategoryKey={subcategoryKey}
+                        className={styles.primaryAction}
+                    >
                         Submit a run
-                    </Link>
+                    </SubmitLink>
                 </div>
             </div>
         </header>

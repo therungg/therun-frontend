@@ -1,13 +1,13 @@
 import { type ReactNode, useEffect, useRef } from 'react';
 import { Funnel, Trophy } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
-import { buildSubmitHref } from '~src/lib/board-url';
 import type {
     LeaderboardEntry,
     LeaderboardResponse,
 } from '../../../../../types/leaderboards.types';
 import { ClearFiltersButton } from '../filters/clear-filters-button';
 import { isSameRunner } from '../shared/is-same-runner';
+import { SubmitLink } from '../submit-dialog/submit-link';
 import { computeDisplayRanks } from './display-rank';
 import styles from './leaderboard.module.scss';
 import { LeaderboardRow, type RowSlots } from './leaderboard-row';
@@ -132,15 +132,14 @@ export function LeaderboardTable({
                             <p className={styles.emptyTitle}>
                                 No runs on this board yet.
                             </p>
-                            <Link
-                                href={buildSubmitHref(gameSlug, {
-                                    categorySlug,
-                                    subcategoryKey,
-                                })}
+                            <SubmitLink
+                                gameSlug={gameSlug}
+                                categorySlug={categorySlug}
+                                subcategoryKey={subcategoryKey}
                                 className={styles.emptyAction}
                             >
                                 Submit the first run
-                            </Link>
+                            </SubmitLink>
                         </>
                     )}
                 </div>
