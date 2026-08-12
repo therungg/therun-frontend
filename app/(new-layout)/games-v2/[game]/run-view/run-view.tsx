@@ -128,12 +128,12 @@ export function RunView({
               page: rankToPage(standing.rank),
           })
         : null;
-    // "Correct this time" / "submit a corrected claim" target — carries
-    // the matched standing's category context when there is one (only the
-    // `run` kind ever has a standing; manual claims never do — see
-    // requirement 5's backend handoff, W6).
+    // "Correct this time" target — opens the submit dialog carrying the
+    // matched standing's category context when there is one (only the `run`
+    // kind ever has a standing; manual claims never do — see requirement 5's
+    // backend handoff, W6). Submitting and claiming are one flow now, so
+    // there is no longer a mode to ask for.
     const claimHref = buildSubmitHref(model.game.name, {
-        mode: 'claim',
         categorySlug: standing?.categorySlug,
         subcategoryKey: standing?.subcategoryKey,
     });

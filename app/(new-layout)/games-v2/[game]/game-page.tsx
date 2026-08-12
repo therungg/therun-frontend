@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Race } from '~app/(new-layout)/races/races.types';
 import Link from '~src/components/link';
-import { buildBoardHref } from '~src/lib/board-url';
+import { buildBoardHref, buildSubmitHref } from '~src/lib/board-url';
 import type { GameModerator } from '../../../../types/board-claims.types';
 import type {
     PublicModLogPage,
@@ -88,7 +88,7 @@ export function GamePage({
                         No runs uploaded for this game yet.
                     </p>
                     <Link
-                        href={`/games-v2/${encodeURIComponent(data.game.name)}/submit`}
+                        href={buildSubmitHref(data.game.name)}
                         className={`${styles.primaryAction} mt-3`}
                     >
                         Submit the first run
