@@ -1121,13 +1121,23 @@ export function RunInspector({
                                 ))}
                             </div>
                             <div className={styles.secondaryBar}>
-                                <button
-                                    type="button"
-                                    className={styles.secondaryBtn}
-                                    onClick={() => openModDialog('move')}
-                                >
-                                    Move…
-                                </button>
+                                {/* Owner-mode Move has nowhere to move a
+                                    rejected run from — same status gate the
+                                    run page's "Move my run…" applies
+                                    (run-actions.tsx's `canMove`). Moderator
+                                    Move is unaffected: a mod can still place
+                                    a rejected run onto a board. */}
+                                {(!ownerMode ||
+                                    entry.verificationStatus !==
+                                        'rejected') && (
+                                    <button
+                                        type="button"
+                                        className={styles.secondaryBtn}
+                                        onClick={() => openModDialog('move')}
+                                    >
+                                        Move…
+                                    </button>
+                                )}
                                 {/* Correcting a time is a moderator edit
                                     (`editRun`); a runner's own route to the
                                     same outcome is the hide wizard's "set a
