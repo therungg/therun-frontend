@@ -1,15 +1,25 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { Form, Modal } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import {
     appealRunAction,
     reportRunAction,
+    selfMoveRunAction,
 } from '~src/actions/run-user-actions.action';
 import Link from '~src/components/link';
 import { buildSubmitHref } from '~src/lib/board-url';
+import type {
+    ResolvedCategory,
+    VariableRow,
+} from '../../../../../types/leaderboards.types';
+import type { LeaderboardRosterRow } from '../../../../../types/moderation.types';
+import { loadOwnerBoardContextAction } from '../leaderboard/actions/load-owner-board-context.action';
+import { MoveDialog } from '../manage/boards/move-dialog';
 import { isSameRunner } from '../shared/is-same-runner';
+import { OwnerHideIdentityDialog } from '../shared/owner-hide-identity-dialog';
 import {
     SelfRunVerdictDialog,
     useSelfRunVerdict,
@@ -17,6 +27,12 @@ import {
 import type { RunViewModel } from './run-view';
 
 type ModalKind = 'report' | 'appeal' | null;
+type OwnerDialogKind = 'move' | 'hide-identity' | null;
+
+interface MoveContext {
+    categories: ResolvedCategory[];
+    variables: VariableRow[];
+}
 
 export function RunActions({
     model,
@@ -25,6 +41,7 @@ export function RunActions({
     model: RunViewModel;
     sessionUsername: string | null;
 }) {
+    const router = useRouter();
     const [modal, setModal] = useState<ModalKind>(null);
     const [reason, setReason] = useState('');
     const [pending, startTransition] = useTransition();
@@ -36,6 +53,72 @@ export function RunActions({
     const canAppeal = isOwnRun && model.verificationStatus === 'rejected';
     const canHide = isOwnRun && model.verificationStatus !== 'rejected';
     const canRestore = isOwnRun && model.verificationStatus === 'rejected';
+    // Same standard the board's owner-mode gate uses (leaderboard-pager.tsx's
+    // isOwnEntry): a guest submission or a userId-less row has no `/v1/me/*`
+    // identity to act as. RunViewModel carries no `anonymized` flag (unlike
+    // LeaderboardEntry), so that third board-gate condition can't be checked
+    // here — not modelled as a gap in the guard, just a fact this page's
+    // model doesn't expose.
+    const canOwnerModerate = isOwnRun && model.userId != null && !model.isGuest;
+
+    const [ownerDialog, setOwnerDialog] = useState<OwnerDialogKind>(null);
+    // Move's category picker needs the game's board context (categories +
+    // variable defs) — loaded lazily on first click, same pattern as the
+    // board drawer's mod dialogs (run-inspector.tsx), so a run page view
+    // that never opens Move never pays for it.
+    const [moveCtx, setMoveCtx] = useState<MoveContext | null>(null);
+    const [ctxPending, startCtxLoad] = useTransition();
+
+    const openMove = () => {
+        if (moveCtx != null) {
+            setOwnerDialog('move');
+            return;
+        }
+        startCtxLoad(async () => {
+            // categorySlug is best-effort here: RunViewModel has no slug of
+            // its own (only categoryId), so this falls back to the matched
+            // board standing's slug when there is one, or '' otherwise. The
+            // loader still returns every category (including archived) —
+            // the empty-string case only risks skipping the variable fetch
+            // for a category that is itself archived and non-featured,
+            // which affects Move's target-band display for re-selecting
+            // that same (already current) category, not the current
+            // placement lookup below.
+            const res = await loadOwnerBoardContextAction(
+                model.game.name,
+                model.boardStanding?.categorySlug ?? '',
+            );
+            if ('error' in res) {
+                toast.error(res.error);
+                return;
+            }
+            setMoveCtx({
+                categories: res.categories,
+                variables: res.variables,
+            });
+            setOwnerDialog('move');
+        });
+    };
+
+    const moveCategory =
+        moveCtx?.categories.find((c) => c.id === model.categoryId) ?? null;
+
+    // Minimal LeaderboardRosterRow — MoveDialog only reads `runnerName` (its
+    // title) and `runId` in the moderator path; the owner path submits
+    // through `onSubmitOwner` below and never touches `row.runId`.
+    const moveRow: LeaderboardRosterRow = {
+        runId: model.id,
+        userId: model.userId,
+        runnerName: model.runnerName,
+        subcategoryKey: model.subcategoryKey,
+        time: model.realTime,
+        gameTime: model.gameTime,
+        verificationStatus: model.verificationStatus,
+        vodUrl: model.vodUrl,
+        endedAt: model.runDate ?? '',
+        isLeaderboardEntry: true,
+        isLeaderboardEntryGt: true,
+    };
     // RunViewModel carries no category slug of its own (only
     // categoryDisplay), but a matched board standing (requirement 1's
     // getUserRankingsByName lookup, `run` kind only) does — use it when
@@ -123,6 +206,25 @@ export function RunActions({
                     >
                         Correct this time…
                     </Link>
+                )}
+                {canOwnerModerate && (
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={openMove}
+                        disabled={ctxPending}
+                    >
+                        {ctxPending ? 'Loading…' : 'Move my run…'}
+                    </button>
+                )}
+                {canOwnerModerate && (
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={() => setOwnerDialog('hide-identity')}
+                    >
+                        Hide my identity…
+                    </button>
                 )}
                 {canHide && (
                     <button
@@ -231,6 +333,43 @@ export function RunActions({
                 onCancel={selfVerdict.cancel}
                 onConfirm={selfVerdict.confirm}
             />
+
+            {moveCtx != null && moveCategory != null && (
+                <MoveDialog
+                    open={ownerDialog === 'move'}
+                    onClose={() => setOwnerDialog(null)}
+                    row={moveRow}
+                    category={moveCategory}
+                    categories={moveCtx.categories}
+                    variables={moveCtx.variables}
+                    subcategoryKey={model.subcategoryKey}
+                    gameSlug={model.game.name}
+                    onMutated={() => router.refresh()}
+                    ownerMode
+                    onSubmitOwner={(target) =>
+                        selfMoveRunAction(
+                            model.game.name,
+                            model.gameId,
+                            model.id,
+                            {
+                                categoryId: model.categoryId,
+                                subcategoryKey: model.subcategoryKey,
+                            },
+                            target,
+                        )
+                    }
+                />
+            )}
+            {canOwnerModerate && (
+                <OwnerHideIdentityDialog
+                    open={ownerDialog === 'hide-identity'}
+                    onClose={() => setOwnerDialog(null)}
+                    onDone={() => router.refresh()}
+                    gameId={model.gameId}
+                    gameSlug={model.game.name}
+                    gameDisplay={model.game.display}
+                />
+            )}
         </>
     );
 }

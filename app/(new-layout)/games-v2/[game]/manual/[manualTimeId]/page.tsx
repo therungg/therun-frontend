@@ -67,6 +67,8 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
                 kind: 'manual',
                 id: manualTimeId,
                 game,
+                gameId: mt.gameId,
+                categoryId: mt.categoryId,
                 categoryDisplay: mt.categoryDisplay,
                 subcategoryKey: mt.subcategoryKey,
                 runnerName: mt.runnerName,
