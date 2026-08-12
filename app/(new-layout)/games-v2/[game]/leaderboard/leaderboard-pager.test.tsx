@@ -256,25 +256,74 @@ describe('LeaderboardPager — un-hide affordance', () => {
         expect(screen.getByText(/shown on this board as/)).toBeInTheDocument();
     });
 
+    /** Open the hoisted dialog the way the drawer does. */
+    function openHideIdentityFromDrawer() {
+        const open = mocks.inspectorProps.current
+            ?.onOpenHideIdentity as () => void;
+        expect(open).toBeTypeOf('function');
+        act(() => open());
+    }
+
     // Hiding from inside the drawer redacts the row and takes the drawer's
     // own entry point with it — without this re-read the note (the only
     // remaining way back) would not appear until a full page load.
-    it('appears after the drawer reports a hide', async () => {
+    it('appears after a hide started from the drawer', async () => {
         mocks.selfAnonymizeStateAction.mockResolvedValue({
             ok: true,
             state: hidden,
         });
+        mocks.fetchLeaderboardPage.mockResolvedValue(board([entry()]));
         renderPager({});
         moderate(entry());
-        const onChanged = mocks.inspectorProps.current
-            ?.onSelfHiddenChanged as () => void;
-        expect(onChanged).toBeTypeOf('function');
-        act(() => onChanged());
+        openHideIdentityFromDrawer();
+        fireEvent.click(
+            screen.getByRole('button', { name: 'stub-unhide-done' }),
+        );
         await waitFor(() =>
             expect(
                 screen.getByText(/shown on this board as/),
             ).toBeInTheDocument(),
         );
+    });
+
+    // The whole reason the dialog lives here and not in the drawer. Its own
+    // success triggers the board refetch; the refetched row comes back
+    // anonymized, which fails `isOwnEntry` and unmounts the drawer. A dialog
+    // rendered inside the drawer would be torn off screen before the runner
+    // read its answer — which can be "a moderator's rule still hides you".
+    it('survives the board refetch its own success triggers, even as the drawer unmounts', async () => {
+        mocks.selfAnonymizeStateAction.mockResolvedValue({
+            ok: true,
+            state: hidden,
+        });
+        // What the board returns once the runner is hidden: the same row,
+        // anonymized and stripped of its userId.
+        mocks.fetchLeaderboardPage.mockResolvedValue(
+            board([
+                entry({
+                    runnerName: 'Anonymous runner #2',
+                    userId: null,
+                    anonymized: true,
+                }),
+            ]),
+        );
+        renderPager({});
+        moderate(entry());
+        expect(screen.getByTestId('inspector')).toBeInTheDocument();
+        openHideIdentityFromDrawer();
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'stub-unhide-done' }),
+        );
+
+        // The drawer goes, exactly as designed…
+        await waitFor(() =>
+            expect(screen.queryByTestId('inspector')).toBeNull(),
+        );
+        // …and the dialog is still on screen, still the runner's to close.
+        expect(
+            screen.getByRole('button', { name: 'stub-unhide-done' }),
+        ).toBeInTheDocument();
     });
 
     it('re-reads after the un-hide dialog acts, rather than assuming', async () => {

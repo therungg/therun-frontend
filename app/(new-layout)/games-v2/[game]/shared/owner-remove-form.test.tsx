@@ -333,6 +333,57 @@ describe('OwnerRemoveForm', () => {
         });
     });
 
+    // A GT board with rtaFallback ranks RTA-only runs by their real time
+    // (the backend orders on COALESCE(gameTime, time)), so those runs ARE on
+    // the board. Reading only `gameTime` dropped every one of them: the
+    // wizard then claimed the runner had no other times here, hid the
+    // "another run of mine stands instead" option, and computed an empty
+    // cascade — leaving a FASTER run of theirs standing in the slot they
+    // just cleared.
+    describe('GT board with rtaFallback', () => {
+        /** One of the runner's runs with a real time but no game time. */
+        const rtaOnly = (runId: number, time: number): UserEligibleRunRow => ({
+            ...mine(runId, time),
+            gameTime: null,
+            primaryTiming: 'gametime',
+        });
+
+        it('counts the runner’s RTA-only runs and cascades over the faster one', async () => {
+            renderForm([rtaOnly(1, FASTER), rtaOnly(2, SLOWER)], {
+                primaryTiming: 'gt',
+                rtaFallback: true,
+            });
+            // Not "You have no other times on this board".
+            await screen.findByRole('radio', {
+                name: /^Another run of mine/,
+            });
+            expect(
+                screen.queryByText('You have no other times on this board.'),
+            ).toBeNull();
+
+            // Standing on the slower one takes the faster one down with it.
+            await standInstead(/1:10:00/);
+            await screen.findByText(/These 2 runs get hidden/);
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Hide my run' }),
+            );
+            await waitFor(() =>
+                expect(mocks.selfRunVerdictAction).toHaveBeenCalledTimes(2),
+            );
+            // Fastest first, the opened run last — the cascade's order.
+            expect(mocks.selfRunVerdictAction.mock.calls[0][0]).toBe(1);
+            expect(mocks.selfRunVerdictAction.mock.calls[1][0]).toBe(RUN_ID);
+        });
+
+        // Without the flag the board really does rank on game time alone, so
+        // an RTA-only run is not on it and must stay out of the roster.
+        it('still ignores RTA-only runs on a GT board without the fallback', async () => {
+            renderForm([rtaOnly(1, FASTER)], { primaryTiming: 'gt' });
+            await screen.findByText('You have no other times on this board.');
+            expect(decideOption(/^Another run of mine/)).toBeNull();
+        });
+    });
+
     it('lets the keyboard reach every run in the picker', async () => {
         renderForm([mine(1, FASTER), mine(2, SLOWER)]);
         fireEvent.click(

@@ -316,6 +316,38 @@ everywhere the instant the request returns.
 
 ---
 
+## 4. GET /v1/leaderboards/runs/{runId} — the owner exemption
+
+Not a `/v1/me/*` route, but the self-service flow depends on it: this is the
+public run-detail payload, and every owner control on the run page is gated on
+"is this run mine", decided from its `runnerName`/`userId`.
+
+The endpoint stays **public and unauthenticated by default**. It now also
+accepts an *optional* `Authorization: Bearer {sessionId}`, and when the caller
+resolves to the run's own `userId` the anonymize redaction is **skipped for
+that caller only** — they see their real `runnerName` and their `userId`
+instead of `Anonymous runner #N` / `null`.
+
+- The exemption applies whoever placed the rule (the runner themself, a game
+  moderator, or a site admin). The mask exists to keep the identity away from
+  the public; the subject is not that public, and they need their own controls
+  either way.
+- Anonymous callers, third parties, and callers whose session fails to resolve
+  are unaffected — they get the placeholder exactly as before. A guest /
+  unsynced run (`userId: null`) can never match a caller.
+- Run-scoped rules (`type: "run"`) follow the same exemption.
+
+**Caching consequence for the frontend — read this before wiring it up.** The
+response body now varies by caller, so it carries `Vary: Authorization`, plus
+`Cache-Control: private, no-store` on the exempted view. A frontend fetcher
+that sends the bearer token **must not** be a shared-cache read (`'use cache'`
+in Next terms) — caching an owner's un-redacted payload under a public key
+would serve their real name to everyone. Keep the cached public fetch as-is and
+make the authenticated read a separate, uncached one, taken only when the
+public copy came back redacted.
+
+---
+
 ## Already existed (composed by the owner remove wizard)
 
 These routes predate this task and are documented elsewhere in full; listed

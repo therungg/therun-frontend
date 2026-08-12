@@ -146,10 +146,13 @@ describe('OwnerHideIdentityDialog', () => {
         await waitFor(() => expect(onDone).toHaveBeenCalled());
     });
 
-    it('does not offer Unhide when a moderator already owns the rule POST reported alreadyExists for', async () => {
-        // The runner's POST reports alreadyExists:true (a covering rule
-        // exists) but it was placed by a moderator — the follow-up GET is
-        // the only source of truth on ownership.
+    // The runner just hid themselves, and the follow-up GET reports a rule
+    // they can't lift — because their POST adopted a moderator's pre-existing
+    // game rule, or because a broader admin rule shadows their own. Unhide
+    // still has to be suppressed (DELETE would 403), but the copy must not
+    // credit a moderator with the action the runner just took, right next to
+    // the success toast for it.
+    it('after the runner’s own apply, a rule they cannot lift is reported as such — never attributed to a moderator', async () => {
         mocks.selfAnonymizeStateAction
             .mockResolvedValueOnce({
                 ok: true,
@@ -178,8 +181,42 @@ describe('OwnerHideIdentityDialog', () => {
         fireEvent.click(
             await screen.findByRole('button', { name: 'Hide my identity' }),
         );
-        await screen.findByText(/A moderator hid your identity here/);
+        await screen.findByText(/Your identity is now hidden across/);
+        // Both facts, in the runner's own voice: it is hidden, and someone
+        // else's rule also covers them so only an admin can lift it.
+        expect(
+            screen.getByText(/only a site admin can lift it/i),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText(/A moderator hid your identity here/),
+        ).toBeNull();
         expect(screen.queryByRole('button', { name: 'Unhide' })).toBeNull();
+        // The success toast for the runner's own action still fires — the two
+        // must not contradict each other.
+        await waitFor(() =>
+            expect(mocks.toastSuccess).toHaveBeenCalledWith(
+                expect.stringContaining('Hiding your identity across'),
+            ),
+        );
+    });
+
+    // The unchanged reading of the same server state, when the runner did NOT
+    // just act: opening the dialog on a moderator's rule still says so.
+    it('state (c) survives: a moderator’s rule read on open is still attributed to a moderator', async () => {
+        mocks.selfAnonymizeStateAction.mockResolvedValue({
+            ok: true,
+            state: {
+                hidden: true,
+                selfApplied: false,
+                ruleId: 12,
+                displayName: 'Anonymous runner #4',
+            },
+        });
+        renderDialog();
+        await screen.findByText(/A moderator hid your identity here/);
+        expect(
+            screen.queryByText(/Your identity is now hidden across/),
+        ).toBeNull();
     });
 
     it('the overlap case: DELETE reports still-hidden after lifting your own rule, and success copy reflects it', async () => {

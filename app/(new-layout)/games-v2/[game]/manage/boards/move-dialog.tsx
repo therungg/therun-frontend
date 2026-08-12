@@ -215,7 +215,10 @@ export function MoveDialog({
         >
             <div className={styles.dialogHeader}>
                 <h5 id="move-sheet-title" className={styles.dialogTitle}>
-                    Move {row.runnerName}
+                    {/* Owner mode is the runner acting on their own run —
+                        naming them at themselves reads like a moderator's
+                        record of it. */}
+                    {ownerMode ? 'Move my run' : `Move ${row.runnerName}`}
                 </h5>
                 <button
                     type="button"

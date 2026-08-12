@@ -38,6 +38,16 @@ export interface OwnerRemoveFormProps {
     categoryId: number;
     subcategoryKey: string;
     primaryTiming: 'rt' | 'gt';
+    /**
+     * `category.rtaFallback` — on a game-time board, a run with no game time
+     * is still ranked, by its real time (the backend orders on
+     * `COALESCE(gameTime, time)`). Without this the wizard drops every
+     * RTA-only run of the runner's from its roster and then states "You have
+     * no other times on this board", never offers "another run of mine stands
+     * instead", and computes an empty cascade — leaving a FASTER run of
+     * theirs standing on the board they just cleared.
+     */
+    rtaFallback?: boolean;
     /** This entry's board time (ms) — decides which other runs are "faster". */
     runTimeMs: number | null;
     onDone: () => void;
@@ -46,9 +56,18 @@ export interface OwnerRemoveFormProps {
     onBusyChange?: (busy: boolean) => void;
 }
 
-/** A run's time on this board's ranking clock. */
-const rowTime = (r: UserEligibleRunRow, timing: 'rt' | 'gt'): number | null =>
-    timing === 'gt' ? r.gameTime : r.time;
+/**
+ * A run's time on this board's ranking clock — the same expression the board
+ * ranks by, including the RTA fallback (`COALESCE(gameTime, time)`) when the
+ * board has it on. Anything else here silently disagrees with the board about
+ * which of the runner's times is faster.
+ */
+const rowTime = (
+    r: UserEligibleRunRow,
+    timing: 'rt' | 'gt',
+    rtaFallback = false,
+): number | null =>
+    timing === 'gt' ? (r.gameTime ?? (rtaFallback ? r.time : null)) : r.time;
 
 /**
  * The runner-facing "hide my run" wizard: Decide (what should happen) →
@@ -71,6 +90,7 @@ export function OwnerRemoveForm({
     categoryId,
     subcategoryKey,
     primaryTiming,
+    rtaFallback = false,
     runTimeMs,
     onDone,
     onClose,
@@ -115,19 +135,19 @@ export function OwnerRemoveForm({
                             r.categoryId === categoryId &&
                             r.subcategoryKey === subcategoryKey &&
                             r.runId !== runId &&
-                            rowTime(r, primaryTiming) != null,
+                            rowTime(r, primaryTiming, rtaFallback) != null,
                     )
                     .sort(
                         (a, b) =>
-                            (rowTime(a, primaryTiming) ?? 0) -
-                            (rowTime(b, primaryTiming) ?? 0),
+                            (rowTime(a, primaryTiming, rtaFallback) ?? 0) -
+                            (rowTime(b, primaryTiming, rtaFallback) ?? 0),
                     ),
             );
         })();
         return () => {
             cancelled = true;
         };
-    }, [gameId, categoryId, subcategoryKey, runId, primaryTiming]);
+    }, [gameId, categoryId, subcategoryKey, runId, primaryTiming, rtaFallback]);
 
     useEffect(() => {
         onBusyChange?.(isConfirming);
@@ -155,7 +175,7 @@ export function OwnerRemoveForm({
     const cutoff =
         choice === 'other'
             ? standRun
-                ? rowTime(standRun, primaryTiming)
+                ? rowTime(standRun, primaryTiming, rtaFallback)
                 : null
             : choice === 'time' && setTimeValid
               ? setTimeMs
@@ -167,7 +187,7 @@ export function OwnerRemoveForm({
         cutoff == null || otherRuns == null
             ? []
             : otherRuns.filter((r) => {
-                  const t = rowTime(r, primaryTiming);
+                  const t = rowTime(r, primaryTiming, rtaFallback);
                   return t != null && t < cutoff;
               });
 
@@ -261,7 +281,7 @@ export function OwnerRemoveForm({
         <>
             Your{' '}
             <DurationToFormatted
-                duration={rowTime(nextBest, primaryTiming) ?? 0}
+                duration={rowTime(nextBest, primaryTiming, rtaFallback) ?? 0}
             />{' '}
             becomes your time on this board.
         </>
@@ -332,6 +352,7 @@ export function OwnerRemoveForm({
                         <OtherRunPicker
                             runs={otherRuns}
                             timing={primaryTiming}
+                            rtaFallback={rtaFallback}
                             value={standRunId}
                             onChange={setStandRunId}
                             fasterCount={fasterRuns.length}
@@ -423,7 +444,13 @@ export function OwnerRemoveForm({
                         <li key={r.runId}>
                             <span className={styles.hideTime}>
                                 <DurationToFormatted
-                                    duration={rowTime(r, primaryTiming) ?? 0}
+                                    duration={
+                                        rowTime(
+                                            r,
+                                            primaryTiming,
+                                            rtaFallback,
+                                        ) ?? 0
+                                    }
                                 />
                             </span>
                             {r.endedAt && (
@@ -503,6 +530,7 @@ export function OwnerRemoveForm({
 function OtherRunPicker({
     runs,
     timing,
+    rtaFallback,
     value,
     onChange,
     fasterCount,
@@ -510,6 +538,8 @@ function OtherRunPicker({
 }: {
     runs: UserEligibleRunRow[];
     timing: 'rt' | 'gt';
+    /** See OwnerRemoveFormProps — the picker must rank the way the board does. */
+    rtaFallback: boolean;
     value: number | null;
     onChange: (runId: number) => void;
     fasterCount: number;
@@ -550,9 +580,7 @@ function OtherRunPicker({
                     >
                         <span className={styles.pickerTime}>
                             <DurationToFormatted
-                                duration={
-                                    (timing === 'gt' ? r.gameTime : r.time) ?? 0
-                                }
+                                duration={rowTime(r, timing, rtaFallback) ?? 0}
                             />
                         </span>
                         {r.endedAt && (

@@ -652,14 +652,17 @@ export function LeaderboardPager({
                         gameId={gameId}
                         gameDisplay={gameDisplay}
                         mode={inspectorMode}
-                        // Hiding your identity from inside the drawer
-                        // redacts your own row, which takes the drawer's
-                        // entry point away with it — the meta-bar note is
-                        // then the only remaining un-hide control, so it has
-                        // to learn about the change here rather than at the
-                        // next full page load.
-                        onSelfHiddenChanged={refreshSelfHidden}
+                        // The drawer asks; this component owns the dialog.
+                        // Hiding your identity from inside the drawer redacts
+                        // your own row, which fails `isOwnEntry` on the next
+                        // refetch and unmounts the drawer — a dialog rendered
+                        // in there would go with it, mid-read. Up here it
+                        // survives the refetch and keeps showing the result,
+                        // and it is the same instance the board-level note
+                        // opens.
+                        onOpenHideIdentity={() => setHideIdentityOpen(true)}
                         categorySlug={categorySlug}
+                        rtaFallback={rtaFallback}
                         categoryDisplay={categoryDisplay}
                         categoryId={categoryId}
                         requireVideo={requireVideo}

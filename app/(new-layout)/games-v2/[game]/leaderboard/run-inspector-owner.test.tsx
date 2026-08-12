@@ -71,15 +71,10 @@ vi.mock('../manage/moderation/shared/run-action-dialog', () => ({
 vi.mock('../shared/owner-remove-form', () => ({
     OwnerRemoveForm: () => <div data-testid="owner-remove-form" />,
 }));
-// Stubbed with a trigger for its `onDone`, so the drawer's reaction to a
-// completed hide/unhide can be asserted without the real dialog's fetches.
+// Present so the drawer rendering one would be visible to the assertions —
+// it must not, since the host owns that dialog now (see the test below).
 vi.mock('../shared/owner-hide-identity-dialog', () => ({
-    OwnerHideIdentityDialog: (props: { open: boolean; onDone: () => void }) =>
-        props.open ? (
-            <button type="button" onClick={props.onDone}>
-                stub-hide-identity-done
-            </button>
-        ) : null,
+    OwnerHideIdentityDialog: () => <div data-testid="owner-hide-dialog" />,
 }));
 vi.mock('./hide-identity-dialog', () => ({ HideIdentityDialog: () => null }));
 vi.mock('../manage/boards/move-dialog', () => ({ MoveDialog: () => null }));
@@ -114,7 +109,8 @@ const undoableEvent: HistoryEvent = {
 function renderInspector(over: {
     mode: 'mod' | 'owner';
     status?: LeaderboardEntry['verificationStatus'];
-    onSelfHiddenChanged?: () => void;
+    onOpenHideIdentity?: () => void;
+    categoryId?: number | null;
 }) {
     return render(
         <RunInspector
@@ -125,13 +121,17 @@ function renderInspector(over: {
             mode={over.mode}
             categorySlug="any"
             categoryDisplay="Any%"
-            categoryId={4}
+            categoryId={
+                over.categoryId === undefined
+                    ? 4
+                    : (over.categoryId ?? undefined)
+            }
             primaryTiming="rt"
             subcategoryDefKeys={[]}
             showMilliseconds={false}
             onClose={vi.fn()}
             onMutated={vi.fn()}
-            onSelfHiddenChanged={over.onSelfHiddenChanged}
+            onOpenHideIdentity={over.onOpenHideIdentity ?? vi.fn()}
         />,
     );
 }
@@ -172,7 +172,7 @@ describe('RunInspector owner mode', () => {
             screen.getByRole('button', { name: 'Move…' }),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole('button', { name: 'Hide identity…' }),
+            screen.getByRole('button', { name: 'Hide my identity…' }),
         ).toBeInTheDocument();
         expect(
             screen.queryByRole('button', { name: 'Adjust time…' }),
@@ -235,17 +235,54 @@ describe('RunInspector owner mode', () => {
         );
     });
 
-    // The one-way door: hiding from in here redacts the runner's own row, so
-    // this drawer's entry point goes with it. The host must be told, or the
-    // board-level un-hide note never appears this session.
-    it('tells the host when hide-identity lands', () => {
-        const onSelfHiddenChanged = vi.fn();
-        renderInspector({ mode: 'owner', onSelfHiddenChanged });
-        fireEvent.click(screen.getByRole('button', { name: 'Hide identity…' }));
+    // The one-way door: hiding from in here redacts the runner's own row, the
+    // host's owner-mode guard stops matching it, and this drawer unmounts on
+    // the next refetch. A dialog rendered in here would go with it mid-read,
+    // so the drawer only ASKS — the host owns the dialog.
+    it('delegates hide-identity to the host and renders no dialog of its own', () => {
+        const onOpenHideIdentity = vi.fn();
+        renderInspector({ mode: 'owner', onOpenHideIdentity });
         fireEvent.click(
-            screen.getByRole('button', { name: 'stub-hide-identity-done' }),
+            screen.getByRole('button', { name: 'Hide my identity…' }),
         );
-        expect(onSelfHiddenChanged).toHaveBeenCalled();
+        expect(onOpenHideIdentity).toHaveBeenCalled();
+        expect(screen.queryByTestId('owner-hide-dialog')).toBeNull();
+    });
+
+    // Nothing to open = nothing to offer, rather than a dead control.
+    it('omits the owner hide-identity control when the host offers no handler', () => {
+        render(
+            <RunInspector
+                entry={entry()}
+                gameSlug="celeste"
+                gameId={12}
+                gameDisplay="Celeste"
+                mode="owner"
+                categorySlug="any"
+                categoryDisplay="Any%"
+                categoryId={4}
+                primaryTiming="rt"
+                subcategoryDefKeys={[]}
+                showMilliseconds={false}
+                onClose={vi.fn()}
+                onMutated={vi.fn()}
+            />,
+        );
+        expect(
+            screen.queryByRole('button', { name: 'Hide my identity…' }),
+        ).toBeNull();
+    });
+
+    // A `0` here would filter the runner's roster to nothing and let the
+    // wizard state "You have no other times on this board" with total
+    // confidence. Refuse to open instead.
+    it('refuses to open the hide wizard when the board’s category is unknown', () => {
+        renderInspector({ mode: 'owner', categoryId: null });
+        fireEvent.click(screen.getByRole('button', { name: /Hide my run/ }));
+        expect(screen.queryByTestId('owner-remove-form')).toBeNull();
+        expect(
+            screen.getByText(/couldn't work out which board this run is on/i),
+        ).toBeInTheDocument();
     });
 
     it('mod mode keeps the full surface', () => {

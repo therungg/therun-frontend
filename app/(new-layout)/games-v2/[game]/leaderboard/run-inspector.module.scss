@@ -455,6 +455,15 @@
     padding: dt.$spacing-md dt.$spacing-lg 0;
 }
 
+// The owner wizard can't open without a board to filter by — this is what
+// says so, in place of the form.
+.verbFormNote {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    padding: dt.$spacing-md dt.$spacing-lg dt.$spacing-lg;
+    margin: 0;
+}
+
 .stepBar {
     display: flex;
     align-items: center;
