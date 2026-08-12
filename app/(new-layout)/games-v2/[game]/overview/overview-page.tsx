@@ -8,6 +8,7 @@ import gamePageStyles from '../game-page.module.scss';
 import { GameHero } from '../header/game-hero';
 import { ViewTabs } from '../header/view-tabs';
 import { Sidebar } from '../sidebar/sidebar';
+import { SubmitDialogMount } from '../submit-dialog/submit-dialog-mount';
 import { CategoryCard } from './category-card';
 import { CollapsibleSection } from './collapsible-section';
 import type { GameOverviewData } from './data';
@@ -104,6 +105,19 @@ export function GameOverviewPage({
 
     return (
         <div>
+            {/* The hero and every card link to `?submit=1`; without this the
+                overview would change the URL and do nothing. Categories come
+                off the cards — the overview only ever holds Featured ones,
+                the same set the board's own dialog is given. */}
+            <SubmitDialogMount
+                game={data.game}
+                categories={data.cards.map((c) => c.category)}
+                groups={data.groups}
+                gameRules={data.gameMeta.gameRules}
+                emulatorPolicy={data.gameMeta.emulatorPolicy}
+                canModerate={canModerate}
+                sessionUsername={data.sessionUsername}
+            />
             <GameHero
                 game={data.game}
                 stats={data.quickStats}
