@@ -83,6 +83,8 @@ export default async function RunDetailPage({ params }: PageProps) {
                 kind: 'run',
                 id: runId,
                 game,
+                gameId: run.gameId,
+                categoryId: run.categoryId,
                 categoryDisplay: run.categoryDisplay,
                 subcategoryKey: run.subcategoryKey,
                 runnerName: run.runnerName,

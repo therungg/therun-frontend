@@ -225,9 +225,14 @@ export function LeaderboardPager({
      */
     const refreshSelfHidden = () => {
         if (sessionUsername == null) return;
-        selfAnonymizeStateAction(gameId).then((res) => {
-            if ('ok' in res) setHiddenState(res.state);
-        });
+        selfAnonymizeStateAction(gameId)
+            .then((res) => {
+                if ('ok' in res) setHiddenState(res.state);
+            })
+            .catch(() => {
+                // Best-effort refresh; a failure here just leaves the note
+                // showing whatever it showed before.
+            });
     };
 
     const [entryClass] = useState(() => {

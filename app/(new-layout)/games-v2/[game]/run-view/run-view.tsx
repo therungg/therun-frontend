@@ -44,6 +44,14 @@ export interface RunViewModel {
     kind: 'run' | 'manual';
     id: number; // runId or manualTimeId
     game: ResolvedGame;
+    /** Numeric game id — the owner Move/Hide-identity actions are game-scoped
+     * `/v1/me/*` calls. Always present (both RunDetail and ManualTimeDetail
+     * carry it), but only ever used when `kind === 'run'`. */
+    gameId: number;
+    /** This run's category id — the owner Move dialog needs it to find its
+     * current placement in the loaded board context. Same availability note
+     * as `gameId`. */
+    categoryId: number;
     categoryDisplay: string;
     subcategoryKey: string;
     runnerName: string;
