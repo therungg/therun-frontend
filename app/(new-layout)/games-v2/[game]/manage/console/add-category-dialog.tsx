@@ -180,40 +180,39 @@ export function AddCategoryDialog({
             initialFocusRef={searchRef}
             closeOnBackdropClick={!pending}
         >
-            <div className="modal-header">
-                <h5 className="modal-title" id="add-category-title">
+            <div className={styles.dialogHeader}>
+                <h5 className={styles.dialogTitle} id="add-category-title">
                     Add a category to the board
                 </h5>
             </div>
-            <div className="modal-body">
-                <p className="text-muted small">
-                    Categories runners have already submitted to. Busiest first
-                    — adding one puts it on the public board with the game's
+            <div className={styles.dialogBody}>
+                <p className={styles.dialogLede}>
+                    Categories runners have already submitted to, busiest first.
+                    Adding one puts it on the public board with this game's
                     default timing and rules.
                 </p>
 
-                <div className="d-flex gap-2 align-items-center flex-wrap mb-3">
+                <div className={styles.pickerSearch}>
                     <input
                         ref={searchRef}
                         type="search"
-                        className="form-control form-control-sm"
-                        style={{ maxWidth: '22rem' }}
+                        className={`form-control form-control-sm ${styles.searchInput}`}
                         placeholder={`Search ${pool.length.toLocaleString()} categories…`}
                         aria-label="Search categories"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                     />
-                    <span className="text-muted small">
+                    <span className={styles.pickerMeta}>
                         {query.trim()
                             ? `${matches.length.toLocaleString()} match${
                                   matches.length === 1 ? '' : 'es'
                               }`
-                            : `showing ${visible.length.toLocaleString()} of ${pool.length.toLocaleString()}`}
+                            : `${visible.length.toLocaleString()} of ${pool.length.toLocaleString()}`}
                     </span>
                 </div>
 
                 {pool.length === 0 ? (
-                    <p className="text-muted small mb-0">
+                    <p className={styles.pickerMeta}>
                         Every category with runs is already on the board.
                     </p>
                 ) : (
@@ -229,23 +228,26 @@ export function AddCategoryDialog({
                                         toggle(r.id, e.target.checked)
                                     }
                                 />
-                                <span>{r.display}</span>
-                                <span className={styles.activityBar}>
+                                <span className={styles.pickerName}>
+                                    {r.display}
                                     <span
-                                        className={styles.activityFill}
-                                        style={{
-                                            display: 'block',
-                                            height: '100%',
-                                            width: `${Math.max(
-                                                2,
-                                                Math.round(
-                                                    (r.uniqueRunners /
-                                                        maxRunners) *
-                                                        100,
-                                                ),
-                                            )}%`,
-                                        }}
-                                    />
+                                        className={styles.bar}
+                                        aria-hidden="true"
+                                    >
+                                        <span
+                                            className={styles.barFill}
+                                            style={{
+                                                width: `${Math.max(
+                                                    4,
+                                                    Math.round(
+                                                        (r.uniqueRunners /
+                                                            maxRunners) *
+                                                            100,
+                                                    ),
+                                                )}%`,
+                                            }}
+                                        />
+                                    </span>
                                 </span>
                                 <span className={styles.pickerStat}>
                                     {formatCount(r.uniqueRunners)} runners
@@ -259,14 +261,14 @@ export function AddCategoryDialog({
                 )}
 
                 {hiddenCount > 0 && (
-                    <div className="d-flex gap-2 align-items-center mt-2">
-                        <span className="text-muted small">
+                    <div className={styles.pickerFoot}>
+                        <span className={styles.pickerMeta}>
                             {hiddenCount.toLocaleString()} quieter categor
                             {hiddenCount === 1 ? 'y' : 'ies'} not shown.
                         </span>
                         <button
                             type="button"
-                            className="btn btn-sm btn-link px-0"
+                            className={styles.showAll}
                             onClick={() => setShowAll(true)}
                         >
                             Show all
@@ -275,22 +277,23 @@ export function AddCategoryDialog({
                 )}
 
                 {query.trim() && matches.length === 0 && (
-                    <p className="text-muted small mb-0">
+                    <p className={styles.pickerMeta}>
                         No category matches “{query.trim()}”.
                     </p>
                 )}
 
-                {error && (
-                    <p className="text-danger small mt-2 mb-0">{error}</p>
-                )}
+                {error && <p className={styles.pickerError}>{error}</p>}
             </div>
-            <div className="modal-footer">
-                <span className="text-muted small me-auto">
+            <div className={styles.dialogFooter}>
+                <span
+                    className={styles.pickerMeta}
+                    style={{ marginRight: 'auto' }}
+                >
                     {progress ?? `${selected.size} selected`}
                 </span>
                 <button
                     type="button"
-                    className="btn btn-sm btn-outline-secondary"
+                    className={styles.cancelAction}
                     onClick={onClose}
                     disabled={pending}
                 >
@@ -298,7 +301,7 @@ export function AddCategoryDialog({
                 </button>
                 <button
                     type="button"
-                    className="btn btn-sm btn-primary"
+                    className={styles.primaryAction}
                     onClick={submit}
                     disabled={pending || selected.size === 0}
                 >
