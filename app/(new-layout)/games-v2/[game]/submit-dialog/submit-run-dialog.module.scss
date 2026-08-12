@@ -1,0 +1,206 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+// ============================================================
+// SubmitRunDialog — the three-step submit flow on the shared
+// BoardDialog primitive. Same chrome vocabulary as prompt-dialog
+// and confirm-dialog; the only thing it adds is a step rail and a
+// footer that carries Back/Next instead of Cancel/Confirm.
+// ============================================================
+.header {
+    @include board.board-dialog-header;
+}
+
+.title {
+    @include board.board-dialog-title;
+}
+
+.body {
+    @include board.board-dialog-body;
+}
+
+.footer {
+    @include board.board-dialog-footer;
+}
+
+// ---- Step rail -------------------------------------------------
+// Position, not navigation: the steps are not clickable, because
+// step 2's answer depends on step 1's board and jumping backwards
+// past a resolved runner would silently strand it.
+.rail {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin-bottom: dt.$spacing-md;
+}
+
+.railStep {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.railStepActive {
+    color: var(--bs-body-color);
+    font-weight: 600;
+}
+
+.railDot {
+    width: 1.4rem;
+    height: 1.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid var(--bs-border-color);
+    font-size: 0.7rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.railDotActive {
+    border-color: var(--bs-primary);
+    background: var(--bs-primary);
+    color: #fff;
+}
+
+.railDotDone {
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+}
+
+.railSep {
+    flex: 1;
+    height: 1px;
+    background: var(--bs-border-color);
+}
+
+// ---- Step body -------------------------------------------------
+.step {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+}
+
+.fieldLabel {
+    @include board.board-dialog-field-label;
+}
+
+.fieldError {
+    @include board.board-dialog-field-error;
+}
+
+.hint {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: 0.25rem 0 0 0;
+}
+
+.errorAlert {
+    @include board.board-error-alert;
+    margin-top: dt.$spacing-sm;
+    margin-bottom: 0;
+}
+
+// ---- Runner step -----------------------------------------------
+.searchResults {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 15rem;
+    overflow-y: auto;
+    border: 1px solid var(--bs-border-color);
+    border-radius: dt.$radius-md;
+    padding: 4px;
+}
+
+.searchResult {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    width: 100%;
+    padding: dt.$spacing-sm;
+    border: 0;
+    border-radius: dt.$radius-sm;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+        background: var(--bs-tertiary-bg);
+        outline: 0;
+    }
+}
+
+.searchAvatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex: 0 0 auto;
+}
+
+// The resolved runner: who this run is about to be filed under.
+.runnerCard {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    border: 1px solid var(--bs-border-color);
+    border-radius: dt.$radius-md;
+    padding: dt.$spacing-md;
+}
+
+.runnerName {
+    font-weight: 600;
+}
+
+.runnerNote {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: 0;
+}
+
+// The one state that stops the flow: they are already on this board.
+.runnerBlocked {
+    @include board.board-dialog-field-error;
+    font-size: dt.$font-size-sm;
+}
+
+.otherBoards {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: 0;
+}
+
+.otherBoardsList {
+    list-style: none;
+    padding: 0;
+    margin: 0.25rem 0 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem dt.$spacing-md;
+}
+
+// ---- Success ---------------------------------------------------
+.successActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+    margin-top: dt.$spacing-md;
+}
+
+// ---- Buttons ---------------------------------------------------
+.btnPrimary {
+    @include board.board-btn-primary;
+}
+
+.btnSecondary {
+    @include board.control-pill;
+}
+
+.quietLink {
+    @include board.board-quiet-link;
+}
