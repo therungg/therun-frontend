@@ -1,6 +1,18 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
+import { Fragment, useMemo, useState, useTransition } from 'react';
+import {
+    CaretDownFill,
+    CaretUpFill,
+    Check2,
+    ChevronDown,
+    ChevronRight,
+    ChevronUp,
+    CircleFill,
+    Dash,
+    GripVertical,
+    ListUl,
+} from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import { assignCategoryGroupAction } from '~src/actions/category-group/assign-category-group.action';
 import { createGroupAction } from '~src/actions/category-group/create-group.action';
@@ -63,9 +75,9 @@ interface Props {
  * the pane header's add dialog — instead of a checkbox column over a thousand
  * rows.
  *
- * That cut is also what makes the configuration columns readable: `▲` marks a
- * category that differs from the rest of the board, which means something
- * across eight peers and nothing at all across nine hundred.
+ * That cut is also what makes the configuration columns readable: an amber dot
+ * marks a category that differs from the rest of the board, which means
+ * something across eight peers and nothing at all across nine hundred.
  */
 export function BoardCategoriesTable({
     game,
@@ -126,6 +138,32 @@ export function BoardCategoriesTable({
                 );
             });
     }, [rows, groupRank]);
+
+    // Consecutive runs of one group, in board order — `boardRows` is already
+    // sorted by group rank, so a band is just a run of equal groupIds. The
+    // band row carries the group's identity, which is what lets the per-row
+    // group control go quiet.
+    const bands = useMemo(() => {
+        const out: Array<{
+            key: string;
+            name: string;
+            rows: ManageCategoryRow[];
+        }> = [];
+        for (const row of boardRows) {
+            const key = row.groupId == null ? 'ungrouped' : String(row.groupId);
+            const last = out[out.length - 1];
+            if (last?.key === key) {
+                last.rows.push(row);
+                continue;
+            }
+            out.push({
+                key,
+                name: row.groupName ?? 'Ungrouped',
+                rows: [row],
+            });
+        }
+        return out;
+    }, [boardRows]);
 
     const archivedRows = useMemo(() => rows.filter((r) => !r.active), [rows]);
 
@@ -366,300 +404,475 @@ export function BoardCategoriesTable({
         commitReorder(dragged, toIndex);
     };
 
+    const maxRunners = Math.max(1, ...boardRows.map((r) => r.uniqueRunners));
+
     return (
-        <section className="mb-4">
-            {/* A board with nothing featured has an empty public band — the
-                one state where this screen should say something rather than
-                wait. The wizard's step 2 pre-ticks its picks; a live-write
-                screen must not, so it offers them instead. */}
-            {suggested.length > 0 && (
-                <div
-                    className="alert alert-info d-flex flex-wrap align-items-center gap-2 py-2"
-                    role="status"
-                >
-                    <span>
-                        Nothing is on the board yet, so the public page shows no
-                        categories. Busiest here:{' '}
-                        <strong>
-                            {suggested.map((r) => r.display).join(', ')}
-                        </strong>
-                        .
-                    </span>
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-primary ms-auto"
-                        disabled={pendingIds.size > 0}
-                        onClick={() => {
-                            for (const r of suggested)
-                                setVisibility(r, 'isMain', true);
-                        }}
-                    >
-                        Add {suggested.length === 1 ? 'it' : 'them'}
-                    </button>
-                </div>
-            )}
-
+        <section>
             {boardRows.length === 0 ? (
-                <p className="text-muted my-4">
-                    No categories on the board. Use “Add category to board” to
-                    put one there.
-                </p>
-            ) : (
-                <div className="table-responsive">
-                    <table className="table table-sm align-middle">
-                        <thead>
-                            <tr>
-                                <th style={{ width: 70 }}>Order</th>
-                                <th>Category</th>
-                                <th>Group</th>
-                                <th>Activity</th>
-                                <th className="text-end">Runners</th>
-                                <th className="text-end">Runs</th>
-                                <th className="text-end">Playtime</th>
-                                <th className="text-center">Timing</th>
-                                <th className="text-end">Minimum</th>
-                                <th className="text-center">Rules</th>
-                                <th className="text-end">Sub-boards</th>
-                                <th />
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {boardRows.map((row) => {
-                                const isPending = pendingIds.has(row.id);
-                                return (
-                                    <tr
-                                        key={row.id}
-                                        onDragOver={(e) => e.preventDefault()}
-                                        onDrop={() => onDropRow(row)}
-                                    >
-                                        <td>
-                                            <div className="d-flex align-items-center gap-1">
-                                                <span
-                                                    aria-hidden="true"
-                                                    title="Drag to reorder"
-                                                    draggable={!reorderPending}
-                                                    onDragStart={() =>
-                                                        setDragId(row.id)
-                                                    }
-                                                    onDragEnd={() =>
-                                                        setDragId(null)
-                                                    }
-                                                    style={{ cursor: 'grab' }}
-                                                    className={
-                                                        dragId === row.id
-                                                            ? 'opacity-50'
-                                                            : ''
-                                                    }
-                                                >
-                                                    ⠿
-                                                </span>
-                                                <div
-                                                    className="btn-group btn-group-sm"
-                                                    role="group"
-                                                    aria-label="Reorder"
-                                                >
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-outline-secondary"
-                                                        onClick={() =>
-                                                            moveBy(row, -1)
-                                                        }
-                                                        disabled={
-                                                            reorderPending
-                                                        }
-                                                        aria-label="Move up"
-                                                    >
-                                                        ▲
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-outline-secondary"
-                                                        onClick={() =>
-                                                            moveBy(row, 1)
-                                                        }
-                                                        disabled={
-                                                            reorderPending
-                                                        }
-                                                        aria-label="Move down"
-                                                    >
-                                                        ▼
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>{row.display}</td>
-                                        <td>
-                                            <select
-                                                className="form-select form-select-sm"
-                                                value={
-                                                    row.groupId == null
-                                                        ? ''
-                                                        : String(row.groupId)
-                                                }
-                                                disabled={isPending}
-                                                onChange={(e) =>
-                                                    onChangeGroup(
-                                                        row,
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                style={{ minWidth: 160 }}
-                                                aria-label={`Group: ${row.display}`}
-                                            >
-                                                <option value="">
-                                                    Ungrouped
-                                                </option>
-                                                {groups.map((g) => (
-                                                    <option
-                                                        key={g.id}
-                                                        value={String(g.id)}
-                                                    >
-                                                        {g.name}
-                                                    </option>
-                                                ))}
-                                                <option value="__create__">
-                                                    + Create group…
-                                                </option>
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <ActivityCell
-                                                runners={row.uniqueRunners}
-                                                max={Math.max(
-                                                    1,
-                                                    ...boardRows.map(
-                                                        (r) => r.uniqueRunners,
-                                                    ),
-                                                )}
-                                            />
-                                        </td>
-                                        <td className="text-end">
-                                            {formatCount(row.uniqueRunners)}
-                                        </td>
-                                        <td className="text-end">
-                                            {formatCount(
-                                                row.totalFinishedAttemptCount,
-                                            )}
-                                        </td>
-                                        <td className="text-end">
-                                            {formatHours(row.totalRunTime)}h
-                                        </td>
-                                        <ConfigCells
-                                            cfg={configById.get(row.id)}
-                                            differs={differs}
-                                        />
-                                        <td className="text-end text-nowrap">
-                                            <button
-                                                type="button"
-                                                className="btn btn-sm btn-link"
-                                                onClick={() => onEdit(row.id)}
-                                            >
-                                                Edit →
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="btn btn-sm btn-link text-secondary"
-                                                disabled={isPending}
-                                                onClick={() =>
-                                                    setVisibility(
-                                                        row,
-                                                        'isMain',
-                                                        false,
-                                                    )
-                                                }
-                                                title="Takes this category off the public board. Runs are kept."
-                                            >
-                                                Remove
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="btn btn-sm btn-link text-secondary"
-                                                disabled={isPending}
-                                                onClick={() =>
-                                                    setVisibility(
-                                                        row,
-                                                        'active',
-                                                        false,
-                                                    )
-                                                }
-                                                title="Hides the category and its boards everywhere. Runs are kept."
-                                            >
-                                                Archive
-                                            </button>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-
-            <div className={styles.coverageRow}>
-                <div className="text-muted small">
-                    {boardRows.length} on the board · {share}% of finished runs
-                    covered
-                </div>
-                <div
-                    className={styles.meter}
-                    role="progressbar"
-                    aria-label="Share of finished runs covered by the board"
-                    aria-valuenow={share}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                >
-                    <div
-                        className={styles.meterFill}
-                        style={{ width: `${share}%` }}
-                    />
-                </div>
-            </div>
-
-            {archivedRows.length > 0 && (
-                <div className="mt-3">
-                    <button
-                        type="button"
-                        className={styles.archivedToggle}
-                        aria-expanded={showArchived}
-                        onClick={() => setShowArchived((v) => !v)}
-                    >
-                        {archivedRows.length} archived categor
-                        {archivedRows.length === 1 ? 'y' : 'ies'}{' '}
-                        {showArchived ? '▴' : '▾'}
-                    </button>
-                    {showArchived && (
-                        <ul className={styles.archivedList}>
-                            {archivedRows.map((row) => (
-                                <li
-                                    key={row.id}
-                                    className={styles.archivedItem}
+                <div className={styles.panel}>
+                    {/* A board with nothing on it renders an empty public band
+                        — the one state where this screen should say something
+                        rather than wait. The wizard's step 2 pre-ticks its
+                        picks; a live-write screen must not, so it offers. */}
+                    <div className={styles.empty}>
+                        <ListUl
+                            size={28}
+                            className={styles.emptyIcon}
+                            aria-hidden="true"
+                        />
+                        <p className={styles.emptyTitle}>
+                            Nothing on the board yet
+                        </p>
+                        {suggested.length > 0 ? (
+                            <>
+                                <p className="mb-0">
+                                    The public page shows no categories until
+                                    one is here.
+                                </p>
+                                <div
+                                    className={styles.suggestion}
+                                    role="status"
                                 >
-                                    <span className={styles.archivedName}>
-                                        {row.display}
+                                    <span>
+                                        Busiest:{' '}
+                                        <span
+                                            className={styles.suggestionNames}
+                                        >
+                                            {suggested
+                                                .map((r) => r.display)
+                                                .join(', ')}
+                                        </span>
                                     </span>
                                     <button
                                         type="button"
-                                        className="btn btn-sm btn-link"
-                                        disabled={pendingIds.has(row.id)}
-                                        onClick={() =>
-                                            setVisibility(row, 'active', true)
-                                        }
+                                        className={styles.primaryAction}
+                                        disabled={pendingIds.size > 0}
+                                        onClick={() => {
+                                            for (const r of suggested)
+                                                setVisibility(
+                                                    r,
+                                                    'isMain',
+                                                    true,
+                                                );
+                                        }}
                                     >
-                                        Restore
+                                        Add{' '}
+                                        {suggested.length === 1 ? 'it' : 'them'}
                                     </button>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
+                                </div>
+                            </>
+                        ) : (
+                            <p className="mb-0">
+                                Use “Add category to board” to put one there.
+                            </p>
+                        )}
+                    </div>
+                </div>
+            ) : (
+                <div className={styles.panel}>
+                    <div className="table-responsive">
+                        <table className={styles.table}>
+                            <thead>
+                                <tr>
+                                    <th style={{ width: '4.5rem' }}>Order</th>
+                                    <th>Category</th>
+                                    <th>Group</th>
+                                    <th className="text-end">Runners</th>
+                                    <th className="text-end">Runs</th>
+                                    <th className="text-end">Playtime</th>
+                                    <th className={styles.zoneStart}>Timing</th>
+                                    <th className="text-end">Minimum</th>
+                                    <th className="text-center">Rules</th>
+                                    <th className="text-end">Boards</th>
+                                    <th className={styles.zoneStart} />
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {bands.map((band) => (
+                                    <Fragment key={band.key}>
+                                        {/* The public board renders a group as
+                                            a recessed well; a table can't, so
+                                            the group becomes a band row. */}
+                                        <tr className={styles.groupRow}>
+                                            <td colSpan={11}>
+                                                <span
+                                                    className={
+                                                        styles.groupLabel
+                                                    }
+                                                >
+                                                    {band.name}
+                                                </span>
+                                                <span
+                                                    className={
+                                                        styles.groupCount
+                                                    }
+                                                >
+                                                    {band.rows.length}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {band.rows.map((row, i) => {
+                                            const isPending = pendingIds.has(
+                                                row.id,
+                                            );
+                                            const cfg = configById.get(row.id);
+                                            return (
+                                                <tr
+                                                    key={row.id}
+                                                    onDragOver={(e) =>
+                                                        e.preventDefault()
+                                                    }
+                                                    onDrop={() =>
+                                                        onDropRow(row)
+                                                    }
+                                                >
+                                                    <td>
+                                                        <div
+                                                            className={
+                                                                styles.orderCell
+                                                            }
+                                                        >
+                                                            <span
+                                                                aria-hidden="true"
+                                                                title="Drag to reorder"
+                                                                draggable={
+                                                                    !reorderPending
+                                                                }
+                                                                onDragStart={() =>
+                                                                    setDragId(
+                                                                        row.id,
+                                                                    )
+                                                                }
+                                                                onDragEnd={() =>
+                                                                    setDragId(
+                                                                        null,
+                                                                    )
+                                                                }
+                                                                className={`${styles.grip} ${
+                                                                    dragId ===
+                                                                    row.id
+                                                                        ? styles.gripDragging
+                                                                        : ''
+                                                                }`}
+                                                            >
+                                                                <GripVertical
+                                                                    size={14}
+                                                                />
+                                                            </span>
+                                                            <span
+                                                                className={
+                                                                    styles.rank
+                                                                }
+                                                            >
+                                                                {i + 1}
+                                                            </span>
+                                                            <span className="d-inline-flex flex-column">
+                                                                <button
+                                                                    type="button"
+                                                                    className={
+                                                                        styles.orderBtn
+                                                                    }
+                                                                    onClick={() =>
+                                                                        moveBy(
+                                                                            row,
+                                                                            -1,
+                                                                        )
+                                                                    }
+                                                                    disabled={
+                                                                        reorderPending ||
+                                                                        i === 0
+                                                                    }
+                                                                    aria-label={`Move ${row.display} up`}
+                                                                >
+                                                                    <CaretUpFill
+                                                                        size={9}
+                                                                    />
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    className={
+                                                                        styles.orderBtn
+                                                                    }
+                                                                    onClick={() =>
+                                                                        moveBy(
+                                                                            row,
+                                                                            1,
+                                                                        )
+                                                                    }
+                                                                    disabled={
+                                                                        reorderPending ||
+                                                                        i ===
+                                                                            band
+                                                                                .rows
+                                                                                .length -
+                                                                                1
+                                                                    }
+                                                                    aria-label={`Move ${row.display} down`}
+                                                                >
+                                                                    <CaretDownFill
+                                                                        size={9}
+                                                                    />
+                                                                </button>
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className={styles.name}>
+                                                        {row.display}
+                                                    </td>
+                                                    <td>
+                                                        <select
+                                                            className={
+                                                                styles.groupSelect
+                                                            }
+                                                            value={
+                                                                row.groupId ==
+                                                                null
+                                                                    ? ''
+                                                                    : String(
+                                                                          row.groupId,
+                                                                      )
+                                                            }
+                                                            disabled={isPending}
+                                                            onChange={(e) =>
+                                                                onChangeGroup(
+                                                                    row,
+                                                                    e.target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                            aria-label={`Group: ${row.display}`}
+                                                        >
+                                                            <option value="">
+                                                                Ungrouped
+                                                            </option>
+                                                            {groups.map((g) => (
+                                                                <option
+                                                                    key={g.id}
+                                                                    value={String(
+                                                                        g.id,
+                                                                    )}
+                                                                >
+                                                                    {g.name}
+                                                                </option>
+                                                            ))}
+                                                            <option value="__create__">
+                                                                + Create group…
+                                                            </option>
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <div
+                                                            className={
+                                                                styles.runnersCell
+                                                            }
+                                                        >
+                                                            <span
+                                                                className={
+                                                                    styles.num
+                                                                }
+                                                            >
+                                                                {formatCount(
+                                                                    row.uniqueRunners,
+                                                                )}
+                                                            </span>
+                                                            <span
+                                                                className={
+                                                                    styles.bar
+                                                                }
+                                                                aria-hidden="true"
+                                                            >
+                                                                <span
+                                                                    className={
+                                                                        styles.barFill
+                                                                    }
+                                                                    style={{
+                                                                        width: `${Math.max(
+                                                                            4,
+                                                                            Math.round(
+                                                                                (row.uniqueRunners /
+                                                                                    maxRunners) *
+                                                                                    100,
+                                                                            ),
+                                                                        )}%`,
+                                                                    }}
+                                                                />
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className={styles.num}>
+                                                        {formatCount(
+                                                            row.totalFinishedAttemptCount,
+                                                        )}
+                                                    </td>
+                                                    <td
+                                                        className={
+                                                            styles.numMuted
+                                                        }
+                                                    >
+                                                        {formatHours(
+                                                            row.totalRunTime,
+                                                        )}
+                                                        h
+                                                    </td>
+                                                    <ConfigCells
+                                                        cfg={cfg}
+                                                        differs={differs}
+                                                    />
+                                                    <td
+                                                        className={
+                                                            styles.zoneStart
+                                                        }
+                                                    >
+                                                        <div
+                                                            className={
+                                                                styles.actions
+                                                            }
+                                                        >
+                                                            <button
+                                                                type="button"
+                                                                className={`${styles.quietAction} ${styles.removeAction}`}
+                                                                disabled={
+                                                                    isPending
+                                                                }
+                                                                onClick={() =>
+                                                                    setVisibility(
+                                                                        row,
+                                                                        'isMain',
+                                                                        false,
+                                                                    )
+                                                                }
+                                                                title="Takes this category off the public board. Runs are kept."
+                                                            >
+                                                                Remove
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                className={
+                                                                    styles.quietAction
+                                                                }
+                                                                disabled={
+                                                                    isPending
+                                                                }
+                                                                onClick={() =>
+                                                                    setVisibility(
+                                                                        row,
+                                                                        'active',
+                                                                        false,
+                                                                    )
+                                                                }
+                                                                title="Hides the category and its boards everywhere. Runs are kept."
+                                                            >
+                                                                Archive
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                className={
+                                                                    styles.editLink
+                                                                }
+                                                                onClick={() =>
+                                                                    onEdit(
+                                                                        row.id,
+                                                                    )
+                                                                }
+                                                            >
+                                                                Edit
+                                                                <ChevronRight
+                                                                    size={11}
+                                                                    aria-hidden="true"
+                                                                />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </Fragment>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div className={styles.coverage}>
+                        <span className={styles.coverageLabel}>
+                            Board coverage
+                        </span>
+                        <span className={styles.coverageValue}>{share}%</span>
+                        <div
+                            className={styles.meter}
+                            role="progressbar"
+                            aria-label="Share of finished runs covered by the board"
+                            aria-valuenow={share}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                        >
+                            <div
+                                className={styles.meterFill}
+                                style={{ width: `${share}%` }}
+                            />
+                        </div>
+                        <span className="text-muted small">
+                            {boardRows.length} categor
+                            {boardRows.length === 1 ? 'y' : 'ies'} carry {share}
+                            % of this game's finished runs
+                        </span>
+                    </div>
                 </div>
             )}
 
-            <p className="text-muted small mt-3 mb-0">
-                Only the categories listed here appear on the public game page,
-                in this order. Removing one takes it off the board but keeps its
-                runs and leaves it available to add back. Archiving hides the
-                category and its boards everywhere.
-            </p>
+            <div className={styles.footRow}>
+                <p className={styles.note}>
+                    Only these categories appear on the public game page, in
+                    this order. Remove takes one off the board and keeps its
+                    runs; Archive hides the category and its boards everywhere.
+                </p>
+                {archivedRows.length > 0 && (
+                    <div>
+                        <button
+                            type="button"
+                            className={styles.archivedToggle}
+                            aria-expanded={showArchived}
+                            onClick={() => setShowArchived((v) => !v)}
+                        >
+                            {archivedRows.length} archived categor
+                            {archivedRows.length === 1 ? 'y' : 'ies'}
+                            {showArchived ? (
+                                <ChevronUp size={10} aria-hidden="true" />
+                            ) : (
+                                <ChevronDown size={10} aria-hidden="true" />
+                            )}
+                        </button>
+                        {showArchived && (
+                            <ul className={styles.archivedList}>
+                                {archivedRows.map((row) => (
+                                    <li
+                                        key={row.id}
+                                        className={styles.archivedItem}
+                                    >
+                                        <span className={styles.archivedName}>
+                                            {row.display}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            className={styles.quietAction}
+                                            style={{ opacity: 1 }}
+                                            disabled={pendingIds.has(row.id)}
+                                            onClick={() =>
+                                                setVisibility(
+                                                    row,
+                                                    'active',
+                                                    true,
+                                                )
+                                            }
+                                        >
+                                            Restore
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                )}
+            </div>
 
             <PromptDialog
                 open={groupPromptRow != null}
@@ -686,23 +899,10 @@ export function BoardCategoriesTable({
     );
 }
 
-/** Runner-count bar, same vocabulary (and same signal) as setup's step 2. */
-function ActivityCell({ runners, max }: { runners: number; max: number }) {
-    return (
-        <div className={styles.activityBar}>
-            <div
-                className={styles.activityFill}
-                style={{
-                    width: `${Math.max(2, Math.round((runners / max) * 100))}%`,
-                }}
-            />
-        </div>
-    );
-}
-
 /**
- * The four configuration columns. Split out so the row body stays readable;
- * `differs` is precomputed for the whole board by the caller.
+ * The four configuration columns — the zone a moderator scans for the odd one
+ * out. Split out so the row body stays readable; `differs` is precomputed for
+ * the whole board by the caller.
  */
 function ConfigCells({
     cfg,
@@ -714,32 +914,54 @@ function ConfigCells({
     if (!cfg) {
         return (
             <>
-                <td className="text-center text-muted">—</td>
-                <td className="text-end text-muted">—</td>
-                <td className="text-center text-muted">—</td>
-                <td className="text-end text-muted">—</td>
+                <td className={styles.zoneStart}>
+                    <Missing />
+                </td>
+                <td className="text-end">
+                    <Missing />
+                </td>
+                <td className="text-center">
+                    <Missing />
+                </td>
+                <td className="text-end">
+                    <Missing />
+                </td>
             </>
         );
     }
     return (
         <>
-            <td className="text-center">
-                {cfg.timing === 'gametime'
-                    ? cfg.gameTimeLabel === 'lrt'
-                        ? 'LRT'
-                        : 'IGT'
-                    : 'RTA'}
+            <td className={styles.zoneStart}>
+                <span className={styles.timing}>
+                    {cfg.timing === 'gametime'
+                        ? cfg.gameTimeLabel === 'lrt'
+                            ? 'LRT'
+                            : 'IGT'
+                        : 'RTA'}
+                </span>
                 <Outlier on={differs.timing.has(cfg.id)} />
             </td>
-            <td className="text-end">
-                {formatMinimum(cfg.minTimeMs)}
+            <td className={styles.num}>
+                {cfg.minTimeMs == null ? (
+                    <Missing />
+                ) : (
+                    formatMinimum(cfg.minTimeMs)
+                )}
                 <Outlier on={differs.minimum.has(cfg.id)} />
             </td>
             <td className="text-center">
-                {cfg.hasRules ? '✓' : '—'}
+                {cfg.hasRules ? (
+                    <Check2
+                        size={14}
+                        className={styles.check}
+                        aria-label="has rules"
+                    />
+                ) : (
+                    <Missing />
+                )}
                 <Outlier on={differs.rules.has(cfg.id)} />
             </td>
-            <td className="text-end">
+            <td className={styles.numMuted}>
                 {cfg.subBoards}
                 <Outlier on={differs.subBoards.has(cfg.id)} />
             </td>
@@ -747,16 +969,23 @@ function ConfigCells({
     );
 }
 
+/** Unset / unknown, as a glyph-free dash. */
+function Missing() {
+    return <Dash size={14} className={styles.dash} aria-label="not set" />;
+}
+
+/**
+ * "Differs from the rest of the board" — a dot, not a warning sign.
+ * Deliberately quiet: it flags a difference, it does not assert a problem.
+ */
 function Outlier({ on }: { on: boolean }) {
     if (!on) return null;
     return (
-        <span
-            className={`ms-1 ${styles.outlier}`}
-            title="Differs from the rest of the board"
+        <CircleFill
+            size={5}
+            className={styles.outlier}
             aria-label="differs from the rest of the board"
-        >
-            {'▲'}
-        </span>
+        />
     );
 }
 

@@ -1,30 +1,295 @@
 @use '../../../../styles/design-tokens' as dt;
 @use '../../../../styles/board' as board;
 
-// The "odd one out" marker in the configuration columns. Deliberately quiet:
-// it flags a difference, it does not assert a problem. Moved here from the
-// old all-categories table — on a featured-only list it finally reads, since
-// "the rest of the board" is eight rows, not nine hundred.
+// The board's category list, in the board's own vocabulary: one surface, one
+// table anatomy, mono tabular numbers, quiet controls. The screen's job is to
+// be read at a glance — eight rows a moderator scans for the odd one out —
+// so nothing here competes with the data.
+
+.panel {
+    @include board.board-surface(dt.$spacing-lg);
+    margin-bottom: dt.$spacing-lg;
+}
+
+.table {
+    @include board.board-table;
+
+    // The leaderboard's header band (system rule 5): structure without a rule
+    // line doing the work.
+    thead tr {
+        background: rgba(var(--bs-body-color-rgb), 0.04);
+    }
+
+    tbody td {
+        padding-top: dt.$spacing-sm;
+        padding-bottom: dt.$spacing-sm;
+    }
+}
+
+// Three zones read across the row: who ran it (identity + audience), how it is
+// configured, and what you can do about it. A hairline opens each zone rather
+// than a heavier divider, which would cut the row in three.
+.zoneStart {
+    border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+}
+
+// ---- Group bands --------------------------------------------
+// The public board renders groups as recessed wells; the table can't, so the
+// group becomes a band row. Structure comes from the band, which frees the
+// per-row group control to go quiet.
+.groupRow td {
+    padding-top: dt.$spacing-lg;
+    padding-bottom: dt.$spacing-xs;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+}
+
+.groupRow:first-child td {
+    padding-top: dt.$spacing-xs;
+}
+
+.groupLabel {
+    @include board.board-eyebrow;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.groupCount {
+    @include board.mono-time;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+    margin-left: dt.$spacing-sm;
+}
+
+// ---- Order ---------------------------------------------------
+.orderCell {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    color: var(--bs-secondary-color);
+}
+
+.grip {
+    display: inline-flex;
+    cursor: grab;
+    color: var(--bs-tertiary-color, var(--bs-secondary-color));
+    opacity: 0.6;
+    transition: opacity dt.$transition-fast;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.gripDragging {
+    opacity: 0.35;
+}
+
+.rank {
+    @include board.mono-time;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    width: 1.25rem;
+    text-align: right;
+}
+
+// Reorder arrows stay invisible until the row is hovered or one of them has
+// focus: at rest the column should read as a rank, not as sixteen buttons.
+.orderBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.15rem;
+    height: 1.15rem;
+    padding: 0;
+    border: 0;
+    border-radius: dt.$radius-sm;
+    background: transparent;
+    color: var(--bs-secondary-color);
+    opacity: 0;
+    transition: opacity dt.$transition-fast, background-color dt.$transition-fast,
+        color dt.$transition-fast;
+
+    &:hover:not(:disabled) {
+        background: rgba(var(--bs-primary-rgb), 0.1);
+        color: var(--bs-emphasis-color);
+    }
+
+    &:focus-visible {
+        opacity: 1;
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+
+    &:disabled {
+        cursor: default;
+    }
+}
+
+tbody tr:hover .orderBtn,
+tbody tr:focus-within .orderBtn {
+    opacity: 1;
+}
+
+// Touch has no hover: reveal-on-hover would hide these permanently.
+@media (hover: none) {
+    .orderBtn,
+    .quietAction {
+        opacity: 1;
+    }
+}
+
+// ---- Cells ---------------------------------------------------
+.name {
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.num {
+    @include board.mono-time;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.numMuted {
+    @include board.mono-time;
+    text-align: right;
+    white-space: nowrap;
+    color: var(--bs-secondary-color);
+}
+
+// Runners carries its own bar underneath, so the audience zone is two columns
+// instead of three and the bar sits against the number it scales.
+.runnersCell {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.2rem;
+}
+
+.bar {
+    width: 3.5rem;
+    height: 0.2rem;
+    border-radius: dt.$radius-sm;
+    background: rgba(var(--bs-body-color-rgb), 0.12);
+    overflow: hidden;
+}
+
+.barFill {
+    display: block;
+    height: 100%;
+    background: rgba(var(--bs-primary-rgb), 0.55);
+}
+
+.timing {
+    @include board.board-eyebrow;
+    font-weight: 700;
+    color: var(--bs-body-color);
+}
+
+.check {
+    color: var(--bs-primary);
+}
+
+.dash {
+    color: var(--bs-tertiary-color, var(--bs-secondary-color));
+    opacity: 0.6;
+}
+
+// "Differs from the rest of the board" — a dot, not a warning glyph. It flags
+// a difference; it does not assert a problem.
 .outlier {
-    color: var(--bs-warning-text-emphasis, #997404);
-    font-size: 0.7em;
+    display: inline-block;
+    margin-left: dt.$spacing-xs;
+    color: dt.$accent-amber;
     vertical-align: middle;
 }
 
-// Coverage footer: the same statement setup's step 2 closes with, so the
-// console and the wizard describe a board in one vocabulary.
-.coverageRow {
+// ---- Row actions ---------------------------------------------
+// One action carries the row (Edit); the rest are quiet-tier and surface on
+// hover, so eight rows don't read as twenty-four buttons.
+.actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: dt.$spacing-sm;
+    white-space: nowrap;
+}
+
+.editLink {
+    @include board.control-pill;
+    font-size: dt.$font-size-xs;
+}
+
+.quietAction {
+    @include board.board-quiet-link;
+    opacity: 0;
+    transition: opacity dt.$transition-fast, color dt.$transition-fast;
+
+    &:focus-visible {
+        opacity: 1;
+    }
+}
+
+tbody tr:hover .quietAction,
+tbody tr:focus-within .quietAction {
+    opacity: 1;
+}
+
+.removeAction:hover:not(:disabled) {
+    color: dt.$accent-red;
+}
+
+// ---- Group control -------------------------------------------
+// Ghost until you reach for it: the band row above already says which group
+// this is, so the select only needs to exist when someone wants to move a row.
+.groupSelect {
+    @include board.board-input-rules;
+    appearance: none;
+    max-width: 12rem;
+    padding: 0.1rem 1.4rem 0.1rem dt.$spacing-sm;
+    border: 1px solid transparent;
+    border-radius: dt.$radius-sm;
+    background-color: transparent;
+    background-image: var(--bs-form-select-bg-img);
+    background-repeat: no-repeat;
+    background-position: right dt.$spacing-xs center;
+    background-size: 12px 9px;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+    cursor: pointer;
+
+    &:hover:not(:disabled),
+    &:focus {
+        border-color: rgba(var(--bs-border-color-rgb), 0.6);
+        color: var(--bs-body-color);
+    }
+}
+
+// ---- Footer ---------------------------------------------------
+.coverage {
     display: flex;
     align-items: center;
     gap: dt.$spacing-md;
     flex-wrap: wrap;
-    margin-top: dt.$spacing-md;
+    margin-top: dt.$spacing-lg;
+    padding-top: dt.$spacing-md;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+}
+
+.coverageLabel {
+    @include board.board-eyebrow;
+}
+
+.coverageValue {
+    @include board.mono-time;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
 }
 
 .meter {
-    flex: 1 1 12rem;
-    height: 0.4rem;
-    border-radius: 999px;
+    flex: 0 1 14rem;
+    height: 0.25rem;
+    border-radius: dt.$radius-sm;
     background: rgba(var(--bs-body-color-rgb), 0.12);
     overflow: hidden;
 }
@@ -32,39 +297,39 @@
 .meterFill {
     height: 100%;
     background: var(--bs-primary);
+    opacity: 0.75;
+    transition: width dt.$transition-base;
 }
 
-.activityBar {
-    width: 4rem;
-    height: 0.35rem;
-    border-radius: 999px;
-    background: rgba(var(--bs-body-color-rgb), 0.12);
-    overflow: hidden;
+.footRow {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    flex-wrap: wrap;
+    margin-top: dt.$spacing-md;
 }
 
-.activityFill {
-    height: 100%;
-    background: rgba(var(--bs-body-color-rgb), 0.45);
-}
-
-// Archived categories live behind a disclosure, not a filter tab: they are a
-// footnote to the board, not one of its states.
-.archivedToggle {
-    background: none;
-    border: 0;
-    padding: 0;
-    font-size: dt.$font-size-sm;
+.note {
+    font-size: dt.$font-size-2xs;
     color: var(--bs-secondary-color);
-    text-decoration: underline;
-    text-underline-offset: 0.2em;
+    max-width: 62ch;
+    margin: 0;
+}
+
+// ---- Archived disclosure --------------------------------------
+.archivedToggle {
+    @include board.board-quiet-link;
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
 }
 
 .archivedList {
     list-style: none;
     margin: dt.$spacing-sm 0 0;
     padding: 0;
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
+    max-width: 28rem;
 }
 
 .archivedItem {
@@ -72,36 +337,156 @@
     align-items: center;
     gap: dt.$spacing-sm;
     padding: dt.$spacing-xs 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+
+    &:last-child {
+        border-bottom: 0;
+    }
 }
 
 .archivedName {
     margin-right: auto;
 }
 
-// Picker rows in the add-to-board dialog.
-.pickerRow {
-    display: grid;
-    grid-template-columns: auto 1fr auto auto auto;
-    align-items: center;
-    gap: dt.$spacing-sm;
-    padding: dt.$spacing-xs dt.$spacing-sm;
-    border-radius: dt.$radius-sm;
-    cursor: pointer;
-
-    &:hover {
-        background: rgba(var(--bs-body-color-rgb), 0.05);
-    }
+// ---- Empty board ----------------------------------------------
+.empty {
+    @include board.board-empty;
 }
 
-.pickerStat {
-    @include board.mono-time;
+.emptyTitle {
+    @include board.board-empty-title;
+}
+
+.emptyIcon {
+    @include board.board-empty-icon;
+}
+
+.suggestion {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: dt.$spacing-sm;
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
-    min-width: 4.5rem;
-    text-align: right;
+}
+
+.suggestionNames {
+    color: var(--bs-emphasis-color);
+    font-weight: 600;
+}
+
+.primaryAction {
+    @include board.board-btn-primary;
+}
+
+// ---- Add-to-board dialog ---------------------------------------
+.dialogHeader {
+    @include board.board-dialog-header;
+}
+
+.dialogTitle {
+    @include board.board-dialog-title;
+}
+
+.dialogBody {
+    @include board.board-dialog-body;
+}
+
+.dialogFooter {
+    @include board.board-dialog-footer;
+}
+
+.dialogLede {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    max-width: 62ch;
+    margin: 0 0 dt.$spacing-lg;
+}
+
+.pickerSearch {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    flex-wrap: wrap;
+    margin-bottom: dt.$spacing-md;
+}
+
+.searchInput {
+    @include board.board-input-rules;
+    max-width: 22rem;
+}
+
+.pickerMeta {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    margin: 0;
+}
+
+.pickerError {
+    @include board.board-dialog-field-error;
+}
+
+.pickerFoot {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin-top: dt.$spacing-sm;
+}
+
+.showAll {
+    @include board.board-quiet-link;
+}
+
+.cancelAction {
+    @include board.control-pill;
 }
 
 .pickerList {
     max-height: 24rem;
     overflow-y: auto;
+    // The list is the dialog's data surface — recessed, the way the wizard's
+    // band preview is, so it reads as one object instead of loose rows.
+    background: rgba(var(--bs-body-color-rgb), 0.04);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-md;
+    padding: dt.$spacing-xs;
+}
+
+.pickerRow {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    align-items: center;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    border-radius: dt.$radius-sm;
+    cursor: pointer;
+    transition: background-color dt.$transition-fast;
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.08);
+    }
+
+    &:has(input:checked) {
+        background: rgba(var(--bs-primary-rgb), 0.12);
+    }
+}
+
+.pickerName {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    color: var(--bs-body-color);
+    min-width: 0;
+}
+
+.pickerStat {
+    @include board.mono-time;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    min-width: 5.5rem;
+    text-align: right;
 }
