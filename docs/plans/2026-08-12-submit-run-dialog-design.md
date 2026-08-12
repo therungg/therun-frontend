@@ -1,5 +1,8 @@
 # Submit a run — dialog design
 
+**Status:** Implemented 2026-08-12 on branch `submit-run-dialog` (frontend) and
+`main` (backend, commits 5c4a831 + fb7d1e8). Not yet browser-verified.
+
 Date: 2026-08-12
 Repos: `therun-frontend` (primary), `therun-backend` (one endpoint)
 
