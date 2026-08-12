@@ -6,6 +6,8 @@ import type {
     LeaderboardResponse,
     ManualTimeDetail,
     RunDetail,
+    RunnerEntriesResult,
+    RunnerGameEntry,
     UserRanking,
     ValidCombinations,
     VariableRow,
@@ -282,6 +284,56 @@ export async function getManualTimeById(
         return body.result;
     } catch (e) {
         if (e instanceof V1FetchError && e.status === 404) return null;
+        throw e;
+    }
+}
+
+// Not exported: this file is 'use server', where every export has to be an
+// async function. Nothing outside busts this tag yet — see the design doc's
+// cache-invalidation note.
+const runnerEntriesCacheTag = (gameId: number, runner: string) =>
+    `runner-entries:${gameId}:${runner.toLowerCase()}`;
+
+/**
+ * Every board entry a runner already holds in one game, by account name or by
+ * a bare name.
+ *
+ * `getUserRankingsByName` cannot stand in for this: it reads `finished_runs`
+ * only, and every time the submit dialog creates lands in `manual_times` —
+ * a separate table merged into boards at read time. It also has no concept of
+ * a runner without an account.
+ *
+ * Rides the `/mod` base-path mapping for the same reason
+ * `getUserRankingsByName` does: the main gateway is at its resource cap, so
+ * the route exists only through the proxy API, which strips the prefix.
+ */
+export async function getRunnerGameEntries(
+    gameId: number,
+    ref: { username: string } | { guestName: string },
+): Promise<RunnerEntriesResult> {
+    'use cache';
+    cacheLife('minutes');
+    const runner = 'username' in ref ? ref.username : ref.guestName;
+    cacheTag(runnerEntriesCacheTag(gameId, runner));
+
+    const qs =
+        'username' in ref
+            ? `username=${encodeURIComponent(ref.username)}`
+            : `guestName=${encodeURIComponent(ref.guestName)}`;
+
+    try {
+        const body = await v1Fetch<{
+            result: { userId: number | null; entries: RunnerGameEntry[] };
+        }>(`/mod/v1/leaderboards/games/${gameId}/runner-entries?${qs}`);
+        return {
+            status: 'found',
+            userId: body.result.userId,
+            entries: body.result.entries ?? [],
+        };
+    } catch (e) {
+        if (e instanceof V1FetchError && e.status === 404) {
+            return { status: 'no-account' };
+        }
         throw e;
     }
 }

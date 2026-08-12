@@ -406,3 +406,33 @@ export interface GameStandings {
     /** Set when the backend's 5000-runner guard fired. */
     truncated: boolean;
 }
+
+/**
+ * One board entry a runner already holds in a game — the union of a finished
+ * run and a manual time, collapsed to one per (category, subcategoryKey) on
+ * the category's primary clock. Mirrors `src/leaderboards/runner-entries.ts`
+ * backend-side.
+ */
+export interface RunnerGameEntry {
+    categoryId: number;
+    category: string;
+    categorySlug: string;
+    subcategoryKey: string;
+    timeMs: number;
+    timing: 'realtime' | 'gametime';
+    rank: number | null;
+    totalRunners: number;
+    source: 'run' | 'manual';
+    runId?: number;
+    manualTimeId?: number;
+}
+
+export type RunnerEntriesResult =
+    | { status: 'found'; userId: number | null; entries: RunnerGameEntry[] }
+    /**
+     * No account under that name, or it is globally anonymized. Drives the
+     * submit dialog's add-under-this-name branch — deliberately distinct from
+     * `{ status: 'found', entries: [] }`, which confirms the account exists
+     * and simply has no times on this game.
+     */
+    | { status: 'no-account' };
