@@ -136,6 +136,8 @@ export function SubmitForm({
     const [claimTiming, setClaimTiming] = useState<ModTiming>('realtime');
     const [claimTime, setClaimTime] = useState<TimeField>(EMPTY_TIME);
     const [evidenceUrl, setEvidenceUrl] = useState<string>('');
+    // Optional achievement date; empty => the entry is dated from its created-at.
+    const [claimRunDate, setClaimRunDate] = useState<string>('');
     const [evidenceTouched, setEvidenceTouched] = useState(false);
 
     const [submitting, setSubmitting] = useState(false);
@@ -376,6 +378,7 @@ export function SubmitForm({
                 subcategoryKey.length > 0 ? subcategoryKey : undefined,
             evidenceUrl:
                 evidenceUrl.trim().length > 0 ? evidenceUrl.trim() : null,
+            runDate: claimRunDate || null,
         });
         setSubmitting(false);
         if ('error' in res) {
@@ -641,6 +644,8 @@ export function SubmitForm({
                         onChangeClaimTime={(raw) =>
                             parseInto(raw, setClaimTime)
                         }
+                        runDate={claimRunDate}
+                        onChangeRunDate={setClaimRunDate}
                         evidenceUrl={evidenceUrl}
                         evidenceShowInvalid={evidenceShowInvalid}
                         onEvidenceChange={(v) => {
