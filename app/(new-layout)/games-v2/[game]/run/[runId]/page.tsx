@@ -6,6 +6,7 @@ import { getRunById, getUserRankingsByName } from '~src/lib/leaderboards-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { getRunProvenance } from '~src/lib/moderation/provenance';
 import { getRunHistory } from '~src/lib/moderation/runs';
+import { getRunByIdAsViewer } from '~src/lib/run-detail-viewer';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import buildMetadata from '~src/utils/metadata';
 import { formatSubcategoryKey } from '../../labels';
@@ -48,10 +49,36 @@ export default async function RunDetailPage({ params }: PageProps) {
     const { game: gameSlug, runId: runIdRaw } = await params;
     const data = await load(gameSlug, runIdRaw);
     if (!data) notFound();
-    const { game, run, runId } = data;
+    const { game, runId } = data;
 
     const session = await getSession();
     const isMod = canModerateGame(session, game.name);
+
+    // The cached public payload redacts a hidden runner — placeholder name,
+    // null userId — and every owner control on this page is gated on "is this
+    // run mine", decided from exactly those two fields. So a runner who hid
+    // their identity would find Restore / Appeal / Hide / Move AND the
+    // un-hide toggle gone from their own run, with no way back (a rejected run
+    // is on no board either).
+    //
+    // The backend exempts the run's owner from redaction when the read carries
+    // their bearer token, so re-read it as this visitor. Deliberately a
+    // separate, uncached call — `getRunById` is a shared `'use cache'` read and
+    // must never carry a session (see run-detail-viewer.ts).
+    //
+    // Only when it can possibly change the answer: a redacted run is exactly a
+    // non-guest row with no userId. Guest rows and normal rows skip the extra
+    // request, so the common path costs nothing.
+    let run = data.run;
+    if (session.id && run.userId == null && !run.isGuest) {
+        const asViewer = await getRunByIdAsViewer(runId, session.id).catch(
+            () => null,
+        );
+        // Only swap in a payload that actually de-redacted something: a
+        // non-owner gets the same masked body back, and `null` means the
+        // authenticated read failed — neither should disturb what renders.
+        if (asViewer && asViewer.userId != null) run = asViewer;
+    }
 
     const [history, provenance, rankings] = await Promise.all([
         getRunHistory(runId).catch(() => []),

@@ -27,7 +27,9 @@ import {
 import type { RunViewModel } from './run-view';
 
 type ModalKind = 'report' | 'appeal' | null;
-type OwnerDialogKind = 'move' | 'hide-identity' | null;
+// Hide-identity is deliberately NOT in here: its dialog has its own `open`
+// state so nothing else can close it. See the render guard at the bottom.
+type OwnerDialogKind = 'move' | null;
 
 interface MoveContext {
     categories: ResolvedCategory[];
@@ -50,16 +52,23 @@ export function RunActions({
     const isRun = model.kind === 'run';
     const isOwnRun = isRun && isSameRunner(sessionUsername, model.runnerName);
     const canReport = isRun && sessionUsername != null;
-    const canAppeal = isOwnRun && model.verificationStatus === 'rejected';
-    const canHide = isOwnRun && model.verificationStatus !== 'rejected';
-    const canRestore = isOwnRun && model.verificationStatus === 'rejected';
     // Same standard the board's owner-mode gate uses (leaderboard-pager.tsx's
     // isOwnEntry): a guest submission or a userId-less row has no `/v1/me/*`
     // identity to act as. RunViewModel carries no `anonymized` flag (unlike
     // LeaderboardEntry), so that third board-gate condition can't be checked
     // here — not modelled as a gap in the guard, just a fact this page's
     // model doesn't expose.
+    //
+    // ONE gate for the whole row. Appeal / Hide / Restore are `/v1/me/*` calls
+    // exactly like Move and Hide-identity, so a name-only check would render
+    // buttons that 403 and let one button row disagree with the next about
+    // what the visitor owns.
     const canOwnerModerate = isOwnRun && model.userId != null && !model.isGuest;
+    const canAppeal =
+        canOwnerModerate && model.verificationStatus === 'rejected';
+    const canHide = canOwnerModerate && model.verificationStatus !== 'rejected';
+    const canRestore =
+        canOwnerModerate && model.verificationStatus === 'rejected';
     // Move only makes sense for a run that's actually on a board — a
     // rejected/hidden run has nowhere to move from, matching `canHide`'s own
     // status branch below rather than opening a dialog for a run this page's
@@ -67,6 +76,10 @@ export function RunActions({
     const canMove = canOwnerModerate && model.verificationStatus !== 'rejected';
 
     const [ownerDialog, setOwnerDialog] = useState<OwnerDialogKind>(null);
+    // Tracked separately from `ownerDialog` so the hide-identity dialog's
+    // lifetime is owned by the runner (open → close), not by any gate its own
+    // success can change. See the render guard below.
+    const [hideIdentityOpen, setHideIdentityOpen] = useState(false);
     // Move's category picker needs the game's board context (categories +
     // variable defs) — loaded lazily on first click, same pattern as the
     // board drawer's mod dialogs (run-inspector.tsx), so a run page view
@@ -234,7 +247,7 @@ export function RunActions({
                     <button
                         type="button"
                         className="btn btn-sm btn-outline-secondary"
-                        onClick={() => setOwnerDialog('hide-identity')}
+                        onClick={() => setHideIdentityOpen(true)}
                     >
                         Hide my identity…
                     </button>
@@ -365,6 +378,21 @@ export function RunActions({
                             model.gameId,
                             model.id,
                             {
+                                // The run's OWN category, which is not
+                                // necessarily the board it currently sits on:
+                                // a previous move writes `run_board_overrides`
+                                // and leaves `finished_runs.category_id`
+                                // alone, and the run-detail payload reports
+                                // the latter. RunViewModel therefore cannot
+                                // name the effective board, so a re-move of an
+                                // already-moved run busts the original
+                                // category's cache instead of the override's.
+                                // Bounded: the target side is always busted,
+                                // and the stale origin board self-heals on the
+                                // `minutes` cacheLife. Closing it needs the
+                                // run-detail response to expose the effective
+                                // board (a backend change, not one this
+                                // component can make).
                                 categoryId: model.categoryId,
                                 subcategoryKey: model.subcategoryKey,
                             },
@@ -373,10 +401,20 @@ export function RunActions({
                     }
                 />
             )}
-            {canOwnerModerate && (
+            {/* Mounted on "was opened", never on `canOwnerModerate`: the
+                dialog's own success can flip that gate (hiding your identity
+                redacts this page's payload for anyone the backend doesn't
+                exempt) and a gate-keyed guard would then tear the dialog off
+                screen mid-flight, before the runner ever sees the result.
+                Same reason the board pager mounts its copy on open. */}
+            {hideIdentityOpen && (
                 <OwnerHideIdentityDialog
-                    open={ownerDialog === 'hide-identity'}
-                    onClose={() => setOwnerDialog(null)}
+                    open
+                    onClose={() => setHideIdentityOpen(false)}
+                    // Refreshes the page's server data (the run's own name may
+                    // now be a placeholder for everyone else) without touching
+                    // the dialog: it stays mounted and keeps showing what
+                    // actually happened until the runner closes it.
                     onDone={() => router.refresh()}
                     gameId={model.gameId}
                     gameSlug={model.game.name}

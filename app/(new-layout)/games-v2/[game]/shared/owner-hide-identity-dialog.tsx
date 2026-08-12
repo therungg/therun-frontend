@@ -30,6 +30,31 @@ export interface OwnerHideIdentityDialogProps {
 type Phase = 'loading' | 'ready' | 'load-error';
 
 /**
+ * Who hid the runner, as far as this dialog can honestly claim.
+ *
+ * `selfApplied` on its own cannot answer it. Two different situations produce
+ * `hidden: true, selfApplied: false` right after the runner's OWN successful
+ * POST: the POST adopted a moderator's pre-existing game rule, and a
+ * broader admin/global rule shadows the caller's own game rule in the
+ * broadest-wins resolver. Reading either as "a moderator hid you" would
+ * attribute the runner's own action to somebody else, in the same breath as
+ * the success toast.
+ *
+ *  - `reported`   — nothing happened in this dialog since the state was read,
+ *                   so `selfApplied` is the whole truth (initial load, lift).
+ *  - `self-applied-shadowed` — the runner just applied it AND a rule they
+ *                   can't lift also covers them. Both halves are true and the
+ *                   copy says both.
+ *  - `unknown`    — the runner just applied it, but the mandatory follow-up
+ *                   GET failed, so ownership of the resulting rule is
+ *                   genuinely unknown.
+ *
+ * Only `reported` + `selfApplied` may offer Unhide; the other two suppress it,
+ * because DELETE would 403 on a rule the caller doesn't own.
+ */
+type Attribution = 'reported' | 'self-applied-shadowed' | 'unknown';
+
+/**
  * The runner-facing "hide who I am in this game" toggle — a game-wide
  * privacy rule covering current and future runs, distinct from the
  * moderator's per-run/per-scope `HideIdentityDialog`. Times, ranks and
@@ -44,9 +69,13 @@ type Phase = 'loading' | 'ready' | 'load-error';
  * runner game-wide, in which case the runner's own POST still reports
  * `alreadyExists: true` while a follow-up GET correctly reports
  * `selfApplied: false`. Only the GET result decides whether "Unhide" is
- * offered. If that follow-up GET itself fails, we do NOT assume ownership —
- * the UI falls back to the moderator-owned rendering (no action button)
- * rather than risk offering an Unhide that would 403.
+ * offered — never the POST response, and never an assumption.
+ *
+ * What the GET can't decide is *attribution*. `selfApplied: false` after the
+ * runner's own successful POST is a real, reachable state (adopted rule, or a
+ * broader admin rule shadowing theirs), and so is a failed follow-up GET.
+ * Neither means "a moderator hid you". `Attribution` above carries that
+ * second axis; Unhide is suppressed in both cases because DELETE would 403.
  *
  * Lift (`DELETE`) is simpler: its response already carries the full
  * resulting state, so it's applied directly with no extra round trip. That
@@ -70,15 +99,14 @@ export function OwnerHideIdentityDialog({
     const [data, setData] = useState<SelfAnonymizeState | null>(null);
     const [error, setError] = useState<string | null>(null);
     /**
-     * True only in the narrow post-apply window where our own POST
-     * succeeded but the mandatory follow-up GET failed, so we genuinely
-     * don't know whether the resulting rule is ours. This is its own
-     * tri-state value, never encoded as `selfApplied: false` — that would
-     * render the moderator-attribution copy (state c) for a rule the
-     * runner just applied themselves, which is false. Reset whenever the
-     * dialog (re)loads fresh state.
+     * How the current `data` may be described to the runner — see the
+     * `Attribution` doc. Never encoded into `data.selfApplied`: that field is
+     * the server's answer about rule ownership, and overloading it with "who
+     * acted" is exactly how the moderator-attribution copy ended up rendering
+     * for a rule the runner had just applied themselves. Reset to `reported`
+     * whenever the dialog (re)loads fresh state.
      */
-    const [unknownOwnership, setUnknownOwnership] = useState(false);
+    const [attribution, setAttribution] = useState<Attribution>('reported');
     const [pending, startTransition] = useTransition();
 
     /** Fetches current state; returns it, or `'error'` on failure. Does not
@@ -94,7 +122,7 @@ export function OwnerHideIdentityDialog({
         setPhase('loading');
         setData(null);
         setError(null);
-        setUnknownOwnership(false);
+        setAttribution('reported');
         (async () => {
             const r = await loadState();
             if (cancelled) return;
@@ -114,7 +142,7 @@ export function OwnerHideIdentityDialog({
     const retryLoad = () => {
         setPhase('loading');
         setError(null);
-        setUnknownOwnership(false);
+        setAttribution('reported');
         startTransition(async () => {
             const r = await loadState();
             if (r === 'error') {
@@ -148,10 +176,19 @@ export function OwnerHideIdentityDialog({
                     ruleId: null,
                     displayName: res.displayName,
                 });
-                setUnknownOwnership(true);
+                setAttribution('unknown');
             } else {
                 setData(refreshed);
-                setUnknownOwnership(false);
+                // The runner just did this. If the resolved rule still isn't
+                // theirs to lift — their POST adopted a moderator's existing
+                // game rule, or a broader admin rule shadows their own — both
+                // facts hold at once, and the copy has to say both rather than
+                // hand the credit to a moderator.
+                setAttribution(
+                    refreshed.selfApplied
+                        ? 'reported'
+                        : 'self-applied-shadowed',
+                );
                 toast.success(
                     `Hiding your identity across ${gameDisplay} — you're shown as ${refreshed.displayName ?? res.displayName}. Some pages may take a moment to catch up.`,
                 );
@@ -226,7 +263,7 @@ export function OwnerHideIdentityDialog({
                 {phase === 'ready' &&
                     data?.hidden &&
                     data.selfApplied &&
-                    !unknownOwnership && (
+                    attribution === 'reported' && (
                         <p className={styles.message}>
                             You&apos;re shown here as{' '}
                             <strong>{data.displayName}</strong>. Your times,
@@ -235,18 +272,42 @@ export function OwnerHideIdentityDialog({
                         </p>
                     )}
 
-                {phase === 'ready' && data?.hidden && unknownOwnership && (
-                    <p className={styles.message}>
-                        Your identity is hidden across {gameDisplay}. We
-                        couldn&apos;t confirm whether you can undo it here —
-                        reopen this to check.
-                    </p>
-                )}
+                {/* The runner hid themselves, and a rule they cannot lift also
+                    covers them. Both halves are stated; nobody else is
+                    credited with the action they just took. */}
+                {phase === 'ready' &&
+                    data?.hidden &&
+                    attribution === 'self-applied-shadowed' && (
+                        <p className={styles.message}>
+                            Your identity is now hidden across {gameDisplay}
+                            {data.displayName ? (
+                                <>
+                                    {' '}
+                                    — you&apos;re shown as{' '}
+                                    <strong>{data.displayName}</strong>
+                                </>
+                            ) : null}
+                            . A moderator&apos;s or admin&apos;s rule also
+                            covers you here, so only a site admin can lift it.
+                            Your times, ranks and history stay visible — only
+                            your name is hidden.
+                        </p>
+                    )}
+
+                {phase === 'ready' &&
+                    data?.hidden &&
+                    attribution === 'unknown' && (
+                        <p className={styles.message}>
+                            Your identity is hidden across {gameDisplay}. We
+                            couldn&apos;t confirm whether you can undo it here —
+                            reopen this to check.
+                        </p>
+                    )}
 
                 {phase === 'ready' &&
                     data?.hidden &&
                     !data.selfApplied &&
-                    !unknownOwnership && (
+                    attribution === 'reported' && (
                         <p className={styles.message}>
                             A moderator hid your identity here
                             {data.displayName ? (
@@ -290,7 +351,7 @@ export function OwnerHideIdentityDialog({
                 {phase === 'ready' &&
                     data?.hidden &&
                     data.selfApplied &&
-                    !unknownOwnership && (
+                    attribution === 'reported' && (
                         <button
                             type="button"
                             className="btn btn-sm btn-primary"

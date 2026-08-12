@@ -45,7 +45,6 @@ import { markRunsAction } from '../manage/moderation/shared/actions/marks.action
 import { restoreRunsAction } from '../manage/moderation/shared/actions/restore.action';
 import { applyVerdictsAction } from '../manage/moderation/shared/actions/verdicts.action';
 import { useDialogBehavior } from '../shared/board-dialog';
-import { OwnerHideIdentityDialog } from '../shared/owner-hide-identity-dialog';
 import { OwnerRemoveForm } from '../shared/owner-remove-form';
 import {
     SelfRunVerdictDialog,
@@ -96,6 +95,13 @@ interface Props {
     requireVideo?: boolean;
     /** Which clock this board ranks on. Decides which time reads primary. */
     primaryTiming: TimingKey;
+    /**
+     * `category.rtaFallback` — a game-time board that also ranks RTA-only
+     * runs, by their real time. The owner hide wizard has to know, or it drops
+     * the runner's RTA-only runs from its roster and mis-states what is left
+     * standing. See OwnerRemoveFormProps.
+     */
+    rtaFallback?: boolean;
     /** Subcategory-role variable names — builds this run's own subcategory
      * key for the Move/Adjust/Hide-identity dialogs. */
     subcategoryDefKeys: string[];
@@ -105,13 +111,20 @@ interface Props {
     /** Board page refetch after any verb lands (or is undone). */
     onMutated: () => void;
     /**
-     * Owner mode: the runner's game-wide "hide my identity" state changed
-     * here. The host must re-read it, because this drawer cannot show the
-     * result — hiding redacts the runner's own row, and the entry point back
-     * into this drawer goes with it. The board-level un-hide affordance is
-     * what's left, and it lives in the pager.
+     * Owner mode: open the host's game-wide "hide my identity" dialog.
+     *
+     * The dialog is deliberately NOT rendered in here. Anything it lands
+     * triggers the host's board refetch, the runner's row comes back
+     * anonymized, the host's own owner-mode render guard stops matching it,
+     * and this whole drawer — dialog included — unmounts mid-read. Owning the
+     * dialog at the host level is what lets it survive to report what actually
+     * happened (a lift can leave a moderator's rule standing), and it is also
+     * where the board-level un-hide note lives.
+     *
+     * Absent in owner mode = no host affordance to open, so the control is not
+     * offered at all rather than rendered dead.
      */
-    onSelfHiddenChanged?: () => void;
+    onOpenHideIdentity?: () => void;
     /** Step to the adjacent run row without closing — j/k also bind to these. */
     onPrev?: () => void;
     onNext?: () => void;
@@ -376,13 +389,17 @@ function EvidenceSection({
 
     if (url == null) {
         if (!editable) {
+            // Owner mode. `attachVodAction` is moderator-gated, so the runner
+            // has no control here — stating a bare requirement with the
+            // Add-a-link affordance stripped would be a blocker with no route
+            // out of it. Name the route instead.
             return (
                 <div className={styles.evidence}>
                     <span className={styles.noVod}>
                         <CameraVideoOff size={16} aria-hidden />
                         <span className={styles.noVodText}>
                             {requireVideo
-                                ? 'No video attached — this board requires one.'
+                                ? 'No video attached. This board requires one, so a moderator has to add the link to this run for you.'
                                 : 'No video attached.'}
                         </span>
                     </span>
@@ -473,12 +490,13 @@ export function RunInspector({
     categoryId,
     requireVideo = false,
     primaryTiming,
+    rtaFallback = false,
     subcategoryDefKeys,
     gameTimeLabel = 'igt',
     showMilliseconds,
     onClose,
     onMutated,
-    onSelfHiddenChanged,
+    onOpenHideIdentity,
     onPrev,
     onNext,
     initialVerb,
@@ -572,13 +590,21 @@ export function RunInspector({
     const rosterRow = entryToRosterRow(entry, entrySubcategoryKey);
     const modCategory =
         modCtx?.categories.find((c) => c.name === categorySlug) ?? null;
+    /**
+     * The board this run is on, for the owner wizard's roster filter. Null
+     * means genuinely unknown — never coerced to a number, because every id
+     * that isn't this board's matches none of the runner's runs and turns
+     * "we don't know" into a confident "you have no other times here".
+     */
+    const ownerCategoryId = categoryId ?? modCategory?.id ?? null;
 
     const openModDialog = (kind: ModDialogKind) => {
-        // The owner's hide-identity dialog is game-scoped and reads its own
-        // state from `/v1/me/anonymize` — it needs no board context at all,
-        // so don't make the runner wait on (or fail on) a categories load.
+        // The owner's hide-identity dialog lives on the host (see the
+        // onOpenHideIdentity prop doc) — it is game-scoped, reads its own
+        // state from `/v1/me/anonymize`, and needs no board context, so
+        // nothing here has to load first.
         if (ownerMode && kind === 'hide-identity') {
-            setModDialog(kind);
+            onOpenHideIdentity?.();
             return;
         }
         if (modCtx != null) {
@@ -907,11 +933,15 @@ export function RunInspector({
                         <div className={styles.record}>
                             {runnerRuns == null ? (
                                 <span className="text-muted">
-                                    Loading the runner's history…
+                                    {ownerMode
+                                        ? 'Loading your other runs…'
+                                        : "Loading the runner's history…"}
                                 </span>
                             ) : ctx.previousBestMs == null ? (
                                 <span className="text-muted">
-                                    First run by this runner on this board.
+                                    {ownerMode
+                                        ? 'Your first run on this board.'
+                                        : 'First run by this runner on this board.'}
                                 </span>
                             ) : (
                                 <>
@@ -949,13 +979,16 @@ export function RunInspector({
                             )}
                         </div>
 
+                        {/* "Worth watching before verifying" is a note to the
+                            person doing the verifying. In owner mode the same
+                            fact is just a fact about the runner's own time. */}
                         {outlier && (
                             <div className={styles.outlier}>
                                 <ExclamationTriangle size={14} aria-hidden />
                                 <span>
-                                    Cuts more than 15% off this runner's own
-                                    best on this board. Worth watching before
-                                    verifying.
+                                    {ownerMode
+                                        ? 'Cuts more than 15% off your own best on this board.'
+                                        : "Cuts more than 15% off this runner's own best on this board. Worth watching before verifying."}
                                 </span>
                             </div>
                         )}
@@ -970,7 +1003,9 @@ export function RunInspector({
                                 <span className="small text-muted">
                                     {runnerRuns == null
                                         ? ' '
-                                        : `On ${ctx.boardCount} board${
+                                        : `${ownerMode ? "You're on" : 'On'} ${
+                                              ctx.boardCount
+                                          } board${
                                               ctx.boardCount === 1 ? '' : 's'
                                           } in this game`}
                                 </span>
@@ -1151,15 +1186,24 @@ export function RunInspector({
                                         Adjust time…
                                     </button>
                                 )}
-                                <button
-                                    type="button"
-                                    className={styles.secondaryBtn}
-                                    onClick={() =>
-                                        openModDialog('hide-identity')
-                                    }
-                                >
-                                    Hide identity…
-                                </button>
+                                {/* Same dialog on both owner surfaces, so the
+                                    same name as the run page's control
+                                    (run-actions.tsx). In owner mode the host
+                                    owns the dialog; with no host handler there
+                                    is nothing to open. */}
+                                {(!ownerMode || onOpenHideIdentity != null) && (
+                                    <button
+                                        type="button"
+                                        className={styles.secondaryBtn}
+                                        onClick={() =>
+                                            openModDialog('hide-identity')
+                                        }
+                                    >
+                                        {ownerMode
+                                            ? 'Hide my identity…'
+                                            : 'Hide identity…'}
+                                    </button>
+                                )}
                             </div>
                         </>
                     ) : (
@@ -1170,24 +1214,35 @@ export function RunInspector({
                                     : `${VERB_TITLE[activeVerb]} — ${entry.runnerName}’s run`}
                             </div>
                             {ownerMode ? (
-                                <OwnerRemoveForm
-                                    gameId={gameId}
-                                    gameSlug={gameSlug}
-                                    runId={runId}
-                                    // The board's own category — the wizard
-                                    // filters the runner's other times to
-                                    // exactly this board. Falls back to the
-                                    // lazily-loaded context only if the page
-                                    // didn't pass one.
-                                    categoryId={
-                                        categoryId ?? modCategory?.id ?? 0
-                                    }
-                                    subcategoryKey={entrySubcategoryKey}
-                                    primaryTiming={primaryTiming}
-                                    runTimeMs={primaryMs}
-                                    onDone={verbDone}
-                                    onClose={() => setActiveVerb(null)}
-                                />
+                                // The board's own category — the wizard
+                                // filters the runner's other times to exactly
+                                // this board. Falls back to the lazily-loaded
+                                // context only if the page didn't pass one;
+                                // with NEITHER there is no board to filter by,
+                                // and a `0` would match no run and render a
+                                // confident "You have no other times on this
+                                // board". Say we can't open it instead.
+                                ownerCategoryId == null ? (
+                                    <p className={styles.verbFormNote}>
+                                        We couldn&apos;t work out which board
+                                        this run is on, so we can&apos;t show
+                                        what hiding it would change. Reload the
+                                        page and try again.
+                                    </p>
+                                ) : (
+                                    <OwnerRemoveForm
+                                        gameId={gameId}
+                                        gameSlug={gameSlug}
+                                        runId={runId}
+                                        categoryId={ownerCategoryId}
+                                        subcategoryKey={entrySubcategoryKey}
+                                        primaryTiming={primaryTiming}
+                                        rtaFallback={rtaFallback}
+                                        runTimeMs={primaryMs}
+                                        onDone={verbDone}
+                                        onClose={() => setActiveVerb(null)}
+                                    />
+                                )
                             ) : (
                                 <RunActionForm
                                     gameSlug={gameSlug}
@@ -1298,29 +1353,6 @@ export function RunInspector({
                                   )
                             : undefined
                     }
-                />
-            )}
-            {ownerMode && (
-                <OwnerHideIdentityDialog
-                    open={modDialog === 'hide-identity'}
-                    onClose={() => setModDialog(null)}
-                    // Deliberately NOT onModDialogMutated: the dialog reports
-                    // the resulting state in place (a lift can still leave a
-                    // moderator's rule standing), so closing it on `onDone`
-                    // would tear that answer off the screen. The runner
-                    // closes it.
-                    onDone={() => {
-                        setHistoryReload((n) => n + 1);
-                        onMutated();
-                        // Not optional bookkeeping: after this the runner's
-                        // row comes back redacted and this drawer's entry
-                        // point is gone, so the host's board-level note is
-                        // the only way back. See the prop doc.
-                        onSelfHiddenChanged?.();
-                    }}
-                    gameId={gameId}
-                    gameSlug={gameSlug}
-                    gameDisplay={gameDisplay ?? modCtx?.gameDisplay ?? gameSlug}
                 />
             )}
             {ownerMode && (
