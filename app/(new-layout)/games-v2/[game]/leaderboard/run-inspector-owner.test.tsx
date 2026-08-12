@@ -179,6 +179,29 @@ describe('RunInspector owner mode', () => {
         ).toBeNull();
     });
 
+    // Same status gate the run page's "Move my run…" applies (canMove in
+    // run-actions.tsx) — a rejected run has nowhere to move from, so the
+    // two owner-facing surfaces must agree.
+    it('hides owner-mode Move on a rejected run, but keeps it for pending/verified', () => {
+        const rejected = renderInspector({ mode: 'owner', status: 'rejected' });
+        expect(screen.queryByRole('button', { name: 'Move…' })).toBeNull();
+        rejected.unmount();
+
+        renderInspector({ mode: 'owner', status: 'pending' });
+        expect(
+            screen.getByRole('button', { name: 'Move…' }),
+        ).toBeInTheDocument();
+    });
+
+    // Mod-mode Move is untouched by the owner-only gate above — a moderator
+    // can still place a rejected run onto a board.
+    it('keeps mod-mode Move available on a rejected run', () => {
+        renderInspector({ mode: 'mod', status: 'rejected' });
+        expect(
+            screen.getByRole('button', { name: 'Move…' }),
+        ).toBeInTheDocument();
+    });
+
     it('opens the owner wizard, not the moderator action form', () => {
         renderInspector({ mode: 'owner' });
         fireEvent.click(screen.getByRole('button', { name: /Hide my run/ }));
