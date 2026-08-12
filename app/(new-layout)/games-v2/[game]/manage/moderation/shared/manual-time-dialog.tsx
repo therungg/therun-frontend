@@ -233,7 +233,7 @@ export function ManualTimeDialog({
                         htmlFor="mt-date"
                         className="form-label small text-muted mb-1"
                     >
-                        Date achieved (optional — shown as the entry's date)
+                        Date achieved (optional, shown as the entry's date)
                     </label>
                     <input
                         id="mt-date"
@@ -334,8 +334,8 @@ export function ManualTimeDialog({
                         htmlFor="mt-reason"
                         className="form-label small text-muted mb-1"
                     >
-                        Reason — required, min {MIN_REASON} characters,
-                        audit-logged
+                        Reason (required, min {MIN_REASON} characters,
+                        audit-logged)
                     </label>
                     <textarea
                         id="mt-reason"

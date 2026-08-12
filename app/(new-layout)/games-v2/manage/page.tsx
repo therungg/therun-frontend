@@ -141,8 +141,8 @@ export default async function GamesManageHubPage() {
                                 </div>
                                 <span
                                     className={styles.badge}
-                                    aria-label="Couldn't load — try refreshing."
-                                    title="Couldn't load — try refreshing."
+                                    aria-label="Couldn't load. Try refreshing."
+                                    title="Couldn't load. Try refreshing."
                                 >
                                     !
                                 </span>
@@ -158,7 +158,7 @@ export default async function GamesManageHubPage() {
                     const clear = row.count === 0 && !row.degraded;
                     const badgeText = formatCountBadge(row.count, row.degraded);
                     const badgeLabel = row.degraded
-                        ? `${row.count} open items — some sources didn't load, actual count may be higher`
+                        ? `${row.count} open items. Some sources didn't load, so the real count may be higher`
                         : `${row.count} open item${row.count === 1 ? '' : 's'}`;
                     return (
                         <div key={row.slug} className={styles.row}>
@@ -188,7 +188,7 @@ export default async function GamesManageHubPage() {
                                 aria-label={badgeLabel}
                                 title={
                                     row.degraded
-                                        ? 'Some sources failed to load — count may be low'
+                                        ? 'Some sources failed to load, so the count may be low'
                                         : undefined
                                 }
                             >

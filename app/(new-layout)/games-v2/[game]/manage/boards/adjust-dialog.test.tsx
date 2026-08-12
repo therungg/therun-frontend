@@ -271,7 +271,7 @@ describe('AdjustDialog', () => {
         fireEvent.change(screen.getByLabelText('Time'), {
             target: { value: '35:48' },
         });
-        fireEvent.change(screen.getByLabelText('Reason — required'), {
+        fireEvent.change(screen.getByLabelText('Reason (required)'), {
             target: { value: 'manual correction' },
         });
         fireEvent.click(screen.getByRole('button', { name: 'Save time' }));
@@ -294,7 +294,7 @@ describe('AdjustDialog', () => {
         fireEvent.change(screen.getByLabelText('Time'), {
             target: { value: 'garbage' },
         });
-        fireEvent.change(screen.getByLabelText('Reason — required'), {
+        fireEvent.change(screen.getByLabelText('Reason (required)'), {
             target: { value: 'manual correction' },
         });
         fireEvent.click(screen.getByRole('button', { name: 'Save time' }));

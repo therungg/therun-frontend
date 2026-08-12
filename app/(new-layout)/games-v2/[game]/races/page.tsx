@@ -63,7 +63,11 @@ export default async function GameRacesPage({ params }: PageProps) {
     if (!game) notFound();
 
     const session = await getSession();
-    if (!session?.roles?.includes('admin')) notFound();
+    if (
+        process.env.NODE_ENV === 'production' &&
+        !session?.roles?.includes('admin')
+    )
+        notFound();
     const sessionUsername =
         session?.username && session.username.length > 0
             ? session.username

@@ -143,7 +143,7 @@ export function AddVariableForm({
                 />
             </label>
             <p className={styles.addNote}>
-                Shown above the board’s buttons — make it friendly.
+                Shown above the board’s buttons, so keep it friendly.
             </p>
 
             <label className={styles.addField}>

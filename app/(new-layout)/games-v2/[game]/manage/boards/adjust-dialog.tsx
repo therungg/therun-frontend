@@ -376,7 +376,7 @@ export function AdjustDialog({
                         htmlFor="adjust-time-date"
                         className={styles.fieldLabel}
                     >
-                        Date achieved — optional
+                        Date achieved (optional)
                     </label>
                     <input
                         id="adjust-time-date"
@@ -390,7 +390,7 @@ export function AdjustDialog({
                         htmlFor="adjust-time-reason"
                         className={styles.fieldLabel}
                     >
-                        Reason — required
+                        Reason (required)
                     </label>
                     <textarea
                         id="adjust-time-reason"

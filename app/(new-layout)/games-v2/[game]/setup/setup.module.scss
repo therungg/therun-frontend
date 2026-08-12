@@ -446,7 +446,12 @@ $rail-collapse: 900px;
 
 // ---- Step body ----------------------------------------------
 .stepBody {
-    animation: stepIn dt.$transition-base both;
+    // `backwards`, never `both`: `forwards` pins the keyframe's final
+    // `transform: none`, which is still a transform — it makes this element a
+    // containing block and breaks `position: fixed` descendants (Popper
+    // dropdowns land in a viewport corner). Only the pre-start state needs
+    // filling.
+    animation: stepIn dt.$transition-base backwards;
 
     // unify raw Bootstrap inputs inside step content
     :global(.form-control),

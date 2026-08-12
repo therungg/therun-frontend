@@ -812,8 +812,8 @@ export function BoardCategoriesTable({
                         </div>
                         <span className="text-muted small">
                             {boardRows.length} categor
-                            {boardRows.length === 1 ? 'y' : 'ies'} carry {share}
-                            % of this game's finished runs
+                            {boardRows.length === 1 ? 'y carries' : 'ies carry'}{' '}
+                            {share}% of this game's finished runs
                         </span>
                     </div>
                 </div>
@@ -822,8 +822,8 @@ export function BoardCategoriesTable({
             <div className={styles.footRow}>
                 <p className={styles.note}>
                     Only these categories appear on the public game page, in
-                    this order. Remove takes one off the board and keeps its
-                    runs; Archive hides the category and its boards everywhere.
+                    this order. Remove takes one off the board but keeps its
+                    runs. Archive hides the category and its boards everywhere.
                 </p>
                 {archivedRows.length > 0 && (
                     <div>

@@ -441,7 +441,7 @@ export function DefaultsRow({
                             lede="Starting text for categories with no rules of their own. Changing it does not rewrite the ones already using it."
                             initial={defaults.rulesTemplate ?? ''}
                             busy={isSaving}
-                            placeholder="No template — every category writes its own rules."
+                            placeholder="No template. Every category writes its own rules."
                             onClose={() => setOpenTemplate(false)}
                             onSave={(text) => {
                                 save({ rulesTemplate: text || null });

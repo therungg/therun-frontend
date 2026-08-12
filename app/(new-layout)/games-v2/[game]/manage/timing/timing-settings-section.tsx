@@ -318,7 +318,7 @@ export function TimingSettingsSection({
                     <p className="text-muted small mb-0 mt-1">
                         Game default: {describeState(gameDefault)}
                         {matchesDefault ? (
-                            ' — this category matches.'
+                            '. This category matches.'
                         ) : (
                             <>
                                 {' · '}

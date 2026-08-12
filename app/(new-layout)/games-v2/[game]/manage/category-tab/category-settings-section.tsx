@@ -240,7 +240,7 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
                         <div className="form-text small">Uploading…</div>
                     )}
                     <div className="form-text small">
-                        PNG/JPEG/WebP, max 2 MB. Square, iconic art — renders at
+                        PNG/JPEG/WebP, max 2 MB. Square, iconic art, rendered at
                         36px. A boss face or item beats a screenshot.
                     </div>
                 </div>

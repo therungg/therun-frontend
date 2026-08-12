@@ -186,7 +186,7 @@ export function CutoffPicker({
                         rovingRadioKeyDown(e, values, 0, onChange)
                     }
                 >
-                    None — just remove this one
+                    None. Remove this one only
                 </button>
                 <div className={styles.cutoffScroll}>
                     {runs.map((r, i) => (
@@ -231,9 +231,9 @@ export function CutoffPicker({
             {fasterCount > 0 && (
                 <p className={styles.cutoffConsequence}>
                     {fasterCount} faster run
-                    {fasterCount === 1 ? ' goes' : 's go'} with it — a board
-                    always shows a runner&apos;s best eligible run, so leaving a
-                    faster one behind would just promote it.
+                    {fasterCount === 1 ? ' goes' : 's go'} with it. A board
+                    always shows a runner&apos;s best eligible run, so a faster
+                    one left behind would be promoted.
                 </p>
             )}
         </div>
@@ -343,7 +343,7 @@ export function ReasonZone({
             />
             <div id={hintId} className={styles.reasonHint}>
                 {required
-                    ? `Required — min ${minLength} characters. Audit-logged.`
+                    ? `Required. Min ${minLength} characters. Audit-logged.`
                     : 'Optional. Audit-logged.'}
             </div>
             {showError && (

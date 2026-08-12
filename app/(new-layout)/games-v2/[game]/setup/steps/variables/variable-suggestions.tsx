@@ -109,7 +109,7 @@ export function VariableSuggestions({
                 <h3 className={styles.title}>Suggested variables</h3>
                 <p className={styles.muted}>
                     No variable is set by enough runners in any featured
-                    category yet — add subcategories and filters below by hand.
+                    category yet. Add subcategories and filters below by hand.
                 </p>
             </section>
         );

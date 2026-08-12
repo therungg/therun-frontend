@@ -1194,13 +1194,14 @@ export function BoardCuration({
                         {bulkBanGuestCount > 0 && (
                             <p className={styles.moveNote}>
                                 {bulkBanGuestCount} guest
-                                {bulkBanGuestCount === 1 ? '' : 's'} selected —
-                                guests can’t be banned and will be skipped.
+                                {bulkBanGuestCount === 1 ? '' : 's'} selected.
+                                Guests can’t be banned and will be skipped.
                             </p>
                         )}
                         {bulkBanUserIds.length === 0 ? (
                             <p className={styles.moveNote}>
-                                No registered runners selected — nothing to ban.
+                                No registered runners selected, so there is
+                                nothing to ban.
                             </p>
                         ) : (
                             <>
@@ -1232,7 +1233,7 @@ export function BoardCuration({
                                     htmlFor="bulk-ban-reason"
                                     className={styles.fieldLabel}
                                 >
-                                    Reason — required
+                                    Reason (required)
                                 </label>
                                 <textarea
                                     id="bulk-ban-reason"

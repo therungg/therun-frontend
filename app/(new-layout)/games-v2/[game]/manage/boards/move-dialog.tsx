@@ -161,7 +161,7 @@ export function MoveDialog({
                 onMutated();
                 toast.success(
                     res.reverify
-                        ? 'Run moved — awaiting verification on its new board.'
+                        ? 'Run moved. It awaits verification on its new board.'
                         : 'Run moved.',
                 );
             });
@@ -268,7 +268,7 @@ export function MoveDialog({
                             htmlFor="move-reason"
                             className={styles.fieldLabel}
                         >
-                            Reason — required, min {MIN_REASON} characters
+                            Reason (required, min {MIN_REASON} characters)
                         </label>
                         <textarea
                             id="move-reason"
@@ -288,7 +288,7 @@ export function MoveDialog({
                 {ownerMode && (
                     <p className={styles.moveNote}>
                         Moving your run takes it off this board and submits it
-                        for verification on the new one — it will not carry its
+                        for verification on the new one. It will not carry its
                         verified status over.
                     </p>
                 )}

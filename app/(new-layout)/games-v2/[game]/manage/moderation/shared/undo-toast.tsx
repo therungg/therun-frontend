@@ -41,7 +41,7 @@ function UndoToast({
                 // covers handled failures, so a rejected promise needs its
                 // own surface.
                 toast.error(
-                    "Couldn't undo — check your connection and try again.",
+                    "Couldn't undo. Check your connection and try again.",
                 );
             }
         });
