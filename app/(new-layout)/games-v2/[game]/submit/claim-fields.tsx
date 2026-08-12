@@ -17,6 +17,9 @@ interface Props {
     effectiveClaimTiming: ModTiming;
     claimTime: TimeField;
     onChangeClaimTime: (raw: string) => void;
+    /** ISO date (yyyy-mm-dd) or '' for "no date asserted". */
+    runDate: string;
+    onChangeRunDate: (value: string) => void;
     evidenceUrl: string;
     evidenceShowInvalid: boolean;
     onEvidenceChange: (value: string) => void;
@@ -32,6 +35,8 @@ export function ClaimFields({
     effectiveClaimTiming,
     claimTime,
     onChangeClaimTime,
+    runDate,
+    onChangeRunDate,
     evidenceUrl,
     evidenceShowInvalid,
     onEvidenceChange,
@@ -78,6 +83,24 @@ export function ClaimFields({
                 field={claimTime}
                 onChange={onChangeClaimTime}
             />
+
+            <div>
+                <label htmlFor="claim-date" className="form-label">
+                    Date achieved
+                    <span className="text-muted small"> (optional)</span>
+                </label>
+                <input
+                    id="claim-date"
+                    type="date"
+                    className="form-control"
+                    value={runDate}
+                    onChange={(e) => onChangeRunDate(e.target.value)}
+                />
+                <div className="form-text">
+                    When you got this time. Leave it empty and the board dates
+                    the time from today instead.
+                </div>
+            </div>
 
             <div>
                 <label htmlFor="claim-evidence" className="form-label">

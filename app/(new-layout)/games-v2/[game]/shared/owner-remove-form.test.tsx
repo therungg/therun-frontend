@@ -193,6 +193,8 @@ describe('OwnerRemoveForm', () => {
                 // would put the number on the wrong clock.
                 timing: 'gametime',
                 timeMs: SLOWER,
+                // Left empty — the board dates the entry from its created-at.
+                runDate: null,
                 reason: 'Hidden by the runner',
             });
         });
@@ -203,6 +205,25 @@ describe('OwnerRemoveForm', () => {
             mocks.selfRunVerdictAction.mock.invocationCallOrder[0],
         ).toBeLessThan(mocks.selfClaimTimeAction.mock.invocationCallOrder[0]);
         await waitFor(() => expect(onDone).toHaveBeenCalled());
+    });
+
+    it('files the date achieved alongside the time when the runner sets one', async () => {
+        renderForm([]);
+        await screen.findByText('You have no other times on this board.');
+        fireEvent.click(screen.getByRole('radio', { name: /^Set a time/ }));
+        fireEvent.change(screen.getByLabelText('Your time'), {
+            target: { value: '1:10:00' },
+        });
+        fireEvent.change(screen.getByLabelText('Date achieved (optional)'), {
+            target: { value: '2026-03-04' },
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Hide my run' }));
+        await waitFor(() => {
+            expect(mocks.selfClaimTimeAction).toHaveBeenCalledWith(
+                expect.objectContaining({ runDate: '2026-03-04' }),
+            );
+        });
     });
 
     it('cascades on the time you type, not just on a picked run', async () => {

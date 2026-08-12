@@ -583,6 +583,9 @@ export interface SelfManualTimeInput {
     timeMs: number;
     subcategoryKey?: string;
     evidenceUrl?: string | null;
+    /** Date the runner says they achieved the time (ISO date); omitted/null =>
+     *  the board shows the manual time's created-at instead. */
+    runDate?: string | null;
     reason?: string;
 }
 

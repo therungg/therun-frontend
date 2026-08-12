@@ -99,6 +99,8 @@ export function OwnerRemoveForm({
     const [choice, setChoice] = useState<Choice>('only');
     const [standRunId, setStandRunId] = useState<number | null>(null);
     const [timeText, setTimeText] = useState('');
+    // Optional achievement date; empty => the entry is dated from its created-at.
+    const [dateText, setDateText] = useState('');
     const [step, setStep] = useState<'decide' | 'confirm'>('decide');
     const [error, setError] = useState<string | null>(null);
     const [isConfirming, startConfirm] = useTransition();
@@ -242,6 +244,7 @@ export function OwnerRemoveForm({
                     subcategoryKey,
                     timing: primaryTiming === 'gt' ? 'gametime' : 'realtime',
                     timeMs: setTimeMs,
+                    runDate: dateText || null,
                     reason: SELF_REASON,
                 });
                 if ('error' in res) {
@@ -324,7 +327,10 @@ export function OwnerRemoveForm({
                         onChange={(v) => {
                             setChoice(v);
                             if (v !== 'other') setStandRunId(null);
-                            if (v !== 'time') setTimeText('');
+                            if (v !== 'time') {
+                                setTimeText('');
+                                setDateText('');
+                            }
                         }}
                         disabled={isConfirming}
                     />
@@ -390,6 +396,24 @@ export function OwnerRemoveForm({
                                     m:ss.SSS).
                                 </p>
                             )}
+                            <label
+                                className={styles.fieldLabel}
+                                htmlFor="owner-remove-date"
+                            >
+                                Date achieved (optional)
+                            </label>
+                            <input
+                                id="owner-remove-date"
+                                type="date"
+                                className="form-control form-control-sm"
+                                value={dateText}
+                                onChange={(e) => setDateText(e.target.value)}
+                                disabled={isConfirming}
+                            />
+                            <p className={styles.note}>
+                                Leave this empty and the board dates the time
+                                from today instead.
+                            </p>
                         </div>
                     )}
                 </div>
