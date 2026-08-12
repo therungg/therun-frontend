@@ -204,6 +204,31 @@ export function LeaderboardPager({
         selfHidden,
     );
     const [hideIdentityOpen, setHideIdentityOpen] = useState(false);
+    // The prop is the server's answer; local state exists only so an action
+    // taken here can update it without a round trip through the route. When
+    // the server sends a fresh one (router.refresh, a soft navigation that
+    // keeps this component mounted), the server wins — a `useState` initial
+    // value would otherwise pin the first answer for the whole session.
+    useEffect(() => {
+        setHiddenState(selfHidden);
+    }, [selfHidden]);
+
+    /**
+     * Re-read "am I hidden in this game" after anything that could have
+     * changed it.
+     *
+     * Load-bearing in one specific way: hiding your identity from the run
+     * drawer redacts your row, which removes the drawer's own entry point —
+     * so if this state didn't refresh, the meta-bar note (the ONLY remaining
+     * un-hide control) would not appear until the next full page load. That
+     * is exactly the one-way door the note exists to prevent.
+     */
+    const refreshSelfHidden = () => {
+        if (sessionUsername == null) return;
+        selfAnonymizeStateAction(gameId).then((res) => {
+            if ('ok' in res) setHiddenState(res.state);
+        });
+    };
 
     const [entryClass] = useState(() => {
         if (typeof window === 'undefined') return styles.boardStagger;
@@ -300,9 +325,26 @@ export function LeaderboardPager({
 
     const boardRefresh = () => startRefetch(refetchCurrentPage);
 
-    /** Is this row the signed-in visitor's own? Drives owner mode. */
+    /**
+     * Is this row the signed-in visitor's own? Drives owner mode.
+     *
+     * The name match is necessary but nowhere near sufficient. `isSameRunner`
+     * is a case-insensitive string compare, and three kinds of row can carry
+     * a name that isn't the account it looks like:
+     *  - a guest submission, whose runner name is self-reported free text;
+     *  - a row with no `userId` at all (nothing to own it);
+     *  - an anonymized row, whose placeholder ("Anonymous runner #3") is a
+     *    name a real runner may legitimately have — the type explicitly
+     *    warns about this.
+     * Every owner verb is a `/v1/me/*` route resolved from the session, so a
+     * mismatch fails server-side rather than escalating, but the drawer must
+     * not open on someone else's run in the first place.
+     */
     const isOwnEntry = (entry: LeaderboardEntry) =>
-        isSameRunner(sessionUsername, entry.runnerName);
+        isSameRunner(sessionUsername, entry.runnerName) &&
+        entry.userId != null &&
+        !entry.isGuest &&
+        entry.anonymized !== true;
     // Which surface the drawer opens with. A moderator always gets the mod
     // one — including on their own run, since it is a superset of the
     // owner's and downgrading it would take verbs away from someone who has
@@ -464,6 +506,33 @@ export function LeaderboardPager({
 
     return (
         <div className={entryClass} ref={boardTopRef}>
+            {/* The un-hide path. Stated as a fact about this board ("you're
+                shown as …") rather than a verb, because the runner may be
+                looking straight at the placeholder row and not know it is
+                theirs. The button only appears for a rule the runner applied
+                themselves — a moderator's rule is not theirs to lift, and the
+                dialog says so.
+
+                Deliberately a SIBLING of the meta bar, not a control inside
+                it: the meta bar is suppressed on an empty, unfiltered board,
+                and "no runs on this subcategory yet" is exactly a board a
+                hidden runner can land on. Inheriting that condition would
+                hide the only un-hide control on the page. */}
+            {hiddenState?.hidden && (
+                <p className={styles.selfHiddenNote}>
+                    You&apos;re shown on this board as{' '}
+                    {hiddenState.displayName ?? 'an anonymous run'}
+                    {hiddenState.selfApplied && (
+                        <button
+                            type="button"
+                            className={styles.selfHiddenBtn}
+                            onClick={() => setHideIdentityOpen(true)}
+                        >
+                            Unhide…
+                        </button>
+                    )}
+                </p>
+            )}
             {(board.totalItems > 0 || filtersActive) && (
                 <div className={styles.boardMetaBar}>
                     <span className={styles.metaLead}>
@@ -491,30 +560,6 @@ export function LeaderboardPager({
                         )}
                     </span>
                     <span className={styles.metaControls}>
-                        {/* The un-hide path. Stated as a fact about this
-                            board ("you're shown as …") rather than a verb,
-                            because the runner may be looking straight at the
-                            placeholder row and not know it is theirs. The
-                            button only appears for a rule the runner applied
-                            themselves — a moderator's rule is not theirs to
-                            lift, and the dialog says so. */}
-                        {hiddenState?.hidden && (
-                            <span className={styles.selfHiddenNote}>
-                                You&apos;re shown on this board as{' '}
-                                {hiddenState.displayName ?? 'an anonymous run'}
-                                {hiddenState.selfApplied && (
-                                    <button
-                                        type="button"
-                                        className={styles.selfHiddenBtn}
-                                        onClick={() =>
-                                            setHideIdentityOpen(true)
-                                        }
-                                    >
-                                        Unhide…
-                                    </button>
-                                )}
-                            </span>
-                        )}
                         {showFindMe && (
                             <button
                                 type="button"
@@ -585,9 +630,7 @@ export function LeaderboardPager({
                         // Re-read rather than assume: a lift can leave an
                         // overlapping moderator rule standing, in which case
                         // the runner is still hidden and the note must stay.
-                        selfAnonymizeStateAction(gameId).then((res) => {
-                            if ('ok' in res) setHiddenState(res.state);
-                        });
+                        refreshSelfHidden();
                         boardRefresh();
                     }}
                     gameId={gameId}
@@ -604,6 +647,13 @@ export function LeaderboardPager({
                         gameId={gameId}
                         gameDisplay={gameDisplay}
                         mode={inspectorMode}
+                        // Hiding your identity from inside the drawer
+                        // redacts your own row, which takes the drawer's
+                        // entry point away with it — the meta-bar note is
+                        // then the only remaining un-hide control, so it has
+                        // to learn about the change here rather than at the
+                        // next full page load.
+                        onSelfHiddenChanged={refreshSelfHidden}
                         categorySlug={categorySlug}
                         categoryDisplay={categoryDisplay}
                         categoryId={categoryId}

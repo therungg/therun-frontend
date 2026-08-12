@@ -55,11 +55,14 @@ export async function loadOwnerBoardContextAction(
             (c) =>
                 (!c.archived && (c.isMain ?? false)) || c.name === categorySlug,
         );
+        // No per-category `.catch(() => [])`: a category whose defs failed to
+        // load would offer no subcategory bands, and the Move would land the
+        // run on the wrong board while looking like it worked. That silent
+        // wrongness is the entire reason this file exists — a rejection here
+        // propagates to the outer catch and the dialog reports an error.
         const perCategory = await Promise.all(
             needed.map((c) =>
-                getVariables(game.name, c.name)
-                    .then((r) => r.variables)
-                    .catch(() => [] as VariableRow[]),
+                getVariables(game.name, c.name).then((r) => r.variables),
             ),
         );
         return {

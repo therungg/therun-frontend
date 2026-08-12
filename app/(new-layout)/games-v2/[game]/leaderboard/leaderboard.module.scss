@@ -766,9 +766,10 @@ tr:focus-within .reveal {
 // muted like the other meta-bar notes, with the lift as an inline link-ish
 // control rather than another outlined pill (it is not a board control).
 .selfHiddenNote {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: dt.$spacing-xs;
+    margin: 0 0 dt.$spacing-sm;
     font-size: dt.$font-size-xs;
     color: var(--bs-tertiary-color);
 }

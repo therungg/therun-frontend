@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
+import type { HistoryEvent } from '../../../../../types/moderation.types';
 import { RunInspector } from './run-inspector';
 
 // vi.mock factories are hoisted above the imports, so the mock fns live in
@@ -70,8 +71,15 @@ vi.mock('../manage/moderation/shared/run-action-dialog', () => ({
 vi.mock('../shared/owner-remove-form', () => ({
     OwnerRemoveForm: () => <div data-testid="owner-remove-form" />,
 }));
+// Stubbed with a trigger for its `onDone`, so the drawer's reaction to a
+// completed hide/unhide can be asserted without the real dialog's fetches.
 vi.mock('../shared/owner-hide-identity-dialog', () => ({
-    OwnerHideIdentityDialog: () => null,
+    OwnerHideIdentityDialog: (props: { open: boolean; onDone: () => void }) =>
+        props.open ? (
+            <button type="button" onClick={props.onDone}>
+                stub-hide-identity-done
+            </button>
+        ) : null,
 }));
 vi.mock('./hide-identity-dialog', () => ({ HideIdentityDialog: () => null }));
 vi.mock('../manage/boards/move-dialog', () => ({ MoveDialog: () => null }));
@@ -91,9 +99,22 @@ const entry = (over: Partial<LeaderboardEntry> = {}): LeaderboardEntry => ({
     ...over,
 });
 
+/** A moderator verdict as the run's latest history event — the one shape
+ *  `historyUndoPlan` maps to an inline Undo. */
+const undoableEvent: HistoryEvent = {
+    type: 'verdict',
+    action: 'verdict_verify',
+    byRole: 'mod',
+    reason: null,
+    at: '2026-08-01T00:00:00.000Z',
+    logId: 1,
+    by: { userId: 2, name: 'Mod' },
+};
+
 function renderInspector(over: {
     mode: 'mod' | 'owner';
     status?: LeaderboardEntry['verificationStatus'];
+    onSelfHiddenChanged?: () => void;
 }) {
     return render(
         <RunInspector
@@ -110,6 +131,7 @@ function renderInspector(over: {
             showMilliseconds={false}
             onClose={vi.fn()}
             onMutated={vi.fn()}
+            onSelfHiddenChanged={over.onSelfHiddenChanged}
         />,
     );
 }
@@ -162,6 +184,45 @@ describe('RunInspector owner mode', () => {
         fireEvent.click(screen.getByRole('button', { name: /Hide my run/ }));
         expect(screen.getByTestId('owner-remove-form')).toBeInTheDocument();
         expect(screen.queryByTestId('mod-action-form')).toBeNull();
+    });
+
+    // The timeline's Undo runs moderator verbs. The history has to actually
+    // contain an undoable event for this to prove anything — an empty
+    // timeline would pass whatever the mode did.
+    it('renders no timeline Undo, on a history that gives mod mode one', async () => {
+        mocks.loadRunHistoryAction.mockResolvedValue({
+            ok: true,
+            events: [undoableEvent],
+        });
+        const owner = renderInspector({ mode: 'owner' });
+        // Wait for the event itself to be on screen (its actor line), not
+        // just for the drawer — otherwise "no Undo" would pass on a timeline
+        // that simply hadn't loaded yet.
+        await waitFor(() =>
+            expect(screen.getByText(/Mod ·/)).toBeInTheDocument(),
+        );
+        expect(screen.queryByRole('button', { name: /Undo/ })).toBeNull();
+        owner.unmount();
+
+        renderInspector({ mode: 'mod' });
+        await waitFor(() =>
+            expect(
+                screen.getByRole('button', { name: /Undo/ }),
+            ).toBeInTheDocument(),
+        );
+    });
+
+    // The one-way door: hiding from in here redacts the runner's own row, so
+    // this drawer's entry point goes with it. The host must be told, or the
+    // board-level un-hide note never appears this session.
+    it('tells the host when hide-identity lands', () => {
+        const onSelfHiddenChanged = vi.fn();
+        renderInspector({ mode: 'owner', onSelfHiddenChanged });
+        fireEvent.click(screen.getByRole('button', { name: 'Hide identity…' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'stub-hide-identity-done' }),
+        );
+        expect(onSelfHiddenChanged).toHaveBeenCalled();
     });
 
     it('mod mode keeps the full surface', () => {
