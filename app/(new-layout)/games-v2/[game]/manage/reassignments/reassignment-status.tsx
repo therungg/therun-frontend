@@ -64,7 +64,7 @@ export function ReassignmentStatus<
             {data.status === 'completed' && (
                 <>
                     <p className={styles.success}>
-                        Done —{' '}
+                        Done.{' '}
                         <span className={styles.statMoved}>
                             {data.runsMovedCount}
                         </span>{' '}

@@ -52,7 +52,7 @@ interface Props {
 const SUBMIT_MODE_HINT =
     'Submit a new run with your category, time, date, and a video link for verification.';
 const CLAIM_MODE_HINT =
-    'Assert or correct your time on this board without a video or splits — for example, to fix an imported time.';
+    'Assert or correct your time on this board without a video or splits. Use it to fix an imported time.';
 
 function todayISODate(): string {
     // Local date, YYYY-MM-DD — matches the <input type="date"> value format.
@@ -398,7 +398,7 @@ export function SubmitForm({
         const statusLine =
             runResult.applied === 'instant'
                 ? 'Your run is on the board.'
-                : 'Your run is submitted and awaiting verification — it appears on the board marked unverified.';
+                : 'Your run is submitted and awaiting verification. It appears on the board marked unverified.';
         const warningMessages = runResult.warnings
             .map((w) => describeSubmitWarning(w, displayNames))
             .filter((m): m is string => m !== null);
@@ -450,7 +450,7 @@ export function SubmitForm({
         const statusLine =
             claimResult.applied === 'instant'
                 ? 'Your time is on the board.'
-                : 'Your time is submitted and awaiting verification — it appears on the board marked unverified.';
+                : 'Your time is submitted and awaiting verification. It appears on the board marked unverified.';
         const boardHref = buildBoardHref(game.name, {
             categorySlug: category.name,
             subcategoryKey,
@@ -711,8 +711,8 @@ function StandingLine({
             </div>
             {isSlower && (
                 <div>
-                    This is slower than your current best — it won’t replace
-                    your board entry.
+                    This is slower than your current best. It won’t replace your
+                    board entry.
                 </div>
             )}
         </div>

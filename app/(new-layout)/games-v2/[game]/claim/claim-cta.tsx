@@ -87,7 +87,7 @@ export function ClaimCta({
                     <p className={styles.blurb}>
                         {claim.hasModerators
                             ? 'Your application goes to this board’s moderators.'
-                            : 'This board has no moderators yet. Tell the site admins why you’re a good fit — your run history here is attached automatically.'}
+                            : 'This board has no moderators yet. Tell the site admins why you’re a good fit. Your run history here is attached automatically.'}
                     </p>
                     <textarea
                         ref={textareaRef}

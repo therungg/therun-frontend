@@ -163,7 +163,7 @@ export function AddRunnerRow({
                 <div className={styles.ghostMatchNote}>
                     {name.trim() &&
                         (matchedRunner
-                            ? `Matched runner: ${matchedRunner.runnerName} — links to their account`
+                            ? `Matched runner: ${matchedRunner.runnerName}, linked to their account`
                             : 'Will be added as a guest entry')}
                 </div>
             </td>

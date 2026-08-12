@@ -227,7 +227,7 @@ export function IgdbSourceCard({
                 }}
                 labelledBy={`igdb-rematch-title-${gameId}`}
                 title={igdbUrl ? 'Re-match this board?' : 'Link this board?'}
-                message={`Match this board to "${pendingApply?.name}" and sync? All IGDB-derived data (description, dates, platforms, genres) is replaced with that game's, and this form reloads with it — unsaved edits here are lost. Mod-set overrides are kept.`}
+                message={`Match this board to "${pendingApply?.name}" and sync? All IGDB-derived data (description, dates, platforms, genres) is replaced with that game's, and this form reloads with it, so unsaved edits here are lost. Mod-set overrides are kept.`}
                 confirmLabel={igdbUrl ? 'Re-match' : 'Link'}
                 pending={isBusy}
                 error={null}

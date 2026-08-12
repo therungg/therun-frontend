@@ -162,7 +162,7 @@ describe('RunnerDialog', () => {
         });
         expect(
             screen.getByText(
-                'Covers every subcategory board of Any% — exact single-board scope is coming later.',
+                'Covers every subcategory board of Any%. Exact single-board scope is coming later.',
             ),
         ).toBeTruthy();
 
@@ -181,7 +181,7 @@ describe('RunnerDialog', () => {
         );
         expect(
             screen.queryByText(
-                'Covers every subcategory board of Any% — exact single-board scope is coming later.',
+                'Covers every subcategory board of Any%. Exact single-board scope is coming later.',
             ),
         ).toBeNull();
     });
@@ -196,7 +196,7 @@ describe('RunnerDialog', () => {
         await screen.findByText(/3 runs? affected/);
         expect(confirm.disabled).toBe(true);
 
-        fireEvent.change(screen.getByLabelText('Reason — required'), {
+        fireEvent.change(screen.getByLabelText('Reason (required)'), {
             target: { value: 'spam' },
         });
         expect(confirm.disabled).toBe(false);
@@ -217,7 +217,7 @@ describe('RunnerDialog', () => {
         );
         renderRunnerDialog();
 
-        fireEvent.change(screen.getByLabelText('Reason — required'), {
+        fireEvent.change(screen.getByLabelText('Reason (required)'), {
             target: { value: 'spam' },
         });
 
@@ -264,7 +264,7 @@ describe('RunnerDialog', () => {
         const { onMutated } = renderRunnerDialog();
         await screen.findByText(/3 runs? affected/);
 
-        fireEvent.change(screen.getByLabelText('Reason — required'), {
+        fireEvent.change(screen.getByLabelText('Reason (required)'), {
             target: { value: 'spam' },
         });
         fireEvent.click(
@@ -290,7 +290,7 @@ describe('RunnerDialog', () => {
 
         fireEvent.click(screen.getByRole('radio', { name: 'Entire site' }));
         fireEvent.click(screen.getByRole('radio', { name: 'Hide name' }));
-        fireEvent.change(screen.getByLabelText('Reason — required'), {
+        fireEvent.change(screen.getByLabelText('Reason (required)'), {
             target: { value: 'tos' },
         });
         fireEvent.click(
@@ -331,7 +331,7 @@ describe('RunnerDialog', () => {
         fireEvent.click(
             screen.getByRole('radio', { name: 'Remove from boards' }),
         );
-        fireEvent.change(screen.getByLabelText('Reason — required'), {
+        fireEvent.change(screen.getByLabelText('Reason (required)'), {
             target: { value: 'tos' },
         });
         fireEvent.click(
@@ -351,7 +351,7 @@ describe('RunnerDialog', () => {
         renderRunnerDialog({ canSiteBan: true });
         fireEvent.click(screen.getByRole('radio', { name: 'Entire site' }));
         fireEvent.click(screen.getByRole('radio', { name: 'Keep as-is' }));
-        fireEvent.change(screen.getByLabelText('Reason — required'), {
+        fireEvent.change(screen.getByLabelText('Reason (required)'), {
             target: { value: 'tos' },
         });
         fireEvent.click(
@@ -371,7 +371,7 @@ describe('RunnerDialog', () => {
         renderRunnerDialog();
         await screen.findByText(/3 runs? affected/);
 
-        fireEvent.change(screen.getByLabelText('Reason — required'), {
+        fireEvent.change(screen.getByLabelText('Reason (required)'), {
             target: { value: 'spam' },
         });
         fireEvent.click(

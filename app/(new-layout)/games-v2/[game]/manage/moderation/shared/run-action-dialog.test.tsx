@@ -176,7 +176,7 @@ describe('remove step flow', () => {
                 (_, el) =>
                     el?.tagName === 'P' &&
                     (el?.textContent ?? '').startsWith(
-                        'Removing this run only — nothing faster than the',
+                        'Removing this run only. Nothing faster than the',
                     ) &&
                     (el?.textContent ?? '').endsWith('you called legit.'),
             ),

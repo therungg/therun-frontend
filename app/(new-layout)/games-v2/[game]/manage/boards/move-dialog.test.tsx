@@ -172,7 +172,7 @@ describe('MoveDialog — owner mode', () => {
         renderDialog({ ownerMode: true, onSubmitOwner: vi.fn() });
         expect(
             screen.getByText(
-                'Moving your run takes it off this board and submits it for verification on the new one — it will not carry its verified status over.',
+                'Moving your run takes it off this board and submits it for verification on the new one. It will not carry its verified status over.',
             ),
         ).toBeTruthy();
     });
@@ -213,7 +213,7 @@ describe('MoveDialog — owner mode', () => {
         expect(onClose).toHaveBeenCalled();
         expect(onMutated).toHaveBeenCalled();
         expect(mocks.toastSuccess).toHaveBeenCalledWith(
-            'Run moved — awaiting verification on its new board.',
+            'Run moved. It awaits verification on its new board.',
         );
     });
 

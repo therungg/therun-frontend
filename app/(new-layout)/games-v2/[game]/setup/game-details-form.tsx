@@ -313,7 +313,7 @@ function GameDetailsFormInner({
             <FieldLabel
                 htmlFor="cover-upload"
                 label="Cover image"
-                hint="The box art shown for this game across the site. Prefilled from IGDB — upload your own if it’s wrong or missing. Portrait (3:4); anything else gets cropped."
+                hint="The box art shown for this game across the site. Prefilled from IGDB. Upload your own if it’s wrong or missing. Portrait (3:4); anything else gets cropped."
             />
             <div className="d-flex gap-3 align-items-start">
                 {preview && (
@@ -377,7 +377,7 @@ function GameDetailsFormInner({
                 className="mt-3"
                 htmlFor="release-year"
                 label="Release year"
-                hint="The year the game released, shown on the game page. Prefilled from IGDB — change it if the IGDB date is wrong."
+                hint="The year the game released, shown on the game page. Prefilled from IGDB. Change it if the IGDB date is wrong."
             />
             <input
                 id="release-year"
@@ -395,7 +395,7 @@ function GameDetailsFormInner({
                 className="mt-3"
                 htmlFor="platforms"
                 label="Platforms"
-                hint="The platforms this game is on, shown on the game page. Comma-separated. Prefilled from IGDB — edit it if you want."
+                hint="The platforms this game is on, shown on the game page. Comma-separated, prefilled from IGDB."
             />
             <input
                 id="platforms"
@@ -413,7 +413,7 @@ function GameDetailsFormInner({
                 className="mt-3"
                 htmlFor="about"
                 label="About"
-                hint="The description shown on the game page. Prefilled from IGDB — once you edit it, later IGDB syncs leave your text alone. Clear it to go back to the IGDB summary."
+                hint="The description shown on the game page. Prefilled from IGDB. Once you edit it, later IGDB syncs leave your text alone. Clear it to go back to the IGDB summary."
             />
             <textarea
                 id="about"
@@ -435,7 +435,7 @@ function GameDetailsFormInner({
                 label="URL slug"
                 hint={
                     <>
-                        The name in this board&apos;s web address —{' '}
+                        The name in this board&apos;s web address.{' '}
                         <code>sm64</code> makes the page{' '}
                         <code>therun.gg/games-v2/sm64</code>. Stored lowercase
                         with non-alphanumerics turned into dashes, and must be
@@ -454,7 +454,7 @@ function GameDetailsFormInner({
             <small className="text-muted">
                 {slug.trim() === '' ? (
                     <>
-                        No slug yet — the board is at <code>{game.name}</code>{' '}
+                        No slug yet. The board is at <code>{game.name}</code>{' '}
                         until you set one. Setting a slug finishes this step.
                     </>
                 ) : slugPreview !== slug ? (
@@ -502,7 +502,7 @@ function GameDetailsFormInner({
             <FieldLabel
                 className="mt-3"
                 label="Links"
-                hint="Extra links shown as chips on the game page — wiki, official site, Twitch. Up to ten."
+                hint="Extra links shown as chips on the game page: wiki, official site, Twitch. Up to ten."
             />
             <p className="text-muted small mb-2">
                 A short label plus an https URL.

@@ -45,6 +45,33 @@ Splits/timers, WR/PB, ranks, categories & platforms, verification/VODs, flags/se
 - **Popover shadow:** floating panels anchored to a trigger (rules toggle, variable dropdown, row-actions menu, the leaderboard's set-time info popover) use `$shadow-md` uniformly. **Exception:** `game-page.module.scss`'s `.heroCover` — the full hero's 132×176 cover on the category wall and the standings page — keeps `$shadow-lg`; it isn't a popover, and needs the heavier lift to read as a distinct object. (Correction, Task 9: the board page's cover is a different element, `.heroCoverSm` at 56×75 inside the masthead plate, and stays on the uniform `$shadow-md` — there's no blurred backdrop left for either cover to lift off of, the `$shadow-lg` exception is now just about the full hero's larger size.)
 - **Overlay motion + elevation (`_board.scss`'s `board-overlay-enter` mixin):** every overlay enters like it came from its trigger — 160ms `cubic-bezier(0.4, 0, 0.2, 1)` (200ms for slide-in drawers), enter-only (exit is instant, no animation), `prefers-reduced-motion: reduce` disables it. One reduced-motion guard, written once, inside the mixin. Stacking order is a single decision in `_design-tokens.scss`'s z-scale, not a per-component guess: `$z-sticky` (20, sticky bars) < `$z-popover` (30, popovers/dropdowns) < `$z-drawer` (40, slide-in drawers) < `$z-dialog` (1055, matches Bootstrap's `.modal` default — BoardDialog).
 
+## Voice (added 2026-08-12)
+
+Copy is part of the craft. games-v2 had drifted into a flat, over-explained
+register: 250-odd user-visible strings using an em dash as the default
+connector, with a reassuring second clause on nearly every instruction. It
+reads as filler, and filler is what a moderator skips. Rules, in force
+everywhere in games-v2:
+
+- **The em dash is not the default connector.** A period, a colon or
+  parentheses is almost always the right joint. Reserve `—` for a genuine
+  mid-sentence aside, and at most once on a screen. (The standalone `—` in an
+  empty data cell is typography, not prose; restyled tables use a `Dash` icon
+  instead.)
+- **Say what a thing does, not what it isn't.** The "it's not X, it's Y"
+  construction sounds insightful and carries nothing. State the behaviour.
+- **One fact per sentence, and stop.** Don't append a reassurance ("…but keeps
+  its runs and leaves it available to add back") to every instruction. Say the
+  consequence that isn't obvious; drop the rest.
+- **A label is a label.** "Reason" with a `required` hint beside it, never
+  "Reason — required, min 10 characters, audit-logged".
+- **No rule-of-three.** Three items because there are three, never for cadence.
+- **No filler.** just, simply, seamlessly, powerful, easily, effortlessly. A
+  moderator removing someone's run is not having an effortless experience.
+- **Sentence case.** A label takes no full stop; a sentence does.
+- **Name the domain thing.** "runs", "board", "category", "verification" —
+  never "items", "content", "entries" where a real word exists.
+
 ## Components
 
 - `console.module.scss` — shared console styles: `.shell`, `.sidebar`, `.navGroup`, `.navItem`/`.active`, `.surface`, `.severitySpine`/`--high`/`--med`/`--low`, `.time` (mono tabular), `.metaRow`, `.actionRow`, `.empty`.

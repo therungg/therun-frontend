@@ -118,7 +118,7 @@ function InlineReasonForm({
     return (
         <div className={styles.inlineForm}>
             <label htmlFor={id} className="form-label small text-muted mb-0">
-                {label} — required, min {MIN_REASON} characters, audit-logged
+                {label} (required, min {MIN_REASON} characters, audit-logged)
             </label>
             <textarea
                 id={id}
@@ -240,7 +240,7 @@ export function RunnerView({
         const res = await deleteRuleAction(gameSlug, rule.ruleId, reason);
         if ('error' in res) return res.error;
         toast.success(
-            `Ban lifted — ${res.result.reinstatedRunCount} run${
+            `Ban lifted. ${res.result.reinstatedRunCount} run${
                 res.result.reinstatedRunCount === 1 ? '' : 's'
             } reinstated.`,
         );
@@ -314,8 +314,8 @@ export function RunnerView({
         if ('error' in res) return res.error;
         toast.success(
             res.result.alreadyExists
-                ? 'Already hidden at this scope — nothing changed.'
-                : `Identity hidden — the public now sees ${res.result.rule.displayName}.`,
+                ? 'Already hidden at this scope. Nothing changed.'
+                : `Identity hidden. The public now sees ${res.result.rule.displayName}.`,
         );
         afterMutation();
         return null;
@@ -332,7 +332,7 @@ export function RunnerView({
             global: rule.gameId == null,
         });
         if ('error' in res) return res.error;
-        toast.success('Identity restored — the real name is public again.');
+        toast.success('Identity restored. The real name is public again.');
         afterMutation();
         return null;
     };
@@ -363,7 +363,7 @@ export function RunnerView({
                     disabled={!canSiteBan}
                     title={
                         canSiteBan
-                            ? 'Lift this rule — the real name becomes public again'
+                            ? 'Lift this rule, so the real name becomes public again'
                             : 'Lifting requires a site admin'
                     }
                     onClick={() => setLiftingAnonId(rule.ruleId)}
@@ -554,7 +554,7 @@ export function RunnerView({
 
                                 {combo.runs.length === 0 ? (
                                     <p className="text-muted small">
-                                        No eligible runs on this board — only
+                                        No eligible runs on this board, only
                                         manual times below.
                                     </p>
                                 ) : (
@@ -910,7 +910,7 @@ export function RunnerView({
                         <div className={styles.sideCardHead}>Identity</div>
                         <p className={styles.identityBlurb}>
                             {coveringAnon
-                                ? `Hidden from the public as ${coveringAnon.displayName}. Every run and rank is untouched — only the name, avatar, flag and profile link are gone.`
+                                ? `Hidden from the public as ${coveringAnon.displayName}. Every run and rank is untouched. The name, avatar, flag and profile link are gone.`
                                 : 'Public. Hiding is permanent and keeps every run and rank in place; moderators always still see the real name.'}
                         </p>
                         {categoriesInPlay.map((cat) => {

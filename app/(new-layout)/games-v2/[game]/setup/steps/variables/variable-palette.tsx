@@ -825,7 +825,7 @@ export function VariablePalette({
                     )}
 
                     {/* Conversion runs one way only, and only from here.
-                        Promoting a filter is additive — the board gains
+                        Promoting a filter is additive. The board gains
                         leaderboards it did not have. The reverse deletes them,
                         along with every record they held, and it sat at the
                         foot of every subcategory group as a chip you could

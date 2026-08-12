@@ -95,8 +95,8 @@ const REASON_REQUIRED: Record<ModVerb, boolean> = {
 // (see src/lib/moderation/mod-fetch.ts's documented error, "reason is
 // required (min 10 characters)"), so these stand in rather than sending "".
 const DEFAULT_REASON: Partial<Record<ModVerb, string>> = {
-    approve: 'Approved — no issues found.',
-    unverify: 'Verification unset — back to pending.',
+    approve: 'Approved. No issues found.',
+    unverify: 'Verification unset. Back to pending.',
     restore: 'Restored after review.',
 };
 
@@ -658,8 +658,8 @@ export function RunActionForm({
                 const total = n + manualTimeIds.length;
                 const message =
                     replacementId != null
-                        ? `${VERB_TITLE[verb]} — ${total} run${total === 1 ? '' : 's'} updated, set time filed.`
-                        : `${VERB_TITLE[verb]} — ${total} run${total === 1 ? '' : 's'} updated.`;
+                        ? `${VERB_TITLE[verb]}. ${total} run${total === 1 ? '' : 's'} updated, set time filed.`
+                        : `${VERB_TITLE[verb]}. ${total} run${total === 1 ? '' : 's'} updated.`;
                 // Verify's inverse is `unverify` (verified → pending), not
                 // restoreRunsAction's include+unreject — unreject is a no-op
                 // against an already-verified run, so that generic undo path
@@ -804,10 +804,10 @@ export function RunActionForm({
                     {removesRunner ? (
                         <p className={styles.scopeNote}>
                             This removes <strong>{removeRunner.name}</strong>{' '}
-                            from {removeRunner.categoryDisplay} completely —
+                            from {removeRunner.categoryDisplay} completely:
                             every run they have on it, and any they submit
-                            later. One reversible rule, not one removal per run.
-                            Their account is unaffected.
+                            later. It is one reversible rule covering all of
+                            them. Their account is unaffected.
                         </p>
                     ) : otherRuns == null ? (
                         <p className={styles.previewLoading}>
@@ -889,7 +889,7 @@ export function RunActionForm({
                                         {removeRunner.name} on this board, with
                                         the same reason as the removal.
                                         {fasterThanLegit.length > 0 &&
-                                            ` Their ${fasterThanLegit.length} faster run${fasterThanLegit.length === 1 ? ' goes' : 's go'} too — a surviving faster run would outrank it.`}
+                                            ` Their ${fasterThanLegit.length} faster run${fasterThanLegit.length === 1 ? ' goes' : 's go'} too, because a surviving faster run would outrank it.`}
                                     </p>
                                     {replaceTimeText.length > 0 &&
                                         !replaceValid && (
@@ -947,7 +947,7 @@ export function RunActionForm({
                         ) : legitRunId != null ? (
                             runIds.length === 1 ? (
                                 <>
-                                    Removing this run only — nothing faster than
+                                    Removing this run only. Nothing faster than
                                     the{' '}
                                     {legitRunTime != null && (
                                         <DurationToFormatted
@@ -959,8 +959,8 @@ export function RunActionForm({
                             ) : (
                                 <>
                                     Removing {runIds.length} run
-                                    {runIds.length === 1 ? '' : 's'} —
-                                    everything faster than the{' '}
+                                    {runIds.length === 1 ? '' : 's'}: everything
+                                    faster than the{' '}
                                     {legitRunTime != null && (
                                         <DurationToFormatted
                                             duration={legitRunTime}
@@ -971,7 +971,7 @@ export function RunActionForm({
                             )
                         ) : replaceActive && runIds.length > 1 ? (
                             <>
-                                Removing {runIds.length} runs — this one and
+                                Removing {runIds.length} runs: this one and
                                 everything faster than the set time.
                             </>
                         ) : (
@@ -1014,7 +1014,7 @@ export function RunActionForm({
                         <strong>{manualTimeIds.length}</strong> set time
                         {manualTimeIds.length === 1 ? '' : 's'} will be{' '}
                         {manualOp === 'delete'
-                            ? 'deleted — a deleted set time cannot be restored'
+                            ? 'deleted, and a deleted set time cannot be restored'
                             : manualOp === 'verify'
                               ? 'verified'
                               : 'rejected'}
@@ -1090,7 +1090,7 @@ export function RunActionForm({
                         <ul className={styles.previewList}>
                             {preview.data.sampleRuns.map((s) => (
                                 <li key={s.runId}>
-                                    {s.runnerName} — {s.categoryName}
+                                    {s.runnerName}, {s.categoryName}
                                     {s.subcategoryKey
                                         ? ` (${s.subcategoryKey})`
                                         : ''}{' '}
@@ -1230,7 +1230,7 @@ export function RunActionDialog({
         >
             <div className={styles.header}>
                 <h5 className={styles.title} id="run-action-title">
-                    {VERB_TITLE[verb]} — {headerTarget}
+                    {VERB_TITLE[verb]}: {headerTarget}
                 </h5>
                 <button
                     type="button"

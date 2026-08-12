@@ -193,7 +193,7 @@ describe('CutoffPicker', () => {
         );
         const radios = screen.getAllByRole('radio');
         expect(radios).toHaveLength(3); // None + 2 runs
-        expect(radios[0].textContent).toContain('None — just remove this one');
+        expect(radios[0].textContent).toContain('None. Remove this one only');
         expect(radios[0].getAttribute('aria-checked')).toBe('true');
         expect(screen.getAllByText('pending')).toHaveLength(2);
     });
@@ -327,7 +327,7 @@ describe('ReasonZone', () => {
         );
         expect(screen.getByLabelText('Reason')).toBeTruthy();
         expect(
-            screen.getByText('Required — min 10 characters. Audit-logged.'),
+            screen.getByText('Required. Min 10 characters. Audit-logged.'),
         ).toBeTruthy();
     });
 

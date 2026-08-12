@@ -192,7 +192,7 @@ export function GroupBuilder({
                     style={{ maxWidth: '20rem' }}
                     value={name}
                     maxLength={60}
-                    placeholder="Group name — e.g. Category Extensions"
+                    placeholder="e.g. Category Extensions"
                     aria-label="New group name"
                     disabled={pending}
                     onChange={(e) => setName(e.target.value)}

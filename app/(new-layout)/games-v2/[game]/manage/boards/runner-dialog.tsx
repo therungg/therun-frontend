@@ -270,7 +270,7 @@ export function RunnerDialog({
                         <Link
                             href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${row.userId}?from=${dossierFrom}`}
                         >
-                            View full runner page — runs, bans, history ↗
+                            View full runner page ↗
                         </Link>
                     </p>
                 )}
@@ -284,8 +284,8 @@ export function RunnerDialog({
 
                 {showSubcategoryNote && (
                     <p className={styles.moveNote}>
-                        Covers every subcategory board of {category.display} —
-                        exact single-board scope is coming later.
+                        Covers every subcategory board of {category.display}.
+                        Exact single-board scope is coming later.
                     </p>
                 )}
 
@@ -410,7 +410,7 @@ export function RunnerDialog({
                     htmlFor="runner-dialog-reason"
                     className={styles.fieldLabel}
                 >
-                    Reason — required
+                    Reason (required)
                 </label>
                 <textarea
                     id="runner-dialog-reason"

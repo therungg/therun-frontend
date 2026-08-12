@@ -6,8 +6,8 @@ import { type TimeField, TimeInput } from './time-input';
 
 function timingExplainer(gameTimeLabel: GameTimeLabel): string {
     return gameTimeLabel === 'lrt'
-        ? 'Real time (RTA) — wall-clock time. Load-removed time (LRT) — the timer with loads removed.'
-        : 'Real time (RTA) — wall-clock time. Game time (IGT) — the in-game timer.';
+        ? 'Real time (RTA) is wall-clock time. Load-removed time (LRT) is the timer with loads removed.'
+        : 'Real time (RTA) is wall-clock time. Game time (IGT) is the in-game timer.';
 }
 
 function gameTimeFieldLabel(gameTimeLabel: GameTimeLabel): string {

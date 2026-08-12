@@ -418,7 +418,7 @@ function EvidenceSection({
                     <CameraVideoOff size={16} aria-hidden />
                     <span className={styles.noVodText}>
                         {requireVideo
-                            ? 'No video attached — this board requires one.'
+                            ? 'No video attached. This board requires one.'
                             : 'No video attached.'}
                     </span>
                     <span className={styles.noVodCta}>Add a link</span>
@@ -442,7 +442,7 @@ function EvidenceSection({
                 >
                     <BoxArrowUpRight size={14} aria-hidden />
                     <span>
-                        Video attached — opens on another host
+                        Video attached, opens on another host
                         <span className={styles.vodUrl}>{url}</span>
                     </span>
                 </a>
@@ -778,7 +778,7 @@ export function RunInspector({
     const primaryLabel =
         primaryTiming === 'gt'
             ? rankedOnFallback
-                ? `Real time — ranked in place of ${gtLabel.toLowerCase()}`
+                ? `Real time, ranked in place of ${gtLabel.toLowerCase()}`
                 : gtLabel
             : 'Real time';
     const secondaryMs =
@@ -1023,7 +1023,7 @@ export function RunInspector({
                         ) : (
                             <span className="text-muted small">
                                 {entry.isGuest
-                                    ? 'Guest submission — no runner account.'
+                                    ? 'Guest submission, with no runner account.'
                                     : 'Runner identity is hidden.'}
                             </span>
                         )}
@@ -1050,7 +1050,7 @@ export function RunInspector({
                         )}
                         {history !== null && history.length === 0 && (
                             <p className="text-muted small mb-0">
-                                Nothing yet — this run has never been actioned.
+                                This run has never been actioned.
                             </p>
                         )}
                         {history !== null && history.length > 0 && (

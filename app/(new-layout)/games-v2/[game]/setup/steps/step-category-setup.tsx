@@ -46,8 +46,8 @@ export function StepCategorySetup({ data, onAdvance }: StepProps) {
             {mains.length === 0 ? (
                 <div className={styles.infoNote}>
                     No categories are featured yet. Go back to Categories and
-                    feature the ones that belong on the board — they show up
-                    here to configure.
+                    feature the ones that belong on the board. They show up here
+                    to configure.
                 </div>
             ) : (
                 <CategoryMatrix

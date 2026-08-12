@@ -669,7 +669,7 @@ describe('BoardCuration — multi-select bulk actions', () => {
         expect(mocks.previewExcludeAction).toHaveBeenCalledTimes(1);
         expect(screen.getByText(/1 guest/)).toBeTruthy();
 
-        fireEvent.change(screen.getByLabelText('Reason — required'), {
+        fireEvent.change(screen.getByLabelText('Reason (required)'), {
             target: { value: 'Mass cheating ring.' },
         });
         fireEvent.click(screen.getByRole('button', { name: 'Confirm ban' }));

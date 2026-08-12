@@ -184,7 +184,7 @@ describe('AddRunnerRow', () => {
         });
 
         expect(
-            screen.getByText('Matched runner: alice — links to their account'),
+            screen.getByText('Matched runner: alice, linked to their account'),
         ).toBeTruthy();
         expect(
             screen.getByRole('button', { name: 'Add for alice' }),

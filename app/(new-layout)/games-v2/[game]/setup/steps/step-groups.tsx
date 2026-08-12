@@ -270,7 +270,7 @@ export function StepGroups({ data, onAdvance }: StepProps) {
                     }
                 >
                     <option value="auto">
-                        Auto — pills, dropdown once there are many
+                        Auto: pills, then a dropdown once there are many
                     </option>
                     <option value="pills">Always pills</option>
                     <option value="dropdown">Always a dropdown</option>
@@ -326,7 +326,7 @@ export function StepGroups({ data, onAdvance }: StepProps) {
                                             className={`${styles.previewNote} mb-0`}
                                         >
                                             {col.group
-                                                ? 'Empty — this group won’t appear.'
+                                                ? 'Empty, so this group won’t appear.'
                                                 : 'Everything is filed.'}
                                         </p>
                                     ) : (

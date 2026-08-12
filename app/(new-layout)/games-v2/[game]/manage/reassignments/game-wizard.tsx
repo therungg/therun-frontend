@@ -135,7 +135,7 @@ export function GameWizard({
                     Merge game: {sourceGameDisplay}
                 </h3>
                 <p className={styles.subtitle}>
-                    Merge this entire game — its runs and categories — into
+                    Merge this entire game, with its runs and categories, into
                     another game.
                 </p>
             </div>

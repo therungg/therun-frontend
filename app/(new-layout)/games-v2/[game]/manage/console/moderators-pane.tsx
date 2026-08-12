@@ -111,7 +111,7 @@ export function ModeratorsPane({
             {pendingApplications > 0 && (
                 <div className={styles.noteInfo}>
                     {pendingApplications} pending application
-                    {pendingApplications === 1 ? '' : 's'} —{' '}
+                    {pendingApplications === 1 ? '' : 's'}.{' '}
                     <Link
                         href={`/games-v2/${encodeURIComponent(gameSlug)}/manage?pane=attention`}
                     >

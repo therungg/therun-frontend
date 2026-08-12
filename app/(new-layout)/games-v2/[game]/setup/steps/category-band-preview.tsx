@@ -56,7 +56,7 @@ export function CategoryBandPreview({
     return (
         <div className={styles.previewPanel}>
             <div className={styles.previewHead}>
-                <h3 className="h6 mb-0">Live preview — the category band</h3>
+                <h3 className="h6 mb-0">Live preview of the category band</h3>
                 <span className={styles.previewNote}>
                     reflects your unsaved edits
                 </span>
@@ -147,9 +147,9 @@ export function CategoryBandPreview({
 
             {flattened && (
                 <p className={`${styles.previewNote} mb-0 mt-2`}>
-                    One group doesn&apos;t change anything — the band only
-                    splits into labeled sections once a second group has
-                    categories in it.
+                    One group doesn&apos;t change anything. The band only splits
+                    into labeled sections once a second group has categories in
+                    it.
                 </p>
             )}
         </div>
