@@ -2,7 +2,12 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
-import { CaretDownFill, CaretUpFill } from 'react-bootstrap-icons';
+import {
+    CaretDownFill,
+    CaretUpFill,
+    Dash,
+    Search,
+} from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
@@ -297,18 +302,18 @@ export function RosterView({
                 </div>
             </div>
 
-            <div className="border rounded p-3 mb-3">
+            <div className={styles.filters}>
                 <div className="row g-2 align-items-end">
                     <div className="col-md-3">
                         <label
                             htmlFor="roster-category"
-                            className="form-label small text-muted mb-1"
+                            className={styles.filterLabel}
                         >
                             Category
                         </label>
                         <select
                             id="roster-category"
-                            className="form-select form-select-sm"
+                            className={`form-select form-select-sm ${styles.input}`}
                             value={categoryId ?? ''}
                             onChange={(e) => {
                                 const id = Number.parseInt(e.target.value, 10);
@@ -331,14 +336,14 @@ export function RosterView({
                     <div className="col-md-2">
                         <label
                             htmlFor="roster-subkey"
-                            className="form-label small text-muted mb-1"
+                            className={styles.filterLabel}
                         >
                             Subcategory key
                         </label>
                         <input
                             id="roster-subkey"
                             type="text"
-                            className="form-control form-control-sm"
+                            className={`form-control form-control-sm ${styles.input}`}
                             value={subcategoryKey}
                             onChange={(e) => setSubcategoryKey(e.target.value)}
                             placeholder="(any)"
@@ -347,13 +352,13 @@ export function RosterView({
                     <div className="col-md-2">
                         <label
                             htmlFor="roster-verification"
-                            className="form-label small text-muted mb-1"
+                            className={styles.filterLabel}
                         >
                             Verification
                         </label>
                         <select
                             id="roster-verification"
-                            className="form-select form-select-sm"
+                            className={`form-select form-select-sm ${styles.input}`}
                             value={verificationStatus}
                             onChange={(e) => {
                                 const next = e.target
@@ -371,13 +376,13 @@ export function RosterView({
                     <div className="col-md-1">
                         <label
                             htmlFor="roster-vod"
-                            className="form-label small text-muted mb-1"
+                            className={styles.filterLabel}
                         >
                             VOD
                         </label>
                         <select
                             id="roster-vod"
-                            className="form-select form-select-sm"
+                            className={`form-select form-select-sm ${styles.input}`}
                             value={hasVod}
                             onChange={(e) => {
                                 const next = e.target.value as VodFilter;
@@ -393,13 +398,13 @@ export function RosterView({
                     <div className="col-md-2">
                         <label
                             htmlFor="roster-board"
-                            className="form-label small text-muted mb-1"
+                            className={styles.filterLabel}
                         >
                             On board
                         </label>
                         <select
                             id="roster-board"
-                            className="form-select form-select-sm"
+                            className={`form-select form-select-sm ${styles.input}`}
                             value={onBoard}
                             onChange={(e) =>
                                 setOnBoard(e.target.value as BoardFilter)
@@ -413,24 +418,24 @@ export function RosterView({
                     <div className="col-md-2">
                         <label
                             htmlFor="roster-runner"
-                            className="form-label small text-muted mb-1"
+                            className={styles.filterLabel}
                         >
                             Runner name
                         </label>
                         <input
                             id="roster-runner"
                             type="text"
-                            className="form-control form-control-sm"
+                            className={`form-control form-control-sm ${styles.input}`}
                             value={runnerName}
                             onChange={(e) => setRunnerName(e.target.value)}
                             placeholder="(any)"
                         />
                     </div>
                 </div>
-                <div className="d-flex justify-content-end mt-2">
+                <div className={styles.filterActions}>
                     <button
                         type="button"
-                        className="btn btn-sm btn-primary"
+                        className={styles.primaryAction}
                         onClick={() => handleLoad()}
                         disabled={isLoading || categoryId == null}
                     >
@@ -440,24 +445,34 @@ export function RosterView({
             </div>
 
             {error && (
-                <div className="alert alert-danger" role="alert">
+                <div className={styles.errorAlert} role="alert">
                     {error}
                 </div>
             )}
 
             {visibleRows != null && (
-                <>
-                    <p className="text-muted small mb-2">
-                        {visibleRows.length} run
-                        {visibleRows.length === 1 ? '' : 's'}
-                    </p>
+                <div className={styles.resultPanel}>
+                    <div className={styles.resultHead}>
+                        <span className={consoleStyles.paneCount}>
+                            {visibleRows.length} run
+                            {visibleRows.length === 1 ? '' : 's'}
+                        </span>
+                    </div>
                     {visibleRows.length === 0 ? (
-                        <p className="text-muted">
-                            No runs match these filters.
-                        </p>
+                        <div className={styles.empty}>
+                            <Search
+                                size={24}
+                                className={styles.emptyIcon}
+                                aria-hidden="true"
+                            />
+                            <p className={styles.emptyTitle}>No runs match</p>
+                            <p className="mb-0">
+                                Widen a filter, or pick another category.
+                            </p>
+                        </div>
                     ) : (
                         <div className="table-responsive">
-                            <table className="table table-sm table-hover align-middle">
+                            <table className={styles.table}>
                                 <thead>
                                     <tr>
                                         <th style={{ width: '1%' }}>
@@ -524,7 +539,11 @@ export function RosterView({
                                                     {isGuest ? (
                                                         <span>
                                                             {row.runnerName}{' '}
-                                                            <span className="badge text-bg-secondary">
+                                                            <span
+                                                                className={
+                                                                    styles.guestTag
+                                                                }
+                                                            >
                                                                 guest
                                                             </span>
                                                         </span>
@@ -536,19 +555,33 @@ export function RosterView({
                                                         />
                                                     )}
                                                 </td>
-                                                <td className="small text-muted">
-                                                    {row.subcategoryKey || '—'}
+                                                <td className={styles.sub}>
+                                                    {row.subcategoryKey || (
+                                                        <Dash
+                                                            size={14}
+                                                            className={
+                                                                styles.dash
+                                                            }
+                                                            aria-label="none"
+                                                        />
+                                                    )}
                                                 </td>
-                                                <td className="text-end">
+                                                <td className={styles.time}>
                                                     {row.time != null ? (
                                                         <DurationToFormatted
                                                             duration={row.time}
                                                         />
                                                     ) : (
-                                                        '—'
+                                                        <Dash
+                                                            size={14}
+                                                            className={
+                                                                styles.dash
+                                                            }
+                                                            aria-label="no real time"
+                                                        />
                                                     )}
                                                 </td>
-                                                <td className="text-end">
+                                                <td className={styles.time}>
                                                     {row.gameTime != null ? (
                                                         <DurationToFormatted
                                                             duration={
@@ -556,7 +589,13 @@ export function RosterView({
                                                             }
                                                         />
                                                     ) : (
-                                                        '—'
+                                                        <Dash
+                                                            size={14}
+                                                            className={
+                                                                styles.dash
+                                                            }
+                                                            aria-label="no game time"
+                                                        />
                                                     )}
                                                 </td>
                                                 <td className="text-center">
@@ -576,13 +615,21 @@ export function RosterView({
                                                             Link
                                                         </a>
                                                     ) : (
-                                                        '—'
+                                                        <Dash
+                                                            size={14}
+                                                            className={
+                                                                styles.dash
+                                                            }
+                                                            aria-label="no VOD"
+                                                        />
                                                     )}
                                                 </td>
                                                 <td className="text-center">
                                                     {isOnBoard(row) && (
                                                         <span
-                                                            className="badge text-bg-success"
+                                                            className={
+                                                                styles.onBoard
+                                                            }
                                                             title={`On board${
                                                                 row.isLeaderboardEntry
                                                                     ? ' RT'
@@ -598,10 +645,16 @@ export function RosterView({
                                                     )}
                                                 </td>
                                                 <td className="text-end">
-                                                    <div className="d-flex gap-1 justify-content-end">
+                                                    <div
+                                                        className={
+                                                            styles.rowActions
+                                                        }
+                                                    >
                                                         <button
                                                             type="button"
-                                                            className="btn btn-sm btn-outline-primary"
+                                                            className={
+                                                                styles.rowAction
+                                                            }
                                                             onClick={() =>
                                                                 setDialog({
                                                                     kind: 'manual',
@@ -621,7 +674,9 @@ export function RosterView({
                                                                             ? `&categoryId=${categoryId}`
                                                                             : ''
                                                                     }`}
-                                                                    className="btn btn-sm btn-outline-secondary"
+                                                                    className={
+                                                                        styles.rowAction
+                                                                    }
                                                                 >
                                                                     View runner
                                                                 </Link>
@@ -635,48 +690,48 @@ export function RosterView({
                             </table>
                         </div>
                     )}
-                </>
+                </div>
             )}
 
             {selected.size > 0 && (
-                <div
-                    className={`border-top bg-body shadow-lg p-2 d-flex flex-wrap align-items-center gap-2 ${styles.bulkBar}`}
-                >
-                    <span className="fw-bold">{selected.size} selected</span>
+                <div className={styles.bulkBar}>
+                    <span className={styles.bulkCount}>
+                        {selected.size} selected
+                    </span>
                     {banSubject && (
                         <button
                             type="button"
-                            className="btn btn-sm btn-outline-danger"
+                            className={styles.removeAction}
                             onClick={openBan}
                         >
                             Ban {banSubject.runnerName} instead…
                         </button>
                     )}
-                    <div className="ms-auto d-flex gap-2">
+                    <div className={styles.bulkGroup}>
                         <button
                             type="button"
-                            className="btn btn-sm btn-outline-secondary"
+                            className={styles.quietAction}
                             onClick={() => setSelected(new Set())}
                         >
                             Clear
                         </button>
                         <button
                             type="button"
-                            className="btn btn-sm btn-success"
+                            className={styles.approveAction}
                             onClick={() => openRunsAction('approve')}
                         >
                             Approve
                         </button>
                         <button
                             type="button"
-                            className="btn btn-sm btn-danger"
+                            className={styles.removeAction}
                             onClick={() => openRunsAction('remove')}
                         >
                             Remove…
                         </button>
                         <button
                             type="button"
-                            className="btn btn-sm btn-outline-secondary"
+                            className={styles.quietAction}
                             onClick={() => openRunsAction('restore')}
                         >
                             Restore

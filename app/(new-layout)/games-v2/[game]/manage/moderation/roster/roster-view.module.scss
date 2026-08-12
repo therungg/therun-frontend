@@ -1,11 +1,170 @@
 @use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/board' as board;
 
-// Targeted fix (Task 18 ledger): bridge the bulk-action bar's inline
-// `zIndex` onto the shared z-scale ($z-sticky, _design-tokens.scss) instead
-// of an arbitrary Bootstrap-dropdown-tier magic number (1020). The rest of
-// this view stays raw Bootstrap.
+// Browse runs, in board vocabulary. This view was raw Bootstrap — a
+// `border rounded p-3` filter box, `table table-sm table-hover`, an
+// `alert alert-danger`, and a bulk bar built from utility classes.
+
+// The filter box becomes a real console surface, and its labels the system's
+// eyebrow rather than Bootstrap form labels.
+.filters {
+    @include board.board-surface(dt.$spacing-lg);
+    margin-bottom: dt.$spacing-lg;
+}
+
+.filterLabel {
+    @include board.board-eyebrow;
+    display: block;
+    margin-bottom: dt.$spacing-xs;
+}
+
+.input {
+    @include board.board-input-rules;
+}
+
+.filterActions {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    justify-content: flex-end;
+    margin-top: dt.$spacing-md;
+}
+
+.primaryAction {
+    @include board.board-btn-primary;
+}
+
+.errorAlert {
+    @include board.board-error-alert;
+    margin-bottom: dt.$spacing-lg;
+}
+
+.resultPanel {
+    @include board.board-surface(dt.$spacing-lg);
+}
+
+.resultHead {
+    @include board.board-section-head;
+}
+
+.resultCount {
+    @include board.board-section-count;
+}
+
+.table {
+    @include board.board-table;
+
+    thead tr {
+        background: rgba(var(--bs-body-color-rgb), 0.04);
+    }
+}
+
+// Times are data: mono, tabular, right-aligned — the system's signature.
+.time {
+    @include board.mono-time;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.sub {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.dash {
+    color: var(--bs-tertiary-color, var(--bs-secondary-color));
+    opacity: 0.6;
+}
+
+.guestTag {
+    @include board.board-pill;
+    margin-left: dt.$spacing-xs;
+}
+
+.onBoard {
+    @include board.board-pill(var(--bs-primary));
+}
+
+.rowActions {
+    display: flex;
+    gap: dt.$spacing-sm;
+    justify-content: flex-end;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.rowAction {
+    @include board.control-pill;
+    font-size: dt.$font-size-xs;
+    text-decoration: none;
+}
+
+.empty {
+    @include board.board-empty;
+}
+
+.emptyTitle {
+    @include board.board-empty-title;
+}
+
+.emptyIcon {
+    @include board.board-empty-icon;
+}
+
+// The one glass surface this view is allowed (system rule): a sticky bar
+// floating above scrolled content.
 .bulkBar {
+    @include board.board-glass;
     position: sticky;
     bottom: 0;
     z-index: dt.$z-sticky;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    margin-top: dt.$spacing-md;
+    border-radius: dt.$radius-md;
+}
+
+.bulkCount {
+    @include board.mono-time;
+    font-weight: 700;
+    margin-right: dt.$spacing-sm;
+}
+
+.bulkGroup {
+    display: flex;
+    gap: dt.$spacing-sm;
+    margin-left: auto;
+}
+
+.quietAction {
+    @include board.control-pill;
+    font-size: dt.$font-size-xs;
+}
+
+// Verdict actions keep their own severity vocabulary (system.md's moderation
+// carve-out) — approve green, remove red — but built off the tokens rather
+// than Bootstrap's near-miss $danger.
+.approveAction {
+    @include board.control-pill;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-primary);
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.12);
+        color: var(--bs-primary);
+    }
+}
+
+.removeAction {
+    @include board.control-pill;
+    font-size: dt.$font-size-xs;
+    color: dt.$accent-red;
+
+    &:hover {
+        background: color-mix(in srgb, #{dt.$accent-red} 14%, transparent);
+        color: dt.$accent-red-light;
+    }
 }
