@@ -60,6 +60,11 @@ export function RunActions({
     // here — not modelled as a gap in the guard, just a fact this page's
     // model doesn't expose.
     const canOwnerModerate = isOwnRun && model.userId != null && !model.isGuest;
+    // Move only makes sense for a run that's actually on a board — a
+    // rejected/hidden run has nowhere to move from, matching `canHide`'s own
+    // status branch below rather than opening a dialog for a run this page's
+    // quick verbs already treat as off-board.
+    const canMove = canOwnerModerate && model.verificationStatus !== 'rejected';
 
     const [ownerDialog, setOwnerDialog] = useState<OwnerDialogKind>(null);
     // Move's category picker needs the game's board context (categories +
@@ -69,39 +74,47 @@ export function RunActions({
     const [moveCtx, setMoveCtx] = useState<MoveContext | null>(null);
     const [ctxPending, startCtxLoad] = useTransition();
 
+    const moveCategory =
+        moveCtx?.categories.find((c) => c.id === model.categoryId) ?? null;
+
     const openMove = () => {
         if (moveCtx != null) {
+            // Cached from an earlier click. If the run's own category never
+            // resolved (see below), it never will from this same cache —
+            // say so every time rather than silently doing nothing, same
+            // shape as run-inspector.tsx's openModDialog.
+            if (moveCategory == null) {
+                toast.error("Could not resolve this run's category.");
+                return;
+            }
             setOwnerDialog('move');
             return;
         }
         startCtxLoad(async () => {
-            // categorySlug is best-effort here: RunViewModel has no slug of
-            // its own (only categoryId), so this falls back to the matched
-            // board standing's slug when there is one, or '' otherwise. The
-            // loader still returns every category (including archived) —
-            // the empty-string case only risks skipping the variable fetch
-            // for a category that is itself archived and non-featured,
-            // which affects Move's target-band display for re-selecting
-            // that same (already current) category, not the current
-            // placement lookup below.
             const res = await loadOwnerBoardContextAction(
                 model.game.name,
-                model.boardStanding?.categorySlug ?? '',
+                model.categoryId,
             );
             if ('error' in res) {
                 toast.error(res.error);
                 return;
             }
-            setMoveCtx({
-                categories: res.categories,
-                variables: res.variables,
-            });
+            const categories = res.categories;
+            setMoveCtx({ categories, variables: res.variables });
+            // resolveCategory drops low-activity categories outright (not
+            // just archived/non-featured ones) — a run sitting in one of
+            // those has no ResolvedCategory to find here at all. Without
+            // this check the guarded MoveDialog render below would mount
+            // nothing and every later click would hit the cached branch
+            // above forever, with no feedback that Move is unusable for
+            // this run.
+            if (!categories.some((c) => c.id === model.categoryId)) {
+                toast.error("Could not resolve this run's category.");
+                return;
+            }
             setOwnerDialog('move');
         });
     };
-
-    const moveCategory =
-        moveCtx?.categories.find((c) => c.id === model.categoryId) ?? null;
 
     // Minimal LeaderboardRosterRow — MoveDialog only reads `runnerName` (its
     // title) and `runId` in the moderator path; the owner path submits
@@ -207,7 +220,7 @@ export function RunActions({
                         Correct this time…
                     </Link>
                 )}
-                {canOwnerModerate && (
+                {canMove && (
                     <button
                         type="button"
                         className="btn btn-sm btn-outline-secondary"

@@ -33,7 +33,7 @@ import type {
  */
 export async function loadOwnerBoardContextAction(
     gameSlug: string,
-    categorySlug: string,
+    categoryId: number,
 ): Promise<
     | {
           ok: true;
@@ -52,8 +52,7 @@ export async function loadOwnerBoardContextAction(
     try {
         const { categories } = await resolveCategory(game.id);
         const needed = categories.filter(
-            (c) =>
-                (!c.archived && (c.isMain ?? false)) || c.name === categorySlug,
+            (c) => (!c.archived && (c.isMain ?? false)) || c.id === categoryId,
         );
         // No per-category `.catch(() => [])`: a category whose defs failed to
         // load would offer no subcategory bands, and the Move would land the

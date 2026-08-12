@@ -592,9 +592,14 @@ export function RunInspector({
         startCtxLoad(async () => {
             // Same shape, different authority: the mod loader 403s for a
             // non-mod, so owner mode reads the public per-category variables
-            // instead (see load-owner-board-context.action.ts).
+            // instead (see load-owner-board-context.action.ts). The owner
+            // loader takes the board's category id, not its slug — this is
+            // always the board currently being viewed, so `categoryId` is
+            // reliably this run's own category (the `-1` fallback only
+            // matters if the page ever fails to pass it; the post-load
+            // `categorySlug` check below still catches that).
             const res = ownerMode
-                ? await loadOwnerBoardContextAction(gameSlug, categorySlug)
+                ? await loadOwnerBoardContextAction(gameSlug, categoryId ?? -1)
                 : await loadModBoardContextAction(gameSlug);
             if ('error' in res) {
                 toast.error(res.error);
