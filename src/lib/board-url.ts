@@ -97,17 +97,26 @@ export function buildCurationHref(
     return withQuery(`/games-v2/${gameSegment(gameSlug)}/manage`, sp);
 }
 
+/** Query param that opens the submit dialog on a board page. */
+export const SUBMIT_PARAM = 'submit';
+
 /**
- * Submit-page URL carrying the same board context, optionally in claim
- * mode. Used by every "Submit a run" / "set the first record" / "Correct
- * this time" entry point so the submit form can preselect category and
- * subcategory (submit/page.tsx).
+ * Opens the submit dialog on the board carrying this context. Used by every
+ * "Submit a run" / "set the first record" / "Correct this time" entry point,
+ * so the dialog opens preselected to the board the runner came from.
+ *
+ * This used to be a route (`/games-v2/{game}/submit`) with a `mode=claim`
+ * variant. It is a query param on the board itself now: the dialog lives on
+ * the game page, submitting and claiming collapsed into one flow, and a param
+ * keeps every existing entry point working without each one reaching into the
+ * page's state. `submit` is set last so a subcategory variable that happens to
+ * be named "submit" can never clobber it.
  */
 export function buildSubmitHref(
     gameSlug: string,
-    ctx: BoardLinkContext & { mode?: 'claim' } = {},
+    ctx: BoardLinkContext = {},
 ): string {
     const sp = buildBoardQuery(ctx);
-    if (ctx.mode) sp.set('mode', ctx.mode);
-    return withQuery(`/games-v2/${gameSegment(gameSlug)}/submit`, sp);
+    sp.set(SUBMIT_PARAM, '1');
+    return withQuery(`/games-v2/${gameSegment(gameSlug)}`, sp);
 }

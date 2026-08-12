@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from 'react';
 import Link from '~src/components/link';
+import { buildSubmitHref } from '~src/lib/board-url';
 import { formatPlaytime } from '~src/lib/setup/board-pulse';
 import { activityShare, suggestFeaturedIds } from '~src/lib/setup/suggestions';
 import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
@@ -131,9 +132,7 @@ export function StepCategories({ data, onAdvance }: StepProps) {
         return (
             <section>
                 <StepHeader step="categories" title="No categories yet" />
-                <Link
-                    href={`/games-v2/${encodeURIComponent(data.game.name)}/submit`}
-                >
+                <Link href={buildSubmitHref(data.game.name)}>
                     Point runners at the submission form →
                 </Link>
                 <div>
