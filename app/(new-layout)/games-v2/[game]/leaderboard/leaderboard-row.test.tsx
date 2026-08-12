@@ -101,6 +101,38 @@ describe('LeaderboardRow — owner entry point', () => {
         expect(screen.queryByRole('button', { name: 'Manage' })).toBeNull();
     });
 
+    // `isCurrentUser` is a case-insensitive NAME match. A guest submission's
+    // runner name is self-reported free text, so it can carry anyone's name
+    // and must never light up their owner control.
+    it('offers nothing on a guest run bearing the viewer’s name', () => {
+        renderRow({
+            entry: entry({ isGuest: true, userId: null }),
+            isCurrentUser: true,
+            canManage: false,
+        });
+        expect(screen.queryByRole('button', { name: 'Manage' })).toBeNull();
+    });
+
+    // The mirror case: an anonymized row's placeholder is a name a real
+    // runner may legitimately have (see LeaderboardEntry.anonymized).
+    it('offers nothing on an anonymized row', () => {
+        renderRow({
+            entry: entry({ anonymized: true, userId: null }),
+            isCurrentUser: true,
+            canManage: false,
+        });
+        expect(screen.queryByRole('button', { name: 'Manage' })).toBeNull();
+    });
+
+    it('offers nothing on a row with no account behind it', () => {
+        renderRow({
+            entry: entry({ userId: null }),
+            isCurrentUser: true,
+            canManage: false,
+        });
+        expect(screen.queryByRole('button', { name: 'Manage' })).toBeNull();
+    });
+
     // The mod surface is a superset of the owner's: a moderator on their own
     // row keeps Moderate and must not be downgraded to the reduced control.
     it('gives a moderator Moderate, not Manage, on their own row', () => {

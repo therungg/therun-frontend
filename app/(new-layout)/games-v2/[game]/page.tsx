@@ -73,11 +73,20 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
     // on every board view, not just the claim-CTA path.
     // Race data rides along: the race API keys on the DISPLAY name. Both
     // calls fail soft — a race-API blip must never take down a game page.
+    // `selfHidden` rides along: "am I hidden on this game's boards?" is a
+    // per-session read (bearer token), so it can't live in the cache-shared
+    // `loadGamePageData`, but it must not cost a serial round trip on the
+    // critical path either. Fails soft — a board still renders if
+    // /v1/me/anonymize is down, it just can't offer the un-hide control (see
+    // LeaderboardPager's `selfHidden`).
     const raceKey = encodeURIComponent(resolvedGame.display);
-    const [moderators, raceStats, activeRaces] = await Promise.all([
+    const [moderators, raceStats, activeRaces, selfHidden] = await Promise.all([
         listGameModerators(resolvedGame.id),
         getRaceGameStatsByGame(raceKey).catch(() => null),
         getAllActiveRacesByGame(raceKey).catch(() => []),
+        session?.id && decision.view === 'board'
+            ? selfAnonymizeState(session.id, resolvedGame.id).catch(() => null)
+            : Promise.resolve(null),
     ]);
     const showRaces = (raceStats?.stats?.totalRaces ?? 0) > 0;
 
@@ -134,17 +143,6 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
                   () => null,
               )
             : null;
-
-    // "Am I hidden on this game's boards?" — read here, not in
-    // `loadGamePageData`, because it is a per-session read (bearer token) and
-    // that loader is a public, cache-shared one. Fails soft: a board must
-    // still render if `/v1/me/anonymize` is down, it just can't offer the
-    // un-hide control (see LeaderboardPager's `selfHidden`).
-    const selfHidden = session?.id
-        ? await selfAnonymizeState(session.id, resolvedGame.id).catch(
-              () => null,
-          )
-        : null;
 
     return (
         <GamePage

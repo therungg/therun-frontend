@@ -463,14 +463,26 @@ export function LeaderboardRow({
                     `runId == null` is a pure manual set time — the owner path
                     for those is the manual-times endpoints, not this drawer.
 
+                    `isCurrentUser` alone is NOT an ownership test: it is a
+                    case-insensitive name match (see is-same-runner.ts), and a
+                    guest submission carries a self-reported name that can be
+                    anyone's. An anonymized row is excluded for the mirror
+                    reason — its placeholder is a name a real runner may
+                    legitimately have (see LeaderboardEntry.anonymized). Hence
+                    the account checks: a run with no `userId`, a guest run,
+                    or a redacted row never offers this, whoever is looking.
+                    `openModerate` re-checks the same set.
+
                     Note what this cannot do: once a runner hides their
-                    identity their row arrives redacted, `isCurrentUser` goes
-                    false, and this button disappears. Un-hiding therefore
-                    lives in the pager's header, not here (see
-                    leaderboard-pager.tsx). */}
+                    identity their row arrives redacted and this button
+                    disappears. Un-hiding therefore lives in the pager's
+                    header, not here (see leaderboard-pager.tsx). */}
                 {!canManage &&
                     isCurrentUser &&
                     entry.runId != null &&
+                    entry.userId != null &&
+                    !entry.isGuest &&
+                    entry.anonymized !== true &&
                     onModerate && (
                         <button
                             type="button"

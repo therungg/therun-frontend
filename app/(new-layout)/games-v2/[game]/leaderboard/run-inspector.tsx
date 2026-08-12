@@ -104,6 +104,14 @@ interface Props {
     onClose: () => void;
     /** Board page refetch after any verb lands (or is undone). */
     onMutated: () => void;
+    /**
+     * Owner mode: the runner's game-wide "hide my identity" state changed
+     * here. The host must re-read it, because this drawer cannot show the
+     * result — hiding redacts the runner's own row, and the entry point back
+     * into this drawer goes with it. The board-level un-hide affordance is
+     * what's left, and it lives in the pager.
+     */
+    onSelfHiddenChanged?: () => void;
     /** Step to the adjacent run row without closing — j/k also bind to these. */
     onPrev?: () => void;
     onNext?: () => void;
@@ -470,6 +478,7 @@ export function RunInspector({
     showMilliseconds,
     onClose,
     onMutated,
+    onSelfHiddenChanged,
     onPrev,
     onNext,
     initialVerb,
@@ -1288,6 +1297,11 @@ export function RunInspector({
                     onDone={() => {
                         setHistoryReload((n) => n + 1);
                         onMutated();
+                        // Not optional bookkeeping: after this the runner's
+                        // row comes back redacted and this drawer's entry
+                        // point is gone, so the host's board-level note is
+                        // the only way back. See the prop doc.
+                        onSelfHiddenChanged?.();
                     }}
                     gameId={gameId}
                     gameSlug={gameSlug}
