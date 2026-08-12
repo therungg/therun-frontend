@@ -57,6 +57,16 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
     }
 
     const { categories, groups } = await resolveCategory(resolvedGame.id);
+    // The page's own query string, handed to whichever view renders so a
+    // `?submit=1` deep link opens the submit dialog on arrival. Rebuilt from
+    // `sp` rather than read from the request, which a Server Component has no
+    // direct access to.
+    const initialSearch = new URLSearchParams(
+        Object.entries(sp).filter(
+            (e): e is [string, string] => typeof e[1] === 'string',
+        ),
+    ).toString();
+
     const decision = decideGameRootView(categories, sp.category);
     if (decision.view === 'redirect') {
         redirect(`/games-v2/${encodeURIComponent(resolvedGame.name)}`);
@@ -124,6 +134,7 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
                 moderators={moderators}
                 showRaces={showRaces}
                 activeRaces={activeRaces}
+                initialSearch={initialSearch}
             />
         );
     }
@@ -160,6 +171,7 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
             view={boardView}
             initialModLog={initialModLog}
             selfHidden={selfHidden}
+            initialSearch={initialSearch}
         />
     );
 }

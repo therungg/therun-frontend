@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Race } from '~app/(new-layout)/races/races.types';
 import Link from '~src/components/link';
-import { buildBoardHref, buildSubmitHref } from '~src/lib/board-url';
+import { buildBoardHref } from '~src/lib/board-url';
 import type { GameModerator } from '../../../../types/board-claims.types';
 import type {
     PublicModLogPage,
@@ -20,7 +20,8 @@ import { LeaderboardPager } from './leaderboard/leaderboard-pager';
 import { ModerationLogView } from './leaderboard/moderation/moderation-log-view';
 import { RulesBody } from './rules/rules-panel';
 import { Sidebar } from './sidebar/sidebar';
-import { SubmitDialogMount } from './submit-dialog/submit-dialog-mount';
+import { SubmitDialogProvider } from './submit-dialog/submit-dialog-context';
+import { SubmitLink } from './submit-dialog/submit-link';
 import type { GamePageData } from './types';
 
 interface Props {
@@ -45,6 +46,8 @@ interface Props {
      * affordance; see its `selfHidden` prop for why that can't live on a row.
      */
     selfHidden?: SelfAnonymizeState | null;
+    /** The page's own query string, so a `?submit=1` deep link opens on arrival. */
+    initialSearch: string;
 }
 
 export function GamePage({
@@ -58,6 +61,7 @@ export function GamePage({
     view = 'board',
     initialModLog,
     selfHidden = null,
+    initialSearch,
 }: Props) {
     const variableKeys = useMemo(
         () => data.variables.map((v) => v.nameNormalized),
@@ -73,42 +77,40 @@ export function GamePage({
 
     if (data.categories.length === 0) {
         return (
-            <div>
-                {/* Mounted on this branch too: "Submit the first run" below
-                    links to `?submit=1`, and without the dialog the button
-                    would do nothing. With no categories the dialog says so,
-                    which is the honest answer rather than silence. */}
-                <SubmitDialogMount
-                    game={data.game}
-                    categories={[]}
-                    groups={data.groups}
-                    gameRules={data.gameMeta.gameRules}
-                    emulatorPolicy={data.gameMeta.emulatorPolicy}
-                    canModerate={canManageRuns}
-                    sessionUsername={data.sessionUsername}
-                />
-                <GameHero
-                    game={data.game}
-                    stats={data.quickStats}
-                    gameMeta={data.gameMeta}
-                    categorySlug={null}
-                    subcategoryKey=""
-                    canManage={canManage}
-                    canModerate={canManageRuns}
-                    claim={claim}
-                />
-                <div className={styles.notice}>
-                    <p className="text-muted mb-0">
-                        No runs uploaded for this game yet.
-                    </p>
-                    <Link
-                        href={buildSubmitHref(data.game.name)}
-                        className={`${styles.primaryAction} mt-3`}
-                    >
-                        Submit the first run
-                    </Link>
+            <SubmitDialogProvider
+                game={data.game}
+                categories={[]}
+                groups={data.groups}
+                gameRules={data.gameMeta.gameRules}
+                emulatorPolicy={data.gameMeta.emulatorPolicy}
+                canModerate={canManageRuns}
+                sessionUsername={data.sessionUsername}
+                initialSearch={initialSearch}
+            >
+                <div>
+                    <GameHero
+                        game={data.game}
+                        stats={data.quickStats}
+                        gameMeta={data.gameMeta}
+                        categorySlug={null}
+                        subcategoryKey=""
+                        canManage={canManage}
+                        canModerate={canManageRuns}
+                        claim={claim}
+                    />
+                    <div className={styles.notice}>
+                        <p className="text-muted mb-0">
+                            No runs uploaded for this game yet.
+                        </p>
+                        <SubmitLink
+                            gameSlug={data.game.name}
+                            className={`${styles.primaryAction} mt-3`}
+                        >
+                            Submit the first run
+                        </SubmitLink>
+                    </div>
                 </div>
-            </div>
+            </SubmitDialogProvider>
         );
     }
 
@@ -150,172 +152,180 @@ export function GamePage({
         data.activeFilters.page > 1;
 
     return (
-        <BoardNavProvider value={boardNav}>
-            <div>
-                <SubmitDialogMount
-                    game={data.game}
-                    categories={data.categories}
-                    groups={data.groups}
-                    gameRules={data.gameMeta.gameRules}
-                    emulatorPolicy={data.gameMeta.emulatorPolicy}
-                    canModerate={canManageRuns}
-                    sessionUsername={data.sessionUsername}
-                    initialCategorySlug={data.selectedCategory.name}
-                    initialSubcategoryValues={
-                        data.activeFilters.subcategoryValues
-                    }
-                />
-                <BoardMasthead
-                    data={data}
-                    canManage={canManage}
-                    canManageRuns={canManageRuns}
-                    claim={claim}
-                    back={backToWall}
-                    subcategoryKey={subcategoryKey}
-                    rulesOpen={rulesOpen}
-                    onToggleRules={() => setRulesOpen((o) => !o)}
-                />
-                {rulesOpen &&
-                    (data.selectedCategory.rules?.trim() ||
-                        data.gameMeta.gameRules?.trim() ||
-                        data.gameMeta.emulatorPolicy) && (
-                        <RulesBody
-                            rules={data.selectedCategory.rules}
-                            gameRules={data.gameMeta.gameRules}
-                            emulatorPolicy={data.gameMeta.emulatorPolicy}
-                        />
-                    )}
-                <div className={styles.grid}>
-                    <div
-                        className={`${styles.colMain} ${boardNav.isPending ? styles.colMainPending : ''}`}
-                        // `pointer-events: none` (colMainPending) only stops
-                        // pointer input — keyboard/AT users could still tab
-                        // into the stale pager controls mid-navigation.
-                        // `inert` (React 19) removes the whole region from
-                        // the tab order and AT tree while a nav is pending;
-                        // the controls inside are stale during the pend
-                        // regardless, so going inert is harmless.
-                        inert={boardNav.isPending}
-                    >
-                        {view === 'moderation' ? (
-                            <ModerationLogView
-                                gameId={data.game.id}
-                                gameSlug={data.game.name}
-                                categories={data.categories}
-                                canManage={canManageRuns}
-                                initial={
-                                    initialModLog ?? {
-                                        items: [],
-                                        total: 0,
-                                        limit: 25,
-                                        offset: 0,
-                                        hasMore: false,
+        <SubmitDialogProvider
+            game={data.game}
+            categories={data.categories}
+            groups={data.groups}
+            gameRules={data.gameMeta.gameRules}
+            emulatorPolicy={data.gameMeta.emulatorPolicy}
+            canModerate={canManageRuns}
+            sessionUsername={data.sessionUsername}
+            defaultCategorySlug={data.selectedCategory.name}
+            defaultSubcategoryValues={data.activeFilters.subcategoryValues}
+            initialSearch={initialSearch}
+        >
+            <BoardNavProvider value={boardNav}>
+                <div>
+                    <BoardMasthead
+                        data={data}
+                        canManage={canManage}
+                        canManageRuns={canManageRuns}
+                        claim={claim}
+                        back={backToWall}
+                        subcategoryKey={subcategoryKey}
+                        rulesOpen={rulesOpen}
+                        onToggleRules={() => setRulesOpen((o) => !o)}
+                    />
+                    {rulesOpen &&
+                        (data.selectedCategory.rules?.trim() ||
+                            data.gameMeta.gameRules?.trim() ||
+                            data.gameMeta.emulatorPolicy) && (
+                            <RulesBody
+                                rules={data.selectedCategory.rules}
+                                gameRules={data.gameMeta.gameRules}
+                                emulatorPolicy={data.gameMeta.emulatorPolicy}
+                            />
+                        )}
+                    <div className={styles.grid}>
+                        <div
+                            className={`${styles.colMain} ${boardNav.isPending ? styles.colMainPending : ''}`}
+                            // `pointer-events: none` (colMainPending) only stops
+                            // pointer input — keyboard/AT users could still tab
+                            // into the stale pager controls mid-navigation.
+                            // `inert` (React 19) removes the whole region from
+                            // the tab order and AT tree while a nav is pending;
+                            // the controls inside are stale during the pend
+                            // regardless, so going inert is harmless.
+                            inert={boardNav.isPending}
+                        >
+                            {view === 'moderation' ? (
+                                <ModerationLogView
+                                    gameId={data.game.id}
+                                    gameSlug={data.game.name}
+                                    categories={data.categories}
+                                    canManage={canManageRuns}
+                                    initial={
+                                        initialModLog ?? {
+                                            items: [],
+                                            total: 0,
+                                            limit: 25,
+                                            offset: 0,
+                                            hasMore: false,
+                                        }
                                     }
+                                />
+                            ) : (
+                                <>
+                                    {data.invalidCombination ? (
+                                        <InvalidCombinationNotice
+                                            gameSlug={data.game.name}
+                                            categorySlug={
+                                                data.selectedCategory.name
+                                            }
+                                            suggestions={
+                                                data.invalidCombination
+                                                    .validCombinations
+                                            }
+                                            defs={data.variables}
+                                        />
+                                    ) : (
+                                        <LeaderboardPager
+                                            key={`${data.selectedCategory.id}|${subcategoryKey}|${JSON.stringify(data.activeFilters.varFilters)}|${data.activeFilters.combined}|${data.activeFilters.verified}`}
+                                            initial={data.leaderboard}
+                                            query={{
+                                                gameSlug: data.game.name,
+                                                categorySlug:
+                                                    data.selectedCategory.name,
+                                                timing: data.selectedCategory
+                                                    .primaryTiming,
+                                                subcategoryValues:
+                                                    data.activeFilters
+                                                        .subcategoryValues,
+                                                combined:
+                                                    data.activeFilters.combined,
+                                                varFilters:
+                                                    data.activeFilters
+                                                        .varFilters,
+                                                verified:
+                                                    data.activeFilters.verified,
+                                                pageSize:
+                                                    data.activeFilters.pageSize,
+                                            }}
+                                            sessionUsername={
+                                                data.sessionUsername
+                                            }
+                                            canManage={canManageRuns}
+                                            canSiteBan={canSiteBan}
+                                            gameSlug={data.game.name}
+                                            gameId={data.game.id}
+                                            gameDisplay={data.game.display}
+                                            selfHidden={selfHidden}
+                                            variableKeys={variableKeys}
+                                            primaryTiming={
+                                                data.selectedCategory
+                                                    .primaryTiming
+                                            }
+                                            gameTimeLabel={
+                                                data.selectedCategory
+                                                    .gameTimeLabel ?? 'igt'
+                                            }
+                                            filtersActive={filtersActive}
+                                            showMilliseconds={showMilliseconds}
+                                            categorySlug={
+                                                data.selectedCategory.name
+                                            }
+                                            categoryDisplay={
+                                                data.selectedCategory.display
+                                            }
+                                            categoryId={
+                                                data.selectedCategory.id
+                                            }
+                                            requireVideo={
+                                                data.selectedCategory
+                                                    .requireVideo ?? false
+                                            }
+                                            subcategoryKey={subcategoryKey}
+                                            subcategoryDefKeys={
+                                                subcategoryDefKeys
+                                            }
+                                            rtaFallback={
+                                                data.selectedCategory
+                                                    .rtaFallback ?? false
+                                            }
+                                            variableDefs={data.variables}
+                                            selectedVarFilters={
+                                                data.activeFilters.varFilters
+                                            }
+                                        />
+                                    )}
+                                </>
+                            )}
+                        </div>
+                        <aside className={styles.rail}>
+                            <Sidebar
+                                game={data.game}
+                                yourRuns={data.yourRuns}
+                                recentPbs={data.recentPbs}
+                                claim={claim}
+                                moderators={moderators}
+                                activeRaces={activeRaces}
+                                series={{
+                                    display: data.gameMeta.seriesDisplay,
+                                    games: data.gameMeta.seriesGames,
+                                }}
+                                board={data.selectedCategory}
+                                boardSize={data.leaderboard?.totalItems ?? null}
+                                categories={data.categories}
+                                about={
+                                    data.gameMeta.summaryOverride ??
+                                    data.gameMeta.summary
                                 }
                             />
-                        ) : (
-                            <>
-                                {data.invalidCombination ? (
-                                    <InvalidCombinationNotice
-                                        gameSlug={data.game.name}
-                                        categorySlug={
-                                            data.selectedCategory.name
-                                        }
-                                        suggestions={
-                                            data.invalidCombination
-                                                .validCombinations
-                                        }
-                                        defs={data.variables}
-                                    />
-                                ) : (
-                                    <LeaderboardPager
-                                        key={`${data.selectedCategory.id}|${subcategoryKey}|${JSON.stringify(data.activeFilters.varFilters)}|${data.activeFilters.combined}|${data.activeFilters.verified}`}
-                                        initial={data.leaderboard}
-                                        query={{
-                                            gameSlug: data.game.name,
-                                            categorySlug:
-                                                data.selectedCategory.name,
-                                            timing: data.selectedCategory
-                                                .primaryTiming,
-                                            subcategoryValues:
-                                                data.activeFilters
-                                                    .subcategoryValues,
-                                            combined:
-                                                data.activeFilters.combined,
-                                            varFilters:
-                                                data.activeFilters.varFilters,
-                                            verified:
-                                                data.activeFilters.verified,
-                                            pageSize:
-                                                data.activeFilters.pageSize,
-                                        }}
-                                        sessionUsername={data.sessionUsername}
-                                        canManage={canManageRuns}
-                                        canSiteBan={canSiteBan}
-                                        gameSlug={data.game.name}
-                                        gameId={data.game.id}
-                                        gameDisplay={data.game.display}
-                                        selfHidden={selfHidden}
-                                        variableKeys={variableKeys}
-                                        primaryTiming={
-                                            data.selectedCategory.primaryTiming
-                                        }
-                                        gameTimeLabel={
-                                            data.selectedCategory
-                                                .gameTimeLabel ?? 'igt'
-                                        }
-                                        filtersActive={filtersActive}
-                                        showMilliseconds={showMilliseconds}
-                                        categorySlug={
-                                            data.selectedCategory.name
-                                        }
-                                        categoryDisplay={
-                                            data.selectedCategory.display
-                                        }
-                                        categoryId={data.selectedCategory.id}
-                                        requireVideo={
-                                            data.selectedCategory
-                                                .requireVideo ?? false
-                                        }
-                                        subcategoryKey={subcategoryKey}
-                                        subcategoryDefKeys={subcategoryDefKeys}
-                                        rtaFallback={
-                                            data.selectedCategory.rtaFallback ??
-                                            false
-                                        }
-                                        variableDefs={data.variables}
-                                        selectedVarFilters={
-                                            data.activeFilters.varFilters
-                                        }
-                                    />
-                                )}
-                            </>
-                        )}
+                        </aside>
                     </div>
-                    <aside className={styles.rail}>
-                        <Sidebar
-                            game={data.game}
-                            yourRuns={data.yourRuns}
-                            recentPbs={data.recentPbs}
-                            claim={claim}
-                            moderators={moderators}
-                            activeRaces={activeRaces}
-                            series={{
-                                display: data.gameMeta.seriesDisplay,
-                                games: data.gameMeta.seriesGames,
-                            }}
-                            board={data.selectedCategory}
-                            boardSize={data.leaderboard?.totalItems ?? null}
-                            categories={data.categories}
-                            about={
-                                data.gameMeta.summaryOverride ??
-                                data.gameMeta.summary
-                            }
-                        />
-                    </aside>
                 </div>
-            </div>
-        </BoardNavProvider>
+            </BoardNavProvider>
+        </SubmitDialogProvider>
     );
 }
 

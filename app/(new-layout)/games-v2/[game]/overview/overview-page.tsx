@@ -8,7 +8,7 @@ import gamePageStyles from '../game-page.module.scss';
 import { GameHero } from '../header/game-hero';
 import { ViewTabs } from '../header/view-tabs';
 import { Sidebar } from '../sidebar/sidebar';
-import { SubmitDialogMount } from '../submit-dialog/submit-dialog-mount';
+import { SubmitDialogProvider } from '../submit-dialog/submit-dialog-context';
 import { CategoryCard } from './category-card';
 import { CollapsibleSection } from './collapsible-section';
 import type { GameOverviewData } from './data';
@@ -22,6 +22,8 @@ interface Props {
     moderators?: GameModerator[];
     showRaces?: boolean;
     activeRaces?: Race[];
+    /** The page's own query string, so a `?submit=1` deep link opens on arrival. */
+    initialSearch: string;
 }
 
 interface CardSection {
@@ -100,136 +102,144 @@ export function GameOverviewPage({
     moderators,
     showRaces,
     activeRaces,
+    initialSearch,
 }: Props) {
     const sections = sectionize(data.cards, data.groups);
 
     return (
-        <div>
-            {/* The hero and every card link to `?submit=1`; without this the
-                overview would change the URL and do nothing. Categories come
-                off the cards — the overview only ever holds Featured ones,
-                the same set the board's own dialog is given. */}
-            <SubmitDialogMount
-                game={data.game}
-                categories={data.cards.map((c) => c.category)}
-                groups={data.groups}
-                gameRules={data.gameMeta.gameRules}
-                emulatorPolicy={data.gameMeta.emulatorPolicy}
-                canModerate={canModerate}
-                sessionUsername={data.sessionUsername}
-            />
-            <GameHero
-                game={data.game}
-                stats={data.quickStats}
-                gameMeta={data.gameMeta}
-                categorySlug={null}
-                subcategoryKey=""
-                canManage={canManage}
-                canModerate={canModerate}
-                claim={claim}
-                activity={data.activitySparkline}
-            />
-            <div className={gamePageStyles.grid}>
-                <div className={gamePageStyles.colMain}>
-                    {/* Standings across a single category is just that board,
+        // The hero and every card trigger the dialog. The provider both owns
+        // it and lets those triggers open it without a navigation. Categories
+        // come off the cards — the overview only ever holds Featured ones,
+        // the same set the board's own dialog is given.
+        <SubmitDialogProvider
+            game={data.game}
+            categories={data.cards.map((c) => c.category)}
+            groups={data.groups}
+            gameRules={data.gameMeta.gameRules}
+            emulatorPolicy={data.gameMeta.emulatorPolicy}
+            canModerate={canModerate}
+            sessionUsername={data.sessionUsername}
+            initialSearch={initialSearch}
+        >
+            <div>
+                <GameHero
+                    game={data.game}
+                    stats={data.quickStats}
+                    gameMeta={data.gameMeta}
+                    categorySlug={null}
+                    subcategoryKey=""
+                    canManage={canManage}
+                    canModerate={canModerate}
+                    claim={claim}
+                    activity={data.activitySparkline}
+                />
+                <div className={gamePageStyles.grid}>
+                    <div className={gamePageStyles.colMain}>
+                        {/* Standings across a single category is just that board,
                         so the tabs only exist once there are two. */}
-                    {data.cards.length > 1 && (
-                        <ViewTabs
-                            gameSlug={data.game.name}
-                            showRaces={showRaces}
-                        />
-                    )}
-                    {data.cards.length === 0 ? (
-                        <div className={styles.emptyState}>
-                            <p className={styles.emptyTitle}>
-                                No leaderboards configured yet.
-                            </p>
-                            <p className={styles.emptyBody}>
-                                {canManage || canModerate
-                                    ? 'Mark categories as Featured in the console to publish their boards.'
-                                    : 'This game has no featured leaderboards yet.'}
-                            </p>
-                            {(canManage || canModerate) && (
-                                <Link
-                                    href={`/games-v2/${encodeURIComponent(data.game.name)}/manage`}
-                                    className={gamePageStyles.primaryAction}
-                                >
-                                    Open the console
-                                </Link>
-                            )}
-                        </div>
-                    ) : (
-                        sections.map((s) => {
-                            const grid = (
-                                <div className={styles.cardGrid}>
-                                    {s.cards.map((card, i) => (
-                                        <CategoryCard
-                                            key={card.category.id}
-                                            gameSlug={data.game.name}
-                                            card={card}
-                                            index={i}
-                                        />
-                                    ))}
-                                </div>
-                            );
-                            if (s.collapsed && s.name) {
-                                return (
-                                    <CollapsibleSection
-                                        key={s.key}
-                                        name={s.name}
-                                        count={s.cards.length}
+                        {data.cards.length > 1 && (
+                            <ViewTabs
+                                gameSlug={data.game.name}
+                                showRaces={showRaces}
+                            />
+                        )}
+                        {data.cards.length === 0 ? (
+                            <div className={styles.emptyState}>
+                                <p className={styles.emptyTitle}>
+                                    No leaderboards configured yet.
+                                </p>
+                                <p className={styles.emptyBody}>
+                                    {canManage || canModerate
+                                        ? 'Mark categories as Featured in the console to publish their boards.'
+                                        : 'This game has no featured leaderboards yet.'}
+                                </p>
+                                {(canManage || canModerate) && (
+                                    <Link
+                                        href={`/games-v2/${encodeURIComponent(data.game.name)}/manage`}
+                                        className={gamePageStyles.primaryAction}
                                     >
-                                        {grid}
-                                    </CollapsibleSection>
+                                        Open the console
+                                    </Link>
+                                )}
+                            </div>
+                        ) : (
+                            sections.map((s) => {
+                                const grid = (
+                                    <div className={styles.cardGrid}>
+                                        {s.cards.map((card, i) => (
+                                            <CategoryCard
+                                                key={card.category.id}
+                                                gameSlug={data.game.name}
+                                                card={card}
+                                                index={i}
+                                            />
+                                        ))}
+                                    </div>
                                 );
-                            }
-                            return (
-                                <section key={s.key} className={styles.section}>
-                                    {s.name && (
-                                        <h2 className={styles.sectionHead}>
-                                            <span
-                                                className={styles.sectionLabel}
-                                            >
-                                                {s.name}
-                                                {/* Count rides the label —
+                                if (s.collapsed && s.name) {
+                                    return (
+                                        <CollapsibleSection
+                                            key={s.key}
+                                            name={s.name}
+                                            count={s.cards.length}
+                                        >
+                                            {grid}
+                                        </CollapsibleSection>
+                                    );
+                                }
+                                return (
+                                    <section
+                                        key={s.key}
+                                        className={styles.section}
+                                    >
+                                        {s.name && (
+                                            <h2 className={styles.sectionHead}>
+                                                <span
+                                                    className={
+                                                        styles.sectionLabel
+                                                    }
+                                                >
+                                                    {s.name}
+                                                    {/* Count rides the label —
                                                     stranded at the far end
                                                     of the hairline it read
                                                     as an orphan. */}
-                                                <span
-                                                    className={
-                                                        styles.sectionCount
-                                                    }
-                                                >
-                                                    {s.cards.length}
+                                                    <span
+                                                        className={
+                                                            styles.sectionCount
+                                                        }
+                                                    >
+                                                        {s.cards.length}
+                                                    </span>
                                                 </span>
-                                            </span>
-                                        </h2>
-                                    )}
-                                    {grid}
-                                </section>
-                            );
-                        })
-                    )}
+                                            </h2>
+                                        )}
+                                        {grid}
+                                    </section>
+                                );
+                            })
+                        )}
+                    </div>
+                    <aside className={gamePageStyles.rail}>
+                        <Sidebar
+                            game={data.game}
+                            yourRuns={data.yourRuns}
+                            recentPbs={data.recentPbs}
+                            claim={claim}
+                            moderators={moderators}
+                            activeRaces={activeRaces}
+                            series={{
+                                display: data.gameMeta.seriesDisplay,
+                                games: data.gameMeta.seriesGames,
+                            }}
+                            about={
+                                data.gameMeta.summaryOverride ??
+                                data.gameMeta.summary
+                            }
+                        />
+                    </aside>
                 </div>
-                <aside className={gamePageStyles.rail}>
-                    <Sidebar
-                        game={data.game}
-                        yourRuns={data.yourRuns}
-                        recentPbs={data.recentPbs}
-                        claim={claim}
-                        moderators={moderators}
-                        activeRaces={activeRaces}
-                        series={{
-                            display: data.gameMeta.seriesDisplay,
-                            games: data.gameMeta.seriesGames,
-                        }}
-                        about={
-                            data.gameMeta.summaryOverride ??
-                            data.gameMeta.summary
-                        }
-                    />
-                </aside>
             </div>
-        </div>
+        </SubmitDialogProvider>
     );
 }
