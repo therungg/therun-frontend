@@ -21,9 +21,14 @@ interface Input {
     sortOrder?: number;
     /**
      * Game-default timing + rules template to apply when this call features
-     * a category (`isMain: true`). Only the setup wizard's feature-on
-     * transition passes this — it's first-setup seeding, not curation, so
-     * the console categories table always leaves it unset.
+     * a category (`isMain: true`).
+     *
+     * Passed by the two deliberate feature-on paths: the setup wizard's step 2
+     * and the console's add-to-board dialog. Both are the same act — putting a
+     * cold category on the board, which should not land there with no timing
+     * and no rules. (The rule this replaces said "console never seeds", back
+     * when the console featured categories through a checkbox column over
+     * every category the game had ever seen; that column is gone.)
      */
     seed?: CategorySeed;
     /** Whether the category's current rules were empty before this call — gates whether `seed.rulesTemplate` gets written. */

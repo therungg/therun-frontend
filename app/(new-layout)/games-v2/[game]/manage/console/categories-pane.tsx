@@ -1,17 +1,21 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type { CategoryConfigRow } from '~src/lib/console/category-rows';
 import { previewCategories } from '~src/lib/console/preview-categories';
 import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
+import type { GameMetadata } from '~src/lib/game-mgmt';
 import type {
     ResolvedCategory,
     ResolvedGame,
     ResolvedGroup,
 } from '../../../../../../types/leaderboards.types';
 import { CategoryBandPreview } from '../../setup/steps/category-band-preview';
-import { CategoriesTable } from '../game-tab/categories-table';
+import { buildCategorySeed } from '../../setup/steps/category-seed';
 import type { ReorderChange } from '../game-tab/reorder-changes';
+import { AddCategoryDialog } from './add-category-dialog';
+import { BoardCategoriesTable } from './board-categories-table';
 import styles from './console.module.scss';
 
 interface Props {
@@ -23,6 +27,9 @@ interface Props {
      *  the live flags on top of it. */
     boardCategories: ResolvedCategory[];
     boardGroups: ResolvedGroup[];
+    /** Game defaults seeded onto a category as it joins the board. Absent for
+     *  viewers whose console didn't load game details. */
+    metadata?: GameMetadata | null;
     onRowChange: (
         categoryId: number,
         patch: { isMain?: boolean; active?: boolean },
@@ -38,14 +45,14 @@ interface Props {
 }
 
 /**
- * The category index — the console's answer to "how is this board configured,
- * and where does it disagree with itself?"
+ * The board's category list — "what is on my board, and where does it
+ * disagree with itself?"
  *
- * This is the destination that replaced six category-scoped panes and the
- * sidebar's category <select>. The table carries both halves: the board
- * columns it always had (featured, archived, group, stats) and the
- * configuration columns from `config`, where a `▲` marks the odd one out.
- * Clicking a category opens its detail screen.
+ * Featured-only by design: the table is the board, in board order, and the
+ * ~860 other categories a big game accumulates live behind the add dialog
+ * rather than in a filter tab. That shape is deliberately the setup wizard's
+ * step 2 — band preview, ranked list, coverage meter — because the console and
+ * the wizard are curating the same thing and should say so the same way.
  */
 export function CategoriesPane({
     game,
@@ -54,29 +61,64 @@ export function CategoriesPane({
     groups,
     boardCategories,
     boardGroups,
+    metadata,
     onRowChange,
     onRowGroupChange,
     onRowsReorder,
     onGroupsChange,
     onEditCategory,
 }: Props) {
+    const [addOpen, setAddOpen] = useState(false);
+
     // The same live preview the wizard's step 2 shows, off the same renderer
     // the public band uses. Featuring a category here is a bet about what the
     // board will look like; the wizard stopped making people place that bet
     // blind, and the console had no reason to keep asking for it.
     const previewed = previewCategories(boardCategories, rows);
 
+    // Everything with runs that isn't on the board — the add dialog's pool.
+    // Archived categories are excluded: they have their own restore path
+    // under the table, and adding one would feature something the board
+    // refuses to render.
+    const pool = useMemo(
+        () => rows.filter((r) => !r.isMain && r.active),
+        [rows],
+    );
+
+    // A category whose own rules are still empty may take the game's rules
+    // template when it joins the board; one that already has rules must never
+    // have them clobbered. Unknown ids count as "has rules" — the conservative
+    // side of a write we can't verify.
+    const rulesEmptyIds = useMemo(() => {
+        const ids = new Set<number>();
+        for (const c of boardCategories) {
+            if (!(c.rules ?? '').trim()) ids.add(c.id);
+        }
+        return ids;
+    }, [boardCategories]);
+
+    const seed = metadata ? buildCategorySeed(metadata) : null;
+
     return (
         <section className={styles.surface}>
             <div className={styles.paneHeader}>
                 <h2 className={styles.paneTitle}>{CONCEPT_LABEL.categories}</h2>
+                <div className={styles.paneActions}>
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-primary"
+                        onClick={() => setAddOpen(true)}
+                    >
+                        + Add category to board
+                    </button>
+                </div>
             </div>
             <p className={styles.paneLede}>
-                Bulk-manage which categories are visible and which are featured.
-                Use "Edit" to open a category for detailed settings.
+                The categories on your board right now, in the order the public
+                page shows them.
             </p>
             <CategoryBandPreview categories={previewed} groups={boardGroups} />
-            <CategoriesTable
+            <BoardCategoriesTable
                 game={game}
                 rows={rows}
                 config={config}
@@ -86,6 +128,17 @@ export function CategoriesPane({
                 onRowsReorder={onRowsReorder}
                 onGroupCreated={(g) => onGroupsChange([...groups, g])}
                 onEdit={onEditCategory}
+            />
+            <AddCategoryDialog
+                open={addOpen}
+                onClose={() => setAddOpen(false)}
+                game={game}
+                pool={pool}
+                seed={seed}
+                rulesEmptyIds={rulesEmptyIds}
+                onAdded={(ids) => {
+                    for (const id of ids) onRowChange(id, { isMain: true });
+                }}
             />
         </section>
     );
