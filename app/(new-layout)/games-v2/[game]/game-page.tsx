@@ -79,6 +79,7 @@ export function GamePage({
         return (
             <SubmitDialogProvider
                 game={data.game}
+                coverUrl={data.gameMeta.coverUrl}
                 categories={[]}
                 groups={data.groups}
                 gameRules={data.gameMeta.gameRules}
@@ -154,6 +155,7 @@ export function GamePage({
     return (
         <SubmitDialogProvider
             game={data.game}
+            coverUrl={data.gameMeta.coverUrl}
             categories={data.categories}
             groups={data.groups}
             gameRules={data.gameMeta.gameRules}

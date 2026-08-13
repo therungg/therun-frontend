@@ -39,6 +39,8 @@ export function useSubmitDialog(): SubmitDialogApi | null {
 
 interface Props {
     game: SubmitDialogGame;
+    /** Moderator-set cover, which wins over the IGDB one — as on the hero. */
+    coverUrl?: string | null;
     categories: ResolvedCategory[];
     groups: ResolvedGroup[];
     gameRules?: string | null;
@@ -68,6 +70,7 @@ interface Props {
  */
 export function SubmitDialogProvider({
     game,
+    coverUrl,
     categories,
     groups,
     gameRules,
@@ -136,6 +139,7 @@ export function SubmitDialogProvider({
             {children}
             <SubmitRunDialog
                 game={game}
+                coverUrl={coverUrl}
                 categories={categories}
                 groups={groups}
                 gameRules={gameRules}
