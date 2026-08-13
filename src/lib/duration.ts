@@ -1,6 +1,9 @@
-// Parses run-submission times losslessly. Unlike the presenter target-time
-// parser (`time-input.ts`), a bare number here is SECONDS, not minutes, and
-// fractional seconds are kept in full (never truncated to whole seconds).
+// The one parser for every typed run time on the leaderboards — submitting a
+// run, a moderator entering or replacing a time, and board minimums.
+//
+// A bare number is SECONDS, not minutes, and fractional seconds are kept in
+// full (never truncated). This used to be four parsers that disagreed about
+// exactly that: see docs/plans/2026-08-13-duration-field-design.md.
 //
 // Accepted shapes:
 //   h:mm:ss(.mmm)   e.g. 1:23:45.678
@@ -14,7 +17,7 @@
 // actually present (e.g. `1:75:00` is rejected because minutes >= 60 while
 // hours are present; a bare `150` is fine — there's no higher unit to
 // bound it).
-export const parseRunTimeInput = (raw: string): number | undefined => {
+export const parseDurationText = (raw: string): number | undefined => {
     const trimmed = raw.trim();
     if (trimmed.length === 0) return undefined;
 
@@ -85,7 +88,7 @@ function parseCourtesyShape(trimmed: string): number | undefined {
 
 // Always shows full precision: h:mm:ss.mmm, with the fraction dropped only
 // when the milliseconds are exactly zero.
-export const formatRunTimeEcho = (ms: number): string => {
+export const formatDuration = (ms: number): string => {
     const totalSeconds = Math.floor(ms / 1000);
     const millis = ms % 1000;
     const h = Math.floor(totalSeconds / 3600);
@@ -95,4 +98,22 @@ export const formatRunTimeEcho = (ms: number): string => {
     const base = h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
     if (millis === 0) return base;
     return `${base}.${String(millis).padStart(3, '0')}`;
+};
+
+/**
+ * The canonical, full-precision form: always `h:mm:ss.mmm`.
+ *
+ * This is what the duration field's readout shows. It never elides a unit,
+ * which is the point — the input shows what was typed, this shows what it
+ * means, so the two are never redundant.
+ */
+export const formatDurationFull = (ms: number): string => {
+    const total = Math.max(0, Math.round(ms));
+    const millis = total % 1000;
+    const totalSeconds = Math.floor(total / 1000);
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+    const pad = (n: number, w: number) => String(n).padStart(w, '0');
+    return `${h}:${pad(m, 2)}:${pad(s, 2)}.${pad(millis, 3)}`;
 };

@@ -1,0 +1,87 @@
+@use '../../../app/(new-layout)/styles/design-tokens' as dt;
+
+// ============================================================
+// DurationField — the one way to type a run time.
+// Digits fill from the right and the colons are drawn by the
+// field, so this is a timer readout that happens to take input,
+// not a text box. Tabular numerals keep it from twitching as
+// the digits change.
+// ============================================================
+
+.wrap {
+    display: flex;
+    flex-direction: column;
+}
+
+.input {
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+    color: var(--bs-body-color);
+    background: var(--bs-tertiary-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: dt.$radius-sm;
+    outline: none;
+
+    &::placeholder {
+        color: var(--bs-secondary-color);
+        opacity: 0.45;
+    }
+
+    &:focus-visible {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
+
+// The submit dialog and the moderator's manual-time dialog: the time is the
+// subject of the screen, so it is sized like one.
+.lg {
+    width: 100%;
+    font-size: clamp(1.5rem, 5vw, 2rem);
+    letter-spacing: 0.01em;
+    padding: 0.5rem 0.75rem;
+}
+
+// Table cells: matches `.form-control-sm` metrics so it sits in a row of
+// ordinary inputs without reflowing it.
+.sm {
+    width: 9rem;
+    font-size: dt.$font-size-sm;
+    padding: 0.25rem 0.5rem;
+}
+
+// What the entry parses as. The field shows what was typed; this shows what
+// it means, so the two are never redundant.
+.readout {
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+    color: var(--bs-secondary-color);
+    margin: 0.4rem 0 0;
+}
+
+.readoutLg {
+    font-size: dt.$font-size-sm;
+}
+
+// In a cell there is no room for a permanent second line, so the readout only
+// appears while the cell has focus. It still occupies its space when hidden —
+// a row that grows on focus would shove the whole table down.
+.readoutSm {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    min-height: 1.1rem;
+    visibility: hidden;
+}
+
+.readoutSmVisible {
+    visibility: visible;
+}
+
+.empty {
+    opacity: 0.6;
+}
