@@ -9,6 +9,7 @@ import {
     Rulers,
 } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
+import { DurationField } from '~src/components/time-input/duration-field';
 import {
     findCategoryMinPolicy,
     findGameMinPolicy,
@@ -28,10 +29,6 @@ import {
     deletePolicyAction,
     updatePolicyAction,
 } from '../moderation/policies/actions/policies-actions.action';
-import {
-    msToTimeInput,
-    parseTimeInput,
-} from '../moderation/shared/time-format';
 import { updateTimingSettingsAction } from '../timing/actions/update-timing-settings.action';
 import { updateVariableAction } from '../variables/actions/update-variable.action';
 import styles from './board-curation.module.scss';
@@ -133,7 +130,7 @@ function MinimumControl({
 }: MinimumControlProps) {
     const router = useRouter();
     const [open, setOpen] = useState(false);
-    const [input, setInput] = useState('');
+    const [minMs, setMinMs] = useState<number | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isSaving, startSaving] = useTransition();
     const rootRef = useRef<HTMLDivElement>(null);
@@ -160,26 +157,20 @@ function MinimumControl({
         const existing =
             findCategoryMinPolicy(policies, category.id) ??
             findGameMinPolicy(policies);
-        setInput(msToTimeInput(minMsFromPolicy(existing, timing)));
+        setMinMs(minMsFromPolicy(existing, timing));
         setError(null);
         setOpen(true);
     };
 
     const handleSave = () => {
         setError(null);
-        const parsed = parseTimeInput(input);
-        if (parsed != null && Number.isNaN(parsed)) {
-            setError('Enter a valid time (h:mm:ss, m:ss, or m:ss.SSS).');
-            return;
-        }
-
         // Only a category-scoped policy is ever read/written/deleted here —
         // a game-wide floor (categoryId null) stays untouched even when it's
         // what the input was seeded from.
         const existing = findCategoryMinPolicy(policies, category.id);
 
         startSaving(async () => {
-            if (parsed == null) {
+            if (minMs === null) {
                 if (!existing) {
                     // Nothing category-scoped to clear — the input was only
                     // showing the inherited game-wide floor.
@@ -198,7 +189,7 @@ function MinimumControl({
                 return;
             }
 
-            const value = minValueForTiming(timing, parsed);
+            const value = minValueForTiming(timing, minMs);
             const res = existing
                 ? await updatePolicyAction(gameSlug, existing.id, value)
                 : await createPolicyAction(gameSlug, {
@@ -244,13 +235,11 @@ function MinimumControl({
                         Reject {timing === 'gt' ? 'game time' : 'real time'}{' '}
                         under
                     </label>
-                    <input
+                    <DurationField
                         id="board-min-input"
-                        type="text"
-                        className="form-control form-control-sm"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder="e.g. 0:30 (empty = no minimum)"
+                        size="sm"
+                        value={minMs}
+                        onChange={setMinMs}
                         disabled={isSaving}
                     />
                     {error && (

@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useMemo, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
+import { DurationField } from '~src/components/time-input/duration-field';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
 import type {
@@ -13,10 +14,7 @@ import { loadUserEligibleRunsAction } from '../moderation/shared/actions/eligibl
 import { excludeAction } from '../moderation/shared/actions/exclude.action';
 import { createManualTimeAction } from '../moderation/shared/actions/manual-times.action';
 import { restoreRunsAction } from '../moderation/shared/actions/restore.action';
-import {
-    msToTimeInput,
-    parseTimeInput,
-} from '../moderation/shared/time-format';
+
 import { fireUndoToast } from '../moderation/shared/undo-toast';
 import styles from './board-curation.module.scss';
 import { primaryValueOf } from './row-actions';
@@ -63,7 +61,7 @@ export function AdjustDialog({
     const [selectedTarget, setSelectedTarget] = useState<number>(row.runId);
 
     // ---- Set a time instead ---------------------------------------------
-    const [timeText, setTimeText] = useState('');
+    const [setTimeMs, setSetTimeMs] = useState<number | null>(null);
     // Optional "when was this achieved" (yyyy-mm-dd). Empty => the board
     // shows the manual time's created-at.
     const [dateText, setDateText] = useState('');
@@ -80,7 +78,7 @@ export function AdjustDialog({
         if (!open) return;
         setSelectedTarget(row.runId);
         setPickError(null);
-        setTimeText(msToTimeInput(timeMs));
+        setSetTimeMs(timeMs ?? null);
         setDateText('');
         setReasonText('');
         setTimeError(null);
@@ -142,7 +140,8 @@ export function AdjustDialog({
     // consequence line right above the button already explains why.
     const confirmPickDisabled =
         isLoadingEligible || isPending || fasterIds.length === 0;
-    const saveTimeDisabled = isPending || reasonText.trim().length === 0;
+    const saveTimeDisabled =
+        isPending || reasonText.trim().length === 0 || setTimeMs === null;
 
     const handleClose = () => {
         if (isPending) return;
@@ -175,9 +174,8 @@ export function AdjustDialog({
 
     const handleSaveTime = () => {
         if (saveTimeDisabled) return;
-        const parsed = parseTimeInput(timeText);
-        if (parsed == null || Number.isNaN(parsed)) {
-            setTimeError('Enter a valid time (h:mm:ss, m:ss, or m:ss.SSS).');
+        if (setTimeMs === null) {
+            setTimeError('Enter a time.');
             return;
         }
         setTimeError(null);
@@ -191,7 +189,7 @@ export function AdjustDialog({
                 subcategoryKey,
                 timing:
                     category.primaryTiming === 'gt' ? 'gametime' : 'realtime',
-                timeMs: parsed,
+                timeMs: setTimeMs,
                 runDate: dateText || null,
                 reason: reasonText,
             });
@@ -360,13 +358,11 @@ export function AdjustDialog({
                     <label htmlFor="adjust-time" className={styles.fieldLabel}>
                         Time
                     </label>
-                    <input
+                    <DurationField
                         id="adjust-time"
-                        type="text"
-                        className={styles.timeInput}
-                        value={timeText}
-                        onChange={(e) => setTimeText(e.target.value)}
-                        placeholder="e.g. 35:48"
+                        size="sm"
+                        value={setTimeMs}
+                        onChange={setSetTimeMs}
                         disabled={isPending}
                     />
                     {timeError && (

@@ -7,6 +7,7 @@ import {
     waitFor,
 } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { typeDuration } from '~src/components/time-input/test-utils';
 import type { UserEligibleRunRow } from '../../../../../../../types/moderation.types';
 
 const mocks = vi.hoisted(() => ({
@@ -263,9 +264,7 @@ describe('remove step flow', () => {
         expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled();
         // 1:40:00 is slower than the runner's 1:35:25 other run — that
         // faster run goes with the removal (it would outrank the set time).
-        fireEvent.change(screen.getByLabelText('Custom time'), {
-            target: { value: '1:40:00' },
-        });
+        typeDuration(screen.getByLabelText('Custom time'), '14000');
         fireEvent.change(screen.getByLabelText('Date achieved (optional)'), {
             target: { value: '2026-08-01' },
         });

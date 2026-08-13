@@ -5,7 +5,6 @@ import { selfClaimTimeAction } from '~src/actions/self-claim.action';
 import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
 import { buildBoardHref, gameSegment } from '~src/lib/board-url';
-import { parseRunTimeInput } from '~src/lib/run-time-input';
 import type {
     ResolvedCategory,
     ResolvedGroup,
@@ -21,13 +20,7 @@ import { buildSubcategoryKey } from '../submit/subcategory-key';
 import type { RunnerChoice } from './runner-state';
 import { StepBoard } from './step-board';
 import { StepRunner } from './step-runner';
-import {
-    EMPTY_TIME,
-    isValidHttpUrl,
-    StepTime,
-    type TimeField,
-    todayISODate,
-} from './step-time';
+import { isValidHttpUrl, StepTime, todayISODate } from './step-time';
 import styles from './submit-run-dialog.module.scss';
 
 export interface SubmitDialogGame {
@@ -239,7 +232,7 @@ export function SubmitRunDialog({
 
     // ---- Time step -------------------------------------------------------
     const [timing, setTiming] = useState<ModTiming>('realtime');
-    const [time, setTime] = useState<TimeField>(EMPTY_TIME);
+    const [timeMs, setTimeMs] = useState<number | null>(null);
     const [runDate, setRunDate] = useState<string>(todayISODate());
     const [vodUrl, setVodUrl] = useState('');
     const [vodTouched, setVodTouched] = useState(false);
@@ -276,22 +269,11 @@ export function SubmitRunDialog({
         setTiming(category?.primaryTiming === 'gt' ? 'gametime' : 'realtime');
     }, [category?.primaryTiming]);
 
-    const parseTimeInto = (raw: string) => {
-        const trimmed = raw.trim();
-        if (trimmed.length === 0) {
-            setTime({ raw, ms: undefined, error: false });
-            return;
-        }
-        const ms = parseRunTimeInput(trimmed);
-        setTime({ raw, ms, error: ms === undefined });
-    };
-
     const boardStepValid = !varsLoading && !combinationInvalid && !!category;
     const runnerStepValid = choice !== null && choice.canProceed;
     const vodInvalid =
         vodUrl.trim().length > 0 && !isValidHttpUrl(vodUrl.trim());
-    const timeStepValid =
-        time.ms !== undefined && !time.error && !vodInvalid && !submitting;
+    const timeStepValid = timeMs !== null && !vodInvalid && !submitting;
 
     const stepValid =
         step === 'board'
@@ -303,7 +285,7 @@ export function SubmitRunDialog({
     const reset = () => {
         setStepIndex(0);
         setChoice(null);
-        setTime(EMPTY_TIME);
+        setTimeMs(null);
         setRunDate(todayISODate());
         setVodUrl('');
         setVodTouched(false);
@@ -312,7 +294,7 @@ export function SubmitRunDialog({
     };
 
     const submit = async () => {
-        if (!category || time.ms === undefined) return;
+        if (!category || timeMs === null) return;
         setSubmitting(true);
         setError(null);
 
@@ -326,7 +308,7 @@ export function SubmitRunDialog({
                 categoryId: category.id,
                 subcategoryKey,
                 timing: effectiveTiming,
-                timeMs: time.ms,
+                timeMs,
                 evidenceUrl: vodUrl.trim() || null,
                 runDate: runDate || null,
                 reason: 'Added via Submit a run',
@@ -346,7 +328,7 @@ export function SubmitRunDialog({
             gameId: game.id,
             categoryId: category.id,
             timing: effectiveTiming,
-            timeMs: time.ms,
+            timeMs,
             subcategoryKey:
                 subcategoryKey.length > 0 ? subcategoryKey : undefined,
             evidenceUrl: vodUrl.trim() || null,
@@ -520,8 +502,8 @@ export function SubmitRunDialog({
                                 timing={effectiveTiming}
                                 onTimingChange={setTiming}
                                 gameTimeLabel={category.gameTimeLabel ?? 'igt'}
-                                time={time}
-                                onTimeChange={parseTimeInto}
+                                timeMs={timeMs}
+                                onTimeChange={setTimeMs}
                                 runDate={runDate}
                                 onRunDateChange={setRunDate}
                                 vodUrl={vodUrl}

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
+import { DurationField } from '~src/components/time-input/duration-field';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { ResolvedCategory } from '../../../../../../../types/leaderboards.types';
 import type {
@@ -20,7 +21,6 @@ import {
 import { loadRosterAction } from '../roster/actions/load-roster.action';
 import { loadStandardsAction } from './actions/standards.action';
 import styles from './standards.module.scss';
-import { msToInput, parseTime } from './time-input';
 
 interface Props {
     gameSlug: string;
@@ -51,16 +51,16 @@ function findPolicy(
     );
 }
 
-function minInputFromPolicies(
+function minMsFromPolicies(
     policies: BoardPolicyRow[],
     categoryId: number,
     timing: 'rt' | 'gt',
-): string {
+): number | null {
     const min = findPolicy(policies, 'min_time', categoryId);
-    if (!min) return msToInput(null);
+    if (!min) return null;
     const bound =
         timing === 'gt' ? min.value.minGameTimeMs : min.value.minTimeMs;
-    return msToInput(num(bound) ?? null);
+    return num(bound) ?? null;
 }
 
 export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
@@ -69,8 +69,8 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
     // rule as the board (board-curation.tsx): anything but 'gt' means 'rt'.
     const timing: 'rt' | 'gt' = category.primaryTiming === 'gt' ? 'gt' : 'rt';
     const [policies, setPolicies] = useState<BoardPolicyRow[]>([]);
-    const [minInput, setMinInput] = useState('');
-    const [originalMinInput, setOriginalMinInput] = useState('');
+    const [minMs, setMinMs] = useState<number | null>(null);
+    const [originalMinMs, setOriginalMinMs] = useState<number | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [isSaving, startSaving] = useTransition();
@@ -90,9 +90,9 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
                 return;
             }
             setPolicies(res.policies);
-            const min = minInputFromPolicies(res.policies, catId, timing);
-            setMinInput(min);
-            setOriginalMinInput(min);
+            const min = minMsFromPolicies(res.policies, catId, timing);
+            setMinMs(min);
+            setOriginalMinMs(min);
             setLoading(false);
         },
         [gameSlug, timing],
@@ -107,23 +107,15 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
         });
     }, [categoryId, gameSlug, loadForCategory]);
 
-    const dirty = minInput !== originalMinInput;
+    const dirty = minMs !== originalMinMs;
 
     const handleReset = () => {
-        setMinInput(originalMinInput);
+        setMinMs(originalMinMs);
         setError(null);
     };
 
     const handleSave = () => {
         setError(null);
-
-        const minMsParsed = parseTime(minInput);
-        if (Number.isNaN(minMsParsed)) {
-            setError(
-                'Time must be in h:mm:ss, m:ss, or m:ss.SSS format and greater than zero.',
-            );
-            return;
-        }
 
         const cid = categoryId;
 
@@ -143,21 +135,21 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
 
             const boundKey = timing === 'gt' ? 'minGameTimeMs' : 'minTimeMs';
 
-            if (minMsParsed == null) {
+            if (minMs === null) {
                 if (existing) {
                     op = () => deletePolicyAction(gameSlug, existing.id);
                 }
             } else if (existing) {
-                if (num(existing.value[boundKey]) !== minMsParsed) {
+                if (num(existing.value[boundKey]) !== minMs) {
                     op = () =>
                         updatePolicyAction(gameSlug, existing.id, {
-                            [boundKey]: minMsParsed,
+                            [boundKey]: minMs,
                         });
                 }
             } else {
                 const input: CreatePolicyInput = {
                     policyType: 'min_time',
-                    value: { [boundKey]: minMsParsed },
+                    value: { [boundKey]: minMs },
                     categoryId: cid,
                 };
                 op = () => createPolicyAction(gameSlug, input);
@@ -182,9 +174,6 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
     };
 
     // ── Live preview (client-side, reflects the UNSAVED field value) ──────
-    const minPreview = parseTime(minInput);
-    const minMs =
-        minPreview != null && !Number.isNaN(minPreview) ? minPreview : null;
     const belowMin =
         minMs == null
             ? []
@@ -202,7 +191,7 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
             // A minimum is optional — done when one is saved, unmarked (not
             // "needs attention") otherwise. Saved state, so it can't flip
             // while typing; absent while the initial load is in flight.
-            status={!loading && originalMinInput.trim() ? 'done' : undefined}
+            status={!loading && originalMinMs !== null ? 'done' : undefined}
             lede={
                 <>
                     Set the minimum time for <strong>{category.display}</strong>{' '}
@@ -224,13 +213,11 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
                                 {timing === 'gt' ? 'in-game time' : 'real time'}{' '}
                                 under
                             </label>
-                            <input
+                            <DurationField
                                 id="std-min"
-                                type="text"
-                                className="form-control form-control-sm"
-                                value={minInput}
-                                onChange={(e) => setMinInput(e.target.value)}
-                                placeholder="e.g. 0:30 (none = no minimum)"
+                                size="sm"
+                                value={minMs}
+                                onChange={setMinMs}
                                 disabled={!canEdit || isSaving}
                             />
                         </div>
