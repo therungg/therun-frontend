@@ -7,7 +7,7 @@ import { lookupRunnerEntriesAction } from '~src/actions/runner-entries.action';
 import Link from '~src/components/link';
 import type { SearchResults } from '~src/components/search/find-user-or-run';
 import { gameSegment } from '~src/lib/board-url';
-import { formatRunTimeEcho } from '~src/lib/run-time-input';
+import { formatDuration } from '~src/lib/duration';
 import { fetcher } from '~src/utils/fetcher';
 import type { RunnerGameEntry } from '../../../../../types/leaderboards.types';
 import {
@@ -36,7 +36,7 @@ function entryHref(gameSlug: string, entry: RunnerGameEntry): string {
 function describeEntry(entry: RunnerGameEntry): string {
     const rank =
         entry.rank != null ? ` (#${entry.rank} of ${entry.totalRunners})` : '';
-    return `${formatRunTimeEcho(entry.timeMs)}${rank}`;
+    return `${formatDuration(entry.timeMs)}${rank}`;
 }
 
 /**

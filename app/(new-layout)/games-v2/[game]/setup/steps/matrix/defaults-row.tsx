@@ -1,9 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
+import { DurationField } from '~src/components/time-input/duration-field';
 import type { BulkCategoryFields } from '~src/lib/category-mgmt';
+import { formatDuration } from '~src/lib/duration';
 import {
     type BoardDefaults,
     categoriesNotOn,
@@ -16,7 +18,6 @@ import {
     timingLabel,
 } from '~src/lib/setup/board-defaults';
 import { findGameMinPolicy } from '~src/lib/setup/game-minimum';
-import { formatTimeInput, parseTimeInput } from '~src/lib/time-input';
 import type { ResolvedCategory } from '../../../../../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../../../../../types/moderation.types';
 import { setBoardMinimumAction } from '../../actions/set-board-minimum.action';
@@ -82,6 +83,12 @@ export function DefaultsRow({
 }: Props) {
     const router = useRouter();
     const [isSaving, startSave] = useTransition();
+    // The cell is controlled while the mod is in it; the saved value re-seeds
+    // it whenever the row refreshes after a save.
+    const [minMs, setMinMs] = useState<number | null>(defaults.minMs);
+    useEffect(() => {
+        setMinMs(defaults.minMs);
+    }, [defaults.minMs]);
     const [openTemplate, setOpenTemplate] = useState(false);
     const [offer, setOffer] = useState<Offer | null>(null);
 
@@ -159,13 +166,7 @@ export function DefaultsRow({
         });
     };
 
-    const saveMinimum = (raw: string) => {
-        const trimmed = raw.trim();
-        const ms = trimmed === '' ? null : parseTimeInput(trimmed);
-        if (trimmed !== '' && ms === undefined) {
-            toast.error('Time must be h:mm:ss, m:ss, or m:ss.SSS.');
-            return;
-        }
+    const saveMinimum = (ms: number | null) => {
         startSave(async () => {
             const res = await setBoardMinimumAction({
                 gameSlug,
@@ -180,9 +181,9 @@ export function DefaultsRow({
                 return;
             }
             router.refresh();
-            if (ms === null || ms === undefined) return;
+            if (ms === null) return;
             offerFollowUp(
-                formatTimeInput(ms),
+                formatDuration(ms),
                 ms,
                 // A category with no minimum of its own already follows the
                 // board, so it reads as already on the new value.
@@ -292,26 +293,17 @@ export function DefaultsRow({
                 )}
 
                 <td>
-                    <input
-                        type="text"
-                        inputMode="numeric"
-                        className={`${styles.defaultsControl} ${styles.minInput}`}
-                        defaultValue={
-                            defaults.minMs === null
-                                ? ''
-                                : formatTimeInput(defaults.minMs)
-                        }
-                        placeholder="Not set"
+                    <DurationField
+                        size="sm"
+                        className={styles.minInput}
+                        value={minMs}
+                        onChange={setMinMs}
+                        // Saves when the mod leaves the cell, not per keystroke.
+                        onCommit={(ms) => {
+                            if (ms !== defaults.minMs) saveMinimum(ms);
+                        }}
                         disabled={isSaving}
                         aria-label="Board default minimum time"
-                        onBlur={(e) => {
-                            const next = e.target.value.trim();
-                            const current =
-                                defaults.minMs === null
-                                    ? ''
-                                    : formatTimeInput(defaults.minMs);
-                            if (next !== current) saveMinimum(next);
-                        }}
                     />
                 </td>
 

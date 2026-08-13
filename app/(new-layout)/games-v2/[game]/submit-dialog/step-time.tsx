@@ -1,16 +1,8 @@
 'use client';
 
-import { formatRunTimeEcho } from '~src/lib/run-time-input';
+import { DurationField } from '~src/components/time-input/duration-field';
 import type { ModTiming } from '../../../../../types/moderation.types';
 import styles from './submit-run-dialog.module.scss';
-
-export interface TimeField {
-    raw: string;
-    ms?: number;
-    error: boolean;
-}
-
-export const EMPTY_TIME: TimeField = { raw: '', ms: undefined, error: false };
 
 /** Local date as YYYY-MM-DD — the value format `<input type="date">` wants. */
 export function todayISODate(): string {
@@ -37,8 +29,9 @@ interface Props {
     onTimingChange: (t: ModTiming) => void;
     /** What this board calls its game-time clock ('igt' | 'lrt'). */
     gameTimeLabel: string;
-    time: TimeField;
-    onTimeChange: (raw: string) => void;
+    /** Milliseconds, or null while the field is empty. */
+    timeMs: number | null;
+    onTimeChange: (ms: number | null) => void;
     runDate: string;
     onRunDateChange: (v: string) => void;
     vodUrl: string;
@@ -57,7 +50,7 @@ export function StepTime({
     timing,
     onTimingChange,
     gameTimeLabel,
-    time,
+    timeMs,
     onTimeChange,
     runDate,
     onRunDateChange,
@@ -97,33 +90,13 @@ export function StepTime({
                 </fieldset>
             )}
 
-            <div>
-                <label htmlFor="submit-time" className="form-label">
-                    Time
-                </label>
-                <input
-                    id="submit-time"
-                    type="text"
-                    inputMode="numeric"
-                    className={`form-control ${time.error ? 'is-invalid' : ''}`}
-                    placeholder="h:mm:ss.ms"
-                    value={time.raw}
-                    onChange={(e) => onTimeChange(e.target.value)}
-                    onBlur={(e) => onTimeChange(e.target.value)}
-                    required
-                />
-                {time.error ? (
-                    <div className={styles.fieldError}>
-                        Enter a valid time (h:mm:ss, m:ss, or m:ss.SSS).
-                    </div>
-                ) : (
-                    time.ms !== undefined && (
-                        <p className={styles.hint}>
-                            {formatRunTimeEcho(time.ms)}
-                        </p>
-                    )
-                )}
-            </div>
+            <DurationField
+                id="submit-time"
+                label="Time"
+                size="lg"
+                value={timeMs}
+                onChange={onTimeChange}
+            />
 
             <div>
                 <label htmlFor="submit-date" className="form-label">

@@ -7,6 +7,10 @@ import {
     waitFor,
 } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+    clearDuration,
+    typeDuration,
+} from '~src/components/time-input/test-utils';
 import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
 import type {
     LeaderboardRosterRow,
@@ -268,9 +272,8 @@ describe('AdjustDialog', () => {
         expect(screen.getByRole('button', { name: 'Save time' })).toBeTruthy();
         expect(mocks.loadUserEligibleRunsAction).not.toHaveBeenCalled();
 
-        fireEvent.change(screen.getByLabelText('Time'), {
-            target: { value: '35:48' },
-        });
+        clearDuration(screen.getByLabelText('Time'));
+        typeDuration(screen.getByLabelText('Time'), '3548');
         fireEvent.change(screen.getByLabelText('Reason (required)'), {
             target: { value: 'manual correction' },
         });
@@ -287,23 +290,23 @@ describe('AdjustDialog', () => {
         );
     });
 
-    it('manual time validation', async () => {
+    it('an empty time blocks the save, and garbage cannot be typed', async () => {
         renderDialog();
         await screen.findAllByRole('radio');
 
+        // The field rejects anything that is not a digit, so there is no
+        // invalid state to submit — only an empty one.
         fireEvent.change(screen.getByLabelText('Time'), {
             target: { value: 'garbage' },
         });
+        clearDuration(screen.getByLabelText('Time'));
         fireEvent.change(screen.getByLabelText('Reason (required)'), {
             target: { value: 'manual correction' },
         });
-        fireEvent.click(screen.getByRole('button', { name: 'Save time' }));
 
         expect(
-            screen.getByText(
-                'Enter a valid time (h:mm:ss, m:ss, or m:ss.SSS).',
-            ),
-        ).toBeTruthy();
+            screen.getByRole('button', { name: 'Save time' }),
+        ).toBeDisabled();
         expect(mocks.createManualTimeAction).not.toHaveBeenCalled();
     });
 
@@ -311,9 +314,8 @@ describe('AdjustDialog', () => {
         renderDialog();
         await screen.findAllByRole('radio');
 
-        fireEvent.change(screen.getByLabelText('Time'), {
-            target: { value: '35:48' },
-        });
+        clearDuration(screen.getByLabelText('Time'));
+        typeDuration(screen.getByLabelText('Time'), '3548');
 
         expect(
             screen.getByRole('button', { name: 'Save time' }),

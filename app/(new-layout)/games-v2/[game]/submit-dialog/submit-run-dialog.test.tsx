@@ -98,6 +98,18 @@ async function advancePastBoard() {
     fireEvent.click(screen.getByRole('button', { name: 'Next' }));
 }
 
+/**
+ * The time field fills from the right, one keystroke at a time, so a test
+ * types digits rather than handing it a formatted string. `1:23:45` is the
+ * digits `12345`.
+ */
+function typeTime(digits: string) {
+    const el = screen.getByLabelText('Time') as HTMLInputElement;
+    for (const ch of digits) {
+        fireEvent.change(el, { target: { value: el.value + ch } });
+    }
+}
+
 describe('SubmitRunDialog', () => {
     it('asks a signed-out visitor to sign in instead of showing the form', () => {
         renderDialog({ sessionUsername: null });
@@ -130,23 +142,21 @@ describe('SubmitRunDialog', () => {
         const submitBtn = screen.getByRole('button', { name: 'Submit run' });
         expect((submitBtn as HTMLButtonElement).disabled).toBe(true);
 
+        // Nothing invalid is representable any more — a stray letter is
+        // rejected by the field rather than becoming an error state.
         fireEvent.change(screen.getByLabelText('Time'), {
-            target: { value: 'not a time' },
+            target: { value: 'x' },
         });
         expect((submitBtn as HTMLButtonElement).disabled).toBe(true);
 
-        fireEvent.change(screen.getByLabelText('Time'), {
-            target: { value: '1:23:45' },
-        });
+        typeTime('12345');
         expect((submitBtn as HTMLButtonElement).disabled).toBe(false);
     });
 
     it('rejects a malformed video link before it reaches the backend', async () => {
         renderDialog();
         await advancePastBoard();
-        fireEvent.change(screen.getByLabelText('Time'), {
-            target: { value: '1:23:45' },
-        });
+        typeTime('12345');
         fireEvent.change(screen.getByLabelText('Video link'), {
             target: { value: 'not-a-url' },
         });
@@ -169,9 +179,7 @@ describe('SubmitRunDialog', () => {
         renderDialog();
         await advancePastBoard();
 
-        fireEvent.change(screen.getByLabelText('Time'), {
-            target: { value: '1:23:45' },
-        });
+        typeTime('12345');
         fireEvent.click(screen.getByRole('button', { name: 'Submit run' }));
 
         await waitFor(() =>
@@ -213,9 +221,7 @@ describe('SubmitRunDialog', () => {
         );
         fireEvent.click(screen.getByRole('button', { name: 'Next' }));
 
-        fireEvent.change(screen.getByLabelText('Time'), {
-            target: { value: '35:48' },
-        });
+        typeTime('3548');
         fireEvent.click(screen.getByRole('button', { name: 'Submit run' }));
 
         await waitFor(() =>

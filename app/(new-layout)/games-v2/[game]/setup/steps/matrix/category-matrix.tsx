@@ -1,10 +1,12 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
+import { DurationField } from '~src/components/time-input/duration-field';
 import { compareByBoardOrder } from '~src/lib/console/category-order';
 import { sectionsFor } from '~src/lib/console/category-sections';
+import { formatDuration } from '~src/lib/duration';
 import {
     type BoardDefaults,
     categoryMinMs,
@@ -22,7 +24,6 @@ import {
     timingChoiceOf,
     timingLabel,
 } from '~src/lib/setup/board-defaults';
-import { formatTimeInput, parseTimeInput } from '~src/lib/time-input';
 import type { ResolvedCategory } from '../../../../../../../types/leaderboards.types';
 import { bulkUpdateCategoriesAction } from '../../actions/bulk-update-categories.action';
 import { setCategoryMinimumAction } from '../../actions/set-category-minimum.action';
@@ -52,6 +53,48 @@ interface Props {
  * exception: a bulk apply first shows what it would change, because select-all
  * is the natural gesture here and there is no undo.
  */
+
+/**
+ * One category's minimum. Its own component because each cell holds the value
+ * the mod is typing, and saves only when they leave it — a matrix of cells
+ * cannot share one piece of state.
+ */
+function MinimumCell({
+    value,
+    inherited,
+    className,
+    disabled,
+    label,
+    onCommit,
+}: {
+    value: number | null;
+    inherited: number | null;
+    className: string;
+    disabled: boolean;
+    label: string;
+    onCommit: (ms: number | null) => void;
+}) {
+    const [ms, setMs] = useState<number | null>(value);
+    useEffect(() => {
+        setMs(value);
+    }, [value]);
+
+    return (
+        <DurationField
+            size="sm"
+            className={className}
+            value={ms}
+            onChange={setMs}
+            onCommit={(next) => {
+                if (next !== value) onCommit(next);
+            }}
+            placeholder={inherited !== null ? formatDuration(inherited) : '—'}
+            disabled={disabled}
+            aria-label={label}
+        />
+    );
+}
+
 export function CategoryMatrix({
     data,
     defaults,
@@ -109,13 +152,7 @@ export function CategoryMatrix({
         });
     };
 
-    const saveMinimum = (category: ResolvedCategory, raw: string) => {
-        const trimmed = raw.trim();
-        const ms = trimmed === '' ? null : parseTimeInput(trimmed);
-        if (trimmed !== '' && ms === undefined) {
-            toast.error('Time must be h:mm:ss, m:ss, or m:ss.SSS.');
-            return;
-        }
+    const saveMinimum = (category: ResolvedCategory, ms: number | null) => {
         startSave(async () => {
             const res = await setCategoryMinimumAction({
                 gameSlug: data.game.name,
@@ -403,58 +440,30 @@ export function CategoryMatrix({
                                                 <Cell
                                                     dot={dotted(c, 'minimum')}
                                                 >
-                                                    <input
-                                                        type="text"
-                                                        inputMode="numeric"
-                                                        className={`${cellClass(
-                                                            c,
-                                                            'minimum',
-                                                        )} ${styles.minInput}`}
-                                                        defaultValue={
-                                                            min === null
-                                                                ? ''
-                                                                : formatTimeInput(
-                                                                      min,
-                                                                  )
-                                                        }
+                                                    <MinimumCell
+                                                        value={min}
                                                         // Empty = no override:
                                                         // the board minimum
                                                         // applies, which is
                                                         // exactly the "—"
                                                         // state. The board
-                                                        // value shows on hover
-                                                        // only — at rest the
-                                                        // cell draws a dot,
+                                                        // value shows as the
+                                                        // placeholder — at rest
+                                                        // the cell draws a dot,
                                                         // like every other
                                                         // inherited cell.
-                                                        placeholder={
-                                                            defaults.minMs !==
-                                                            null
-                                                                ? formatTimeInput(
-                                                                      defaults.minMs,
-                                                                  )
-                                                                : '—'
+                                                        inherited={
+                                                            defaults.minMs
                                                         }
+                                                        className={`${cellClass(
+                                                            c,
+                                                            'minimum',
+                                                        )} ${styles.minInput}`}
                                                         disabled={isSaving}
-                                                        aria-label={`Minimum time for ${c.display}`}
-                                                        onBlur={(e) => {
-                                                            const next =
-                                                                e.target.value.trim();
-                                                            const current =
-                                                                min === null
-                                                                    ? ''
-                                                                    : formatTimeInput(
-                                                                          min,
-                                                                      );
-                                                            if (
-                                                                next !== current
-                                                            ) {
-                                                                saveMinimum(
-                                                                    c,
-                                                                    next,
-                                                                );
-                                                            }
-                                                        }}
+                                                        label={`Minimum time for ${c.display}`}
+                                                        onCommit={(ms) =>
+                                                            saveMinimum(c, ms)
+                                                        }
                                                     />
                                                 </Cell>
                                             </td>

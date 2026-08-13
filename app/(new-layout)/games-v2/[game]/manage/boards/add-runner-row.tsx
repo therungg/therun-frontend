@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
+import { DurationField } from '~src/components/time-input/duration-field';
 import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
 import type {
     LeaderboardRosterRow,
@@ -9,7 +10,6 @@ import type {
     RunnerRef,
 } from '../../../../../../types/moderation.types';
 import { createManualTimeAction } from '../moderation/shared/actions/manual-times.action';
-import { parseTimeInput } from '../moderation/shared/time-format';
 import styles from './board-curation.module.scss';
 
 type KnownRunner = Pick<LeaderboardRosterRow, 'userId' | 'runnerName'>;
@@ -92,7 +92,7 @@ export function AddRunnerRow({
     onMutated,
 }: AddRunnerRowProps) {
     const [name, setName] = useState('');
-    const [timeText, setTimeText] = useState('');
+    const [timeMs, setTimeMs] = useState<number | null>(null);
     // Optional achievement date; empty => the entry shows its created-at.
     const [dateText, setDateText] = useState('');
     const [error, setError] = useState<string | null>(null);
@@ -109,9 +109,8 @@ export function AddRunnerRow({
             setError('Enter a runner name.');
             return;
         }
-        const parsed = parseTimeInput(timeText);
-        if (parsed == null || Number.isNaN(parsed)) {
-            setError('Enter a valid time (h:mm:ss, m:ss, or m:ss.SSS).');
+        if (timeMs === null) {
+            setError('Enter a time.');
             return;
         }
         startAdding(async () => {
@@ -123,7 +122,7 @@ export function AddRunnerRow({
                 categoryId: category.id,
                 subcategoryKey,
                 timing: modTiming,
-                timeMs: parsed,
+                timeMs,
                 runDate: dateText || null,
                 reason: 'Added during board curation',
             });
@@ -132,7 +131,7 @@ export function AddRunnerRow({
                 return;
             }
             setName('');
-            setTimeText('');
+            setTimeMs(null);
             setDateText('');
             setError(null);
             toast.success('Runner added.');
@@ -168,18 +167,12 @@ export function AddRunnerRow({
                 </div>
             </td>
             <td>
-                <input
-                    type="text"
-                    className={`${styles.ghostInput} ${styles.ghostTimeInput}`}
-                    placeholder="e.g. 35:48"
-                    value={timeText}
-                    onChange={(e) => setTimeText(e.target.value)}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handleAdd();
-                        }
-                    }}
+                <DurationField
+                    size="sm"
+                    className={styles.ghostTimeField}
+                    value={timeMs}
+                    onChange={setTimeMs}
+                    onEnter={handleAdd}
                     disabled={isAdding}
                     aria-label="Runner time"
                 />
@@ -204,7 +197,7 @@ export function AddRunnerRow({
                     type="button"
                     className={styles.actionBtn}
                     onClick={handleAdd}
-                    disabled={isAdding || !name.trim() || !timeText.trim()}
+                    disabled={isAdding || !name.trim() || timeMs === null}
                 >
                     {isAdding
                         ? 'Adding…'

@@ -25,8 +25,20 @@ interface Props {
     'aria-label'?: string;
     disabled?: boolean;
     autoFocus?: boolean;
+    /**
+     * Shown while empty. Defaults to the `0:00.000` scaffold; a cell whose
+     * empty state means "inherits" passes the inherited value instead.
+     */
+    placeholder?: string;
     /** Enter submits the surrounding row/dialog. */
     onEnter?: () => void;
+    /**
+     * Fired on blur with the settled value — for cells that save when the
+     * user leaves them rather than on every keystroke.
+     */
+    onCommit?: (ms: number | null) => void;
+    /** For dialogs that focus this field on open (`initialFocusRef`). */
+    inputRef?: React.RefObject<HTMLInputElement | null>;
     className?: string;
 }
 
@@ -56,13 +68,23 @@ export function DurationField({
     'aria-label': ariaLabel,
     disabled,
     autoFocus,
+    placeholder = '0:00.000',
     onEnter,
+    onCommit,
+    inputRef: externalRef,
     className,
 }: Props) {
     const generatedId = useId();
     const inputId = id ?? generatedId;
     const readoutId = `${inputId}-readout`;
     const inputRef = useRef<HTMLInputElement>(null);
+
+    // Both refs point at the same input: the component needs it to pin the
+    // caret, a dialog needs it to focus the field on open.
+    const setInputRef = (el: HTMLInputElement | null) => {
+        inputRef.current = el;
+        if (externalRef) externalRef.current = el;
+    };
 
     const [draft, setDraft] = useState(() => msToDraft(value));
     const [focused, setFocused] = useState(false);
@@ -126,6 +148,7 @@ export function DurationField({
         setFocused(false);
         // Segments settle on the way out: 0:95 becomes 1:35.
         setDraft(msToDraft(ms));
+        onCommit?.(ms);
     };
 
     const showReadout = size === 'lg' || focused;
@@ -138,18 +161,17 @@ export function DurationField({
                 </label>
             )}
             <input
-                ref={inputRef}
+                ref={setInputRef}
                 id={inputId}
                 type="text"
                 inputMode="decimal"
                 autoComplete="off"
                 className={`${styles.input} ${styles[size]}`}
-                placeholder="0:00.000"
+                placeholder={placeholder}
                 value={text}
                 aria-label={ariaLabel}
                 aria-describedby={readoutId}
                 disabled={disabled}
-                // biome-ignore lint/a11y/noAutofocus: dialogs focus their first field
                 autoFocus={autoFocus}
                 onChange={handleInput}
                 onKeyDown={handleKeyDown}

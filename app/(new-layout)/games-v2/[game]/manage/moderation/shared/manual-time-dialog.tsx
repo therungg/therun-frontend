@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
+import { DurationField } from '~src/components/time-input/duration-field';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type {
     ManualTimePreviewResult,
@@ -15,7 +16,6 @@ import {
     previewManualTimeAction,
     updateManualTimeAction,
 } from './actions/manual-times.action';
-import { msToTimeInput, parseTimeInput } from './time-format';
 
 interface Props {
     gameSlug: string;
@@ -57,7 +57,9 @@ export function ManualTimeDialog({
     const [timing, setTiming] = useState<ModTiming>(
         existing?.timing ?? 'realtime',
     );
-    const [timeText, setTimeText] = useState(msToTimeInput(existing?.timeMs));
+    const [timeMs, setTimeMs] = useState<number | null>(
+        existing?.timeMs ?? null,
+    );
     const [evidenceUrl, setEvidenceUrl] = useState(existing?.evidenceUrl ?? '');
     // yyyy-mm-dd for the date input; '' = no asserted date. Tracked against
     // its initial value so an edit that never touched the field sends
@@ -74,8 +76,7 @@ export function ManualTimeDialog({
     const [isSaving, startSave] = useTransition();
     const timeFieldRef = useRef<HTMLInputElement>(null);
 
-    const timeMs = parseTimeInput(timeText);
-    const timeValid = timeMs != null && !Number.isNaN(timeMs);
+    const timeValid = timeMs !== null;
     const reasonOk = reason.trim().length >= MIN_REASON;
     const busy = isPreviewing || isSaving;
 
@@ -88,7 +89,7 @@ export function ManualTimeDialog({
                 categoryId,
                 subcategoryKey,
                 timing,
-                timeMs: timeMs as number,
+                timeMs,
             });
             if ('error' in res) {
                 setError(res.error);
@@ -105,7 +106,7 @@ export function ManualTimeDialog({
             const res = isEdit
                 ? await updateManualTimeAction(gameSlug, existing.id, {
                       reason: reason.trim(),
-                      timeMs: timeMs as number,
+                      timeMs,
                       evidenceUrl: evidenceUrl.trim() || null,
                       ...(dateText !== initialDate
                           ? { runDate: dateText || null }
@@ -116,7 +117,7 @@ export function ManualTimeDialog({
                       categoryId,
                       subcategoryKey,
                       timing,
-                      timeMs: timeMs as number,
+                      timeMs,
                       evidenceUrl: evidenceUrl.trim() || null,
                       runDate: dateText || null,
                       reason: reason.trim(),
@@ -193,19 +194,17 @@ export function ManualTimeDialog({
                             htmlFor="mt-time"
                             className="form-label small text-muted mb-1"
                         >
-                            Time (h:mm:ss.SSS)
+                            Time
                         </label>
-                        <input
+                        <DurationField
                             id="mt-time"
-                            ref={timeFieldRef}
-                            type="text"
-                            className="form-control form-control-sm"
-                            value={timeText}
-                            onChange={(e) => {
-                                setTimeText(e.target.value);
+                            size="sm"
+                            inputRef={timeFieldRef}
+                            value={timeMs}
+                            onChange={(ms) => {
+                                setTimeMs(ms);
                                 setPreview(null);
                             }}
-                            placeholder="e.g. 35:48 or 1:23:45"
                             disabled={busy}
                         />
                     </div>
@@ -220,13 +219,6 @@ export function ManualTimeDialog({
                         </button>
                     </div>
                 </div>
-
-                {timeText.length > 0 && !timeValid && (
-                    <small className="text-danger">
-                        Enter a valid positive time (h:mm:ss, m:ss, or
-                        m:ss.SSS).
-                    </small>
-                )}
 
                 <div className="mt-2">
                     <label

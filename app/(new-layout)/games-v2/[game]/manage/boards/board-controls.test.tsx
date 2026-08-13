@@ -1,6 +1,10 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+    clearDuration,
+    typeDuration,
+} from '~src/components/time-input/test-utils';
 
 import type {
     ResolvedCategory,
@@ -91,10 +95,7 @@ describe('BoardControls — Minimum', () => {
         render(<BoardControls {...baseProps({ timing: 'gt' })} />);
 
         fireEvent.click(screen.getByRole('button', { name: /Minimum/ }));
-        fireEvent.change(
-            screen.getByPlaceholderText('e.g. 0:30 (empty = no minimum)'),
-            { target: { value: '0:30' } },
-        );
+        typeDuration(screen.getByLabelText(/^Reject/), '030');
         fireEvent.click(screen.getByRole('button', { name: 'Save' }));
 
         await vi.waitFor(() =>
@@ -141,11 +142,9 @@ describe('BoardControls — Minimum', () => {
         );
 
         fireEvent.click(screen.getByRole('button', { name: /Minimum/ }));
-        const input = screen.getByPlaceholderText(
-            'e.g. 0:30 (empty = no minimum)',
-        ) as HTMLInputElement;
-        expect(input.value).toBe('00:10');
-        fireEvent.change(input, { target: { value: '' } });
+        const input = screen.getByLabelText(/^Reject/) as HTMLInputElement;
+        expect(input.value).toBe('0:10');
+        clearDuration(input);
         fireEvent.click(screen.getByRole('button', { name: 'Save' }));
 
         await vi.waitFor(() =>

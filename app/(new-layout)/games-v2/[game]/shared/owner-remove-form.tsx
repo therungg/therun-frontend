@@ -8,6 +8,7 @@ import {
     selfRunVerdictAction,
 } from '~src/actions/run-user-actions.action';
 import { selfClaimTimeAction } from '~src/actions/self-claim.action';
+import { DurationField } from '~src/components/time-input/duration-field';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { formatRunDate } from '~src/lib/format-run-date';
 import type { UserEligibleRunRow } from '../../../../../types/moderation.types';
@@ -15,7 +16,6 @@ import {
     rovingRadioKeyDown,
     ScopeCards,
 } from '../manage/moderation/shared/run-action-parts';
-import { parseTimeInput } from '../manage/moderation/shared/time-format';
 import { BoardDialog } from './board-dialog';
 import styles from './owner-remove-form.module.scss';
 
@@ -98,7 +98,7 @@ export function OwnerRemoveForm({
 }: OwnerRemoveFormProps) {
     const [choice, setChoice] = useState<Choice>('only');
     const [standRunId, setStandRunId] = useState<number | null>(null);
-    const [timeText, setTimeText] = useState('');
+    const [enteredMs, setEnteredMs] = useState<number | null>(null);
     // Optional achievement date; empty => the entry is dated from its created-at.
     const [dateText, setDateText] = useState('');
     const [step, setStep] = useState<'decide' | 'confirm'>('decide');
@@ -160,8 +160,8 @@ export function OwnerRemoveForm({
     /** Fastest surviving run of yours — the one that inherits the slot. */
     const nextBest = otherRuns?.[0] ?? null;
 
-    const setTimeMs = choice === 'time' ? parseTimeInput(timeText) : null;
-    const setTimeValid = setTimeMs != null && !Number.isNaN(setTimeMs);
+    const setTimeMs = choice === 'time' ? enteredMs : null;
+    const setTimeValid = setTimeMs !== null;
 
     const standRun =
         choice === 'other' && standRunId != null
@@ -328,7 +328,7 @@ export function OwnerRemoveForm({
                             setChoice(v);
                             if (v !== 'other') setStandRunId(null);
                             if (v !== 'time') {
-                                setTimeText('');
+                                setEnteredMs(null);
                                 setDateText('');
                             }
                         }}
@@ -374,13 +374,11 @@ export function OwnerRemoveForm({
                             >
                                 Your time
                             </label>
-                            <input
+                            <DurationField
                                 id="owner-remove-time"
-                                type="text"
-                                className="form-control form-control-sm"
-                                value={timeText}
-                                onChange={(e) => setTimeText(e.target.value)}
-                                placeholder="e.g. 35:48 or 1:23:45"
+                                size="sm"
+                                value={enteredMs}
+                                onChange={setEnteredMs}
                                 disabled={isConfirming}
                             />
                             <p className={styles.note}>
@@ -390,12 +388,6 @@ export function OwnerRemoveForm({
                                 {fasterRuns.length > 0 &&
                                     ` ${fasterRuns.length} faster time${fasterRuns.length === 1 ? ' of yours goes' : 's of yours go'} too — a faster time left standing would outrank it.`}
                             </p>
-                            {timeText.length > 0 && !setTimeValid && (
-                                <p className={styles.fieldError}>
-                                    Enter a valid time (h:mm:ss, m:ss, or
-                                    m:ss.SSS).
-                                </p>
-                            )}
                             <label
                                 className={styles.fieldLabel}
                                 htmlFor="owner-remove-date"

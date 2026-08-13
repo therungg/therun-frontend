@@ -7,6 +7,7 @@ import {
     waitFor,
 } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { typeDuration } from '~src/components/time-input/test-utils';
 import type { UserEligibleRunRow } from '../../../../../types/moderation.types';
 
 const mocks = vi.hoisted(() => ({
@@ -179,9 +180,7 @@ describe('OwnerRemoveForm', () => {
         });
         await screen.findByText('You have no other times on this board.');
         fireEvent.click(screen.getByRole('radio', { name: /^Set a time/ }));
-        fireEvent.change(screen.getByLabelText('Your time'), {
-            target: { value: '1:10:00' },
-        });
+        typeDuration(screen.getByLabelText('Your time'), '11000');
         fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
         fireEvent.click(screen.getByRole('button', { name: 'Hide my run' }));
         await waitFor(() => {
@@ -211,9 +210,7 @@ describe('OwnerRemoveForm', () => {
         renderForm([]);
         await screen.findByText('You have no other times on this board.');
         fireEvent.click(screen.getByRole('radio', { name: /^Set a time/ }));
-        fireEvent.change(screen.getByLabelText('Your time'), {
-            target: { value: '1:10:00' },
-        });
+        typeDuration(screen.getByLabelText('Your time'), '11000');
         fireEvent.change(screen.getByLabelText('Date achieved (optional)'), {
             target: { value: '2026-03-04' },
         });
@@ -231,9 +228,7 @@ describe('OwnerRemoveForm', () => {
         await screen.findByRole('radio', { name: /^Another run of mine/ });
         fireEvent.click(screen.getByRole('radio', { name: /^Set a time/ }));
         // 1:10:00 is slower than your standing 50:00, which would outrank it.
-        fireEvent.change(screen.getByLabelText('Your time'), {
-            target: { value: '1:10:00' },
-        });
+        typeDuration(screen.getByLabelText('Your time'), '11000');
         expect(
             screen.getByText(/1 faster time of yours goes too/),
         ).toBeTruthy();
@@ -253,9 +248,7 @@ describe('OwnerRemoveForm', () => {
         renderForm([]);
         await screen.findByText('You have no other times on this board.');
         fireEvent.click(screen.getByRole('radio', { name: /^Set a time/ }));
-        fireEvent.change(screen.getByLabelText('Your time'), {
-            target: { value: '1:10:00' },
-        });
+        typeDuration(screen.getByLabelText('Your time'), '11000');
         fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
         mocks.selfClaimTimeAction.mockResolvedValueOnce({
             error: 'Something went wrong.',

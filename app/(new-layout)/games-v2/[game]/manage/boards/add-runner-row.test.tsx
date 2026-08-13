@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { typeDuration } from '~src/components/time-input/test-utils';
 import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
 import type { LeaderboardRosterRow } from '../../../../../../types/moderation.types';
 import {
@@ -101,9 +102,7 @@ describe('AddRunnerRow', () => {
         fireEvent.change(screen.getByLabelText('Runner name'), {
             target: { value: 'newrunner' },
         });
-        fireEvent.change(screen.getByLabelText('Runner time'), {
-            target: { value: '35:48' },
-        });
+        typeDuration(screen.getByLabelText('Runner time'), '3548');
         fireEvent.click(screen.getByRole('button', { name: 'Add guest' }));
 
         await vi.waitFor(() =>
@@ -133,9 +132,7 @@ describe('AddRunnerRow', () => {
         fireEvent.change(screen.getByLabelText('Runner name'), {
             target: { value: 'alice' },
         });
-        fireEvent.change(screen.getByLabelText('Runner time'), {
-            target: { value: '10:00' },
-        });
+        typeDuration(screen.getByLabelText('Runner time'), '1000');
         fireEvent.click(screen.getByRole('button', { name: 'Add for alice' }));
 
         await vi.waitFor(() =>
@@ -146,22 +143,24 @@ describe('AddRunnerRow', () => {
         );
     });
 
-    it('shows an inline error and does not submit for an invalid time', () => {
+    it('cannot submit without a time — garbage never lands in the field', () => {
         renderRow();
 
         fireEvent.change(screen.getByLabelText('Runner name'), {
             target: { value: 'newrunner' },
         });
+        // Non-digits are rejected by the field itself, so the row stays in
+        // the same state as an untouched one: no time, no Add.
         fireEvent.change(screen.getByLabelText('Runner time'), {
             target: { value: 'not-a-time' },
         });
-        fireEvent.click(screen.getByRole('button', { name: 'Add guest' }));
 
         expect(
-            screen.getByText(
-                'Enter a valid time (h:mm:ss, m:ss, or m:ss.SSS).',
-            ),
-        ).toBeTruthy();
+            (screen.getByLabelText('Runner time') as HTMLInputElement).value,
+        ).toBe('');
+        expect(
+            screen.getByRole('button', { name: 'Add guest' }),
+        ).toBeDisabled();
         expect(mocks.createManualTimeAction).not.toHaveBeenCalled();
     });
 

@@ -9,6 +9,7 @@ import {
     useTransition,
 } from 'react';
 import { toast } from 'react-toastify';
+import { DurationField } from '~src/components/time-input/duration-field';
 import {
     DurationToFormatted,
     getFormattedString,
@@ -54,7 +55,6 @@ import {
     ReasonZone,
     ScopeCards,
 } from './run-action-parts';
-import { parseTimeInput } from './time-format';
 import { fireUndoToast } from './undo-toast';
 
 const MIN_REASON = 10;
@@ -232,7 +232,7 @@ export function RunActionForm({
      * checkbox's job).
      */
     const [replaceEnabled, setReplaceEnabled] = useState(false);
-    const [replaceTimeText, setReplaceTimeText] = useState('');
+    const [replaceTimeMs, setReplaceTimeMs] = useState<number | null>(null);
     const [replaceDateText, setReplaceDateText] = useState('');
 
     const [reason, setReason] = useState('');
@@ -301,9 +301,8 @@ export function RunActionForm({
     const replaceOffered =
         verb === 'remove' && removeRunner != null && !removesRunner;
     const replaceActive = replaceOffered && replaceEnabled;
-    const replaceMs = replaceActive ? parseTimeInput(replaceTimeText) : null;
-    const replaceValid =
-        !replaceActive || (replaceMs != null && !Number.isNaN(replaceMs));
+    const replaceMs = replaceActive ? replaceTimeMs : null;
+    const replaceValid = !replaceActive || replaceMs !== null;
 
     // The runner's other runs faster than a given cutoff time. A board
     // always surfaces the best eligible run, so leaving a faster invalid one
@@ -857,16 +856,10 @@ export function RunActionForm({
                             {replaceEnabled && (
                                 <>
                                     <div className={styles.replaceFields}>
-                                        <input
-                                            type="text"
-                                            className="form-control form-control-sm"
-                                            value={replaceTimeText}
-                                            onChange={(e) =>
-                                                setReplaceTimeText(
-                                                    e.target.value,
-                                                )
-                                            }
-                                            placeholder="e.g. 35:48 or 1:23:45"
+                                        <DurationField
+                                            size="sm"
+                                            value={replaceTimeMs}
+                                            onChange={setReplaceTimeMs}
                                             aria-label="Custom time"
                                             disabled={isConfirming}
                                         />
@@ -891,13 +884,6 @@ export function RunActionForm({
                                         {fasterThanLegit.length > 0 &&
                                             ` Their ${fasterThanLegit.length} faster run${fasterThanLegit.length === 1 ? ' goes' : 's go'} too, because a surviving faster run would outrank it.`}
                                     </p>
-                                    {replaceTimeText.length > 0 &&
-                                        !replaceValid && (
-                                            <p className={styles.reasonError}>
-                                                Enter a valid time (h:mm:ss,
-                                                m:ss, or m:ss.SSS).
-                                            </p>
-                                        )}
                                 </>
                             )}
                         </div>

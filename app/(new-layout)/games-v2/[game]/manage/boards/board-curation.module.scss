@@ -483,9 +483,12 @@
     }
 }
 
-.ghostTimeInput {
-    @include board.mono-time;
-    width: 7rem;
+.ghostTimeField {
+    // The field brings its own mono/tabular treatment; the row only needs to
+    // say how wide the cell's copy of it is.
+    input {
+        width: 7rem;
+    }
 }
 
 // Reserves its line height whether or not it has text, so the match/guest
