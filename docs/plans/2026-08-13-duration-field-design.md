@@ -74,6 +74,28 @@ Rules that follow from the model:
   value is always normalized regardless: `0:95` emits 95 000ms, so no caller
   ever sees an over-60 segment.
 
+### The readout
+
+The field never leaves the user guessing what their keystrokes mean. Under it
+sits a live readout of the parsed value: **the field shows what was typed, the
+readout shows what it parses as**, always at full canonical precision, so the
+two are never redundant duplicates of each other.
+
+| Field shows | Readout |
+|---|---|
+| `0:95` | `= 0:01:35.000` |
+| `35:48` | `= 0:35:48.000` |
+| `35:48.6` | `= 0:35:48.600` |
+| empty | `—` |
+
+This promotes an idiom the submit dialog already has (`formatRunTimeEcho`
+rendered under the input) into the shared component, rather than inventing one.
+
+`size="lg"` shows the readout always. `size="sm"` lives in table cells with no
+second line to spend, so there the readout appears only while the cell has
+focus; on blur the cell normalizes to the canonical value and becomes its own
+readout.
+
 ## Components
 
 ### `src/components/time-input/duration-field.tsx`
@@ -171,7 +193,9 @@ gains a `number | null`.
   become regression coverage that the superset parser still accepts every shape
   the old ones did.
 - `duration-field.test.tsx` — one test per size: type, paste, clear, and the
-  external-value re-seed while unfocused.
+  external-value re-seed while unfocused. Plus the readout: that `0:95` in the
+  field reads `= 0:01:35.000` beneath it, and that `sm` only renders the readout
+  while focused.
 
 ## Out of scope
 
