@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { selfClaimTimeAction } from '~src/actions/self-claim.action';
+import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
 import { buildBoardHref, gameSegment } from '~src/lib/board-url';
 import { parseRunTimeInput } from '~src/lib/run-time-input';
@@ -33,10 +34,14 @@ export interface SubmitDialogGame {
     id: number;
     name: string;
     display: string;
+    /** IGDB cover, shown in the dialog header. */
+    image?: string | null;
 }
 
 interface Props {
     game: SubmitDialogGame;
+    /** Moderator-set cover, which wins over the IGDB one — as on the hero. */
+    coverUrl?: string | null;
     /** Featured, non-archived categories — the same set the board shows. */
     categories: ResolvedCategory[];
     groups: ResolvedGroup[];
@@ -68,6 +73,45 @@ function canonicalMatch(def: VariableRow, raw: string): string | null {
     return bucket?.[0] ?? null;
 }
 
+/**
+ * The dialog's header — the game it is about, then the action.
+ *
+ * The dialog can be opened from anywhere on a game's pages, and once it
+ * covers the board there is nothing left on screen naming the game, so the
+ * header carries it: cover art at the board's own 3:4, name above the title.
+ */
+function DialogHeader({
+    game,
+    coverUrl,
+}: {
+    game: SubmitDialogGame;
+    coverUrl?: string | null;
+}) {
+    return (
+        <div className={styles.header}>
+            <div className={styles.headerGame}>
+                <GameImage
+                    src={coverUrl ?? game.image ?? 'noimage'}
+                    alt={game.display}
+                    quality="small"
+                    width={36}
+                    height={48}
+                    // Inline, not the class: GameImage always adds Bootstrap's
+                    // `img-fluid`, whose `height: auto` would otherwise win.
+                    style={{ width: 36, height: 48, objectFit: 'cover' }}
+                    className={styles.headerArt}
+                />
+                <div>
+                    <div className={styles.headerGameName}>{game.display}</div>
+                    <h2 id="submit-run-dialog-title" className={styles.title}>
+                        Submit a run
+                    </h2>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 const STEP_LABELS: Record<StepId, string> = {
     board: 'Board',
     runner: 'Runner',
@@ -84,6 +128,7 @@ const STEP_LABELS: Record<StepId, string> = {
  */
 export function SubmitRunDialog({
     game,
+    coverUrl,
     categories,
     groups,
     gameRules,
@@ -325,15 +370,9 @@ export function SubmitRunDialog({
                 labelledBy="submit-run-dialog-title"
                 size="md"
             >
-                <div className={styles.header}>
-                    <h2 id="submit-run-dialog-title" className={styles.title}>
-                        Submit a run
-                    </h2>
-                </div>
+                <DialogHeader game={game} coverUrl={coverUrl} />
                 <div className={styles.body}>
-                    <p className="mb-0">
-                        Sign in with Twitch to submit a run for {game.display}.
-                    </p>
+                    <p className="mb-0">Sign in with Twitch to submit a run.</p>
                 </div>
                 <div className={styles.footer}>
                     <button
@@ -356,11 +395,7 @@ export function SubmitRunDialog({
                 labelledBy="submit-run-dialog-title"
                 size="md"
             >
-                <div className={styles.header}>
-                    <h2 id="submit-run-dialog-title" className={styles.title}>
-                        Submit a run
-                    </h2>
-                </div>
+                <DialogHeader game={game} coverUrl={coverUrl} />
                 <div className={styles.body}>
                     <p className="mb-0">
                         This game has no categories to submit to yet.
@@ -386,11 +421,7 @@ export function SubmitRunDialog({
             labelledBy="submit-run-dialog-title"
             size="lg"
         >
-            <div className={styles.header}>
-                <h2 id="submit-run-dialog-title" className={styles.title}>
-                    Submit a run
-                </h2>
-            </div>
+            <DialogHeader game={game} coverUrl={coverUrl} />
 
             {result ? (
                 <>

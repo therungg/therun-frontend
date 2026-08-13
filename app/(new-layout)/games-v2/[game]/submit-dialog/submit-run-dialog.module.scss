@@ -15,6 +15,30 @@
     @include board.board-dialog-title;
 }
 
+// ---- Header game plate -----------------------------------------
+// The dialog covers the board it was opened from, so the game has to
+// be named here. Cover art at IGDB's native 3:4.
+.headerGame {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    min-width: 0;
+}
+
+.headerArt {
+    flex-shrink: 0;
+    border-radius: dt.$radius-sm;
+}
+
+.headerGameName {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin-bottom: 0.1rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .body {
     @include board.board-dialog-body;
 }

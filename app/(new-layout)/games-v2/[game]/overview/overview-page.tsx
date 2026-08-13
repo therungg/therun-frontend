@@ -113,6 +113,7 @@ export function GameOverviewPage({
         // the same set the board's own dialog is given.
         <SubmitDialogProvider
             game={data.game}
+            coverUrl={data.gameMeta.coverUrl}
             categories={data.cards.map((c) => c.category)}
             groups={data.groups}
             gameRules={data.gameMeta.gameRules}
