@@ -39,7 +39,15 @@ interface Props {
     onCommit?: (ms: number | null) => void;
     /** For dialogs that focus this field on open (`initialFocusRef`). */
     inputRef?: React.RefObject<HTMLInputElement | null>;
+    /** Styles the wrapper — the input *and* its readout. Layout, not looks. */
     className?: string;
+    /**
+     * Styles the input itself. A caller that wants to restyle the box — a
+     * table cell's borders, its width, its placeholder — means this one, not
+     * `className`: on the wrapper a border would draw a second box around the
+     * input's own.
+     */
+    inputClassName?: string;
 }
 
 const SECOND = 1_000;
@@ -73,6 +81,7 @@ export function DurationField({
     onCommit,
     inputRef: externalRef,
     className,
+    inputClassName,
 }: Props) {
     const generatedId = useId();
     const inputId = id ?? generatedId;
@@ -154,7 +163,7 @@ export function DurationField({
     const showReadout = size === 'lg' || focused;
 
     return (
-        <div className={`${styles.wrap} ${className ?? ''}`}>
+        <div className={[styles.wrap, className].filter(Boolean).join(' ')}>
             {label && (
                 <label htmlFor={inputId} className="form-label">
                     {label}
@@ -166,7 +175,9 @@ export function DurationField({
                 type="text"
                 inputMode="decimal"
                 autoComplete="off"
-                className={`${styles.input} ${styles[size]}`}
+                className={[styles.input, styles[size], inputClassName]
+                    .filter(Boolean)
+                    .join(' ')}
                 placeholder={placeholder}
                 value={text}
                 aria-label={ariaLabel}

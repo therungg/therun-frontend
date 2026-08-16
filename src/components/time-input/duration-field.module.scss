@@ -11,6 +11,7 @@
 .wrap {
     display: flex;
     flex-direction: column;
+    position: relative;
 }
 
 .input {
@@ -68,13 +69,19 @@
     font-size: dt.$font-size-sm;
 }
 
-// In a cell there is no room for a permanent second line, so the readout only
-// appears while the cell has focus. It still occupies its space when hidden —
-// a row that grows on focus would shove the whole table down.
+// In a table there is no room for a permanent second line, so the readout only
+// appears while the cell has focus — and it hangs below the field rather than
+// sitting in the flow, so a row of cells is exactly as tall as its inputs and
+// nothing shifts when one takes focus.
 .readoutSm {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 2;
+    margin: 0.15rem 0 0;
     font-size: 0.75rem;
-    margin-top: 0.25rem;
-    min-height: 1.1rem;
+    white-space: nowrap;
+    pointer-events: none;
     visibility: hidden;
 }
 
