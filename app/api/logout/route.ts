@@ -1,18 +1,13 @@
-import { revalidatePath } from 'next/cache';
 import { apiResponse } from '~app/api/response';
-import { getBaseUrl } from '~src/actions/base-url.action';
 
 export async function POST() {
-    const baseUrl = await getBaseUrl();
-
-    const response = apiResponse({
+    // Nothing to revalidate: the rendered shell never reads the session cookie
+    // (see SessionProvider), so clearing the cookie is the whole logout.
+    return apiResponse({
         body: null,
         headers: {
             'Set-Cookie':
                 'session_id=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0',
         },
     });
-
-    revalidatePath(baseUrl);
-    return response;
 }

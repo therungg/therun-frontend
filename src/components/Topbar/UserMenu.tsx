@@ -13,6 +13,7 @@ import { resetSession } from '~src/actions/reset-session.action';
 import { Button } from '~src/components/Button/Button';
 import Link from '~src/components/link';
 import { NameAsPatreon } from '~src/components/patreon/patreon-name';
+import { useSessionActions } from '~src/components/session-provider';
 import { TwitchLoginButton } from '~src/components/twitch/TwitchLoginButton';
 import { BunnyIcon } from '~src/icons/bunny-icon';
 import styles from './UserMenu.module.scss';
@@ -25,15 +26,19 @@ interface UserMenuProps {
 
 export function UserMenu({ username, picture, sessionError }: UserMenuProps) {
     const router = useRouter();
+    const { clear: clearSession } = useSessionActions();
     const [open, setOpen] = useState(false);
     const [avatarError, setAvatarError] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
+    // Logging out leaves you where you are — only the session goes away. The
+    // cookie is cleared server-side, the client session state right after, so
+    // the menu flips to logged-out without a page load.
     const logout = useCallback(async () => {
         await fetch('/api/logout', { method: 'POST' });
-        router.push('/');
+        clearSession();
         router.refresh();
-    }, [router]);
+    }, [clearSession, router]);
 
     const handleResetSession = useCallback(async () => {
         await resetSession();
