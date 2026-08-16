@@ -1,0 +1,80 @@
+@use '../../../app/(new-layout)/styles/design-tokens' as dt;
+
+// ============================================================
+// RunTimesField — a submission's clocks, together.
+// The pair is one reading of one run, so it is one block: the
+// fields sit side by side where there is room, and what they
+// imply (the loads) sits under both rather than under either.
+// ============================================================
+
+.group {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+}
+
+.fields {
+    display: grid;
+    // Side by side when the dialog is wide enough for two timers, stacked
+    // the moment it isn't. No breakpoint to keep in sync with the dialog.
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: dt.$spacing-md;
+}
+
+.field {
+    min-width: 0;
+}
+
+// The secondary carries its own label row because it says more than its
+// name: whether this board insists on it.
+.secondaryLabel {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: dt.$spacing-xs;
+    margin-bottom: 0.5rem;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
+}
+
+.required,
+.optional {
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.required {
+    color: var(--bs-warning);
+}
+
+.optional {
+    color: var(--bs-secondary-color);
+}
+
+// Derived, never typed: real time minus game time. It reads as a caption on
+// the pair, which is why it is not styled like either field's own readout.
+.loads {
+    margin: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+
+    strong {
+        font-family: var(--bs-font-monospace);
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        color: var(--bs-body-color);
+    }
+}
+
+.warning {
+    margin: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-warning);
+}
+
+.error {
+    margin: 0.35rem 0 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-danger);
+}

@@ -8,10 +8,18 @@ import {
     selfRunVerdictAction,
 } from '~src/actions/run-user-actions.action';
 import { selfClaimTimeAction } from '~src/actions/self-claim.action';
-import { DurationField } from '~src/components/time-input/duration-field';
+import { RunTimesField } from '~src/components/time-input/run-times-field';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { formatRunDate } from '~src/lib/format-run-date';
-import type { UserEligibleRunRow } from '../../../../../types/moderation.types';
+import { otherTiming, validateRunTimes } from '~src/lib/run-times';
+import type {
+    ModTiming,
+    UserEligibleRunRow,
+} from '../../../../../types/moderation.types';
+import {
+    type BoardClocks,
+    loadBoardClocksAction,
+} from '../manage/moderation/shared/actions/board-clocks.action';
 import {
     rovingRadioKeyDown,
     ScopeCards,
@@ -99,11 +107,29 @@ export function OwnerRemoveForm({
     const [choice, setChoice] = useState<Choice>('only');
     const [standRunId, setStandRunId] = useState<number | null>(null);
     const [enteredMs, setEnteredMs] = useState<number | null>(null);
+    // The board's other clock, when it ranks game time. See run-times.ts.
+    const [secondaryMs, setSecondaryMs] = useState<number | null>(null);
+    const [clocks, setClocks] = useState<BoardClocks | null>(null);
     // Optional achievement date; empty => the entry is dated from its created-at.
     const [dateText, setDateText] = useState('');
     const [step, setStep] = useState<'decide' | 'confirm'>('decide');
     const [error, setError] = useState<string | null>(null);
     const [isConfirming, startConfirm] = useTransition();
+
+    // The board's clocks decide whether the entered time carries a second
+    // one. This form knows the game and the category, so it asks rather than
+    // making every caller thread the flags down.
+    useEffect(() => {
+        let cancelled = false;
+        loadBoardClocksAction(gameSlug, categoryId)
+            .then((c) => {
+                if (!cancelled) setClocks(c);
+            })
+            .catch(() => {});
+        return () => {
+            cancelled = true;
+        };
+    }, [gameSlug, categoryId]);
 
     /**
      * Your other runs on this exact board. Note what the backend can return:
@@ -161,7 +187,16 @@ export function OwnerRemoveForm({
     const nextBest = otherRuns?.[0] ?? null;
 
     const setTimeMs = choice === 'time' ? enteredMs : null;
-    const setTimeValid = setTimeMs !== null;
+    const clockPrimary: ModTiming =
+        clocks?.primaryTiming ??
+        (primaryTiming === 'gt' ? 'gametime' : 'realtime');
+    const timesVerdict = validateRunTimes({
+        primaryTiming: clockPrimary,
+        showSecondary: clocks?.showSecondary ?? false,
+        primaryMs: setTimeMs,
+        secondaryMs,
+    });
+    const setTimeValid = setTimeMs !== null && timesVerdict.ok;
 
     const standRun =
         choice === 'other' && standRunId != null
@@ -242,8 +277,15 @@ export function OwnerRemoveForm({
                     gameId,
                     categoryId,
                     subcategoryKey,
-                    timing: primaryTiming === 'gt' ? 'gametime' : 'realtime',
+                    timing: clockPrimary,
                     timeMs: setTimeMs,
+                    secondary:
+                        secondaryMs !== null
+                            ? {
+                                  timing: otherTiming(clockPrimary),
+                                  timeMs: secondaryMs,
+                              }
+                            : null,
                     runDate: dateText || null,
                     reason: SELF_REASON,
                 });
@@ -368,17 +410,17 @@ export function OwnerRemoveForm({
 
                     {choice === 'time' && (
                         <div className={styles.zone}>
-                            <label
-                                className={styles.fieldLabel}
-                                htmlFor="owner-remove-time"
-                            >
-                                Your time
-                            </label>
-                            <DurationField
-                                id="owner-remove-time"
+                            <RunTimesField
+                                idPrefix="owner-remove-time"
                                 size="sm"
-                                value={enteredMs}
-                                onChange={setEnteredMs}
+                                primaryTiming={clockPrimary}
+                                gameTimeLabel={clocks?.gameTimeLabel ?? 'igt'}
+                                showSecondary={clocks?.showSecondary ?? false}
+                                primaryMs={enteredMs}
+                                onPrimaryChange={setEnteredMs}
+                                secondaryMs={secondaryMs}
+                                onSecondaryChange={setSecondaryMs}
+                                showErrors={enteredMs !== null}
                                 disabled={isConfirming}
                             />
                             <p className={styles.note}>

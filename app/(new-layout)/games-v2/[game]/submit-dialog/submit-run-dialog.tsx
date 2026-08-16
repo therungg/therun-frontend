@@ -5,6 +5,7 @@ import { selfClaimTimeAction } from '~src/actions/self-claim.action';
 import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
 import { buildBoardHref, gameSegment } from '~src/lib/board-url';
+import { otherTiming, validateRunTimes } from '~src/lib/run-times';
 import type {
     ResolvedCategory,
     ResolvedGroup,
@@ -231,8 +232,9 @@ export function SubmitRunDialog({
     const [choice, setChoice] = useState<RunnerChoice | null>(null);
 
     // ---- Time step -------------------------------------------------------
-    const [timing, setTiming] = useState<ModTiming>('realtime');
+    // Two clocks, not one time and a question about which clock it was.
     const [timeMs, setTimeMs] = useState<number | null>(null);
+    const [secondaryMs, setSecondaryMs] = useState<number | null>(null);
     const [runDate, setRunDate] = useState<string>(todayISODate());
     const [vodUrl, setVodUrl] = useState('');
     const [vodTouched, setVodTouched] = useState(false);
@@ -244,12 +246,16 @@ export function SubmitRunDialog({
         manualTimeId: number;
     } | null>(null);
 
-    // A category's own clocks decide whether the timing is a choice at all.
+    // A category's own clocks decide how many times this takes. When it shows
+    // both, the board's primary is the first field and the other clock is the
+    // second — there is nothing left to ask.
     const showRt = !category?.hideRealTime;
     const showGt = !category?.hideGameTime;
-    const timingChoice = showRt && showGt;
-    const effectiveTiming: ModTiming = timingChoice
-        ? timing
+    const showSecondary = showRt && showGt;
+    const primaryTiming: ModTiming = showSecondary
+        ? category?.primaryTiming === 'gt'
+            ? 'gametime'
+            : 'realtime'
         : showGt
           ? 'gametime'
           : 'realtime';
@@ -263,17 +269,23 @@ export function SubmitRunDialog({
         setChoice(null);
     }, [categoryId, subcategoryKey]);
 
-    // Default the timing to the category's primary whenever the board changes,
-    // so the pre-checked option matches what the board actually ranks on.
+    // A board change can swap which clock is primary, and the entered times
+    // belong to the old board's clocks — not to the new one's.
     useEffect(() => {
-        setTiming(category?.primaryTiming === 'gt' ? 'gametime' : 'realtime');
-    }, [category?.primaryTiming]);
+        setSecondaryMs(null);
+    }, [category?.primaryTiming, showSecondary]);
 
     const boardStepValid = !varsLoading && !combinationInvalid && !!category;
     const runnerStepValid = choice !== null && choice.canProceed;
     const vodInvalid =
         vodUrl.trim().length > 0 && !isValidHttpUrl(vodUrl.trim());
-    const timeStepValid = timeMs !== null && !vodInvalid && !submitting;
+    const timesVerdict = validateRunTimes({
+        primaryTiming,
+        showSecondary,
+        primaryMs: timeMs,
+        secondaryMs,
+    });
+    const timeStepValid = timesVerdict.ok && !vodInvalid && !submitting;
 
     const stepValid =
         step === 'board'
@@ -286,6 +298,7 @@ export function SubmitRunDialog({
         setStepIndex(0);
         setChoice(null);
         setTimeMs(null);
+        setSecondaryMs(null);
         setRunDate(todayISODate());
         setVodUrl('');
         setVodTouched(false);
@@ -298,6 +311,12 @@ export function SubmitRunDialog({
         setSubmitting(true);
         setError(null);
 
+        // The other clock rides along as a second row when it was filled in.
+        const secondary =
+            secondaryMs !== null
+                ? { timing: otherTiming(primaryTiming), timeMs: secondaryMs }
+                : null;
+
         // A non-moderator never reaches the runner step, so `choice` is null
         // and they always take the self path. A moderator submitting for
         // themselves goes through the mod path with their own user id — same
@@ -307,8 +326,9 @@ export function SubmitRunDialog({
                 runnerRef: choice.ref,
                 categoryId: category.id,
                 subcategoryKey,
-                timing: effectiveTiming,
+                timing: primaryTiming,
                 timeMs,
+                secondary,
                 evidenceUrl: vodUrl.trim() || null,
                 runDate: runDate || null,
                 reason: 'Added via Submit a run',
@@ -327,8 +347,9 @@ export function SubmitRunDialog({
         const res = await selfClaimTimeAction({
             gameId: game.id,
             categoryId: category.id,
-            timing: effectiveTiming,
+            timing: primaryTiming,
             timeMs,
+            secondary,
             subcategoryKey:
                 subcategoryKey.length > 0 ? subcategoryKey : undefined,
             evidenceUrl: vodUrl.trim() || null,
@@ -498,12 +519,13 @@ export function SubmitRunDialog({
 
                         {step === 'time' && (
                             <StepTime
-                                timingChoice={timingChoice}
-                                timing={effectiveTiming}
-                                onTimingChange={setTiming}
+                                primaryTiming={primaryTiming}
+                                showSecondary={showSecondary}
                                 gameTimeLabel={category.gameTimeLabel ?? 'igt'}
                                 timeMs={timeMs}
                                 onTimeChange={setTimeMs}
+                                secondaryMs={secondaryMs}
+                                onSecondaryChange={setSecondaryMs}
                                 runDate={runDate}
                                 onRunDateChange={setRunDate}
                                 vodUrl={vodUrl}

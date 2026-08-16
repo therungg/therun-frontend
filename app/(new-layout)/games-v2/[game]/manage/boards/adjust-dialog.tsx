@@ -2,11 +2,13 @@
 
 import { useEffect, useId, useMemo, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
-import { DurationField } from '~src/components/time-input/duration-field';
+import { RunTimesField } from '~src/components/time-input/run-times-field';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { otherTiming } from '~src/lib/run-times';
 import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
 import type {
     LeaderboardRosterRow,
+    ModTiming,
     UserEligibleRunRow,
 } from '../../../../../../types/moderation.types';
 import { BoardDialog } from '../../shared/board-dialog';
@@ -50,6 +52,8 @@ export function AdjustDialog({
     onMutated,
 }: AdjustDialogProps) {
     const timing: 'rt' | 'gt' = category.primaryTiming === 'gt' ? 'gt' : 'rt';
+    const primaryTiming: ModTiming = timing === 'gt' ? 'gametime' : 'realtime';
+    const showSecondary = !category.hideRealTime && !category.hideGameTime;
     const isGuest = row.userId == null;
 
     // ---- Pick the valid run --------------------------------------------
@@ -62,6 +66,8 @@ export function AdjustDialog({
 
     // ---- Set a time instead ---------------------------------------------
     const [setTimeMs, setSetTimeMs] = useState<number | null>(null);
+    // The other clock, on a board that ranks game time. See run-times.ts.
+    const [secondaryMs, setSecondaryMs] = useState<number | null>(null);
     // Optional "when was this achieved" (yyyy-mm-dd). Empty => the board
     // shows the manual time's created-at.
     const [dateText, setDateText] = useState('');
@@ -187,9 +193,15 @@ export function AdjustDialog({
                         : { userId: row.userId },
                 categoryId: category.id,
                 subcategoryKey,
-                timing:
-                    category.primaryTiming === 'gt' ? 'gametime' : 'realtime',
+                timing: primaryTiming,
                 timeMs: setTimeMs,
+                secondary:
+                    secondaryMs !== null
+                        ? {
+                              timing: otherTiming(primaryTiming),
+                              timeMs: secondaryMs,
+                          }
+                        : null,
                 runDate: dateText || null,
                 reason: reasonText,
             });
@@ -355,14 +367,17 @@ export function AdjustDialog({
                     <p className={styles.moveNote}>
                         Files a moderator manual time for this board.
                     </p>
-                    <label htmlFor="adjust-time" className={styles.fieldLabel}>
-                        Time
-                    </label>
-                    <DurationField
-                        id="adjust-time"
+                    <RunTimesField
+                        idPrefix="adjust-time"
                         size="sm"
-                        value={setTimeMs}
-                        onChange={setSetTimeMs}
+                        primaryTiming={primaryTiming}
+                        gameTimeLabel={category.gameTimeLabel ?? 'igt'}
+                        showSecondary={showSecondary}
+                        primaryMs={setTimeMs}
+                        onPrimaryChange={setSetTimeMs}
+                        secondaryMs={secondaryMs}
+                        onSecondaryChange={setSecondaryMs}
+                        showErrors={setTimeMs !== null}
                         disabled={isPending}
                     />
                     {timeError && (

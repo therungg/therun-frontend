@@ -103,8 +103,9 @@ async function advancePastBoard() {
  * types digits rather than handing it a formatted string. `1:23:45` is the
  * digits `12345`.
  */
-function typeTime(digits: string) {
-    const el = screen.getByLabelText('Time') as HTMLInputElement;
+function typeTime(digits: string, clock = /Real time/) {
+    const el = screen.getByLabelText(clock) as HTMLInputElement;
+    fireEvent.focus(el);
     for (const ch of digits) {
         fireEvent.change(el, { target: { value: el.value + ch } });
     }
@@ -144,13 +145,95 @@ describe('SubmitRunDialog', () => {
 
         // Nothing invalid is representable any more — a stray letter is
         // rejected by the field rather than becoming an error state.
-        fireEvent.change(screen.getByLabelText('Time'), {
+        fireEvent.change(screen.getByLabelText(/Real time/), {
             target: { value: 'x' },
         });
         expect((submitBtn as HTMLButtonElement).disabled).toBe(true);
 
         typeTime('12345');
         expect((submitBtn as HTMLButtonElement).disabled).toBe(false);
+    });
+
+    // A board timed by game time that also shows real time has a column no
+    // single-clock submission can fill, so it asks for both.
+    const bothClocks = {
+        ...category,
+        primaryTiming: 'gt',
+        gameTimeLabel: 'igt',
+        hideRealTime: false,
+        hideGameTime: false,
+    } as unknown as ResolvedCategory;
+
+    it('takes both clocks on a board that shows both', async () => {
+        mocks.selfClaimTimeAction.mockResolvedValue({
+            ok: true,
+            applied: 'instant',
+            manualTimeId: 77,
+        });
+        renderDialog({ categories: [bothClocks] });
+        await advancePastBoard();
+
+        typeTime('12345', /IGT/);
+        typeTime('12400', /Real time/);
+        fireEvent.click(screen.getByRole('button', { name: 'Submit run' }));
+
+        await waitFor(() =>
+            expect(mocks.selfClaimTimeAction).toHaveBeenCalledTimes(1),
+        );
+        expect(mocks.selfClaimTimeAction.mock.calls[0][0]).toMatchObject({
+            timing: 'gametime',
+            timeMs: 5025000,
+            secondary: { timing: 'realtime', timeMs: 5040000 },
+        });
+    });
+
+    it('will not submit one clock when the board demands both', async () => {
+        renderDialog({ categories: [bothClocks] });
+        await advancePastBoard();
+
+        typeTime('12345', /IGT/);
+
+        expect(
+            (
+                screen.getByRole('button', {
+                    name: 'Submit run',
+                }) as HTMLButtonElement
+            ).disabled,
+        ).toBe(true);
+        expect(
+            screen.getByText(
+                'This board shows both times, so both are required.',
+            ),
+        ).toBeTruthy();
+    });
+
+    it('sends no secondary when the runner leaves the optional clock empty', async () => {
+        mocks.selfClaimTimeAction.mockResolvedValue({
+            ok: true,
+            applied: 'instant',
+            manualTimeId: 78,
+        });
+        // Real-time board showing game time: the second clock is never demanded.
+        renderDialog({
+            categories: [
+                {
+                    ...bothClocks,
+                    primaryTiming: 'rt',
+                } as unknown as ResolvedCategory,
+            ],
+        });
+        await advancePastBoard();
+
+        typeTime('12345', /Real time/);
+        fireEvent.click(screen.getByRole('button', { name: 'Submit run' }));
+
+        await waitFor(() =>
+            expect(mocks.selfClaimTimeAction).toHaveBeenCalledTimes(1),
+        );
+        expect(mocks.selfClaimTimeAction.mock.calls[0][0]).toMatchObject({
+            timing: 'realtime',
+            secondary: null,
+        });
     });
 
     it('rejects a malformed video link before it reaches the backend', async () => {

@@ -272,8 +272,8 @@ describe('AdjustDialog', () => {
         expect(screen.getByRole('button', { name: 'Save time' })).toBeTruthy();
         expect(mocks.loadUserEligibleRunsAction).not.toHaveBeenCalled();
 
-        clearDuration(screen.getByLabelText('Time'));
-        typeDuration(screen.getByLabelText('Time'), '3548');
+        clearDuration(screen.getByLabelText(/Real time/));
+        typeDuration(screen.getByLabelText(/Real time/), '3548');
         fireEvent.change(screen.getByLabelText('Reason (required)'), {
             target: { value: 'manual correction' },
         });
@@ -290,16 +290,59 @@ describe('AdjustDialog', () => {
         );
     });
 
+    // A game-timed board that also shows real time: the mod's set-time files
+    // both clocks, as two manual-time rows.
+    it('files both clocks on a board that shows both', async () => {
+        renderDialog({
+            row: rosterRow({ userId: null, runnerName: 'runner' }),
+            category: {
+                ...CATEGORY,
+                primaryTiming: 'gt',
+                gameTimeLabel: 'igt',
+                hideRealTime: false,
+                hideGameTime: false,
+            } as ResolvedCategory,
+        });
+
+        // Focus first, as a click does: an unfocused field re-seeds its draft
+        // from the value it is handed on every parent render.
+        const igt = screen.getByLabelText(/IGT/);
+        const rta = screen.getByLabelText(/Real time/);
+        fireEvent.focus(igt);
+        clearDuration(igt);
+        typeDuration(igt, '3548');
+        fireEvent.blur(igt);
+        fireEvent.focus(rta);
+        clearDuration(rta);
+        typeDuration(rta, '3600');
+        fireEvent.blur(rta);
+        fireEvent.change(screen.getByLabelText('Reason (required)'), {
+            target: { value: 'manual correction' },
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'Save time' }));
+
+        await waitFor(() =>
+            expect(mocks.createManualTimeAction).toHaveBeenCalledWith(
+                'some-game',
+                expect.objectContaining({
+                    timing: 'gametime',
+                    timeMs: 2_148_000,
+                    secondary: { timing: 'realtime', timeMs: 2_160_000 },
+                }),
+            ),
+        );
+    });
+
     it('an empty time blocks the save, and garbage cannot be typed', async () => {
         renderDialog();
         await screen.findAllByRole('radio');
 
         // The field rejects anything that is not a digit, so there is no
         // invalid state to submit — only an empty one.
-        fireEvent.change(screen.getByLabelText('Time'), {
+        fireEvent.change(screen.getByLabelText(/Real time/), {
             target: { value: 'garbage' },
         });
-        clearDuration(screen.getByLabelText('Time'));
+        clearDuration(screen.getByLabelText(/Real time/));
         fireEvent.change(screen.getByLabelText('Reason (required)'), {
             target: { value: 'manual correction' },
         });
@@ -314,8 +357,8 @@ describe('AdjustDialog', () => {
         renderDialog();
         await screen.findAllByRole('radio');
 
-        clearDuration(screen.getByLabelText('Time'));
-        typeDuration(screen.getByLabelText('Time'), '3548');
+        clearDuration(screen.getByLabelText(/Real time/));
+        typeDuration(screen.getByLabelText(/Real time/), '3548');
 
         expect(
             screen.getByRole('button', { name: 'Save time' }),

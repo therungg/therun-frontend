@@ -15,7 +15,12 @@ const mocks = vi.hoisted(() => ({
     selfRunVerdictAction: vi.fn(),
     revalidateSelfBoardsAction: vi.fn(),
     selfClaimTimeAction: vi.fn(),
+    loadBoardClocksAction: vi.fn(),
     toastSuccess: vi.fn(),
+}));
+
+vi.mock('../manage/moderation/shared/actions/board-clocks.action', () => ({
+    loadBoardClocksAction: mocks.loadBoardClocksAction,
 }));
 
 vi.mock('~src/actions/run-user-actions.action', () => ({
@@ -62,6 +67,12 @@ const mine = (runId: number, time: number): UserEligibleRunRow => ({
 
 beforeEach(() => {
     vi.clearAllMocks();
+    // A real-time board: one clock, so the wizard keeps its single time field.
+    mocks.loadBoardClocksAction.mockResolvedValue({
+        primaryTiming: 'realtime',
+        showSecondary: false,
+        gameTimeLabel: 'igt',
+    });
     mocks.selfRunVerdictAction.mockResolvedValue({
         ok: true,
         applied: 'instant',
@@ -174,17 +185,27 @@ describe('OwnerRemoveForm', () => {
     });
 
     it('files the time you set, on the board clock, after the runs are hidden', async () => {
+        // The board's clocks are read from the category, not from the prop:
+        // this one ranks game time and does not show its real-time column.
+        mocks.loadBoardClocksAction.mockResolvedValue({
+            primaryTiming: 'gametime',
+            showSecondary: false,
+            gameTimeLabel: 'igt',
+        });
         const { onDone } = renderForm([], {
             primaryTiming: 'gt',
             subcategoryKey: 'glitchless',
         });
         await screen.findByText('You have no other times on this board.');
         fireEvent.click(screen.getByRole('radio', { name: /^Set a time/ }));
-        typeDuration(screen.getByLabelText('Your time'), '11000');
+        await screen.findByLabelText(/IGT/);
+        typeDuration(screen.getByLabelText(/IGT/), '11000');
         fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
         fireEvent.click(screen.getByRole('button', { name: 'Hide my run' }));
         await waitFor(() => {
             expect(mocks.selfClaimTimeAction).toHaveBeenCalledWith({
+                // No second clock entered, so none is sent.
+                secondary: null,
                 gameId: 5,
                 categoryId: 10,
                 subcategoryKey: 'glitchless',
@@ -210,7 +231,7 @@ describe('OwnerRemoveForm', () => {
         renderForm([]);
         await screen.findByText('You have no other times on this board.');
         fireEvent.click(screen.getByRole('radio', { name: /^Set a time/ }));
-        typeDuration(screen.getByLabelText('Your time'), '11000');
+        typeDuration(screen.getByLabelText(/Real time/), '11000');
         fireEvent.change(screen.getByLabelText('Date achieved (optional)'), {
             target: { value: '2026-03-04' },
         });
@@ -228,7 +249,7 @@ describe('OwnerRemoveForm', () => {
         await screen.findByRole('radio', { name: /^Another run of mine/ });
         fireEvent.click(screen.getByRole('radio', { name: /^Set a time/ }));
         // 1:10:00 is slower than your standing 50:00, which would outrank it.
-        typeDuration(screen.getByLabelText('Your time'), '11000');
+        typeDuration(screen.getByLabelText(/Real time/), '11000');
         expect(
             screen.getByText(/1 faster time of yours goes too/),
         ).toBeTruthy();
@@ -248,7 +269,7 @@ describe('OwnerRemoveForm', () => {
         renderForm([]);
         await screen.findByText('You have no other times on this board.');
         fireEvent.click(screen.getByRole('radio', { name: /^Set a time/ }));
-        typeDuration(screen.getByLabelText('Your time'), '11000');
+        typeDuration(screen.getByLabelText(/Real time/), '11000');
         fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
         mocks.selfClaimTimeAction.mockResolvedValueOnce({
             error: 'Something went wrong.',

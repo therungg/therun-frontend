@@ -74,12 +74,23 @@ export interface ManualTimePreviewResult {
     }>;
 }
 
+/**
+ * The other clock on a paired submission. `timing` must be the opposite of the
+ * request's own `timing` — two clocks are two `manual_times` rows, and the
+ * table is unique per (runner, slice, timing), so a matching one is a 400.
+ */
+export interface SecondaryTimeInput {
+    timing: ModTiming;
+    timeMs: number;
+}
+
 export interface CreateManualTimeInput {
     runnerRef: RunnerRef;
     categoryId: number;
     subcategoryKey?: string;
     timing: ModTiming;
     timeMs: number;
+    secondary?: SecondaryTimeInput | null;
     evidenceUrl?: string | null;
     /** Mod-asserted date the time was achieved (ISO date); omitted/null =>
      *  the board shows the manual time's created-at instead. */
@@ -89,6 +100,8 @@ export interface CreateManualTimeInput {
 
 export interface CreateManualTimeResult {
     id: number;
+    /** The other clock's row, when one was sent. */
+    secondaryId?: number | null;
     affectedLeaderboards: AffectedLeaderboard[];
 }
 
@@ -581,6 +594,8 @@ export interface SelfManualTimeInput {
     categoryId: number;
     timing: ModTiming;
     timeMs: number;
+    /** The other clock, on a board that shows both. */
+    secondary?: SecondaryTimeInput | null;
     subcategoryKey?: string;
     evidenceUrl?: string | null;
     /** Date the runner says they achieved the time (ISO date); omitted/null =>
@@ -592,6 +607,8 @@ export interface SelfManualTimeInput {
 export interface SelfManualTimeResult {
     applied: 'instant' | 'provisional';
     manualTimeId: number;
+    /** The other clock's row, when one was sent. */
+    secondaryManualTimeId?: number | null;
 }
 
 export interface SelfRunVerdictInput {
