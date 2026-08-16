@@ -40,7 +40,14 @@ interface Props {
     onVodChange: (v: string) => void;
     vodTouched: boolean;
     onVodBlur: () => void;
+    description: string;
+    onDescriptionChange: (v: string) => void;
+    /** Set when a moderator revoked descriptions on this board for this runner. */
+    descriptionBlockedReason?: string | null;
 }
+
+/** Matches the backend cap in services/run-description.ts. */
+export const DESCRIPTION_MAX_LENGTH = 4000;
 
 /**
  * The time itself — one field per clock the board shows.
@@ -63,6 +70,9 @@ export function StepTime({
     onVodChange,
     vodTouched,
     onVodBlur,
+    description,
+    onDescriptionChange,
+    descriptionBlockedReason,
 }: Props) {
     const vodInvalid =
         vodUrl.trim().length > 0 && !isValidHttpUrl(vodUrl.trim());
@@ -122,6 +132,37 @@ export function StepTime({
                 ) : (
                     <p className={styles.hint}>
                         Optional, but a run with a video is verified faster.
+                    </p>
+                )}
+            </div>
+
+            <div>
+                <label htmlFor="submit-description" className="form-label">
+                    Description
+                </label>
+                <textarea
+                    id="submit-description"
+                    className="form-control"
+                    rows={4}
+                    value={description}
+                    disabled={descriptionBlockedReason != null}
+                    onChange={(e) => onDescriptionChange(e.target.value)}
+                    placeholder="Route notes, what went wrong, what you'd do differently. Markdown supported."
+                />
+                {descriptionBlockedReason ? (
+                    <div className={styles.fieldError}>
+                        A moderator removed your ability to add a description
+                        here. Reason: “{descriptionBlockedReason}”
+                    </div>
+                ) : description.trim().length > DESCRIPTION_MAX_LENGTH ? (
+                    <div className={styles.fieldError}>
+                        Descriptions are limited to {DESCRIPTION_MAX_LENGTH}{' '}
+                        characters.
+                    </div>
+                ) : (
+                    <p className={styles.hint}>
+                        Optional. It shows on the run's page, and you can edit
+                        it later.
                     </p>
                 )}
             </div>

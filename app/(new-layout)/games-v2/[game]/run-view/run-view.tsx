@@ -24,6 +24,10 @@ import { isSameRunner } from '../shared/is-same-runner';
 import { OriginPanel } from './origin-panel';
 import { RunActions } from './run-actions';
 import { VariablesLine, VerificationBadge } from './run-badges';
+import {
+    RunDescription,
+    type RunDescriptionRestrictionView,
+} from './run-description';
 import { RunHistoryList } from './run-history-list';
 import styles from './run-view.module.scss';
 
@@ -63,6 +67,13 @@ export interface RunViewModel {
     gameTimeLabel: 'igt' | 'lrt';
     runDate: string | null; // null for manual times (no run date)
     vodUrl: string | null;
+    /** Runner-authored markdown. Manual times carry no description — `null`. */
+    description?: string | null;
+    /**
+     * Only ever set for the run's owner, on a read that carried their session:
+     * a moderator revoked their descriptions on this category.
+     */
+    descriptionRestriction?: RunDescriptionRestrictionView | null;
     verificationStatus: 'pending' | 'verified' | 'rejected';
     variables: Record<string, string>;
     origin: RunOrigin | null;
@@ -76,11 +87,14 @@ export function RunView({
     history,
     sessionUsername,
     modPanel,
+    canModerate = false,
 }: {
     model: RunViewModel;
     history: HistoryEvent[]; // [] for manual times
     sessionUsername: string | null;
     modPanel?: React.ReactNode; // mod layer slot, page decides
+    /** The visitor moderates this game — gates the description's mod verbs. */
+    canModerate?: boolean;
 }): React.JSX.Element {
     const primaryTime = model.realTime ?? model.gameTime;
     const isRejected = model.verificationStatus === 'rejected';
@@ -280,6 +294,26 @@ export function RunView({
                                 No video attached
                             </div>
                         )}
+                        <RunDescription
+                            kind={model.kind}
+                            runId={model.id}
+                            description={model.description ?? null}
+                            // Same gate as the owner verbs above: a guest row
+                            // or a userId-less row has no `/v1/me` identity,
+                            // so there is nobody to edit as.
+                            canEdit={
+                                isSameRunner(
+                                    sessionUsername,
+                                    model.runnerName,
+                                ) &&
+                                model.userId != null &&
+                                !model.isGuest
+                            }
+                            restriction={model.descriptionRestriction ?? null}
+                            canModerate={canModerate}
+                            gameSlug={model.game.name}
+                            hasAccount={model.userId != null}
+                        />
                     </div>
                     <div className="col-lg-4 d-flex flex-column gap-3">
                         <div className={styles.surface}>

@@ -69,8 +69,21 @@ export default async function RunDetailPage({ params }: PageProps) {
     // Only when it can possibly change the answer: a redacted run is exactly a
     // non-guest row with no userId. Guest rows and normal rows skip the extra
     // request, so the common path costs nothing.
+    //
+    // The same authenticated read is also the only one that carries
+    // `descriptionRestriction` — a per-viewer field the cached payload must
+    // never hold — so a visitor who is plainly the runner takes this path too,
+    // otherwise a restricted runner would be shown a live editor that 403s on
+    // save. Everyone else still skips the extra request.
     let run = data.run;
-    if (session.id && run.userId == null && !run.isGuest) {
+    const looksLikeOwner =
+        session.username != null &&
+        !run.isGuest &&
+        session.username.toLowerCase() === run.runnerName.toLowerCase();
+    if (
+        session.id &&
+        (looksLikeOwner || (run.userId == null && !run.isGuest))
+    ) {
         const asViewer = await getRunByIdAsViewer(runId, session.id).catch(
             () => null,
         );
@@ -122,6 +135,10 @@ export default async function RunDetailPage({ params }: PageProps) {
                 gameTimeLabel: run.gameTimeLabel ?? 'igt',
                 runDate: run.runDate,
                 vodUrl: run.vodUrl,
+                description: run.description ?? null,
+                // Present only when the re-read above ran as the owner — the
+                // cached public payload never carries a per-viewer field.
+                descriptionRestriction: run.descriptionRestriction ?? null,
                 verificationStatus: run.verificationStatus,
                 variables: run.variables,
                 origin: run.origin ?? null,
@@ -131,6 +148,7 @@ export default async function RunDetailPage({ params }: PageProps) {
             }}
             history={history}
             sessionUsername={session.username || null}
+            canModerate={isMod}
             modPanel={
                 isMod ? (
                     <ModProvenancePanel

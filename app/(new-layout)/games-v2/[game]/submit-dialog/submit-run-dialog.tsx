@@ -20,7 +20,12 @@ import { buildSubcategoryKey } from '../submit/subcategory-key';
 import type { RunnerChoice } from './runner-state';
 import { StepBoard } from './step-board';
 import { StepRunner } from './step-runner';
-import { isValidHttpUrl, StepTime, todayISODate } from './step-time';
+import {
+    DESCRIPTION_MAX_LENGTH,
+    isValidHttpUrl,
+    StepTime,
+    todayISODate,
+} from './step-time';
 import styles from './submit-run-dialog.module.scss';
 
 export interface SubmitDialogGame {
@@ -230,6 +235,13 @@ export function SubmitRunDialog({
     const [runDate, setRunDate] = useState<string>(todayISODate());
     const [vodUrl, setVodUrl] = useState('');
     const [vodTouched, setVodTouched] = useState(false);
+    const [description, setDescription] = useState('');
+    // Learned from a rejected submit rather than a lookup up front: the
+    // restriction is rare, and asking for it on every open would cost every
+    // runner a request to tell almost all of them nothing.
+    const [descriptionBlockedReason, setDescriptionBlockedReason] = useState<
+        string | null
+    >(null);
 
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -277,7 +289,10 @@ export function SubmitRunDialog({
         primaryMs: timeMs,
         secondaryMs,
     });
-    const timeStepValid = timesVerdict.ok && !vodInvalid && !submitting;
+    const descriptionInvalid =
+        description.trim().length > DESCRIPTION_MAX_LENGTH;
+    const timeStepValid =
+        timesVerdict.ok && !vodInvalid && !descriptionInvalid && !submitting;
 
     const stepValid =
         step === 'board'
@@ -294,8 +309,22 @@ export function SubmitRunDialog({
         setRunDate(todayISODate());
         setVodUrl('');
         setVodTouched(false);
+        setDescription('');
+        setDescriptionBlockedReason(null);
         setError(null);
         setResult(null);
+    };
+
+    /**
+     * The backend is the only thing that knows a runner has lost descriptions
+     * on this board, and it says so by refusing the submit. Catch that one
+     * message and disable the field, so the retry isn't the same wall again.
+     */
+    const noteDescriptionBlock = (message: string) => {
+        if (message.includes('ability to add a description')) {
+            setDescriptionBlockedReason(message);
+            setDescription('');
+        }
     };
 
     const submit = async () => {
@@ -323,11 +352,19 @@ export function SubmitRunDialog({
                 secondary,
                 evidenceUrl: vodUrl.trim() || null,
                 runDate: runDate || null,
+                // Only a guest has no voice of its own for a moderator to
+                // stand in for; entering a time for an account may not write
+                // words in that account's name (the backend 400s if we try).
+                description:
+                    'guestName' in choice.ref
+                        ? description.trim() || null
+                        : null,
                 reason: 'Added via Submit a run',
             });
             setSubmitting(false);
             if ('error' in res) {
                 setError(res.error);
+                noteDescriptionBlock(res.error);
                 return;
             }
             // A moderator entering a time is the verification — it lands on
@@ -346,10 +383,12 @@ export function SubmitRunDialog({
                 subcategoryKey.length > 0 ? subcategoryKey : undefined,
             evidenceUrl: vodUrl.trim() || null,
             runDate: runDate || null,
+            description: description.trim() || null,
         });
         setSubmitting(false);
         if ('error' in res) {
             setError(res.error);
+            noteDescriptionBlock(res.error);
             return;
         }
         setResult({ applied: res.applied, manualTimeId: res.manualTimeId });
@@ -527,6 +566,11 @@ export function SubmitRunDialog({
                                 }}
                                 vodTouched={vodTouched}
                                 onVodBlur={() => setVodTouched(true)}
+                                description={description}
+                                onDescriptionChange={setDescription}
+                                descriptionBlockedReason={
+                                    descriptionBlockedReason
+                                }
                             />
                         )}
 

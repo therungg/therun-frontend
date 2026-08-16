@@ -288,12 +288,27 @@ export interface RunDetail {
     gameTimeLabel?: GameTimeLabel;
     runDate: string;
     vodUrl: string | null;
+    /** Runner-authored markdown about this run. Null when none was written. */
+    description: string | null;
+    /**
+     * Only ever non-null on a read that carried the runner's own session — a
+     * moderator revoked their ability to write descriptions on this category.
+     * The cached public payload never carries it.
+     */
+    descriptionRestriction?: RunDescriptionRestriction | null;
     verificationStatus: 'pending' | 'verified' | 'rejected';
     variables: Record<string, string>;
     origin?: RunOrigin;
     verifiedBy?: RunOriginRef | null;
     verifiedAt?: string | null;
     rejectionReason?: string | null;
+}
+
+export interface RunDescriptionRestriction {
+    /** The moderator's typed reason, shown to the runner. */
+    reason: string;
+    /** ISO timestamp the restriction was written, or null. */
+    since: string | null;
 }
 
 export interface RunOriginRef {
@@ -329,6 +344,10 @@ export interface ManualTimeDetail {
     timing: 'realtime' | 'gametime';
     timeMs: number;
     evidenceUrl: string | null;
+    /** Runner-authored markdown about this time. Null when none was written. */
+    description: string | null;
+    /** Owner-only, session-bound — see RunDetail.descriptionRestriction. */
+    descriptionRestriction?: RunDescriptionRestriction | null;
     verificationStatus: 'pending' | 'verified' | 'rejected';
     /** Mod-asserted achievement date; null when never set (origin.ingestedAt
      *  remains the system clock). */

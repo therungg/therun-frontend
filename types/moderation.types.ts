@@ -95,6 +95,12 @@ export interface CreateManualTimeInput {
     /** Mod-asserted date the time was achieved (ISO date); omitted/null =>
      *  the board shows the manual time's created-at instead. */
     runDate?: string | null;
+    /**
+     * Runner-authored markdown. A moderator may only send this for a guest
+     * runner — a guest has no account to write for itself. Sending it for an
+     * account is a 400.
+     */
+    description?: string | null;
     reason: string;
 }
 
@@ -121,6 +127,10 @@ export interface UpdateManualTimeInput {
     evidenceUrl?: string | null;
     /** Explicit null clears the date (created-at stands in again). */
     runDate?: string | null;
+    /** Moderators may only clear this (`null`); see CreateManualTimeInput. */
+    description?: string | null;
+    /** Revoke or restore the runner's descriptions on this time's category. */
+    descriptionRestriction?: 'revoke' | 'restore';
 }
 
 export interface UpdateManualTimeResult {
@@ -601,6 +611,8 @@ export interface SelfManualTimeInput {
     /** Date the runner says they achieved the time (ISO date); omitted/null =>
      *  the board shows the manual time's created-at instead. */
     runDate?: string | null;
+    /** Runner-authored markdown; the same words land on both clocks' rows. */
+    description?: string | null;
     reason?: string;
 }
 

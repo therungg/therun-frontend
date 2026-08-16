@@ -5,6 +5,7 @@ import { resolveGame } from '~src/lib/games-v1';
 import { getManualTimeById } from '~src/lib/leaderboards-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { getManualTimeProvenance } from '~src/lib/moderation/provenance';
+import { getManualTimeByIdAsViewer } from '~src/lib/run-detail-viewer';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import buildMetadata from '~src/utils/metadata';
 import { formatSubcategoryKey } from '../../labels';
@@ -47,10 +48,28 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
     const { game: gameSlug, manualTimeId: manualTimeIdRaw } = await params;
     const data = await load(gameSlug, manualTimeIdRaw);
     if (!data) notFound();
-    const { game, mt, manualTimeId } = data;
+    const { game, manualTimeId } = data;
 
     const session = await getSession();
     const isMod = canModerateGame(session, game.name);
+
+    // `descriptionRestriction` is per-viewer and only travels on an
+    // authenticated read, so the runner's own copy is fetched uncached — the
+    // shared `'use cache'` payload must never hold a per-viewer field. Only for
+    // a visitor who is plainly the runner; everyone else keeps the cached read.
+    let mt = data.mt;
+    if (
+        session.id &&
+        session.username &&
+        !mt.isGuest &&
+        session.username.toLowerCase() === mt.runnerName.toLowerCase()
+    ) {
+        const asViewer = await getManualTimeByIdAsViewer(
+            manualTimeId,
+            session.id,
+        ).catch(() => null);
+        if (asViewer) mt = asViewer;
+    }
 
     const provenance =
         isMod && session.id
@@ -79,6 +98,8 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
                 gameTimeLabel: 'igt',
                 runDate: mt.runDate ?? null,
                 vodUrl: mt.evidenceUrl,
+                description: mt.description ?? null,
+                descriptionRestriction: mt.descriptionRestriction ?? null,
                 verificationStatus: mt.verificationStatus,
                 variables: {},
                 origin: mt.origin,
@@ -88,6 +109,7 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
             }}
             history={[]}
             sessionUsername={session.username || null}
+            canModerate={isMod}
             modPanel={
                 isMod ? (
                     <ModProvenancePanel

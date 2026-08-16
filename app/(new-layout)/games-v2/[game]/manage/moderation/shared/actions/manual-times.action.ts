@@ -87,6 +87,8 @@ export async function createManualTimeAction(
         secondary?: SecondaryTimeInput | null;
         evidenceUrl?: string | null;
         runDate?: string | null;
+        /** Guest runners only — see CreateManualTimeInput.description. */
+        description?: string | null;
         reason: string;
     },
 ): Promise<{ ok: true; result: CreateManualTimeResult } | Fail> {

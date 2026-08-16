@@ -24,6 +24,26 @@ export function selfCreateManualTime(
     });
 }
 
+/**
+ * Write (or clear, with `null`) the description on a manual time you own.
+ *
+ * Same route as the create above, dispatched on the body: `manualTimeId`
+ * present and no time fields. The api stack is one CloudFormation resource
+ * from its 500-resource ceiling, so a description edit does not get a route
+ * of its own — don't "clean this up" into a PUT without checking that budget.
+ */
+export function selfSetManualTimeDescription(
+    sessionId: string,
+    manualTimeId: number,
+    description: string | null,
+): Promise<{ manualTimeId: number; updated: boolean }> {
+    return meFetch('/v1/me/manual-times', {
+        sessionId,
+        method: 'POST',
+        body: { manualTimeId, description },
+    });
+}
+
 /** Delete your own manual time (§E2). No reason required. */
 export function selfDeleteManualTime(
     sessionId: string,

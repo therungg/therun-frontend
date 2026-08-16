@@ -1,0 +1,180 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+// The run's own prose. Sits under the video in the main column — wide measure,
+// body type, none of the mono/stat vocabulary the side rail uses.
+
+.panel {
+    @include board.board-surface(dt.$spacing-lg);
+    margin-top: dt.$spacing-md;
+}
+
+.head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    margin-bottom: dt.$spacing-sm;
+}
+
+.title {
+    @include board.board-eyebrow;
+    margin: 0;
+}
+
+.body {
+    // Prose, not UI: a comfortable measure beats filling the column.
+    max-width: 68ch;
+
+    :global(p),
+    :global(ul),
+    :global(ol),
+    :global(blockquote) {
+        margin-bottom: dt.$spacing-sm;
+    }
+
+    :global(h1),
+    :global(h2),
+    :global(h3) {
+        font-size: dt.$font-size-lg;
+        margin-top: dt.$spacing-md;
+        margin-bottom: dt.$spacing-xs;
+    }
+
+    :global(img) {
+        max-width: 100%;
+    }
+
+    :global(table) {
+        width: auto;
+        margin-bottom: dt.$spacing-sm;
+
+        :global(td),
+        :global(th) {
+            padding: 0.15rem dt.$spacing-sm 0.15rem 0;
+        }
+    }
+
+    :global(pre) {
+        overflow-x: auto;
+    }
+
+    > :last-child {
+        margin-bottom: 0;
+    }
+}
+
+.empty {
+    color: var(--bs-tertiary-color);
+    margin: 0;
+}
+
+.editor {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+.textarea {
+    width: 100%;
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    border: 1px solid var(--bs-border-color);
+    border-radius: dt.$radius-sm;
+    padding: dt.$spacing-sm;
+    font-family: inherit;
+    resize: vertical;
+
+    &:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+    }
+}
+
+.restricted {
+    @include board.board-pill(dt.$accent-amber);
+    display: block;
+    margin: 0;
+}
+
+.editorFoot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-sm;
+    flex-wrap: wrap;
+}
+
+.editorActions {
+    display: flex;
+    gap: dt.$spacing-sm;
+}
+
+.counter {
+    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.counterOver {
+    @extend .counter;
+    color: dt.$accent-red;
+    font-weight: 700;
+}
+
+.editButton,
+.ghostButton {
+    background: transparent;
+    border: 1px solid var(--bs-border-color);
+    border-radius: dt.$radius-sm;
+    color: var(--bs-body-color);
+    padding: 0.15rem dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+
+    &:hover {
+        border-color: var(--bs-secondary-color);
+    }
+}
+
+// Moderator verbs live below the prose, never beside the title: removing
+// someone's words is a considered act, not a header affordance.
+.modBar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+    margin-top: dt.$spacing-md;
+    padding-top: dt.$spacing-sm;
+    border-top: 1px solid var(--bs-border-color);
+}
+
+.modForm {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    width: 100%;
+}
+
+.modPrompt {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+    margin: 0;
+}
+
+.dangerButton {
+    @extend .ghostButton;
+    border-color: dt.$accent-red;
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+.saveButton {
+    @extend .ghostButton;
+    border-color: dt.$accent-green;
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}

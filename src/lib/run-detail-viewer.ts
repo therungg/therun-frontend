@@ -1,4 +1,7 @@
-import type { RunDetail } from '../../types/leaderboards.types';
+import type {
+    ManualTimeDetail,
+    RunDetail,
+} from '../../types/leaderboards.types';
 import { V1FetchError, v1Fetch } from './v1-fetch';
 
 /**
@@ -19,6 +22,25 @@ import { V1FetchError, v1Fetch } from './v1-fetch';
  * Not a server action (this module has no `'use server'`): it takes a session
  * id and must stay callable only from server components.
  */
+export async function getManualTimeByIdAsViewer(
+    manualTimeId: number,
+    sessionId: string,
+): Promise<ManualTimeDetail | null> {
+    try {
+        const body = await v1Fetch<{ result: ManualTimeDetail }>(
+            `/v1/leaderboards/manual-times/${manualTimeId}`,
+            {
+                headers: { Authorization: `Bearer ${sessionId}` },
+                cache: 'no-store',
+            },
+        );
+        return body.result;
+    } catch (e) {
+        if (e instanceof V1FetchError && e.status === 404) return null;
+        throw e;
+    }
+}
+
 export async function getRunByIdAsViewer(
     runId: number,
     sessionId: string,
