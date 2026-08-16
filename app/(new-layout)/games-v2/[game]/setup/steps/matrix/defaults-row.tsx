@@ -295,7 +295,7 @@ export function DefaultsRow({
                 <td>
                     <DurationField
                         size="sm"
-                        className={styles.minInput}
+                        inputClassName={styles.minInput}
                         value={minMs}
                         onChange={setMinMs}
                         // Saves when the mod leaves the cell, not per keystroke.

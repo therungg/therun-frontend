@@ -271,10 +271,15 @@
 // The one control here that is not a dropdown, and the one that therefore has
 // to say it is editable without being touched first: a select has a chevron, a
 // text box has nothing. So it keeps a faint box at rest.
-.minInput {
+// Doubled selector on purpose: this lands on a DurationField's input, which
+// arrives with its own box from another CSS module. The cell's metrics have to
+// win regardless of which module the bundler emits first.
+.minInput.minInput {
     @include board.mono-time;
     width: 6.5rem;
-    border-color: rgba(var(--bs-border-color-rgb), 0.28);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.28);
+    background: transparent;
+    padding: 0.15rem dt.$spacing-xs;
 
     &::placeholder {
         color: var(--bs-tertiary-color);

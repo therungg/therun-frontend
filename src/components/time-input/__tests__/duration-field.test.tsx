@@ -152,6 +152,27 @@ describe('DurationField', () => {
         expect(screen.getByText('= 1:23:45.678')).toBeDefined();
     });
 
+    // A table cell styles the box: those classes have to reach the input. On
+    // the wrapper, a cell border drew a second box around the field's own.
+    test('routes inputClassName to the input and className to the wrapper', () => {
+        const { container } = render(
+            <DurationField
+                value={null}
+                onChange={() => {}}
+                size="sm"
+                aria-label="Time"
+                className="wrapper-class"
+                inputClassName="cell-class"
+            />,
+        );
+
+        const input = container.querySelector('input');
+        expect(input?.className).toMatch(/cell-class/);
+        expect(input?.className).not.toMatch(/wrapper-class/);
+        expect(input?.parentElement?.className).toMatch(/wrapper-class/);
+        expect(input?.parentElement?.className).not.toMatch(/cell-class/);
+    });
+
     test('sm hides the readout until the cell has focus', () => {
         const { container } = render(<Harness size="sm" initial={2_148_000} />);
         const readout = container.querySelector('p');

@@ -82,7 +82,9 @@ function MinimumCell({
     return (
         <DurationField
             size="sm"
-            className={className}
+            // The cell classes style the box, so they belong on the input —
+            // on the wrapper their border draws a second box around it.
+            inputClassName={className}
             value={ms}
             onChange={setMs}
             onCommit={(next) => {
