@@ -24,6 +24,7 @@ import type {
     ManualTimeRow,
     ModTiming,
     RunnerRef,
+    SecondaryTimeInput,
 } from '../../../../../../../../types/moderation.types';
 
 type Fail = { error: string };
@@ -82,6 +83,8 @@ export async function createManualTimeAction(
         subcategoryKey: string;
         timing: ModTiming;
         timeMs: number;
+        /** The other clock, on a board that shows both. */
+        secondary?: SecondaryTimeInput | null;
         evidenceUrl?: string | null;
         runDate?: string | null;
         reason: string;

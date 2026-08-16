@@ -1,6 +1,6 @@
 'use client';
 
-import { DurationField } from '~src/components/time-input/duration-field';
+import { RunTimesField } from '~src/components/time-input/run-times-field';
 import type { ModTiming } from '../../../../../types/moderation.types';
 import styles from './submit-run-dialog.module.scss';
 
@@ -23,15 +23,17 @@ export function isValidHttpUrl(raw: string): boolean {
 }
 
 interface Props {
-    /** True when the category shows both clocks, so the timing is a choice. */
-    timingChoice: boolean;
-    timing: ModTiming;
-    onTimingChange: (t: ModTiming) => void;
+    /** The clock this board ranks by. */
+    primaryTiming: ModTiming;
+    /** True when the category shows both clocks, so both fields appear. */
+    showSecondary: boolean;
     /** What this board calls its game-time clock ('igt' | 'lrt'). */
     gameTimeLabel: string;
     /** Milliseconds, or null while the field is empty. */
     timeMs: number | null;
     onTimeChange: (ms: number | null) => void;
+    secondaryMs: number | null;
+    onSecondaryChange: (ms: number | null) => void;
     runDate: string;
     onRunDateChange: (v: string) => void;
     vodUrl: string;
@@ -41,17 +43,20 @@ interface Props {
 }
 
 /**
- * The time itself. A manual time asserts one clock, so this takes a single
- * time — on a board that ranks both, which clock it is becomes a choice
- * rather than two fields.
+ * The time itself — one field per clock the board shows.
+ *
+ * This used to be a single time plus a radio asking which clock it was, which
+ * left a board showing two columns with only ever one of them filled. Two
+ * labeled fields answer that question by existing.
  */
 export function StepTime({
-    timingChoice,
-    timing,
-    onTimingChange,
+    primaryTiming,
+    showSecondary,
     gameTimeLabel,
     timeMs,
     onTimeChange,
+    secondaryMs,
+    onSecondaryChange,
     runDate,
     onRunDateChange,
     vodUrl,
@@ -64,38 +69,18 @@ export function StepTime({
 
     return (
         <div className={styles.step}>
-            {timingChoice && (
-                <fieldset>
-                    <legend className="form-label">Timing</legend>
-                    <div className="d-flex gap-3">
-                        <label className="d-flex align-items-center gap-2">
-                            <input
-                                type="radio"
-                                name="submit-timing"
-                                checked={timing === 'realtime'}
-                                onChange={() => onTimingChange('realtime')}
-                            />
-                            Real time
-                        </label>
-                        <label className="d-flex align-items-center gap-2">
-                            <input
-                                type="radio"
-                                name="submit-timing"
-                                checked={timing === 'gametime'}
-                                onChange={() => onTimingChange('gametime')}
-                            />
-                            {gameTimeLabel.toUpperCase()}
-                        </label>
-                    </div>
-                </fieldset>
-            )}
-
-            <DurationField
-                id="submit-time"
-                label="Time"
-                size="lg"
-                value={timeMs}
-                onChange={onTimeChange}
+            <RunTimesField
+                idPrefix="submit-time"
+                primaryTiming={primaryTiming}
+                gameTimeLabel={gameTimeLabel}
+                showSecondary={showSecondary}
+                primaryMs={timeMs}
+                onPrimaryChange={onTimeChange}
+                secondaryMs={secondaryMs}
+                onSecondaryChange={onSecondaryChange}
+                // A missing second clock is only worth saying once the first
+                // one is there — an untouched form should not scold.
+                showErrors={timeMs !== null}
             />
 
             <div>

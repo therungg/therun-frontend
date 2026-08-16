@@ -1,9 +1,11 @@
 'use client';
 
-import { useRef, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import { DurationField } from '~src/components/time-input/duration-field';
+import { RunTimesField } from '~src/components/time-input/run-times-field';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { otherTiming, validateRunTimes } from '~src/lib/run-times';
 import type {
     ManualTimePreviewResult,
     ManualTimeRow,
@@ -11,6 +13,10 @@ import type {
     RunnerRef,
 } from '../../../../../../../types/moderation.types';
 import { BoardDialog } from '../../../shared/board-dialog';
+import {
+    type BoardClocks,
+    loadBoardClocksAction,
+} from './actions/board-clocks.action';
 import {
     createManualTimeAction,
     previewManualTimeAction,
@@ -36,6 +42,12 @@ interface Props {
     > & {
         runDate?: string | null;
     };
+    /**
+     * The category's clocks. Callers that already hold the category pass them;
+     * everyone else gets them fetched, because a board that shows two clocks
+     * must not be given one time and a picker.
+     */
+    clocks?: BoardClocks;
     onDone: () => void;
     onClose: () => void;
 }
@@ -50,6 +62,7 @@ export function ManualTimeDialog({
     categoryLabel,
     subcategoryKey,
     existing,
+    clocks: clocksProp,
     onDone,
     onClose,
 }: Props) {
@@ -60,6 +73,7 @@ export function ManualTimeDialog({
     const [timeMs, setTimeMs] = useState<number | null>(
         existing?.timeMs ?? null,
     );
+    const [secondaryMs, setSecondaryMs] = useState<number | null>(null);
     const [evidenceUrl, setEvidenceUrl] = useState(existing?.evidenceUrl ?? '');
     // yyyy-mm-dd for the date input; '' = no asserted date. Tracked against
     // its initial value so an edit that never touched the field sends
@@ -76,19 +90,57 @@ export function ManualTimeDialog({
     const [isSaving, startSave] = useTransition();
     const timeFieldRef = useRef<HTMLInputElement>(null);
 
-    const timeValid = timeMs !== null;
+    // Editing a row edits one clock — a row *is* one clock. Only a create
+    // asks for the pair.
+    const [clocks, setClocks] = useState<BoardClocks | null>(
+        clocksProp ?? null,
+    );
+    const [clocksLoading, setClocksLoading] = useState(!clocksProp && !isEdit);
+
+    useEffect(() => {
+        if (clocksProp || isEdit) return;
+        let cancelled = false;
+        setClocksLoading(true);
+        loadBoardClocksAction(gameSlug, categoryId)
+            .then((c) => {
+                if (cancelled) return;
+                setClocks(c);
+                // Falling back to the stored timing keeps the dialog usable
+                // when the category can't be read — one clock, the mod's pick.
+                if (c) setTiming(c.primaryTiming);
+            })
+            .catch(() => {})
+            .finally(() => {
+                if (!cancelled) setClocksLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [clocksProp, isEdit, gameSlug, categoryId]);
+
+    const paired = !isEdit && clocks !== null;
+    const timesVerdict = validateRunTimes({
+        primaryTiming: clocks?.primaryTiming ?? timing,
+        showSecondary: paired && clocks.showSecondary,
+        primaryMs: timeMs,
+        secondaryMs,
+    });
+
+    const timeValid = paired ? timesVerdict.ok : timeMs !== null;
     const reasonOk = reason.trim().length >= MIN_REASON;
-    const busy = isPreviewing || isSaving;
+    const busy = isPreviewing || isSaving || clocksLoading;
 
     const handlePreview = () => {
-        if (!timeValid) return;
+        if (!timeValid || timeMs === null) return;
         setError(null);
         startPreview(async () => {
             const res = await previewManualTimeAction(gameSlug, {
                 runnerRef,
                 categoryId,
                 subcategoryKey,
-                timing,
+                // The preview is about the board this time ranks on, which is
+                // the primary clock — the other one ranks its own board.
+                timing: clocks?.primaryTiming ?? timing,
                 timeMs,
             });
             if ('error' in res) {
@@ -100,7 +152,7 @@ export function ManualTimeDialog({
     };
 
     const handleSave = () => {
-        if (!timeValid || !reasonOk) return;
+        if (!timeValid || !reasonOk || timeMs === null) return;
         setError(null);
         startSave(async () => {
             const res = isEdit
@@ -116,8 +168,16 @@ export function ManualTimeDialog({
                       runnerRef,
                       categoryId,
                       subcategoryKey,
-                      timing,
+                      timing: clocks?.primaryTiming ?? timing,
                       timeMs,
+                      // The other clock rides along as a second row.
+                      secondary:
+                          paired && secondaryMs !== null
+                              ? {
+                                    timing: otherTiming(clocks.primaryTiming),
+                                    timeMs: secondaryMs,
+                                }
+                              : null,
                       evidenceUrl: evidenceUrl.trim() || null,
                       runDate: dateText || null,
                       reason: reason.trim(),
@@ -168,46 +228,79 @@ export function ManualTimeDialog({
                     eligible run will beat it automatically.
                 </p>
 
+                {clocksLoading && (
+                    <p className="small text-muted mb-2">
+                        Reading this board's timing…
+                    </p>
+                )}
+
                 <div className="row g-2">
-                    <div className="col-md-4">
-                        <label
-                            htmlFor="mt-timing"
-                            className="form-label small text-muted mb-1"
-                        >
-                            Timing
-                        </label>
-                        <select
-                            id="mt-timing"
-                            className="form-select form-select-sm"
-                            value={timing}
-                            onChange={(e) =>
-                                setTiming(e.target.value as ModTiming)
-                            }
-                            disabled={isEdit || busy}
-                        >
-                            <option value="realtime">Real time</option>
-                            <option value="gametime">Game time</option>
-                        </select>
-                    </div>
-                    <div className="col-md-4">
-                        <label
-                            htmlFor="mt-time"
-                            className="form-label small text-muted mb-1"
-                        >
-                            Time
-                        </label>
-                        <DurationField
-                            id="mt-time"
-                            size="sm"
-                            inputRef={timeFieldRef}
-                            value={timeMs}
-                            onChange={(ms) => {
-                                setTimeMs(ms);
-                                setPreview(null);
-                            }}
-                            disabled={busy}
-                        />
-                    </div>
+                    {paired ? (
+                        // The board's own clocks decide the fields, so there is
+                        // no clock to pick: the primary is the board's, the
+                        // second one is required when it has a column for it.
+                        <div className="col-md-8">
+                            <RunTimesField
+                                idPrefix="mt"
+                                size="sm"
+                                primaryTiming={clocks.primaryTiming}
+                                gameTimeLabel={clocks.gameTimeLabel}
+                                showSecondary={clocks.showSecondary}
+                                primaryMs={timeMs}
+                                onPrimaryChange={(ms) => {
+                                    setTimeMs(ms);
+                                    setPreview(null);
+                                }}
+                                secondaryMs={secondaryMs}
+                                onSecondaryChange={setSecondaryMs}
+                                showErrors={timeMs !== null}
+                                disabled={busy}
+                                inputRef={timeFieldRef}
+                            />
+                        </div>
+                    ) : (
+                        <>
+                            <div className="col-md-4">
+                                <label
+                                    htmlFor="mt-timing"
+                                    className="form-label small text-muted mb-1"
+                                >
+                                    Timing
+                                </label>
+                                <select
+                                    id="mt-timing"
+                                    className="form-select form-select-sm"
+                                    value={timing}
+                                    onChange={(e) =>
+                                        setTiming(e.target.value as ModTiming)
+                                    }
+                                    disabled={isEdit || busy}
+                                >
+                                    <option value="realtime">Real time</option>
+                                    <option value="gametime">Game time</option>
+                                </select>
+                            </div>
+                            <div className="col-md-4">
+                                <label
+                                    htmlFor="mt-time"
+                                    className="form-label small text-muted mb-1"
+                                >
+                                    Time
+                                </label>
+                                <DurationField
+                                    id="mt-time"
+                                    size="sm"
+                                    inputRef={timeFieldRef}
+                                    value={timeMs}
+                                    onChange={(ms) => {
+                                        setTimeMs(ms);
+                                        setPreview(null);
+                                    }}
+                                    disabled={busy}
+                                />
+                            </div>
+                        </>
+                    )}
                     <div className="col-md-4 d-flex align-items-end">
                         <button
                             type="button"
