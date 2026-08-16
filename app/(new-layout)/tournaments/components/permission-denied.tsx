@@ -33,7 +33,7 @@ export function PermissionDenied({
                         : 'Ask a tournament admin to grant you the required capability.'}
                 </span>
                 {needsLogin ? (
-                    <TwitchLoginButton url={tournamentHref} />
+                    <TwitchLoginButton returnTo={tournamentHref} />
                 ) : (
                     <Link
                         href={tournamentHref}

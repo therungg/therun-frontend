@@ -91,7 +91,7 @@ export default async function GamesManageHubPage() {
                     <p className={styles.blurb}>
                         Sign in with Twitch to view your moderation consoles.
                     </p>
-                    <TwitchLoginButton url="/games-v2/manage" />
+                    <TwitchLoginButton returnTo="/games-v2/manage" />
                 </div>
             </div>
         );
