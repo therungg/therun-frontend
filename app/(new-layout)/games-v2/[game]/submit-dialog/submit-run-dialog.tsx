@@ -9,7 +9,6 @@ import { otherTiming, validateRunTimes } from '~src/lib/run-times';
 import type {
     ResolvedCategory,
     ResolvedGroup,
-    ValidCombinations,
     VariableRow,
 } from '../../../../../types/leaderboards.types';
 import type { ModTiming } from '../../../../../types/moderation.types';
@@ -157,8 +156,6 @@ export function SubmitRunDialog({
     );
 
     const [variables, setVariables] = useState<VariableRow[]>([]);
-    const [validCombinations, setValidCombinations] =
-        useState<ValidCombinations>({ mode: 'open' });
     const [subcategory, setSubcategory] = useState<Record<string, string>>({});
     const [varsLoading, startVarsTransition] = useTransition();
     const [varsError, setVarsError] = useState(false);
@@ -185,7 +182,6 @@ export function SubmitRunDialog({
                 );
                 if (cancelled) return;
                 setVariables(resp.variables);
-                setValidCombinations(resp.validCombinations);
                 const sub: Record<string, string> = {};
                 for (const def of resp.variables) {
                     if (def.role !== 'subcategory') continue;
@@ -211,7 +207,6 @@ export function SubmitRunDialog({
             } catch {
                 if (cancelled) return;
                 setVariables([]);
-                setValidCombinations({ mode: 'open' });
                 setSubcategory({});
                 setVarsError(true);
             }
@@ -224,9 +219,6 @@ export function SubmitRunDialog({
 
     const subcatDefs = variables.filter((v) => v.role === 'subcategory');
     const subcategoryKey = buildSubcategoryKey(subcategory);
-    const combinationInvalid =
-        validCombinations.mode === 'managed' &&
-        !validCombinations.keys.includes(subcategoryKey);
 
     // ---- Runner step (moderators only) ----------------------------------
     const [choice, setChoice] = useState<RunnerChoice | null>(null);
@@ -275,7 +267,7 @@ export function SubmitRunDialog({
         setSecondaryMs(null);
     }, [category?.primaryTiming, showSecondary]);
 
-    const boardStepValid = !varsLoading && !combinationInvalid && !!category;
+    const boardStepValid = !varsLoading && !!category;
     const runnerStepValid = choice !== null && choice.canProceed;
     const vodInvalid =
         vodUrl.trim().length > 0 && !isValidHttpUrl(vodUrl.trim());
@@ -560,7 +552,6 @@ export function SubmitRunDialog({
                                 }
                                 varsLoading={varsLoading}
                                 varsError={varsError}
-                                combinationInvalid={combinationInvalid}
                                 gameRules={gameRules}
                                 categoryRules={category.rules}
                                 emulatorPolicy={emulatorPolicy}

@@ -10,7 +10,6 @@ import type {
 } from '~src/lib/leaderboard-variables';
 import type { BoardBucket } from '~src/lib/setup/variable-view';
 import {
-    categoriesNeedingCombinations,
     categoriesToConvert,
     driftSides,
     groupVariables,
@@ -42,7 +41,6 @@ import {
     previewVariableChangesAction,
 } from '../../actions/apply-variable-changes.action';
 import { AddVariableForm } from './add-variable-form';
-import { CombinationsBlock } from './combinations-block';
 import { ConsequenceDialog } from './consequence-dialog';
 import { TriCheckbox } from './tri-checkbox';
 import { normalizeName, RESERVED_NAMES } from './variable-keys';
@@ -1207,16 +1205,6 @@ function VariableSection({
     const [adding, setAdding] = useState(false);
     const copy = SECTION[role];
 
-    // Categories where a combination cannot be expressed by removing an
-    // option — the only ones the valid-combinations list has anything to say
-    // about. See categoriesNeedingCombinations.
-    const multiGroup = categories.filter((c) =>
-        categoriesNeedingCombinations(
-            categories.map((x) => x.id),
-            variables,
-        ).includes(c.id),
-    );
-
     // Total boards across the featured categories — the number this section
     // exists to control, and the one that quietly gets out of hand.
     const boardTotal = categories.reduce(
@@ -1310,15 +1298,6 @@ function VariableSection({
                         takenNames={takenNames}
                     />
                 ))
-            )}
-
-            {role === 'subcategory' && (
-                <CombinationsBlock
-                    gameSlug={game.name}
-                    gameId={game.id}
-                    categories={multiGroup}
-                    variables={variables}
-                />
             )}
 
             {adding ? (
