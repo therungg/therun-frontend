@@ -20,7 +20,7 @@ export const YourStatsSection = async ({
     const session = await getSession();
 
     if (!session?.user) {
-        const loginUrl = getTwitchOAuthURL({ redirect: '/api' });
+        const loginUrl = getTwitchOAuthURL({ returnTo: '/' });
 
         return (
             <Panel

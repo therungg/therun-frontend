@@ -67,7 +67,7 @@ export function UserMenu({ username, picture, sessionError }: UserMenuProps) {
     }
 
     if (!username) {
-        return <TwitchLoginButton url="/api" />;
+        return <TwitchLoginButton />;
     }
 
     return (

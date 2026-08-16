@@ -60,7 +60,7 @@ export const LoginWithPatreon = ({
             <div className={styles.invitePage}>
                 <div className={styles.loginPrompt}>
                     To connect your Patreon account, login with Twitch first.
-                    <TwitchLoginButton url="/api/change-appearance" />
+                    <TwitchLoginButton returnTo="/change-appearance" />
                 </div>
             </div>
         );

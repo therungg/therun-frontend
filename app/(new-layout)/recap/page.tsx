@@ -87,7 +87,7 @@ export default function Page() {
                                 To view your 2025 Recap, please login with
                                 Twitch.
                             </p>
-                            <TwitchLoginButton url="/api/recap" />
+                            <TwitchLoginButton returnTo="/recap" />
                         </>
                     )}
                 </div>
