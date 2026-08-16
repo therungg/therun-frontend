@@ -22,7 +22,6 @@ interface Props {
     onSubcategoryChange: (nameNormalized: string, value: string) => void;
     varsLoading: boolean;
     varsError: boolean;
-    combinationInvalid: boolean;
     gameRules?: string | null;
     categoryRules?: string | null;
     emulatorPolicy?: EmulatorPolicy;
@@ -45,7 +44,6 @@ export function StepBoard({
     onSubcategoryChange,
     varsLoading,
     varsError,
-    combinationInvalid,
     gameRules,
     categoryRules,
     emulatorPolicy,
@@ -125,13 +123,6 @@ export function StepBoard({
                 <div className="alert alert-warning py-2 mb-0" role="alert">
                     Could not load subcategories for this category. You can
                     still submit; they will use their defaults.
-                </div>
-            )}
-
-            {combinationInvalid && (
-                <div className="alert alert-warning py-2 mb-0" role="alert">
-                    This combination has no leaderboard. Pick a different
-                    combination to submit.
                 </div>
             )}
         </div>

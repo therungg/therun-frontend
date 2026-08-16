@@ -15,9 +15,6 @@ vi.mock('../../actions/apply-variable-changes.action', () => ({
         preview: { categories: [], totalMoved: 0 },
     })),
 }));
-vi.mock('../../actions/set-valid-combinations.action', () => ({
-    setValidCombinationsAction: vi.fn(async () => ({ ok: true })),
-}));
 vi.mock(
     '../../../manage/variables/actions/load-variable-suggestions.action',
     () => ({
