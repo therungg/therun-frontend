@@ -10,7 +10,12 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 import type { UserCardContext } from '../../../../types/user-card.types';
-import { CARD_WIDTH, type CardPlacement, placeCard } from './card-position';
+import {
+    availableHeight,
+    CARD_WIDTH,
+    type CardPlacement,
+    placeCard,
+} from './card-position';
 import { createHoverIntent } from './hover-intent';
 import { UserHoverCard } from './user-hover-card';
 import styles from './user-hover-card.module.scss';
@@ -36,7 +41,9 @@ export interface AnchorHandlers {
  * event handlers and no more.
  */
 export function HoverCardAnchor({ username, context, children }: Props) {
-    const [placement, setPlacement] = useState<CardPlacement | null>(null);
+    const [placement, setPlacement] = useState<
+        (CardPlacement & { maxHeight: number }) | null
+    >(null);
     const anchorRef = useRef<HTMLElement | null>(null);
 
     const setOpen = useCallback((open: boolean) => {
@@ -46,12 +53,17 @@ export function HoverCardAnchor({ username, context, children }: Props) {
             return;
         }
 
-        setPlacement(
-            placeCard(node.getBoundingClientRect(), {
-                width: window.innerWidth,
-                height: window.innerHeight,
-            }),
-        );
+        const rect = node.getBoundingClientRect();
+        const viewport = {
+            width: window.innerWidth,
+            height: window.innerHeight,
+        };
+        const next = placeCard(rect, viewport);
+
+        setPlacement({
+            ...next,
+            maxHeight: availableHeight(rect, viewport, next.flipped),
+        });
     }, []);
 
     const intent = useMemo(() => createHoverIntent(setOpen), [setOpen]);
@@ -105,7 +117,9 @@ export function HoverCardAnchor({ username, context, children }: Props) {
                           style={{
                               left: placement.left,
                               top: placement.top,
+                              bottom: placement.bottom,
                               width: CARD_WIDTH,
+                              maxHeight: placement.maxHeight,
                           }}
                           // Already open: only call off the pending close, so
                           // moving onto the card doesn't re-run placement.

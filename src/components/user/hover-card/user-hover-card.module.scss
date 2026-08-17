@@ -11,6 +11,14 @@ $z-hover-card: 1060;
     // The pointer travels through this box on its way to the card; it must not
     // swallow clicks on whatever sits underneath when the card is small.
     pointer-events: auto;
+    // A flipped card is anchored by its bottom edge, so the layer must shrink
+    // to the card rather than stretch from the max-height it was given.
+    display: flex;
+    overflow: auto;
+}
+
+.layer > * {
+    width: 100%;
 }
 
 .card {
