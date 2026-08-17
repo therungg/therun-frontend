@@ -94,7 +94,7 @@ export function FiltersPopover({
             {open && (
                 <div
                     ref={panelRef}
-                    className={`${styles.popoverPanel} ${panelStyles.panel}`}
+                    className={panelStyles.panel}
                     role="dialog"
                     aria-modal="true"
                     aria-label="Filters"

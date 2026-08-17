@@ -30,7 +30,7 @@ interface Props {
  * internally rather than lifting it here — this component only threads its
  * data props through.
  *
- * View controls (VerifiedToggle, FiltersPopover) deliberately do NOT live
+ * View controls (the Filters sheet, Export) deliberately do NOT live
  * here — they exist in exactly one place, the leaderboard's meta bar, so
  * no duplicate-instance/focus-trap machinery is needed for them. While
  * this bar is showing, the plate's rail is still mounted just above the

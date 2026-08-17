@@ -708,7 +708,7 @@ tr:focus-within .reveal {
     position: relative;
 
     // These controls float over the canvas, not inside a panel — the bare
-    // chip (VerifiedToggle / Export / Filters triggers, masthead `.chip`)
+    // chip (Find me / Export / Filters triggers, masthead `.chip`)
     // read as plain text out here. Outline every trigger like `.findMeBtn`.
     // `> div > button` reaches the popover-root-wrapped triggers without
     // touching buttons inside the popover panels (one level deeper); the

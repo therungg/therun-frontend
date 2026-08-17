@@ -13,7 +13,8 @@ import type {
 } from '../../../../../types/leaderboards.types';
 import mastheadStyles from '../header/masthead.module.scss';
 import type { VideoFilter } from './builtin-params';
-import type { FilterDraft } from './filter-draft';
+import { draftCount, type FilterDraft } from './filter-draft';
+import { toggleFilterValue } from './filter-values';
 import styles from './filters-popover.module.scss';
 
 interface Props {
@@ -85,10 +86,7 @@ export function FiltersSheet({
     const setB = (patch: Partial<FilterDraft['builtins']>) =>
         onChange({ ...draft, builtins: { ...b, ...patch } });
     const toggleVar = (key: string, value: string) => {
-        const cur = draft.varFilters[key] ?? [];
-        const next = cur.includes(value)
-            ? cur.filter((v) => v !== value)
-            : [...cur, value];
+        const next = toggleFilterValue(draft.varFilters[key] ?? [], value);
         const varFilters = { ...draft.varFilters };
         if (next.length) varFilters[key] = next;
         else delete varFilters[key];
@@ -231,7 +229,9 @@ export function FiltersSheet({
                     type="button"
                     className={styles.reset}
                     onClick={onReset}
-                    disabled={isPending}
+                    // Nothing drafted and nothing applied — Reset would push
+                    // the URL it is already on.
+                    disabled={isPending || (!dirty && draftCount(draft) === 0)}
                 >
                     Reset filters
                 </button>
