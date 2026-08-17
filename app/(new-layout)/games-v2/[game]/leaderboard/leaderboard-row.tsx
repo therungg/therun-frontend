@@ -379,6 +379,16 @@ export function LeaderboardRow({
                             <UserLink
                                 username={entry.runnerName}
                                 url={undefined}
+                                // The row already holds everything the hover
+                                // card's identity line needs, so it paints
+                                // before the card's own fetch resolves.
+                                cardContext={{
+                                    rank: entry.rank,
+                                    timeMs:
+                                        timingValue(primary.key) ?? undefined,
+                                    picture: entry.picture,
+                                    country: entry.country,
+                                }}
                             />
                             <CountryFlag country={entry.country} />
                         </>

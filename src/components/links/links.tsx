@@ -2,8 +2,10 @@
 import { ReactNode } from 'react';
 import Link from '~src/components/link';
 import { safeEncodeURI } from '~src/utils/uri';
+import type { UserCardContext } from '../../../types/user-card.types';
 import PatreonName from '../patreon/patreon-name';
 import { usePatreons } from '../patreon/use-patreons';
+import { HoverCardAnchor } from '../user/hover-card/hover-card-anchor';
 
 interface ChildrenType {
     children?: ReactNode;
@@ -15,6 +17,18 @@ interface UserLinkProps extends ChildrenType {
     icon?: boolean;
     parentIsUrl?: boolean;
     className?: string;
+    /**
+     * Opt out of the hover card. Set it where a card would be noise (the
+     * runner's own profile header) or where the surrounding element already
+     * explains who this is.
+     */
+    hoverCard?: boolean;
+    /**
+     * What the surrounding surface already knows about this runner — a
+     * leaderboard row has their rank, time, avatar and flag on hand. Painted
+     * immediately, before the card's own fetch resolves.
+     */
+    cardContext?: UserCardContext;
 }
 
 interface UserGameLinkProps extends UserLinkProps, GameLinkProps {}
@@ -37,6 +51,8 @@ export const UserLink = ({
     icon = true,
     url = '',
     parentIsUrl = false,
+    hoverCard = true,
+    cardContext,
 }: UserLinkProps) => {
     const { data: patreons, isLoading } = usePatreons();
 
@@ -68,16 +84,35 @@ export const UserLink = ({
 
     const element = children ? children : displayNode;
 
+    // `parentIsUrl` means we render a bare label inside someone else's anchor.
+    // There is no element of ours to hang the hover handlers on, and wrapping
+    // one in would change the layout of every caller, so those keep the label.
+    if (parentIsUrl) return <>{element}</>;
+
+    if (!hoverCard) {
+        return (
+            <a className="overflow-hidden text-truncate" href={url}>
+                {element}
+            </a>
+        );
+    }
+
     return (
-        <>
-            {!parentIsUrl ? (
-                <a className="overflow-hidden text-truncate" href={url}>
+        <HoverCardAnchor username={nameStr} context={cardContext}>
+            {(handlers) => (
+                <a
+                    className="overflow-hidden text-truncate"
+                    href={url}
+                    ref={handlers.ref as React.Ref<HTMLAnchorElement>}
+                    onPointerEnter={handlers.onPointerEnter}
+                    onPointerLeave={handlers.onPointerLeave}
+                    onFocus={handlers.onFocus}
+                    onBlur={handlers.onBlur}
+                >
                     {element}
                 </a>
-            ) : (
-                element
             )}
-        </>
+        </HoverCardAnchor>
     );
 };
 

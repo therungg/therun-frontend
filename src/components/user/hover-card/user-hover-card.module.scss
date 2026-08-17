@@ -1,0 +1,239 @@
+@use '../../../../app/(new-layout)/styles/design-tokens' as dt;
+@use '../../../../app/(new-layout)/styles/board' as board;
+
+// Above BoardDialog's 1055 — the card can be summoned from a name inside a
+// dialog, and must not open behind it.
+$z-hover-card: 1060;
+
+.layer {
+    position: fixed;
+    z-index: $z-hover-card;
+    // The pointer travels through this box on its way to the card; it must not
+    // swallow clicks on whatever sits underneath when the card is small.
+    pointer-events: auto;
+}
+
+.card {
+    @include board.board-surface(dt.$spacing-md);
+    box-shadow: dt.$shadow-md;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+    animation: card-in 160ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes card-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card {
+        animation: none;
+    }
+}
+
+// ---- Identity ------------------------------------------------
+.identity {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    border-radius: dt.$radius-sm;
+    object-fit: cover;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #fff;
+}
+
+.identityText {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.name {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--bs-emphasis-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.flag {
+    width: 16px;
+    height: 12px;
+    flex: 0 0 16px;
+    object-fit: cover;
+    border-radius: 2px;
+}
+
+.meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+
+    > span + span::before {
+        content: '·';
+        margin-right: dt.$spacing-xs;
+    }
+}
+
+// ---- Board context (leaderboard hover only) -------------------
+.context {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    border-radius: dt.$radius-sm;
+    background: rgba(var(--bs-body-color-rgb), 0.04);
+}
+
+.contextRank {
+    @include board.mono-time;
+    font-weight: 700;
+}
+
+.contextLabel {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+}
+
+.contextTime {
+    @include board.mono-time;
+}
+
+// ---- Stats ----------------------------------------------------
+.stats {
+    display: flex;
+    justify-content: space-between;
+    gap: dt.$spacing-sm;
+    padding-top: dt.$spacing-xs;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+
+    b {
+        font-family: dt.$font-mono;
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+        color: var(--bs-emphasis-color);
+    }
+}
+
+// ---- Top runs -------------------------------------------------
+.topRuns {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    li {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        align-items: baseline;
+        gap: dt.$spacing-sm;
+    }
+}
+
+.runGame {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--bs-body-color);
+}
+
+.runCategory {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    white-space: nowrap;
+}
+
+.runTime {
+    @include board.mono-time;
+    font-size: dt.$font-size-xs;
+}
+
+// ---- Latest PB ------------------------------------------------
+.latest {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    padding-top: dt.$spacing-xs;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+
+    svg {
+        color: dt.$accent-gold;
+        flex: 0 0 auto;
+    }
+}
+
+.latestText {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.latestWhen {
+    color: var(--bs-tertiary-color);
+    white-space: nowrap;
+}
+
+// ---- Loading / empty ------------------------------------------
+.skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: dt.$spacing-xs;
+
+    span {
+        height: 10px;
+        border-radius: dt.$radius-sm;
+        background: rgba(var(--bs-body-color-rgb), 0.07);
+
+        &:nth-child(1) {
+            width: 100%;
+        }
+        &:nth-child(2) {
+            width: 82%;
+        }
+        &:nth-child(3) {
+            width: 58%;
+        }
+    }
+}
+
+.empty {
+    margin: 0;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+}
