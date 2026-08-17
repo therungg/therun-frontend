@@ -23,20 +23,23 @@ export function ActiveRacesPanel({ races }: { races: Race[] }) {
     const overflow = visible.length - shown.length;
 
     return (
-        <section className={styles.panel}>
+        <section className={styles.panel} aria-labelledby="rail-races">
             <div className={styles.panelHead}>
-                <span className={`${styles.eyebrow} ${styles.eyebrowLive}`}>
+                <h2
+                    id="rail-races"
+                    className={`${styles.eyebrow} ${styles.eyebrowLive}`}
+                >
                     <span className={styles.liveDot} aria-hidden />
                     Races
-                </span>
+                </h2>
             </div>
-            <ul className="list-unstyled mb-0">
+            <ul className={styles.list}>
                 {shown.map((r) => (
-                    <li key={r.raceId} className={styles.pbRow}>
-                        <div className={styles.pbTop}>
+                    <li key={r.raceId} className={styles.personRow}>
+                        <div className={styles.rowTop}>
                             <Link
                                 href={`/races/${r.raceId}`}
-                                className="text-decoration-none"
+                                className={styles.rowLabel}
                             >
                                 {r.customName?.trim() ||
                                     r.displayCategory ||
@@ -47,15 +50,13 @@ export function ActiveRacesPanel({ races }: { races: Race[] }) {
                                 {r.participantCount === 1 ? 'racer' : 'racers'}
                             </span>
                         </div>
-                        <div className={styles.pbMetaFlush}>
+                        <div className={styles.rowSubFlush}>
                             {STATUS_LABEL[r.status] ?? r.status}
                         </div>
                     </li>
                 ))}
             </ul>
-            {overflow > 0 && (
-                <p className={`${styles.rowMeta} mb-0`}>+{overflow} more</p>
-            )}
+            {overflow > 0 && <p className={styles.more}>+{overflow} more</p>}
         </section>
     );
 }

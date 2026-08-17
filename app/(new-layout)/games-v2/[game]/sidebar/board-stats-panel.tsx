@@ -30,10 +30,14 @@ export function BoardStatsPanel({ category, boardSize = null }: Props) {
         attempts > 0 ? Math.round((finished / attempts) * 100) : null;
 
     return (
-        <section className={styles.panel}>
-            <span className={`${styles.eyebrow} d-block mb-2`}>
-                Category: {category.display}
-            </span>
+        <section className={styles.panel} aria-labelledby="rail-board-stats">
+            <div className={styles.panelHead}>
+                {/* The masthead already names the category; "This board" is
+                    enough here and stays true when the board is a slice. */}
+                <h2 id="rail-board-stats" className={styles.eyebrow}>
+                    This board
+                </h2>
+            </div>
             <dl className={styles.statList}>
                 {boardSize != null && (
                     <div className={styles.statRow}>

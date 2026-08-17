@@ -233,10 +233,8 @@ export function GameOverviewPage({
                                 display: data.gameMeta.seriesDisplay,
                                 games: data.gameMeta.seriesGames,
                             }}
-                            about={
-                                data.gameMeta.summaryOverride ??
-                                data.gameMeta.summary
-                            }
+                            categories={data.cards.map((c) => c.category)}
+                            gameMeta={data.gameMeta}
                         />
                     </aside>
                 </div>

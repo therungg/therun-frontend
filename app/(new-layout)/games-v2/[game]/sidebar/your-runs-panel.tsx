@@ -1,74 +1,106 @@
 import Link from '~src/components/link';
 import { DurationToFormatted } from '~src/components/util/datetime';
-import { parseSubcategoryKey } from '~src/lib/run-view/parse-subcategory-key';
 import type { UserRanking } from '../../../../../types/leaderboards.types';
-import { VerificationBadge } from '../run-view/run-badges';
+import { formatSubcategoryKey, type LabelVariableDef } from '../labels';
 import styles from './sidebar.module.scss';
 
 interface Props {
     rankings: UserRanking[];
     gameSlug: string;
+    /**
+     * Variable definitions of the board on screen, so a subcategory value
+     * prints as its display name ("Nintendo 64") rather than its slug. Rows
+     * from other boards fall back to a humanized slug.
+     */
+    variableDefs?: LabelVariableDef[];
 }
 
+const STATUS_WORD = {
+    pending: 'pending',
+    rejected: 'rejected',
+} as const;
+
 /**
- * Signed-in-only sidebar surface: the runner's own standing on this game,
- * one glance away. Sourced from `getUserRankingsByName`, which already
- * returns one (best) entry per board — pending non-PB attempts, hidden
- * runs, and open claims are invisible here. That's why the panel title
- * makes no "all your runs" claim, and why it renders nothing rather than
- * a misleadingly-empty state when there's nothing to show.
+ * Signed-in-only: the runner's own standing on this game, one glance away.
+ * Sourced from `getUserRankingsByName`, which returns one (best) entry per
+ * board — pending non-PB attempts, hidden runs, and open claims are invisible
+ * here. That's why the panel title makes no "all your runs" claim, and why it
+ * renders nothing rather than a misleadingly-empty state.
  */
-export function YourRunsPanel({ rankings, gameSlug }: Props) {
+export function YourRunsPanel({ rankings, gameSlug, variableDefs }: Props) {
     if (rankings.length === 0) return null;
 
     return (
-        <section className={styles.panel}>
-            <span className={`${styles.eyebrow} d-block mb-2`}>Your runs</span>
-            <ul className="list-unstyled mb-0">
+        <section
+            className={`${styles.panel} ${styles.panelYou}`}
+            aria-labelledby="rail-your-runs"
+        >
+            <div className={styles.panelHead}>
+                <h2 id="rail-your-runs" className={styles.eyebrow}>
+                    Your runs
+                </h2>
+            </div>
+            <ul className={styles.list}>
                 {rankings.map((r) => {
                     const primary =
                         r.primaryTiming === 'gt'
                             ? (r.gameTime ?? r.time)
                             : r.time;
-                    const subcategoryParts = parseSubcategoryKey(
+                    const slice = formatSubcategoryKey(
                         r.subcategoryKey,
+                        variableDefs,
                     );
+                    const status =
+                        r.verificationStatus === 'verified'
+                            ? null
+                            : STATUS_WORD[r.verificationStatus];
 
                     return (
                         <li
                             key={`${r.categoryId}-${r.subcategoryKey}`}
-                            className={styles.yourRunRow}
+                            className={styles.personRow}
                         >
-                            <div className={styles.yourRunHead}>
-                                <span className={styles.statLabel}>
+                            <div className={styles.rowTop}>
+                                <span className={styles.rowLabel}>
                                     {r.category}
-                                    {subcategoryParts.length > 0 && (
+                                    {slice && (
                                         <span className={styles.rowMeta}>
-                                            {' '}
-                                            ·{' '}
-                                            {subcategoryParts
-                                                .map((p) => p.value)
-                                                .join(', ')}
+                                            {' · '}
+                                            {slice}
                                         </span>
                                     )}
                                 </span>
-                                <VerificationBadge
-                                    status={r.verificationStatus}
-                                />
+                                <span className={styles.rowTime}>
+                                    <Link
+                                        href={`/games-v2/${encodeURIComponent(gameSlug)}/run/${r.runId}`}
+                                    >
+                                        <DurationToFormatted
+                                            duration={primary}
+                                        />
+                                    </Link>
+                                </span>
                             </div>
-                            <span className={styles.statValue}>
-                                <Link
-                                    href={`/games-v2/${encodeURIComponent(gameSlug)}/run/${r.runId}`}
-                                >
-                                    <DurationToFormatted duration={primary} />
-                                </Link>
-                                {r.rank != null && (
-                                    <span className={styles.rowMeta}>
-                                        {' '}
-                                        #{r.rank}
-                                    </span>
-                                )}
-                            </span>
+                            {(r.rank != null || status) && (
+                                <div className={styles.rowSub}>
+                                    {r.rank != null && (
+                                        <span className={styles.mono}>
+                                            #{r.rank}
+                                        </span>
+                                    )}
+                                    {status && (
+                                        <span
+                                            className={
+                                                status === 'pending'
+                                                    ? styles.statusPending
+                                                    : styles.statusRejected
+                                            }
+                                        >
+                                            {r.rank != null && ' · '}
+                                            {status}
+                                        </span>
+                                    )}
+                                </div>
+                            )}
                         </li>
                     );
                 })}

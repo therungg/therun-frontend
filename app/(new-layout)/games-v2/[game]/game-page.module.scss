@@ -275,10 +275,34 @@
     pointer-events: none;
 }
 
+// The rail. Wide: sticky beside the board, and never taller than the
+// viewport: it scrolls inside itself past that, so the foot is always
+// reachable instead of pinned off-screen until the board runs out (the old
+// bug: a rail of six panels stuck at top and its bottom half was
+// unreachable for the length of a 100-row board). Narrow: the aside
+// dissolves into the page grid so its two zones can straddle the main
+// column: You + Live above the board, the rest below.
 .rail {
     @media (min-width: 992px) {
         position: sticky;
         top: 5rem;
         align-self: start;
+        max-height: calc(100vh - 5rem - dt.$spacing-lg);
+        overflow-y: auto;
+        // Room for the You panel's spine and the surfaces' ambient shadow so
+        // the scroll clip doesn't shave them.
+        padding-inline: 4px;
+        margin-inline: -4px;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(var(--bs-body-color-rgb), 0.15) transparent;
+    }
+
+    @media (max-width: 991.98px) {
+        display: contents;
+
+        > :first-child {
+            order: -1;
+            margin-bottom: dt.$spacing-md;
+        }
     }
 }

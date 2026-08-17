@@ -2,9 +2,30 @@
 @use '../../../styles/board' as board;
 @use '../../../styles/frontpage-utilities' as fp;
 
+// The rail, in three zones (see sidebar.tsx). Every panel shares one
+// surface, one head, one list and one row template — the differences between
+// zones are weight, not vocabulary: You gets a green spine, Pulse gets the
+// live dot and the running numbers, Trust gets no box at all.
+
+// ---- Zones -------------------------------------------------------
+// Both wrappers are grid items of the page grid on narrow screens (the aside
+// goes display: contents there, see game-page.module.scss .rail); on wide
+// screens they're plain stacked blocks inside the sticky rail.
+.zoneTop,
+.zoneRest {
+    min-width: 0;
+}
+
+// ---- Panel -------------------------------------------------------
 .panel {
     @include board.board-surface(dt.$spacing-md dt.$spacing-lg);
-    margin-bottom: dt.$spacing-lg;
+    margin-bottom: dt.$spacing-md;
+}
+
+// You: the same primary spine the board paints on your own row.
+.panelYou {
+    box-shadow: var(--board-surface-shadow, none),
+        inset 3px 0 0 var(--bs-primary);
 }
 
 .panelHead {
@@ -13,6 +34,7 @@
 
 .eyebrow {
     @include board.board-eyebrow;
+    margin: 0;
 }
 
 .eyebrowLive {
@@ -29,16 +51,78 @@
     @include board.board-quiet-link;
 }
 
-.row {
+.empty {
+    margin: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-tertiary-color);
+}
+
+.more {
+    margin: dt.$spacing-xs 0 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+}
+
+.list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+// ---- Scope switch -------------------------------------------------
+// One control for the pulse zone: this board / all boards. Segmented, quiet;
+// the active side carries the brand green like every other active chip.
+.scopeSwitch {
+    display: inline-flex;
+    gap: 2px;
+    margin-bottom: dt.$spacing-sm;
+    padding: 2px;
+    border-radius: dt.$badge-radius;
+    background: rgba(var(--bs-body-color-rgb), 0.04);
+}
+
+.scopeBtn {
+    @include board.control-pill;
+    padding: dt.$spacing-xs dt.$spacing-md;
+    font-size: dt.$font-size-xs;
+    white-space: nowrap;
+
+    @media (pointer: coarse) {
+        padding-block: dt.$spacing-sm;
+    }
+}
+
+.scopeBtnActive {
+    @include board.control-pill-active;
+}
+
+// ---- Row template --------------------------------------------------
+// Two lines. Top: who (avatar + name) or what (label), and a right-aligned
+// mono value. Sub: meta in tertiary, indented under the name past the avatar.
+.personRow {
+    padding-block: dt.$spacing-xs;
+
+    & + & {
+        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+    }
+}
+
+// Between attempts: the row stays, but steps back.
+.personRowIdle {
+    .rowUser,
+    .rowMeta {
+        opacity: 0.7;
+    }
+}
+
+.rowTop {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: dt.$spacing-sm;
-    padding-block: 2px;
     font-size: dt.$font-size-sm;
 }
 
-// Avatar + name pair at the start of a row.
 .rowUser {
     display: inline-flex;
     align-items: center;
@@ -49,19 +133,148 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        text-decoration: none;
     }
+}
+
+.rowLabel {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-decoration: none;
+    color: inherit;
 }
 
 .rowMeta {
     font-size: dt.$font-size-xs;
     color: var(--bs-tertiary-color);
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
-// ---- This board: stat rows + activity sparkline --------------
+.rowMetaLink {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+        color: var(--bs-primary);
+    }
+}
+
+.rowTime {
+    @include board.mono-time;
+    font-size: dt.$font-size-sm;
+    flex-shrink: 0;
+
+    a {
+        color: inherit;
+        text-decoration: none;
+
+        &:hover {
+            color: var(--bs-primary);
+        }
+    }
+}
+
+.mono {
+    @include board.mono-time;
+}
+
+.rowSub {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+    // Under the name, past the avatar gutter.
+    padding-left: calc(#{dt.$avatar-xs} + #{dt.$spacing-xs});
+}
+
+// Sub line for rows with no avatar gutter (races).
+.rowSubFlush {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+}
+
+.rowSubNote {
+    color: var(--bs-secondary-color);
+}
+
+.streamIcon {
+    flex-shrink: 0;
+    color: #9146ff; // Twitch's own purple; the one place a third-party hue is right.
+}
+
+// Which clock a PB time is on. Shown only when the row is NOT plain RTA.
+.pbTiming {
+    // A word, not a number: steps out of the mono.
+    font-family: var(--bs-body-font-family);
+    font-size: dt.$font-size-2xs;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--bs-tertiary-color);
+    margin-left: dt.$spacing-xs;
+}
+
+.pbDelta {
+    color: var(--bs-link-color);
+}
+
+// Your runs: verification as a quiet word in the meta line, not a pill.
+.statusPending {
+    color: dt.$accent-amber;
+}
+
+.statusRejected {
+    color: dt.$accent-red;
+}
+
+// ---- Live rows -----------------------------------------------------
+// How deep into the run the attempt is, by splits completed. A hairline track
+// so the bar reads as telemetry, not as a loading state.
+.progressTrack {
+    height: 3px;
+    border-radius: 999px;
+    background: rgba(var(--bs-border-color-rgb), 0.35);
+    overflow: hidden;
+    margin-block: dt.$spacing-xs;
+}
+
+.progressFill {
+    height: 100%;
+    border-radius: inherit;
+    background: var(--bs-primary);
+    transition: width dt.$transition-slow;
+}
+
+// elapsed · split · pace
+.paceLine {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+    min-width: 0;
+}
+
+.splitName {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+// Pace deltas share the improvement-blue / behind-red idiom the rest of the
+// site uses for comparisons.
+.paceAhead {
+    color: var(--bs-link-color);
+}
+
+.paceBehind {
+    color: dt.$accent-red;
+}
+
+// ---- This board: stat rows ------------------------------------------
 .statList {
     margin: 0;
     display: grid;
-    gap: 2px;
+    gap: dt.$spacing-xs;
 }
 
 .statRow {
@@ -83,108 +296,9 @@
 .statValue {
     @include board.mono-time;
     font-size: dt.$font-size-sm;
-
-    a {
-        color: inherit;
-        text-decoration: none;
-
-        &:hover {
-            color: var(--bs-primary);
-        }
-    }
 }
 
-// ---- Recent PBs: two-line rows -------------------------------
-// Line 1: runner + right-aligned mono time. Line 2: category · when.
-.pbRow {
-    padding-block: dt.$spacing-xs;
-
-    & + & {
-        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
-    }
-}
-
-.pbTop {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: dt.$spacing-sm;
-    font-size: dt.$font-size-sm;
-}
-
-.pbTime {
-    @include board.mono-time;
-    font-size: dt.$font-size-sm;
-    flex-shrink: 0;
-
-    a {
-        color: inherit;
-        text-decoration: none;
-
-        &:hover {
-            color: var(--bs-primary);
-        }
-    }
-}
-
-// Which clock this time is on. Shown only when the row is NOT plain RTA —
-// the panel is game-wide, so a game-time board's PB sitting next to a
-// real-time board's PB has to say which is which.
-.pbTiming {
-    // Steps out of .pbTime's mono — this is a word, not a number.
-    font-family: var(--bs-body-font-family);
-    font-size: dt.$font-size-2xs;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    color: var(--bs-tertiary-color);
-    margin-left: 0.3rem;
-}
-
-.pbMeta {
-    font-size: dt.$font-size-xs;
-    color: var(--bs-tertiary-color);
-    // Align under the name, past the avatar gutter.
-    padding-left: calc(#{dt.$avatar-xs} + #{dt.$spacing-xs});
-}
-
-// Second line for rows with no avatar gutter (active races).
-.pbMetaFlush {
-    font-size: dt.$font-size-xs;
-    color: var(--bs-tertiary-color);
-}
-
-.pbDelta {
-    color: var(--bs-link-color);
-}
-
-// Live rows: how deep into the run the attempt is, by splits completed.
-// A hairline track so the bar reads as telemetry, not as a loading state.
-.progressTrack {
-    height: 3px;
-    border-radius: 999px;
-    background: rgba(var(--bs-border-color-rgb), 0.35);
-    overflow: hidden;
-    margin-block: dt.$spacing-xs 4px;
-}
-
-.progressFill {
-    height: 100%;
-    border-radius: inherit;
-    background: var(--bs-primary);
-    transition: width dt.$transition-slow;
-}
-
-// Live rows: pace deltas share the improvement-blue / behind-red idiom
-// the rest of the site uses for comparisons.
-.paceAhead {
-    color: var(--bs-link-color);
-}
-
-.paceBehind {
-    color: var(--bs-red);
-}
-
-// ---- Series panel: cover-thumb rows --------------------------
+// ---- Series panel: cover-thumb rows -----------------------------------
 .seriesRow {
     & + & {
         border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
@@ -205,6 +319,7 @@
     }
 }
 
+// 3:4 cover art at the avatar-xs scale, give or take the ratio.
 .seriesArt {
     width: 24px;
     height: 32px;
@@ -219,31 +334,47 @@
     white-space: nowrap;
 }
 
-.yourRunRow {
-    padding-block: dt.$spacing-xs 0;
+// ---- Trust foot -----------------------------------------------------------
+// Unboxed. A hairline above, tertiary text, no surface: reference, not
+// activity. Sits inside the rail's horizontal rhythm via the same padding
+// the panels use.
+.trustFoot {
+    margin-top: dt.$spacing-sm;
+    padding: dt.$spacing-md dt.$spacing-lg 0;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+    line-height: 1.5;
+}
 
-    & + & {
-        margin-top: dt.$spacing-sm;
-        padding-top: dt.$spacing-sm;
-        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+.trustDescription {
+    margin: 0 0 dt.$spacing-sm;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.trustLine {
+    margin: 0 0 dt.$spacing-xs;
+
+    a {
+        text-decoration: none;
     }
 }
 
-.yourRunHead {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: dt.$spacing-sm;
-    margin-bottom: 2px;
+.trustLabel {
+    color: var(--bs-tertiary-color);
 }
 
-.sidebarFoot {
-    text-align: center;
+.trustLinks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-md;
+    align-items: center;
     margin-top: dt.$spacing-sm;
 }
 
-// Panel-shaped loading placeholder (LivePanel) — row-sized shimmer bars
-// instead of a raw "Loading…" line.
+// ---- Loading ---------------------------------------------------------------
+// Panel-shaped loading placeholder (LivePanel): row-sized shimmer bars.
 .skeletonRow {
     @include board.board-skeleton;
     height: 14px;

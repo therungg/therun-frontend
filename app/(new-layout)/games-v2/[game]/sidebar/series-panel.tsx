@@ -27,11 +27,13 @@ export function SeriesPanel({
     const overflow = games.length - shown.length;
 
     return (
-        <section className={styles.panel}>
-            <span className={`${styles.eyebrow} d-block mb-2`}>
-                {seriesDisplay ? `More in ${seriesDisplay}` : 'Same series'}
-            </span>
-            <ul className="list-unstyled mb-0">
+        <section className={styles.panel} aria-labelledby="rail-series">
+            <div className={styles.panelHead}>
+                <h2 id="rail-series" className={styles.eyebrow}>
+                    {seriesDisplay ? `More in ${seriesDisplay}` : 'Same series'}
+                </h2>
+            </div>
+            <ul className={styles.list}>
                 {shown.map((g) => (
                     <li key={g.slug} className={styles.seriesRow}>
                         <Link
@@ -57,9 +59,7 @@ export function SeriesPanel({
                     </li>
                 ))}
             </ul>
-            {overflow > 0 && (
-                <p className={`${styles.rowMeta} mb-0`}>+{overflow} more</p>
-            )}
+            {overflow > 0 && <p className={styles.more}>+{overflow} more</p>}
         </section>
     );
 }
