@@ -2,7 +2,7 @@
 
 Date: 2026-08-17
 Repos: therun-backend (query + `/variables` facets), therun-frontend (UI)
-Status: design approved in chat 2026-08-17; not built.
+Status: BUILT 2026-08-17 — frontend `board-filters` (pushed), backend `board-builtin-filters` (pushed, not merged; merge = deploy). Popover shape = mockup B (two-column sheet, Reset/Apply, batched navigation) — supersedes the "navigates immediately" text below for the sheet; band chips still remove one filter immediately. Browser pass done against the running dev server (dark/light/mobile).
 
 ## Problem
 
