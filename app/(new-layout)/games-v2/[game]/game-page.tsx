@@ -312,6 +312,10 @@ export function GamePage({
                                             selectedVarFilters={
                                                 data.activeFilters.varFilters
                                             }
+                                            builtins={
+                                                data.activeFilters.builtins
+                                            }
+                                            facets={data.facets}
                                         />
                                     )}
                                 </>

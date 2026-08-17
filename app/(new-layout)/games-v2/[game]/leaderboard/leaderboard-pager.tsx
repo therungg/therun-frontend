@@ -5,6 +5,7 @@ import { selfAnonymizeStateAction } from '~src/actions/run-user-actions.action';
 import type { LeaderboardQuery } from '~src/lib/leaderboards-v1';
 import { normalizeVariableName } from '~src/lib/variables/keys';
 import type {
+    BoardFacets,
     LeaderboardEntry,
     LeaderboardResponse,
     VariableRow,
@@ -14,8 +15,8 @@ import {
     fetchLeaderboardPage,
     findRunnerPage,
 } from '../actions/fetch-page.action';
+import type { BuiltinFilterState } from '../filters/builtin-params';
 import { FiltersPopover } from '../filters/filters-popover';
-import { VerifiedToggle } from '../filters/verified-toggle';
 import { isSameRunner } from '../shared/is-same-runner';
 import { OwnerHideIdentityDialog } from '../shared/owner-hide-identity-dialog';
 import { computeBoardRange } from './board-range';
@@ -79,6 +80,10 @@ interface Props {
     variableDefs: VariableRow[];
     /** Active filter-variable selections, keyed by `nameNormalized`. */
     selectedVarFilters: Record<string, string>;
+    /** Applied built-in filters — the Filters sheet seeds its draft from these. */
+    builtins: BuiltinFilterState;
+    /** Countries present on this board + its earliest run date, for the sheet's controls. */
+    facets: BoardFacets;
     /** category.rtaFallback — GT board ranks RTA-only runs by real time. */
     rtaFallback?: boolean;
 }
@@ -122,6 +127,8 @@ export function LeaderboardPager({
     subcategoryDefKeys,
     variableDefs,
     selectedVarFilters,
+    builtins,
+    facets,
     rtaFallback = false,
 }: Props) {
     // Variables (either role) the moderator opted into showing as their own
@@ -577,7 +584,6 @@ export function LeaderboardPager({
                                     : 'Find me'}
                             </button>
                         )}
-                        <VerifiedToggle verified={query.verified ?? false} />
                         <ExportButton
                             query={query}
                             gameSlug={gameSlug}
@@ -588,6 +594,8 @@ export function LeaderboardPager({
                         <FiltersPopover
                             defs={variableDefs}
                             selectedVarFilters={selectedVarFilters}
+                            builtins={builtins}
+                            facets={facets}
                         />
                     </span>
                 </div>

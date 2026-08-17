@@ -1,0 +1,162 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+// The Filters sheet: a two-column grid of icon-labelled groups over a
+// Reset / Apply foot. Wider than the old popover because the sheet holds
+// every filter the board has, not just the category's own.
+.panel {
+    min-width: 34rem;
+    max-width: min(38rem, calc(100vw - 2rem));
+    padding: dt.$spacing-lg dt.$spacing-xl;
+}
+
+.sheet {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: dt.$spacing-lg dt.$spacing-2xl;
+}
+
+.group {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    min-width: 0;
+}
+
+// The category's own filters get the full width — their values are pills
+// of unpredictable length and wrap badly in half a sheet.
+.groupWide {
+    grid-column: 1 / -1;
+}
+
+.groupLabel {
+    @include board.board-eyebrow;
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    margin: 0;
+
+    svg {
+        opacity: 0.7;
+    }
+}
+
+.segmented {
+    @include board.board-segmented;
+    align-self: flex-start;
+    margin-bottom: 0;
+}
+
+.segment {
+    @include board.board-segment;
+    font: inherit;
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
+    padding: dt.$spacing-xs dt.$spacing-md;
+    cursor: pointer;
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: -2px;
+    }
+}
+
+.segmentOn {
+    @include board.board-segment-active;
+}
+
+.dates {
+    display: flex;
+    align-items: flex-end;
+    gap: dt.$spacing-sm;
+}
+
+.dateField {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+
+    input {
+        @include board.board-input-rules;
+        font: inherit;
+        font-family: dt.$font-mono;
+        font-variant-numeric: tabular-nums;
+        color: var(--bs-emphasis-color);
+        background: rgba(var(--bs-body-color-rgb), 0.09);
+        border: 1px solid var(--bs-border-color);
+        padding: dt.$spacing-xs dt.$spacing-sm;
+    }
+}
+
+.dash {
+    color: var(--bs-tertiary-color);
+    padding-bottom: dt.$spacing-xs;
+}
+
+.hint {
+    margin: 0;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+}
+
+.select {
+    @include board.board-input-rules;
+    font: inherit;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-emphasis-color);
+    background: rgba(var(--bs-body-color-rgb), 0.09);
+    border: 1px solid var(--bs-border-color);
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    max-width: 16rem;
+}
+
+.pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs;
+}
+
+.foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: dt.$spacing-sm;
+    border-top: 1px solid var(--bs-border-color);
+    padding-top: dt.$spacing-md;
+}
+
+.reset {
+    @include board.board-chip;
+    border-color: transparent;
+    background: transparent;
+    color: var(--bs-secondary-color);
+}
+
+.apply {
+    @include board.board-chip;
+    @include board.board-chip-active;
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: default;
+        box-shadow: none;
+    }
+}
+
+@media (max-width: 40rem) {
+    .panel {
+        min-width: 0;
+        width: calc(100vw - 2rem);
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}
