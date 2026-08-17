@@ -2,12 +2,24 @@
 @use '../../../styles/board' as board;
 
 // The Filters sheet: a two-column grid of icon-labelled groups over a
-// Reset / Apply foot. Wider than the old popover because the sheet holds
-// every filter the board has, not just the category's own.
+// Reset / Apply foot.
+//
+// This owns the whole floating panel rather than composing game-page's
+// `.popoverPanel`: the sheet is wider and more generously padded than the
+// generic popover, and stacking two CSS-module classes that both declare
+// min-width/padding/background at equal specificity would leave the winner
+// to stylesheet insertion order. Same mixins and tokens, one class.
 .panel {
+    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
+    position: absolute;
+    right: 0;
+    top: calc(100% + #{dt.$spacing-xs});
+    z-index: dt.$z-popover;
+    background: var(--board-surface-bg, var(--bs-body-bg));
+    box-shadow: dt.$shadow-md;
     min-width: 34rem;
     max-width: min(38rem, calc(100vw - 2rem));
-    padding: dt.$spacing-lg dt.$spacing-xl;
+    @include board.board-overlay-enter(rise);
 }
 
 .sheet {
