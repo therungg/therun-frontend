@@ -12,6 +12,7 @@ import buildMetadata from '~src/utils/metadata';
 import { formatSubcategoryKey } from '../../labels';
 import { ModProvenancePanel } from '../../run-view/mod-provenance-panel';
 import { type RunBoardStanding, RunView } from '../../run-view/run-view';
+import { isSameRunner } from '../../shared/is-same-runner';
 
 interface PageProps {
     params: Promise<{ game: string; runId: string }>;
@@ -70,7 +71,14 @@ export default async function RunDetailPage({ params }: PageProps) {
     // non-guest row with no userId. Guest rows and normal rows skip the extra
     // request, so the common path costs nothing.
     let run = data.run;
-    if (session.id && run.userId == null && !run.isGuest) {
+    // The authed read is also the only source of owner-only fields
+    // (descriptionRestriction), which the cached getRunById strips. Fetch as
+    // this viewer when the run is redacted OR the visitor owns it and isn't a
+    // mod (mods read restrictions on their own surfaces, not here).
+    const needsViewerRead =
+        (run.userId == null && !run.isGuest) ||
+        (!isMod && isSameRunner(session.username, run.runnerName));
+    if (session.id && needsViewerRead) {
         const asViewer = await getRunByIdAsViewer(runId, session.id).catch(
             () => null,
         );
@@ -123,7 +131,7 @@ export default async function RunDetailPage({ params }: PageProps) {
                 runDate: run.runDate,
                 vodUrl: run.vodUrl,
                 description: run.description ?? null,
-                descriptionRevoked: run.descriptionRevoked ?? false,
+                descriptionRevoked: run.descriptionRestriction != null,
                 verificationStatus: run.verificationStatus,
                 variables: run.variables,
                 origin: run.origin ?? null,
