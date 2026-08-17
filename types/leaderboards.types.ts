@@ -297,6 +297,7 @@ export interface RunDetail {
     gameTimeLabel?: GameTimeLabel;
     runDate: string;
     vodUrl: string | null;
+    vodReview?: VodReview | null;
     verificationStatus: 'pending' | 'verified' | 'rejected';
     variables: Record<string, string>;
     origin?: RunOrigin;
@@ -338,6 +339,7 @@ export interface ManualTimeDetail {
     timing: 'realtime' | 'gametime';
     timeMs: number;
     evidenceUrl: string | null;
+    vodReview?: VodReview | null;
     verificationStatus: 'pending' | 'verified' | 'rejected';
     /** Mod-asserted achievement date; null when never set (origin.ingestedAt
      *  remains the system clock). */
@@ -445,3 +447,34 @@ export type RunnerEntriesResult =
      * and simply has no times on this game.
      */
     | { status: 'no-account' };
+
+// ---- VOD review (frame-stepped verification) ------------------------------
+// Backend: src/types/vod-review.ts — see docs/frontend-guide-vod-review.md.
+export type VodMarkerKind = 'start' | 'end' | 'split' | 'note';
+
+export interface VodMarker {
+    kind: VodMarkerKind;
+    /** Integer ≥ 0 from video time 0 at `VodReview.fps`. */
+    frame: number;
+    label?: string;
+    note?: string;
+    splitIndex?: number;
+}
+
+export interface VodReviewAuthor {
+    markers: VodMarker[];
+    at: string;
+}
+
+export interface VodReview {
+    fps: number;
+    runner?: VodReviewAuthor;
+    mod?: VodReviewAuthor & { retimedMs: number | null; by: number };
+}
+
+/** What a client sends: one author's markers + fps. `null` clears (mod only). */
+export interface VodReviewPatch {
+    fps: number;
+    markers: VodMarker[];
+    retimedMs?: number | null;
+}

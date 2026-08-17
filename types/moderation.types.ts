@@ -3,6 +3,8 @@
 // docs/superpowers/specs/2026-05-24-moderation-backend-contract-actual.md.
 // Field names + casing are exactly what the backend reads/writes — do not "fix" them.
 
+import type { VodReviewPatch } from './leaderboards.types';
+
 // ── Shared ────────────────────────────────────────────────────────────────
 
 /** Timing vocab for mod/self endpoints. (The public board read uses 'rt'|'gt'.) */
@@ -95,6 +97,7 @@ export interface CreateManualTimeInput {
     /** Mod-asserted date the time was achieved (ISO date); omitted/null =>
      *  the board shows the manual time's created-at instead. */
     runDate?: string | null;
+    vodReview?: VodReviewPatch;
     reason: string;
 }
 
@@ -121,6 +124,7 @@ export interface UpdateManualTimeInput {
     evidenceUrl?: string | null;
     /** Explicit null clears the date (created-at stands in again). */
     runDate?: string | null;
+    vodReview?: VodReviewPatch | null;
 }
 
 export interface UpdateManualTimeResult {
@@ -601,6 +605,7 @@ export interface SelfManualTimeInput {
     /** Date the runner says they achieved the time (ISO date); omitted/null =>
      *  the board shows the manual time's created-at instead. */
     runDate?: string | null;
+    vodReview?: VodReviewPatch;
     reason?: string;
 }
 
