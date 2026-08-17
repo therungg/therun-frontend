@@ -65,6 +65,8 @@ import { relativeDate } from './relative-date';
 import { isOutlierImprovement, runBoardContext } from './run-context';
 import styles from './run-inspector.module.scss';
 import type { TimingKey } from './timing-columns';
+import { detectVod } from './vod-review/player/types';
+import { ReviewVodPanel } from './vod-review/review-vod-panel';
 
 /**
  * Who is looking. `'mod'` is the full moderation surface; `'owner'` is the
@@ -297,6 +299,7 @@ function EvidenceSection({
     const [text, setText] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
+    const [reviewing, setReviewing] = useState(false);
     const inputId = useId();
 
     const openEditor = () => {
@@ -370,7 +373,8 @@ function EvidenceSection({
                     )}
                     <p className={styles.vodHint}>
                         YouTube and Twitch links play inline here. Anything else
-                        is saved as a link.
+                        is saved as a link. Changing the link clears any saved
+                        frame markers.
                     </p>
                     {url != null && (
                         <button
@@ -427,9 +431,18 @@ function EvidenceSection({
         );
     }
 
+    const reviewable = editable && detectVod(url) != null;
+
     return (
         <div className={styles.evidence}>
-            {isEmbeddableVod(url) ? (
+            {reviewing ? (
+                <ReviewVodPanel
+                    url={url}
+                    target={{ kind: 'run', runId }}
+                    gameSlug={gameSlug}
+                    onSaved={onMutated}
+                />
+            ) : isEmbeddableVod(url) ? (
                 <div className={styles.vodFrame}>
                     <Vod vod={url} />
                 </div>
@@ -463,6 +476,15 @@ function EvidenceSection({
                         onClick={openEditor}
                     >
                         Change link
+                    </button>
+                )}
+                {reviewable && (
+                    <button
+                        type="button"
+                        className={styles.vodEditBtn}
+                        onClick={() => setReviewing((v) => !v)}
+                    >
+                        {reviewing ? 'Close review' : 'Review VOD'}
                     </button>
                 )}
             </div>

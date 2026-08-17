@@ -31,11 +31,14 @@ import { buildSubcategoryKey } from '../submit/subcategory-key';
 import { loadModBoardContextAction } from './actions/load-mod-board-context.action';
 import { relativeDate } from './relative-date';
 import styles from './run-inspector.module.scss';
+import { detectVod } from './vod-review/player/types';
+import { ReviewVodPanel } from './vod-review/review-vod-panel';
 
 interface Props {
     /** The inspected row — always a manual set time (manualTimeId != null). */
     entry: LeaderboardEntry;
     gameSlug: string;
+    gameId: number;
     categorySlug: string;
     subcategoryDefKeys: string[];
     gameTimeLabel?: GameTimeLabel;
@@ -84,6 +87,7 @@ export function manualVerbsForStatus(
 export function ManualInspector({
     entry,
     gameSlug,
+    gameId,
     categorySlug,
     subcategoryDefKeys,
     gameTimeLabel = 'igt',
@@ -95,6 +99,7 @@ export function ManualInspector({
     initialVerb,
 }: Props) {
     const manualTimeId = entry.manualTimeId as number;
+    const [reviewing, setReviewing] = useState(false);
     const panelRef = useRef<HTMLDivElement>(null);
     // Portal target isn't available during SSR — mount client-side only.
     const [portalReady, setPortalReady] = useState(false);
@@ -315,6 +320,18 @@ export function ManualInspector({
                                     <PlayBtn size={14} aria-hidden /> Evidence
                                 </a>
                             )}
+                            {entry.vodUrl &&
+                                detectVod(entry.vodUrl) != null && (
+                                    <button
+                                        type="button"
+                                        className={styles.factLink}
+                                        onClick={() => setReviewing((v) => !v)}
+                                    >
+                                        {reviewing
+                                            ? 'Close review'
+                                            : 'Review VOD'}
+                                    </button>
+                                )}
                             <Link
                                 href={`/games-v2/${encodeURIComponent(gameSlug)}/manual/${manualTimeId}`}
                                 className={styles.factLink}
@@ -323,6 +340,20 @@ export function ManualInspector({
                                 Set-time details
                             </Link>
                         </div>
+                        {reviewing && entry.vodUrl && (
+                            <div className="mt-2">
+                                <ReviewVodPanel
+                                    url={entry.vodUrl}
+                                    target={{
+                                        kind: 'manual',
+                                        manualTimeId,
+                                        gameId,
+                                    }}
+                                    gameSlug={gameSlug}
+                                    onSaved={onMutated}
+                                />
+                            </div>
+                        )}
                     </div>
 
                     <div className="p-3 border-bottom">
