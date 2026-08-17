@@ -2,11 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { evidencePermissions } from './use-evidence-permissions';
 
 const base = {
-    ownerUserId: 1,
+    isOwner: true,
     verificationStatus: 'pending',
-    isGuest: false,
     descriptionRevoked: false,
-    sessionUserId: 1,
     isMod: false,
 };
 
@@ -46,13 +44,11 @@ describe('evidencePermissions', () => {
         });
     });
 
-    it('mod can edit both even on a guest run', () => {
+    it('mod can edit both even on a guest run (not the owner)', () => {
         const result = evidencePermissions({
             ...base,
             isMod: true,
-            ownerUserId: null,
-            isGuest: true,
-            sessionUserId: null,
+            isOwner: false,
         });
         expect(result).toEqual({
             canEditVod: true,
@@ -62,16 +58,7 @@ describe('evidencePermissions', () => {
     });
 
     it('a non-owner, non-mod cannot edit anything, no note needed', () => {
-        const result = evidencePermissions({ ...base, sessionUserId: 2 });
-        expect(result).toEqual({
-            canEditVod: false,
-            canEditDescription: false,
-            lockedReason: null,
-        });
-    });
-
-    it('logged-out visitor (sessionUserId null) cannot edit', () => {
-        const result = evidencePermissions({ ...base, sessionUserId: null });
+        const result = evidencePermissions({ ...base, isOwner: false });
         expect(result).toEqual({
             canEditVod: false,
             canEditDescription: false,
@@ -142,25 +129,10 @@ describe('evidencePermissions', () => {
         });
     });
 
-    it('guest run (ownerUserId null, isGuest true): never owner-editable', () => {
+    it('guest run / no owner match: never owner-editable', () => {
         const result = evidencePermissions({
             ...base,
-            ownerUserId: null,
-            isGuest: true,
-            sessionUserId: 1,
-        });
-        expect(result).toEqual({
-            canEditVod: false,
-            canEditDescription: false,
-            lockedReason: null,
-        });
-    });
-
-    it('isGuest true even with a matching ownerUserId is never owner-editable', () => {
-        // Defensive: isGuest should override even if ownerUserId somehow matches.
-        const result = evidencePermissions({
-            ...base,
-            isGuest: true,
+            isOwner: false,
         });
         expect(result).toEqual({
             canEditVod: false,

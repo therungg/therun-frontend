@@ -2,7 +2,6 @@ import moment from 'moment';
 import type React from 'react';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
-import { Vod } from '~src/components/run/dashboard/vod';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import {
     buildBoardHref,
@@ -10,7 +9,6 @@ import {
     rankToPage,
 } from '~src/lib/board-url';
 import { formatRunDate } from '~src/lib/format-run-date';
-import { isEmbeddableVod } from '~src/lib/vod-url';
 import type {
     ResolvedGame,
     RunOrigin,
@@ -24,6 +22,7 @@ import { isSameRunner } from '../shared/is-same-runner';
 import { OriginPanel } from './origin-panel';
 import { RunActions } from './run-actions';
 import { VariablesLine, VerificationBadge } from './run-badges';
+import { RunEvidencePanel } from './run-evidence-panel';
 import { RunHistoryList } from './run-history-list';
 import styles from './run-view.module.scss';
 
@@ -63,6 +62,10 @@ export interface RunViewModel {
     gameTimeLabel: 'igt' | 'lrt';
     runDate: string | null; // null for manual times (no run date)
     vodUrl: string | null;
+    /** Runner-authored description (backend Task A4). May be absent while
+     * that backend surface isn't deployed yet — pages default it to null. */
+    description: string | null;
+    descriptionRevoked?: boolean;
     verificationStatus: 'pending' | 'verified' | 'rejected';
     variables: Record<string, string>;
     origin: RunOrigin | null;
@@ -75,11 +78,13 @@ export function RunView({
     model,
     history,
     sessionUsername,
+    isMod = false,
     modPanel,
 }: {
     model: RunViewModel;
     history: HistoryEvent[]; // [] for manual times
     sessionUsername: string | null;
+    isMod?: boolean;
     modPanel?: React.ReactNode; // mod layer slot, page decides
 }): React.JSX.Element {
     const primaryTime = model.realTime ?? model.gameTime;
@@ -259,27 +264,11 @@ export function RunView({
 
                 <div className="row g-3">
                     <div className="col-lg-8">
-                        {model.vodUrl ? (
-                            isEmbeddableVod(model.vodUrl) ? (
-                                <div className={styles.vodWrap}>
-                                    <Vod vod={model.vodUrl} />
-                                </div>
-                            ) : (
-                                <div className={styles.mediaPlaceholder}>
-                                    <a
-                                        href={model.vodUrl}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                    >
-                                        Watch video / view evidence ↗
-                                    </a>
-                                </div>
-                            )
-                        ) : (
-                            <div className={styles.mediaPlaceholder}>
-                                No video attached
-                            </div>
-                        )}
+                        <RunEvidencePanel
+                            model={model}
+                            sessionUsername={sessionUsername}
+                            isMod={isMod}
+                        />
                     </div>
                     <div className="col-lg-4 d-flex flex-column gap-3">
                         <div className={styles.surface}>
