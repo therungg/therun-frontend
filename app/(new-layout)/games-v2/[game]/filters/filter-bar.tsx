@@ -1,6 +1,8 @@
 import type { VariableRow } from '../../../../../types/leaderboards.types';
 import styles from '../header/masthead.module.scss';
 import { ActiveFilterChips } from './active-filter-chips';
+import type { BuiltinFilterState } from './builtin-params';
+import { hasBuiltinFilters } from './builtin-params';
 import { SubcategoryPills } from './subcategory-pills';
 import { TierSummary } from './tier-summary';
 
@@ -11,6 +13,7 @@ interface Props {
     /** `nameNormalized -> canonicalValue -> runners`; see GamePageData. */
     subcategoryValueCounts: Record<string, Record<string, number>>;
     totalItems: number;
+    builtins: BuiltinFilterState;
 }
 
 /**
@@ -25,10 +28,12 @@ export function FilterBar({
     selectedVarFilters,
     subcategoryValueCounts,
     totalItems,
+    builtins,
 }: Props) {
     const hasSubcategories = defs.some((d) => d.role === 'subcategory');
     const hasVarFilters = Object.keys(selectedVarFilters).length > 0;
-    if (!hasSubcategories && !hasVarFilters) return null;
+    if (!hasSubcategories && !hasVarFilters && !hasBuiltinFilters(builtins))
+        return null;
 
     return (
         <div className={styles.tier}>
@@ -38,7 +43,11 @@ export function FilterBar({
                     selected={selectedSubcategoryValues}
                     counts={subcategoryValueCounts}
                 />
-                <ActiveFilterChips defs={defs} selected={selectedVarFilters} />
+                <ActiveFilterChips
+                    defs={defs}
+                    selected={selectedVarFilters}
+                    builtins={builtins}
+                />
             </div>
             <TierSummary totalItems={totalItems} />
         </div>
