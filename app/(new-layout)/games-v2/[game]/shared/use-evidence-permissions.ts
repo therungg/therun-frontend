@@ -1,11 +1,13 @@
 import { useMemo } from 'react';
 
 export interface EvidencePermissionsInput {
-    ownerUserId: number | null;
+    /** Caller-computed: true iff the signed-in visitor owns this run/manual
+     * time. The codebase has no numeric session user id to compare against
+     * an owner id with (see `isSameRunner`) — ownership is resolved by
+     * username before this hook ever runs. */
+    isOwner: boolean;
     verificationStatus: string;
-    isGuest: boolean;
     descriptionRevoked?: boolean;
-    sessionUserId: number | null;
     isMod: boolean;
 }
 
@@ -26,11 +28,9 @@ const DESCRIPTION_REVOKED_REASON =
  * feature's top risk.
  */
 export function evidencePermissions({
-    ownerUserId,
+    isOwner,
     verificationStatus,
-    isGuest,
     descriptionRevoked = false,
-    sessionUserId,
     isMod,
 }: EvidencePermissionsInput): EvidencePermissions {
     if (isMod) {
@@ -40,9 +40,6 @@ export function evidencePermissions({
             lockedReason: null,
         };
     }
-
-    const isOwner =
-        !isGuest && sessionUserId != null && sessionUserId === ownerUserId;
 
     if (!isOwner) {
         return {
@@ -77,11 +74,9 @@ export function useEvidencePermissions(
     return useMemo(
         () => evidencePermissions(input),
         [
-            input.ownerUserId,
+            input.isOwner,
             input.verificationStatus,
-            input.isGuest,
             input.descriptionRevoked,
-            input.sessionUserId,
             input.isMod,
         ],
     );

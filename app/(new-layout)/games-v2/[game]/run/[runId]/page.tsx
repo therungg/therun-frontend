@@ -122,6 +122,8 @@ export default async function RunDetailPage({ params }: PageProps) {
                 gameTimeLabel: run.gameTimeLabel ?? 'igt',
                 runDate: run.runDate,
                 vodUrl: run.vodUrl,
+                description: run.description ?? null,
+                descriptionRevoked: run.descriptionRevoked ?? false,
                 verificationStatus: run.verificationStatus,
                 variables: run.variables,
                 origin: run.origin ?? null,
@@ -131,6 +133,7 @@ export default async function RunDetailPage({ params }: PageProps) {
             }}
             history={history}
             sessionUsername={session.username || null}
+            isMod={isMod}
             modPanel={
                 isMod ? (
                     <ModProvenancePanel

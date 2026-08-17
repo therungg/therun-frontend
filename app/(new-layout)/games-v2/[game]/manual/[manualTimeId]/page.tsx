@@ -79,6 +79,8 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
                 gameTimeLabel: 'igt',
                 runDate: mt.runDate ?? null,
                 vodUrl: mt.evidenceUrl,
+                description: mt.description ?? null,
+                descriptionRevoked: mt.descriptionRevoked ?? false,
                 verificationStatus: mt.verificationStatus,
                 variables: {},
                 origin: mt.origin,
@@ -88,6 +90,7 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
             }}
             history={[]}
             sessionUsername={session.username || null}
+            isMod={isMod}
             modPanel={
                 isMod ? (
                     <ModProvenancePanel
