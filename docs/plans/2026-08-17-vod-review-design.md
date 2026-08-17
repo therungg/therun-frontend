@@ -2,7 +2,7 @@
 
 Date: 2026-08-17
 Repos: therun-frontend (workbench, submit-dialog pin), therun-backend (one jsonb column, three field pass-throughs)
-Status: DESIGN — approved in conversation 2026-08-17; implementation plan follows.
+Status: BUILT 2026-08-17 — frontend `vod-review` (unpushed at time of writing; A1-B7 all committed, tip 2668ce33) and backend `vod-review` (unpushed; A1-A4, tip af68dee). Executed subagent-driven (12 tasks, per-task spec+quality review; migration 0096 additive). Browser pass DEFERRED to post-backend-deploy: frame-stepping/markers/retime are pure-frontend and unit-tested (69 vod-review tests green), but Save/Apply persistence can only be verified once the backend branch is merged+deployed (= migration 0096 + deploy, Joey's call). Place-splits (phase 1b) NOT built.
 
 ## Problem
 
