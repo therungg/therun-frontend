@@ -1,0 +1,308 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/board' as board;
+
+// ============================================================
+// VodReviewWorkbench — the frame-stepped VOD review surface used
+// inside the run inspector (mod) and the runner's set-time form.
+// Board-native: same borders + subtle surface tint as the rest of
+// games-v2, no gradient washes. Times are mono tabular throughout.
+// ============================================================
+
+.workbench {
+    display: grid;
+    gap: dt.$spacing-lg;
+    outline: none;
+
+    &:focus-visible {
+        border-radius: dt.$radius-md;
+        box-shadow: 0 0 0 2px var(--bs-body-bg), 0 0 0 4px var(--bs-primary);
+    }
+}
+
+// ---------- player ----------
+
+.playerBox {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+.player {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: dt.$radius-md;
+    overflow: hidden;
+    background: var(--bs-tertiary-bg);
+
+    :global(iframe) {
+        width: 100%;
+        height: 100%;
+        display: block;
+        border: none;
+    }
+}
+
+// ---------- transport ----------
+
+.transport {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
+
+    button {
+        @include board.control-pill;
+        border: 1px solid var(--bs-border-color);
+        background: var(--bs-tertiary-bg);
+        padding: dt.$spacing-xs dt.$spacing-md;
+        color: var(--bs-body-color);
+
+        &:hover:not(:disabled) {
+            border-color: var(--bs-primary);
+            color: var(--bs-primary);
+        }
+
+        &:disabled {
+            opacity: 0.5;
+        }
+    }
+
+    select {
+        border: 1px solid var(--bs-border-color);
+        border-radius: dt.$radius-sm;
+        background: var(--bs-tertiary-bg);
+        color: var(--bs-body-color);
+        font-size: dt.$font-size-sm;
+        padding: dt.$spacing-xs dt.$spacing-sm;
+    }
+}
+
+.fps {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    margin-left: dt.$spacing-sm;
+
+    button {
+        @include board.control-pill;
+        border: 1px solid var(--bs-border-color);
+        background: var(--bs-tertiary-bg);
+        padding: dt.$spacing-xs dt.$spacing-sm;
+        color: var(--bs-body-color);
+        font-size: dt.$font-size-xs;
+
+        &:hover {
+            border-color: var(--bs-primary);
+            color: var(--bs-primary);
+        }
+    }
+
+    input {
+        width: 4.5rem;
+        border: 1px solid var(--bs-border-color);
+        border-radius: dt.$radius-sm;
+        background: var(--bs-tertiary-bg);
+        color: var(--bs-body-color);
+        font-size: dt.$font-size-xs;
+        padding: dt.$spacing-xs dt.$spacing-sm;
+        @include board.mono-time;
+    }
+}
+
+.fpsLabel {
+    font-size: dt.$font-size-2xs;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--bs-secondary-color);
+}
+
+.on {
+    border-color: var(--bs-primary) !important;
+    color: var(--bs-primary) !important;
+    background: rgba(var(--bs-primary-rgb), 0.1) !important;
+}
+
+.cursor {
+    margin-left: auto;
+    @include board.mono-time;
+    font-size: dt.$font-size-sm;
+}
+
+// ---------- mark buttons ----------
+
+.markButtons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+
+    button {
+        @include board.control-pill;
+        border: 1px solid var(--bs-border-color);
+        background: var(--bs-tertiary-bg);
+        padding: dt.$spacing-xs dt.$spacing-md;
+        color: var(--bs-body-color);
+
+        &:hover:not(:disabled) {
+            border-color: var(--bs-primary);
+            color: var(--bs-primary);
+        }
+
+        &:disabled {
+            opacity: 0.5;
+        }
+    }
+
+    kbd {
+        font-size: 0.7rem;
+        line-height: 1;
+        padding: 0.15em 0.35em;
+        border-radius: 3px;
+        background: rgba(0, 0, 0, 0.18);
+        color: inherit;
+        opacity: 0.8;
+    }
+}
+
+.secondary {
+    color: var(--bs-secondary-color) !important;
+    font-size: dt.$font-size-sm;
+}
+
+// ---------- marker rail ----------
+
+.empty {
+    margin: 0;
+    padding: dt.$spacing-md;
+    border: 1px dashed var(--bs-border-color);
+    border-radius: dt.$radius-md;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+    text-align: center;
+}
+
+.rail {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+}
+
+.marker {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    border: 1px solid var(--bs-border-color);
+    border-radius: dt.$radius-sm;
+    background: var(--bs-tertiary-bg);
+}
+
+.ghost {
+    opacity: 0.55;
+}
+
+.kind {
+    flex: 0 0 auto;
+    font-size: dt.$font-size-2xs;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.1em 0.5em;
+    border-radius: dt.$radius-sm;
+    color: var(--bs-secondary-color);
+    background: rgba(var(--bs-secondary-rgb), 0.12);
+}
+
+.kind_start {
+    color: var(--bs-success);
+    background: rgba(var(--bs-success-rgb), 0.12);
+}
+
+.kind_end {
+    color: dt.$accent-red;
+    background: rgba(var(--bs-danger-rgb), 0.12);
+}
+
+.kind_split {
+    color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.12);
+}
+
+.kind_note {
+    color: dt.$accent-amber;
+    background: rgba(var(--bs-warning-rgb), 0.12);
+}
+
+.markerTime {
+    flex: 0 0 auto;
+    border: none;
+    background: none;
+    padding: 0;
+    @include board.mono-time;
+    font-size: dt.$font-size-sm;
+
+    &:hover {
+        color: var(--bs-primary);
+        text-decoration: underline;
+    }
+}
+
+.frameNo {
+    color: var(--bs-secondary-color);
+    font-weight: 400;
+}
+
+.markerText {
+    flex: 1 1 auto;
+    min-width: 0;
+    border: 1px solid var(--bs-border-color);
+    border-radius: dt.$radius-sm;
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    font-size: dt.$font-size-sm;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+}
+
+.author {
+    flex: 0 0 auto;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+}
+
+.remove {
+    flex: 0 0 auto;
+    border: none;
+    background: none;
+    padding: 0 dt.$spacing-xs;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-md;
+    line-height: 1;
+
+    &:hover {
+        color: var(--bs-danger);
+    }
+}
+
+// ---------- retime line ----------
+
+.retimeLine {
+    margin: 0;
+    font-size: dt.$font-size-md;
+    font-variant-numeric: tabular-nums;
+}
+
+.hint,
+.note {
+    margin: 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+// ---------- footer ----------
+
+.footer {
+    display: flex;
+    gap: dt.$spacing-sm;
+}
