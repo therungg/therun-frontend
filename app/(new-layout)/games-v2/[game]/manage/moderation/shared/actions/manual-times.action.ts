@@ -16,6 +16,7 @@ import {
     revalidateAffectedBoards,
     revalidateRunDetails,
 } from '~src/lib/moderation/revalidate-boards';
+import type { VodReviewPatch } from '../../../../../../../../types/leaderboards.types';
 import type {
     CreateManualTimeResult,
     ManualTimeFilter,
@@ -87,6 +88,7 @@ export async function createManualTimeAction(
         secondary?: SecondaryTimeInput | null;
         evidenceUrl?: string | null;
         runDate?: string | null;
+        vodReview?: VodReviewPatch;
         reason: string;
     },
 ): Promise<{ ok: true; result: CreateManualTimeResult } | Fail> {

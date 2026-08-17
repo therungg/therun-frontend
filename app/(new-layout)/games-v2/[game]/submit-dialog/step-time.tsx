@@ -1,7 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import { RunTimesField } from '~src/components/time-input/run-times-field';
+import type { VodReviewPatch } from '../../../../../types/leaderboards.types';
 import type { ModTiming } from '../../../../../types/moderation.types';
+import { detectVod } from '../leaderboard/vod-review/player/types';
+import { VodReviewWorkbench } from '../leaderboard/vod-review/vod-review-workbench';
 import styles from './submit-run-dialog.module.scss';
 
 /** Local date as YYYY-MM-DD — the value format `<input type="date">` wants. */
@@ -40,6 +44,8 @@ interface Props {
     onVodChange: (v: string) => void;
     vodTouched: boolean;
     onVodBlur: () => void;
+    vodReview: VodReviewPatch | null;
+    onVodReviewChange: (p: VodReviewPatch | null) => void;
 }
 
 /**
@@ -63,9 +69,17 @@ export function StepTime({
     onVodChange,
     vodTouched,
     onVodBlur,
+    vodReview,
+    onVodReviewChange,
 }: Props) {
     const vodInvalid =
         vodUrl.trim().length > 0 && !isValidHttpUrl(vodUrl.trim());
+    const [pinFramesOpen, setPinFramesOpen] = useState(false);
+    const trimmedVodUrl = vodUrl.trim();
+    const canPinFrames =
+        trimmedVodUrl.length > 0 &&
+        !vodInvalid &&
+        detectVod(trimmedVodUrl) != null;
 
     return (
         <div className={styles.step}>
@@ -123,6 +137,31 @@ export function StepTime({
                     <p className={styles.hint}>
                         Optional, but a run with a video is verified faster.
                     </p>
+                )}
+                {canPinFrames && (
+                    <details
+                        className={styles.pinFrames}
+                        onToggle={(e) => setPinFramesOpen(e.currentTarget.open)}
+                    >
+                        <summary>Pin start and end frames (optional)</summary>
+                        <p className={styles.hint}>
+                            Step to the first and last frame of your run so the
+                            moderator can confirm the time faster.
+                        </p>
+                        {pinFramesOpen && (
+                            <VodReviewWorkbench
+                                mode="runner"
+                                url={trimmedVodUrl}
+                                initial={{
+                                    fps: vodReview?.fps ?? 60,
+                                    markers: vodReview?.markers ?? [],
+                                    realTimeMs: null,
+                                    timing: 'realtime',
+                                }}
+                                onChange={onVodReviewChange}
+                            />
+                        )}
+                    </details>
                 )}
             </div>
         </div>

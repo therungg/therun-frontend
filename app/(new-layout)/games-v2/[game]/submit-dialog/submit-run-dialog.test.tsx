@@ -318,6 +318,25 @@ describe('SubmitRunDialog', () => {
         expect(mocks.selfClaimTimeAction).not.toHaveBeenCalled();
     });
 
+    it('offers to pin frames only for an embeddable video link', async () => {
+        renderDialog();
+        await advancePastBoard();
+
+        expect(screen.queryByText(/Pin start and end frames/i)).toBeNull();
+
+        fireEvent.change(screen.getByLabelText('Video link'), {
+            target: { value: 'https://youtu.be/dQw4w9WgXcQ' },
+        });
+        expect(screen.getByText(/Pin start and end frames/i)).toBeTruthy();
+
+        fireEvent.change(screen.getByLabelText('Video link'), {
+            target: {
+                value: 'https://drive.google.com/file/d/abc123/view',
+            },
+        });
+        expect(screen.queryByText(/Pin start and end frames/i)).toBeNull();
+    });
+
     it('will not let a moderator add a second entry for someone already on the board', async () => {
         mocks.lookupRunnerEntriesAction.mockResolvedValue({
             status: 'found',
