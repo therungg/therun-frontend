@@ -1,5 +1,6 @@
 import type { GameMetadata } from '~src/lib/game-mgmt';
 import type {
+    BoardFacets,
     LeaderboardEntry,
     LeaderboardResponse,
     QuickStats,
@@ -11,11 +12,16 @@ import type {
     ValidCombinations,
     VariableRow,
 } from '../../../../types/leaderboards.types';
+import type { BuiltinFilterState } from './filters/builtin-params';
 
 export interface GamePageSearchParams {
     category?: string;
     combined?: string;
     verified?: string;
+    video?: string;
+    from?: string;
+    to?: string;
+    country?: string;
     page?: string;
     pageSize?: string;
     /** 'moderation' -> the board's public Moderation tab (see leaderboard/moderation/). */
@@ -65,11 +71,13 @@ export interface GamePageData {
      * with no entry renders with no count.
      */
     categoryBoardCounts: Record<string, number>;
+    facets: BoardFacets;
     activeFilters: {
         subcategoryValues: Record<string, string>;
         varFilters: Record<string, string>;
         combined: boolean;
         verified: boolean;
+        builtins: BuiltinFilterState;
         page: number;
         pageSize: number;
     };

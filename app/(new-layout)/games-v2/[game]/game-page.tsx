@@ -10,6 +10,7 @@ import type {
     SelfAnonymizeState,
 } from '../../../../types/moderation.types';
 import type { ClaimCtaState } from './claim/claim-cta';
+import { hasBuiltinFilters } from './filters/builtin-params';
 import { BoardNavProvider, useBoardNavState } from './filters/use-board-nav';
 import styles from './game-page.module.scss';
 import { BoardMasthead } from './header/board-masthead';
@@ -150,7 +151,8 @@ export function GamePage({
         data.activeFilters.combined ||
         Object.keys(data.activeFilters.subcategoryValues).length > 0 ||
         Object.keys(data.activeFilters.varFilters).length > 0 ||
-        data.activeFilters.page > 1;
+        data.activeFilters.page > 1 ||
+        hasBuiltinFilters(data.activeFilters.builtins);
 
     return (
         <SubmitDialogProvider
@@ -232,7 +234,7 @@ export function GamePage({
                                         />
                                     ) : (
                                         <LeaderboardPager
-                                            key={`${data.selectedCategory.id}|${subcategoryKey}|${JSON.stringify(data.activeFilters.varFilters)}|${data.activeFilters.combined}|${data.activeFilters.verified}`}
+                                            key={`${data.selectedCategory.id}|${subcategoryKey}|${JSON.stringify(data.activeFilters.varFilters)}|${data.activeFilters.combined}|${data.activeFilters.verified}|${JSON.stringify(data.activeFilters.builtins)}`}
                                             initial={data.leaderboard}
                                             query={{
                                                 gameSlug: data.game.name,
@@ -250,6 +252,18 @@ export function GamePage({
                                                         .varFilters,
                                                 verified:
                                                     data.activeFilters.verified,
+                                                video:
+                                                    data.activeFilters.builtins
+                                                        .video ?? undefined,
+                                                from:
+                                                    data.activeFilters.builtins
+                                                        .from ?? undefined,
+                                                to:
+                                                    data.activeFilters.builtins
+                                                        .to ?? undefined,
+                                                country:
+                                                    data.activeFilters.builtins
+                                                        .country ?? undefined,
                                                 pageSize:
                                                     data.activeFilters.pageSize,
                                             }}
