@@ -1,0 +1,262 @@
+@use '../../../styles/design-tokens' as dt;
+
+// ============================================================
+// EvidenceEditor — the single owner/mod control for a run's VOD
+// + description. Used across the owner dashboard, run inspector,
+// run detail page, and manage/run surfaces; styling stays
+// board-native and self-contained (no dependency on a parent
+// drawer/panel's own padding).
+// ============================================================
+
+.evidenceEditor {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-lg;
+}
+
+// ---------- shared ----------
+
+.secondaryBtn {
+    border: none;
+    background: none;
+    padding: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+
+    &:hover:not(:disabled) {
+        color: var(--bs-primary);
+    }
+}
+
+.factLink {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    text-decoration: none;
+    transition: color dt.$transition-fast;
+
+    &:hover {
+        color: var(--bs-primary);
+    }
+}
+
+.lockedNote {
+    margin: 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    font-style: italic;
+}
+
+// ---------- vod ----------
+
+.vodSection {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+.vodFrame {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: dt.$radius-md;
+    overflow: hidden;
+    background: #000;
+
+    iframe {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+}
+
+// A VOD on a host the embed doesn't speak. Still evidence — make it a
+// full-width target rather than a stray link.
+.vodLinkCard {
+    display: flex;
+    align-items: flex-start;
+    gap: dt.$spacing-sm;
+    width: 100%;
+    padding: dt.$spacing-md;
+    border: 1px solid var(--bs-border-color);
+    border-radius: dt.$radius-md;
+    color: var(--bs-body-color);
+    text-decoration: none;
+    font-size: dt.$font-size-sm;
+
+    &:hover {
+        border-color: var(--bs-primary);
+        color: var(--bs-primary);
+    }
+}
+
+.vodUrl {
+    display: block;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+    word-break: break-all;
+}
+
+.vodActions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    width: 100%;
+}
+
+.vodEditBtn {
+    border: none;
+    background: none;
+    padding: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+
+    &:hover {
+        color: var(--bs-primary);
+        text-decoration: underline;
+    }
+}
+
+.noVod {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    width: 100%;
+    padding: dt.$spacing-md;
+    border: 1px dashed var(--bs-border-color);
+    border-radius: dt.$radius-md;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+    text-align: left;
+    background: none;
+    transition:
+        border-color dt.$transition-fast,
+        background-color dt.$transition-fast;
+
+    &:hover {
+        border-color: var(--bs-primary);
+    }
+}
+
+.noVodText {
+    flex: 1 1 auto;
+}
+
+.noVodCta {
+    flex: 0 0 auto;
+    font-weight: 600;
+    color: var(--bs-primary);
+}
+
+.vodForm {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    width: 100%;
+}
+
+.vodFormLabel {
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+}
+
+.vodFormRow {
+    display: flex;
+    gap: dt.$spacing-sm;
+    align-items: center;
+}
+
+.vodInput {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.vodHint {
+    margin: 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.vodRemove {
+    align-self: flex-start;
+    border: none;
+    background: none;
+    padding: 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-danger);
+
+    &:hover:not(:disabled) {
+        text-decoration: underline;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
+
+// ---------- description ----------
+
+.descriptionSection {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+.descriptionMarkdown {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
+
+    :global(p:last-child) {
+        margin-bottom: 0;
+    }
+}
+
+.descriptionEmpty {
+    margin: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    font-style: italic;
+}
+
+.descriptionEditBtn {
+    align-self: flex-start;
+    border: none;
+    background: none;
+    padding: 0;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    color: var(--bs-primary);
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.descriptionInput {
+    width: 100%;
+    resize: vertical;
+}
+
+.descriptionActions {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+}
+
+.descriptionClear {
+    border: none;
+    background: none;
+    padding: 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-danger);
+
+    &:hover:not(:disabled) {
+        text-decoration: underline;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
