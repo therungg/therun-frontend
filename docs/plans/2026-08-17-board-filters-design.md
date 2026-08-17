@@ -173,5 +173,10 @@ param validation, `leaderboard-pager.test.tsx` mock updates.
 ## Sequencing
 1. Backend on `board-builtin-filters` → push to main (pipeline deploys) →
    15-minute monitor.
-2. Frontend on `board-filters` off main; degrades when facets are missing so
-   order is not load-bearing.
+2. Frontend on `board-filters` off main; degrades gracefully when facets are
+   absent (hides Country and the date floor). That is the *only* case order
+   isn't load-bearing for: the deployed backend on this branch's cut silently
+   ignores `video`/`from`/`to` and never applied `country` at all, so this
+   frontend branch must merge AFTER the backend branch (`board-builtin-
+   filters`) is merged and deployed — merging frontend first ships filter
+   controls that appear to apply but silently no-op against production.

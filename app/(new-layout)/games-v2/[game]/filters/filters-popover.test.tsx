@@ -146,6 +146,36 @@ describe('FiltersPopover (sheet with Apply)', () => {
         );
     });
 
+    it('Reset on an unfiltered board with a drafted change does not navigate, and re-disables Apply', () => {
+        render(
+            <FiltersPopover
+                defs={[]}
+                selectedVarFilters={{}}
+                builtins={off}
+                facets={facets}
+            />,
+        );
+        open();
+        fireEvent.click(screen.getByRole('radio', { name: /verified only/i }));
+        expect(
+            (
+                screen.getByRole('button', {
+                    name: /^apply$/i,
+                }) as HTMLButtonElement
+            ).disabled,
+        ).toBe(false);
+        fireEvent.click(screen.getByRole('button', { name: /reset filters/i }));
+        expect(nav.navigate).not.toHaveBeenCalled();
+        open();
+        expect(
+            (
+                screen.getByRole('button', {
+                    name: /^apply$/i,
+                }) as HTMLButtonElement
+            ).disabled,
+        ).toBe(true);
+    });
+
     it('date inputs carry the facet floor; country lists only facet countries', () => {
         render(
             <FiltersPopover
