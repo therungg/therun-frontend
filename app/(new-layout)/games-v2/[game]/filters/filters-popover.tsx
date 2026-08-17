@@ -9,7 +9,7 @@ import type {
 import styles from '../game-page.module.scss';
 import mastheadStyles from '../header/masthead.module.scss';
 import { usePopoverFocus } from '../shared/use-popover-focus';
-import type { BuiltinFilterState } from './builtin-params';
+import { BUILTIN_PARAM_KEYS, type BuiltinFilterState } from './builtin-params';
 import {
     draftCount,
     draftEquals,
@@ -42,7 +42,16 @@ export function FiltersPopover({
     const panelRef = useRef<HTMLDivElement>(null);
     const { applyFilters, isPending } = useBuiltinFilterNav();
 
-    const filterDefs = defs.filter((d) => d.role === 'filter');
+    // A mod-defined filter named e.g. `video` or `country` would collide with
+    // a built-in param of the same name — the built-in always wins the URL
+    // key, so a colliding def could never actually be selected.
+    const filterDefs = defs.filter(
+        (d) =>
+            d.role === 'filter' &&
+            !(BUILTIN_PARAM_KEYS as readonly string[]).includes(
+                d.nameNormalized,
+            ),
+    );
     const variableKeys = filterDefs.map((d) => d.nameNormalized);
     const applied = draftFromApplied(builtins, selectedVarFilters);
     const [draft, setDraft] = useState<FilterDraft>(applied);
@@ -72,6 +81,12 @@ export function FiltersPopover({
     const onReset = () => {
         const d = emptyDraft();
         setDraft(d);
+        // Nothing applied to clear — writing the empty draft would push the
+        // URL it is already on.
+        if (draftCount(applied) === 0) {
+            close();
+            return;
+        }
         applyFilters(d, variableKeys);
         close();
     };

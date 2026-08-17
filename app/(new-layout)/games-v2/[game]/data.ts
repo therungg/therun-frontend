@@ -260,6 +260,13 @@ async function loadSubcategoryValueCounts(
     const subDefs = defs.filter((d) => d.role === 'subcategory');
     if (subDefs.length === 0) return {};
 
+    // A date range takes the as-of-window path on the backend — an index-
+    // range scan over every attempt in the window plus a per-runner sort,
+    // not the cached flag-path lookup. Firing up to MAX_VALUE_COUNT_PROBES
+    // of those in parallel per render is the fan-out this guards against;
+    // the chips render fine without counts.
+    if (baseQuery.from || baseQuery.to) return {};
+
     const probes = subDefs.flatMap((def) =>
         def.values
             .map((bucket) => bucket[0])

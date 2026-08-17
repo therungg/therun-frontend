@@ -94,6 +94,9 @@ export function FiltersSheet({
     };
     const today = new Date().toISOString().slice(0, 10);
     const names = countries() as Record<string, string>;
+    const countryOptions = facets.countries
+        .map((code) => ({ code, name: names[code] ?? code }))
+        .sort((a, b) => a.name.localeCompare(b.name));
 
     return (
         <div className={styles.sheet}>
@@ -182,9 +185,9 @@ export function FiltersSheet({
                             }
                         >
                             <option value="">Any</option>
-                            {facets.countries.map((c) => (
-                                <option key={c} value={c}>
-                                    {names[c] ?? c}
+                            {countryOptions.map((c) => (
+                                <option key={c.code} value={c.code}>
+                                    {c.name}
                                 </option>
                             ))}
                         </select>
