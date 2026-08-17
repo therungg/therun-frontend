@@ -373,6 +373,7 @@ export function VodReviewWorkbench({
                         ),
                     )
                 }
+                readOnly={!isMod}
             />
 
             {isMod && (
