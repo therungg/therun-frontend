@@ -127,6 +127,16 @@
     margin-bottom: 0;
 }
 
+.pinFrames {
+    margin-top: dt.$spacing-sm;
+
+    > summary {
+        cursor: pointer;
+        font-size: dt.$font-size-sm;
+        color: var(--bs-secondary-color);
+    }
+}
+
 // ---- Runner step -----------------------------------------------
 .searchResults {
     display: flex;

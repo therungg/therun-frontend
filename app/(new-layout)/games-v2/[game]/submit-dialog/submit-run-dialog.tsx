@@ -10,8 +10,10 @@ import type {
     ResolvedCategory,
     ResolvedGroup,
     VariableRow,
+    VodReviewPatch,
 } from '../../../../../types/leaderboards.types';
 import type { ModTiming } from '../../../../../types/moderation.types';
+import { detectVod } from '../leaderboard/vod-review/player/types';
 import { createManualTimeAction } from '../manage/moderation/shared/actions/manual-times.action';
 import type { EmulatorPolicy } from '../rules/rules-panel';
 import { BoardDialog } from '../shared/board-dialog';
@@ -230,6 +232,7 @@ export function SubmitRunDialog({
     const [runDate, setRunDate] = useState<string>(todayISODate());
     const [vodUrl, setVodUrl] = useState('');
     const [vodTouched, setVodTouched] = useState(false);
+    const [vodReview, setVodReview] = useState<VodReviewPatch | null>(null);
 
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -294,6 +297,7 @@ export function SubmitRunDialog({
         setRunDate(todayISODate());
         setVodUrl('');
         setVodTouched(false);
+        setVodReview(null);
         setError(null);
         setResult(null);
     };
@@ -309,6 +313,15 @@ export function SubmitRunDialog({
                 ? { timing: otherTiming(primaryTiming), timeMs: secondaryMs }
                 : null;
 
+        // A lone start (or end) marker isn't worth storing — only a matched
+        // pair produces a retime a moderator can act on.
+        const pinnedReview =
+            vodReview &&
+            vodReview.markers.some((m) => m.kind === 'start') &&
+            vodReview.markers.some((m) => m.kind === 'end')
+                ? vodReview
+                : undefined;
+
         // A non-moderator never reaches the runner step, so `choice` is null
         // and they always take the self path. A moderator submitting for
         // themselves goes through the mod path with their own user id — same
@@ -323,6 +336,7 @@ export function SubmitRunDialog({
                 secondary,
                 evidenceUrl: vodUrl.trim() || null,
                 runDate: runDate || null,
+                vodReview: pinnedReview,
                 reason: 'Added via Submit a run',
             });
             setSubmitting(false);
@@ -346,6 +360,7 @@ export function SubmitRunDialog({
                 subcategoryKey.length > 0 ? subcategoryKey : undefined,
             evidenceUrl: vodUrl.trim() || null,
             runDate: runDate || null,
+            vodReview: pinnedReview,
         });
         setSubmitting(false);
         if ('error' in res) {
@@ -522,11 +537,19 @@ export function SubmitRunDialog({
                                 onRunDateChange={setRunDate}
                                 vodUrl={vodUrl}
                                 onVodChange={(v) => {
+                                    if (
+                                        detectVod(v)?.id !==
+                                        detectVod(vodUrl)?.id
+                                    ) {
+                                        setVodReview(null);
+                                    }
                                     setVodUrl(v);
                                     setVodTouched(true);
                                 }}
                                 vodTouched={vodTouched}
                                 onVodBlur={() => setVodTouched(true)}
+                                vodReview={vodReview}
+                                onVodReviewChange={setVodReview}
                             />
                         )}
 
