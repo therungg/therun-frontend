@@ -119,6 +119,10 @@ export interface RecentPb {
     // backend omission doesn't break the type — consumers must fall back
     // when it's missing.
     runId?: number | null;
+    // Backend `FINISHED_RUN_SELECT.userPicture`: the runner's Twitch avatar,
+    // nulled for anonymized runners under the same predicate as the name.
+    // Optional for the cast-without-mapping reason above.
+    userPicture?: string | null;
 }
 
 // Variable definition shared between the admin CRUD endpoint and the public

@@ -90,6 +90,7 @@ export function RecentPbsPanel({ pbs, gameSlug, categories, board }: Props) {
                                     <span className={styles.rowUser}>
                                         <RunnerAvatar
                                             name={p.username}
+                                            picture={p.userPicture}
                                             size="xs"
                                         />
                                         <UserLink
