@@ -379,6 +379,9 @@ export function LeaderboardRow({
                             <UserLink
                                 username={entry.runnerName}
                                 url={undefined}
+                                // A guest has no account behind the name, so
+                                // there is no card to open.
+                                hoverCard={!entry.isGuest}
                                 // The row already holds everything the hover
                                 // card's identity line needs, so it paints
                                 // before the card's own fetch resolves.
