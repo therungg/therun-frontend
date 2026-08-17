@@ -160,5 +160,8 @@ describe('VodReviewWorkbench (runner)', () => {
             fps: 60,
             markers: [{ kind: 'start', frame: 120 }],
         });
+        expect(
+            screen.queryByRole('button', { name: /remove .* marker/i }),
+        ).toBeNull();
     });
 });
