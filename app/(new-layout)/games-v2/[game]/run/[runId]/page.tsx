@@ -77,7 +77,9 @@ export default async function RunDetailPage({ params }: PageProps) {
     // mod (mods read restrictions on their own surfaces, not here).
     const needsViewerRead =
         (run.userId == null && !run.isGuest) ||
-        (!isMod && isSameRunner(session.username, run.runnerName));
+        (!isMod &&
+            !run.isGuest &&
+            isSameRunner(session.username, run.runnerName));
     if (session.id && needsViewerRead) {
         const asViewer = await getRunByIdAsViewer(runId, session.id).catch(
             () => null,

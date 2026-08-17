@@ -58,7 +58,12 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
     // (descriptionRestriction). Re-read as this viewer when the visitor owns
     // the time and isn't a mod, so the revoke note is accurate.
     let detail = mt;
-    if (session.id && !isMod && isSameRunner(session.username, mt.runnerName)) {
+    if (
+        session.id &&
+        !isMod &&
+        !mt.isGuest &&
+        isSameRunner(session.username, mt.runnerName)
+    ) {
         const asViewer = await getManualTimeByIdAsViewer(
             manualTimeId,
             session.id,
