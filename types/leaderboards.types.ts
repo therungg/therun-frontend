@@ -304,6 +304,8 @@ export interface RunDetail {
     verifiedBy?: RunOriginRef | null;
     verifiedAt?: string | null;
     rejectionReason?: string | null;
+    description?: string | null;
+    descriptionRevoked?: boolean;
 }
 
 export interface RunOriginRef {
@@ -345,6 +347,8 @@ export interface ManualTimeDetail {
      *  remains the system clock). */
     runDate: string | null;
     origin: RunOrigin;
+    description?: string | null;
+    descriptionRevoked?: boolean;
 }
 
 // Submit warnings (no UI consumer in this app yet — see plan coordination notes).
