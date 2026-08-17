@@ -15,6 +15,12 @@ describe('detectVod', () => {
         expect(
             detectVod('https://www.twitch.tv/videos/123456789?t=1h2m'),
         ).toEqual({ kind: 'twitch', id: '123456789' });
+        // short id: without the youtu-guard, youtubeParser's regex matches `v/` in `tv/`
+        // (capture 'ideos/12345' is 11 chars) and misclassifies this as YouTube.
+        expect(detectVod('https://www.twitch.tv/videos/12345')).toEqual({
+            kind: 'twitch',
+            id: '12345',
+        });
         expect(detectVod('https://clips.twitch.tv/SomeClip')).toBeNull();
         expect(detectVod('https://twitch.tv/somechannel')).toBeNull();
     });
