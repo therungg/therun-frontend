@@ -951,36 +951,148 @@ git add "app/(new-layout)/games-v2/[game]/filters/use-builtin-filter-nav.ts"
 git commit -m "feat(board): one nav path for built-in filter params"
 ```
 
-### Task B4: Filters popover — always rendered, built-in rows
+### Task B4: Filters popover — always rendered, two-column sheet with Reset / Apply (mockup variant B)
+
+Joey picked mockup **B** (2026-08-17): a two-column grid of icon-labelled groups, the category's own filters as a full-width pill row, and a **Reset filters / Apply** foot. Changes are drafted locally and written to the URL in ONE navigation on Apply (or Reset). This supersedes the earlier "every control navigates immediately" text; the band chips (B5) still remove one filter immediately.
 
 **Files:**
+- Modify: `app/(new-layout)/games-v2/[game]/filters/use-builtin-filter-nav.ts` (add `applyFilters`)
+- Create: `app/(new-layout)/games-v2/[game]/filters/filter-draft.ts` (+ `filter-draft.test.ts`)
+- Create: `app/(new-layout)/games-v2/[game]/filters/filters-sheet.tsx`
 - Modify: `app/(new-layout)/games-v2/[game]/filters/filters-popover.tsx` (rewrite)
-- Create: `app/(new-layout)/games-v2/[game]/filters/builtin-filter-rows.tsx`
 - Create: `app/(new-layout)/games-v2/[game]/filters/filters-popover.module.scss`
 - Create: `app/(new-layout)/games-v2/[game]/filters/filters-popover.test.tsx`
 - Delete: `app/(new-layout)/games-v2/[game]/filters/verified-toggle.tsx`
-- Modify: `app/(new-layout)/games-v2/[game]/leaderboard/leaderboard-pager.tsx:17-18, 580-586` and `leaderboard-pager.test.tsx:44-45`
+- Delete: `app/(new-layout)/games-v2/[game]/filters/variable-pills.tsx` and `variable-pill.tsx` — the popover was their only consumer (verify with a search before deleting; if anything else imports them, keep them and note it)
+- Modify: `app/(new-layout)/games-v2/[game]/leaderboard/leaderboard-pager.tsx` (props + toolbar) and `leaderboard-pager.test.tsx`
+- Modify: `app/(new-layout)/games-v2/[game]/game-page.tsx` (pass `builtins`/`facets` to the pager)
 
 **Interfaces:**
-- Consumes: B1 (`BuiltinFilterState`, `countBuiltinFilters`), B3 (`useBuiltinFilterNav`), `BoardFacets`, `VariablePills`, `usePopoverFocus`, `countries()` from `~src/common/countries`.
+- Consumes: B1 `BuiltinFilterState`, `VideoFilter`, `countBuiltinFilters`; B3 `useBuiltinFilterNav` (`useBoardNav` underneath: `navigate(url, key)`, `isPending`); `BoardFacets`; `VariableRow` (`role`, `name`, `nameNormalized`, `values: string[][]` — `values[i][0]` is the canonical value); `usePopoverFocus`; `countries()` from `~src/common/countries`; `usePathname`/`useSearchParams`.
 - Produces:
-```tsx
-export function FiltersPopover(props: {
-    defs: VariableRow[];
-    selectedVarFilters: Record<string, string>;
-    builtins: BuiltinFilterState;
-    facets: BoardFacets;
-}): JSX.Element;   // never null
-export function BuiltinFilterRows(props: { builtins: BuiltinFilterState; facets: BoardFacets }): JSX.Element;
+```ts
+// filter-draft.ts
+export interface FilterDraft { builtins: BuiltinFilterState; varFilters: Record<string, string[]> }
+export function draftFromApplied(builtins: BuiltinFilterState, selectedVarFilters: Record<string, string>): FilterDraft; // splits 'a,b' → ['a','b']
+export function emptyDraft(): FilterDraft;
+export function draftEquals(a: FilterDraft, b: FilterDraft): boolean;
+export function draftCount(d: FilterDraft): number; // countBuiltinFilters + total selected variable values
+export function applyDraftToParams(sp: URLSearchParams, d: FilterDraft, variableKeys: string[]): void; // sets/deletes verified,video,from,to,country + each variable key; deletes 'page'
+// use-builtin-filter-nav.ts (added)
+applyFilters: (d: FilterDraft, variableKeys: string[]) => void; // one navigate, pending key 'builtin:apply'
+// filters-popover.tsx
+export function FiltersPopover(props: { defs: VariableRow[]; selectedVarFilters: Record<string,string>; builtins: BuiltinFilterState; facets: BoardFacets }): JSX.Element; // never null
+// filters-sheet.tsx (the panel body, pure-ish: draft in, callbacks out)
+export function FiltersSheet(props: { draft: FilterDraft; onChange: (d: FilterDraft) => void; onApply: () => void; onReset: () => void; dirty: boolean; facets: BoardFacets; filterDefs: VariableRow[]; isPending: boolean }): JSX.Element;
 ```
 
-- [ ] **Step 1: Write the failing test**
+- [ ] **Step 1: Failing tests for the draft helpers**
+
+```ts
+// filter-draft.test.ts
+import { describe, expect, it } from 'vitest';
+import { applyDraftToParams, draftCount, draftEquals, draftFromApplied, emptyDraft } from './filter-draft';
+
+const off = { verified: false, video: null, from: null, to: null, country: null };
+
+describe('filter-draft', () => {
+    it('builds a draft from applied state, splitting multi-values', () => {
+        const d = draftFromApplied({ ...off, verified: true }, { route: 'a,b', platform: '' });
+        expect(d.varFilters).toEqual({ route: ['a', 'b'] });
+        expect(d.builtins.verified).toBe(true);
+    });
+    it('counts built-ins plus every selected value', () => {
+        expect(draftCount(draftFromApplied({ ...off, from: '2024-01-01', to: '2024-06-30', country: 'NL' }, { route: 'a,b' }))).toBe(4);
+        expect(draftCount(emptyDraft())).toBe(0);
+    });
+    it('equality is structural', () => {
+        const a = draftFromApplied({ ...off, video: 'required' }, { route: 'a' });
+        const b = draftFromApplied({ ...off, video: 'required' }, { route: 'a' });
+        expect(draftEquals(a, b)).toBe(true);
+        expect(draftEquals(a, emptyDraft())).toBe(false);
+    });
+    it('writes every key to the params and drops page', () => {
+        const sp = new URLSearchParams('category=x&page=3&route=z&verified=true');
+        applyDraftToParams(sp, { builtins: { ...off, video: 'missing', from: '2024-01-01', to: null, country: 'nl' }, varFilters: { route: ['a', 'b'] } }, ['route', 'platform']);
+        expect(sp.toString()).toBe('category=x&route=a%2Cb&video=missing&from=2024-01-01&country=NL');
+    });
+});
+```
+(`URLSearchParams.toString()` encodes the comma as `%2C` — the existing `useFilterNav` produced the same, and the backend splits it. Country is upper-cased on write.)
+
+- [ ] **Step 2: Run** `npx vitest run "app/(new-layout)/games-v2/\[game\]/filters/filter-draft.test.ts"` → FAIL (module not found).
+
+- [ ] **Step 3: Implement `filter-draft.ts` and extend the nav hook**
+
+```ts
+// filter-draft.ts
+import { BUILTIN_PARAM_KEYS, type BuiltinFilterState, countBuiltinFilters } from './builtin-params';
+
+/** Local, not-yet-applied state of the Filters sheet. The URL stays the truth; the draft is what Apply writes there in one navigation. */
+export interface FilterDraft {
+    builtins: BuiltinFilterState;
+    varFilters: Record<string, string[]>;
+}
+
+export function emptyDraft(): FilterDraft {
+    return { builtins: { verified: false, video: null, from: null, to: null, country: null }, varFilters: {} };
+}
+
+export function draftFromApplied(builtins: BuiltinFilterState, selectedVarFilters: Record<string, string>): FilterDraft {
+    const varFilters: Record<string, string[]> = {};
+    for (const [k, v] of Object.entries(selectedVarFilters)) {
+        const values = v.split(',').filter(Boolean);
+        if (values.length > 0) varFilters[k] = values;
+    }
+    return { builtins: { ...builtins }, varFilters };
+}
+
+export function draftCount(d: FilterDraft): number {
+    return countBuiltinFilters(d.builtins) + Object.values(d.varFilters).reduce((n, v) => n + v.length, 0);
+}
+
+export function draftEquals(a: FilterDraft, b: FilterDraft): boolean {
+    for (const k of BUILTIN_PARAM_KEYS) if (a.builtins[k] !== b.builtins[k]) return false;
+    const keys = new Set([...Object.keys(a.varFilters), ...Object.keys(b.varFilters)]);
+    for (const k of keys) {
+        const av = [...(a.varFilters[k] ?? [])].sort();
+        const bv = [...(b.varFilters[k] ?? [])].sort();
+        if (av.length !== bv.length || av.some((v, i) => v !== bv[i])) return false;
+    }
+    return true;
+}
+
+export function applyDraftToParams(sp: URLSearchParams, d: FilterDraft, variableKeys: string[]): void {
+    const b = d.builtins;
+    if (b.verified) sp.set('verified', 'true'); else sp.delete('verified');
+    if (b.video) sp.set('video', b.video); else sp.delete('video');
+    if (b.from) sp.set('from', b.from); else sp.delete('from');
+    if (b.to) sp.set('to', b.to); else sp.delete('to');
+    if (b.country) sp.set('country', b.country.toUpperCase()); else sp.delete('country');
+    for (const k of variableKeys) {
+        const values = d.varFilters[k] ?? [];
+        if (values.length > 0) sp.set(k, values.join(',')); else sp.delete(k);
+    }
+    sp.delete('page');
+}
+```
+Note: `URLSearchParams.set` on an existing key keeps its position, so the expected string in the test depends on the input order — the test's input already accounts for that. If your output differs only in key order, compare via `Object.fromEntries(sp)` in the test instead of the string.
+
+In `use-builtin-filter-nav.ts` add:
+```ts
+const applyFilters = (d: FilterDraft, variableKeys: string[]) =>
+    push((sp) => applyDraftToParams(sp, d, variableKeys), 'builtin:apply');
+```
+(import `FilterDraft`/`applyDraftToParams` from `./filter-draft`; return it alongside `setBuiltin`/`setRange`.)
+
+- [ ] **Step 4: Failing popover test**
 
 ```tsx
 // filters-popover.test.tsx
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { VariableRow } from '../../../../../types/leaderboards.types';
 import { FiltersPopover } from './filters-popover';
 
 const nav = vi.hoisted(() => ({ navigate: vi.fn() }));
@@ -991,214 +1103,204 @@ vi.mock('next/navigation', () => ({
 vi.mock('./use-board-nav', () => ({
     useBoardNav: () => ({ navigate: nav.navigate, isPending: false, pendingKey: null }),
 }));
-vi.mock('./variable-pills', () => ({
-    VariablePills: () => <div data-testid="variable-pills" />,
-}));
 
 const off = { verified: false, video: null, from: null, to: null, country: null };
 const facets = { countries: ['DE', 'NL'], minDate: '2019-04-02' };
+const route: VariableRow = { name: 'Route', nameNormalized: 'route', role: 'filter', values: [['Standard'], ['Cannonless']] } as VariableRow;
 
-const open = () => fireEvent.click(screen.getByRole('button', { name: /filters/i }));
+const open = () => fireEvent.click(screen.getByRole('button', { name: /^filters/i }));
+const apply = () => fireEvent.click(screen.getByRole('button', { name: /^apply$/i }));
 
-describe('FiltersPopover', () => {
+describe('FiltersPopover (sheet with Apply)', () => {
     beforeEach(() => nav.navigate.mockReset());
 
-    it('renders the button with no variable filters and no active count', () => {
+    it('renders the trigger with no category filters and no count', () => {
         render(<FiltersPopover defs={[]} selectedVarFilters={{}} builtins={off} facets={facets} />);
-        const btn = screen.getByRole('button', { name: /filters/i });
-        expect(btn).toBeTruthy();
+        const btn = screen.getByRole('button', { name: /^filters/i });
         expect(btn.textContent).not.toMatch(/\d/);
     });
 
-    it('badge counts built-ins + variable values', () => {
-        render(<FiltersPopover defs={[]} selectedVarFilters={{ route: 'a,b' }}
+    it('badge counts applied built-ins + category filter values', () => {
+        render(<FiltersPopover defs={[route]} selectedVarFilters={{ route: 'Standard,Cannonless' }}
             builtins={{ ...off, verified: true, from: '2024-01-01' }} facets={facets} />);
-        expect(screen.getByRole('button', { name: /filters/i }).textContent).toContain('4');
+        expect(screen.getByRole('button', { name: /^filters/i }).textContent).toContain('4');
     });
 
-    it('verified row toggles ?verified=true and drops page', () => {
-        render(<FiltersPopover defs={[]} selectedVarFilters={{}} builtins={off} facets={facets} />);
+    it('nothing navigates until Apply; Apply writes everything in one URL and drops page', () => {
+        render(<FiltersPopover defs={[route]} selectedVarFilters={{}} builtins={off} facets={facets} />);
         open();
-        fireEvent.click(screen.getByRole('switch', { name: /verified runs only/i }));
-        expect(nav.navigate).toHaveBeenCalledWith('/games-v2/sm64?category=120-star&verified=true', 'builtin:verified');
+        fireEvent.click(screen.getByRole('radio', { name: /verified only/i }));
+        fireEvent.click(screen.getByRole('radio', { name: /^missing$/i }));
+        fireEvent.change(screen.getByLabelText(/^from$/i), { target: { value: '2024-01-01' } });
+        fireEvent.change(screen.getByLabelText(/^country$/i), { target: { value: 'NL' } });
+        fireEvent.click(screen.getByRole('button', { name: /^cannonless$/i }));
+        expect(nav.navigate).not.toHaveBeenCalled();
+        apply();
+        expect(nav.navigate).toHaveBeenCalledTimes(1);
+        const [url, key] = nav.navigate.mock.calls[0];
+        expect(key).toBe('builtin:apply');
+        const sp = new URL(`http://x${url}`).searchParams;
+        expect(Object.fromEntries(sp)).toEqual({ category: '120-star', verified: 'true', video: 'missing', from: '2024-01-01', country: 'NL', route: 'Cannonless' });
     });
 
-    it('video segmented control sets and clears ?video', () => {
+    it('Apply is disabled while the draft equals what is applied', () => {
         render(<FiltersPopover defs={[]} selectedVarFilters={{}} builtins={{ ...off, video: 'required' }} facets={facets} />);
         open();
-        fireEvent.click(screen.getByRole('radio', { name: /^missing$/i }));
-        expect(nav.navigate).toHaveBeenLastCalledWith('/games-v2/sm64?category=120-star&video=missing', 'builtin:video');
+        expect((screen.getByRole('button', { name: /^apply$/i }) as HTMLButtonElement).disabled).toBe(true);
         fireEvent.click(screen.getByRole('radio', { name: /^any$/i }));
-        expect(nav.navigate).toHaveBeenLastCalledWith('/games-v2/sm64?category=120-star', 'builtin:video');
+        expect((screen.getByRole('button', { name: /^apply$/i }) as HTMLButtonElement).disabled).toBe(false);
     });
 
-    it('date inputs carry the facet floor and navigate on change', () => {
-        render(<FiltersPopover defs={[]} selectedVarFilters={{}} builtins={off} facets={facets} />);
+    it('Reset filters clears every filter in one navigation', () => {
+        render(<FiltersPopover defs={[route]} selectedVarFilters={{ route: 'Standard' }} builtins={{ ...off, verified: true, country: 'NL' }} facets={facets} />);
         open();
-        const from = screen.getByLabelText(/^from$/i) as HTMLInputElement;
-        expect(from.min).toBe('2019-04-02');
-        fireEvent.change(from, { target: { value: '2024-01-01' } });
-        expect(nav.navigate).toHaveBeenCalledWith('/games-v2/sm64?category=120-star&from=2024-01-01', 'builtin:range');
+        fireEvent.click(screen.getByRole('button', { name: /reset filters/i }));
+        expect(nav.navigate).toHaveBeenCalledWith('/games-v2/sm64?category=120-star', 'builtin:apply');
     });
 
-    it('country select lists only facet countries and navigates', () => {
+    it('date inputs carry the facet floor; country lists only facet countries', () => {
         render(<FiltersPopover defs={[]} selectedVarFilters={{}} builtins={off} facets={facets} />);
         open();
+        expect((screen.getByLabelText(/^from$/i) as HTMLInputElement).min).toBe('2019-04-02');
         const sel = screen.getByLabelText(/^country$/i) as HTMLSelectElement;
         expect(Array.from(sel.options).map((o) => o.value)).toEqual(['', 'DE', 'NL']);
-        fireEvent.change(sel, { target: { value: 'NL' } });
-        expect(nav.navigate).toHaveBeenCalledWith('/games-v2/sm64?category=120-star&country=NL', 'builtin:country');
     });
 
-    it('hides the country row when facets are empty; still shows the rest', () => {
+    it('hides the country group when facets are empty; the rest still renders', () => {
         render(<FiltersPopover defs={[]} selectedVarFilters={{}} builtins={off} facets={{ countries: [], minDate: null }} />);
         open();
         expect(screen.queryByLabelText(/^country$/i)).toBeNull();
-        expect(screen.getByRole('switch', { name: /verified runs only/i })).toBeTruthy();
+        expect(screen.getByRole('radio', { name: /verified only/i })).toBeTruthy();
     });
 });
 ```
 
-- [ ] **Step 2: Run to verify it fails**
+- [ ] **Step 5: Run** the popover test → FAIL.
 
-Run: `npx vitest run "app/(new-layout)/games-v2/\[game\]/filters/filters-popover.test.tsx"`
-Expected: FAIL (props unknown; popover returns null with no defs).
+- [ ] **Step 6: Implement the sheet + popover**
 
-- [ ] **Step 3: Implement the rows**
+`filters-sheet.tsx` — the panel body. Layout is a 2-column grid of groups; each group = icon + uppercase label, then its control. Verification and Video are solid segmented controls (`role="radiogroup"` with `role="radio"` buttons, `aria-checked`); Date range = two `<input type="date">` with a caption; Country = `<select>` (hidden when `facets.countries` is empty); the category's filters each render as a full-width group of multi-select pill buttons (`aria-pressed`). Foot: `Reset filters` (ghost) + `Apply` (primary, `disabled={!dirty}`).
 
 ```tsx
-// builtin-filter-rows.tsx
 'use client';
 
-import type { BoardFacets } from '../../../../../types/leaderboards.types';
+import type { BoardFacets, VariableRow } from '../../../../../types/leaderboards.types';
 import { countries } from '~src/common/countries';
-import type { BuiltinFilterState, VideoFilter } from './builtin-params';
+import mastheadStyles from '../header/masthead.module.scss';
+import type { VideoFilter } from './builtin-params';
+import type { FilterDraft } from './filter-draft';
 import styles from './filters-popover.module.scss';
-import { useBuiltinFilterNav } from './use-builtin-filter-nav';
 
 interface Props {
-    builtins: BuiltinFilterState;
+    draft: FilterDraft;
+    onChange: (d: FilterDraft) => void;
+    onApply: () => void;
+    onReset: () => void;
+    dirty: boolean;
     facets: BoardFacets;
+    filterDefs: VariableRow[];
+    isPending: boolean;
 }
 
-const VIDEO_OPTIONS: Array<{ value: VideoFilter | ''; label: string }> = [
-    { value: '', label: 'Any' },
-    { value: 'required', label: 'Required' },
-    { value: 'missing', label: 'Missing' },
+const VIDEO: Array<{ value: VideoFilter | ''; label: string }> = [
+    { value: '', label: 'Any' }, { value: 'required', label: 'Required' }, { value: 'missing', label: 'Missing' },
 ];
 
-/**
- * The built-in rows of the Filters popover: Verified · Video · Date range ·
- * Country. Each control writes the URL immediately through
- * useBuiltinFilterNav — the URL is the state, the board applies optimistically.
- */
-export function BuiltinFilterRows({ builtins, facets }: Props) {
-    const { setBuiltin, setRange, isPending } = useBuiltinFilterNav();
+function Segmented<T extends string>({ label, id, value, options, onChange }: {
+    label: string; id: string; value: T; options: Array<{ value: T; label: string }>; onChange: (v: T) => void;
+}) {
+    return (
+        <div className={styles.segmented} role="radiogroup" aria-labelledby={id}>
+            {options.map((o) => (
+                <button key={o.value || 'any'} type="button" role="radio" aria-checked={value === o.value}
+                    className={`${styles.segment} ${value === o.value ? styles.segmentOn : ''}`}
+                    onClick={() => onChange(o.value)}>
+                    {o.label}
+                </button>
+            ))}
+            <span className="visually-hidden">{label}</span>
+        </div>
+    );
+}
+
+export function FiltersSheet({ draft, onChange, onApply, onReset, dirty, facets, filterDefs, isPending }: Props) {
+    const b = draft.builtins;
+    const setB = (patch: Partial<FilterDraft['builtins']>) => onChange({ ...draft, builtins: { ...b, ...patch } });
+    const toggleVar = (key: string, value: string) => {
+        const cur = draft.varFilters[key] ?? [];
+        const next = cur.includes(value) ? cur.filter((v) => v !== value) : [...cur, value];
+        const varFilters = { ...draft.varFilters };
+        if (next.length) varFilters[key] = next; else delete varFilters[key];
+        onChange({ ...draft, varFilters });
+    };
     const today = new Date().toISOString().slice(0, 10);
     const names = countries() as Record<string, string>;
 
     return (
-        <div className={styles.rows}>
-            <div className={styles.row}>
-                <span className={styles.rowLabel} id="flt-verified-label">
-                    Verified runs only
-                </span>
-                <button
-                    type="button"
-                    role="switch"
-                    aria-checked={builtins.verified}
-                    aria-labelledby="flt-verified-label"
-                    disabled={isPending}
-                    className={`${styles.switch} ${builtins.verified ? styles.switchOn : ''}`}
-                    onClick={() => setBuiltin('verified', builtins.verified ? null : 'true')}
-                >
-                    <span className={styles.switchKnob} aria-hidden />
-                </button>
+        <div className={styles.sheet}>
+            <div className={styles.grid}>
+                <section className={styles.group}>
+                    <h3 className={styles.groupLabel} id="flt-verified">{/* check icon */}<CheckIcon />Verification</h3>
+                    <Segmented id="flt-verified" label="Verification" value={b.verified ? 'verified' : 'all'}
+                        options={[{ value: 'all', label: 'All runs' }, { value: 'verified', label: 'Verified only' }]}
+                        onChange={(v) => setB({ verified: v === 'verified' })} />
+                </section>
+                <section className={styles.group}>
+                    <h3 className={styles.groupLabel} id="flt-video"><VideoIcon />Video</h3>
+                    <Segmented id="flt-video" label="Video" value={b.video ?? ''} options={VIDEO}
+                        onChange={(v) => setB({ video: v || null })} />
+                </section>
+                <section className={styles.group}>
+                    <h3 className={styles.groupLabel}><CalendarIcon />Date range</h3>
+                    <div className={styles.dates}>
+                        <label className={styles.dateField}><span>From</span>
+                            <input type="date" value={b.from ?? ''} min={facets.minDate ?? undefined} max={b.to ?? today}
+                                onChange={(e) => setB({ from: e.target.value || null })} /></label>
+                        <span className={styles.dash} aria-hidden>–</span>
+                        <label className={styles.dateField}><span>To</span>
+                            <input type="date" value={b.to ?? ''} min={b.from ?? facets.minDate ?? undefined} max={today}
+                                onChange={(e) => setB({ to: e.target.value || null })} /></label>
+                    </div>
+                    <p className={styles.hint}>The board as it stood, counting only runs finished in this range.</p>
+                </section>
+                {facets.countries.length > 0 && (
+                    <section className={styles.group}>
+                        <label className={styles.groupLabel} htmlFor="flt-country"><GlobeIcon />Country</label>
+                        <select id="flt-country" className={styles.select} value={b.country ?? ''}
+                            onChange={(e) => setB({ country: e.target.value || null })}>
+                            <option value="">Any</option>
+                            {facets.countries.map((c) => <option key={c} value={c}>{names[c] ?? c}</option>)}
+                        </select>
+                    </section>
+                )}
+                {filterDefs.map((def) => (
+                    <section key={def.nameNormalized} className={`${styles.group} ${styles.groupWide}`}>
+                        <h3 className={styles.groupLabel}>{def.name}</h3>
+                        <div className={styles.pills} role="group" aria-label={def.name}>
+                            {def.values.map((bucket) => {
+                                const v = bucket[0];
+                                const on = (draft.varFilters[def.nameNormalized] ?? []).includes(v);
+                                return (
+                                    <button key={v} type="button" aria-pressed={on}
+                                        className={`${mastheadStyles.chip} ${on ? mastheadStyles.chipActive : ''}`}
+                                        onClick={() => toggleVar(def.nameNormalized, v)}>{v}</button>
+                                );
+                            })}
+                        </div>
+                    </section>
+                ))}
             </div>
-
-            <div className={styles.row}>
-                <span className={styles.rowLabel} id="flt-video-label">
-                    Video
-                </span>
-                <div className={styles.segmented} role="radiogroup" aria-labelledby="flt-video-label">
-                    {VIDEO_OPTIONS.map((o) => {
-                        const active = (builtins.video ?? '') === o.value;
-                        return (
-                            <button
-                                key={o.value || 'any'}
-                                type="button"
-                                role="radio"
-                                aria-checked={active}
-                                disabled={isPending}
-                                className={`${styles.segment} ${active ? styles.segmentActive : ''}`}
-                                onClick={() => setBuiltin('video', o.value || null)}
-                            >
-                                {o.label}
-                            </button>
-                        );
-                    })}
-                </div>
+            <div className={styles.foot}>
+                <button type="button" className={styles.reset} onClick={onReset} disabled={isPending}>Reset filters</button>
+                <button type="button" className={styles.apply} onClick={onApply} disabled={!dirty || isPending}>Apply</button>
             </div>
-
-            <div className={styles.row}>
-                <span className={styles.rowLabel}>Date range</span>
-                <div className={styles.dates}>
-                    <label className={styles.dateField}>
-                        <span>From</span>
-                        <input
-                            type="date"
-                            value={builtins.from ?? ''}
-                            min={facets.minDate ?? undefined}
-                            max={builtins.to ?? today}
-                            disabled={isPending}
-                            onChange={(e) => setRange(e.target.value || null, builtins.to)}
-                        />
-                    </label>
-                    <label className={styles.dateField}>
-                        <span>To</span>
-                        <input
-                            type="date"
-                            value={builtins.to ?? ''}
-                            min={builtins.from ?? facets.minDate ?? undefined}
-                            max={today}
-                            disabled={isPending}
-                            onChange={(e) => setRange(builtins.from, e.target.value || null)}
-                        />
-                    </label>
-                </div>
-                <p className={styles.rowHint}>
-                    The board as it stood counting only runs finished in this range.
-                </p>
-            </div>
-
-            {facets.countries.length > 0 && (
-                <div className={styles.row}>
-                    <label className={styles.rowLabel} htmlFor="flt-country">
-                        Country
-                    </label>
-                    <select
-                        id="flt-country"
-                        className={styles.select}
-                        value={builtins.country ?? ''}
-                        disabled={isPending}
-                        onChange={(e) => setBuiltin('country', e.target.value || null)}
-                    >
-                        <option value="">Any</option>
-                        {facets.countries.map((c) => (
-                            <option key={c} value={c}>
-                                {names[c] ?? c}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-            )}
         </div>
     );
 }
 ```
+Icons: use `react-bootstrap-icons` (`CheckCircle`, `CameraVideo`, `Calendar3`, `Globe2` at size 13, `aria-hidden`) instead of the `<CheckIcon/>` placeholders above — the package is already a dependency. If the project has no `visually-hidden` utility class, drop that span (the `aria-labelledby` on the radiogroup already names it).
 
-`filters-popover.tsx` becomes:
-
+`filters-popover.tsx`:
 ```tsx
 'use client';
 
@@ -1208,73 +1310,54 @@ import type { BoardFacets, VariableRow } from '../../../../../types/leaderboards
 import styles from '../game-page.module.scss';
 import mastheadStyles from '../header/masthead.module.scss';
 import { usePopoverFocus } from '../shared/use-popover-focus';
-import { BuiltinFilterRows } from './builtin-filter-rows';
-import { type BuiltinFilterState, countBuiltinFilters } from './builtin-params';
+import type { BuiltinFilterState } from './builtin-params';
+import { draftCount, draftEquals, draftFromApplied, emptyDraft, type FilterDraft } from './filter-draft';
 import panelStyles from './filters-popover.module.scss';
-import { VariablePills } from './variable-pills';
+import { FiltersSheet } from './filters-sheet';
+import { useBuiltinFilterNav } from './use-builtin-filter-nav';
 
-interface Props {
-    defs: VariableRow[];
-    selectedVarFilters: Record<string, string>;
-    builtins: BuiltinFilterState;
-    facets: BoardFacets;
-}
+interface Props { defs: VariableRow[]; selectedVarFilters: Record<string, string>; builtins: BuiltinFilterState; facets: BoardFacets }
 
-// Always rendered: the built-in rows (Verified / Video / Date range / Country)
-// exist on every board; the per-category filter pills join below when the
-// category defines any.
+// Always rendered. Opening seeds a local draft from the applied state; Apply
+// writes the whole draft to the URL in one navigation (Reset writes an empty
+// one). The badge shows what is APPLIED, not what is drafted.
 export function FiltersPopover({ defs, selectedVarFilters, builtins, facets }: Props) {
     const [open, setOpen] = useState(false);
     const rootRef = useRef<HTMLDivElement>(null);
     const panelRef = useRef<HTMLDivElement>(null);
+    const { applyFilters, isPending } = useBuiltinFilterNav();
 
     const filterDefs = defs.filter((d) => d.role === 'filter');
-    const varCount = Object.values(selectedVarFilters).reduce(
-        (n, v) => n + v.split(',').filter(Boolean).length,
-        0,
-    );
-    const count = countBuiltinFilters(builtins) + varCount;
+    const variableKeys = filterDefs.map((d) => d.nameNormalized);
+    const applied = draftFromApplied(builtins, selectedVarFilters);
+    const [draft, setDraft] = useState<FilterDraft>(applied);
+    const count = draftCount(applied);
 
+    const openSheet = () => { setDraft(draftFromApplied(builtins, selectedVarFilters)); setOpen(true); };
     const close = () => setOpen(false);
     usePopoverFocus({ open, onClose: close, panelRef });
-
     useEffect(() => {
         if (!open) return;
-        const onDown = (e: MouseEvent) => {
-            if (!rootRef.current?.contains(e.target as Node)) close();
-        };
+        const onDown = (e: MouseEvent) => { if (!rootRef.current?.contains(e.target as Node)) close(); };
         document.addEventListener('mousedown', onDown);
         return () => document.removeEventListener('mousedown', onDown);
     }, [open]);
 
+    const onApply = () => { applyFilters(draft, variableKeys); close(); };
+    const onReset = () => { const d = emptyDraft(); setDraft(d); applyFilters(d, variableKeys); close(); };
+
     return (
         <div className={styles.popoverRoot} ref={rootRef}>
-            <button
-                type="button"
-                className={`${mastheadStyles.chip} ${count > 0 ? mastheadStyles.chipActive : ''}`}
-                aria-haspopup="dialog"
-                aria-expanded={open}
-                onClick={() => setOpen((o) => !o)}
-            >
+            <button type="button" className={`${mastheadStyles.chip} ${count > 0 ? mastheadStyles.chipActive : ''}`}
+                aria-haspopup="dialog" aria-expanded={open} onClick={() => (open ? close() : openSheet())}>
                 <Sliders size={13} aria-hidden />
                 Filters
                 {count > 0 && <span className={styles.filterCount}>{count}</span>}
             </button>
             {open && (
-                <div
-                    ref={panelRef}
-                    className={`${styles.popoverPanel} ${panelStyles.panel}`}
-                    role="dialog"
-                    aria-modal="true"
-                    aria-label="Filters"
-                >
-                    <BuiltinFilterRows builtins={builtins} facets={facets} />
-                    {filterDefs.length > 0 && (
-                        <>
-                            <hr className={panelStyles.divider} />
-                            <VariablePills defs={filterDefs} selected={selectedVarFilters} />
-                        </>
-                    )}
+                <div ref={panelRef} className={`${styles.popoverPanel} ${panelStyles.panel}`} role="dialog" aria-modal="true" aria-label="Filters">
+                    <FiltersSheet draft={draft} onChange={setDraft} onApply={onApply} onReset={onReset}
+                        dirty={!draftEquals(draft, applied)} facets={facets} filterDefs={filterDefs} isPending={isPending} />
                 </div>
             )}
         </div>
@@ -1282,43 +1365,41 @@ export function FiltersPopover({ defs, selectedVarFilters, builtins, facets }: P
 }
 ```
 
-`filters-popover.module.scss` (use the board's tokens; check `_board.scss` mixins used by `game-page.module.scss` for the exact `@use` lines and copy them):
-
+`filters-popover.module.scss` — copy the `@use` lines from `game-page.module.scss` (design tokens as `dt`, board mixins as `board`). Then:
 ```scss
-@use '~src/styles/design-tokens' as dt;   // match game-page.module.scss's actual @use paths
-@use '../shared/board' as board;           // ditto
-
-.panel { min-width: 22rem; max-width: min(28rem, calc(100vw - 2rem)); }
-.rows { display: flex; flex-direction: column; gap: dt.$spacing-md; }
-.row { display: flex; flex-wrap: wrap; align-items: center; gap: dt.$spacing-xs dt.$spacing-sm; }
-.rowLabel { flex: 0 0 7.5rem; font-size: dt.$font-size-xs; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; opacity: 0.8; }
-.rowHint { flex-basis: 100%; margin: 0; font-size: dt.$font-size-2xs; opacity: 0.7; }
-.segmented { display: inline-flex; border: 1px solid var(--bs-border-color); border-radius: 999px; overflow: hidden; }
-.segment { @include board.control-pill; border: 0; border-radius: 0; }
-.segmentActive { background: rgba(var(--bs-primary-rgb), 0.18); }
-.switch { width: 2.25rem; height: 1.25rem; border-radius: 999px; border: 1px solid var(--bs-border-color); background: transparent; position: relative; padding: 0; }
-.switchOn { background: rgba(var(--bs-primary-rgb), 0.35); border-color: rgba(var(--bs-primary-rgb), 0.6); }
-.switchKnob { position: absolute; top: 2px; left: 2px; width: calc(1.25rem - 6px); height: calc(1.25rem - 6px); border-radius: 50%; background: currentColor; transition: transform 120ms; }
-.switchOn .switchKnob { transform: translateX(1rem); }
-.dates { display: flex; gap: dt.$spacing-sm; }
-.dateField { display: flex; flex-direction: column; gap: 2px; font-size: dt.$font-size-2xs; input { font: inherit; padding: 2px dt.$spacing-xs; } }
-.select { font: inherit; padding: 2px dt.$spacing-xs; max-width: 14rem; }
-.divider { margin: 0; opacity: 0.4; }
+.panel { min-width: 34rem; max-width: min(38rem, calc(100vw - 2rem)); padding: dt.$spacing-lg dt.$spacing-xl; }
+.sheet { display: flex; flex-direction: column; gap: dt.$spacing-md; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: dt.$spacing-lg dt.$spacing-2xl; }
+.group { display: flex; flex-direction: column; gap: dt.$spacing-sm; min-width: 0; }
+.groupWide { grid-column: 1 / -1; }
+.groupLabel { @include board.board-eyebrow; display: flex; align-items: center; gap: dt.$spacing-xs; margin: 0; color: var(--bs-secondary-color); svg { opacity: 0.7; } }
+.segmented { display: inline-flex; border: 1px solid var(--bs-border-color); border-radius: dt.$radius-md; overflow: hidden; align-self: flex-start; }
+.segment { border: 0; border-right: 1px solid var(--bs-border-color); background: transparent; color: var(--bs-secondary-color); font: inherit; font-size: dt.$font-size-xs; font-weight: 600; padding: dt.$spacing-xs dt.$spacing-md; cursor: pointer; &:last-child { border-right: 0; } &:focus-visible { outline: 2px solid rgba(var(--bs-primary-rgb), 0.5); outline-offset: -2px; } }
+.segmentOn { background: var(--bs-primary); color: #fff; }
+.dates { display: flex; align-items: flex-end; gap: dt.$spacing-sm; }
+.dateField { display: flex; flex-direction: column; gap: 2px; font-size: dt.$font-size-2xs; color: var(--bs-tertiary-color); input { font: inherit; font-family: dt.$font-mono; font-variant-numeric: tabular-nums; color: var(--bs-emphasis-color); background: rgba(var(--bs-body-color-rgb), 0.09); border: 1px solid var(--bs-border-color); border-radius: dt.$radius-md; padding: dt.$spacing-xs dt.$spacing-sm; } }
+.dash { color: var(--bs-tertiary-color); padding-bottom: dt.$spacing-xs; }
+.hint { margin: 0; font-size: dt.$font-size-2xs; color: var(--bs-tertiary-color); }
+.select { font: inherit; font-size: dt.$font-size-xs; color: var(--bs-emphasis-color); background: rgba(var(--bs-body-color-rgb), 0.09); border: 1px solid var(--bs-border-color); border-radius: dt.$radius-md; padding: dt.$spacing-xs dt.$spacing-sm; max-width: 16rem; }
+.pills { display: flex; flex-wrap: wrap; gap: dt.$spacing-xs; }
+.foot { display: flex; justify-content: flex-end; gap: dt.$spacing-sm; border-top: 1px solid var(--bs-border-color); padding-top: dt.$spacing-md; }
+.reset { @include board.board-chip; border-color: transparent; background: transparent; color: var(--bs-secondary-color); }
+.apply { @include board.board-chip; @include board.board-chip-active; &:disabled { opacity: 0.5; cursor: default; box-shadow: none; } }
+@media (max-width: 40rem) { .panel { min-width: 0; width: calc(100vw - 2rem); } .grid { grid-template-columns: 1fr; } }
 ```
-If `board.control-pill` or a token name does not exist, open `app/(new-layout)/games-v2/[game]/game-page.module.scss` and reuse whatever it uses for `.rulesToggle` — do not invent tokens.
+If `board.board-eyebrow` doesn't exist, look at how `masthead.module.scss` styles `.activeChipKey` and use that mixin. Do not invent tokens.
 
-Delete `verified-toggle.tsx`. In `leaderboard-pager.tsx`: remove the `VerifiedToggle` import and the `<VerifiedToggle …/>` line; pass `builtins={query.builtins}`… — no: the pager only has `query: Omit<LeaderboardQuery,'page'>`. Add two props to `LeaderboardPager` (`builtins: BuiltinFilterState; facets: BoardFacets;`), pass them from `game-page.tsx` (`data.activeFilters.builtins`, `data.facets`) and forward to `<FiltersPopover defs={variableDefs} selectedVarFilters={selectedVarFilters} builtins={builtins} facets={facets} />`. In `leaderboard-pager.test.tsx` delete the `verified-toggle` mock line and add `builtins`/`facets` to the pager's rendered props (search the file for where `<LeaderboardPager` is rendered and add `builtins={{ verified: false, video: null, from: null, to: null, country: null }} facets={{ countries: [], minDate: null }}`).
+Delete `verified-toggle.tsx`. Delete `variable-pills.tsx` + `variable-pill.tsx` if the popover was their only importer. In `leaderboard-pager.tsx`: remove the `VerifiedToggle` import + element; add props `builtins: BuiltinFilterState; facets: BoardFacets;` and forward them to `<FiltersPopover defs={variableDefs} selectedVarFilters={selectedVarFilters} builtins={builtins} facets={facets} />`. In `game-page.tsx` pass `builtins={data.activeFilters.builtins} facets={data.facets}` to `<LeaderboardPager>`. In `leaderboard-pager.test.tsx` remove the `verified-toggle` mock line and add the two props wherever `<LeaderboardPager` is rendered.
 
-- [ ] **Step 4: Run tests**
+- [ ] **Step 7: Run tests + checks**
 
-Run: `npx vitest run "app/(new-layout)/games-v2/\[game\]/filters/filters-popover.test.tsx" "app/(new-layout)/games-v2/\[game\]/leaderboard/leaderboard-pager.test.tsx"` then `npm run typecheck 2>&1 | grep -E "filters/|leaderboard-pager|game-page.tsx"`
-Expected: PASS; no typecheck lines. Then `npx @biomejs/biome check --write "app/(new-layout)/games-v2/[game]/filters"`.
+`npx vitest run "app/(new-layout)/games-v2/\[game\]/filters" "app/(new-layout)/games-v2/\[game\]/leaderboard/leaderboard-pager.test.tsx"` → PASS. `npm run typecheck 2>&1 | grep -E "filters/|leaderboard-pager|game-page.tsx"` → nothing. `npx @biomejs/biome check --write "app/(new-layout)/games-v2/[game]/filters" "app/(new-layout)/games-v2/[game]/leaderboard/leaderboard-pager.tsx" "app/(new-layout)/games-v2/[game]/game-page.tsx"`.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
 git add -A "app/(new-layout)/games-v2/[game]/filters" "app/(new-layout)/games-v2/[game]/leaderboard/leaderboard-pager.tsx" "app/(new-layout)/games-v2/[game]/leaderboard/leaderboard-pager.test.tsx" "app/(new-layout)/games-v2/[game]/game-page.tsx"
-git commit -m "feat(board): the Filters popover always renders and holds Verified, Video, Date range, Country"
+git commit -m "feat(board): the Filters sheet — Verified, Video, Date range, Country and category filters, applied together"
 ```
 
 ### Task B5: Band chips for built-ins + FilterBar gating
