@@ -602,6 +602,7 @@ export interface SelfManualTimeInput {
     secondary?: SecondaryTimeInput | null;
     subcategoryKey?: string;
     evidenceUrl?: string | null;
+    description?: string;
     /** Date the runner says they achieved the time (ISO date); omitted/null =>
      *  the board shows the manual time's created-at instead. */
     runDate?: string | null;
