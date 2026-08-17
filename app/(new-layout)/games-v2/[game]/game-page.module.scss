@@ -289,8 +289,8 @@
         align-self: start;
         max-height: calc(100vh - 5rem - dt.$spacing-lg);
         overflow-y: auto;
-        // Room for the You panel's spine and the surfaces' ambient shadow so
-        // the scroll clip doesn't shave them.
+        // Room for the surfaces' ambient shadow so the scroll clip doesn't
+        // shave it.
         padding-inline: 4px;
         margin-inline: -4px;
         scrollbar-width: thin;

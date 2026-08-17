@@ -31,10 +31,7 @@ export function YourRunsPanel({ rankings, gameSlug, variableDefs }: Props) {
     if (rankings.length === 0) return null;
 
     return (
-        <section
-            className={`${styles.panel} ${styles.panelYou}`}
-            aria-labelledby="rail-your-runs"
-        >
+        <section className={styles.panel} aria-labelledby="rail-your-runs">
             <div className={styles.panelHead}>
                 <h2 id="rail-your-runs" className={styles.eyebrow}>
                     Your runs

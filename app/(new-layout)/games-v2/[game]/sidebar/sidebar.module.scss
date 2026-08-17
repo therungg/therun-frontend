@@ -22,11 +22,9 @@
     margin-bottom: dt.$spacing-md;
 }
 
-// You: the same primary spine the board paints on your own row.
-.panelYou {
-    box-shadow: var(--board-surface-shadow, none),
-        inset 3px 0 0 var(--bs-primary);
-}
+// You shares the panel surface. A green spine was tried and removed on
+// review (2026-08-17): the panel is already first, the eyebrow says whose
+// runs they are.
 
 .panelHead {
     @include board.board-section-head;
