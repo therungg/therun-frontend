@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ClaimCtaState } from '../claim/claim-cta';
+import { hasBuiltinFilters } from '../filters/builtin-params';
 import { FilterBar } from '../filters/filter-bar';
 import { RulesPanel } from '../rules/rules-panel';
 import type { GamePageData } from '../types';
@@ -61,7 +62,8 @@ export function BoardMasthead({
         );
     const showFilterTier =
         data.variables.some((v) => v.role === 'subcategory') ||
-        Object.keys(data.activeFilters.varFilters).length > 0;
+        Object.keys(data.activeFilters.varFilters).length > 0 ||
+        hasBuiltinFilters(data.activeFilters.builtins);
     const showRules =
         Boolean(category.rules?.trim()) ||
         Boolean(data.gameMeta.gameRules?.trim()) ||
@@ -174,6 +176,7 @@ export function BoardMasthead({
                                     data.subcategoryValueCounts
                                 }
                                 totalItems={data.leaderboard.totalItems}
+                                builtins={data.activeFilters.builtins}
                             />
                         )}
                         {showRules && (
