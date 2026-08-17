@@ -716,6 +716,7 @@ export function LeaderboardPager({
                 <ManualInspector
                     entry={inspectManualEntry}
                     gameSlug={gameSlug}
+                    gameId={gameId}
                     categorySlug={categorySlug}
                     subcategoryDefKeys={subcategoryDefKeys}
                     gameTimeLabel={gameTimeLabel}

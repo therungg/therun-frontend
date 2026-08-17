@@ -111,10 +111,14 @@ function renderInspector(over: {
     status?: LeaderboardEntry['verificationStatus'];
     onOpenHideIdentity?: () => void;
     categoryId?: number | null;
+    vodUrl?: string;
 }) {
     return render(
         <RunInspector
-            entry={entry({ verificationStatus: over.status ?? 'verified' })}
+            entry={entry({
+                verificationStatus: over.status ?? 'verified',
+                vodUrl: over.vodUrl,
+            })}
             gameSlug="celeste"
             gameId={12}
             gameDisplay="Celeste"
@@ -296,5 +300,15 @@ describe('RunInspector owner mode', () => {
         expect(
             screen.getByRole('button', { name: 'Adjust time…' }),
         ).toBeInTheDocument();
+    });
+
+    it('owner mode has no Review VOD control', () => {
+        renderInspector({
+            mode: 'owner',
+            vodUrl: 'https://youtu.be/dQw4w9WgXcQ',
+        });
+        expect(
+            screen.queryByRole('button', { name: /review vod/i }),
+        ).toBeNull();
     });
 });
