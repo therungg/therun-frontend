@@ -280,6 +280,15 @@ export interface UserRanking {
 }
 
 // Backend: GET /v1/leaderboards/runs/{runId}
+/** Owner-only. Present on a detail read only when the authenticated viewer
+ *  owns the run/time; `null` when no restriction is in place (never absent
+ *  for an owner). A non-null value means the owner may not add/edit a
+ *  description for this category. */
+export interface DescriptionRestriction {
+    reason: string;
+    since: string | null;
+}
+
 export interface RunDetail {
     runId: number;
     gameId: number;
@@ -305,7 +314,7 @@ export interface RunDetail {
     verifiedAt?: string | null;
     rejectionReason?: string | null;
     description?: string | null;
-    descriptionRevoked?: boolean;
+    descriptionRestriction?: DescriptionRestriction | null;
 }
 
 export interface RunOriginRef {
@@ -348,7 +357,7 @@ export interface ManualTimeDetail {
     runDate: string | null;
     origin: RunOrigin;
     description?: string | null;
-    descriptionRevoked?: boolean;
+    descriptionRestriction?: DescriptionRestriction | null;
 }
 
 // Submit warnings (no UI consumer in this app yet — see plan coordination notes).

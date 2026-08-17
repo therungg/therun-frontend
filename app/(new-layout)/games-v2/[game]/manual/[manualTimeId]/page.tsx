@@ -5,11 +5,13 @@ import { resolveGame } from '~src/lib/games-v1';
 import { getManualTimeById } from '~src/lib/leaderboards-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { getManualTimeProvenance } from '~src/lib/moderation/provenance';
+import { getManualTimeByIdAsViewer } from '~src/lib/run-detail-viewer';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import buildMetadata from '~src/utils/metadata';
 import { formatSubcategoryKey } from '../../labels';
 import { ModProvenancePanel } from '../../run-view/mod-provenance-panel';
 import { RunView } from '../../run-view/run-view';
+import { isSameRunner } from '../../shared/is-same-runner';
 
 interface PageProps {
     params: Promise<{ game: string; manualTimeId: string }>;
@@ -52,6 +54,18 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
     const session = await getSession();
     const isMod = canModerateGame(session, game.name);
 
+    // getManualTimeById is the cached public read and strips owner-only fields
+    // (descriptionRestriction). Re-read as this viewer when the visitor owns
+    // the time and isn't a mod, so the revoke note is accurate.
+    let detail = mt;
+    if (session.id && !isMod && isSameRunner(session.username, mt.runnerName)) {
+        const asViewer = await getManualTimeByIdAsViewer(
+            manualTimeId,
+            session.id,
+        ).catch(() => null);
+        if (asViewer) detail = asViewer;
+    }
+
     const provenance =
         isMod && session.id
             ? await getManualTimeProvenance(
@@ -79,8 +93,8 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
                 gameTimeLabel: 'igt',
                 runDate: mt.runDate ?? null,
                 vodUrl: mt.evidenceUrl,
-                description: mt.description ?? null,
-                descriptionRevoked: mt.descriptionRevoked ?? false,
+                description: detail.description ?? null,
+                descriptionRevoked: detail.descriptionRestriction != null,
                 verificationStatus: mt.verificationStatus,
                 variables: {},
                 origin: mt.origin,
