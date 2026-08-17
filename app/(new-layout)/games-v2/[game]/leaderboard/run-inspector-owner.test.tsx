@@ -15,6 +15,11 @@ const mocks = vi.hoisted(() => ({
     selfRunVerdictAction: vi.fn(),
     loadModBoardContext: vi.fn(),
     loadOwnerBoardContext: vi.fn(),
+    loadOwnerEvidenceAction: vi.fn(),
+    selfSetEvidenceAction: vi.fn(),
+    selfSetManualEvidenceAction: vi.fn(),
+    updateManualTimeAction: vi.fn(),
+    attachVodAction: vi.fn(),
 }));
 
 vi.mock('~src/actions/run-user-actions.action', () => ({
@@ -35,7 +40,19 @@ vi.mock('./actions/load-mod-board-context.action', () => ({
 vi.mock('./actions/load-owner-board-context.action', () => ({
     loadOwnerBoardContextAction: mocks.loadOwnerBoardContext,
 }));
-vi.mock('./actions/attach-vod.action', () => ({ attachVodAction: vi.fn() }));
+vi.mock('./actions/attach-vod.action', () => ({
+    attachVodAction: mocks.attachVodAction,
+}));
+vi.mock('./actions/load-owner-evidence.action', () => ({
+    loadOwnerEvidenceAction: mocks.loadOwnerEvidenceAction,
+}));
+vi.mock('~src/actions/self-evidence.action', () => ({
+    selfSetEvidenceAction: mocks.selfSetEvidenceAction,
+    selfSetManualEvidenceAction: mocks.selfSetManualEvidenceAction,
+}));
+vi.mock('../manage/moderation/shared/actions/manual-times.action', () => ({
+    updateManualTimeAction: mocks.updateManualTimeAction,
+}));
 vi.mock('../manage/moderation/shared/actions/exclude.action', () => ({
     excludeAction: vi.fn(),
 }));
@@ -112,12 +129,14 @@ function renderInspector(over: {
     onOpenHideIdentity?: () => void;
     categoryId?: number | null;
     vodUrl?: string;
+    entryOver?: Partial<LeaderboardEntry>;
 }) {
     return render(
         <RunInspector
             entry={entry({
                 verificationStatus: over.status ?? 'verified',
                 vodUrl: over.vodUrl,
+                ...over.entryOver,
             })}
             gameSlug="celeste"
             gameId={12}
@@ -145,6 +164,16 @@ beforeEach(() => {
     mocks.loadRunHistoryAction.mockResolvedValue({ ok: true, events: [] });
     mocks.loadSelfEligibleRunsAction.mockResolvedValue({ ok: true, rows: [] });
     mocks.loadUserEligibleRunsAction.mockResolvedValue({ ok: true, rows: [] });
+    mocks.loadOwnerEvidenceAction.mockResolvedValue({
+        ok: true,
+        vodUrl: null,
+        description: null,
+        descriptionRevoked: false,
+    });
+    mocks.selfSetEvidenceAction.mockResolvedValue({ ok: true });
+    mocks.selfSetManualEvidenceAction.mockResolvedValue({ ok: true });
+    mocks.updateManualTimeAction.mockResolvedValue({ ok: true });
+    mocks.attachVodAction.mockResolvedValue({ ok: true, url: null });
 });
 
 describe('RunInspector owner mode', () => {
@@ -310,5 +339,187 @@ describe('RunInspector owner mode', () => {
         expect(
             screen.queryByRole('button', { name: /review vod/i }),
         ).toBeNull();
+    });
+
+    // The owner self-service evidence editor — B5. `evidencePermissions` is
+    // its own pure-function suite; these assert the drawer actually wires
+    // its result into `EvidenceEditor`, not just that the function is right.
+    describe('owner evidence editor', () => {
+        it('renders editable VOD + description when unverified', async () => {
+            mocks.loadOwnerEvidenceAction.mockResolvedValue({
+                ok: true,
+                vodUrl: null,
+                description: null,
+                descriptionRevoked: false,
+            });
+            renderInspector({ mode: 'owner', status: 'pending' });
+            await waitFor(() =>
+                expect(
+                    screen.getByRole('button', { name: /add a link/i }),
+                ).toBeInTheDocument(),
+            );
+            expect(
+                screen.getByRole('button', { name: /add a description/i }),
+            ).toBeInTheDocument();
+            expect(mocks.loadOwnerEvidenceAction).toHaveBeenCalledWith({
+                kind: 'run',
+                runId: 55,
+            });
+        });
+
+        it('locks both fields when verified, with the lock note', async () => {
+            mocks.loadOwnerEvidenceAction.mockResolvedValue({
+                ok: true,
+                vodUrl: null,
+                description: 'Some notes.',
+                descriptionRevoked: false,
+            });
+            renderInspector({ mode: 'owner', status: 'verified' });
+            await waitFor(() =>
+                expect(
+                    screen.getByText(/locked, ask a moderator/i),
+                ).toBeInTheDocument(),
+            );
+            expect(
+                screen.queryByRole('button', { name: /add a link/i }),
+            ).toBeNull();
+            expect(
+                screen.queryByRole('button', {
+                    name: /edit description|add a description/i,
+                }),
+            ).toBeNull();
+            // The description text itself still renders — locked means
+            // read-only, not hidden.
+            expect(screen.getByText('Some notes.')).toBeInTheDocument();
+        });
+
+        it('leaves VOD editable but locks description when revoked', async () => {
+            mocks.loadOwnerEvidenceAction.mockResolvedValue({
+                ok: true,
+                vodUrl: null,
+                description: null,
+                descriptionRevoked: true,
+            });
+            renderInspector({ mode: 'owner', status: 'pending' });
+            await waitFor(() =>
+                expect(
+                    screen.getByRole('button', { name: /add a link/i }),
+                ).toBeInTheDocument(),
+            );
+            expect(
+                screen.getByText(/description edit ability has been revoked/i),
+            ).toBeInTheDocument();
+            expect(
+                screen.queryByRole('button', { name: /add a description/i }),
+            ).toBeNull();
+        });
+
+        it('saves a VOD edit through the owner action for a run row', async () => {
+            mocks.loadOwnerEvidenceAction.mockResolvedValue({
+                ok: true,
+                vodUrl: null,
+                description: null,
+                descriptionRevoked: false,
+            });
+            renderInspector({ mode: 'owner', status: 'pending' });
+            await waitFor(() =>
+                screen.getByRole('button', { name: /add a link/i }),
+            );
+            fireEvent.click(
+                screen.getByRole('button', { name: /add a link/i }),
+            );
+            fireEvent.change(screen.getByLabelText(/video link/i), {
+                target: { value: 'https://youtu.be/abc123' },
+            });
+            fireEvent.click(screen.getByRole('button', { name: /attach/i }));
+            await waitFor(() =>
+                expect(mocks.selfSetEvidenceAction).toHaveBeenCalledWith(55, {
+                    vodUrl: 'https://youtu.be/abc123',
+                }),
+            );
+            expect(mocks.selfSetManualEvidenceAction).not.toHaveBeenCalled();
+            expect(mocks.attachVodAction).not.toHaveBeenCalled();
+        });
+
+        it('does not fetch owner evidence in mod mode', () => {
+            renderInspector({ mode: 'mod', status: 'pending' });
+            expect(mocks.loadOwnerEvidenceAction).not.toHaveBeenCalled();
+        });
+    });
+
+    // Mod mode's attach path branches on the row's type, not a runId cast —
+    // a set time has no finished_run, so it must go through
+    // updateManualTimeAction, never attachVodAction.
+    describe('mod-mode evidence attach branches on row type', () => {
+        it('a run row attaches through attachVodAction with runId', async () => {
+            renderInspector({ mode: 'mod', status: 'pending' });
+            fireEvent.click(
+                screen.getByRole('button', { name: /add a link/i }),
+            );
+            fireEvent.change(screen.getByLabelText(/video link/i), {
+                target: { value: 'https://youtu.be/xyz789' },
+            });
+            fireEvent.click(screen.getByRole('button', { name: /attach/i }));
+            await waitFor(() =>
+                expect(mocks.attachVodAction).toHaveBeenCalledWith(
+                    'celeste',
+                    55,
+                    'https://youtu.be/xyz789',
+                    { categorySlug: 'any', subcategoryKey: '' },
+                ),
+            );
+            expect(mocks.updateManualTimeAction).not.toHaveBeenCalled();
+        });
+
+        it('a manual (set time) row attaches through updateManualTimeAction with manualTimeId', async () => {
+            renderInspector({
+                mode: 'mod',
+                status: 'pending',
+                entryOver: { source: 'manual', manualTimeId: 909 },
+            });
+            fireEvent.click(
+                screen.getByRole('button', { name: /add a link/i }),
+            );
+            fireEvent.change(screen.getByLabelText(/video link/i), {
+                target: { value: 'https://youtu.be/manual1' },
+            });
+            fireEvent.click(screen.getByRole('button', { name: /attach/i }));
+            await waitFor(() =>
+                expect(mocks.updateManualTimeAction).toHaveBeenCalledWith(
+                    'celeste',
+                    909,
+                    expect.objectContaining({
+                        evidenceUrl: 'https://youtu.be/manual1',
+                    }),
+                ),
+            );
+            expect(mocks.attachVodAction).not.toHaveBeenCalled();
+        });
+    });
+
+    // A signed-out visitor or a non-owner never gets `mode="owner"` from the
+    // host in the first place (leaderboard-pager.tsx gates on `isOwnEntry`);
+    // mod mode on a guest/no-account row is what's left to prove doesn't
+    // regress — the evidence block still renders and still uses the mod
+    // path, unaffected by the owner-mode additions above.
+    it('mod mode on a guest row still uses the mod attach path', async () => {
+        renderInspector({
+            mode: 'mod',
+            status: 'pending',
+            entryOver: { userId: null, isGuest: true },
+        });
+        fireEvent.click(screen.getByRole('button', { name: /add a link/i }));
+        fireEvent.change(screen.getByLabelText(/video link/i), {
+            target: { value: 'https://youtu.be/guest1' },
+        });
+        fireEvent.click(screen.getByRole('button', { name: /attach/i }));
+        await waitFor(() =>
+            expect(mocks.attachVodAction).toHaveBeenCalledWith(
+                'celeste',
+                55,
+                'https://youtu.be/guest1',
+                { categorySlug: 'any', subcategoryKey: '' },
+            ),
+        );
     });
 });

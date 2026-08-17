@@ -21,6 +21,10 @@ import {
     loadSelfEligibleRunsAction,
     selfMoveRunAction,
 } from '~src/actions/run-user-actions.action';
+import {
+    selfSetEvidenceAction,
+    selfSetManualEvidenceAction,
+} from '~src/actions/self-evidence.action';
 import Link from '~src/components/link';
 import { Vod } from '~src/components/run/dashboard/vod';
 import { DurationToFormatted } from '~src/components/util/datetime';
@@ -41,19 +45,26 @@ import { AdjustDialog } from '../manage/boards/adjust-dialog';
 import { MoveDialog } from '../manage/boards/move-dialog';
 import { loadUserEligibleRunsAction } from '../manage/moderation/shared/actions/eligible-runs.action';
 import { excludeAction } from '../manage/moderation/shared/actions/exclude.action';
+import { updateManualTimeAction } from '../manage/moderation/shared/actions/manual-times.action';
 import { markRunsAction } from '../manage/moderation/shared/actions/marks.action';
 import { restoreRunsAction } from '../manage/moderation/shared/actions/restore.action';
 import { applyVerdictsAction } from '../manage/moderation/shared/actions/verdicts.action';
 import { useDialogBehavior } from '../shared/board-dialog';
+import { EvidenceEditor } from '../shared/evidence-editor';
 import { OwnerRemoveForm } from '../shared/owner-remove-form';
 import {
     SelfRunVerdictDialog,
     useSelfRunVerdict,
 } from '../shared/self-run-verdict';
+import { evidencePermissions } from '../shared/use-evidence-permissions';
 import { buildSubcategoryKey } from '../submit/subcategory-key';
 import { attachVodAction } from './actions/attach-vod.action';
 import { loadModBoardContextAction } from './actions/load-mod-board-context.action';
 import { loadOwnerBoardContextAction } from './actions/load-owner-board-context.action';
+import {
+    loadOwnerEvidenceAction,
+    type OwnerEvidenceTarget,
+} from './actions/load-owner-evidence.action';
 import { HideIdentityDialog } from './hide-identity-dialog';
 import {
     type HistoryUndoPlan,
@@ -258,37 +269,52 @@ const VERB_KEY: Partial<Record<ModVerb, string>> = {
 };
 
 /**
+ * A mod's fixed sentence when attaching/clearing evidence on a set time
+ * through this drawer — `updateManualTime` has no reason UI here (same
+ * reasoning as `attachVodAction`'s ATTACH_REASON/CLEAR_REASON for runs).
+ */
+const MOD_MANUAL_VOD_REASON =
+    'Attached video evidence from the board mod drawer.';
+
+/**
  * The evidence block — the video, or the fact that there isn't one, and in
- * either case a way to fix that from here.
+ * either case a way to fix that from here. Moderator-only: owner mode
+ * renders `EvidenceEditor` instead (see `OwnerEvidenceBlock`), whose save
+ * path is self-service, not `attachVodAction`.
  *
  * A moderator who finds a run with no VOD used to have to go somewhere else
  * to attach one (or bounce it back to the runner). Missing evidence is the
  * single most common reason a run stalls, so the "no video" state is itself
  * the control: click it, paste a link, done. No reason field — the mod log
  * records who attached what, and the server action stamps the sentence.
+ *
+ * Branches on the row's type (`manualTimeId`/`source`), not a runId cast:
+ * a set time has no `finished_run` behind it, so its evidence goes through
+ * `updateManualTimeAction`, never `attachVodAction`.
  */
 function EvidenceSection({
     vodUrl,
     requireVideo,
     gameSlug,
     runId,
+    manualTimeId,
+    entrySource,
     categorySlug,
     subcategoryKey,
     onMutated,
-    editable = true,
 }: {
     vodUrl: string | null;
     requireVideo: boolean;
     gameSlug: string;
     runId: number;
+    manualTimeId: number | null;
+    entrySource: LeaderboardEntry['source'];
     categorySlug: string;
     subcategoryKey: string;
     onMutated: () => void;
-    /** False in owner mode: `attachVodAction` is moderator-gated, so the
-     * paste-a-link affordances would offer a 403. The evidence still shows;
-     * only the editing controls go. */
-    editable?: boolean;
 }) {
+    const isManual = entrySource === 'manual' && manualTimeId != null;
+
     // What we last saved, held locally so the block updates the instant the
     // action returns rather than waiting on the board refetch behind it.
     // Remounted per run (`key={runId}`), so it never leaks across rows.
@@ -311,22 +337,35 @@ function EvidenceSection({
     const save = (next: string | null) => {
         setError(null);
         startTransition(async () => {
-            const res = await attachVodAction(gameSlug, runId, next, {
-                categorySlug,
-                subcategoryKey,
-            });
-            if ('error' in res) {
-                setError(res.error);
-                return;
+            if (isManual) {
+                const res = await updateManualTimeAction(
+                    gameSlug,
+                    manualTimeId as number,
+                    { reason: MOD_MANUAL_VOD_REASON, evidenceUrl: next },
+                );
+                if ('error' in res) {
+                    setError(res.error);
+                    return;
+                }
+                setSaved(next);
+            } else {
+                const res = await attachVodAction(gameSlug, runId, next, {
+                    categorySlug,
+                    subcategoryKey,
+                });
+                if ('error' in res) {
+                    setError(res.error);
+                    return;
+                }
+                setSaved(res.url);
             }
-            setSaved(res.url);
             setEditing(false);
-            toast.success(res.url ? 'Video attached.' : 'Video link removed.');
+            toast.success(next ? 'Video attached.' : 'Video link removed.');
             onMutated();
         });
     };
 
-    if (editing && editable) {
+    if (editing) {
         return (
             <div className={styles.evidence}>
                 <form
@@ -392,24 +431,6 @@ function EvidenceSection({
     }
 
     if (url == null) {
-        if (!editable) {
-            // Owner mode. `attachVodAction` is moderator-gated, so the runner
-            // has no control here — stating a bare requirement with the
-            // Add-a-link affordance stripped would be a blocker with no route
-            // out of it. Name the route instead.
-            return (
-                <div className={styles.evidence}>
-                    <span className={styles.noVod}>
-                        <CameraVideoOff size={16} aria-hidden />
-                        <span className={styles.noVodText}>
-                            {requireVideo
-                                ? 'No video attached. This board requires one, so a moderator has to add the link to this run for you.'
-                                : 'No video attached.'}
-                        </span>
-                    </span>
-                </div>
-            );
-        }
         return (
             <div className={styles.evidence}>
                 <button
@@ -431,7 +452,10 @@ function EvidenceSection({
         );
     }
 
-    const reviewable = editable && detectVod(url) != null;
+    // Reviewable through this drawer for a real run only — the panel's
+    // target isn't wired for a set time here (unreachable today: manual
+    // rows never route through RunInspector, see leaderboard-pager.tsx).
+    const reviewable = !isManual && detectVod(url) != null;
 
     return (
         <div className={styles.evidence}>
@@ -469,15 +493,13 @@ function EvidenceSection({
                 >
                     <BoxArrowUpRight size={12} aria-hidden /> Open in a new tab
                 </a>
-                {editable && (
-                    <button
-                        type="button"
-                        className={styles.vodEditBtn}
-                        onClick={openEditor}
-                    >
-                        Change link
-                    </button>
-                )}
+                <button
+                    type="button"
+                    className={styles.vodEditBtn}
+                    onClick={openEditor}
+                >
+                    Change link
+                </button>
                 {reviewable && (
                     <button
                         type="button"
@@ -488,6 +510,83 @@ function EvidenceSection({
                     </button>
                 )}
             </div>
+        </div>
+    );
+}
+
+type OwnerEvidence = {
+    vodUrl: string | null;
+    description: string | null;
+    descriptionRevoked: boolean;
+};
+
+/**
+ * Owner mode's evidence block — the self-service `EvidenceEditor`, wired to
+ * the owner save actions instead of the mod-gated `attachVodAction`. Mirrors
+ * the wiring `run-evidence-panel.tsx` does for the run page, so the two
+ * owner surfaces can't drift: same permission mirror
+ * (`evidencePermissions`), same branch on the row's type for which owner
+ * action applies (`selfSetEvidenceAction` for a run, `selfSetManualEvidenceAction`
+ * for a set time).
+ *
+ * `evidence` is `null` until `loadOwnerEvidenceAction` returns — the public
+ * `vodUrl` on the row is known instantly, but `description` and the revoke
+ * restriction aren't (see that action's doc), so the whole block waits
+ * rather than rendering permissions it might have to immediately correct.
+ */
+function OwnerEvidenceBlock({
+    runId,
+    manualTimeId,
+    entrySource,
+    verificationStatus,
+    evidence,
+}: {
+    runId: number;
+    manualTimeId: number | null;
+    entrySource: LeaderboardEntry['source'];
+    verificationStatus: LeaderboardEntry['verificationStatus'];
+    evidence: OwnerEvidence | null;
+}) {
+    const isManual = entrySource === 'manual' && manualTimeId != null;
+
+    const perms = evidencePermissions({
+        isOwner: true,
+        isMod: false,
+        verificationStatus,
+        descriptionRevoked: evidence?.descriptionRevoked ?? false,
+    });
+
+    const onSaveVod = (url: string | null) =>
+        isManual
+            ? selfSetManualEvidenceAction(manualTimeId as number, {
+                  evidenceUrl: url,
+              })
+            : selfSetEvidenceAction(runId, { vodUrl: url });
+
+    const onSaveDescription = (text: string | null) =>
+        isManual
+            ? selfSetManualEvidenceAction(manualTimeId as number, {
+                  description: text,
+              })
+            : selfSetEvidenceAction(runId, { description: text });
+
+    if (evidence == null) {
+        return (
+            <div className={styles.evidence}>
+                <p className="text-muted small mb-0">Loading your evidence…</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className={styles.evidence}>
+            <EvidenceEditor
+                vodUrl={evidence.vodUrl}
+                description={evidence.description}
+                perms={perms}
+                onSaveVod={onSaveVod}
+                onSaveDescription={onSaveDescription}
+            />
         </div>
     );
 }
@@ -554,6 +653,15 @@ export function RunInspector({
     // Adjust dialog uses — game-wide, so the counts mean "in this game",
     // not "on this page".
     const [runnerRuns, setRunnerRuns] = useState<UserEligibleRunRow[] | null>(
+        null,
+    );
+
+    // Owner mode only: `description` + `descriptionRevoked` aren't on the
+    // public `LeaderboardEntry` — see `load-owner-evidence.action.ts`. Loaded
+    // lazily on open, same as the history/roster reads above, and never
+    // fetched in mod mode (a moderator neither needs the restriction nor can
+    // edit description from here).
+    const [ownerEvidence, setOwnerEvidence] = useState<OwnerEvidence | null>(
         null,
     );
 
@@ -778,6 +886,32 @@ export function RunInspector({
         };
     }, [gameSlug, gameId, ownerMode, entry.userId]);
 
+    // Owner-only evidence read (description + its revoke restriction). See
+    // the `ownerEvidence` state doc above for why this is skipped in mod
+    // mode. Manual-time branch is defensive/symmetric with mod mode's
+    // branch-on-type below — RunInspector currently only ever receives real
+    // runs (leaderboard-pager.tsx filters to `runId != null` before opening
+    // in owner mode), but the row's own type decides, not an assumption.
+    const isManualRow = entry.source === 'manual' && entry.manualTimeId != null;
+    useEffect(() => {
+        if (!ownerMode) {
+            setOwnerEvidence(null);
+            return;
+        }
+        let stale = false;
+        setOwnerEvidence(null);
+        const target: OwnerEvidenceTarget = isManualRow
+            ? { kind: 'manual', manualTimeId: entry.manualTimeId as number }
+            : { kind: 'run', runId };
+        loadOwnerEvidenceAction(target).then((res) => {
+            if (stale || 'error' in res) return;
+            setOwnerEvidence(res);
+        });
+        return () => {
+            stale = true;
+        };
+    }, [ownerMode, runId, isManualRow, entry.manualTimeId]);
+
     const badge =
         entry.source === 'manual'
             ? null
@@ -901,18 +1035,32 @@ export function RunInspector({
 
                 <div className="flex-grow-1 overflow-auto">
                     {/* Evidence. Verification means watching the run, so the
-                        video (or the fact that there isn't one) leads. */}
-                    <EvidenceSection
-                        key={runId}
-                        vodUrl={entry.vodUrl ?? null}
-                        requireVideo={requireVideo}
-                        gameSlug={gameSlug}
-                        runId={runId}
-                        categorySlug={categorySlug}
-                        subcategoryKey={entrySubcategoryKey}
-                        onMutated={onMutated}
-                        editable={!ownerMode}
-                    />
+                        video (or the fact that there isn't one) leads. Owner
+                        mode gets the self-service editor (VOD + description);
+                        mod mode keeps the paste-a-link block. */}
+                    {ownerMode ? (
+                        <OwnerEvidenceBlock
+                            key={runId}
+                            runId={runId}
+                            manualTimeId={entry.manualTimeId ?? null}
+                            entrySource={entry.source}
+                            verificationStatus={entry.verificationStatus}
+                            evidence={ownerEvidence}
+                        />
+                    ) : (
+                        <EvidenceSection
+                            key={runId}
+                            vodUrl={entry.vodUrl ?? null}
+                            requireVideo={requireVideo}
+                            gameSlug={gameSlug}
+                            runId={runId}
+                            manualTimeId={entry.manualTimeId ?? null}
+                            entrySource={entry.source}
+                            categorySlug={categorySlug}
+                            subcategoryKey={entrySubcategoryKey}
+                            onMutated={onMutated}
+                        />
+                    )}
 
                     {/* The time, in the clock this board ranks on, with what
                         it takes to judge it: its rank, and the runner's own
