@@ -57,18 +57,6 @@
     margin: dt.$spacing-lg 0;
 }
 
-// variable-pill dropdown panel
-.dropdownPanel {
-    @include board.board-surface(dt.$spacing-sm dt.$spacing-md);
-    position: absolute;
-    z-index: dt.$z-popover;
-    margin-top: dt.$spacing-xs;
-    box-shadow: dt.$shadow-md;
-    background: var(--board-surface-bg, var(--bs-body-bg));
-    min-width: 10rem;
-    @include board.board-overlay-enter(rise);
-}
-
 // invalid-combination / empty notices
 .notice {
     @include board.board-surface;

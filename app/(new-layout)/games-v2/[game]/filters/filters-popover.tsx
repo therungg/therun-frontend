@@ -2,29 +2,57 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Sliders } from 'react-bootstrap-icons';
-import type { VariableRow } from '../../../../../types/leaderboards.types';
+import type {
+    BoardFacets,
+    VariableRow,
+} from '../../../../../types/leaderboards.types';
 import styles from '../game-page.module.scss';
 import mastheadStyles from '../header/masthead.module.scss';
 import { usePopoverFocus } from '../shared/use-popover-focus';
-import { VariablePills } from './variable-pills';
+import type { BuiltinFilterState } from './builtin-params';
+import {
+    draftCount,
+    draftEquals,
+    draftFromApplied,
+    emptyDraft,
+    type FilterDraft,
+} from './filter-draft';
+import panelStyles from './filters-popover.module.scss';
+import { FiltersSheet } from './filters-sheet';
+import { useBuiltinFilterNav } from './use-builtin-filter-nav';
 
 interface Props {
     defs: VariableRow[];
     selectedVarFilters: Record<string, string>;
+    builtins: BuiltinFilterState;
+    facets: BoardFacets;
 }
 
-export function FiltersPopover({ defs, selectedVarFilters }: Props) {
+// Always rendered. Opening seeds a local draft from the applied state; Apply
+// writes the whole draft to the URL in one navigation (Reset writes an empty
+// one). The badge shows what is APPLIED, not what is drafted.
+export function FiltersPopover({
+    defs,
+    selectedVarFilters,
+    builtins,
+    facets,
+}: Props) {
     const [open, setOpen] = useState(false);
     const rootRef = useRef<HTMLDivElement>(null);
     const panelRef = useRef<HTMLDivElement>(null);
+    const { applyFilters, isPending } = useBuiltinFilterNav();
 
     const filterDefs = defs.filter((d) => d.role === 'filter');
-    // Variable filters only — the verified toggle lives in the band now and
-    // isn't part of this popover or its count.
-    const count = Object.keys(selectedVarFilters).length;
+    const variableKeys = filterDefs.map((d) => d.nameNormalized);
+    const applied = draftFromApplied(builtins, selectedVarFilters);
+    const [draft, setDraft] = useState<FilterDraft>(applied);
+    const count = draftCount(applied);
 
+    const openSheet = () => {
+        setDraft(draftFromApplied(builtins, selectedVarFilters));
+        setOpen(true);
+    };
     const close = () => setOpen(false);
-
     usePopoverFocus({ open, onClose: close, panelRef });
 
     // Outside-click closes too; Escape and Tab-trap come from usePopoverFocus.
@@ -37,7 +65,16 @@ export function FiltersPopover({ defs, selectedVarFilters }: Props) {
         return () => document.removeEventListener('mousedown', onDown);
     }, [open]);
 
-    if (filterDefs.length === 0) return null;
+    const onApply = () => {
+        applyFilters(draft, variableKeys);
+        close();
+    };
+    const onReset = () => {
+        const d = emptyDraft();
+        setDraft(d);
+        applyFilters(d, variableKeys);
+        close();
+    };
 
     return (
         <div className={styles.popoverRoot} ref={rootRef}>
@@ -46,7 +83,7 @@ export function FiltersPopover({ defs, selectedVarFilters }: Props) {
                 className={`${mastheadStyles.chip} ${count > 0 ? mastheadStyles.chipActive : ''}`}
                 aria-haspopup="dialog"
                 aria-expanded={open}
-                onClick={() => setOpen((o) => !o)}
+                onClick={() => (open ? close() : openSheet())}
             >
                 <Sliders size={13} aria-hidden />
                 Filters
@@ -57,14 +94,20 @@ export function FiltersPopover({ defs, selectedVarFilters }: Props) {
             {open && (
                 <div
                     ref={panelRef}
-                    className={styles.popoverPanel}
+                    className={`${styles.popoverPanel} ${panelStyles.panel}`}
                     role="dialog"
                     aria-modal="true"
                     aria-label="Filters"
                 >
-                    <VariablePills
-                        defs={filterDefs}
-                        selected={selectedVarFilters}
+                    <FiltersSheet
+                        draft={draft}
+                        onChange={setDraft}
+                        onApply={onApply}
+                        onReset={onReset}
+                        dirty={!draftEquals(draft, applied)}
+                        facets={facets}
+                        filterDefs={filterDefs}
+                        isPending={isPending}
                     />
                 </div>
             )}

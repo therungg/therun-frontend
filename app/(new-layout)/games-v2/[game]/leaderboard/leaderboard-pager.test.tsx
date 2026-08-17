@@ -42,7 +42,6 @@ vi.mock('./manual-inspector', () => ({
 vi.mock('./bulk-bar', () => ({ BoardBulkBar: () => null }));
 vi.mock('./export-button', () => ({ ExportButton: () => null }));
 vi.mock('../filters/filters-popover', () => ({ FiltersPopover: () => null }));
-vi.mock('../filters/verified-toggle', () => ({ VerifiedToggle: () => null }));
 vi.mock('../shared/owner-hide-identity-dialog', () => ({
     OwnerHideIdentityDialog: (props: { open: boolean; onDone: () => void }) =>
         props.open ? (
@@ -118,6 +117,14 @@ function renderPager(over: {
             subcategoryDefKeys={[]}
             variableDefs={[]}
             selectedVarFilters={{}}
+            builtins={{
+                verified: false,
+                video: null,
+                from: null,
+                to: null,
+                country: null,
+            }}
+            facets={{ countries: [], minDate: null }}
         />,
     );
 }
@@ -251,6 +258,14 @@ describe('LeaderboardPager — un-hide affordance', () => {
                 subcategoryDefKeys={[]}
                 variableDefs={[]}
                 selectedVarFilters={{}}
+                builtins={{
+                    verified: false,
+                    video: null,
+                    from: null,
+                    to: null,
+                    country: null,
+                }}
+                facets={{ countries: [], minDate: null }}
             />,
         );
         expect(screen.getByText(/shown on this board as/)).toBeInTheDocument();

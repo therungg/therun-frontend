@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname, useSearchParams } from 'next/navigation';
+import { applyDraftToParams, type FilterDraft } from './filter-draft';
 import { useBoardNav } from './use-board-nav';
 
 type BuiltinKey = 'verified' | 'video' | 'from' | 'to' | 'country';
@@ -38,5 +39,13 @@ export function useBuiltinFilterNav() {
             else sp.delete('to');
         }, 'builtin:range');
 
-    return { setBuiltin, setRange, isPending, pendingKey };
+    /**
+     * The Filters sheet's one write: the whole draft — built-ins and the
+     * category's own filter values — lands in a single navigation, so a
+     * sheetful of changes costs one board fetch instead of six.
+     */
+    const applyFilters = (d: FilterDraft, variableKeys: string[]) =>
+        push((sp) => applyDraftToParams(sp, d, variableKeys), 'builtin:apply');
+
+    return { setBuiltin, setRange, applyFilters, isPending, pendingKey };
 }
