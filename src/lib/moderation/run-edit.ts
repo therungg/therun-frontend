@@ -1,3 +1,4 @@
+import type { VodReviewPatch } from '../../../types/leaderboards.types';
 import { meFetch } from './mod-fetch';
 
 /**
@@ -14,6 +15,8 @@ export interface EditRunInput {
     platform?: string;
     emulator?: boolean;
     leaderboardEligible?: boolean;
+    /** explicit `null` clears the whole review; changing `vodUrl` clears it server-side */
+    vodReview?: VodReviewPatch | null;
     /** Mandatory, min 10 characters — the endpoint 400s without it. */
     reason: string;
 }
