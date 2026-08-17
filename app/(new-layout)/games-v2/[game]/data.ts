@@ -12,6 +12,7 @@ import {
     getVariables,
 } from '~src/lib/leaderboards-v1';
 import type { VariableRow } from '../../../../types/leaderboards.types';
+import { parseBuiltinParams } from './filters/builtin-params';
 import {
     filterPbsToFeatured,
     RECENT_PB_FETCH_LIMIT,
@@ -42,6 +43,9 @@ const RESERVED_LOWER = new Set([
     'verified',
     'country',
     'year',
+    'from',
+    'to',
+    'video',
     'page',
     'pagesize',
     'timing',
@@ -101,6 +105,7 @@ export async function loadGamePageData(
             sessionUsername,
             subcategoryValueCounts: {},
             categoryBoardCounts: {},
+            facets: { countries: [], minDate: null },
             activeFilters: emptyFilters(),
         };
     }
@@ -109,6 +114,7 @@ export async function loadGamePageData(
         variables: [],
         reservedParams: [],
         validCombinations: { mode: 'open' as const },
+        facets: { countries: [], minDate: null },
     }));
 
     const subVarNames = new Set(
@@ -138,7 +144,8 @@ export async function loadGamePageData(
     }
 
     const combined = sp.combined === '1' || sp.combined === 'true';
-    const verified = sp.verified === 'true';
+    const builtins = parseBuiltinParams(sp);
+    const verified = builtins.verified;
     const page = sp.page ? Math.max(1, parseInt(sp.page, 10) || 1) : 1;
     const pageSize = sp.pageSize
         ? Math.min(
@@ -153,6 +160,10 @@ export async function loadGamePageData(
         subcategoryValues,
         combined,
         verified,
+        video: builtins.video ?? undefined,
+        from: builtins.from ?? undefined,
+        to: builtins.to ?? undefined,
+        country: builtins.country ?? undefined,
         page,
         pageSize,
         varFilters,
@@ -215,11 +226,13 @@ export async function loadGamePageData(
         sessionUsername,
         subcategoryValueCounts,
         categoryBoardCounts,
+        facets: varsResp.facets,
         activeFilters: {
             subcategoryValues,
             varFilters,
             combined,
             verified,
+            builtins,
             page,
             pageSize,
         },
@@ -364,6 +377,7 @@ function emptyFilters() {
         varFilters: {} as Record<string, string>,
         combined: false,
         verified: false,
+        builtins: parseBuiltinParams({}),
         page: 1,
         pageSize: DEFAULT_PAGE_SIZE,
     };

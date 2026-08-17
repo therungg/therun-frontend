@@ -2,6 +2,7 @@
 
 import { cacheLife, cacheTag } from 'next/cache';
 import type {
+    BoardFacets,
     LeaderboardExportResponse,
     LeaderboardResponse,
     ManualTimeDetail,
@@ -30,6 +31,13 @@ export interface LeaderboardQuery {
     /** Filter variables, keyed by `nameNormalized` (no `var_` prefix). */
     varFilters?: Record<string, string>;
     verified?: boolean;
+    /** Built-in narrowing filters; see docs/plans/2026-08-17-board-filters-design.md. */
+    video?: 'required' | 'missing';
+    /** 'YYYY-MM-DD' inclusive bounds of the as-of window. */
+    from?: string;
+    to?: string;
+    /** ISO alpha-2. */
+    country?: string;
     page?: number;
     pageSize?: number;
 }
@@ -59,6 +67,10 @@ function buildLeaderboardQS(q: LeaderboardQuery): string {
         }
     }
     if (q.verified) sp.set('verified', 'true');
+    if (q.video) sp.set('video', q.video);
+    if (q.from) sp.set('from', q.from);
+    if (q.to) sp.set('to', q.to);
+    if (q.country) sp.set('country', q.country);
     if (q.page) sp.set('page', String(q.page));
     if (q.pageSize) sp.set('pageSize', String(q.pageSize));
     return sp.toString();
@@ -208,6 +220,7 @@ export async function getVariables(
     variables: VariableRow[];
     reservedParams: string[];
     validCombinations: ValidCombinations;
+    facets: BoardFacets;
 }> {
     'use cache';
     cacheLife('hours');
@@ -219,6 +232,7 @@ export async function getVariables(
         variables: body.variables ?? [],
         reservedParams: body.reservedParams ?? [],
         validCombinations: body.validCombinations ?? { mode: 'open' },
+        facets: body.facets ?? { countries: [], minDate: null },
     };
 }
 

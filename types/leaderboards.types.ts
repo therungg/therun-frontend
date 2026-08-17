@@ -160,11 +160,20 @@ export type ValidCombinations =
     | ValidCombinationsOpen
     | ValidCombinationsManaged;
 
+export interface BoardFacets {
+    /** Sorted alpha-2 codes of runners on this category's boards. */
+    countries: string[];
+    /** Earliest run/manual-time date, 'YYYY-MM-DD'; null for an empty category. */
+    minDate: string | null;
+}
+
 // Wire shape of the public /variables response.
 export interface VariablesResponse {
     variables: VariableRow[];
     reservedParams: string[];
     validCombinations: ValidCombinations;
+    /** Absent on backends that predate board built-in filters. */
+    facets?: BoardFacets;
 }
 
 export interface LeaderboardEntry {

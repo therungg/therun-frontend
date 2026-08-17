@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTransition } from 'react';
+import { BUILTIN_PARAM_KEYS } from './builtin-params';
 import styles from './clear-filters-button.module.scss';
 
 interface Props {
@@ -16,7 +17,7 @@ export function ClearFiltersButton({ variableKeys }: Props) {
 
     const onClick = () => {
         const sp = new URLSearchParams(searchParams.toString());
-        sp.delete('verified');
+        for (const k of BUILTIN_PARAM_KEYS) sp.delete(k);
         sp.delete('page');
         sp.delete('combined');
         for (const k of variableKeys) sp.delete(k);
