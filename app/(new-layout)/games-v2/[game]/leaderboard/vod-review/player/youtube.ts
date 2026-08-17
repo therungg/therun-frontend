@@ -59,10 +59,15 @@ export function createYouTubePlayer(
     videoId: string,
 ): VodPlayer {
     let player: YTPlayerLike | null = null;
+    // Create an inner container so the YouTube API can replace it without
+    // affecting React's reference to el. React only owns el (which stays empty);
+    // YouTube replaces the inner div, which React never tracked.
+    const inner = document.createElement('div');
+    el.appendChild(inner);
     const ready = loadYouTubeApi().then(
         (YT) =>
             new Promise<void>((resolve, reject) => {
-                player = new YT.Player(el, {
+                player = new YT.Player(inner, {
                     videoId,
                     playerVars: {
                         enablejsapi: 1,
@@ -100,6 +105,7 @@ export function createYouTubePlayer(
         },
         destroy: () => {
             player?.destroy();
+            el.replaceChildren();
             player = null;
         },
     };

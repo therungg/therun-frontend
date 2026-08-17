@@ -1,5 +1,7 @@
-import { describe, expect, it } from 'vitest';
+// @vitest-environment jsdom
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { detectVod } from './types';
+import { createYouTubePlayer } from './youtube';
 
 describe('detectVod', () => {
     it('recognises YouTube watch, short and embed links', () => {
@@ -26,5 +28,85 @@ describe('detectVod', () => {
     });
     it('returns null for everything else', () => {
         expect(detectVod('https://drive.google.com/file/d/abc')).toBeNull();
+    });
+});
+
+describe('createYouTubePlayer', () => {
+    let originalYT: (typeof window)['YT'];
+
+    beforeEach(() => {
+        // Save original window.YT
+        originalYT = typeof window !== 'undefined' ? window.YT : undefined;
+    });
+
+    afterEach(() => {
+        // Restore original window.YT
+        if (typeof window !== 'undefined') {
+            window.YT = originalYT;
+            // @ts-expect-error test cleanup of mock global
+            // biome-ignore lint/suspicious/noExplicitAny: test needs to clean up mocked globals
+            delete (window as any).onYouTubeIframeAPIReady;
+        }
+    });
+
+    it('destroy() does not throw and leaves el clean when API replaces inner div', async () => {
+        if (typeof window === 'undefined') {
+            // Skip test if window is not available (shouldn't happen in jsdom)
+            return;
+        }
+
+        // Mock the YouTube API: Player constructor simulates the real behavior
+        // by replacing the element it's given with an iframe
+        const mockYT = {
+            Player: class MockPlayer {
+                // @ts-expect-error mock constructor
+                constructor(el: HTMLElement, opts) {
+                    // Simulate YouTube's behavior: empty the element and add an iframe
+                    el.replaceChildren(document.createElement('iframe'));
+                    // Invoke onReady callback
+                    opts.events.onReady();
+                }
+
+                seekTo() {
+                    // mock stub
+                }
+                playVideo() {
+                    // mock stub
+                }
+                pauseVideo() {
+                    // mock stub
+                }
+                getCurrentTime() {
+                    return 0;
+                }
+                getDuration() {
+                    return 100;
+                }
+                setPlaybackRate() {
+                    // mock stub
+                }
+                destroy() {
+                    // mock stub
+                }
+            },
+        };
+        window.YT = mockYT;
+
+        const container = document.createElement('div');
+        const player = createYouTubePlayer(container, 'dQw4w9WgXcQ');
+
+        // Wait for ready
+        await player.ready;
+
+        // Verify the inner div was created and has content
+        expect(container.children.length).toBeGreaterThan(0);
+
+        // Destroy should not throw
+        expect(() => {
+            player.destroy();
+        }).not.toThrow();
+
+        // After destroy, el should be clean (no children)
+        expect(container.children.length).toBe(0);
     });
 });
