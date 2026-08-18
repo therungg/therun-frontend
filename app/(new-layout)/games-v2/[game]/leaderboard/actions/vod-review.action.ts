@@ -13,6 +13,7 @@ import {
     getRunByIdAsViewer,
 } from '~src/lib/run-detail-viewer';
 import type {
+    RunSplit,
     VodReview,
     VodReviewPatch,
 } from '../../../../../../types/leaderboards.types';
@@ -40,6 +41,7 @@ export async function loadVodReviewAction(target: VodReviewTarget): Promise<
           vodUrl: string | null;
           realTimeMs: number | null;
           timing: 'realtime' | 'gametime';
+          splits: RunSplit[];
       }
     | Fail
 > {
@@ -55,6 +57,7 @@ export async function loadVodReviewAction(target: VodReviewTarget): Promise<
                 vodUrl: d.vodUrl,
                 realTimeMs: d.realTime ?? d.time,
                 timing: 'realtime',
+                splits: d.splits ?? [],
             };
         }
         const d = await getManualTimeByIdAsViewer(
@@ -68,6 +71,7 @@ export async function loadVodReviewAction(target: VodReviewTarget): Promise<
             vodUrl: d.evidenceUrl,
             realTimeMs: d.timing === 'realtime' ? d.timeMs : null,
             timing: d.timing,
+            splits: [],
         };
     } catch {
         return { error: 'Could not load the review.' };
