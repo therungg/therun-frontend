@@ -19,6 +19,7 @@ const mocks = vi.hoisted(() => ({
      * gate under test (the row only decides whether to show a button). */
     tableProps: { current: null as null | Record<string, unknown> },
     inspectorProps: { current: null as null | Record<string, unknown> },
+    manualInspectorProps: { current: null as null | Record<string, unknown> },
     selfAnonymizeStateAction: vi.fn(),
     fetchLeaderboardPage: vi.fn(),
     findRunnerPage: vi.fn(),
@@ -37,7 +38,10 @@ vi.mock('./run-inspector', () => ({
     },
 }));
 vi.mock('./manual-inspector', () => ({
-    ManualInspector: () => <div data-testid="manual-inspector" />,
+    ManualInspector: (props: Record<string, unknown>) => {
+        mocks.manualInspectorProps.current = props;
+        return <div data-testid="manual-inspector" />;
+    },
 }));
 vi.mock('./bulk-bar', () => ({ BoardBulkBar: () => null }));
 vi.mock('./export-button', () => ({ ExportButton: () => null }));
@@ -142,6 +146,7 @@ beforeEach(() => {
     vi.clearAllMocks();
     mocks.tableProps.current = null;
     mocks.inspectorProps.current = null;
+    mocks.manualInspectorProps.current = null;
 });
 
 describe('LeaderboardPager — owner gate', () => {
@@ -176,7 +181,7 @@ describe('LeaderboardPager — owner gate', () => {
         expect(screen.queryByTestId('inspector')).toBeNull();
     });
 
-    it('refuses the visitor’s own set time (runId == null)', () => {
+    it('opens ManualInspector in owner mode on the visitor’s own set time', () => {
         const manual = entry({
             runId: null,
             manualTimeId: 3,
@@ -185,7 +190,36 @@ describe('LeaderboardPager — owner gate', () => {
         renderPager({ entries: [manual] });
         moderate(manual);
         expect(screen.queryByTestId('inspector')).toBeNull();
+        expect(screen.getByTestId('manual-inspector')).toBeInTheDocument();
+        expect(mocks.manualInspectorProps.current?.mode).toBe('owner');
+        // A single row is in scope for an owner — no stepping to a
+        // stranger's set time.
+        expect(mocks.manualInspectorProps.current?.onPrev).toBeUndefined();
+        expect(mocks.manualInspectorProps.current?.onNext).toBeUndefined();
+    });
+
+    it('refuses another runner’s set time', () => {
+        const manual = entry({
+            runId: null,
+            manualTimeId: 3,
+            source: 'manual',
+            runnerName: 'Someone',
+        });
+        renderPager({ entries: [manual] });
+        moderate(manual);
         expect(screen.queryByTestId('manual-inspector')).toBeNull();
+    });
+
+    it('gives a moderator mod mode on a set time, even someone else’s', () => {
+        const manual = entry({
+            runId: null,
+            manualTimeId: 3,
+            source: 'manual',
+            runnerName: 'Someone',
+        });
+        renderPager({ canManage: true, entries: [manual] });
+        moderate(manual);
+        expect(mocks.manualInspectorProps.current?.mode).toBe('mod');
     });
 
     it('gives a moderator mod mode, even on their own run', () => {
