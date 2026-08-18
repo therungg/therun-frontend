@@ -20,6 +20,27 @@ const mocks = vi.hoisted(() => ({
     selfSetManualEvidenceAction: vi.fn(),
     updateManualTimeAction: vi.fn(),
     attachVodAction: vi.fn(),
+    loadVodReviewAction: vi.fn(),
+}));
+
+vi.mock('./actions/vod-review.action', () => ({
+    loadVodReviewAction: mocks.loadVodReviewAction,
+    saveVodReviewAction: vi.fn(),
+}));
+// The real factory loads Twitch/YouTube embed scripts, which jsdom can't;
+// a ready fake lets the workbench become interactive in the pane tests.
+vi.mock('./vod-review/player/create-player', () => ({
+    createVodPlayer: () => ({
+        ready: Promise.resolve(),
+        supportsRate: false,
+        seek: vi.fn(),
+        play: vi.fn(),
+        pause: vi.fn(),
+        getTime: () => 0,
+        setRate: vi.fn(),
+        duration: () => 100,
+        destroy: vi.fn(),
+    }),
 }));
 
 vi.mock('~src/actions/run-user-actions.action', () => ({
@@ -174,7 +195,28 @@ beforeEach(() => {
     mocks.selfSetManualEvidenceAction.mockResolvedValue({ ok: true });
     mocks.updateManualTimeAction.mockResolvedValue({ ok: true });
     mocks.attachVodAction.mockResolvedValue({ ok: true, url: null });
+    mocks.loadVodReviewAction.mockResolvedValue({
+        ok: true,
+        vodReview: null,
+        vodUrl: null,
+        realTimeMs: 90_000,
+        timing: 'realtime',
+        splits: [],
+    });
 });
+
+/** jsdom has no matchMedia; the pane hook treats that as "too narrow". */
+function stubViewport(wide: boolean) {
+    Object.defineProperty(window, 'matchMedia', {
+        configurable: true,
+        writable: true,
+        value: vi.fn().mockReturnValue({
+            matches: wide,
+            addEventListener: vi.fn(),
+            removeEventListener: vi.fn(),
+        }),
+    });
+}
 
 describe('RunInspector owner mode', () => {
     it('offers one owner verb and no moderator verdict', () => {
@@ -339,6 +381,89 @@ describe('RunInspector owner mode', () => {
         expect(
             screen.queryByRole('button', { name: /review vod/i }),
         ).toBeNull();
+    });
+
+    // The VOD review workbench moves out of the drawer into a companion pane
+    // beside it when the viewport is wide enough; the drawer keeps its summary
+    // and verbs and shows a "reviewing" card in the player's place. Narrow
+    // viewports keep the workbench inline, as before.
+    describe('review pane', () => {
+        const vodUrl = 'https://www.twitch.tv/videos/40861387';
+
+        it('opens the workbench in a pane beside the drawer, with a summary card in the drawer', async () => {
+            stubViewport(true);
+            renderInspector({ mode: 'mod', vodUrl });
+            fireEvent.click(
+                screen.getByRole('button', { name: /review vod/i }),
+            );
+
+            const pane = await screen.findByRole('complementary', {
+                name: /vod review/i,
+            });
+            expect(pane).toBeInTheDocument();
+            // The drawer's evidence block holds its place with the card,
+            // not the workbench.
+            expect(
+                screen.getByText(/twitch vod · reviewing/i),
+            ).toBeInTheDocument();
+            expect(screen.getByText(/nothing marked yet/i)).toBeInTheDocument();
+            // The workbench itself lives in the pane.
+            await waitFor(() =>
+                expect(
+                    pane.querySelector('[aria-label="VOD review"] button'),
+                ).toBeTruthy(),
+            );
+        });
+
+        it('the card mirrors the workbench markers live', async () => {
+            stubViewport(true);
+            renderInspector({ mode: 'mod', vodUrl });
+            fireEvent.click(
+                screen.getByRole('button', { name: /review vod/i }),
+            );
+            // Wait for the workbench to be interactive, then set a marker.
+            const setStart = await screen.findByRole('button', {
+                name: /set start/i,
+            });
+            await waitFor(() => expect(setStart).toBeEnabled());
+            fireEvent.click(setStart);
+            expect(
+                await screen.findByText(/start 0:00\.000/),
+            ).toBeInTheDocument();
+        });
+
+        it('Close review from the card closes the pane', async () => {
+            stubViewport(true);
+            renderInspector({ mode: 'mod', vodUrl });
+            fireEvent.click(
+                screen.getByRole('button', { name: /review vod/i }),
+            );
+            await screen.findByRole('complementary', { name: /vod review/i });
+            // Two "Close review" controls exist (card + pane bar); either works.
+            fireEvent.click(
+                screen.getAllByRole('button', { name: /close review/i })[0],
+            );
+            expect(
+                screen.queryByRole('complementary', { name: /vod review/i }),
+            ).toBeNull();
+            expect(screen.queryByText(/twitch vod · reviewing/i)).toBeNull();
+        });
+
+        it('falls back to the inline workbench on a narrow viewport', async () => {
+            stubViewport(false);
+            renderInspector({ mode: 'mod', vodUrl });
+            fireEvent.click(
+                screen.getByRole('button', { name: /review vod/i }),
+            );
+            // No pane, no card — the workbench renders inside the drawer.
+            expect(
+                screen.queryByRole('complementary', { name: /vod review/i }),
+            ).toBeNull();
+            expect(screen.queryByText(/twitch vod · reviewing/i)).toBeNull();
+            expect(
+                await screen.findByRole('button', { name: /set start/i }),
+            ).toBeInTheDocument();
+        });
     });
 
     // The owner self-service evidence editor — B5. `evidencePermissions` is

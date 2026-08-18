@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import type {
     RunSplit,
     VodReview,
+    VodReviewPatch,
 } from '../../../../../../types/leaderboards.types';
 import {
     loadVodReviewAction,
@@ -17,11 +18,15 @@ export function ReviewVodPanel({
     target,
     gameSlug,
     onSaved,
+    onChange,
 }: {
     url: string;
     target: VodReviewTarget;
     gameSlug: string;
     onSaved: () => void;
+    /** Live marker/retime state, for a summary rendered elsewhere (the
+     *  drawer's "reviewing" card while the workbench lives in the pane). */
+    onChange?: (patch: VodReviewPatch | null) => void;
 }) {
     const [state, setState] = useState<
         | { status: 'loading' }
@@ -80,6 +85,7 @@ export function ReviewVodPanel({
                 splits: state.splits,
             }}
             onSaved={onSaved}
+            onChange={onChange}
         />
     );
 }

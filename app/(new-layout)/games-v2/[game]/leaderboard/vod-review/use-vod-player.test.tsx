@@ -49,11 +49,12 @@ describe('useVodPlayer', () => {
         // same target every click and the video appears to skip randomly.
         const player = fakePlayer();
         let reported = 0;
-        player.seek = vi.fn((s: number) => {
+        const seek = vi.fn((s: number) => {
             // The clock only catches up to the previous seek on the next call.
             reported = player.time;
             player.time = s;
         });
+        player.seek = seek;
         player.getTime = () => reported;
         const { result } = renderHook(() =>
             useVodPlayer({
@@ -75,9 +76,7 @@ describe('useVodPlayer', () => {
         });
         // Three clicks must request three distinct, increasing frames — not
         // the same frame re-requested because the stale clock disagreed.
-        const targetFrames = player.seek.mock.calls.map((c) =>
-            Math.floor(c[0] * 60),
-        );
+        const targetFrames = seek.mock.calls.map((c) => Math.floor(c[0] * 60));
         expect(targetFrames).toEqual([1, 2, 3]);
         expect(result.current.cursorFrame).toBe(3);
     });
