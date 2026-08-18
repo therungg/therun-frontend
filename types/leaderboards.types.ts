@@ -307,6 +307,8 @@ export interface RunDetail {
     runDate: string;
     vodUrl: string | null;
     vodReview?: VodReview | null;
+    /** PB split times for VOD split-jumps; `[]` unless this run is the PB. */
+    splits?: RunSplit[];
     verificationStatus: 'pending' | 'verified' | 'rejected';
     variables: Record<string, string>;
     origin?: RunOrigin;
@@ -483,6 +485,24 @@ export interface VodReview {
     fps: number;
     runner?: VodReviewAuthor;
     mod?: VodReviewAuthor & { retimedMs: number | null; by: number };
+}
+
+/**
+ * A finished run's per-split cumulative times, for the VOD-review split jumps.
+ * Returned by the run-detail read ONLY when the run is the current PB (its real
+ * time equals the PB's final cumulative split); otherwise `splits` is `[]` and
+ * the workbench shows "splits not available". Manual times never carry splits.
+ */
+export interface RunSplit {
+    /** Zero-based segment ordinal — pairs with a VodMarker's `splitIndex`. */
+    index: number;
+    name: string;
+    /** Cumulative real (RTA) time from run start to this split, ms. */
+    splitTimeMs: number;
+    /** Cumulative game-time split, ms, when the board stores one. Display only —
+     *  a VOD is real footage, so frame anchoring always uses `splitTimeMs`. */
+    gameSplitTimeMs: number | null;
+    segmentCount: number;
 }
 
 /** What a client sends: one author's markers + fps. `null` clears (mod only). */

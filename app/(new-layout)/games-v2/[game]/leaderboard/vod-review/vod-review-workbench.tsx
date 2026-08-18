@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { toast } from 'react-toastify';
 import type {
+    RunSplit,
     VodMarker,
     VodReviewPatch,
 } from '../../../../../../types/leaderboards.types';
@@ -29,6 +30,12 @@ import {
     retimeMs,
     setMarker,
 } from './retime';
+import {
+    nextSplitPos,
+    prevSplitPos,
+    splitTargetFrame,
+    startFrameOf,
+} from './split-nav';
 import { useVodPlayer } from './use-vod-player';
 import styles from './vod-review.module.scss';
 
@@ -43,6 +50,8 @@ export interface VodReviewWorkbenchProps {
         runnerMarkers?: VodMarker[];
         realTimeMs: number | null;
         timing: 'realtime' | 'gametime';
+        /** PB split times for split-jumps; empty unless this run is the PB. */
+        splits?: RunSplit[];
     };
     onChange?: (patch: VodReviewPatch | null) => void;
     onSaved?: (patch: VodReviewPatch | null, appliedMs?: number) => void;
@@ -105,6 +114,37 @@ export function VodReviewWorkbench({
         [markers, player, update],
     );
 
+    // Split jumps: anchor the run's known cumulative split times onto the
+    // VOD's frame timeline, using the `start` marker as frame 0 of the run.
+    const splits = useMemo(() => initial.splits ?? [], [initial.splits]);
+    const startFrame = useMemo(() => startFrameOf(markers), [markers]);
+    const finishMs = initial.realTimeMs;
+    const canJumpSplits = ready && startFrame != null;
+
+    const jumpToSplitPos = useCallback(
+        (pos: number) => {
+            if (startFrame == null) return;
+            player.seekToFrame(
+                splitTargetFrame(startFrame, splits[pos].splitTimeMs, fps),
+            );
+        },
+        [startFrame, splits, fps, player],
+    );
+    const jumpNextSplit = useCallback(() => {
+        if (startFrame == null) return;
+        const pos = nextSplitPos(splits, startFrame, fps, player.cursorFrame);
+        if (pos != null) jumpToSplitPos(pos);
+    }, [startFrame, splits, fps, player.cursorFrame, jumpToSplitPos]);
+    const jumpPrevSplit = useCallback(() => {
+        if (startFrame == null) return;
+        const pos = prevSplitPos(splits, startFrame, fps, player.cursorFrame);
+        if (pos != null) jumpToSplitPos(pos);
+    }, [startFrame, splits, fps, player.cursorFrame, jumpToSplitPos]);
+    const jumpToFinish = useCallback(() => {
+        if (startFrame == null || finishMs == null) return;
+        player.seekToFrame(startFrame + Math.round((finishMs / 1000) * fps));
+    }, [startFrame, finishMs, fps, player]);
+
     const retimed = useMemo(() => retimeMs(markers, fps), [markers, fps]);
     const delta =
         retimed != null && initial.realTimeMs != null
@@ -130,6 +170,9 @@ export function VodReviewWorkbench({
             '[': () => mark('start'),
             ']': () => mark('end'),
             m: () => isMod && mark('note'),
+            n: () => isMod && jumpNextSplit(),
+            p: () => isMod && jumpPrevSplit(),
+            e: () => isMod && jumpToFinish(),
         };
         const fn = map[e.key];
         if (fn) {
@@ -304,6 +347,69 @@ export function VodReviewWorkbench({
                     {formatFrameTime(player.cursorFrame, fps)}
                 </span>
             </div>
+
+            {isMod && (
+                <div className={styles.splitNav}>
+                    <span className={styles.splitNavLabel}>Splits</span>
+                    {splits.length > 0 ? (
+                        <>
+                            <button
+                                type="button"
+                                disabled={!canJumpSplits}
+                                onClick={jumpPrevSplit}
+                                title="Previous split (p)"
+                            >
+                                ‹ Split
+                            </button>
+                            <button
+                                type="button"
+                                disabled={!canJumpSplits}
+                                onClick={jumpNextSplit}
+                                title="Next split (n)"
+                            >
+                                Split ›
+                            </button>
+                            <select
+                                aria-label="Jump to split"
+                                disabled={!canJumpSplits}
+                                value=""
+                                onChange={(e) => {
+                                    if (e.target.value !== '')
+                                        jumpToSplitPos(Number(e.target.value));
+                                }}
+                            >
+                                <option value="">Jump to split…</option>
+                                {splits.map((s, i) => (
+                                    <option key={s.index} value={i}>
+                                        {i + 1}. {s.name} ·{' '}
+                                        {formatMs(s.splitTimeMs)}
+                                    </option>
+                                ))}
+                            </select>
+                        </>
+                    ) : (
+                        <span className={styles.note}>
+                            Splits not available for this run.
+                        </span>
+                    )}
+                    {finishMs != null && (
+                        <button
+                            type="button"
+                            disabled={!canJumpSplits}
+                            onClick={jumpToFinish}
+                            title="Skip to finish (e)"
+                        >
+                            Skip to finish
+                        </button>
+                    )}
+                    {startFrame == null &&
+                        (splits.length > 0 || finishMs != null) && (
+                            <span className={styles.note}>
+                                Set the start marker to enable jumps.
+                            </span>
+                        )}
+                </div>
+            )}
 
             <div className={styles.markButtons}>
                 <button

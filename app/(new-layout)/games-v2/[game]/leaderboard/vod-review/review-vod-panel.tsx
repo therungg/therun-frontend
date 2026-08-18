@@ -1,7 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { VodReview } from '../../../../../../types/leaderboards.types';
+import type {
+    RunSplit,
+    VodReview,
+} from '../../../../../../types/leaderboards.types';
 import {
     loadVodReviewAction,
     type VodReviewTarget,
@@ -28,6 +31,7 @@ export function ReviewVodPanel({
               vodReview: VodReview | null;
               realTimeMs: number | null;
               timing: 'realtime' | 'gametime';
+              splits: RunSplit[];
           }
     >({ status: 'loading' });
 
@@ -43,6 +47,7 @@ export function ReviewVodPanel({
                           vodReview: res.vodReview,
                           realTimeMs: res.realTimeMs,
                           timing: res.timing,
+                          splits: res.splits,
                       },
             );
         });
@@ -72,6 +77,7 @@ export function ReviewVodPanel({
                 runnerMarkers: state.vodReview?.runner?.markers,
                 realTimeMs: state.realTimeMs,
                 timing: state.timing,
+                splits: state.splits,
             }}
             onSaved={onSaved}
         />
