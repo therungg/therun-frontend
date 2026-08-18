@@ -347,3 +347,97 @@
     letter-spacing: 0.04em;
     color: var(--bs-secondary-color);
 }
+
+// ---------- companion pane (beside the inspector drawer) ----------
+// The drawer is `min(38rem, 100%)` wide (run-inspector.module.scss); the
+// pane docks against its left edge and takes what's left, capped so the
+// video never outgrows what a mod can frame-step comfortably. Slides in
+// from behind the drawer. Only mounted at ≥1150px (REVIEW_PANE_MIN_VIEWPORT
+// in review-pane.tsx); narrower viewports keep the workbench inline.
+
+.pane {
+    z-index: dt.$z-drawer;
+    right: 38rem;
+    width: min(40rem, calc(100vw - 38rem));
+    border-right: 1px solid var(--bs-border-color);
+    @include board.board-overlay-enter(slide-right);
+}
+
+.paneBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-md dt.$spacing-lg;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.paneLabel {
+    font-size: dt.$font-size-2xs;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--bs-secondary-color);
+    font-weight: dt.$label-font-weight;
+}
+
+.paneClose {
+    @include board.control-pill;
+    border: 1px solid var(--bs-border-color);
+    background: var(--bs-tertiary-bg);
+    padding: dt.$spacing-xs dt.$spacing-md;
+    color: var(--bs-body-color);
+
+    &:hover {
+        border-color: var(--bs-primary);
+        color: var(--bs-primary);
+    }
+}
+
+.paneBody {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: dt.$spacing-lg;
+}
+
+// ---------- "reviewing" card (in the drawer, in the player's place) ----------
+
+.reviewingCard {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-md;
+    border: 1px solid var(--bs-primary);
+    border-radius: dt.$radius-md;
+    background: rgba(var(--bs-primary-rgb), 0.08);
+}
+
+.reviewingMain {
+    min-width: 0;
+}
+
+.reviewingTitle {
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+}
+
+.reviewingSummary {
+    @include board.mono-time;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.reviewingClose {
+    @include board.control-pill;
+    flex: none;
+    border: 1px solid var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.1);
+    padding: dt.$spacing-xs dt.$spacing-md;
+    color: var(--bs-primary);
+    font-weight: 600;
+}
