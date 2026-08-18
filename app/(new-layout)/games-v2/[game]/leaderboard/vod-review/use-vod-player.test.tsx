@@ -43,6 +43,86 @@ describe('useVodPlayer', () => {
         act(() => result.current.stepFrames(-5));
         expect(result.current.cursorFrame).toBe(0);
     });
+    it('keeps stepping forward when the player clock lags a seek behind (Twitch)', async () => {
+        // Twitch's getCurrentTime() keeps reporting the PRE-seek time after a
+        // paused seek. If stepFrames trusts that stale clock it re-computes the
+        // same target every click and the video appears to skip randomly.
+        const player = fakePlayer();
+        let reported = 0;
+        player.seek = vi.fn((s: number) => {
+            // The clock only catches up to the previous seek on the next call.
+            reported = player.time;
+            player.time = s;
+        });
+        player.getTime = () => reported;
+        const { result } = renderHook(() =>
+            useVodPlayer({
+                url: 'https://twitch.tv/videos/1',
+                fps: 60,
+                factory: () => player,
+            }),
+        );
+        await act(async () => {
+            await player.ready;
+        });
+        // A BURST: three clicks before React re-renders, so every call sees
+        // the same closed-over cursorFrame. That's what "3 quick clicks only
+        // moved 1 step" is in the browser.
+        act(() => {
+            result.current.stepFrames(1);
+            result.current.stepFrames(1);
+            result.current.stepFrames(1);
+        });
+        // Three clicks must request three distinct, increasing frames — not
+        // the same frame re-requested because the stale clock disagreed.
+        const targetFrames = player.seek.mock.calls.map((c) =>
+            Math.floor(c[0] * 60),
+        );
+        expect(targetFrames).toEqual([1, 2, 3]);
+        expect(result.current.cursorFrame).toBe(3);
+    });
+    it('a burst of +1s clicks moves the full distance even with a live clock', async () => {
+        // Same burst on a player whose clock updates instantly (YouTube).
+        // Every click must still advance from the previous click's target.
+        const player = fakePlayer();
+        const { result } = renderHook(() =>
+            useVodPlayer({
+                url: 'https://youtu.be/dQw4w9WgXcQ',
+                fps: 60,
+                factory: () => player,
+            }),
+        );
+        await act(async () => {
+            await player.ready;
+        });
+        act(() => {
+            result.current.stepSeconds(1);
+            result.current.stepSeconds(1);
+            result.current.stepSeconds(1);
+        });
+        expect(result.current.cursorFrame).toBe(180);
+        expect(player.seek).toHaveBeenLastCalledWith(180.5 / 60);
+    });
+    it('still follows a scrub the user made inside the iframe', async () => {
+        // The stale-clock guard must not make us ignore a real clock move: if
+        // the user drags the player's own scrubber, the next step goes from
+        // THERE, not from our (now outdated) cursor.
+        const player = fakePlayer();
+        const { result } = renderHook(() =>
+            useVodPlayer({
+                url: 'https://youtu.be/dQw4w9WgXcQ',
+                fps: 60,
+                factory: () => player,
+            }),
+        );
+        await act(async () => {
+            await player.ready;
+        });
+        act(() => result.current.stepFrames(1)); // cursor 1
+        player.time = 10; // user scrubbed to 10s (frame 600) in the iframe
+        act(() => result.current.stepFrames(1));
+        expect(result.current.cursorFrame).toBe(601);
+    });
     it('reads the frame from the player clock at the current fps', async () => {
         const player = fakePlayer();
         const { result, rerender } = renderHook(
