@@ -101,6 +101,103 @@ describe('VodReviewWorkbench (mod)', () => {
             ),
         );
     });
+    it('jumps to a chosen split and to the finish, anchored on the start marker', async () => {
+        const player = fake();
+        render(
+            <VodReviewWorkbench
+                mode="mod"
+                {...base}
+                playerFactory={() => player}
+                initial={{
+                    fps: 60,
+                    markers: [{ kind: 'start', frame: 0 }],
+                    realTimeMs: 4200,
+                    timing: 'realtime',
+                    splits: [
+                        {
+                            index: 0,
+                            name: 'First',
+                            splitTimeMs: 1000,
+                            gameSplitTimeMs: null,
+                            segmentCount: 2,
+                        },
+                        {
+                            index: 1,
+                            name: 'Second',
+                            splitTimeMs: 2500,
+                            gameSplitTimeMs: null,
+                            segmentCount: 2,
+                        },
+                    ],
+                }}
+            />,
+        );
+        await waitFor(() =>
+            expect(screen.getByLabelText('Jump to split')).toBeEnabled(),
+        );
+        // Second split: 0 + round(2500/1000*60) = 150.
+        fireEvent.change(screen.getByLabelText('Jump to split'), {
+            target: { value: '1' },
+        });
+        expect(screen.getByText(/frame 150/)).toBeInTheDocument();
+        // Finish: 0 + round(4200/1000*60) = 252.
+        fireEvent.click(
+            screen.getByRole('button', { name: /skip to finish/i }),
+        );
+        expect(screen.getByText(/frame 252/)).toBeInTheDocument();
+    });
+    it('says splits are unavailable when the run has none', async () => {
+        render(
+            <VodReviewWorkbench
+                mode="mod"
+                {...base}
+                playerFactory={() => fake()}
+                initial={{
+                    fps: 60,
+                    markers: [{ kind: 'start', frame: 0 }],
+                    realTimeMs: 1000,
+                    timing: 'realtime',
+                    splits: [],
+                }}
+            />,
+        );
+        await waitFor(() =>
+            expect(
+                screen.getByText(/splits not available/i),
+            ).toBeInTheDocument(),
+        );
+    });
+    it('disables split jumps until the start marker is set', async () => {
+        render(
+            <VodReviewWorkbench
+                mode="mod"
+                {...base}
+                playerFactory={() => fake()}
+                initial={{
+                    fps: 60,
+                    markers: [],
+                    realTimeMs: 4200,
+                    timing: 'realtime',
+                    splits: [
+                        {
+                            index: 0,
+                            name: 'First',
+                            splitTimeMs: 1000,
+                            gameSplitTimeMs: null,
+                            segmentCount: 1,
+                        },
+                    ],
+                }}
+            />,
+        );
+        await waitFor(() =>
+            expect(screen.getByLabelText('Jump to split')).toBeInTheDocument(),
+        );
+        expect(screen.getByLabelText('Jump to split')).toBeDisabled();
+        expect(
+            screen.getByText(/set the start marker to enable jumps/i),
+        ).toBeInTheDocument();
+    });
     it('disables Apply retime when the set time is game time', async () => {
         render(
             <VodReviewWorkbench
