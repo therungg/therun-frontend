@@ -36,6 +36,7 @@ import type {
     LeaderboardEntry,
     ResolvedCategory,
     VariableRow,
+    VodReviewPatch,
 } from '../../../../../types/leaderboards.types';
 import type {
     HistoryEvent,
@@ -77,7 +78,9 @@ import { isOutlierImprovement, runBoardContext } from './run-context';
 import styles from './run-inspector.module.scss';
 import type { TimingKey } from './timing-columns';
 import { detectVod } from './vod-review/player/types';
+import { ReviewPane, useReviewPaneFits } from './vod-review/review-pane';
 import { ReviewVodPanel } from './vod-review/review-vod-panel';
+import { ReviewingCard } from './vod-review/reviewing-card';
 
 /**
  * Who is looking. `'mod'` is the full moderation surface; `'owner'` is the
@@ -302,6 +305,10 @@ function EvidenceSection({
     categorySlug,
     subcategoryKey,
     onMutated,
+    reviewing,
+    onToggleReview,
+    reviewPatch,
+    paneFits,
 }: {
     vodUrl: string | null;
     requireVideo: boolean;
@@ -312,6 +319,13 @@ function EvidenceSection({
     categorySlug: string;
     subcategoryKey: string;
     onMutated: () => void;
+    /** Review state lives in the inspector: the workbench renders in the
+     *  companion pane beside the drawer, so the drawer only shows a summary. */
+    reviewing: boolean;
+    onToggleReview: () => void;
+    reviewPatch: VodReviewPatch | null;
+    /** False on narrow viewports — then the workbench renders inline here. */
+    paneFits: boolean;
 }) {
     const isManual = entrySource === 'manual' && manualTimeId != null;
 
@@ -325,7 +339,6 @@ function EvidenceSection({
     const [text, setText] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
-    const [reviewing, setReviewing] = useState(false);
     const inputId = useId();
 
     const openEditor = () => {
@@ -459,7 +472,15 @@ function EvidenceSection({
 
     return (
         <div className={styles.evidence}>
-            {reviewing ? (
+            {reviewing && paneFits ? (
+                // Workbench is in the pane; hold its place with the summary.
+                <ReviewingCard
+                    url={url}
+                    patch={reviewPatch}
+                    onClose={onToggleReview}
+                />
+            ) : reviewing ? (
+                // Too narrow for the pane: host the workbench here, as before.
                 <ReviewVodPanel
                     url={url}
                     target={{ kind: 'run', runId }}
@@ -504,7 +525,7 @@ function EvidenceSection({
                     <button
                         type="button"
                         className={styles.vodEditBtn}
-                        onClick={() => setReviewing((v) => !v)}
+                        onClick={onToggleReview}
                     >
                         {reviewing ? 'Close review' : 'Review VOD'}
                     </button>
@@ -641,6 +662,30 @@ export function RunInspector({
     useEffect(() => {
         if (initialVerb) setActiveVerb(initialVerb);
     }, [initialVerb, runId]);
+
+    // VOD review. The workbench renders in a companion pane beside the drawer
+    // (or inline in the evidence block when the viewport is too narrow), so
+    // its open/closed state and its live marker summary live up here. Review
+    // stays open across j/k — the pane re-targets to the new run — but the
+    // summary is per run.
+    const [reviewing, setReviewing] = useState(false);
+    const [reviewPatch, setReviewPatch] = useState<VodReviewPatch | null>(null);
+    const paneFits = useReviewPaneFits();
+    useEffect(() => {
+        setReviewPatch(null);
+    }, [runId]);
+    const toggleReview = () => {
+        setReviewing((v) => !v);
+        setReviewPatch(null);
+    };
+    const reviewUrl = entry.vodUrl ?? null;
+    const reviewInPane =
+        reviewing &&
+        paneFits &&
+        !ownerMode &&
+        entry.source !== 'manual' &&
+        reviewUrl != null &&
+        detectVod(reviewUrl) != null;
 
     const [history, setHistory] = useState<HistoryEvent[] | null>(null);
     const [historyError, setHistoryError] = useState<string | null>(null);
@@ -985,6 +1030,17 @@ export function RunInspector({
                 className={`position-fixed top-0 start-0 w-100 h-100 border-0 p-0 ${styles.backdrop}`}
                 onClick={onClose}
             />
+            {reviewInPane && (
+                <ReviewPane
+                    key={runId}
+                    url={reviewUrl}
+                    target={{ kind: 'run', runId }}
+                    gameSlug={gameSlug}
+                    onSaved={onMutated}
+                    onChange={setReviewPatch}
+                    onClose={toggleReview}
+                />
+            )}
             <div
                 ref={panelRef}
                 className={`position-fixed top-0 end-0 h-100 bg-body shadow-lg d-flex flex-column ${styles.panel}`}
@@ -1059,6 +1115,10 @@ export function RunInspector({
                             categorySlug={categorySlug}
                             subcategoryKey={entrySubcategoryKey}
                             onMutated={onMutated}
+                            reviewing={reviewing}
+                            onToggleReview={toggleReview}
+                            reviewPatch={reviewPatch}
+                            paneFits={paneFits}
                         />
                     )}
 

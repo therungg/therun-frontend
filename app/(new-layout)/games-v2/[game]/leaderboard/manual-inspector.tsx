@@ -23,6 +23,7 @@ import type {
     LeaderboardEntry,
     ResolvedCategory,
     VariableRow,
+    VodReviewPatch,
 } from '../../../../../types/leaderboards.types';
 import type { UserEligibleRunRow } from '../../../../../types/moderation.types';
 import { loadUserEligibleRunsAction } from '../manage/moderation/shared/actions/eligible-runs.action';
@@ -39,7 +40,9 @@ import {
 import { relativeDate } from './relative-date';
 import styles from './run-inspector.module.scss';
 import { detectVod } from './vod-review/player/types';
+import { ReviewPane, useReviewPaneFits } from './vod-review/review-pane';
 import { ReviewVodPanel } from './vod-review/review-vod-panel';
+import { ReviewingCard } from './vod-review/reviewing-card';
 
 /** Who is looking. `'mod'` is the full moderation surface (default, so
  * existing callers — board-curation, the mod pager path — are unchanged);
@@ -169,7 +172,26 @@ export function ManualInspector({
 }: Props) {
     const ownerMode = mode === 'owner';
     const manualTimeId = entry.manualTimeId as number;
+    // VOD review — see RunInspector: workbench in a companion pane beside the
+    // drawer at wide viewports, inline in the evidence block otherwise. Open
+    // state survives j/k (the pane re-targets); the summary is per set time.
     const [reviewing, setReviewing] = useState(false);
+    const [reviewPatch, setReviewPatch] = useState<VodReviewPatch | null>(null);
+    const paneFits = useReviewPaneFits();
+    useEffect(() => {
+        setReviewPatch(null);
+    }, [manualTimeId]);
+    const toggleReview = () => {
+        setReviewing((v) => !v);
+        setReviewPatch(null);
+    };
+    const reviewUrl = entry.vodUrl ?? null;
+    const reviewInPane =
+        reviewing &&
+        paneFits &&
+        !ownerMode &&
+        reviewUrl != null &&
+        detectVod(reviewUrl) != null;
     const panelRef = useRef<HTMLDivElement>(null);
     // Portal target isn't available during SSR — mount client-side only.
     const [portalReady, setPortalReady] = useState(false);
@@ -352,6 +374,17 @@ export function ManualInspector({
                 className={`position-fixed top-0 start-0 w-100 h-100 border-0 p-0 ${styles.backdrop}`}
                 onClick={onClose}
             />
+            {reviewInPane && reviewUrl && (
+                <ReviewPane
+                    key={manualTimeId}
+                    url={reviewUrl}
+                    target={{ kind: 'manual', manualTimeId, gameId }}
+                    gameSlug={gameSlug}
+                    onSaved={onMutated}
+                    onChange={setReviewPatch}
+                    onClose={toggleReview}
+                />
+            )}
             <div
                 ref={panelRef}
                 className={`position-fixed top-0 end-0 h-100 bg-body shadow-lg d-flex flex-column ${styles.panel}`}
@@ -432,9 +465,7 @@ export function ManualInspector({
                                         <button
                                             type="button"
                                             className={styles.factLink}
-                                            onClick={() =>
-                                                setReviewing((v) => !v)
-                                            }
+                                            onClick={toggleReview}
                                         >
                                             {reviewing
                                                 ? 'Close review'
@@ -450,20 +481,32 @@ export function ManualInspector({
                                 </Link>
                             </div>
                         )}
-                        {!ownerMode && reviewing && entry.vodUrl && (
+                        {reviewInPane && reviewUrl && (
                             <div className="mt-2">
-                                <ReviewVodPanel
-                                    url={entry.vodUrl}
-                                    target={{
-                                        kind: 'manual',
-                                        manualTimeId,
-                                        gameId,
-                                    }}
-                                    gameSlug={gameSlug}
-                                    onSaved={onMutated}
+                                <ReviewingCard
+                                    url={reviewUrl}
+                                    patch={reviewPatch}
+                                    onClose={toggleReview}
                                 />
                             </div>
                         )}
+                        {!reviewInPane &&
+                            !ownerMode &&
+                            reviewing &&
+                            entry.vodUrl && (
+                                <div className="mt-2">
+                                    <ReviewVodPanel
+                                        url={entry.vodUrl}
+                                        target={{
+                                            kind: 'manual',
+                                            manualTimeId,
+                                            gameId,
+                                        }}
+                                        gameSlug={gameSlug}
+                                        onSaved={onMutated}
+                                    />
+                                </div>
+                            )}
                     </div>
 
                     {/* Owner mode gets the self-service evidence editor
