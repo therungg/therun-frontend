@@ -167,7 +167,7 @@ describe('VodReviewWorkbench (mod)', () => {
             ).toBeInTheDocument(),
         );
     });
-    it('disables split jumps until the start marker is set', async () => {
+    it('starts with a default start marker at frame 0, so split jumps work immediately', async () => {
         render(
             <VodReviewWorkbench
                 mode="mod"
@@ -191,12 +191,45 @@ describe('VodReviewWorkbench (mod)', () => {
             />,
         );
         await waitFor(() =>
-            expect(screen.getByLabelText('Jump to split')).toBeInTheDocument(),
+            expect(screen.getByLabelText('Jump to split')).toBeEnabled(),
+        );
+        // The rail shows the seeded start at 0:00.000.
+        expect(screen.getByText('0:00.000')).toBeInTheDocument();
+        expect(
+            screen.queryByText(/set the start marker to enable jumps/i),
+        ).toBeNull();
+        // Removing it disables the jumps again and says why.
+        fireEvent.click(
+            screen.getByRole('button', { name: /remove start marker/i }),
         );
         expect(screen.getByLabelText('Jump to split')).toBeDisabled();
         expect(
             screen.getByText(/set the start marker to enable jumps/i),
         ).toBeInTheDocument();
+    });
+
+    it('keeps a loaded start marker instead of overriding it with the default', async () => {
+        const player = fake();
+        render(
+            <VodReviewWorkbench
+                mode="mod"
+                {...base}
+                playerFactory={() => player}
+                initial={{
+                    fps: 60,
+                    markers: [{ kind: 'start', frame: 600 }],
+                    realTimeMs: null,
+                    timing: 'realtime',
+                }}
+            />,
+        );
+        await waitFor(() =>
+            expect(
+                screen.getByRole('button', { name: /set start/i }),
+            ).toBeEnabled(),
+        );
+        expect(screen.getByText('0:10.000')).toBeInTheDocument();
+        expect(screen.queryByText('0:00.000')).toBeNull();
     });
     it('disables Apply retime when the set time is game time', async () => {
         render(

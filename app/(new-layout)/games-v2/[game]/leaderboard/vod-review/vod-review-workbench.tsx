@@ -63,6 +63,18 @@ function toPatch(fps: number, markers: VodMarker[]): VodReviewPatch {
     return r === null ? { fps, markers } : { fps, markers, retimedMs: r };
 }
 
+/**
+ * The start marker defaults to frame 0 — most VODs begin at the run's start,
+ * so the common case needs only an `end` to retime, and split jumps (which
+ * anchor on `start`) work straight away. Loaded markers that already carry a
+ * start are left alone; Set start moves it like any other.
+ */
+export function withDefaultStart(markers: VodMarker[]): VodMarker[] {
+    return markers.some((m) => m.kind === 'start')
+        ? markers
+        : setMarker(markers, { kind: 'start', frame: 0 });
+}
+
 export function VodReviewWorkbench({
     mode,
     url,
@@ -78,7 +90,9 @@ export function VodReviewWorkbench({
     const [fpsChoice, setFpsChoice] = useState<'60' | '30' | 'other'>(
         initial.fps === 60 ? '60' : initial.fps === 30 ? '30' : 'other',
     );
-    const [markers, setMarkers] = useState<VodMarker[]>(initial.markers);
+    const [markers, setMarkers] = useState<VodMarker[]>(() =>
+        withDefaultStart(initial.markers),
+    );
     // Tracked for a future "unsaved changes" affordance; Save is gated on
     // having markers at all (see the controller ruling in the B5 brief),
     // not on this flag.
