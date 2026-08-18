@@ -369,7 +369,16 @@ export function LeaderboardPager({
         // Non-mods reach this only through their own row's Manage button.
         // Re-checked here rather than trusted from the row: this callback is
         // handed to every row, and the drawer it opens performs mutations.
-        if (!canManage && (!isOwnEntry(entry) || entry.runId == null)) return;
+        // A non-mod's own row is allowed through as long as it carries SOME
+        // id to inspect (a real run OR a set time) — both RunInspector and
+        // ManualInspector have an owner mode; there is simply nothing to
+        // open for a row with neither.
+        if (
+            !canManage &&
+            (!isOwnEntry(entry) ||
+                (entry.runId == null && entry.manualTimeId == null))
+        )
+            return;
         setInspectVerb(verb ?? null);
         if (entry.runId != null) {
             setInspectManualId(null);
@@ -712,45 +721,54 @@ export function LeaderboardPager({
                         }
                     />
                 )}
-            {canManage && inspectManualEntry != null && (
-                <ManualInspector
-                    entry={inspectManualEntry}
-                    gameSlug={gameSlug}
-                    gameId={gameId}
-                    categorySlug={categorySlug}
-                    subcategoryDefKeys={subcategoryDefKeys}
-                    gameTimeLabel={gameTimeLabel}
-                    showMilliseconds={showMilliseconds}
-                    onClose={() => {
-                        setInspectManualId(null);
-                        setInspectVerb(null);
-                    }}
-                    onMutated={boardRefresh}
-                    initialVerb={inspectVerb ?? undefined}
-                    onPrev={
-                        inspectManualIndex > 0
-                            ? () => {
-                                  setInspectVerb(null);
-                                  setInspectManualId(
-                                      manualEntries[inspectManualIndex - 1]
-                                          .manualTimeId ?? null,
-                                  );
-                              }
-                            : undefined
-                    }
-                    onNext={
-                        inspectManualIndex < manualEntries.length - 1
-                            ? () => {
-                                  setInspectVerb(null);
-                                  setInspectManualId(
-                                      manualEntries[inspectManualIndex + 1]
-                                          .manualTimeId ?? null,
-                                  );
-                              }
-                            : undefined
-                    }
-                />
-            )}
+            {(canManage ||
+                (inspectManualEntry != null &&
+                    isOwnEntry(inspectManualEntry))) &&
+                inspectManualEntry != null && (
+                    <ManualInspector
+                        entry={inspectManualEntry}
+                        gameSlug={gameSlug}
+                        gameId={gameId}
+                        mode={inspectorMode}
+                        categorySlug={categorySlug}
+                        subcategoryDefKeys={subcategoryDefKeys}
+                        gameTimeLabel={gameTimeLabel}
+                        showMilliseconds={showMilliseconds}
+                        onClose={() => {
+                            setInspectManualId(null);
+                            setInspectVerb(null);
+                        }}
+                        onMutated={boardRefresh}
+                        initialVerb={inspectVerb ?? undefined}
+                        // Stepping is a moderator's sweep through a page of
+                        // other people's set times. An owner has exactly one
+                        // set time in scope — see the matching note on
+                        // RunInspector's onPrev/onNext above.
+                        onPrev={
+                            canManage && inspectManualIndex > 0
+                                ? () => {
+                                      setInspectVerb(null);
+                                      setInspectManualId(
+                                          manualEntries[inspectManualIndex - 1]
+                                              .manualTimeId ?? null,
+                                      );
+                                  }
+                                : undefined
+                        }
+                        onNext={
+                            canManage &&
+                            inspectManualIndex < manualEntries.length - 1
+                                ? () => {
+                                      setInspectVerb(null);
+                                      setInspectManualId(
+                                          manualEntries[inspectManualIndex + 1]
+                                              .manualTimeId ?? null,
+                                      );
+                                  }
+                                : undefined
+                        }
+                    />
+                )}
             {canManage && selectedKeys.size > 0 && (
                 <BoardBulkBar
                     gameSlug={gameSlug}
