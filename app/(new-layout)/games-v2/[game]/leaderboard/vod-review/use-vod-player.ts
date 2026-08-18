@@ -31,6 +31,19 @@ export function useVodPlayer({
     // its identity would remount the player (and re-trigger the effect) on every render.
     const factoryRef = useRef(factory);
     factoryRef.current = factory;
+    // Frames we've recently seeked to (plus the pre-seek clock). Twitch keeps
+    // reporting an OLD position for a while after a paused seek — it walks one
+    // or more steps behind us. If stepFrames trusted that stale clock, a burst
+    // of clicks would re-request already-visited frames and "3 clicks moves 2".
+    // A clock reading that matches something in this history is lag: step from
+    // cursorFrame. A reading that matches nothing here is a real move (playback,
+    // an in-iframe scrub) and is trusted. Cleared when playback starts.
+    const recentSeeksRef = useRef<Set<number>>(new Set());
+    // The frame we most recently sent the player to. cursorFrame (state) is
+    // what's on screen, but it's stale inside a burst of clicks that all land
+    // before React re-renders — every click would step from the same value and
+    // three clicks would move one step. This ref updates synchronously.
+    const lastTargetRef = useRef<number | null>(null);
 
     // Mount / remount the player when the url changes.
     useEffect(() => {
@@ -85,29 +98,49 @@ export function useVodPlayer({
         return () => window.clearInterval(id);
     }, [playing, status, currentFrameFromPlayer]);
 
-    const seekToFrame = useCallback((frame: number) => {
-        const p = playerRef.current;
-        if (!p) return;
-        const dur = p.duration();
-        const maxFrame =
-            dur != null
-                ? Math.max(0, Math.floor(dur * fpsRef.current) - 1)
-                : Infinity;
-        const target = Math.min(Math.max(0, Math.round(frame)), maxFrame);
-        p.seek(secondsFromFrame(target, fpsRef.current));
-        setPlaying(false);
-        setCursorFrame(target);
-        // One late sync: some players report the pre-seek time for a tick.
-        window.setTimeout(() => setCursorFrame(target), 300);
-    }, []);
+    const seekToFrame = useCallback(
+        (frame: number) => {
+            const p = playerRef.current;
+            if (!p) return;
+            const dur = p.duration();
+            const maxFrame =
+                dur != null
+                    ? Math.max(0, Math.floor(dur * fpsRef.current) - 1)
+                    : Infinity;
+            const target = Math.min(Math.max(0, Math.round(frame)), maxFrame);
+            // Remember where the clock was and where we're sending it: a lagging
+            // player will keep reporting one of these, and stepFrames must not
+            // step from them. Bounded so an old scrub can't be mistaken for lag.
+            const recent = recentSeeksRef.current;
+            recent.add(currentFrameFromPlayer());
+            recent.add(target);
+            if (recent.size > 32) {
+                const [oldest] = recent;
+                recent.delete(oldest);
+            }
+            p.seek(secondsFromFrame(target, fpsRef.current));
+            lastTargetRef.current = target;
+            setPlaying(false);
+            setCursorFrame(target);
+            // One late sync: some players report the pre-seek time for a tick.
+            window.setTimeout(() => setCursorFrame(target), 300);
+        },
+        [currentFrameFromPlayer],
+    );
 
     const stepFrames = useCallback(
-        (delta: number) =>
-            seekToFrame(
-                currentFrameFromPlayer() === cursorFrame
-                    ? cursorFrame + delta
-                    : currentFrameFromPlayer() + delta,
-            ),
+        (delta: number) => {
+            const clock = currentFrameFromPlayer();
+            // Where we last sent the player (synchronous, burst-safe); the
+            // rendered cursor is only the fallback before any seek.
+            const ours = lastTargetRef.current ?? cursorFrame;
+            // Trust the clock only when it's on a frame we did NOT put it on
+            // (playback ran, or the user scrubbed inside the iframe). A clock
+            // sitting on `ours` or any recent seek position is just lagging.
+            const clockIsReal =
+                clock !== ours && !recentSeeksRef.current.has(clock);
+            seekToFrame((clockIsReal ? clock : ours) + delta);
+        },
         [cursorFrame, currentFrameFromPlayer, seekToFrame],
     );
     const stepSeconds = useCallback(
@@ -121,8 +154,13 @@ export function useVodPlayer({
         if (playing) {
             p.pause();
             setPlaying(false);
-            setCursorFrame(currentFrameFromPlayer());
+            const here = currentFrameFromPlayer();
+            setCursorFrame(here);
+            lastTargetRef.current = here;
         } else {
+            // Playback makes the clock live again.
+            recentSeeksRef.current.clear();
+            lastTargetRef.current = null;
             p.play();
             setPlaying(true);
         }
