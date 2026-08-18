@@ -306,3 +306,44 @@
     display: flex;
     gap: dt.$spacing-sm;
 }
+
+.splitNav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
+
+    button {
+        @include board.control-pill;
+        border: 1px solid var(--bs-border-color);
+        background: var(--bs-tertiary-bg);
+        padding: dt.$spacing-xs dt.$spacing-md;
+        color: var(--bs-body-color);
+
+        &:hover:not(:disabled) {
+            border-color: var(--bs-primary);
+            color: var(--bs-primary);
+        }
+
+        &:disabled {
+            opacity: 0.5;
+        }
+    }
+
+    select {
+        border: 1px solid var(--bs-border-color);
+        border-radius: dt.$radius-sm;
+        background: var(--bs-tertiary-bg);
+        color: var(--bs-body-color);
+        font-size: dt.$font-size-sm;
+        padding: dt.$spacing-xs dt.$spacing-sm;
+        max-width: 22rem;
+    }
+}
+
+.splitNavLabel {
+    font-size: dt.$font-size-2xs;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--bs-secondary-color);
+}

@@ -56,9 +56,16 @@ export function createTwitchPlayer(
     videoId: string,
 ): VodPlayer {
     let player: TwitchPlayerLike | null = null;
+    // Construction is async (the embed script has to load first). If destroy()
+    // runs before that — React StrictMode's mount→cleanup→mount does exactly
+    // this — the late `.then` must NOT still build a player into `el`: it would
+    // be an orphan iframe nobody controls, sitting on top of the real one, so
+    // seeks go to the hidden player and the visible video never moves.
+    let destroyed = false;
     const ready = loadTwitchApi().then(
         (Twitch) =>
             new Promise<void>((resolve) => {
+                if (destroyed) return;
                 player = new Twitch.Player(el, {
                     video: videoId,
                     // Same allow-list vod.tsx uses, plus wherever we're actually
@@ -95,6 +102,7 @@ export function createTwitchPlayer(
             return d > 0 ? d : null;
         },
         destroy: () => {
+            destroyed = true;
             player?.destroy?.();
             el.replaceChildren();
             player = null;
