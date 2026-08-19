@@ -27,8 +27,11 @@ const GAME_TIME_KEYS = new Set(['gt', 'gametime', 'igt', 'lrt']);
  * fixing anything for the latter.
  */
 export function splitHumanizedWords(raw: string): string {
-    if (!raw) return '';
-    return raw
+    if (raw === null || raw === undefined || raw === '') return '';
+    // Variable values harvested from LiveSplit arrive as whatever JSON the
+    // splits file held — `"Version": 5`, `"Patch": 1.14` — even though the
+    // type says string. Coerce instead of crashing the run page on `.replace`.
+    return String(raw)
         .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
         .replace(/[_-]+/g, ' ')
         .trim();
@@ -118,9 +121,11 @@ export function formatVariableList(
     vars: Record<string, string>,
     defs?: LabelVariableDef[],
 ): string {
-    const entries = Object.entries(vars).filter(([k]) => k.length > 0);
+    const entries = Object.entries(vars).filter(
+        ([k, v]) => k.length > 0 && v !== null && v !== undefined,
+    );
     if (entries.length === 0) return '';
-    return entries.map(([k, v]) => formatPair(k, v, defs)).join(' · ');
+    return entries.map(([k, v]) => formatPair(k, String(v), defs)).join(' · ');
 }
 
 /**
