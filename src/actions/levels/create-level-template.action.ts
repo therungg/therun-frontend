@@ -3,6 +3,7 @@
 import { updateTag } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
 import { ApiError } from '~src/lib/api-client';
+import type { PrimaryTiming } from '~src/lib/category-mgmt';
 import { createLevelTemplate } from '~src/lib/levels';
 import { confirmPermission } from '~src/rbac/confirm-permission';
 
@@ -10,7 +11,7 @@ interface Input {
     gameSlug: string;
     gameId: number;
     display: string;
-    primaryTiming?: string;
+    primaryTiming?: PrimaryTiming;
     gameTimeLabel?: string;
     rules?: string;
     requireVideo?: boolean;
