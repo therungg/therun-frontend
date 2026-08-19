@@ -33,7 +33,9 @@ const aliasImporter = {
     findFileUrl(url) {
         for (const [prefix, target] of Object.entries(ALIASES)) {
             if (url.startsWith(prefix)) {
-                return pathToFileURL(resolve(target + url.slice(prefix.length)));
+                return pathToFileURL(
+                    resolve(target + url.slice(prefix.length)),
+                );
             }
         }
         return null;
