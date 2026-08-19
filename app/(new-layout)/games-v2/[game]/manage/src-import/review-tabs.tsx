@@ -9,6 +9,7 @@ import type {
     SrcImportMatchKind,
     SrcImportPlayer,
     SrcImportRun,
+    SrcImportRunPlayer,
     SrcImportVariable,
 } from '../../../../../../types/src-import.types';
 import { SegmentedControl } from '../shared/form-kit';
@@ -579,6 +580,12 @@ function RunsTab({
     );
 }
 
+/** A staged player's display name; a guest is flagged, an unstaged ref falls back to its SRC id. */
+export function runPlayerLabel(p: SrcImportRunPlayer): string {
+    if ('guestName' in p) return `${p.guestName} (guest)`;
+    return p.name ?? p.srcUserId;
+}
+
 export function primaryTime(r: SrcImportRun): string {
     const ms = r.realtimeMs ?? r.ingameMs ?? r.realtimeNoloadsMs;
     if (ms === null || ms === undefined) return '—';
@@ -592,14 +599,29 @@ function RunRow({
     r: SrcImportRun;
     categoryName: string;
 }) {
-    const players = r.players
-        .map((p) => ('guestName' in p ? `${p.guestName} (guest)` : p.srcUserId))
-        .join(', ');
     return (
         <tr>
             <td>{categoryName}</td>
             <td>
-                {players}
+                {r.players.map((p, i) => (
+                    <span
+                        key={
+                            'guestName' in p ? `g:${p.guestName}` : p.srcUserId
+                        }
+                    >
+                        {i > 0 && ', '}
+                        {runPlayerLabel(p)}
+                        {'therunUsername' in p && p.therunUsername && (
+                            <span
+                                className={`${styles.pill} ${styles.pillPrimary}`}
+                                style={{ marginLeft: '0.25rem' }}
+                                title="Matched therun.gg user"
+                            >
+                                {p.therunUsername}
+                            </span>
+                        )}
+                    </span>
+                ))}
                 {r.playerCount > 1 && (
                     <>
                         {' '}

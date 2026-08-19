@@ -83,7 +83,15 @@ export interface SrcImportPlayer {
     matchKind: SrcImportMatchKind;
 }
 
-export type SrcImportRunPlayer = { srcUserId: string } | { guestName: string };
+export type SrcImportRunPlayer =
+    | {
+          srcUserId: string;
+          /** Staged player's speedrun.com name; null if the player was not staged. */
+          name: string | null;
+          /** therun.gg username when the player matched, else null. */
+          therunUsername: string | null;
+      }
+    | { guestName: string };
 
 export interface SrcImportRun {
     id: number;

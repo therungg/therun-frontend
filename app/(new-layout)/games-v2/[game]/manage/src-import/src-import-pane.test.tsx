@@ -26,7 +26,7 @@ vi.mock('./src-import-actions', () => ({
     })),
 }));
 
-import { primaryTime } from './review-tabs';
+import { primaryTime, runPlayerLabel } from './review-tabs';
 import {
     getSrcImportJobAction,
     listSrcImportCategoriesAction,
@@ -289,5 +289,25 @@ describe('srcUrlFromInput', () => {
     it('is empty when nothing useful was typed', () => {
         expect(srcUrlFromInput('')).toBe('');
         expect(srcUrlFromInput('https://www.speedrun.com/')).toBe('');
+    });
+});
+
+describe('runPlayerLabel', () => {
+    it('shows the staged name, falls back to the SRC id, flags guests', () => {
+        expect(
+            runPlayerLabel({
+                srcUserId: 'j59qw1qx',
+                name: 'Averge',
+                therunUsername: null,
+            }),
+        ).toBe('Averge');
+        expect(
+            runPlayerLabel({
+                srcUserId: 'j59qw1qx',
+                name: null,
+                therunUsername: null,
+            }),
+        ).toBe('j59qw1qx');
+        expect(runPlayerLabel({ guestName: 'Bob' })).toBe('Bob (guest)');
     });
 });

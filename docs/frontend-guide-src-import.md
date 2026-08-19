@@ -13,7 +13,8 @@ Success bodies are `{ result: T }` (apiFetch unwraps). Errors: plain-text body w
 1. Mod is on `/mod/<game>` (therun `gameId` known). They paste an SRC game URL.
 2. `POST /src-import/games/{gameId}` `{ url }` → 202 `{ jobId }`.
    - 400 invalid URL / body; 403 not authenticated | `You are not a moderator of this game on therun.gg` |
-     `SRC identity not verified` | `Not a speedrun.com moderator of this game`; 404 SRC game not found;
+     `SRC identity not verified` | `Not a speedrun.com moderator of this game` (global admins skip these two);
+     404 SRC game not found;
      409 an import is already queued/running.
    - A `queued`/`running` job older than 6 hours is treated as stale and no longer blocks a new POST.
 3. Poll `GET /src-import/games/{gameId}` every ~5 s until `status` is `done` or `failed`.
@@ -34,7 +35,7 @@ export type SrcImportJob = {
 export type SrcImportCategory = { id: number; jobId: number; srcId: string; name: string; rules: string | null; type: 'per-game'|'per-level'; defaultTiming: 'realtime'|'realtime_noloads'|'ingame'|null; misc: boolean; sortOrder: number; skipped: boolean };
 export type SrcImportVariable = { id: number; jobId: number; srcId: string; srcCategoryId: string | null; name: string; isSubcategory: boolean; values: { id: string; label: string; rules: string | null }[]; defaultValueId: string | null; scope: string; skipped: boolean };
 export type SrcImportPlayer = { id: number; jobId: number; srcUserId: string | null; name: string; twitchLogin: string | null; youtubeUri: string | null; twitterUri: string | null; country: string | null; therunUserId: number | null; therunUsername: string | null; matchKind: 'src_verified'|'twitch'|'none' };
-export type SrcImportRun = { id: number; jobId: number; srcRunId: string; srcCategoryId: string; status: 'verified'|'new'; realtimeMs: number | null; realtimeNoloadsMs: number | null; ingameMs: number | null; date: string | null; submittedAt: string | null; verifiedAt: string | null; srcVerifierId: string | null; comment: string | null; videoUrl: string | null; platformName: string | null; emulated: boolean; region: string | null; values: Record<string, string>; players: ({ srcUserId: string } | { guestName: string })[]; playerCount: number };
+export type SrcImportRun = { id: number; jobId: number; srcRunId: string; srcCategoryId: string; status: 'verified'|'new'; realtimeMs: number | null; realtimeNoloadsMs: number | null; ingameMs: number | null; date: string | null; submittedAt: string | null; verifiedAt: string | null; srcVerifierId: string | null; comment: string | null; videoUrl: string | null; platformName: string | null; emulated: boolean; region: string | null; values: Record<string, string>; players: ({ srcUserId: string; name: string | null; therunUsername: string | null } | { guestName: string })[]; playerCount: number };
 export type Paged<T> = { items: T[]; total: number };
 ```
 
