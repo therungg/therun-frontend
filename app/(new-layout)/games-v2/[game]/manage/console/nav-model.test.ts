@@ -243,10 +243,18 @@ describe('nav shape', () => {
         expect(buildNav(ALL).map((g) => g.id)).toEqual(['moderate', 'board']);
     });
 
-    it('shows ten items to a fully privileged viewer', () => {
+    it('shows eleven items to a fully privileged viewer', () => {
         // Attention, roster and reports are out of the nav for now (see
         // ALL_GROUPS in nav-model.ts).
-        expect(buildNav(ALL).flatMap((g) => g.items)).toHaveLength(10);
+        expect(buildNav(ALL).flatMap((g) => g.items)).toHaveLength(11);
+    });
+
+    it('shows the speedrun.com import to moderators and configurers alike', () => {
+        const ids = (flags: NavFlags) =>
+            buildNav(flags).flatMap((g) => g.items.map((i) => i.id));
+        expect(ids({ ...NO_FLAGS, canModerate: true })).toContain('import');
+        expect(ids({ ...NO_FLAGS, canConfigure: true })).toContain('import');
+        expect(ids(NO_FLAGS)).not.toContain('import');
     });
 
     it('no longer exposes the pulled triage entries', () => {

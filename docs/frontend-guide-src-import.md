@@ -1,17 +1,22 @@
 # Frontend guide — speedrun.com import (dry-run phase)
 
 Base: `NEXT_PUBLIC_DATA_URL`, all via `apiFetch<T>()`, `Authorization: Bearer {sessionId}`.
+
+**Path prefix:** every route below is served from a sibling RestApi mapped at `api.therun.gg/src-import/**` — the
+main API template is at CloudFormation's 500-resource cap (see `aws/lib/src-import-stack.ts`). Public paths are
+`/src-import/games/{gameId}[/{jobId}/…]` and `/src-import/admin/users/{username}/src-identity`; the Lambda rewrites
+them internally onto `/v1/games/{gameId}/src-import/**` and `/admin/users/**`.
 Success bodies are `{ result: T }` (apiFetch unwraps). Errors: plain-text body with the status below.
 
 ## Mod flow
 
 1. Mod is on `/mod/<game>` (therun `gameId` known). They paste an SRC game URL.
-2. `POST /v1/games/{gameId}/src-import` `{ url }` → 202 `{ jobId }`.
+2. `POST /src-import/games/{gameId}` `{ url }` → 202 `{ jobId }`.
    - 400 invalid URL / body; 403 not authenticated | `You are not a moderator of this game on therun.gg` |
      `SRC identity not verified` | `Not a speedrun.com moderator of this game`; 404 SRC game not found;
      409 an import is already queued/running.
    - A `queued`/`running` job older than 6 hours is treated as stale and no longer blocks a new POST.
-3. Poll `GET /v1/games/{gameId}/src-import` every ~5 s until `status` is `done` or `failed`.
+3. Poll `GET /src-import/games/{gameId}` every ~5 s until `status` is `done` or `failed`.
    - The job fails (status `failed`, `error` set) if any single category+status set on SRC exceeds
      ~20,000 runs (unsupported in v1).
 4. Show the review tabs from the sub-resources.
@@ -37,14 +42,14 @@ export type Paged<T> = { items: T[]; total: number };
 
 | Method | Path | Query | Returns |
 |---|---|---|---|
-| POST | `/v1/games/{gameId}/src-import` | body `{ url }` | 202 `{ jobId }` |
-| GET | `/v1/games/{gameId}/src-import` | — | `SrcImportJob \| null` |
-| GET | `/v1/games/{gameId}/src-import/{jobId}/categories` | — | `SrcImportCategory[]` |
-| GET | `/v1/games/{gameId}/src-import/{jobId}/variables` | — | `SrcImportVariable[]` |
-| GET | `/v1/games/{gameId}/src-import/{jobId}/players` | `match=src_verified\|twitch\|none`, `page`, `pageSize` (≤500) | `Paged<SrcImportPlayer>` |
-| GET | `/v1/games/{gameId}/src-import/{jobId}/runs` | `categoryId` (SRC id), `status=verified\|new`, `page`, `pageSize` (≤500) | `Paged<SrcImportRun>` |
-| PUT | `/admin/users/{username}/src-identity` | body `{ srcUserId }` or `{ srcName }` | `{ username, srcUserId }` (admin only) |
-| DELETE | `/admin/users/{username}/src-identity` | — | `{ username, srcUserId: null }` |
+| POST | `/src-import/games/{gameId}` | body `{ url }` | 202 `{ jobId }` |
+| GET | `/src-import/games/{gameId}` | — | `SrcImportJob \| null` |
+| GET | `/src-import/games/{gameId}/{jobId}/categories` | — | `SrcImportCategory[]` |
+| GET | `/src-import/games/{gameId}/{jobId}/variables` | — | `SrcImportVariable[]` |
+| GET | `/src-import/games/{gameId}/{jobId}/players` | `match=src_verified\|twitch\|none`, `page`, `pageSize` (≤500) | `Paged<SrcImportPlayer>` |
+| GET | `/src-import/games/{gameId}/{jobId}/runs` | `categoryId` (SRC id), `status=verified\|new`, `page`, `pageSize` (≤500) | `Paged<SrcImportRun>` |
+| PUT | `/src-import/admin/users/{username}/src-identity` | body `{ srcUserId }` or `{ srcName }` | `{ username, srcUserId }` (admin only) |
+| DELETE | `/src-import/admin/users/{username}/src-identity` | — | `{ username, srcUserId: null }` |
 
 All GETs require the caller to hold `import-board` on the game (game-mod/game-admin/series-mod/series-admin/global-admin).
 
