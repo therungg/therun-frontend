@@ -139,7 +139,7 @@ describe('LevelCategoriesPane', () => {
             expect(mocks.createLevelTemplateAction).toHaveBeenCalledWith({
                 ...GAME,
                 display: 'Low%',
-                primaryTiming: 'rt',
+                primaryTiming: 'realtime',
                 isMain: true,
             });
         });

@@ -2,6 +2,7 @@
 
 import type { LevelOverview } from '../../types/levels.types';
 import { apiFetch } from './api-client';
+import type { PrimaryTiming } from './category-mgmt';
 
 export interface CreateLevelBody {
     name: string;
@@ -44,7 +45,9 @@ export async function updateLevel(
 
 export interface CreateLevelTemplateBody {
     display: string;
-    primaryTiming?: string;
+    // The same two values every other category write uses — the Postgres
+    // CHECK on categories.primary_timing accepts nothing else.
+    primaryTiming?: PrimaryTiming;
     gameTimeLabel?: string;
     rules?: string;
     requireVideo?: boolean;

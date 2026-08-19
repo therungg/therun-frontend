@@ -1,23 +1,23 @@
 'use client';
 
-import { useCallback, useEffect, useState, useTransition } from 'react';
+import { useState } from 'react';
 import { createLevelTemplateAction } from '~src/actions/levels/create-level-template.action';
 import { levelOpAction } from '~src/actions/levels/level-op.action';
-import { levelOverviewAction } from '~src/actions/levels/level-overview.action';
 import Link from '~src/components/link';
-import type { LevelOverview } from '../../../../../../types/levels.types';
+import type { PrimaryTiming } from '~src/lib/category-mgmt';
 import consoleStyles from '../console/console.module.scss';
 import { InlineError } from '../shared/form-kit';
 import kit from '../shared/form-kit.module.scss';
 import { updateVisibilityAction } from '../visibility/actions/update-visibility.action';
 import styles from './levels.module.scss';
+import { useActionRunner, useLevelOverview } from './use-level-overview';
 
 interface Props {
     gameId: number;
     gameSlug: string;
 }
 
-type Timing = 'rt' | 'gametime';
+const DEFAULT_TIMING: PrimaryTiming = 'realtime';
 
 /**
  * The level categories (templates): the categories every level gets. Edited
@@ -26,80 +26,52 @@ type Timing = 'rt' | 'gametime';
  * "did my last edit land everywhere", and Push now is the repair.
  */
 export function LevelCategoriesPane({ gameId, gameSlug }: Props) {
-    const [overview, setOverview] = useState<LevelOverview | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const { overview, loading, error, reload, setError } = useLevelOverview(
+        gameSlug,
+        gameId,
+    );
+    const { isPending, run } = useActionRunner(setError, reload);
     const [display, setDisplay] = useState('');
-    const [timing, setTiming] = useState<Timing>('rt');
-    const [isPending, startPending] = useTransition();
+    const [timing, setTiming] = useState<PrimaryTiming>(DEFAULT_TIMING);
 
-    const load = useCallback(async () => {
-        const res = await levelOverviewAction({ gameSlug, gameId });
-        if ('error' in res) {
-            setError(res.error);
-            setLoading(false);
-            return;
-        }
-        setError(null);
-        setOverview(res.result);
-        setLoading(false);
-    }, [gameId, gameSlug]);
-
-    useEffect(() => {
-        void load();
-    }, [load]);
-
-    const push = (templateId: number) => {
-        startPending(async () => {
-            const res = await levelOpAction({
+    const push = (templateId: number) =>
+        run(() =>
+            levelOpAction({
                 gameSlug,
                 gameId,
                 op: { op: 'level-push', templateId },
-            });
-            if ('error' in res) {
-                setError(res.error);
-                return;
-            }
-            await load();
-        });
-    };
+            }),
+        );
 
-    const archive = (templateId: number) => {
-        startPending(async () => {
-            const res = await updateVisibilityAction({
+    const archive = (templateId: number) =>
+        run(() =>
+            updateVisibilityAction({
                 gameSlug,
                 gameId,
                 categoryId: templateId,
                 active: false,
-            });
-            if ('error' in res) {
-                setError(res.error);
-                return;
-            }
-            await load();
-        });
-    };
+            }),
+        );
 
     const addTemplate = () => {
         const trimmed = display.trim();
         if (!trimmed) return;
-        startPending(async () => {
-            const res = await createLevelTemplateAction({
-                gameSlug,
-                gameId,
-                display: trimmed,
-                primaryTiming: timing,
-                // A new level category is featured by default: an unfeatured
-                // one materialises boards nobody can see.
-                isMain: true,
-            });
-            if ('error' in res) {
-                setError(res.error);
-                return;
-            }
-            setDisplay('');
-            await load();
-        });
+        run(
+            () =>
+                createLevelTemplateAction({
+                    gameSlug,
+                    gameId,
+                    display: trimmed,
+                    primaryTiming: timing,
+                    // A new level category is featured by default: an
+                    // unfeatured one materialises boards nobody can see.
+                    isMain: true,
+                }),
+            () => {
+                setDisplay('');
+                setTiming(DEFAULT_TIMING);
+            },
+        );
     };
 
     const templates = overview?.templates ?? [];
@@ -121,7 +93,7 @@ export function LevelCategoriesPane({ gameId, gameSlug }: Props) {
 
             {loading && <p className="text-muted">Loading level categories…</p>}
 
-            {!loading && templates.length === 0 && (
+            {!loading && !error && templates.length === 0 && (
                 <div className={styles.empty}>
                     No level categories yet. Add one and every level gets a
                     board for it.
@@ -195,7 +167,13 @@ export function LevelCategoriesPane({ gameId, gameSlug }: Props) {
                 </table>
             )}
 
-            <div className={styles.createRow}>
+            <form
+                className={styles.createRow}
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    addTemplate();
+                }}
+            >
                 <input
                     className="form-control form-control-sm w-auto"
                     aria-label="New level category"
@@ -209,20 +187,19 @@ export function LevelCategoriesPane({ gameId, gameSlug }: Props) {
                     aria-label="Primary timing"
                     value={timing}
                     disabled={isPending}
-                    onChange={(e) => setTiming(e.target.value as Timing)}
+                    onChange={(e) => setTiming(e.target.value as PrimaryTiming)}
                 >
-                    <option value="rt">Real time</option>
+                    <option value="realtime">Real time</option>
                     <option value="gametime">Game time</option>
                 </select>
                 <button
-                    type="button"
+                    type="submit"
                     className={kit.saveBtn}
                     disabled={isPending || !display.trim()}
-                    onClick={addTemplate}
                 >
                     Add level category
                 </button>
-            </div>
+            </form>
         </section>
     );
 }

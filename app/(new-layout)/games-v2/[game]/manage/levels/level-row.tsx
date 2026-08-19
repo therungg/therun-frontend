@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 import { levelOpAction } from '~src/actions/levels/level-op.action';
 import { updateLevelAction } from '~src/actions/levels/update-level.action';
 import Link from '~src/components/link';
@@ -8,6 +8,7 @@ import type { LevelOverview } from '../../../../../../types/levels.types';
 import { InlineError } from '../shared/form-kit';
 import kit from '../shared/form-kit.module.scss';
 import styles from './levels.module.scss';
+import { useActionRunner } from './use-level-overview';
 
 type Level = LevelOverview['levels'][number];
 type TemplateSummary = LevelOverview['templates'][number];
@@ -38,7 +39,7 @@ export function LevelRow({
     const [rulesOpen, setRulesOpen] = useState(false);
     const [rules, setRules] = useState(level.rules ?? '');
     const [error, setError] = useState<string | null>(null);
-    const [isPending, startPending] = useTransition();
+    const { isPending, run } = useActionRunner(setError, onChanged);
 
     const instanceFor = (templateId: number) =>
         level.instances.find((i) => i.templateId === templateId) ?? null;
@@ -48,42 +49,29 @@ export function LevelRow({
     const saveName = () => {
         const trimmed = name.trim();
         if (!trimmed || trimmed === level.name) return;
-        startPending(async () => {
-            const res = await updateLevelAction({
+        run(() =>
+            updateLevelAction({
                 gameSlug,
                 gameId,
                 groupId: level.id,
                 name: trimmed,
-            });
-            if ('error' in res) {
-                setError(res.error);
-                return;
-            }
-            setError(null);
-            onChanged();
-        });
+            }),
+        );
     };
 
-    const saveRules = () => {
-        startPending(async () => {
-            const res = await updateLevelAction({
+    const saveRules = () =>
+        run(() =>
+            updateLevelAction({
                 gameSlug,
                 gameId,
                 groupId: level.id,
                 rules: rules.trim() === '' ? null : rules,
-            });
-            if ('error' in res) {
-                setError(res.error);
-                return;
-            }
-            setError(null);
-            onChanged();
-        });
-    };
+            }),
+        );
 
-    const toggleTemplate = (templateId: number, excluded: boolean) => {
-        startPending(async () => {
-            const res = await levelOpAction({
+    const toggleTemplate = (templateId: number, excluded: boolean) =>
+        run(() =>
+            levelOpAction({
                 gameSlug,
                 gameId,
                 op: {
@@ -92,31 +80,17 @@ export function LevelRow({
                     templateId,
                     excluded,
                 },
-            });
-            if ('error' in res) {
-                setError(res.error);
-                return;
-            }
-            setError(null);
-            onChanged();
-        });
-    };
+            }),
+        );
 
-    const resync = (categoryId: number) => {
-        startPending(async () => {
-            const res = await levelOpAction({
+    const resync = (categoryId: number) =>
+        run(() =>
+            levelOpAction({
                 gameSlug,
                 gameId,
                 op: { op: 'level-resync', categoryId },
-            });
-            if ('error' in res) {
-                setError(res.error);
-                return;
-            }
-            setError(null);
-            onChanged();
-        });
-    };
+            }),
+        );
 
     const categoryHref = (categoryId: number) =>
         `/games-v2/${encodeURIComponent(gameSlug)}/manage/category/${categoryId}`;

@@ -7,7 +7,10 @@ import {
     waitFor,
 } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { LevelOverview } from '../../../../../../types/levels.types';
+import type {
+    LevelOverview,
+    LevelTemplate,
+} from '../../../../../../types/levels.types';
 
 const mocks = vi.hoisted(() => ({
     levelOverviewAction: vi.fn(),
@@ -98,15 +101,24 @@ const OVERVIEW: LevelOverview = {
     ],
 };
 
-function renderPane() {
+function renderPane(templates: LevelTemplate[] = []) {
     return render(
         <LevelsPane
             gameId={GAME.gameId}
             gameSlug={GAME.gameSlug}
-            templates={[]}
+            templates={templates}
         />,
     );
 }
+
+const TEMPLATE: LevelTemplate = {
+    id: 10,
+    display: 'Any%',
+    rules: null,
+    isMain: true,
+    sortOrder: 0,
+    imageUrl: null,
+};
 
 afterEach(() => {
     cleanup();
@@ -238,6 +250,36 @@ describe('LevelsPane', () => {
                 name: 'Green Hill Zone',
             });
         });
+    });
+
+    it('tells a board with no levels but existing categories what happens next', async () => {
+        mocks.levelOverviewAction.mockResolvedValue({
+            result: { levels: [], templates: [] },
+        });
+        renderPane([TEMPLATE]);
+
+        expect(
+            await screen.findByText(/every level category gets a board on it/i),
+        ).toBeTruthy();
+    });
+
+    it('tells a board with neither levels nor categories to start with a level', async () => {
+        mocks.levelOverviewAction.mockResolvedValue({
+            result: { levels: [], templates: [] },
+        });
+        renderPane();
+
+        expect(
+            await screen.findByText(/then define the level categories/i),
+        ).toBeTruthy();
+    });
+
+    it('shows the load error instead of an empty state', async () => {
+        mocks.levelOverviewAction.mockResolvedValue({ error: 'Nope.' });
+        renderPane();
+
+        await screen.findByRole('alert');
+        expect(screen.queryByText(/No levels yet/)).toBeNull();
     });
 
     it('surfaces a failed load', async () => {
