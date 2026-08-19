@@ -103,9 +103,10 @@ describe('TileGrid pulled triage entries', () => {
         );
 
         expect(screen.queryByText('Reports')).toBeNull();
-        // 2 Moderate tiles (bans/history) + 2 Board tiles (categories,
-        // boards) — attention/roster/reports are out of buildNav for now.
-        expect(screen.getAllByRole('button')).toHaveLength(4);
+        // 2 Moderate tiles (bans/history) + 3 Board tiles (categories,
+        // boards, import) — attention/roster/reports are out of buildNav
+        // for now.
+        expect(screen.getAllByRole('button')).toHaveLength(5);
     });
 });
 

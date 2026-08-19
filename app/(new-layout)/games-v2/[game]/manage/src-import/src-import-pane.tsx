@@ -1,0 +1,244 @@
+'use client';
+
+import {
+    type FormEvent,
+    useCallback,
+    useId,
+    useState,
+    useTransition,
+} from 'react';
+import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
+import type { SrcImportJob } from '../../../../../../types/src-import.types';
+import consoleStyles from '../console/console.module.scss';
+import { InlineError } from '../shared/form-kit';
+import kit from '../shared/form-kit.module.scss';
+import { ReviewTabs } from './review-tabs';
+import styles from './src-import.module.scss';
+import {
+    getSrcImportJobAction,
+    startSrcImportAction,
+} from './src-import-actions';
+import { useSrcImportJob } from './use-src-import-job';
+
+interface Props {
+    gameId: number;
+    gameSlug: string;
+    gameDisplay: string;
+}
+
+const BADGE_CLASS: Record<SrcImportJob['status'], string> = {
+    queued: styles.badgeQueued,
+    running: styles.badgeRunning,
+    done: styles.badgeDone,
+    failed: styles.badgeFailed,
+};
+
+const PHASE_LABEL: Record<SrcImportJob['phase'], string> = {
+    meta: 'reading categories & variables',
+    runs: 'fetching runs',
+    matching: 'matching players',
+    done: 'finished',
+};
+
+/**
+ * Import pane: paste a speedrun.com game URL, watch the background job, then
+ * review what it staged. Dry run — nothing on this pane touches the live
+ * board; the commit step is a later phase.
+ */
+export function SrcImportPane({ gameId, gameSlug, gameDisplay }: Props) {
+    const fetchJob = useCallback(
+        () => getSrcImportJobAction({ gameId, gameSlug }),
+        [gameId, gameSlug],
+    );
+    const {
+        job,
+        loading,
+        error: loadError,
+        refresh,
+    } = useSrcImportJob(fetchJob);
+
+    const inputId = useId();
+    const [slug, setSlug] = useState('');
+    const url = srcUrlFromInput(slug);
+    const [submitError, setSubmitError] = useState<string | null>(null);
+    const [pending, startTransition] = useTransition();
+
+    const inFlight =
+        job !== null && (job.status === 'queued' || job.status === 'running');
+
+    const submit = (e: FormEvent) => {
+        e.preventDefault();
+        if (!url || pending || inFlight) return;
+        setSubmitError(null);
+        startTransition(async () => {
+            const res = await startSrcImportAction({ gameId, gameSlug, url });
+            if ('error' in res) {
+                setSubmitError(res.error);
+                return;
+            }
+            setSlug('');
+            await refresh();
+        });
+    };
+
+    return (
+        <div className={consoleStyles.surface}>
+            <div className={consoleStyles.paneHeader}>
+                <h2 className={consoleStyles.paneTitle}>
+                    {CONCEPT_LABEL.import}
+                </h2>
+            </div>
+            <p className={consoleStyles.paneLede}>
+                Fetch the {gameDisplay} board from speedrun.com — categories,
+                subcategories and filters, runs, and players — and review it
+                here before anything is written.
+            </p>
+
+            <div className={styles.stack}>
+                <div className={`${styles.callout} ${styles.calloutWarn}`}>
+                    Dry run: nothing on this page changes the live board.
+                    Importing into therun.gg is a separate, later step.
+                </div>
+
+                <form className={styles.form} onSubmit={submit}>
+                    <div className={styles.field}>
+                        <label htmlFor={inputId} className={styles.label}>
+                            speedrun.com game URL
+                        </label>
+                        <span className={styles.urlGroup}>
+                            <span className={styles.urlPrefix} aria-hidden>
+                                {SRC_PREFIX}
+                            </span>
+                            <input
+                                id={inputId}
+                                className={`${styles.input} ${styles.urlInput}`}
+                                type="text"
+                                autoComplete="off"
+                                spellCheck={false}
+                                placeholder="sm64"
+                                value={slug}
+                                onChange={(e) => setSlug(e.target.value)}
+                                disabled={pending || inFlight}
+                                required
+                            />
+                        </span>
+                    </div>
+                    <button
+                        type="submit"
+                        className={kit.saveBtn}
+                        disabled={pending || inFlight || !url}
+                    >
+                        {pending ? 'Starting…' : 'Fetch board'}
+                    </button>
+                </form>
+                {submitError && <InlineError>{submitError}</InlineError>}
+                {inFlight && (
+                    <p className={styles.muted}>
+                        An import is already running for this game — wait for it
+                        to finish before starting another.
+                    </p>
+                )}
+
+                {loading && (
+                    <div className={styles.jobHead}>
+                        <span className={styles.spinner} aria-hidden />
+                        <span className={styles.muted}>Loading…</span>
+                    </div>
+                )}
+                {!loading && loadError && !job && (
+                    <div className={`${styles.callout} ${styles.calloutError}`}>
+                        Couldn’t load the import status: {loadError}
+                    </div>
+                )}
+                {job && <JobCard job={job} />}
+                {job?.status === 'done' && (
+                    <ReviewTabs gameId={gameId} gameSlug={gameSlug} job={job} />
+                )}
+            </div>
+        </div>
+    );
+}
+
+export const SRC_PREFIX = 'https://www.speedrun.com/';
+
+/**
+ * The user types only the part after the prefix (the game abbreviation), but a
+ * pasted full URL still works: any speedrun.com origin is stripped back to its
+ * path, and the result is re-joined onto the canonical prefix. Returns '' when
+ * there is nothing to send.
+ */
+export function srcUrlFromInput(raw: string): string {
+    const trimmed = raw.trim();
+    if (!trimmed) return '';
+    const path = trimmed
+        .replace(/^(?:https?:\/\/)?(?:www\.)?speedrun\.com\/?/i, '')
+        .replace(/^\/+/, '');
+    return path ? `${SRC_PREFIX}${path}` : '';
+}
+
+function JobCard({ job }: { job: SrcImportJob }) {
+    const inFlight = job.status === 'queued' || job.status === 'running';
+    return (
+        <section className={styles.jobCard} aria-label="Import job">
+            <div className={styles.jobHead}>
+                {inFlight && <span className={styles.spinner} aria-hidden />}
+                <span
+                    className={`${styles.statusBadge} ${BADGE_CLASS[job.status]}`}
+                >
+                    {job.status}
+                </span>
+                <span className={styles.jobTitle}>{job.srcGameName}</span>
+                <a
+                    className={styles.jobLink}
+                    href={job.srcUrl}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                >
+                    {job.srcUrl}
+                </a>
+            </div>
+            {inFlight && (
+                <p className={styles.muted}>
+                    Phase: {PHASE_LABEL[job.phase]}. speedrun.com is rate
+                    limited, so large boards take a while — this page updates on
+                    its own.
+                </p>
+            )}
+            {job.status === 'failed' && (
+                <div className={`${styles.callout} ${styles.calloutError}`}>
+                    Import failed{job.error ? `: ${job.error}` : '.'} You can
+                    start it again with the same URL.
+                </div>
+            )}
+            <div className={styles.counters}>
+                <Counter label="Categories" value={job.categoriesCount} />
+                <Counter label="Levels" value={job.levelsCount} />
+                <Counter label="Variables" value={job.variablesCount} />
+                <Counter label="Runs" value={job.runsCount} />
+                <Counter label="Players" value={job.playersCount} />
+                <Counter label="Matched" value={job.playersMatchedCount} />
+                <Counter label="API requests" value={job.requestsMade} />
+            </div>
+            <p className={styles.muted}>
+                Started {job.startedAt ? fmtDate(job.startedAt) : '—'}
+                {job.finishedAt ? ` · finished ${fmtDate(job.finishedAt)}` : ''}
+            </p>
+        </section>
+    );
+}
+
+function Counter({ label, value }: { label: string; value: number }) {
+    return (
+        <div className={styles.counter}>
+            <span className={styles.counterValue}>
+                {value.toLocaleString()}
+            </span>
+            <span className={styles.counterLabel}>{label}</span>
+        </div>
+    );
+}
+
+function fmtDate(iso: string): string {
+    const d = new Date(iso);
+    return Number.isNaN(d.getTime()) ? iso : d.toLocaleString();
+}

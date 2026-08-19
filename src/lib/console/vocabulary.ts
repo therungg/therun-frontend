@@ -19,6 +19,7 @@ export type ConceptId =
     | 'level-categories'
     | 'moderators'
     | 'reassign'
+    | 'import'
     | 'variables'
     | 'combinations'
     | 'timing'
@@ -41,6 +42,7 @@ export const CONCEPT_LABEL: Record<ConceptId, string> = {
     'level-categories': 'Level categories',
     moderators: 'Moderators',
     reassign: 'Merge games & categories',
+    import: 'Import from speedrun.com',
     variables: 'Subcategories & filters',
     combinations: 'Sub-boards',
     timing: 'Timing',
@@ -80,6 +82,7 @@ export const TILE_CONCEPT_IDS = [
     'boards',
     'moderators',
     'reassign',
+    'import',
 ] as const;
 
 export type TileConceptId = (typeof TILE_CONCEPT_IDS)[number];
@@ -153,6 +156,10 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
         action: 'Merge duplicates',
         blurb: 'Fold a duplicate game or category into the right one and move its runs across.',
     },
+    import: {
+        action: 'Bring the board over from speedrun.com',
+        blurb: 'Fetch categories, filters, runs and players from speedrun.com and review them before anything is written.',
+    },
 };
 
 /**
@@ -187,6 +194,7 @@ const BOARD_PANES: ReadonlySet<ConceptId> = new Set<ConceptId>([
     'boards',
     'moderators',
     'reassign',
+    'import',
 ]);
 
 /**

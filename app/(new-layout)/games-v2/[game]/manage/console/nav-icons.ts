@@ -4,6 +4,7 @@
 import {
     ArrowLeftRight,
     ClockHistory,
+    CloudDownload,
     Collection,
     Controller,
     Diagram3,
@@ -40,4 +41,5 @@ export const NAV_ICON: Record<NavItemId, IconType> = {
     boards: Trophy,
     moderators: ShieldLock,
     reassign: ArrowLeftRight,
+    import: CloudDownload,
 };

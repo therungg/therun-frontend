@@ -19,7 +19,8 @@ export type NavItemId =
     | 'variables'
     | 'boards'
     | 'moderators'
-    | 'reassign';
+    | 'reassign'
+    | 'import';
 
 export type NavGroupId = 'moderate' | 'board';
 
@@ -94,6 +95,9 @@ const ALL_GROUPS: NavGroup[] = [
             { id: 'boards', label: CONCEPT_LABEL.boards },
             { id: 'moderators', label: CONCEPT_LABEL.moderators },
             { id: 'reassign', label: CONCEPT_LABEL.reassign },
+            // Dry-run import from speedrun.com — reachable by any moderator,
+            // matching the backend's `import-board` action.
+            { id: 'import', label: CONCEPT_LABEL.import },
         ],
     },
 ];
@@ -115,6 +119,7 @@ function itemVisible(
     if (groupId === 'moderate') return flags.canModerate;
     if (itemId === 'categories') return flags.canConfigure || flags.canModerate;
     if (itemId === 'boards') return flags.canModerate || flags.canConfigure;
+    if (itemId === 'import') return flags.canModerate || flags.canConfigure;
     return flags.canConfigure;
 }
 
