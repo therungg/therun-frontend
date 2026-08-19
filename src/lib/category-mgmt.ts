@@ -1,6 +1,7 @@
 'use server';
 
 import type { CategoryDisplayMode } from '../../types/leaderboards.types';
+import type { LevelTemplate } from '../../types/levels.types';
 import { apiFetch } from './api-client';
 
 export type PrimaryTiming = 'realtime' | 'gametime';
@@ -24,6 +25,8 @@ export interface ManageCategoryRow {
     totalRunTime: number;
     totalFinishedAttemptCount: number;
     uniqueRunners: number;
+    levelTemplateId: number | null;
+    levelOverride: boolean;
 }
 
 interface GameCategoryRow {
@@ -35,6 +38,21 @@ interface GameCategoryRow {
     sortOrder?: number;
     isMain?: boolean;
     active?: boolean;
+    levelTemplateId?: number | null;
+    levelOverride?: boolean;
+    name?: string;
+    rules?: string | null;
+    imageUrl?: string | null;
+    gameTimeLabel?: string;
+    sortAscending?: boolean;
+    showMilliseconds?: boolean;
+    requireVideo?: boolean;
+    // Carried on every pageData category entry since 2026-08-19 (hideRealTime
+    // and hideGameTime above predate that); older baked pageData lacks them
+    // and the column defaults apply until the game is rebuilt. See
+    // docs/frontend-guide-levels.md.
+    rtaFallback?: boolean;
+    requireVideoTopN?: number | null;
 }
 
 interface GamePageData {
@@ -46,8 +64,11 @@ interface GamePageData {
         sortOrder?: number;
         hiddenByDefault?: boolean;
         displayMode?: string | null;
+        kind?: string;
+        rules?: string | null;
         categories?: GameCategoryRow[];
     }[];
+    levelTemplates?: GameCategoryRow[];
 }
 
 /** Anything the UI cannot draw reads as "no override stated". */
@@ -85,10 +106,7 @@ export async function getCategoryVisibility(
     };
 }
 
-export async function listManageCategories(
-    gameId: number,
-): Promise<ManageCategoryRow[]> {
-    const data = await loadPageData(gameId);
+function categoryRowsOf(data: GamePageData): ManageCategoryRow[] {
     const rows: ManageCategoryRow[] = [];
     for (const c of data.ungroupedCategories ?? []) {
         rows.push({
@@ -103,6 +121,8 @@ export async function listManageCategories(
             totalRunTime: 0,
             totalFinishedAttemptCount: 0,
             uniqueRunners: 0,
+            levelTemplateId: c.levelTemplateId ?? null,
+            levelOverride: c.levelOverride ?? false,
         });
     }
     for (const g of data.groups ?? []) {
@@ -119,10 +139,34 @@ export async function listManageCategories(
                 totalRunTime: 0,
                 totalFinishedAttemptCount: 0,
                 uniqueRunners: 0,
+                levelTemplateId: c.levelTemplateId ?? null,
+                levelOverride: c.levelOverride ?? false,
             });
         }
     }
     return rows;
+}
+
+function levelTemplatesOf(data: GamePageData): LevelTemplate[] {
+    return (data.levelTemplates ?? []).map((t) => ({
+        id: t.id,
+        display: t.display,
+        rules: t.rules ?? null,
+        isMain: t.isMain ?? false,
+        sortOrder: t.sortOrder ?? 0,
+        imageUrl: t.imageUrl ?? null,
+        primaryTiming: t.primaryTiming === 'gametime' ? 'gt' : 'rt',
+        gameTimeLabel: t.gameTimeLabel === 'lrt' ? 'lrt' : 'igt',
+        // Older baked pageData lacks these keys; the column defaults apply
+        // until the game is rebuilt.
+        sortAscending: t.sortAscending ?? true,
+        showMilliseconds: t.showMilliseconds ?? true,
+        requireVideo: t.requireVideo ?? false,
+        hideRealTime: t.hideRealTime ?? false,
+        hideGameTime: t.hideGameTime ?? false,
+        rtaFallback: t.rtaFallback ?? false,
+        requireVideoTopN: t.requireVideoTopN ?? null,
+    }));
 }
 
 export interface UpdateCategoryBody {
@@ -213,10 +257,13 @@ export interface ManageGroup {
     hiddenByDefault: boolean;
     /** `null` = no override; the group follows `gameCategoryDisplayMode`. */
     displayMode: CategoryDisplayMode | null;
+    /** category_groups.kind — 'level' groups are individual levels. */
+    kind: 'normal' | 'level';
+    /** Level-specific rules (level groups only). */
+    rules: string | null;
 }
 
-export async function listManageGroups(gameId: number): Promise<ManageGroup[]> {
-    const data = await loadPageData(gameId);
+function manageGroupsOf(data: GamePageData): ManageGroup[] {
     return (data.groups ?? [])
         .map((g) => ({
             id: g.id,
@@ -224,8 +271,30 @@ export async function listManageGroups(gameId: number): Promise<ManageGroup[]> {
             sortOrder: g.sortOrder ?? 0,
             hiddenByDefault: g.hiddenByDefault ?? false,
             displayMode: asDisplayMode(g.displayMode),
+            kind: g.kind === 'level' ? ('level' as const) : ('normal' as const),
+            rules: g.rules ?? null,
         }))
         .sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
+/**
+ * Everything the console's index needs off pageData, from ONE request.
+ *
+ * Rows, groups and level templates are all projections of the same pageData
+ * blob; loading them separately cost three uncached `GET /v1/games/{id}`
+ * calls for one screen.
+ */
+export async function loadConsoleCatalog(gameId: number): Promise<{
+    rows: ManageCategoryRow[];
+    groups: ManageGroup[];
+    levelTemplates: LevelTemplate[];
+}> {
+    const data = await loadPageData(gameId);
+    return {
+        rows: categoryRowsOf(data),
+        groups: manageGroupsOf(data),
+        levelTemplates: levelTemplatesOf(data),
+    };
 }
 
 export interface CreateGroupBody {
@@ -233,6 +302,8 @@ export interface CreateGroupBody {
     sortOrder?: number;
     hiddenByDefault?: boolean;
     displayMode?: CategoryDisplayMode | null;
+    kind?: 'normal' | 'level';
+    rules?: string | null;
 }
 
 export interface UpdateGroupBody {
@@ -241,6 +312,7 @@ export interface UpdateGroupBody {
     hiddenByDefault?: boolean;
     /** `null` clears the override and returns the group to the game default. */
     displayMode?: CategoryDisplayMode | null;
+    rules?: string | null;
 }
 
 export async function createGroup(

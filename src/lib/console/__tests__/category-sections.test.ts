@@ -18,7 +18,14 @@ function mkCat(overrides: Partial<ResolvedCategory> = {}): ResolvedCategory {
 }
 
 function mkGroup(overrides: Partial<ResolvedGroup> = {}): ResolvedGroup {
-    return { id: 1, name: 'Main', sortOrder: 0, ...overrides };
+    return {
+        id: 1,
+        name: 'Main',
+        sortOrder: 0,
+        kind: 'normal',
+        rules: null,
+        ...overrides,
+    };
 }
 
 describe('sectionsFor', () => {

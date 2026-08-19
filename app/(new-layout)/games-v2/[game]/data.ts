@@ -11,7 +11,11 @@ import {
     getUserRankingsByName,
     getVariables,
 } from '~src/lib/leaderboards-v1';
-import type { VariableRow } from '../../../../types/leaderboards.types';
+import { splitLevelBoards } from '~src/lib/levels/display';
+import type {
+    ResolvedGroup,
+    VariableRow,
+} from '../../../../types/leaderboards.types';
 import { parseBuiltinParams } from './filters/builtin-params';
 import {
     filterPbsToFeatured,
@@ -91,8 +95,10 @@ export async function loadGamePageData(
                 archived: false,
                 sortOrder: 0,
             },
+            activeLevel: null,
             categories,
             groups: resolved.groups,
+            levelTemplates: resolved.levelTemplates,
             variables: [],
             reservedParams: [],
             validCombinations: { mode: 'open' },
@@ -200,20 +206,33 @@ export async function loadGamePageData(
         ? null
         : { validCombinations: boardResult.validCombinations };
 
+    // The active level's group, when the selected board is a level board —
+    // derived once here rather than in every consumer (board-masthead.tsx,
+    // game-page.tsx) that needs the level's name/rules.
+    const activeLevel =
+        resolved.groups.find(
+            (g) => g.id === selected.groupId && g.kind === 'level',
+        ) ?? null;
+
     const [subcategoryValueCounts, categoryBoardCounts] = await Promise.all([
         loadSubcategoryValueCounts(
             { ...baseQuery, timing: selected.primaryTiming },
             varsResp.variables,
             boardResult.ok && !combined ? leaderboard.totalItems : null,
         ),
-        loadCategoryBoardCounts(game.name, categories),
+        loadCategoryBoardCounts(
+            game.name,
+            countableCategories(categories, resolved.groups, activeLevel),
+        ),
     ]);
 
     return {
         game: gameWithConfig,
         selectedCategory: selected,
+        activeLevel,
         categories,
         groups: resolved.groups,
+        levelTemplates: resolved.levelTemplates,
         variables: varsResp.variables,
         reservedParams: varsResp.reservedParams,
         validCombinations: varsResp.validCombinations,
@@ -336,15 +355,86 @@ async function loadSubcategoryValueCounts(
  * too: `combined=1` is the whole category across its subcategories, which is
  * exactly the total its own values partition.
  */
+/**
+ * Which categories a page's chips can afford to count.
+ *
+ * Every level board of every level is Featured, so `categories` on a levelled
+ * game is the full cross product — hundreds of rows, which both blows past
+ * MAX_CATEGORY_COUNT_PROBES (making every chip on the page lose its count) and
+ * describes boards no chip on this page shows. The band shows the game's
+ * full-game categories plus, when a level board is selected, that level's
+ * boards; that is exactly what is counted.
+ */
+export function countableCategories<
+    T extends { name: string; groupId?: number | null },
+>(
+    categories: T[],
+    groups: ResolvedGroup[],
+    activeLevel: { id: number } | null,
+): T[] {
+    const { fullGame, levelBoards } = splitLevelBoards(categories, groups);
+    if (!activeLevel) return fullGame;
+    return [
+        ...fullGame,
+        ...levelBoards.filter((c) => c.groupId === activeLevel.id),
+    ];
+}
+
+/** A board with no finished runs and no playtime has no rows to count. */
+function hasNoRuns(c: {
+    totalFinishedAttemptCount?: number;
+    totalRunTime?: number;
+}): boolean {
+    return (
+        (c.totalFinishedAttemptCount ?? 0) === 0 && (c.totalRunTime ?? 0) === 0
+    );
+}
+
+export interface CountProbePlan<T> {
+    /** Answered from stats alone — 0, at no cost. */
+    empty: Record<string, number>;
+    /** The ones worth a request; empty once the budget is blown. */
+    toProbe: T[];
+}
+
+/**
+ * Who gets a request. A board the category stats already call empty answers 0
+ * without one — that is most of a levelled game — and the probe ceiling then
+ * applies to what is actually left, so one zero-run board no longer costs
+ * every chip on the page its count.
+ */
+export function planCategoryCountProbes<
+    T extends {
+        name: string;
+        totalFinishedAttemptCount?: number;
+        totalRunTime?: number;
+    },
+>(categories: T[]): CountProbePlan<T> {
+    const empty = Object.fromEntries(
+        categories.filter(hasNoRuns).map((c) => [c.name, 0] as const),
+    );
+    const toProbe = categories.filter((c) => !hasNoRuns(c));
+    return {
+        empty,
+        toProbe: toProbe.length > MAX_CATEGORY_COUNT_PROBES ? [] : toProbe,
+    };
+}
+
 async function loadCategoryBoardCounts(
     gameSlug: string,
-    categories: { name: string; primaryTiming: 'rt' | 'gt' }[],
+    categories: {
+        name: string;
+        primaryTiming: 'rt' | 'gt';
+        totalFinishedAttemptCount?: number;
+        totalRunTime?: number;
+    }[],
 ): Promise<Record<string, number>> {
     if (categories.length === 0) return {};
-    if (categories.length > MAX_CATEGORY_COUNT_PROBES) return {};
+    const { empty, toProbe } = planCategoryCountProbes(categories);
+    if (toProbe.length === 0) return empty;
 
     const results = await Promise.all(
-        categories.map(async (c) => {
+        toProbe.map(async (c) => {
             try {
                 const r = await getLeaderboard({
                     gameSlug,
@@ -361,9 +451,12 @@ async function loadCategoryBoardCounts(
         }),
     );
 
-    return Object.fromEntries(
-        results.filter((r): r is readonly [string, number] => r !== null),
-    );
+    return {
+        ...empty,
+        ...Object.fromEntries(
+            results.filter((r): r is readonly [string, number] => r !== null),
+        ),
+    };
 }
 
 function emptyBoard() {

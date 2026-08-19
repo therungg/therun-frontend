@@ -12,6 +12,7 @@ import type {
     ValidCombinations,
     VariableRow,
 } from '../../../../types/leaderboards.types';
+import type { LevelTemplate } from '../../../../types/levels.types';
 import type { BuiltinFilterState } from './filters/builtin-params';
 
 export interface GamePageSearchParams {
@@ -32,8 +33,16 @@ export interface GamePageSearchParams {
 export interface GamePageData {
     game: ResolvedGame;
     selectedCategory: ResolvedCategory;
+    /** The level group owning `selectedCategory`, when it's a level board —
+     *  derived once here so header/board-masthead.tsx and game-page.tsx
+     *  don't each re-derive the same `groups.find(...)` lookup. Null when
+     *  the selected board isn't a level board. */
+    activeLevel: ResolvedGroup | null;
     categories: ResolvedCategory[];
     groups: ResolvedGroup[];
+    /** Level templates (pageData.levelTemplates) — never in `categories`
+     *  or `groups[].categories`; see docs/frontend-guide-levels.md. */
+    levelTemplates: LevelTemplate[];
     variables: VariableRow[];
     reservedParams: string[];
     validCombinations: ValidCombinations;

@@ -27,6 +27,10 @@ export interface ResolvedGroup {
      * Backed by category_groups.display_mode.
      */
     displayMode?: CategoryDisplayMode | null;
+    /** category_groups.kind — 'level' groups are individual levels. */
+    kind: 'normal' | 'level';
+    /** Level-specific rules (level groups only). */
+    rules: string | null;
 }
 
 /**
@@ -74,6 +78,10 @@ export interface ResolvedCategory {
     /** "Put RTA in leaderboard if IGT is not available" — RTA-only runs rank
      * on the game-time board by their real time. */
     rtaFallback?: boolean;
+    /** Set on level boards: the level category (template) this board instantiates. */
+    levelTemplateId?: number | null;
+    /** Level board detached from its template (or excluded). */
+    levelOverride?: boolean;
 }
 
 export interface QuickStats {

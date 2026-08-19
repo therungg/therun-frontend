@@ -7,10 +7,12 @@ import {
     CloudDownload,
     Collection,
     Controller,
+    Diagram3,
     ExclamationTriangle,
     Flag,
     Grid3x3,
     type Icon as IconType,
+    Layers,
     ListCheck,
     ListOl,
     ListUl,
@@ -30,6 +32,9 @@ export const NAV_ICON: Record<NavItemId, IconType> = {
     'game-details': Controller,
     categories: ListUl,
     groups: Collection,
+    // Stacked levels, and the template that fans out across them.
+    levels: Layers,
+    'level-categories': Diagram3,
     // A grid, because that is literally the surface: categories down, options
     // across.
     variables: Grid3x3,

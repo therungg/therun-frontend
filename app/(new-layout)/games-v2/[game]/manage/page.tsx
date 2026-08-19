@@ -4,11 +4,12 @@ import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { getSession } from '~src/actions/session.action';
 import { listGameBoardClaims } from '~src/lib/board-claims';
-import { listManageCategories, listManageGroups } from '~src/lib/category-mgmt';
+import { loadConsoleCatalog } from '~src/lib/category-mgmt';
 import {
     buildCategoryRows,
     type CategoryConfigRow,
 } from '~src/lib/console/category-rows';
+import { keepConsoleRow } from '~src/lib/console/keep-console-row';
 import { getGameIdentifiers, getGameMetadata } from '~src/lib/game-mgmt';
 import { listGameModerators } from '~src/lib/game-moderators';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
@@ -29,7 +30,6 @@ import {
 } from '~src/lib/setup/completeness';
 import { type BoardHealth, computeBoardHealth } from '~src/lib/setup/health';
 import { defineAbilityFor } from '~src/rbac/ability';
-import { isLowActivityCategory } from '~src/utils/format-stats';
 import buildMetadata from '~src/utils/metadata';
 import type {
     BoardClaimRequest,
@@ -99,13 +99,18 @@ export default async function GameAdminConsolePage({ params }: Props) {
     const categoryName = (id: number) =>
         categoryById.get(id) ?? `Category ${id}`;
 
-    const [identifiers, rawRows, groups, queueRes, reportsRes, manualTimesRes] =
+    const [identifiers, catalog, queueRes, reportsRes, manualTimesRes] =
         await Promise.all([
             getGameIdentifiers(game.id).catch(() => ({
                 slug: null,
             })),
-            listManageCategories(game.id).catch(() => []),
-            listManageGroups(game.id).catch(() => []),
+            // Rows, groups and level categories all come off pageData — one load,
+            // not three.
+            loadConsoleCatalog(game.id).catch(() => ({
+                rows: [],
+                groups: [],
+                levelTemplates: [],
+            })),
             resolveSource(
                 listQueue(sessionId, game.id, { limit: 200 }),
                 'flags',
@@ -113,6 +118,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
             resolveSource(listGameReports(sessionId, game.id), 'reports'),
             resolveSource(listManualTimes(sessionId, game.id), 'manual times'),
         ]);
+    const { rows: rawRows, groups, levelTemplates } = catalog;
     const degradedSources = degradedSourcesOf([
         queueRes,
         reportsRes,
@@ -123,6 +129,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
     const manualTimes = manualTimesRes.ok ? manualTimesRes.data : [];
 
     const statsById = new Map(categories.map((c) => [c.id, c]));
+    const resolvedIds = new Set(categories.map((c) => c.id));
     const rows = rawRows
         .map((r) => {
             const stats = statsById.get(r.id);
@@ -134,7 +141,12 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 uniqueRunners: stats?.uniqueRunners ?? 0,
             };
         })
-        .filter((r) => !isLowActivityCategory(r));
+        // `resolveCategory` has already applied the activity floor AND
+        // unioned in every zero-stats board, so membership in its list is the
+        // whole verdict — see keepConsoleRow. Re-running the floor here would
+        // drop freshly materialised level boards (all-zero stats) while
+        // keeping the below-floor junk it is meant to remove.
+        .filter((r) => keepConsoleRow(r.id, resolvedIds));
 
     const pendingClaims = manualTimes.filter(
         (m) => m.verificationStatus === 'pending',
@@ -248,6 +260,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 initialRows={rows}
                 categoryConfig={categoryConfig}
                 initialGroups={groups}
+                levelTemplates={levelTemplates}
                 boardGroups={boardGroups}
                 variables={variables}
                 policies={policies}

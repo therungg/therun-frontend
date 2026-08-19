@@ -53,3 +53,38 @@
         white-space: nowrap;
     }
 }
+
+// ---- Level banner ---------------------------------------------
+// A level category is edited once and lands on every level; a level board is
+// a copy of one. Either way, what the moderator is about to edit is not just
+// this screen, so the screen says so before the first field.
+.levelBanner {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm dt.$spacing-md;
+    padding: dt.$spacing-md;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-left: 3px solid var(--bs-primary);
+    border-radius: dt.$radius-sm;
+}
+
+.levelBannerText {
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    margin: 0;
+}
+
+.levelNote {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+    margin: 0;
+    flex-basis: 100%;
+}
+
+.levelError {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-danger);
+    margin: 0;
+    flex-basis: 100%;
+}

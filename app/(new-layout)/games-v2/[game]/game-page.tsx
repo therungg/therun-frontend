@@ -183,10 +183,13 @@ export function GamePage({
                     {rulesOpen &&
                         (data.selectedCategory.rules?.trim() ||
                             data.gameMeta.gameRules?.trim() ||
+                            data.activeLevel?.rules?.trim() ||
                             data.gameMeta.emulatorPolicy) && (
                             <RulesBody
                                 rules={data.selectedCategory.rules}
                                 gameRules={data.gameMeta.gameRules}
+                                levelRules={data.activeLevel?.rules}
+                                levelName={data.activeLevel?.name}
                                 emulatorPolicy={data.gameMeta.emulatorPolicy}
                             />
                         )}

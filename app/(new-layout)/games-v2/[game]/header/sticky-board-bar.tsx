@@ -2,6 +2,7 @@ import type {
     ResolvedCategory,
     ResolvedGroup,
 } from '../../../../../types/leaderboards.types';
+import type { LevelTemplate } from '../../../../../types/levels.types';
 import styles from './masthead.module.scss';
 import { SwitchBoardPopover } from './switch-board-popover';
 
@@ -18,6 +19,7 @@ interface Props {
     groups: ResolvedGroup[];
     selectedCategoryName: string;
     variableKeys: string[];
+    levelTemplates?: LevelTemplate[];
 }
 
 /**
@@ -46,6 +48,7 @@ export function StickyBoardBar({
     groups,
     selectedCategoryName,
     variableKeys,
+    levelTemplates,
 }: Props) {
     return (
         <div className={styles.stickyBar}>
@@ -84,6 +87,7 @@ export function StickyBoardBar({
                 groups={groups}
                 selectedCategoryName={selectedCategoryName}
                 variableKeys={variableKeys}
+                levelTemplates={levelTemplates}
             />
         </div>
     );

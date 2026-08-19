@@ -3,10 +3,12 @@
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CaretDownFill } from 'react-bootstrap-icons';
+import { levelBoardLabel } from '~src/lib/levels/display';
 import type {
     ResolvedCategory,
     ResolvedGroup,
 } from '../../../../../types/leaderboards.types';
+import type { LevelTemplate } from '../../../../../types/levels.types';
 import { useBoardNav } from '../filters/use-board-nav';
 import { usePopoverFocus } from '../shared/use-popover-focus';
 import { computeCategoryVisibility } from './category-visibility';
@@ -19,6 +21,7 @@ interface Props {
     groups: ResolvedGroup[];
     selectedCategoryName: string;
     variableKeys: string[];
+    levelTemplates?: LevelTemplate[];
 }
 
 /**
@@ -38,6 +41,7 @@ export function SwitchBoardPopover({
     groups,
     selectedCategoryName,
     variableKeys,
+    levelTemplates,
 }: Props) {
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -47,9 +51,15 @@ export function SwitchBoardPopover({
     const rootRef = useRef<HTMLDivElement>(null);
     const panelRef = useRef<HTMLDivElement>(null);
 
-    const { sections } = useMemo(
-        () => computeCategoryVisibility(categories, groups),
-        [categories, groups],
+    const { sections, levels } = useMemo(
+        () =>
+            computeCategoryVisibility(
+                categories,
+                groups,
+                null,
+                selectedCategoryName,
+            ),
+        [categories, groups, selectedCategoryName],
     );
 
     const close = () => setOpen(false);
@@ -86,8 +96,10 @@ export function SwitchBoardPopover({
 
     // Nothing to switch to: same guard as CategoryRail's own "don't render
     // a control for a single board" rule.
-    if (sections.length === 0) return null;
-    if (sections.length === 1 && sections[0].pills.length <= 1) return null;
+    const hasLevels = levels.groups.length > 0;
+    if (sections.length === 0 && !hasLevels) return null;
+    if (sections.length === 1 && sections[0].pills.length <= 1 && !hasLevels)
+        return null;
 
     return (
         <div className={styles.switchRoot} ref={rootRef}>
@@ -148,6 +160,41 @@ export function SwitchBoardPopover({
                             </div>
                         );
                     })}
+                    {levels.groups.map((level) => (
+                        <div
+                            key={`switch-level-${level.id}`}
+                            className={styles.switchGroup}
+                            role="group"
+                            aria-labelledby={`switch-level-label-${level.id}`}
+                        >
+                            <span
+                                id={`switch-level-label-${level.id}`}
+                                className={styles.groupEyebrow}
+                            >
+                                {level.name}
+                            </span>
+                            <div className={styles.switchChips}>
+                                {level.boards.map((c) => {
+                                    const active =
+                                        c.name === optimisticSelectedName;
+                                    return (
+                                        <button
+                                            key={c.id}
+                                            type="button"
+                                            onClick={() => onSelect(c.name)}
+                                            aria-pressed={active}
+                                            className={`${styles.chip} ${active ? styles.chipActive : ''}`}
+                                        >
+                                            {levelBoardLabel(
+                                                c,
+                                                levelTemplates ?? [],
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ))}
                 </div>
             )}
         </div>

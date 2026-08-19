@@ -7,6 +7,7 @@ import {
     getLeaderboard,
     getUserRankingsByName,
 } from '~src/lib/leaderboards-v1';
+import { splitLevelBoards } from '~src/lib/levels/display';
 import type {
     LeaderboardEntry,
     QuickStats,
@@ -68,12 +69,31 @@ async function fetchCardEntries(
     }
 }
 
+/**
+ * The categories the wall is made of.
+ *
+ * Level boards are Featured — an instance copies its level category's isMain —
+ * but they are not cards: a 30-level game with four level categories would put
+ * 120 of them on the wall and fire 120 leaderboard requests to fill them in.
+ * They are reached through the level picker on a board, so the wall (and the
+ * fetches, and the "featured" scope the sidebar's PBs are filtered to) is
+ * full-game only. Narrowed here as well as at the caller so no route can
+ * accidentally pay for the fan-out.
+ */
+export function overviewCardCategories(
+    featured: ResolvedCategory[],
+    groups: ResolvedGroup[],
+): ResolvedCategory[] {
+    return splitLevelBoards(featured, groups).fullGame;
+}
+
 export async function loadGameOverviewData(
     game: ResolvedGame,
     featured: ResolvedCategory[],
     groups: ResolvedGroup[],
     sessionUsername: string | null,
 ): Promise<GameOverviewData> {
+    const cardCategories = overviewCardCategories(featured, groups);
     const today = isoDaysAgo(0);
     const [
         quickStats,
@@ -97,7 +117,7 @@ export async function loadGameOverviewData(
         sessionUsername
             ? getUserRankingsByName(sessionUsername).catch(() => [])
             : Promise.resolve([]),
-        Promise.all(featured.map((c) => fetchCardEntries(game.name, c))),
+        Promise.all(cardCategories.map((c) => fetchCardEntries(game.name, c))),
         getGameActivityTimeseries(game.id, isoDaysAgo(90), today).catch(
             () => [],
         ),
@@ -108,12 +128,12 @@ export async function loadGameOverviewData(
         gameMeta,
         quickStats,
         groups,
-        cards: featured.map((category, i) => ({
+        cards: cardCategories.map((category, i) => ({
             category,
             entries: cardEntries[i],
         })),
         // The sidebar must not surface PBs from boards the wall can't link to.
-        recentPbs: filterPbsToFeatured(recentPbs, featured),
+        recentPbs: filterPbsToFeatured(recentPbs, cardCategories),
         yourRuns: rawYourRuns.filter((r) => r.gameSlug === game.name),
         activitySparkline: toSparklineSeries(activity90, 90),
         sessionUsername,

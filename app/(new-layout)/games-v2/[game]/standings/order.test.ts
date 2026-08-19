@@ -6,7 +6,9 @@ import type {
 } from '../../../../../types/leaderboards.types';
 import {
     boardDisplayOrder,
+    dropStandingsCategories,
     orderStandingsForDisplay,
+    standingsScope,
     standingsSections,
 } from './order';
 
@@ -28,6 +30,8 @@ const group = (id: number, sortOrder: number): ResolvedGroup => ({
     id,
     name: `g${id}`,
     sortOrder,
+    kind: 'normal',
+    rules: null,
 });
 
 const standingsCat = (name: string) => ({
@@ -108,5 +112,73 @@ describe('orderStandingsForDisplay', () => {
             [],
         );
         expect(out.categories.map((c) => c.name)).toEqual(['main', 'mystery']);
+    });
+});
+
+describe('standingsScope — levels are not part of the comparison', () => {
+    const levelGroup: ResolvedGroup = {
+        ...group(9, 90),
+        name: 'E1M1',
+        kind: 'level',
+    };
+    const anyPct = resolved('any', 1, null);
+    const board = { ...resolved('e1m1any', 2, 9), id: 42 };
+
+    it('drops level boards and level groups from the scope', () => {
+        const scope = standingsScope(
+            [anyPct, board],
+            [group(1, 10), levelGroup],
+        );
+        expect(scope.categories).toEqual([anyPct]);
+        expect(scope.groups.map((g) => g.id)).toEqual([1]);
+        expect([...scope.excludedIds]).toEqual([42]);
+    });
+
+    it('a level group never becomes a toggle section', () => {
+        const scope = standingsScope([anyPct, board], [levelGroup]);
+        expect(standingsSections(scope.categories, scope.groups)).toEqual([
+            { label: null, names: ['any'], defaultCounted: true },
+        ]);
+    });
+});
+
+describe('dropStandingsCategories', () => {
+    const std = (): GameStandings => ({
+        categories: [
+            { ...standingsCat('any'), id: 1 },
+            { ...standingsCat('e1m1-any%'), id: 42 },
+            { ...standingsCat('hundred'), id: 2 },
+        ],
+        runners: [
+            {
+                name: 'joey',
+                userId: 1,
+                isGuest: false,
+                picture: null,
+                country: null,
+            },
+        ],
+        cells: [
+            [0, 0, 1, 100],
+            [1, 0, 1, 200],
+            [2, 0, 3, 300],
+        ],
+        truncated: false,
+    });
+
+    it('removes the column and reindexes the cells that survive', () => {
+        const out = dropStandingsCategories(std(), new Set([42]));
+        expect(out.categories.map((c) => c.id)).toEqual([1, 2]);
+        // The level board's own cell goes with its column; "hundred" moves
+        // from index 2 to 1 and its cell moves with it.
+        expect(out.cells).toEqual([
+            [0, 0, 1, 100],
+            [1, 0, 3, 300],
+        ]);
+    });
+
+    it('is a no-op when nothing is excluded', () => {
+        const input = std();
+        expect(dropStandingsCategories(input, new Set())).toBe(input);
     });
 });

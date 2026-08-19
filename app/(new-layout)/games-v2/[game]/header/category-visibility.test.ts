@@ -22,6 +22,16 @@ function cat(
     };
 }
 
+function grp(
+    overrides: Partial<ResolvedGroup> & {
+        id: number;
+        name: string;
+        sortOrder: number;
+    },
+): ResolvedGroup {
+    return { kind: 'normal', rules: null, ...overrides };
+}
+
 describe('computeCategoryVisibility', () => {
     it('lists all passed-in (Featured) categories, sorted by playtime', () => {
         const categories = [
@@ -50,8 +60,8 @@ describe('computeCategoryVisibility', () => {
 
     it('splits categories into labeled group sections in sortOrder', () => {
         const groups: ResolvedGroup[] = [
-            { id: 10, name: 'Main Game', sortOrder: 0 },
-            { id: 20, name: 'DLC', sortOrder: 1 },
+            grp({ id: 10, name: 'Main Game', sortOrder: 0 }),
+            grp({ id: 20, name: 'DLC', sortOrder: 1 }),
         ];
         const categories = [
             cat({ id: 1, groupId: 10 }),
@@ -68,8 +78,8 @@ describe('computeCategoryVisibility', () => {
 
     it('appends a trailing ungrouped section after labeled groups', () => {
         const groups: ResolvedGroup[] = [
-            { id: 10, name: 'Main Game', sortOrder: 0 },
-            { id: 20, name: 'DLC', sortOrder: 1 },
+            grp({ id: 10, name: 'Main Game', sortOrder: 0 }),
+            grp({ id: 20, name: 'DLC', sortOrder: 1 }),
         ];
         const categories = [
             cat({ id: 1, groupId: 10 }),
@@ -86,7 +96,7 @@ describe('computeCategoryVisibility', () => {
 
     it('orders pills within a section by playtime descending', () => {
         const groups: ResolvedGroup[] = [
-            { id: 10, name: 'Main Game', sortOrder: 0 },
+            grp({ id: 10, name: 'Main Game', sortOrder: 0 }),
         ];
         const categories = [
             cat({ id: 1, groupId: 10, totalRunTime: 5 }),
@@ -117,8 +127,8 @@ describe('computeCategoryVisibility', () => {
 
     it('applies sortOrder within each group section, over playtime', () => {
         const groups: ResolvedGroup[] = [
-            { id: 10, name: 'Main Game', sortOrder: 0 },
-            { id: 20, name: 'DLC', sortOrder: 1 },
+            grp({ id: 10, name: 'Main Game', sortOrder: 0 }),
+            grp({ id: 20, name: 'DLC', sortOrder: 1 }),
         ];
         const categories = [
             cat({ id: 1, groupId: 10, sortOrder: 2, totalRunTime: 999 }),
@@ -132,7 +142,7 @@ describe('computeCategoryVisibility', () => {
 
     it('treats a single group with all categories in it as trivial', () => {
         const groups: ResolvedGroup[] = [
-            { id: 10, name: 'Main Game', sortOrder: 0 },
+            grp({ id: 10, name: 'Main Game', sortOrder: 0 }),
         ];
         const categories = [
             cat({ id: 1, groupId: 10 }),
@@ -152,13 +162,13 @@ describe('computeCategoryVisibility', () => {
 
     it('marks a hidden-by-default group as collapsed', () => {
         const groups: ResolvedGroup[] = [
-            { id: 10, name: 'Main Game', sortOrder: 0 },
-            {
+            grp({ id: 10, name: 'Main Game', sortOrder: 0 }),
+            grp({
                 id: 20,
                 name: 'Category Extensions',
                 sortOrder: 1,
                 hiddenByDefault: true,
-            },
+            }),
         ];
         const categories = [
             cat({ id: 1, groupId: 10 }),
@@ -173,17 +183,105 @@ describe('computeCategoryVisibility', () => {
 
     it('ignores hidden-by-default on the flattened single-group section', () => {
         const groups: ResolvedGroup[] = [
-            { id: 10, name: 'Main Game', sortOrder: 0, hiddenByDefault: true },
+            grp({
+                id: 10,
+                name: 'Main Game',
+                sortOrder: 0,
+                hiddenByDefault: true,
+            }),
         ];
         const categories = [cat({ id: 1, groupId: 10 })];
         const result = computeCategoryVisibility(categories, groups);
         expect(result.sections[0].collapsedByDefault).toBe(false);
     });
 
+    it('pulls level groups out of the sections and returns them as levels', () => {
+        const groups = [
+            {
+                id: 1,
+                name: 'World 1',
+                sortOrder: 1,
+                kind: 'normal' as const,
+                rules: null,
+            },
+            {
+                id: 2,
+                name: 'E1M1',
+                sortOrder: 2,
+                kind: 'level' as const,
+                rules: 'lvl',
+            },
+            {
+                id: 3,
+                name: 'E1M2',
+                sortOrder: 3,
+                kind: 'level' as const,
+                rules: null,
+            },
+        ];
+        const cats = [
+            cat({ id: 10, groupId: 1, display: 'Any%' }),
+            cat({
+                id: 20,
+                groupId: 2,
+                display: 'E1M1 — Any%',
+                levelTemplateId: 9,
+            }),
+            cat({
+                id: 30,
+                groupId: 3,
+                display: 'E1M2 — Any%',
+                levelTemplateId: 9,
+                // The fixture's default name (`cat-30`) doesn't carry the
+                // real instance-slug convention — set it explicitly so
+                // `activeCategoryName` below can match a level board by name.
+                name: 'e1m2-any',
+            }),
+        ];
+        const v = computeCategoryVisibility(cats, groups, null, 'e1m2-any');
+        expect(v.sections.map((s) => s.id)).toEqual([1]);
+        expect(
+            v.levels.groups.map((g) => [g.id, g.boards.map((b) => b.id)]),
+        ).toEqual([
+            [2, [20]],
+            [3, [30]],
+        ]);
+        expect(v.levels.activeLevelId).toBe(3);
+    });
+
+    it('returns no levels for a game without level groups', () => {
+        const v = computeCategoryVisibility([cat({ id: 1 })], [], null);
+        expect(v.levels).toEqual({ groups: [], activeLevelId: null });
+    });
+
+    it('emits no empty flattened section for a levels-only game', () => {
+        const groups: ResolvedGroup[] = [
+            grp({ id: 1, name: 'E1M1', sortOrder: 1, kind: 'level' }),
+        ];
+        const cats = [
+            cat({
+                id: 20,
+                groupId: 1,
+                display: 'E1M1 — Any%',
+                levelTemplateId: 9,
+            }),
+        ];
+        const v = computeCategoryVisibility(cats, groups);
+        expect(v.sections).toEqual([]);
+        expect(v.levels.groups).toEqual([
+            { id: 1, name: 'E1M1', rules: null, boards: [cats[0]] },
+        ]);
+    });
+
     it('never collapses the trailing ungrouped section', () => {
         const groups: ResolvedGroup[] = [
-            { id: 10, name: 'Main Game', sortOrder: 0, hiddenByDefault: true },
-            { id: 20, name: 'DLC', sortOrder: 1, hiddenByDefault: true },
+            grp({
+                id: 10,
+                name: 'Main Game',
+                sortOrder: 0,
+                hiddenByDefault: true,
+            }),
+            grp({ id: 20, name: 'DLC', sortOrder: 1, hiddenByDefault: true }),
         ];
         const categories = [
             cat({ id: 1, groupId: 10 }),
@@ -218,8 +316,13 @@ describe('computeCategoryVisibility — display mode', () => {
 
     it('a group overrides the game default', () => {
         const groups: ResolvedGroup[] = [
-            { id: 10, name: 'Main Game', sortOrder: 0, displayMode: 'pills' },
-            { id: 20, name: 'DLC', sortOrder: 1 },
+            grp({
+                id: 10,
+                name: 'Main Game',
+                sortOrder: 0,
+                displayMode: 'pills',
+            }),
+            grp({ id: 20, name: 'DLC', sortOrder: 1 }),
         ];
         const categories = [
             cat({ id: 1, groupId: 10 }),
@@ -238,8 +341,13 @@ describe('computeCategoryVisibility — display mode', () => {
 
     it('a stated auto beats an inherited dropdown, then counts', () => {
         const groups: ResolvedGroup[] = [
-            { id: 10, name: 'Main Game', sortOrder: 0, displayMode: 'auto' },
-            { id: 20, name: 'DLC', sortOrder: 1 },
+            grp({
+                id: 10,
+                name: 'Main Game',
+                sortOrder: 0,
+                displayMode: 'auto',
+            }),
+            grp({ id: 20, name: 'DLC', sortOrder: 1 }),
         ];
         const categories = [...many(2, 10), cat({ id: 99, groupId: 20 })];
         const result = computeCategoryVisibility(
