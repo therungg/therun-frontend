@@ -51,8 +51,10 @@ export function useActionRunner(
     const run = useCallback(
         (
             action: () => Promise<ActionResult>,
-            /** Runs only on success — clearing a form the write consumed,
-             * so a failed write leaves what was typed on screen. */
+            /** Runs only on success — clearing a form the write consumed.
+             * What a failed write does with the typed value is the caller's
+             * call (create forms keep it; level rows reset to the server
+             * value in their error sink). */
             onSuccess?: () => void,
         ) => {
             startPending(async () => {

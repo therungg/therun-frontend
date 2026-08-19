@@ -147,12 +147,6 @@ function categoryRowsOf(data: GamePageData): ManageCategoryRow[] {
     return rows;
 }
 
-export async function listManageCategories(
-    gameId: number,
-): Promise<ManageCategoryRow[]> {
-    return categoryRowsOf(await loadPageData(gameId));
-}
-
 function levelTemplatesOf(data: GamePageData): LevelTemplate[] {
     return (data.levelTemplates ?? []).map((t) => ({
         id: t.id,
@@ -173,12 +167,6 @@ function levelTemplatesOf(data: GamePageData): LevelTemplate[] {
         rtaFallback: t.rtaFallback ?? false,
         requireVideoTopN: t.requireVideoTopN ?? null,
     }));
-}
-
-export async function listLevelTemplates(
-    gameId: number,
-): Promise<LevelTemplate[]> {
-    return levelTemplatesOf(await loadPageData(gameId));
 }
 
 export interface UpdateCategoryBody {
@@ -289,17 +277,12 @@ function manageGroupsOf(data: GamePageData): ManageGroup[] {
         .sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
-export async function listManageGroups(gameId: number): Promise<ManageGroup[]> {
-    return manageGroupsOf(await loadPageData(gameId));
-}
-
 /**
  * Everything the console's index needs off pageData, from ONE request.
  *
- * The three list functions above each load pageData for themselves, which is
- * right for a caller that wants one of them and wasteful for the console,
- * which wants all three in the same render — that was three uncached
- * `GET /v1/games/{id}` calls for one screen.
+ * Rows, groups and level templates are all projections of the same pageData
+ * blob; loading them separately cost three uncached `GET /v1/games/{id}`
+ * calls for one screen.
  */
 export async function loadConsoleCatalog(gameId: number): Promise<{
     rows: ManageCategoryRow[];

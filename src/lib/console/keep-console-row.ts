@@ -1,7 +1,7 @@
 /**
  * Whether a manage-category row belongs in the console at all.
  *
- * The console merges two lists that look alike and are not: `listManageCategories`
+ * The console merges two lists that look alike and are not: `loadConsoleCatalog().rows`
  * (every category in pageData, junk included) and `resolveCategory`, whose
  * `categories` are already the curated population — it returns stats rows that
  * clear the activity floor PLUS every pageData category with no stats row at
