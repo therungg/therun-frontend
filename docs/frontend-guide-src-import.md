@@ -179,3 +179,56 @@ category maps to therun's `gametime` timing with the game-time label `lrt` (load
   already-linked rows instead of duplicating them.
 - Imported runs carry `source === 'src_import'` — badge them as "imported from speedrun.com". Unmatched SRC runners
   become guest rows claimable through the existing Twitch-rename carry flow.
+
+## Undo (remove imported runs)
+
+Reverts the run import for a game. Staged/preview data stands and the configuration
+(categories, levels, variables, mappings) stays — only the `finished_runs` rows the import created are removed, and
+the boards go back to how they were. Design: `docs/plans/2026-08-20-src-import-undo-design.md`.
+
+| Method | Path | Body | Returns |
+|---|---|---|---|
+| POST | `/src-import/games/{gameId}/{jobId}/undo-runs` | — | 202 `{ jobId }` · 409 nothing imported / already in progress / not the latest done job · 403 without `verify-reject-run` |
+
+Permissions are the same pair as `import-runs`: `import-board` (checked first, generic 403) plus `verify-reject-run`.
+
+**When it is offered.** The job must be the game's latest and `status === 'done'`, `configAppliedAt` must be set,
+and `commitStatus` must be `imported` or `failed` — or an `importing`/`undoing` job whose heartbeat is more than 20
+minutes old (the same staleness reclaim as the other commit actions). On `null`, `planning`, `applying` or `applied`
+the endpoint 409s with "This import has nothing imported to undo"; on a fresh `importing`/`undoing` it 409s with "An
+undo is in progress" / "A commit is already in progress". Show the undo button only for `imported` / `failed`.
+
+`failed` is ambiguous on its own — it also covers a job whose **apply-config** died, which never reached the run
+walk. Those 409 with "The import configuration was never applied…; re-POST apply-config instead", so gate the button
+on `configAppliedAt != null` as well as on the status, or be ready to surface that message.
+
+**Undo is reachable only through the game's latest job.** Staging a new dry run creates a newer job and makes undo
+(and every other commit action) unavailable on the older one — the older import's runs can then only be removed by
+taking the new job through its own apply-config → import-runs → undo-runs lifecycle. Warn before starting a fresh
+dry run on a game whose previous import has not been undone.
+
+**A stale `undoing` job recovers by re-POSTing `undo-runs`.** Once its heartbeat passes 20 minutes the endpoint
+accepts again and the walk resumes from where it stopped; `import-runs` meanwhile 409s with "An undo of this import
+was left unfinished; re-POST undo-runs before importing again" rather than letting you import on top of a
+half-reverted board.
+
+**Semantics.** Scope is the **game**, not one job: every `finished_runs` row with `source = 'src_import'` on that
+game is deleted, in batches of 500, resumable and budget-limited exactly like `import-runs`. Rows that entered
+therun natively are untouched. `wr_history` and run board overrides pointing at the deleted rows cascade away, and a
+whole-game leaderboard rebuild (`rebuildAllFlags`) plus a game-stats refresh run afterwards, so boards may take a
+moment to settle.
+
+**Status while running:** `commitStatus = 'undoing'`, `commitPhase = 'runs'` — a value the frontend's
+`SrcImportCommitStatus` union has to gain. When it finishes, the job returns to its post-apply-config state:
+`commitStatus = 'applied'`, `commitPhase = 'config'`, `commitCheckpoint = null`, `runsImportedAt = null`,
+`importedRunsCount = 0`, `importSkippedCount = 0`. If it fails mid-walk the job goes to `failed` with `commitError`
+set; POST again to resume.
+
+**The links survive and re-import works.** `src_import_run_links` rows are kept as provenance with their
+`finishedRunId` cleared (the FK is `ON DELETE SET NULL`), so the srcRunId → therun history is not lost. A later
+`POST import-runs` re-imports the same SRC runs from scratch into **new** `finished_runs` rows (new ids — any
+external link to an old run id is dead) and repopulates the links. Undo is therefore fully reversible by
+re-importing, which is the only "redo": individual runs cannot be restored, and undo never touches the config.
+
+As with the other commit actions, a failed enqueue returns `500` and rolls `commitStatus`/`commitPhase` back to what
+they were, so a retry after a transient SQS failure works.
