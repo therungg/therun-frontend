@@ -61,6 +61,37 @@ $rail: 3px;
     }
 }
 
+// Prefix + input reading as one field: the prefix is the static
+// "https://www.speedrun.com/" part, the input is the game abbreviation.
+.urlGroup {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+}
+
+.urlPrefix {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 dt.$spacing-sm 0 dt.$spacing-md;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    background: color-mix(
+        in srgb,
+        var(--bs-body-bg) 88%,
+        var(--bs-secondary-bg) 12%
+    );
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    border-right: 0;
+    border-radius: dt.$radius-md 0 0 dt.$radius-md;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.urlInput {
+    border-radius: 0 dt.$radius-md dt.$radius-md 0;
+    min-width: 0;
+}
+
 .select {
     width: auto;
     max-width: 320px;

@@ -1,6 +1,12 @@
 'use client';
 
-import { type FormEvent, useCallback, useState, useTransition } from 'react';
+import {
+    type FormEvent,
+    useCallback,
+    useId,
+    useState,
+    useTransition,
+} from 'react';
 import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 import type { SrcImportJob } from '../../../../../../types/src-import.types';
 import consoleStyles from '../console/console.module.scss';
@@ -51,7 +57,9 @@ export function SrcImportPane({ gameId, gameSlug, gameDisplay }: Props) {
         refresh,
     } = useSrcImportJob(fetchJob);
 
-    const [url, setUrl] = useState('');
+    const inputId = useId();
+    const [slug, setSlug] = useState('');
+    const url = srcUrlFromInput(slug);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [pending, startTransition] = useTransition();
 
@@ -60,7 +68,7 @@ export function SrcImportPane({ gameId, gameSlug, gameDisplay }: Props) {
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
-        if (!url.trim() || pending || inFlight) return;
+        if (!url || pending || inFlight) return;
         setSubmitError(null);
         startTransition(async () => {
             const res = await startSrcImportAction({ gameId, gameSlug, url });
@@ -68,7 +76,7 @@ export function SrcImportPane({ gameId, gameSlug, gameDisplay }: Props) {
                 setSubmitError(res.error);
                 return;
             }
-            setUrl('');
+            setSlug('');
             await refresh();
         });
     };
@@ -93,25 +101,32 @@ export function SrcImportPane({ gameId, gameSlug, gameDisplay }: Props) {
                 </div>
 
                 <form className={styles.form} onSubmit={submit}>
-                    <label className={styles.field}>
-                        <span className={styles.label}>
+                    <div className={styles.field}>
+                        <label htmlFor={inputId} className={styles.label}>
                             speedrun.com game URL
+                        </label>
+                        <span className={styles.urlGroup}>
+                            <span className={styles.urlPrefix} aria-hidden>
+                                {SRC_PREFIX}
+                            </span>
+                            <input
+                                id={inputId}
+                                className={`${styles.input} ${styles.urlInput}`}
+                                type="text"
+                                autoComplete="off"
+                                spellCheck={false}
+                                placeholder="sm64"
+                                value={slug}
+                                onChange={(e) => setSlug(e.target.value)}
+                                disabled={pending || inFlight}
+                                required
+                            />
                         </span>
-                        <input
-                            className={styles.input}
-                            type="url"
-                            inputMode="url"
-                            placeholder="https://www.speedrun.com/sm64"
-                            value={url}
-                            onChange={(e) => setUrl(e.target.value)}
-                            disabled={pending || inFlight}
-                            required
-                        />
-                    </label>
+                    </div>
                     <button
                         type="submit"
                         className={kit.saveBtn}
-                        disabled={pending || inFlight || !url.trim()}
+                        disabled={pending || inFlight || !url}
                     >
                         {pending ? 'Starting…' : 'Fetch board'}
                     </button>
@@ -142,6 +157,23 @@ export function SrcImportPane({ gameId, gameSlug, gameDisplay }: Props) {
             </div>
         </div>
     );
+}
+
+export const SRC_PREFIX = 'https://www.speedrun.com/';
+
+/**
+ * The user types only the part after the prefix (the game abbreviation), but a
+ * pasted full URL still works: any speedrun.com origin is stripped back to its
+ * path, and the result is re-joined onto the canonical prefix. Returns '' when
+ * there is nothing to send.
+ */
+export function srcUrlFromInput(raw: string): string {
+    const trimmed = raw.trim();
+    if (!trimmed) return '';
+    const path = trimmed
+        .replace(/^(?:https?:\/\/)?(?:www\.)?speedrun\.com\/?/i, '')
+        .replace(/^\/+/, '');
+    return path ? `${SRC_PREFIX}${path}` : '';
 }
 
 function JobCard({ job }: { job: SrcImportJob }) {

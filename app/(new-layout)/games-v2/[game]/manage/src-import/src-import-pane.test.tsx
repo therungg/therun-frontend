@@ -33,7 +33,7 @@ import {
     listSrcImportRunsAction,
     startSrcImportAction,
 } from './src-import-actions';
-import { SrcImportPane } from './src-import-pane';
+import { SrcImportPane, srcUrlFromInput } from './src-import-pane';
 import { POLL_MS } from './use-src-import-job';
 
 const job = (over: Partial<SrcImportJob> = {}): SrcImportJob => ({
@@ -85,7 +85,7 @@ describe('SrcImportPane', () => {
             screen.getByRole('button', { name: 'Fetch board' }),
         ).toBeDisabled();
         fireEvent.change(screen.getByLabelText('speedrun.com game URL'), {
-            target: { value: 'https://www.speedrun.com/sm64' },
+            target: { value: 'sm64' },
         });
         expect(
             screen.getByRole('button', { name: 'Fetch board' }),
@@ -106,7 +106,7 @@ describe('SrcImportPane', () => {
         await waitFor(() => expect(getSrcImportJobAction).toHaveBeenCalled());
 
         fireEvent.change(screen.getByLabelText('speedrun.com game URL'), {
-            target: { value: 'https://www.speedrun.com/sm64' },
+            target: { value: 'sm64' },
         });
         fireEvent.click(screen.getByRole('button', { name: 'Fetch board' }));
 
@@ -132,7 +132,7 @@ describe('SrcImportPane', () => {
         render(<SrcImportPane {...props} />);
         await waitFor(() => expect(getSrcImportJobAction).toHaveBeenCalled());
         fireEvent.change(screen.getByLabelText('speedrun.com game URL'), {
-            target: { value: 'https://www.speedrun.com/sm64' },
+            target: { value: 'sm64' },
         });
         fireEvent.click(screen.getByRole('button', { name: 'Fetch board' }));
         expect(
@@ -188,7 +188,7 @@ describe('SrcImportPane', () => {
             await screen.findByText(/Import failed: SRC returned 500/),
         ).toBeInTheDocument();
         fireEvent.change(screen.getByLabelText('speedrun.com game URL'), {
-            target: { value: 'https://www.speedrun.com/sm64' },
+            target: { value: 'sm64' },
         });
         expect(
             screen.getByRole('button', { name: 'Fetch board' }),
@@ -266,5 +266,28 @@ describe('primaryTime', () => {
         expect(primaryTime(run({ ingameMs: 61000 }))).not.toBe('—');
         expect(primaryTime(run({ realtimeNoloadsMs: 61000 }))).not.toBe('—');
         expect(primaryTime(run({}))).toBe('—');
+    });
+});
+
+describe('srcUrlFromInput', () => {
+    it('joins the abbreviation onto the canonical prefix', () => {
+        expect(srcUrlFromInput('sm64')).toBe('https://www.speedrun.com/sm64');
+        expect(srcUrlFromInput('  /sm64 ')).toBe(
+            'https://www.speedrun.com/sm64',
+        );
+    });
+
+    it('accepts a pasted full URL without doubling the host', () => {
+        expect(srcUrlFromInput('https://www.speedrun.com/sm64')).toBe(
+            'https://www.speedrun.com/sm64',
+        );
+        expect(srcUrlFromInput('speedrun.com/sm64/full_game')).toBe(
+            'https://www.speedrun.com/sm64/full_game',
+        );
+    });
+
+    it('is empty when nothing useful was typed', () => {
+        expect(srcUrlFromInput('')).toBe('');
+        expect(srcUrlFromInput('https://www.speedrun.com/')).toBe('');
     });
 });
