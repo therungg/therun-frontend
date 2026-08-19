@@ -1,0 +1,128 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/board' as board;
+
+// Levels and level categories share one anatomy: a table of templates on one
+// side, a list of levels each carrying the same checklist of templates on the
+// other. Both are read as inventories — what exists, what is missing — so the
+// styling stays quiet and lets the counts carry the meaning.
+
+.table {
+    @include board.board-table;
+
+    thead tr {
+        background: rgba(var(--bs-body-color-rgb), 0.04);
+    }
+
+    tbody td {
+        padding-top: dt.$spacing-sm;
+        padding-bottom: dt.$spacing-sm;
+        vertical-align: middle;
+    }
+}
+
+.pill {
+    @include board.board-pill;
+}
+
+// One state colour per instance state, so a level's checklist can be scanned
+// for the odd one out without reading every label.
+.pillOverridden {
+    background: color-mix(in srgb, #{dt.$accent-amber} 18%, transparent);
+    color: color-mix(in srgb, #{dt.$accent-amber} 80%, var(--bs-body-color));
+}
+
+.pillExcluded {
+    background: rgba(var(--bs-secondary-rgb), 0.12);
+    color: var(--bs-secondary-color);
+}
+
+.pillLevelOnly {
+    background: rgba(var(--bs-primary-rgb), 0.12);
+    color: var(--bs-primary);
+}
+
+.levelRow {
+    padding: dt.$spacing-md 0;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+
+    &:last-child {
+        border-bottom: 0;
+    }
+}
+
+.levelHead {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    flex-wrap: wrap;
+}
+
+.nameInput {
+    font-weight: 600;
+    max-width: 18rem;
+}
+
+.checklist {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-md;
+    margin-top: dt.$spacing-sm;
+}
+
+.check {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-sm;
+}
+
+.instanceList {
+    margin: dt.$spacing-sm 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-sm;
+}
+
+.instanceRow {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+}
+
+.rulesToggle {
+    @include board.board-quiet-link;
+    font-size: dt.$font-size-sm;
+}
+
+.rulesBox {
+    margin-top: dt.$spacing-sm;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    max-width: 48rem;
+}
+
+.createRow {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    flex-wrap: wrap;
+    margin-top: dt.$spacing-lg;
+}
+
+.hint {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: dt.$spacing-sm 0 0;
+}
+
+.count {
+    @include board.mono-time;
+}
+
+.empty {
+    @include board.board-empty;
+}

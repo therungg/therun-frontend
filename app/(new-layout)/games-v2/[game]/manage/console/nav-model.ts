@@ -14,6 +14,8 @@ export type NavItemId =
     | 'game-details'
     | 'categories'
     | 'groups'
+    | 'levels'
+    | 'level-categories'
     | 'variables'
     | 'boards'
     | 'moderators'
@@ -76,6 +78,14 @@ const ALL_GROUPS: NavGroup[] = [
             // Order matches the wizard: details 1, categories 2, groups 3.
             { id: 'categories', label: CONCEPT_LABEL.categories },
             { id: 'groups', label: CONCEPT_LABEL.groups },
+            // Individual levels sit with the groups they are: a level IS a
+            // category group (kind: 'level'), and the level categories are
+            // the templates every level's boards are materialised from.
+            { id: 'levels', label: CONCEPT_LABEL.levels },
+            {
+                id: 'level-categories',
+                label: CONCEPT_LABEL['level-categories'],
+            },
             // The wizard's step 4, mounted as a pane: the same VariablesGrid,
             // spanning every featured category. Structure used to be reachable
             // only by opening a category and scrolling — which meant the one

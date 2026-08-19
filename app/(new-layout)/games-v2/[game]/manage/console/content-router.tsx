@@ -13,11 +13,14 @@ import type {
     ResolvedGroup,
     VariableRow,
 } from '../../../../../../types/leaderboards.types';
+import type { LevelTemplate } from '../../../../../../types/levels.types';
 import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
 import { VariablesGrid } from '../../setup/steps/variables/variables-grid';
 import { BoardCuration } from '../boards/board-curation';
 import { GameTab } from '../game-tab/game-tab';
 import type { ReorderChange } from '../game-tab/reorder-changes';
+import { LevelCategoriesPane } from '../levels/level-categories-pane';
+import { LevelsPane } from '../levels/levels-pane';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import { ModApplicationsCard } from '../moderation/attention/mod-applications-card';
 import { NeedsAttention } from '../moderation/attention/needs-attention';
@@ -59,6 +62,10 @@ export interface ContentRouterProps {
     gameDetails?: GameDetailsData | null;
     rows: ManageCategoryRow[];
     groups: ManageGroup[];
+    /** Level categories (templates) loaded server-side — the Levels pane
+     * only needs them for its empty state; the live picture comes from the
+     * overview it loads itself. */
+    levelTemplates: LevelTemplate[];
     /** Permission-filtered console nav, for the tile grid. Distinct from
      * `groups`, which is the category-grouping model. */
     navGroups: NavGroup[];
@@ -160,6 +167,18 @@ export function ContentRouter(props: ContentRouterProps) {
                     onGroupsChange={props.onGroupsChange}
                     onRowGroupChange={props.onRowGroupChange}
                 />
+            );
+        case 'levels':
+            return (
+                <LevelsPane
+                    gameId={game.id}
+                    gameSlug={game.name}
+                    templates={props.levelTemplates}
+                />
+            );
+        case 'level-categories':
+            return (
+                <LevelCategoriesPane gameId={game.id} gameSlug={game.name} />
             );
         case 'variables':
             // The wizard's step 4 without the wizard: same grid, same staging
