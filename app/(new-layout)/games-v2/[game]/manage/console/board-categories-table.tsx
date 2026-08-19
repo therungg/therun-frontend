@@ -319,6 +319,8 @@ export function BoardCategoriesTable({
             sortOrder: (groups[groups.length - 1]?.sortOrder ?? 0) + 1,
             hiddenByDefault: false,
             displayMode: null,
+            kind: 'normal',
+            rules: null,
         });
 
         setPending(row.id, true);

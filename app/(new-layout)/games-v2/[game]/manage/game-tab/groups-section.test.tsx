@@ -41,6 +41,8 @@ function renderSection(hiddenByDefault: boolean) {
                     sortOrder: 1,
                     hiddenByDefault,
                     displayMode: null,
+                    kind: 'normal',
+                    rules: null,
                 },
             ]}
             rows={[]}

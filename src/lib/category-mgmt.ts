@@ -1,6 +1,7 @@
 'use server';
 
 import type { CategoryDisplayMode } from '../../types/leaderboards.types';
+import type { LevelTemplate } from '../../types/levels.types';
 import { apiFetch } from './api-client';
 
 export type PrimaryTiming = 'realtime' | 'gametime';
@@ -24,6 +25,8 @@ export interface ManageCategoryRow {
     totalRunTime: number;
     totalFinishedAttemptCount: number;
     uniqueRunners: number;
+    levelTemplateId: number | null;
+    levelOverride: boolean;
 }
 
 interface GameCategoryRow {
@@ -35,6 +38,11 @@ interface GameCategoryRow {
     sortOrder?: number;
     isMain?: boolean;
     active?: boolean;
+    levelTemplateId?: number | null;
+    levelOverride?: boolean;
+    name?: string;
+    rules?: string | null;
+    imageUrl?: string | null;
 }
 
 interface GamePageData {
@@ -46,8 +54,11 @@ interface GamePageData {
         sortOrder?: number;
         hiddenByDefault?: boolean;
         displayMode?: string | null;
+        kind?: string;
+        rules?: string | null;
         categories?: GameCategoryRow[];
     }[];
+    levelTemplates?: GameCategoryRow[];
 }
 
 /** Anything the UI cannot draw reads as "no override stated". */
@@ -103,6 +114,8 @@ export async function listManageCategories(
             totalRunTime: 0,
             totalFinishedAttemptCount: 0,
             uniqueRunners: 0,
+            levelTemplateId: c.levelTemplateId ?? null,
+            levelOverride: c.levelOverride ?? false,
         });
     }
     for (const g of data.groups ?? []) {
@@ -119,10 +132,26 @@ export async function listManageCategories(
                 totalRunTime: 0,
                 totalFinishedAttemptCount: 0,
                 uniqueRunners: 0,
+                levelTemplateId: c.levelTemplateId ?? null,
+                levelOverride: c.levelOverride ?? false,
             });
         }
     }
     return rows;
+}
+
+export async function listLevelTemplates(
+    gameId: number,
+): Promise<LevelTemplate[]> {
+    const data = await loadPageData(gameId);
+    return (data.levelTemplates ?? []).map((t) => ({
+        id: t.id,
+        display: t.display,
+        rules: t.rules ?? null,
+        isMain: t.isMain ?? false,
+        sortOrder: t.sortOrder ?? 0,
+        imageUrl: t.imageUrl ?? null,
+    }));
 }
 
 export interface UpdateCategoryBody {
@@ -213,6 +242,10 @@ export interface ManageGroup {
     hiddenByDefault: boolean;
     /** `null` = no override; the group follows `gameCategoryDisplayMode`. */
     displayMode: CategoryDisplayMode | null;
+    /** category_groups.kind — 'level' groups are individual levels. */
+    kind: 'normal' | 'level';
+    /** Level-specific rules (level groups only). */
+    rules: string | null;
 }
 
 export async function listManageGroups(gameId: number): Promise<ManageGroup[]> {
@@ -224,6 +257,8 @@ export async function listManageGroups(gameId: number): Promise<ManageGroup[]> {
             sortOrder: g.sortOrder ?? 0,
             hiddenByDefault: g.hiddenByDefault ?? false,
             displayMode: asDisplayMode(g.displayMode),
+            kind: g.kind === 'level' ? ('level' as const) : ('normal' as const),
+            rules: g.rules ?? null,
         }))
         .sort((a, b) => a.sortOrder - b.sortOrder);
 }
@@ -233,6 +268,8 @@ export interface CreateGroupBody {
     sortOrder?: number;
     hiddenByDefault?: boolean;
     displayMode?: CategoryDisplayMode | null;
+    kind?: 'normal' | 'level';
+    rules?: string | null;
 }
 
 export interface UpdateGroupBody {
@@ -241,6 +278,7 @@ export interface UpdateGroupBody {
     hiddenByDefault?: boolean;
     /** `null` clears the override and returns the group to the game default. */
     displayMode?: CategoryDisplayMode | null;
+    rules?: string | null;
 }
 
 export async function createGroup(

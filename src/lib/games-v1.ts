@@ -9,6 +9,7 @@ import type {
     ResolvedGame,
     ResolvedGroup,
 } from '../../types/leaderboards.types';
+import type { LevelTemplate } from '../../types/levels.types';
 import { isLowActivityCategory } from '../utils/format-stats';
 import { normalizeArchived } from './archived-flag';
 import { normalizeSlug } from './normalize-slug';
@@ -128,6 +129,16 @@ interface PageDataCategoryFlags {
     archived?: boolean | null;
     sortOrder?: number | null;
     imageUrl?: string | null;
+    display?: string;
+    name?: string;
+    levelTemplateId?: number | null;
+    levelOverride?: boolean;
+    primaryTiming?: string;
+    gameTimeLabel?: string;
+    rules?: string | null;
+    showMilliseconds?: boolean;
+    requireVideo?: boolean;
+    sortAscending?: boolean;
 }
 
 interface PageDataGroup {
@@ -136,6 +147,8 @@ interface PageDataGroup {
     sortOrder?: number;
     hiddenByDefault?: boolean;
     displayMode?: string | null;
+    kind?: string;
+    rules?: string | null;
     categories?: PageDataCategoryFlags[];
 }
 
@@ -143,6 +156,7 @@ interface PageDataForCats {
     ungroupedCategories?: PageDataCategoryFlags[];
     groups?: PageDataGroup[];
     game?: { categoryDisplayMode?: string | null };
+    levelTemplates?: PageDataCategoryFlags[];
 }
 
 /**
@@ -207,6 +221,7 @@ export async function resolveCategory(
     groups: ResolvedGroup[];
     /** Board-wide selector default; the flat case has nowhere else to get one. */
     categoryDisplayMode: CategoryDisplayMode | null;
+    levelTemplates: LevelTemplate[];
 }> {
     'use cache';
     cacheLife('minutes');
@@ -222,32 +237,17 @@ export async function resolveCategory(
         ),
     ]);
 
-    const flagsById = new Map<
-        number,
-        {
-            isMain: boolean;
-            archived: boolean;
-            sortOrder: number;
-            imageUrl: string | null;
-        }
-    >();
+    // Keep the full pageData entry per category id — not just display
+    // flags — so a pageData-only row (no stats yet) has everything it needs
+    // to render, and every row can pick up levelTemplateId/levelOverride.
+    const entryById = new Map<number, PageDataCategoryFlags>();
     const groupByCatId = new Map<number, { id: number; name: string }>();
     for (const c of pageDataResp.result?.ungroupedCategories ?? []) {
-        flagsById.set(c.id, {
-            isMain: c.isMain ?? false,
-            archived: normalizeArchived(c),
-            sortOrder: c.sortOrder ?? 0,
-            imageUrl: c.imageUrl ?? null,
-        });
+        entryById.set(c.id, c);
     }
     for (const g of pageDataResp.result?.groups ?? []) {
         for (const c of g.categories ?? []) {
-            flagsById.set(c.id, {
-                isMain: c.isMain ?? false,
-                archived: normalizeArchived(c),
-                sortOrder: c.sortOrder ?? 0,
-                imageUrl: c.imageUrl ?? null,
-            });
+            entryById.set(c.id, c);
             groupByCatId.set(c.id, { id: g.id, name: g.name });
         }
     }
@@ -259,6 +259,8 @@ export async function resolveCategory(
             sortOrder: g.sortOrder ?? 0,
             hiddenByDefault: g.hiddenByDefault ?? false,
             displayMode: asCategoryDisplayMode(g.displayMode),
+            kind: g.kind === 'level' ? ('level' as const) : ('normal' as const),
+            rules: g.rules ?? null,
         }))
         .sort((a, b) => a.sortOrder - b.sortOrder);
 
@@ -269,8 +271,12 @@ export async function resolveCategory(
                 totalFinishedAttemptCount: r.total_finished_attempt_count,
             }),
     );
+    // Every category with a stats row is "seen" — including rows filtered
+    // out below the activity floor, which must stay dropped, not get
+    // re-added by the zero-stats union below.
+    const seenIds = new Set(categoryStats.map((r) => r.category_id));
     const categories: ResolvedCategory[] = rows.map((r) => {
-        const flags = flagsById.get(r.category_id);
+        const entry = entryById.get(r.category_id);
         const grp = groupByCatId.get(r.category_id) ?? null;
         return {
             id: r.category_id,
@@ -285,12 +291,12 @@ export async function resolveCategory(
                     ? ('lrt' as const)
                     : ('igt' as const),
             sortAscending: r.sort_ascending ?? true,
-            isMain: flags?.isMain ?? false,
-            archived: flags?.archived ?? false,
-            sortOrder: flags?.sortOrder ?? 0,
+            isMain: entry?.isMain ?? false,
+            archived: entry ? normalizeArchived(entry) : false,
+            sortOrder: entry?.sortOrder ?? 0,
             groupId: grp?.id ?? null,
             groupName: grp?.name ?? null,
-            imageUrl: flags?.imageUrl ?? null,
+            imageUrl: entry?.imageUrl ?? null,
             totalRunTime: r.total_run_time,
             totalAttemptCount: r.total_attempt_count,
             totalFinishedAttemptCount: r.total_finished_attempt_count,
@@ -303,8 +309,54 @@ export async function resolveCategory(
             hideRealTime: r.hide_real_time ?? false,
             hideGameTime: r.hide_game_time ?? false,
             rtaFallback: r.rta_fallback ?? false,
+            levelTemplateId: entry?.levelTemplateId ?? null,
+            levelOverride: entry?.levelOverride ?? false,
         };
     });
+
+    // Union in every pageData category (ungrouped or grouped, any kind)
+    // that has no stats row — zero-run boards and level boards, which start
+    // empty, must still show up rather than waiting for their first run.
+    for (const [id, entry] of entryById) {
+        if (seenIds.has(id)) continue;
+        const grp = groupByCatId.get(id) ?? null;
+        const display = entry.display ?? '';
+        categories.push({
+            id,
+            name: entry.name ?? normalizeSlug(display),
+            display,
+            primaryTiming:
+                entry.primaryTiming === 'gt' ||
+                entry.primaryTiming === 'gametime'
+                    ? ('gt' as const)
+                    : ('rt' as const),
+            gameTimeLabel:
+                entry.gameTimeLabel === 'lrt'
+                    ? ('lrt' as const)
+                    : ('igt' as const),
+            sortAscending: entry.sortAscending ?? true,
+            isMain: entry.isMain ?? false,
+            archived: normalizeArchived(entry),
+            sortOrder: entry.sortOrder ?? 0,
+            groupId: grp?.id ?? null,
+            groupName: grp?.name ?? null,
+            imageUrl: entry.imageUrl ?? null,
+            totalRunTime: 0,
+            totalAttemptCount: 0,
+            totalFinishedAttemptCount: 0,
+            totalPbs: 0,
+            uniqueRunners: 0,
+            rules: entry.rules ?? null,
+            showMilliseconds: entry.showMilliseconds ?? true,
+            requireVideo: entry.requireVideo ?? false,
+            requireVideoTopN: null,
+            hideRealTime: false,
+            hideGameTime: false,
+            rtaFallback: false,
+            levelTemplateId: entry.levelTemplateId ?? null,
+            levelOverride: entry.levelOverride ?? false,
+        });
+    }
 
     let selected: ResolvedCategory | null = null;
     if (categorySlug) {
@@ -313,6 +365,17 @@ export async function resolveCategory(
     }
     if (!selected) selected = categories[0] ?? null;
 
+    const levelTemplates: LevelTemplate[] = (
+        pageDataResp.result?.levelTemplates ?? []
+    ).map((t) => ({
+        id: t.id,
+        display: t.display ?? '',
+        rules: t.rules ?? null,
+        isMain: t.isMain ?? false,
+        sortOrder: t.sortOrder ?? 0,
+        imageUrl: t.imageUrl ?? null,
+    }));
+
     return {
         categories,
         selected,
@@ -320,6 +383,7 @@ export async function resolveCategory(
         categoryDisplayMode: asCategoryDisplayMode(
             pageDataResp.result?.game?.categoryDisplayMode,
         ),
+        levelTemplates,
     };
 }
 

@@ -28,6 +28,8 @@ const group = (id: number, sortOrder: number): ResolvedGroup => ({
     id,
     name: `g${id}`,
     sortOrder,
+    kind: 'normal',
+    rules: null,
 });
 
 const standingsCat = (name: string) => ({
