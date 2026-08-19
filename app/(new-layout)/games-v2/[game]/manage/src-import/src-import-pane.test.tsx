@@ -298,6 +298,7 @@ describe('runPlayerLabel', () => {
             runPlayerLabel({
                 srcUserId: 'j59qw1qx',
                 name: 'Averge',
+                twitchLogin: 'averge',
                 therunUsername: null,
             }),
         ).toBe('Averge');
@@ -305,6 +306,7 @@ describe('runPlayerLabel', () => {
             runPlayerLabel({
                 srcUserId: 'j59qw1qx',
                 name: null,
+                twitchLogin: null,
                 therunUsername: null,
             }),
         ).toBe('j59qw1qx');
