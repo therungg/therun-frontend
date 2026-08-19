@@ -18,6 +18,7 @@ vi.mock('../v1-fetch', () => ({
 }));
 
 import { resolveCategory } from '../games-v1';
+import { normalizeSlug } from '../normalize-slug';
 
 const CATEGORY_STATS = [
     {
@@ -110,6 +111,17 @@ const PAGE_DATA = {
                 },
             ],
         },
+        {
+            // A wire group predating `kind`/`rules` (or simply a normal
+            // group, which the backend never stamps with `kind: 'normal'`
+            // explicitly) — the absence of both fields must still resolve
+            // to 'normal'/null, not merely happen to match a fixture that
+            // sets them.
+            id: 20,
+            name: 'Bonus Stages',
+            sortOrder: 2,
+            categories: [],
+        },
     ],
     levelTemplates: [
         {
@@ -147,7 +159,9 @@ describe('resolveCategory — level groups + pageData-only categories', () => {
         expect(zeroStats?.totalRunTime ?? 0).toBe(0);
         expect(zeroStats?.totalAttemptCount ?? 0).toBe(0);
         expect(zeroStats?.totalFinishedAttemptCount ?? 0).toBe(0);
-        expect(zeroStats?.name).toBe('100');
+        // The slug is derived from `display`, not the pageData `name` field
+        // (which is set to a deliberately different value in this fixture).
+        expect(zeroStats?.name).toBe(normalizeSlug('100%'));
         expect(zeroStats?.display).toBe('100%');
         expect(zeroStats?.rules).toBe('No major skips.');
         expect(zeroStats?.showMilliseconds).toBe(false);
@@ -176,14 +190,12 @@ describe('resolveCategory — level groups + pageData-only categories', () => {
         expect(levelGroup?.rules).toBe('No OoB.');
     });
 
-    it('normal groups carry kind "normal" and null rules', async () => {
+    it('a group with no kind/rules on the wire defaults to normal/null', async () => {
         setupFetch();
         const { groups } = await resolveCategory(1);
-        // The only group in this fixture is the level group; assert the
-        // default a normal (kind-less on the wire) group would resolve to.
-        expect(
-            groups.every((g) => g.kind === 'level' || g.kind === 'normal'),
-        ).toBe(true);
+        const bonus = groups.find((g) => g.id === 20);
+        expect(bonus?.kind).toBe('normal');
+        expect(bonus?.rules).toBeNull();
     });
 
     it('returns levelTemplates from pageData', async () => {
@@ -199,6 +211,21 @@ describe('resolveCategory — level groups + pageData-only categories', () => {
                 imageUrl: null,
             },
         ]);
+    });
+
+    it('slugs a zero-stats board from display, same as a stats-backed row would, and it is selectable', async () => {
+        setupFetch();
+        const { categories, selected } = await resolveCategory(
+            1,
+            'E1M1 — Any%',
+        );
+        const board = categories.find((c) => c.id === 4);
+        // The backend `name` on the wire fixture ('e1m1-any%') is NOT the
+        // slug — it must not leak through. The slug is always derived from
+        // `display`, exactly as a stats-backed row's `name` is.
+        expect(board?.name).toBe(normalizeSlug('E1M1 — Any%'));
+        expect(board?.name).not.toBe('e1m1-any%');
+        expect(selected?.id).toBe(4);
     });
 
     it('sets levelTemplateId/levelOverride on a normal category from pageData', async () => {

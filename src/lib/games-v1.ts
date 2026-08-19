@@ -160,6 +160,39 @@ interface PageDataForCats {
 }
 
 /**
+ * Derivations shared by both `resolveCategory` branches (stats-backed rows
+ * and the pageData-only zero-stats union) — kept in one place so the two
+ * branches cannot silently diverge on how a display resolves to a slug or
+ * how the raw timing strings map to the typed enums.
+ *
+ * The slug is always `normalizeSlug(display)`, never the backend `name`
+ * column — an instance's backend `name` (e.g. `e1m1-any%`) is a real slug,
+ * but a template's is namespaced `level-template:<slug>` and is never a URL
+ * slug, and every slug lookup in this app (this function's own `selected`
+ * search, `root-view.ts`) compares against `normalizeSlug(param)`. Deriving
+ * the slug the same way here keeps both branches — and every other slug
+ * consumer — consistent.
+ */
+function deriveCategoryBasics(
+    display: string,
+    primaryTimingRaw: string | undefined,
+    gameTimeLabelRaw: string | undefined,
+): {
+    name: string;
+    primaryTiming: 'rt' | 'gt';
+    gameTimeLabel: 'igt' | 'lrt';
+} {
+    return {
+        name: normalizeSlug(display),
+        primaryTiming:
+            primaryTimingRaw === 'gt' || primaryTimingRaw === 'gametime'
+                ? 'gt'
+                : 'rt',
+        gameTimeLabel: gameTimeLabelRaw === 'lrt' ? 'lrt' : 'igt',
+    };
+}
+
+/**
  * The wire carries whatever the column holds; anything the UI does not know
  * how to draw degrades to 'auto' rather than to a blank band.
  */
@@ -278,18 +311,17 @@ export async function resolveCategory(
     const categories: ResolvedCategory[] = rows.map((r) => {
         const entry = entryById.get(r.category_id);
         const grp = groupByCatId.get(r.category_id) ?? null;
+        const basics = deriveCategoryBasics(
+            r.category_display,
+            r.primary_timing,
+            r.game_time_label,
+        );
         return {
             id: r.category_id,
-            name: normalizeSlug(r.category_display),
+            name: basics.name,
             display: r.category_display,
-            primaryTiming:
-                r.primary_timing === 'gt' || r.primary_timing === 'gametime'
-                    ? ('gt' as const)
-                    : ('rt' as const),
-            gameTimeLabel:
-                r.game_time_label === 'lrt'
-                    ? ('lrt' as const)
-                    : ('igt' as const),
+            primaryTiming: basics.primaryTiming,
+            gameTimeLabel: basics.gameTimeLabel,
             sortAscending: r.sort_ascending ?? true,
             isMain: entry?.isMain ?? false,
             archived: entry ? normalizeArchived(entry) : false,
@@ -321,19 +353,17 @@ export async function resolveCategory(
         if (seenIds.has(id)) continue;
         const grp = groupByCatId.get(id) ?? null;
         const display = entry.display ?? '';
+        const basics = deriveCategoryBasics(
+            display,
+            entry.primaryTiming,
+            entry.gameTimeLabel,
+        );
         categories.push({
             id,
-            name: entry.name ?? normalizeSlug(display),
+            name: basics.name,
             display,
-            primaryTiming:
-                entry.primaryTiming === 'gt' ||
-                entry.primaryTiming === 'gametime'
-                    ? ('gt' as const)
-                    : ('rt' as const),
-            gameTimeLabel:
-                entry.gameTimeLabel === 'lrt'
-                    ? ('lrt' as const)
-                    : ('igt' as const),
+            primaryTiming: basics.primaryTiming,
+            gameTimeLabel: basics.gameTimeLabel,
             sortAscending: entry.sortAscending ?? true,
             isMain: entry.isMain ?? false,
             archived: normalizeArchived(entry),
@@ -349,6 +379,12 @@ export async function resolveCategory(
             rules: entry.rules ?? null,
             showMilliseconds: entry.showMilliseconds ?? true,
             requireVideo: entry.requireVideo ?? false,
+            // pageData doesn't carry these — they're wired to real config
+            // only once the board has a stats row (/v1/runs/categories).
+            // Until then these are gaps, not asserted config: a board that
+            // actually sets requireVideoTopN/hideRealTime/hideGameTime/
+            // rtaFallback shows the defaults here until its first run lands
+            // it in the stats branch above.
             requireVideoTopN: null,
             hideRealTime: false,
             hideGameTime: false,
