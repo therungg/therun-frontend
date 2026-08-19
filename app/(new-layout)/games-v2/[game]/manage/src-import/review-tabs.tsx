@@ -611,6 +611,15 @@ function RunRow({
                     >
                         {i > 0 && ', '}
                         {runPlayerLabel(p)}
+                        {'twitchLogin' in p && p.twitchLogin && (
+                            <span
+                                className={styles.muted}
+                                style={{ marginLeft: '0.25rem' }}
+                                title="Twitch login on speedrun.com"
+                            >
+                                (twitch: {p.twitchLogin})
+                            </span>
+                        )}
                         {'therunUsername' in p && p.therunUsername && (
                             <span
                                 className={`${styles.pill} ${styles.pillPrimary}`}

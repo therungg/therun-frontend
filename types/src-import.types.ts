@@ -88,6 +88,8 @@ export type SrcImportRunPlayer =
           srcUserId: string;
           /** Staged player's speedrun.com name; null if the player was not staged. */
           name: string | null;
+          /** Twitch login from the player's speedrun.com profile, if any. */
+          twitchLogin: string | null;
           /** therun.gg username when the player matched, else null. */
           therunUsername: string | null;
       }
