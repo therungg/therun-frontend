@@ -43,6 +43,10 @@ interface GameCategoryRow {
     name?: string;
     rules?: string | null;
     imageUrl?: string | null;
+    gameTimeLabel?: string;
+    sortAscending?: boolean;
+    showMilliseconds?: boolean;
+    requireVideo?: boolean;
 }
 
 interface GamePageData {
@@ -151,6 +155,11 @@ export async function listLevelTemplates(
         isMain: t.isMain ?? false,
         sortOrder: t.sortOrder ?? 0,
         imageUrl: t.imageUrl ?? null,
+        primaryTiming: t.primaryTiming === 'gametime' ? 'gt' : 'rt',
+        gameTimeLabel: t.gameTimeLabel === 'lrt' ? 'lrt' : 'igt',
+        sortAscending: t.sortAscending ?? true,
+        showMilliseconds: t.showMilliseconds ?? true,
+        requireVideo: t.requireVideo ?? false,
     }));
 }
 

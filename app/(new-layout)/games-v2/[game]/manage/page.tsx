@@ -143,7 +143,13 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 uniqueRunners: stats?.uniqueRunners ?? 0,
             };
         })
-        .filter((r) => !isLowActivityCategory(r));
+        // The activity floor drops junk harvested from LiveSplit splits —
+        // rows that HAVE stats and barely any. A row with no stats entry at
+        // all is not junk, it's a board nobody has run yet (a fresh category,
+        // or a level board that was just materialised), and dropping those
+        // would make the console blind to exactly the boards a moderator has
+        // just created.
+        .filter((r) => !statsById.has(r.id) || !isLowActivityCategory(r));
 
     const pendingClaims = manualTimes.filter(
         (m) => m.verificationStatus === 'pending',

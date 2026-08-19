@@ -17,6 +17,15 @@ export interface LevelTemplate {
     isMain: boolean;
     sortOrder: number;
     imageUrl: string | null;
+    /** Board settings the template pushes to its boards. Optional because a
+     * consumer that only needs a label (the console's level-board band) never
+     * looks at them; the console's category detail page edits a template as a
+     * category and does. */
+    primaryTiming?: 'rt' | 'gt';
+    gameTimeLabel?: 'igt' | 'lrt';
+    sortAscending?: boolean;
+    showMilliseconds?: boolean;
+    requireVideo?: boolean;
 }
 
 export interface LevelOverview {

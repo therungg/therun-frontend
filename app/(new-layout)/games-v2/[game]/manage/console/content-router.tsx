@@ -146,6 +146,7 @@ export function ContentRouter(props: ContentRouterProps) {
                     rows={props.rows}
                     config={props.categoryConfig}
                     groups={props.groups}
+                    levelTemplates={props.levelTemplates}
                     boardCategories={props.boardCategories}
                     boardGroups={props.boardGroups}
                     metadata={props.gameDetails?.metadata}

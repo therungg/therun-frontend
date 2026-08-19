@@ -403,14 +403,26 @@ export async function resolveCategory(
 
     const levelTemplates: LevelTemplate[] = (
         pageDataResp.result?.levelTemplates ?? []
-    ).map((t) => ({
-        id: t.id,
-        display: t.display ?? '',
-        rules: t.rules ?? null,
-        isMain: t.isMain ?? false,
-        sortOrder: t.sortOrder ?? 0,
-        imageUrl: t.imageUrl ?? null,
-    }));
+    ).map((t) => {
+        const basics = deriveCategoryBasics(
+            t.display ?? '',
+            t.primaryTiming,
+            t.gameTimeLabel,
+        );
+        return {
+            id: t.id,
+            display: t.display ?? '',
+            rules: t.rules ?? null,
+            isMain: t.isMain ?? false,
+            sortOrder: t.sortOrder ?? 0,
+            imageUrl: t.imageUrl ?? null,
+            primaryTiming: basics.primaryTiming,
+            gameTimeLabel: basics.gameTimeLabel,
+            sortAscending: t.sortAscending ?? true,
+            showMilliseconds: t.showMilliseconds ?? true,
+            requireVideo: t.requireVideo ?? false,
+        };
+    });
 
     return {
         categories,

@@ -11,6 +11,7 @@ import type {
     ResolvedGame,
     ResolvedGroup,
 } from '../../../../../../types/leaderboards.types';
+import type { LevelTemplate } from '../../../../../../types/levels.types';
 import { CategoryBandPreview } from '../../setup/steps/category-band-preview';
 import { buildCategorySeed } from '../../setup/steps/category-seed';
 import type { ReorderChange } from '../game-tab/reorder-changes';
@@ -23,6 +24,8 @@ interface Props {
     rows: ManageCategoryRow[];
     config: CategoryConfigRow[];
     groups: ManageGroup[];
+    /** Level categories — the table labels level boards by them. */
+    levelTemplates?: LevelTemplate[];
     /** The server snapshot the band preview renders from — `rows` supplies
      *  the live flags on top of it. */
     boardCategories: ResolvedCategory[];
@@ -59,6 +62,7 @@ export function CategoriesPane({
     rows,
     config,
     groups,
+    levelTemplates,
     boardCategories,
     boardGroups,
     metadata,
@@ -79,9 +83,14 @@ export function CategoriesPane({
     // Everything with runs that isn't on the board — the add dialog's pool.
     // Archived categories are excluded: they have their own restore path
     // under the table, and adding one would feature something the board
-    // refuses to render.
+    // refuses to render. Level boards are excluded too: they are featured by
+    // their level category, and featuring one here would drift it from the
+    // template the next push overwrites.
     const pool = useMemo(
-        () => rows.filter((r) => !r.isMain && r.active),
+        () =>
+            rows.filter(
+                (r) => !r.isMain && r.active && r.levelTemplateId == null,
+            ),
         [rows],
     );
 
@@ -123,6 +132,7 @@ export function CategoriesPane({
                 rows={rows}
                 config={config}
                 groups={groups}
+                levelTemplates={levelTemplates}
                 onRowChange={onRowChange}
                 onRowGroupChange={onRowGroupChange}
                 onRowsReorder={onRowsReorder}

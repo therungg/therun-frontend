@@ -21,9 +21,11 @@ import {
     type CategoryConfigRow,
     disagreementsByColumn,
 } from '~src/lib/console/category-rows';
+import { splitLevelBoards } from '~src/lib/levels/display';
 import { activityShare, suggestFeaturedIds } from '~src/lib/setup/suggestions';
 import { formatCount, formatHours } from '~src/utils/format-stats';
 import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
+import type { LevelTemplate } from '../../../../../../types/levels.types';
 import { effectiveSortKey } from '../../category-sort';
 import { PromptDialog } from '../../shared/prompt-dialog';
 import { reorderCategoriesAction } from '../game-tab/actions/reorder-categories.action';
@@ -32,6 +34,7 @@ import { computeReorderChanges } from '../game-tab/reorder-changes';
 import { fireUndoToast } from '../moderation/shared/undo-toast';
 import { updateVisibilityAction } from '../visibility/actions/update-visibility.action';
 import styles from './board-categories.module.scss';
+import { LevelBoardsBand } from './level-boards-band';
 
 /** Past-tense label for a Featured/Archived toggle's undo-toast message. */
 function toggleLabel(field: 'isMain' | 'active', value: boolean): string {
@@ -49,6 +52,9 @@ interface Props {
     /** Per-category configuration, keyed by id — the matrix columns. */
     config: CategoryConfigRow[];
     groups: ManageGroup[];
+    /** Level categories, for labelling level boards by the category they
+     *  instantiate. Absent on games that have no levels. */
+    levelTemplates?: LevelTemplate[];
     onRowChange: (
         categoryId: number,
         patch: { isMain?: boolean; active?: boolean },
@@ -84,6 +90,7 @@ export function BoardCategoriesTable({
     rows,
     config,
     groups,
+    levelTemplates = [],
     onRowChange,
     onRowGroupChange,
     onRowsReorder,
@@ -117,9 +124,19 @@ export function BoardCategoriesTable({
         return m;
     }, [groups]);
 
+    // Level boards never enter the table: one per level per level category,
+    // they follow their template — order, grouping and featuring are all
+    // decided there — so they collapse into a band of their own below.
+    // Splitting first keeps every memo below full-game only, including the
+    // reorder scope, the disagreement scan and the suggestions.
+    const { fullGame: fullGameRows, levelBoards: levelRows } = useMemo(
+        () => splitLevelBoards(rows, groups),
+        [rows, groups],
+    );
+
     // The board: publicly visible categories, in public order.
     const boardRows = useMemo(() => {
-        return rows
+        return fullGameRows
             .filter((r) => r.isMain && r.active)
             .sort((a, b) => {
                 const ga =
@@ -137,7 +154,7 @@ export function BoardCategoriesTable({
                     b.totalRunTime - a.totalRunTime
                 );
             });
-    }, [rows, groupRank]);
+    }, [fullGameRows, groupRank]);
 
     // Consecutive runs of one group, in board order — `boardRows` is already
     // sorted by group rank, so a band is just a run of equal groupIds. The
@@ -165,7 +182,24 @@ export function BoardCategoriesTable({
         return out;
     }, [boardRows]);
 
-    const archivedRows = useMemo(() => rows.filter((r) => !r.active), [rows]);
+    const archivedRows = useMemo(
+        () => fullGameRows.filter((r) => !r.active),
+        [fullGameRows],
+    );
+
+    // Groups a full-game category may be moved into. Level groups are not
+    // among them: membership of a level is what makes a board a level board,
+    // and that is granted by pushing a level category, never by hand.
+    const groupOptions = useMemo(
+        () => groups.filter((g) => g.kind !== 'level'),
+        [groups],
+    );
+
+    // Featured, live level boards — the band's contents.
+    const levelBoardRows = useMemo(
+        () => levelRows.filter((r) => r.isMain && r.active),
+        [levelRows],
+    );
 
     // `differs` is computed once for the whole board — never per row — and
     // over the featured scope only, matching what the table renders.
@@ -190,7 +224,7 @@ export function BoardCategoriesTable({
     const suggested = useMemo(() => {
         if (boardRows.length > 0) return [];
         const ids = suggestFeaturedIds(
-            rows
+            fullGameRows
                 .filter((r) => r.active)
                 .map((r) => ({
                     id: r.id,
@@ -198,8 +232,8 @@ export function BoardCategoriesTable({
                     uniqueRunners: r.uniqueRunners,
                 })),
         );
-        return rows.filter((r) => ids.has(r.id));
-    }, [rows, boardRows]);
+        return fullGameRows.filter((r) => ids.has(r.id));
+    }, [fullGameRows, boardRows]);
 
     const setPending = (id: number, pending: boolean) => {
         setPendingIds((prev) => {
@@ -410,7 +444,7 @@ export function BoardCategoriesTable({
 
     return (
         <section>
-            {boardRows.length === 0 ? (
+            {boardRows.length === 0 && levelBoardRows.length === 0 && (
                 <div className={styles.panel}>
                     {/* A board with nothing on it renders an empty public band
                         — the one state where this screen should say something
@@ -470,7 +504,8 @@ export function BoardCategoriesTable({
                         )}
                     </div>
                 </div>
-            ) : (
+            )}
+            {boardRows.length > 0 && (
                 <div className={styles.panel}>
                     <div className="table-responsive">
                         <table className={styles.table}>
@@ -647,16 +682,20 @@ export function BoardCategoriesTable({
                                                             <option value="">
                                                                 Ungrouped
                                                             </option>
-                                                            {groups.map((g) => (
-                                                                <option
-                                                                    key={g.id}
-                                                                    value={String(
-                                                                        g.id,
-                                                                    )}
-                                                                >
-                                                                    {g.name}
-                                                                </option>
-                                                            ))}
+                                                            {groupOptions.map(
+                                                                (g) => (
+                                                                    <option
+                                                                        key={
+                                                                            g.id
+                                                                        }
+                                                                        value={String(
+                                                                            g.id,
+                                                                        )}
+                                                                    >
+                                                                        {g.name}
+                                                                    </option>
+                                                                ),
+                                                            )}
                                                             <option value="__create__">
                                                                 + Create group…
                                                             </option>
@@ -819,6 +858,16 @@ export function BoardCategoriesTable({
                         </span>
                     </div>
                 </div>
+            )}
+
+            {levelBoardRows.length > 0 && (
+                <LevelBoardsBand
+                    gameId={game.id}
+                    rows={levelBoardRows}
+                    groups={groups}
+                    levelTemplates={levelTemplates}
+                    onEdit={onEdit}
+                />
             )}
 
             <div className={styles.footRow}>

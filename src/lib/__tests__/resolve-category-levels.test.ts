@@ -209,6 +209,15 @@ describe('resolveCategory — level groups + pageData-only categories', () => {
                 isMain: true,
                 sortOrder: 1,
                 imageUrl: null,
+                // The board settings a template pushes — the console's
+                // category detail page edits a template as a category, so
+                // they come off the same pageData entry every category uses.
+                // This fixture states none of them, so they read as defaults.
+                primaryTiming: 'rt',
+                gameTimeLabel: 'igt',
+                sortAscending: true,
+                showMilliseconds: true,
+                requireVideo: false,
             },
         ]);
     });
