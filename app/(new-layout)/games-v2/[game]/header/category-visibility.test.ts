@@ -254,6 +254,25 @@ describe('computeCategoryVisibility', () => {
         expect(v.levels).toEqual({ groups: [], activeLevelId: null });
     });
 
+    it('emits no empty flattened section for a levels-only game', () => {
+        const groups: ResolvedGroup[] = [
+            grp({ id: 1, name: 'E1M1', sortOrder: 1, kind: 'level' }),
+        ];
+        const cats = [
+            cat({
+                id: 20,
+                groupId: 1,
+                display: 'E1M1 — Any%',
+                levelTemplateId: 9,
+            }),
+        ];
+        const v = computeCategoryVisibility(cats, groups);
+        expect(v.sections).toEqual([]);
+        expect(v.levels.groups).toEqual([
+            { id: 1, name: 'E1M1', rules: null, boards: [cats[0]] },
+        ]);
+    });
+
     it('never collapses the trailing ungrouped section', () => {
         const groups: ResolvedGroup[] = [
             grp({

@@ -284,14 +284,23 @@ export function CategoryRail({
 
             {hasLevels && (
                 <div className={styles.block}>
-                    <LevelPicker
-                        levels={levels.groups}
-                        activeLevelId={levels.activeLevelId}
-                        activeCategoryName={optimisticSelectedName}
-                        templates={levelTemplates ?? []}
-                        boardCounts={boardCounts}
-                        onSelect={onSelect}
-                    />
+                    <span className={styles.endcap} id="rail-levels">
+                        Levels
+                    </span>
+                    <div
+                        className={styles.well}
+                        role="group"
+                        aria-labelledby="rail-levels"
+                    >
+                        <LevelPicker
+                            levels={levels.groups}
+                            activeLevelId={levels.activeLevelId}
+                            activeCategoryName={optimisticSelectedName}
+                            templates={levelTemplates ?? []}
+                            boardCounts={boardCounts}
+                            onSelect={onSelect}
+                        />
+                    </div>
                 </div>
             )}
         </nav>

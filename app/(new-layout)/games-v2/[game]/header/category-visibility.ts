@@ -116,23 +116,31 @@ export function computeCategoryVisibility(
     );
     const trivial =
         groups.length === 0 || (groups.length <= 1 && usedGroupIds.size <= 1);
+    // A levels-only game (every visible category is a level board) has
+    // nothing for the flattened/ungrouped section to hold — an empty
+    // section here would render an empty well ("No categories enabled for
+    // this group.") above the level picker, which owns these boards.
+    const levelsOnly = fullGame.length === 0 && levels.groups.length > 0;
     if (trivial) {
         return {
-            sections: [
-                {
-                    id: null,
-                    name: null,
-                    pills: fullGame,
-                    collapsedByDefault: false,
-                    // The flat case has no group row to carry an override,
-                    // which is exactly why the game-level default exists.
-                    displayMode: resolveDisplayMode(
-                        null,
-                        gameDisplayMode,
-                        fullGame.length,
-                    ),
-                },
-            ],
+            sections: levelsOnly
+                ? []
+                : [
+                      {
+                          id: null,
+                          name: null,
+                          pills: fullGame,
+                          collapsedByDefault: false,
+                          // The flat case has no group row to carry an
+                          // override, which is exactly why the game-level
+                          // default exists.
+                          displayMode: resolveDisplayMode(
+                              null,
+                              gameDisplayMode,
+                              fullGame.length,
+                          ),
+                      },
+                  ],
             levels,
         };
     }

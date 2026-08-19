@@ -2,6 +2,8 @@
 
 .levelPicker {
     display: flex;
+    flex: 1;
+    min-width: 0;
     flex-wrap: wrap;
     align-items: center;
     gap: dt.$spacing-sm;

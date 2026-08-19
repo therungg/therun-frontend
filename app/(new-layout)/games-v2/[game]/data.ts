@@ -91,6 +91,7 @@ export async function loadGamePageData(
                 archived: false,
                 sortOrder: 0,
             },
+            activeLevel: null,
             categories,
             groups: resolved.groups,
             levelTemplates: resolved.levelTemplates,
@@ -210,9 +211,18 @@ export async function loadGamePageData(
         loadCategoryBoardCounts(game.name, categories),
     ]);
 
+    // The active level's group, when the selected board is a level board —
+    // derived once here rather than in every consumer (board-masthead.tsx,
+    // game-page.tsx) that needs the level's name/rules.
+    const activeLevel =
+        resolved.groups.find(
+            (g) => g.id === selected.groupId && g.kind === 'level',
+        ) ?? null;
+
     return {
         game: gameWithConfig,
         selectedCategory: selected,
+        activeLevel,
         categories,
         groups: resolved.groups,
         levelTemplates: resolved.levelTemplates,

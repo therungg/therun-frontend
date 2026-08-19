@@ -132,4 +132,32 @@ describe('LevelPicker', () => {
         fireEvent.change(select, { target: { value: '1' } });
         expect(onSelect).toHaveBeenCalledWith('e1m1-any');
     });
+
+    it('remembers the chosen level across a re-render with unchanged props', () => {
+        const onSelect = vi.fn();
+        const props = {
+            levels,
+            activeLevelId: 2,
+            activeCategoryName: 'e1m2-any',
+            templates,
+            onSelect,
+        };
+        const { rerender } = render(<LevelPicker {...props} />);
+        const select = screen.getByRole('combobox', {
+            name: 'Level',
+        }) as HTMLSelectElement;
+        fireEvent.change(select, { target: { value: '1' } });
+        expect(select.value).toBe('1');
+
+        // Same props, no pill clicked in between: activeLevelId (still 2)
+        // must not snap the dropdown back to the active board's level.
+        rerender(<LevelPicker {...props} />);
+        expect(
+            (
+                screen.getByRole('combobox', {
+                    name: 'Level',
+                }) as HTMLSelectElement
+            ).value,
+        ).toBe('1');
+    });
 });

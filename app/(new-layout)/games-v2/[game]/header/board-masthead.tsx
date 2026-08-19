@@ -75,11 +75,9 @@ export function BoardMasthead({
 
     // The active level's rules, when the selected board is a level board —
     // shown as its own tier between game rules and category rules.
-    const activeLevel = data.groups.find(
-        (g) => g.id === category.groupId && g.kind === 'level',
-    );
-    const levelRules = activeLevel?.rules ?? null;
-    const levelName = activeLevel?.name ?? null;
+    // `data.activeLevel` is derived once in data.ts.
+    const levelRules = data.activeLevel?.rules ?? null;
+    const levelName = data.activeLevel?.name ?? null;
 
     const showFilterTier =
         data.variables.some((v) => v.role === 'subcategory') ||

@@ -70,17 +70,6 @@ export function GamePage({
     );
     const [rulesOpen, setRulesOpen] = useState(false);
     useEffect(() => setRulesOpen(false), [data.selectedCategory.id]);
-    // The active level's rules, when the selected board is a level board —
-    // same lookup board-masthead.tsx does for the sticky-plate RulesPanel.
-    const activeLevel = useMemo(
-        () =>
-            data.groups.find(
-                (g) =>
-                    g.id === data.selectedCategory.groupId &&
-                    g.kind === 'level',
-            ),
-        [data.groups, data.selectedCategory.groupId],
-    );
     // Single owner of every board-URL-push transition (category/subcategory
     // pills, verified toggle, Filters popover) — see use-board-nav.ts.
     // Hooks run unconditionally, so this is created even on the
@@ -194,13 +183,13 @@ export function GamePage({
                     {rulesOpen &&
                         (data.selectedCategory.rules?.trim() ||
                             data.gameMeta.gameRules?.trim() ||
-                            activeLevel?.rules?.trim() ||
+                            data.activeLevel?.rules?.trim() ||
                             data.gameMeta.emulatorPolicy) && (
                             <RulesBody
                                 rules={data.selectedCategory.rules}
                                 gameRules={data.gameMeta.gameRules}
-                                levelRules={activeLevel?.rules}
-                                levelName={activeLevel?.name}
+                                levelRules={data.activeLevel?.rules}
+                                levelName={data.activeLevel?.name}
                                 emulatorPolicy={data.gameMeta.emulatorPolicy}
                             />
                         )}
