@@ -23,6 +23,7 @@ import { ModApplicationsCard } from '../moderation/attention/mod-applications-ca
 import { NeedsAttention } from '../moderation/attention/needs-attention';
 import { ActiveBans } from '../moderation/configure/active-bans';
 import { ReassignPane } from '../reassignments/reassign-pane';
+import { SrcImportPane } from '../src-import/src-import-pane';
 import { CategoriesPane } from './categories-pane';
 import styles from './console.module.scss';
 import type { GameDetailsData } from './game-details-pane';
@@ -226,6 +227,14 @@ export function ContentRouter(props: ContentRouterProps) {
                     // sidebar picker is gone and per-category work lives on
                     // its own route. Reassign picks its own source.
                     selectedCategory={null}
+                />
+            );
+        case 'import':
+            return (
+                <SrcImportPane
+                    gameId={game.id}
+                    gameSlug={game.name}
+                    gameDisplay={game.display}
                 />
             );
         case null:
