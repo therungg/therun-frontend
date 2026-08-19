@@ -29,13 +29,15 @@ export type SrcImportJob = {
   id: number; gameId: number; srcGameId: string; srcGameAbbreviation: string; srcGameName: string; srcUrl: string;
   requestedBy: number; status: 'queued'|'running'|'done'|'failed'; phase: 'meta'|'runs'|'matching'|'done';
   checkpoint: { categoryIndex: number; status: 'verified'|'new'; offset: number; direction: 'asc'|'desc' } | null;
-  categoriesCount: number; variablesCount: number; runsCount: number; playersCount: number; playersMatchedCount: number;
+  categoriesCount: number; levelsCount: number; variablesCount: number; runsCount: number; playersCount: number; playersMatchedCount: number;
   requestsMade: number; error: string | null; startedAt: string | null; finishedAt: string | null; createdAt: string;
 };
 export type SrcImportCategory = { id: number; jobId: number; srcId: string; name: string; rules: string | null; type: 'per-game'|'per-level'; defaultTiming: 'realtime'|'realtime_noloads'|'ingame'|null; misc: boolean; sortOrder: number; skipped: boolean };
-export type SrcImportVariable = { id: number; jobId: number; srcId: string; srcCategoryId: string | null; name: string; isSubcategory: boolean; values: { id: string; label: string; rules: string | null }[]; defaultValueId: string | null; scope: string; skipped: boolean };
+// SRC levels: a plain ordered list. Level categories (type 'per-level') apply to every level.
+export type SrcImportLevel = { id: number; jobId: number; srcId: string; name: string; rules: string | null; sortOrder: number };
+export type SrcImportVariable = { id: number; jobId: number; srcId: string; srcCategoryId: string | null; name: string; isSubcategory: boolean; values: { id: string; label: string; rules: string | null }[]; defaultValueId: string | null; scope: 'global'|'full-game'|'all-levels'|'single-level'; srcLevelId: string | null; skipped: boolean };
 export type SrcImportPlayer = { id: number; jobId: number; srcUserId: string | null; name: string; twitchLogin: string | null; youtubeUri: string | null; twitterUri: string | null; country: string | null; therunUserId: number | null; therunUsername: string | null; matchKind: 'src_verified'|'twitch'|'none' };
-export type SrcImportRun = { id: number; jobId: number; srcRunId: string; srcCategoryId: string; status: 'verified'|'new'; realtimeMs: number | null; realtimeNoloadsMs: number | null; ingameMs: number | null; date: string | null; submittedAt: string | null; verifiedAt: string | null; srcVerifierId: string | null; comment: string | null; videoUrl: string | null; platformName: string | null; emulated: boolean; region: string | null; values: Record<string, string>; players: ({ srcUserId: string; name: string | null; twitchLogin: string | null; therunUsername: string | null } | { guestName: string })[]; playerCount: number };
+export type SrcImportRun = { id: number; jobId: number; srcRunId: string; srcCategoryId: string; srcLevelId: string | null; status: 'verified'|'new'; realtimeMs: number | null; realtimeNoloadsMs: number | null; ingameMs: number | null; date: string | null; submittedAt: string | null; verifiedAt: string | null; srcVerifierId: string | null; comment: string | null; videoUrl: string | null; platformName: string | null; emulated: boolean; region: string | null; values: Record<string, string>; players: ({ srcUserId: string; name: string | null; twitchLogin: string | null; therunUsername: string | null } | { guestName: string })[]; playerCount: number };
 export type Paged<T> = { items: T[]; total: number };
 ```
 
@@ -46,9 +48,10 @@ export type Paged<T> = { items: T[]; total: number };
 | POST | `/src-import/games/{gameId}` | body `{ url }` | 202 `{ jobId }` |
 | GET | `/src-import/games/{gameId}` | — | `SrcImportJob \| null` |
 | GET | `/src-import/games/{gameId}/{jobId}/categories` | — | `SrcImportCategory[]` |
+| GET | `/src-import/games/{gameId}/{jobId}/levels` | — | `SrcImportLevel[]` |
 | GET | `/src-import/games/{gameId}/{jobId}/variables` | — | `SrcImportVariable[]` |
 | GET | `/src-import/games/{gameId}/{jobId}/players` | `match=src_verified\|twitch\|none`, `page`, `pageSize` (≤500) | `Paged<SrcImportPlayer>` |
-| GET | `/src-import/games/{gameId}/{jobId}/runs` | `categoryId` (SRC id), `status=verified\|new`, `page`, `pageSize` (≤500) | `Paged<SrcImportRun>` |
+| GET | `/src-import/games/{gameId}/{jobId}/runs` | `categoryId` (SRC id), `levelId` (SRC id), `status=verified\|new`, `page`, `pageSize` (≤500) | `Paged<SrcImportRun>` |
 | PUT | `/src-import/admin/users/{username}/src-identity` | body `{ srcUserId }` or `{ srcName }` | `{ username, srcUserId }` (admin only) |
 | DELETE | `/src-import/admin/users/{username}/src-identity` | — | `{ username, srcUserId: null }` |
 
@@ -57,7 +60,7 @@ All GETs require the caller to hold `import-board` on the game (game-mod/game-ad
 ## Suggested UI
 
 - Import card on the mod panel: URL input, submit, job status line (`phase`, counters, `requestsMade`, `error`).
-- Review page tabs: Categories (flag `skipped` = IL, not imported), Variables (subcategory vs filter, `skipped`),
+- Review page tabs: Categories (`type` = full game vs level category; level categories apply to every level), Levels, Variables (subcategory vs filter, `skipped`),
   Players (filter by `matchKind`; `none` is the "needs a claim" list; `twitch` is a suggestion — say so),
-  Runs (filter by category/status; `playerCount > 1` = co-op, `videoUrl` null = no video).
+  Runs (filter by category/level/status; `srcLevelId` set = IL run; `playerCount > 1` = co-op, `videoUrl` null = no video).
 - Nothing on this page commits anything; the commit action is a later phase.

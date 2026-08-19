@@ -17,6 +17,7 @@ vi.mock('./src-import-actions', () => ({
     getSrcImportJobAction: vi.fn(),
     startSrcImportAction: vi.fn(),
     listSrcImportCategoriesAction: vi.fn(async () => ({ result: [] })),
+    listSrcImportLevelsAction: vi.fn(async () => ({ result: [] })),
     listSrcImportVariablesAction: vi.fn(async () => ({ result: [] })),
     listSrcImportPlayersAction: vi.fn(async () => ({
         result: { items: [], total: 0 },
@@ -48,6 +49,7 @@ const job = (over: Partial<SrcImportJob> = {}): SrcImportJob => ({
     phase: 'runs',
     checkpoint: null,
     categoriesCount: 6,
+    levelsCount: 0,
     variablesCount: 2,
     runsCount: 1234,
     playersCount: 0,
@@ -224,6 +226,7 @@ describe('SrcImportPane', () => {
                     jobId: 7,
                     query: {
                         categoryId: undefined,
+                        levelId: undefined,
                         status: undefined,
                         page: 1,
                         pageSize: 100,
@@ -240,6 +243,7 @@ describe('SrcImportPane', () => {
                 expect.objectContaining({
                     query: {
                         categoryId: 'cat120',
+                        levelId: undefined,
                         status: 'verified',
                         page: 1,
                         pageSize: 100,

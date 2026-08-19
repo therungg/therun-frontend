@@ -212,6 +212,7 @@ function JobCard({ job }: { job: SrcImportJob }) {
             )}
             <div className={styles.counters}>
                 <Counter label="Categories" value={job.categoriesCount} />
+                <Counter label="Levels" value={job.levelsCount} />
                 <Counter label="Variables" value={job.variablesCount} />
                 <Counter label="Runs" value={job.runsCount} />
                 <Counter label="Players" value={job.playersCount} />

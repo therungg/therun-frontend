@@ -9,6 +9,7 @@ import {
 import {
     getSrcImportJob,
     listSrcImportCategories,
+    listSrcImportLevels,
     listSrcImportPlayers,
     listSrcImportRuns,
     listSrcImportVariables,
@@ -20,6 +21,7 @@ import type {
     Paged,
     SrcImportCategory,
     SrcImportJob,
+    SrcImportLevel,
     SrcImportPlayer,
     SrcImportRun,
     SrcImportVariable,
@@ -83,6 +85,17 @@ export async function listSrcImportCategoriesAction(input: {
     return run(async () => {
         const sessionId = await requireBoardMod(input.gameSlug);
         return listSrcImportCategories(sessionId, input.gameId, input.jobId);
+    });
+}
+
+export async function listSrcImportLevelsAction(input: {
+    gameId: number;
+    gameSlug: string;
+    jobId: number;
+}): Promise<ActionResult<SrcImportLevel[]>> {
+    return run(async () => {
+        const sessionId = await requireBoardMod(input.gameSlug);
+        return listSrcImportLevels(sessionId, input.gameId, input.jobId);
     });
 }
 

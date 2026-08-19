@@ -24,6 +24,7 @@ export interface SrcImportJob {
     phase: SrcImportPhase;
     checkpoint: SrcImportCheckpoint | null;
     categoriesCount: number;
+    levelsCount: number;
     variablesCount: number;
     runsCount: number;
     playersCount: number;
@@ -48,6 +49,16 @@ export interface SrcImportCategory {
     skipped: boolean;
 }
 
+/** SRC levels: a plain ordered list. Level categories (`type: 'per-level'`) apply to every level. */
+export interface SrcImportLevel {
+    id: number;
+    jobId: number;
+    srcId: string;
+    name: string;
+    rules: string | null;
+    sortOrder: number;
+}
+
 export interface SrcImportVariableValue {
     id: string;
     label: string;
@@ -63,7 +74,9 @@ export interface SrcImportVariable {
     isSubcategory: boolean;
     values: SrcImportVariableValue[];
     defaultValueId: string | null;
-    scope: string;
+    scope: 'global' | 'full-game' | 'all-levels' | 'single-level';
+    /** Set iff scope is 'single-level'. */
+    srcLevelId: string | null;
     skipped: boolean;
 }
 
@@ -100,6 +113,8 @@ export interface SrcImportRun {
     jobId: number;
     srcRunId: string;
     srcCategoryId: string;
+    /** Null for full-game runs; the SRC level id for IL runs. */
+    srcLevelId: string | null;
     status: 'verified' | 'new';
     realtimeMs: number | null;
     realtimeNoloadsMs: number | null;

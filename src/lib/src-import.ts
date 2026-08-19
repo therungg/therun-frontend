@@ -7,6 +7,7 @@ import type {
     Paged,
     SrcImportCategory,
     SrcImportJob,
+    SrcImportLevel,
     SrcImportMatchKind,
     SrcImportPlayer,
     SrcImportRun,
@@ -54,6 +55,17 @@ export async function listSrcImportCategories(
     );
 }
 
+export async function listSrcImportLevels(
+    sessionId: string,
+    gameId: number,
+    jobId: number,
+): Promise<SrcImportLevel[]> {
+    return apiFetch<SrcImportLevel[]>(`${base(gameId)}/${jobId}/levels`, {
+        method: 'GET',
+        sessionId,
+    });
+}
+
 export async function listSrcImportVariables(
     sessionId: string,
     gameId: number,
@@ -85,6 +97,7 @@ export async function listSrcImportPlayers(
 
 export interface SrcImportRunsQuery {
     categoryId?: string;
+    levelId?: string;
     status?: 'verified' | 'new';
     page?: number;
     pageSize?: number;

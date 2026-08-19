@@ -6,6 +6,7 @@ import type {
     Paged,
     SrcImportCategory,
     SrcImportJob,
+    SrcImportLevel,
     SrcImportMatchKind,
     SrcImportPlayer,
     SrcImportRun,
@@ -17,14 +18,16 @@ import styles from './src-import.module.scss';
 import {
     type ActionResult,
     listSrcImportCategoriesAction,
+    listSrcImportLevelsAction,
     listSrcImportPlayersAction,
     listSrcImportRunsAction,
     listSrcImportVariablesAction,
 } from './src-import-actions';
 
-type Tab = 'categories' | 'variables' | 'players' | 'runs';
+type Tab = 'categories' | 'levels' | 'variables' | 'players' | 'runs';
 const TABS: Array<{ value: Tab; label: string }> = [
     { value: 'categories', label: 'Categories' },
+    { value: 'levels', label: 'Levels' },
     { value: 'variables', label: 'Subcategories & filters' },
     { value: 'players', label: 'Players' },
     { value: 'runs', label: 'Runs' },
@@ -59,6 +62,8 @@ export function ReviewTabs({
         () => listSrcImportCategoriesAction(scope),
         [job.id],
     );
+    // Levels are shared with the Variables (scope) and Runs (filter) tabs.
+    const levels = useLoad(() => listSrcImportLevelsAction(scope), [job.id]);
 
     return (
         <section aria-label="Review staged data">
@@ -70,15 +75,21 @@ export function ReviewTabs({
             />
             <div style={{ marginTop: '0.75rem' }}>
                 {tab === 'categories' && <CategoriesTab state={categories} />}
+                {tab === 'levels' && <LevelsTab state={levels} />}
                 {tab === 'variables' && (
                     <VariablesTab
                         scope={scope}
                         categories={categories.data ?? []}
+                        levels={levels.data ?? []}
                     />
                 )}
                 {tab === 'players' && <PlayersTab scope={scope} />}
                 {tab === 'runs' && (
-                    <RunsTab scope={scope} categories={categories.data ?? []} />
+                    <RunsTab
+                        scope={scope}
+                        categories={categories.data ?? []}
+                        levels={levels.data ?? []}
+                    />
                 )}
             </div>
         </section>
@@ -160,8 +171,8 @@ function CategoriesTab({ state }: { state: LoadState<SrcImportCategory[]> }) {
             {(rows) => (
                 <>
                     <p className={styles.muted}>
-                        Level (IL) categories are listed but not imported —
-                        marked “skipped”.
+                        Level categories apply to every level on the Levels tab;
+                        the boards are level × category.
                     </p>
                     <div className={styles.tableWrap}>
                         <table className={styles.table}>
@@ -204,7 +215,7 @@ function CategoriesTab({ state }: { state: LoadState<SrcImportCategory[]> }) {
                                             >
                                                 {c.type === 'per-game'
                                                     ? 'full game'
-                                                    : 'level'}
+                                                    : 'level category'}
                                             </span>
                                         </td>
                                         <td>{timingLabel(c.defaultTiming)}</td>
@@ -236,6 +247,47 @@ function timingLabel(t: SrcImportCategory['defaultTiming']): string {
     }
 }
 
+// ---- Levels ----------------------------------------------------------------
+
+function LevelsTab({ state }: { state: LoadState<SrcImportLevel[]> }) {
+    return (
+        <Status state={state} empty="This game has no levels on speedrun.com.">
+            {(rows) => (
+                <>
+                    <p className={styles.muted}>
+                        Each level gets every level category from the Categories
+                        tab. Level-specific rules are rare.
+                    </p>
+                    <div className={styles.tableWrap}>
+                        <table className={styles.table}>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Level</th>
+                                    <th>Rules</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {rows.map((l) => (
+                                    <tr key={l.id}>
+                                        <td className={styles.cellMono}>
+                                            {l.sortOrder + 1}
+                                        </td>
+                                        <td>{l.name}</td>
+                                        <td>
+                                            <Rules text={l.rules} />
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </>
+            )}
+        </Status>
+    );
+}
+
 function Rules({ text }: { text: string | null }) {
     const [open, setOpen] = useState(false);
     if (!text) return <span className={styles.muted}>—</span>;
@@ -261,22 +313,42 @@ function Rules({ text }: { text: string | null }) {
 function VariablesTab({
     scope,
     categories,
+    levels,
 }: {
     scope: Scope;
     categories: SrcImportCategory[];
+    levels: SrcImportLevel[];
 }) {
     const state = useLoad(
         () => listSrcImportVariablesAction(scope),
         [scope.jobId],
     );
     const catName = new Map(categories.map((c) => [c.srcId, c.name]));
+    const levelName = new Map(levels.map((l) => [l.srcId, l.name]));
+    const scopeLabel = (v: SrcImportVariable): string => {
+        switch (v.scope) {
+            case 'all-levels':
+                return 'Every level';
+            case 'single-level':
+                return `Level: ${
+                    (v.srcLevelId && levelName.get(v.srcLevelId)) ??
+                    v.srcLevelId ??
+                    '?'
+                }`;
+            case 'full-game':
+                return 'Full game';
+            default:
+                return 'Full game & levels';
+        }
+    };
     return (
         <Status state={state} empty="No variables were staged.">
             {(rows) => (
                 <>
                     <p className={styles.muted}>
-                        Subcategories split a board; filters narrow it. Level
-                        -scoped variables are marked “skipped”.
+                        Subcategories split a board; filters narrow it. “Applies
+                        to” shows the category and whether the variable is
+                        full-game, every-level, or one level.
                     </p>
                     <div className={styles.tableWrap}>
                         <table className={styles.table}>
@@ -323,6 +395,9 @@ function VariablesTab({
                                                       v.srcCategoryId,
                                                   ) ?? v.srcCategoryId)
                                                 : 'All categories'}
+                                            <div className={styles.muted}>
+                                                {scopeLabel(v)}
+                                            </div>
                                         </td>
                                         <td>
                                             {v.values.map((val) => (
@@ -480,11 +555,14 @@ function PlayerRow({ p }: { p: SrcImportPlayer }) {
 function RunsTab({
     scope,
     categories,
+    levels,
 }: {
     scope: Scope;
     categories: SrcImportCategory[];
+    levels: SrcImportLevel[];
 }) {
     const [categoryId, setCategoryId] = useState<string>('');
+    const [levelId, setLevelId] = useState<string>('');
     const [status, setStatus] = useState<'all' | 'verified' | 'new'>('all');
     const [page, setPage] = useState(1);
     const state = useLoad(
@@ -493,14 +571,18 @@ function RunsTab({
                 ...scope,
                 query: {
                     categoryId: categoryId || undefined,
+                    levelId: levelId || undefined,
                     status: status === 'all' ? undefined : status,
                     page,
                     pageSize: PAGE_SIZE,
                 },
             }),
-        [scope.jobId, categoryId, status, page],
+        [scope.jobId, categoryId, levelId, status, page],
     );
     const catName = new Map(categories.map((c) => [c.srcId, c.name]));
+    const levelName = new Map(levels.map((l) => [l.srcId, l.name]));
+    const catType = new Map(categories.map((c) => [c.srcId, c.type]));
+    const selectedType = categoryId ? catType.get(categoryId) : undefined;
     return (
         <>
             <div className={styles.toolbar}>
@@ -515,15 +597,51 @@ function RunsTab({
                         }}
                     >
                         <option value="">All categories</option>
-                        {categories
-                            .filter((c) => !c.skipped)
-                            .map((c) => (
-                                <option key={c.srcId} value={c.srcId}>
-                                    {c.name}
-                                </option>
-                            ))}
+                        <optgroup label="Full game">
+                            {categories
+                                .filter((c) => c.type === 'per-game')
+                                .map((c) => (
+                                    <option key={c.srcId} value={c.srcId}>
+                                        {c.name}
+                                    </option>
+                                ))}
+                        </optgroup>
+                        {categories.some((c) => c.type === 'per-level') && (
+                            <optgroup label="Level categories">
+                                {categories
+                                    .filter((c) => c.type === 'per-level')
+                                    .map((c) => (
+                                        <option key={c.srcId} value={c.srcId}>
+                                            {c.name}
+                                        </option>
+                                    ))}
+                            </optgroup>
+                        )}
                     </select>
                 </label>
+                {levels.length > 0 && selectedType !== 'per-game' && (
+                    <label
+                        className={styles.field}
+                        style={{ flex: '0 1 auto' }}
+                    >
+                        <span className={styles.label}>Level</span>
+                        <select
+                            className={styles.select}
+                            value={levelId}
+                            onChange={(e) => {
+                                setLevelId(e.target.value);
+                                setPage(1);
+                            }}
+                        >
+                            <option value="">All levels</option>
+                            {levels.map((l) => (
+                                <option key={l.srcId} value={l.srcId}>
+                                    {l.name}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+                )}
                 <SegmentedControl
                     label="Status"
                     value={status}
@@ -546,6 +664,7 @@ function RunsTab({
                                 <thead>
                                     <tr>
                                         <th>Category</th>
+                                        <th>Level</th>
                                         <th>Players</th>
                                         <th>Time</th>
                                         <th>Status</th>
@@ -562,6 +681,13 @@ function RunsTab({
                                             categoryName={
                                                 catName.get(r.srcCategoryId) ??
                                                 r.srcCategoryId
+                                            }
+                                            levelName={
+                                                r.srcLevelId
+                                                    ? (levelName.get(
+                                                          r.srcLevelId,
+                                                      ) ?? r.srcLevelId)
+                                                    : null
                                             }
                                         />
                                     ))}
@@ -595,13 +721,18 @@ export function primaryTime(r: SrcImportRun): string {
 function RunRow({
     r,
     categoryName,
+    levelName,
 }: {
     r: SrcImportRun;
     categoryName: string;
+    levelName: string | null;
 }) {
     return (
         <tr>
             <td>{categoryName}</td>
+            <td>
+                {levelName ?? <span className={styles.muted}>full game</span>}
+            </td>
             <td>
                 {r.players.map((p, i) => (
                     <span
