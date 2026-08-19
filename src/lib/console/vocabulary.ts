@@ -15,6 +15,8 @@ export type ConceptId =
     | 'game-details'
     | 'categories'
     | 'groups'
+    | 'levels'
+    | 'level-categories'
     | 'moderators'
     | 'reassign'
     | 'import'
@@ -36,6 +38,8 @@ export const CONCEPT_LABEL: Record<ConceptId, string> = {
     'game-details': 'Game details',
     categories: 'Categories',
     groups: 'Groups',
+    levels: 'Levels',
+    'level-categories': 'Level categories',
     moderators: 'Moderators',
     reassign: 'Merge games & categories',
     import: 'Import from speedrun.com',
@@ -72,6 +76,8 @@ export const TILE_CONCEPT_IDS = [
     'game-details',
     'categories',
     'groups',
+    'levels',
+    'level-categories',
     'variables',
     'boards',
     'moderators',
@@ -126,6 +132,14 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
         action: 'Sort categories into groups',
         blurb: 'Bundle related categories so the leaderboard reads in a sensible order.',
     },
+    levels: {
+        action: 'Set up individual levels',
+        blurb: 'List the levels; every level category appears on each one.',
+    },
+    'level-categories': {
+        action: 'Define the level categories',
+        blurb: 'The categories and subcategories every level gets — edit once, applied everywhere.',
+    },
     variables: {
         action: 'Structure the boards',
         blurb: 'Split a category into subcategories, add filters, and decide which values runners pick from.',
@@ -175,6 +189,8 @@ const BOARD_PANES: ReadonlySet<ConceptId> = new Set<ConceptId>([
     'game-details',
     'categories',
     'groups',
+    'levels',
+    'level-categories',
     'boards',
     'moderators',
     'reassign',

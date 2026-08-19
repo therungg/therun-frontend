@@ -1,3 +1,4 @@
+import { splitLevelBoards } from '~src/lib/levels/display';
 import type {
     GameStandings,
     ResolvedCategory,
@@ -116,6 +117,66 @@ export function orderStandingsForDisplay(
                 rank,
                 time,
             ],
+        ),
+    };
+}
+
+/**
+ * The standings scope: full-game boards only.
+ *
+ * A level board is Featured (it copies its level category's isMain) and sits
+ * in a level group, so without this the matrix grows one column per level per
+ * level category — 120 on a 30-level game — and one toggle section per level.
+ * They also cannot be ordered: the backend's column `name` for an instance is
+ * a real board slug (`e1m1-any%`) while every other view keys off
+ * `normalizeSlug(display)`, so they sort into the unknown tail regardless.
+ * Standings compare a game's boards against each other; the levels of one game
+ * are not that comparison.
+ */
+export function standingsScope(
+    categories: ResolvedCategory[],
+    groups: ResolvedGroup[],
+): {
+    categories: ResolvedCategory[];
+    groups: ResolvedGroup[];
+    /** Category ids to drop from the payload's columns. */
+    excludedIds: Set<number>;
+} {
+    const { fullGame, levelBoards } = splitLevelBoards(categories, groups);
+    return {
+        categories: fullGame,
+        groups: groups.filter((g) => g.kind !== 'level'),
+        excludedIds: new Set(levelBoards.map((c) => c.id)),
+    };
+}
+
+/**
+ * Drops whole columns from a standings payload, remapping the surviving
+ * columns' indices and dropping the cells that pointed at the removed ones.
+ * Column identity is the category `id`, never the slug — an instance's
+ * backend slug doesn't match the frontend's derived one, which is half the
+ * reason these columns have to go.
+ */
+export function dropStandingsCategories(
+    standings: GameStandings,
+    excludedIds: Set<number>,
+): GameStandings {
+    if (excludedIds.size === 0) return standings;
+    const keptOldIndices = standings.categories
+        .map((c, i) => [c, i] as const)
+        .filter(([c]) => !excludedIds.has(c.id))
+        .map(([, i]) => i);
+    if (keptOldIndices.length === standings.categories.length) return standings;
+
+    const oldToNew = new Map(keptOldIndices.map((oldIdx, i) => [oldIdx, i]));
+    return {
+        ...standings,
+        categories: keptOldIndices.map((i) => standings.categories[i]),
+        cells: standings.cells.flatMap(
+            ([c, r, rank, time]): StandingsCell[] => {
+                const next = oldToNew.get(c);
+                return next === undefined ? [] : [[next, r, rank, time]];
+            },
         ),
     };
 }

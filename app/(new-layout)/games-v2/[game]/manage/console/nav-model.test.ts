@@ -243,10 +243,10 @@ describe('nav shape', () => {
         expect(buildNav(ALL).map((g) => g.id)).toEqual(['moderate', 'board']);
     });
 
-    it('shows eleven items to a fully privileged viewer', () => {
+    it('shows thirteen items to a fully privileged viewer', () => {
         // Attention, roster and reports are out of the nav for now (see
         // ALL_GROUPS in nav-model.ts).
-        expect(buildNav(ALL).flatMap((g) => g.items)).toHaveLength(11);
+        expect(buildNav(ALL).flatMap((g) => g.items)).toHaveLength(13);
     });
 
     it('shows the speedrun.com import to moderators and configurers alike', () => {
@@ -268,11 +268,15 @@ describe('nav shape', () => {
 
     it('orders the board group to match the wizard', () => {
         const board = buildNav(ALL).find((g) => g.id === 'board');
-        expect(board?.items.slice(0, 6).map((i) => i.id)).toEqual([
+        expect(board?.items.slice(0, 8).map((i) => i.id)).toEqual([
             'setup',
             'game-details',
             'categories',
             'groups',
+            // Levels and their categories sit with the groups they are
+            // built from, before the board-wide structure grid.
+            'levels',
+            'level-categories',
             'variables',
             'boards',
         ]);
@@ -307,5 +311,33 @@ describe('nav shape', () => {
         expect(isLandingPaneId('variables', visible)).toBe(true);
         // The neighbouring Board item leaves the console entirely.
         expect(isLandingPaneId('setup', visible)).toBe(false);
+    });
+});
+
+describe('levels nav items', () => {
+    it('gives both levels items to a viewer who can configure', () => {
+        const ids = buildNav({ ...NO_FLAGS, canConfigure: true })
+            .flatMap((g) => g.items)
+            .map((it) => it.id);
+        expect(ids).toContain('levels');
+        expect(ids).toContain('level-categories');
+    });
+
+    it('keeps them from a moderator who cannot configure', () => {
+        // Materialising boards and editing a template rewrites every level's
+        // board — a configure surface, like the structure grid beside it.
+        const ids = buildNav({ ...NO_FLAGS, canModerate: true })
+            .flatMap((g) => g.items)
+            .map((it) => it.id);
+        expect(ids).not.toContain('levels');
+        expect(ids).not.toContain('level-categories');
+    });
+
+    it('lets both land as ?pane= deep links', () => {
+        const visible = buildNav({ ...NO_FLAGS, canConfigure: true })
+            .flatMap((g) => g.items)
+            .map((it) => it.id);
+        expect(isLandingPaneId('levels', visible)).toBe(true);
+        expect(isLandingPaneId('level-categories', visible)).toBe(true);
     });
 });
