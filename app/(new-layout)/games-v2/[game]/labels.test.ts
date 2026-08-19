@@ -133,6 +133,19 @@ describe('formatVariableList', () => {
         expect(formatVariableList({ platform: 'pc' }, defs)).toBe('PC');
     });
 
+    it('survives non-string values harvested from LiveSplit splits', () => {
+        // Real payloads: { Version: 5 }, { Patch: 1.14 } — numbers, not
+        // strings, despite the declared type. This used to throw
+        // `a.replace is not a function` and 500 the run page.
+        const vars = {
+            Version: 5,
+            Patch: 1.14,
+            Platforms: 'PC',
+            Skipped: null,
+        } as unknown as Record<string, string>;
+        expect(formatVariableList(vars)).toBe('Version 5 · Patch 1.14 · PC');
+    });
+
     it('never leaves a raw key=value pair in the output', () => {
         const result = formatVariableList({ console: 'n64', region: 'ntsc' });
         expect(result).not.toContain('=');
