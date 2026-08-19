@@ -29,6 +29,7 @@ vi.mock('react-toastify', () => ({
 }));
 
 import { BoardCategoriesTable } from './board-categories-table';
+import { LevelBoardsBand } from './level-boards-band';
 
 const GAME = { id: 1, name: 'example-game', display: 'Example Game' } as never;
 
@@ -304,6 +305,52 @@ describe('BoardCategoriesTable — level boards', () => {
         );
     });
 
+    it('is the way back for an archived level board', () => {
+        // The full-game archived disclosure is full-game only and the add
+        // dialog refuses level boards, so if the band skipped these the board
+        // would be unreachable from the console entirely.
+        renderTable(
+            [
+                row({ id: 1, display: '120 Star', isMain: true }),
+                row({
+                    id: 21,
+                    display: 'E1M1 — Any%',
+                    isMain: true,
+                    active: false,
+                    groupId: 10,
+                    groupName: 'E1M1',
+                    levelTemplateId: 100,
+                }),
+                row({
+                    id: 22,
+                    display: 'E1M1 — UV-Max',
+                    isMain: false,
+                    groupId: 10,
+                    groupName: 'E1M1',
+                    levelTemplateId: 101,
+                }),
+            ],
+            LEVEL_GROUPS,
+            LEVEL_TEMPLATES,
+        );
+
+        // Neither one is in the full-game archived list.
+        expect(
+            screen.queryByRole('button', { name: /archived categor/ }),
+        ).toBeNull();
+        expect(screen.getByText('Level boards (2)')).toBeTruthy();
+        fireEvent.click(
+            screen.getByRole('button', { name: /Show level boards/ }),
+        );
+        expect(screen.getByText('archived')).toBeTruthy();
+        expect(screen.getByText('not featured')).toBeTruthy();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Restore' }));
+        expect(mocks.updateVisibilityAction).toHaveBeenCalledWith(
+            expect.objectContaining({ categoryId: 21, active: true }),
+        );
+    });
+
     it('leaves level boards out of the full-game reorder scope', () => {
         // Level board order follows the template, not this table — a
         // full-game row's move must not renumber across them.
@@ -319,5 +366,47 @@ describe('BoardCategoriesTable — level boards', () => {
                 }) as HTMLButtonElement
             ).disabled,
         ).toBe(true);
+    });
+});
+
+describe('LevelBoardsBand — nothing falls out of the band', () => {
+    it('counts what it renders and buckets boards whose level is missing', () => {
+        // The band iterates levels; a board whose level isn't in `groups`
+        // would otherwise vanish while the header still promised it.
+        render(
+            <LevelBoardsBand
+                gameId={1}
+                rows={[
+                    row({
+                        id: 21,
+                        display: 'E1M1 — Any%',
+                        isMain: true,
+                        groupId: 10,
+                        groupName: 'E1M1',
+                        levelTemplateId: 100,
+                    }),
+                    row({
+                        id: 22,
+                        display: 'Ghost level — Any%',
+                        isMain: true,
+                        groupId: 999,
+                        groupName: 'Ghost level',
+                        levelTemplateId: 100,
+                    }),
+                ]}
+                groups={[levelGroup(10, 'E1M1')]}
+                levelTemplates={LEVEL_TEMPLATES}
+                pendingIds={new Set()}
+                onEdit={vi.fn()}
+                onRestore={vi.fn()}
+            />,
+        );
+
+        expect(screen.getByText('Level boards (2)')).toBeTruthy();
+        fireEvent.click(
+            screen.getByRole('button', { name: /Show level boards/ }),
+        );
+        expect(screen.getByText('Other levels')).toBeTruthy();
+        expect(screen.getAllByText('Any%')).toHaveLength(2);
     });
 });

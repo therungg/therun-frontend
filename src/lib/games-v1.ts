@@ -418,6 +418,8 @@ export async function resolveCategory(
             imageUrl: t.imageUrl ?? null,
             primaryTiming: basics.primaryTiming,
             gameTimeLabel: basics.gameTimeLabel,
+            // pageData's levelTemplates entries don't carry sortAscending — the
+            // default here is a known display-only gap, never written back.
             sortAscending: t.sortAscending ?? true,
             showMilliseconds: t.showMilliseconds ?? true,
             requireVideo: t.requireVideo ?? false,

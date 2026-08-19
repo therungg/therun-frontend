@@ -13,6 +13,7 @@ import {
     buildCategoryRows,
     type CategoryConfigRow,
 } from '~src/lib/console/category-rows';
+import { keepConsoleRow } from '~src/lib/console/keep-console-row';
 import { getGameIdentifiers, getGameMetadata } from '~src/lib/game-mgmt';
 import { listGameModerators } from '~src/lib/game-moderators';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
@@ -33,7 +34,6 @@ import {
 } from '~src/lib/setup/completeness';
 import { type BoardHealth, computeBoardHealth } from '~src/lib/setup/health';
 import { defineAbilityFor } from '~src/rbac/ability';
-import { isLowActivityCategory } from '~src/utils/format-stats';
 import buildMetadata from '~src/utils/metadata';
 import type {
     BoardClaimRequest,
@@ -132,6 +132,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
     const manualTimes = manualTimesRes.ok ? manualTimesRes.data : [];
 
     const statsById = new Map(categories.map((c) => [c.id, c]));
+    const resolvedIds = new Set(categories.map((c) => c.id));
     const rows = rawRows
         .map((r) => {
             const stats = statsById.get(r.id);
@@ -143,13 +144,12 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 uniqueRunners: stats?.uniqueRunners ?? 0,
             };
         })
-        // The activity floor drops junk harvested from LiveSplit splits —
-        // rows that HAVE stats and barely any. A row with no stats entry at
-        // all is not junk, it's a board nobody has run yet (a fresh category,
-        // or a level board that was just materialised), and dropping those
-        // would make the console blind to exactly the boards a moderator has
-        // just created.
-        .filter((r) => !statsById.has(r.id) || !isLowActivityCategory(r));
+        // `resolveCategory` has already applied the activity floor AND
+        // unioned in every zero-stats board, so membership in its list is the
+        // whole verdict — see keepConsoleRow. Re-running the floor here would
+        // drop freshly materialised level boards (all-zero stats) while
+        // keeping the below-floor junk it is meant to remove.
+        .filter((r) => keepConsoleRow(r.id, resolvedIds));
 
     const pendingClaims = manualTimes.filter(
         (m) => m.verificationStatus === 'pending',

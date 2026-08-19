@@ -23,6 +23,10 @@ export interface LevelTemplate {
      * category and does. */
     primaryTiming?: 'rt' | 'gt';
     gameTimeLabel?: 'igt' | 'lrt';
+    /** Known gap: the backend's pageData `levelTemplates` entries do not
+     * carry this, so it reads as the `true` default wherever it is filled in.
+     * Display only — the console's editors send only fields the moderator
+     * actually changed, so a defaulted value is never written back. */
     sortAscending?: boolean;
     showMilliseconds?: boolean;
     requireVideo?: boolean;

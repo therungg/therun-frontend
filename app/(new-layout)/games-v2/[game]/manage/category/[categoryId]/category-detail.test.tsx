@@ -138,6 +138,29 @@ describe('CategoryDetail — level board (instance)', () => {
         });
     });
 
+    it('keeps a failed detach on screen instead of swallowing it', () => {
+        mocks.levelOpAction.mockResolvedValueOnce({
+            error: 'Not authorized to manage category groups.',
+        } as never);
+        renderDetail({
+            category: category({
+                id: 21,
+                display: 'E1M1 — Any%',
+                levelTemplateId: 100,
+                levelOverride: false,
+            }),
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Detach' }));
+
+        return screen
+            .findByText('Not authorized to manage category groups.')
+            .then((el) => {
+                expect(el).toBeTruthy();
+                expect(mocks.refresh).not.toHaveBeenCalled();
+            });
+    });
+
     it('warns that editing a synced board detaches it', () => {
         renderDetail({
             category: category({

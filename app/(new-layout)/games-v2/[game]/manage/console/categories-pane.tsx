@@ -6,6 +6,7 @@ import type { CategoryConfigRow } from '~src/lib/console/category-rows';
 import { previewCategories } from '~src/lib/console/preview-categories';
 import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 import type { GameMetadata } from '~src/lib/game-mgmt';
+import { splitLevelBoards } from '~src/lib/levels/display';
 import type {
     ResolvedCategory,
     ResolvedGame,
@@ -83,15 +84,17 @@ export function CategoriesPane({
     // Everything with runs that isn't on the board — the add dialog's pool.
     // Archived categories are excluded: they have their own restore path
     // under the table, and adding one would feature something the board
-    // refuses to render. Level boards are excluded too: they are featured by
-    // their level category, and featuring one here would drift it from the
-    // template the next push overwrites.
+    // refuses to render. Everything in a level group is excluded too — level
+    // boards are featured by their level category, and featuring one here
+    // would drift it from the template the next push overwrites. Membership
+    // of a level is the test, not `levelTemplateId`: a level-only row (in a
+    // level group with no template) is just as much not-a-full-game-board.
     const pool = useMemo(
         () =>
-            rows.filter(
-                (r) => !r.isMain && r.active && r.levelTemplateId == null,
+            splitLevelBoards(rows, groups).fullGame.filter(
+                (r) => !r.isMain && r.active,
             ),
-        [rows],
+        [rows, groups],
     );
 
     // A category whose own rules are still empty may take the game's rules

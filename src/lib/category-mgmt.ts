@@ -157,6 +157,8 @@ export async function listLevelTemplates(
         imageUrl: t.imageUrl ?? null,
         primaryTiming: t.primaryTiming === 'gametime' ? 'gt' : 'rt',
         gameTimeLabel: t.gameTimeLabel === 'lrt' ? 'lrt' : 'igt',
+        // pageData's levelTemplates entries don't carry sortAscending — the
+        // default here is a known display-only gap, never written back.
         sortAscending: t.sortAscending ?? true,
         showMilliseconds: t.showMilliseconds ?? true,
         requireVideo: t.requireVideo ?? false,

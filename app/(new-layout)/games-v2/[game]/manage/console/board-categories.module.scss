@@ -555,7 +555,8 @@ tbody tr:focus-within .quietAction {
     color: var(--bs-secondary-color);
 }
 
-.levelDetached {
+.levelFlag {
     font-size: dt.$font-size-2xs;
-    color: var(--bs-warning);
+    color: var(--bs-secondary-color);
+    text-transform: lowercase;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { ChevronDown, ChevronRight, ChevronUp } from 'react-bootstrap-icons';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import { levelBoardLabel } from '~src/lib/levels/display';
@@ -10,12 +10,20 @@ import styles from './board-categories.module.scss';
 interface Props {
     /** Scopes the disclosure's remembered state — one board, one memory. */
     gameId: number;
-    /** Level boards only; the caller has already split them off. */
+    /** Every level board, featured or not, live or archived; the caller has
+     *  already split them off the full-game rows. */
     rows: ManageCategoryRow[];
     /** Every group, in display order — the level ones become sub-bands. */
     groups: ManageGroup[];
     levelTemplates: LevelTemplate[];
+    /** Rows with a write in flight, so their controls can go quiet — the
+     *  table owns the writes, this band only offers them. */
+    pendingIds: Set<number>;
     onEdit: (categoryId: number) => void;
+    /** Un-archives a level board. Same write the full-game archived list
+     *  makes; the table passes its own handler in rather than this band
+     *  growing a second copy of it. */
+    onRestore: (row: ManageCategoryRow) => void;
 }
 
 const storageKey = (gameId: number) => `console:levelBoards:${gameId}`;
@@ -31,21 +39,27 @@ const storageKey = (gameId: number) => `console:levelBoards:${gameId}`;
  * ("Any%") rather than their own display ("E1M1 — Any%") — inside a level, the
  * level's name is already the band.
  *
- * Deliberately not the full matrix: no reorder, no group control, no
- * Featured/Archive. Every one of those is a template-level decision, and the
- * Edit link is the way to the one thing that is per-board.
+ * Every level board is here, including the archived and the unfeatured ones:
+ * the full-game archived disclosure is full-game only and the add dialog
+ * refuses level boards, so this band is their one way back. Deliberately not
+ * the full matrix, though — no reorder, no group control, no Featured toggle.
+ * Each of those is decided at the level category, and the Edit link is the way
+ * to the things that aren't.
  */
 export function LevelBoardsBand({
     gameId,
     rows,
     groups,
     levelTemplates,
+    pendingIds,
     onEdit,
+    onRestore,
 }: Props) {
     // Default collapsed, then adopt what this game remembered. Read in an
     // effect rather than in the initial state so the server and the first
     // client render agree.
     const [open, setOpen] = useState(false);
+    const listId = useId();
     useEffect(() => {
         try {
             setOpen(window.localStorage.getItem(storageKey(gameId)) === 'open');
@@ -67,25 +81,41 @@ export function LevelBoardsBand({
         }
     };
 
-    // One sub-band per level that actually has boards, in group display order.
+    // One sub-band per level that actually has boards, in group display order,
+    // plus a bucket for boards whose level isn't in `groups` at all. Nothing
+    // may fall out of this band silently: the header count is what the band
+    // renders, so an orphan is visible rather than subtracted.
     const byGroup = groups
         .filter((g) => g.kind === 'level')
         .map((g) => ({
-            group: g,
+            key: String(g.id),
+            name: g.name,
             rows: rows.filter((r) => r.groupId === g.id),
         }))
         .filter((b) => b.rows.length > 0);
+
+    const placed = new Set(byGroup.flatMap((b) => b.rows.map((r) => r.id)));
+    const orphans = rows.filter((r) => !placed.has(r.id));
+    const sections =
+        orphans.length > 0
+            ? [
+                  ...byGroup,
+                  { key: 'other', name: 'Other levels', rows: orphans },
+              ]
+            : byGroup;
+    const shown = placed.size + orphans.length;
 
     return (
         <div className={styles.levelBand}>
             <div className={styles.levelBandHead}>
                 <span className={styles.levelBandTitle}>
-                    Level boards ({rows.length})
+                    Level boards ({shown})
                 </span>
                 <button
                     type="button"
                     className={styles.archivedToggle}
                     aria-expanded={open}
+                    aria-controls={listId}
                     onClick={toggle}
                 >
                     {open ? 'Hide level boards' : 'Show level boards'}
@@ -101,12 +131,15 @@ export function LevelBoardsBand({
                 category — edit that once and every level takes it.
             </p>
             {open && (
-                <div className={styles.levelList}>
-                    {byGroup.map(({ group, rows: levelRows }) => (
-                        <section key={group.id} className={styles.levelSection}>
-                            <h3 className={styles.levelName}>{group.name}</h3>
+                <div className={styles.levelList} id={listId}>
+                    {sections.map((section) => (
+                        <section
+                            key={section.key}
+                            className={styles.levelSection}
+                        >
+                            <h3 className={styles.levelName}>{section.name}</h3>
                             <ul className={styles.levelRows}>
-                                {levelRows.map((row) => (
+                                {section.rows.map((row) => (
                                     <li
                                         key={row.id}
                                         className={styles.levelRow}
@@ -118,11 +151,38 @@ export function LevelBoardsBand({
                                             )}
                                         </span>
                                         {row.levelOverride && (
-                                            <span
-                                                className={styles.levelDetached}
-                                            >
+                                            <span className={styles.levelFlag}>
                                                 detached
                                             </span>
+                                        )}
+                                        {!row.isMain && row.active && (
+                                            <span className={styles.levelFlag}>
+                                                not featured
+                                            </span>
+                                        )}
+                                        {!row.active && (
+                                            <>
+                                                <span
+                                                    className={styles.levelFlag}
+                                                >
+                                                    archived
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    className={
+                                                        styles.quietAction
+                                                    }
+                                                    style={{ opacity: 1 }}
+                                                    disabled={pendingIds.has(
+                                                        row.id,
+                                                    )}
+                                                    onClick={() =>
+                                                        onRestore(row)
+                                                    }
+                                                >
+                                                    Restore
+                                                </button>
+                                            </>
                                         )}
                                         <button
                                             type="button"

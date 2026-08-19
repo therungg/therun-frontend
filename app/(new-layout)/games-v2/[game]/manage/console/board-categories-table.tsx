@@ -195,12 +195,6 @@ export function BoardCategoriesTable({
         [groups],
     );
 
-    // Featured, live level boards — the band's contents.
-    const levelBoardRows = useMemo(
-        () => levelRows.filter((r) => r.isMain && r.active),
-        [levelRows],
-    );
-
     // `differs` is computed once for the whole board — never per row — and
     // over the featured scope only, matching what the table renders.
     const differs = useMemo(() => {
@@ -444,7 +438,7 @@ export function BoardCategoriesTable({
 
     return (
         <section>
-            {boardRows.length === 0 && levelBoardRows.length === 0 && (
+            {boardRows.length === 0 && levelRows.length === 0 && (
                 <div className={styles.panel}>
                     {/* A board with nothing on it renders an empty public band
                         — the one state where this screen should say something
@@ -860,13 +854,15 @@ export function BoardCategoriesTable({
                 </div>
             )}
 
-            {levelBoardRows.length > 0 && (
+            {levelRows.length > 0 && (
                 <LevelBoardsBand
                     gameId={game.id}
-                    rows={levelBoardRows}
+                    rows={levelRows}
                     groups={groups}
                     levelTemplates={levelTemplates}
+                    pendingIds={pendingIds}
                     onEdit={onEdit}
+                    onRestore={(row) => setVisibility(row, 'active', true)}
                 />
             )}
 
