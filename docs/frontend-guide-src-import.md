@@ -64,3 +64,118 @@ All GETs require the caller to hold `import-board` on the game (game-mod/game-ad
   Players (filter by `matchKind`; `none` is the "needs a claim" list; `twitch` is a suggestion — say so),
   Runs (filter by category/level/status; `srcLevelId` set = IL run; `playerCount > 1` = co-op, `videoUrl` null = no video).
 - Nothing on this page commits anything; the commit action is a later phase.
+
+## Commit phase
+
+The dry run stages; the commit phase writes. Two steps, in order, both on the game's **latest `done` job**:
+`apply-config` (categories/levels/variables) then `import-runs` (`finished_runs` rows). Both are 202-accepted and
+run on the import worker; poll `GET /src-import/games/{gameId}` for progress.
+
+### Extra fields on `SrcImportJob`
+
+```ts
+export type SrcImportCommitStatus = 'planning'|'applying'|'applied'|'importing'|'imported'|'failed';
+
+export type SrcImportJobCommitFields = {
+  commitStatus: SrcImportCommitStatus | null;
+  commitPhase: 'config' | 'runs' | null;
+  commitCheckpoint: { cursor: number; batch: number; updatedAtMs?: number } | null;
+  commitError: string | null;
+  commitOverrides: SrcCommitOverrides | null;
+  importedRunsCount: number;
+  importSkippedCount: number;
+  configAppliedAt: string | null;
+  runsImportedAt: string | null;
+};
+```
+
+### Plan types
+
+```ts
+export type SrcPlanAction = 'create' | 'reuse' | 'skip';
+export type SrcCommitOverrides = {
+  categories?: Record<string, { action: SrcPlanAction; therunId?: number }>;
+  levels?: Record<string, { action: SrcPlanAction; therunId?: number }>;
+  variables?: Record<string, { action: SrcPlanAction; therunId?: number }>;
+};
+export type SrcCommitPlan = {
+  categories: Array<{ srcId: string; name: string; type: 'per-game'|'per-level'; action: SrcPlanAction; therunId?: number; therunDisplay?: string; reason?: string }>;
+  levels: Array<{ srcId: string; name: string; action: SrcPlanAction; therunId?: number; reason?: string }>;
+  variables: Array<{
+    srcId: string; name: string; role: 'subcategory'|'filter'; scope: string;
+    targets: Array<{ kind: 'category'|'template'|'instance'; therunId?: number; name: string }>;
+    action: SrcPlanAction;
+    values: Array<{
+      srcId: string; label: string; action: 'create'|'reuse';
+      /** Set when this SRC value normalized to the same string as an earlier one and
+       * was folded into it. Both srcIds still get a `variable-value` mapping written
+       * on apply-config, pointing at the surviving canonical label. */
+      mergedIntoSrcId?: string;
+    }>;
+    nameNormalized?: string; reason?: string;
+  }>;
+  conflicts: Array<{ kind: 'category'|'level'|'variable'; srcId: string; message: string }>;
+  runs: { total: number; byStatus: { verified: number; new: number }; guests: number; matched: number; unmappable: number };
+};
+```
+
+### Endpoints
+
+| Method | Path | Body | Returns |
+|---|---|---|---|
+| GET | `/src-import/games/{gameId}/{jobId}/plan` | — | `SrcCommitPlan` |
+| POST | `/src-import/games/{gameId}/{jobId}/plan` | `SrcCommitOverrides` | `SrcCommitPlan` (stored, then recomputed) |
+| POST | `/src-import/games/{gameId}/{jobId}/apply-config` | — | 202 `{ jobId }` · 409 conflicts / not latest done job / already in progress · 403 without `create-edit-category` |
+| POST | `/src-import/games/{gameId}/{jobId}/import-runs` | — | 202 `{ jobId }` · 409 config not applied / already importing · 403 without `verify-reject-run` |
+
+`GET /src-import/games/{gameId}` returns the job with the commit fields above.
+
+Both `apply-config` and `import-runs` additionally require `import-board` (same as every other src-import route) on
+top of the permission listed above — the check runs first, before the more specific one, so a non-moderator gets a
+generic "not a moderator" 403 rather than the category/run-specific message.
+
+**POST /plan replaces, it does not merge.** The body you send becomes the job's entire stored `commitOverrides`.
+Omitting a group (e.g. sending `{ categories: {...} }` with no `levels` key) clears any previously-stored overrides
+for that group — it does not leave them untouched. Send the full override set on every call. Arrays are rejected:
+each group and each entry within it must be a plain object (`{ "srcId": { "action": ... } }`), not a list; a 400 is
+returned otherwise.
+
+**Re-POSTing `import-runs` on an already-`imported` job is allowed and resets progress**: it resets
+`commitCheckpoint` to `{ cursor: 0, batch: 0 }` and sets `commitStatus` back to `importing` (not straight to
+`imported`) — the worker re-walks `finished_runs` from the start, upserting via the existing links, so already-linked
+rows are updated rather than duplicated. `apply-config` cannot be re-run while `import-runs` has already succeeded
+in the sense of blocking progress — both actions 409 while a commit is in `applying`/`importing`.
+
+**Stale commits are reclaimable after 20 minutes.** The worker stamps `commitCheckpoint.updatedAtMs` on every
+commit-phase write. If a job sits in `applying`/`importing` with a stamp older than 20 minutes (or with no stamp at
+all), it is treated as abandoned and a new POST takes it over instead of 409ing — so a worker that died mid-commit
+never locks a game's import permanently. Below 20 minutes the 409 stands; surface it as "a commit is already
+running" rather than offering a retry.
+
+**Variables already on a target board.** If the plan wants to write a variable whose key already exists on one of
+its target categories, the existing value set wins: when it covers every SRC value the variable is planned as
+`reuse` with reason `matches existing variable` and nothing is written (the SRC values are mapped onto the live
+labels); when it does not cover them, a `variable` conflict is raised and `apply-config` is blocked until it is
+resolved with an override — the import never silently reshapes a live board's subcategories.
+
+**`isPb` on imported runs.** After the walk, `import-runs` recomputes `isPb`/`isPbGametime` across the game's
+imported rows only (`source = 'src_import'`): the fastest run per runner, category and subcategory key. Runs that
+entered therun natively are deliberately untouched, so a runner with both native and imported history can show a PB
+flag on one of each — imported history cannot retroactively take the flag off a timer run.
+
+If the enqueue for either action fails (SQS error, etc.), the handler returns `500` and rolls the job's
+`commitStatus`/`commitPhase`/`commitError` back to what they were before the request — the row never gets stuck
+looking permanently busy, so a retry after a transient failure works.
+
+**Timing mapping** (for reference, not something the UI computes): SRC's `realtime_noloads` default timing on a
+category maps to therun's `gametime` timing with the game-time label `lrt` (loadless real time), the same way
+`ingame` maps to `gametime`/`igt`. Only `realtime` maps straight to therun's `realtime`.
+
+### Notes for the UI
+
+- Render `conflicts` as blocking: `apply-config` 409s until every one is resolved via an override.
+- Progress: `importedRunsCount + importSkippedCount` out of `runsCount`; `commitError` is the failure reason.
+- Re-running either action is safe. `apply-config` is a no-op apart from newly staged rows; `import-runs` updates
+  already-linked rows instead of duplicating them.
+- Imported runs carry `source === 'src_import'` — badge them as "imported from speedrun.com". Unmatched SRC runners
+  become guest rows claimable through the existing Twitch-rename carry flow.
