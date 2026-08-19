@@ -1,3 +1,4 @@
+import { splitLevelBoards } from '~src/lib/levels/display';
 import type {
     ResolvedCategory,
     ResolvedGroup,
@@ -34,8 +35,23 @@ export type ResolvedDisplayMode = 'pills' | 'dropdown';
  */
 export const AUTO_PILL_LIMIT = 9;
 
+/** One level (category group with kind: 'level'), its rules, and its boards
+ *  (category instances of level templates, already display-sorted). */
+export interface LevelGroupVisibility {
+    id: number;
+    name: string;
+    rules: string | null;
+    boards: ResolvedCategory[];
+}
+
 export interface CategoryVisibility {
     sections: CategorySection[];
+    levels: {
+        groups: LevelGroupVisibility[];
+        /** The active category's level group id, or null when the active
+         *  category isn't a level board (or no level is selected yet). */
+        activeLevelId: number | null;
+    };
 }
 
 /**
@@ -68,8 +84,32 @@ export function computeCategoryVisibility(
     groups: ResolvedGroup[],
     /** games_pg.category_display_mode — the default every group inherits. */
     gameDisplayMode?: string | null,
+    /** The board's active category name — resolves `levels.activeLevelId`. */
+    activeCategoryName?: string | null,
 ): CategoryVisibility {
     const visible = sortCategoriesForDisplay(categories);
+
+    const levelGroups = groups.filter((g) => g.kind === 'level');
+    const nonLevelGroups = groups.filter((g) => g.kind !== 'level');
+    const { fullGame, levelBoards } = splitLevelBoards(visible, groups);
+
+    const levels = {
+        groups: levelGroups
+            .slice()
+            .sort((a, b) => a.sortOrder - b.sortOrder)
+            .map((g) => ({
+                id: g.id,
+                name: g.name,
+                rules: g.rules,
+                boards: sortCategoriesForDisplay(
+                    levelBoards.filter((c) => c.groupId === g.id),
+                ),
+            }))
+            .filter((g) => g.boards.length > 0),
+        activeLevelId:
+            levelBoards.find((c) => c.name === activeCategoryName)?.groupId ??
+            null,
+    };
 
     const usedGroupIds = new Set(
         visible.map((c) => c.groupId ?? null).filter((id) => id != null),
@@ -82,23 +122,24 @@ export function computeCategoryVisibility(
                 {
                     id: null,
                     name: null,
-                    pills: visible,
+                    pills: fullGame,
                     collapsedByDefault: false,
                     // The flat case has no group row to carry an override,
                     // which is exactly why the game-level default exists.
                     displayMode: resolveDisplayMode(
                         null,
                         gameDisplayMode,
-                        visible.length,
+                        fullGame.length,
                     ),
                 },
             ],
+            levels,
         };
     }
 
     const byGroup = new Map<number, ResolvedCategory[]>();
     const ungrouped: ResolvedCategory[] = [];
-    for (const c of visible) {
+    for (const c of fullGame) {
         if (c.groupId == null) ungrouped.push(c);
         else {
             const arr = byGroup.get(c.groupId) ?? [];
@@ -106,7 +147,7 @@ export function computeCategoryVisibility(
             byGroup.set(c.groupId, arr);
         }
     }
-    const sections: CategorySection[] = groups.map((g) => {
+    const sections: CategorySection[] = nonLevelGroups.map((g) => {
         const pills = sortCategoriesForDisplay(byGroup.get(g.id) ?? []);
         return {
             id: g.id,
@@ -136,5 +177,5 @@ export function computeCategoryVisibility(
             collapsedByDefault: false,
         });
     }
-    return { sections };
+    return { sections, levels };
 }

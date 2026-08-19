@@ -7,9 +7,11 @@ import type {
     ResolvedCategory,
     ResolvedGroup,
 } from '../../../../../types/leaderboards.types';
+import type { LevelTemplate } from '../../../../../types/levels.types';
 import { useBoardNav } from '../filters/use-board-nav';
 import { groupShowsEmblems } from './board-identity';
 import { computeCategoryVisibility } from './category-visibility';
+import { LevelPicker } from './level-picker';
 import styles from './masthead.module.scss';
 
 const PENDING_PREFIX = 'category:';
@@ -23,6 +25,9 @@ interface Props {
     boardCounts?: Record<string, number>;
     /** Board-wide selector default; groups override it one by one. */
     gameDisplayMode?: string | null;
+    /** Level templates (pageData.levelTemplates) — labels level boards by
+     *  their template's own display rather than the board's full display. */
+    levelTemplates?: LevelTemplate[];
 }
 
 export function CategoryRail({
@@ -32,6 +37,7 @@ export function CategoryRail({
     variableKeys,
     boardCounts,
     gameDisplayMode,
+    levelTemplates,
 }: Props) {
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -42,9 +48,15 @@ export function CategoryRail({
     // so every visit starts from it again.
     const [opened, setOpened] = useState<Set<number>>(new Set());
 
-    const { sections } = useMemo(
-        () => computeCategoryVisibility(categories, groups, gameDisplayMode),
-        [categories, groups, gameDisplayMode],
+    const { sections, levels } = useMemo(
+        () =>
+            computeCategoryVisibility(
+                categories,
+                groups,
+                gameDisplayMode,
+                selectedCategoryName,
+            ),
+        [categories, groups, gameDisplayMode, selectedCategoryName],
     );
 
     const onSelect = (name: string) => {
@@ -70,8 +82,10 @@ export function CategoryRail({
             return next;
         });
 
-    if (sections.length === 0) return null;
-    if (sections.length === 1 && sections[0].pills.length <= 1) return null;
+    const hasLevels = levels.groups.length > 0;
+    if (sections.length === 0 && !hasLevels) return null;
+    if (sections.length === 1 && sections[0].pills.length <= 1 && !hasLevels)
+        return null;
 
     // A collapsed group holding the board you're looking at expands
     // regardless — otherwise the active chip is invisible.
@@ -265,6 +279,19 @@ export function CategoryRail({
                     <div className={`${styles.well} ${styles.wellSolo}`}>
                         <div className={styles.chips}>{ghostChips}</div>
                     </div>
+                </div>
+            )}
+
+            {hasLevels && (
+                <div className={styles.block}>
+                    <LevelPicker
+                        levels={levels.groups}
+                        activeLevelId={levels.activeLevelId}
+                        activeCategoryName={optimisticSelectedName}
+                        templates={levelTemplates ?? []}
+                        boardCounts={boardCounts}
+                        onSelect={onSelect}
+                    />
                 </div>
             )}
         </nav>

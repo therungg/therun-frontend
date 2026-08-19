@@ -1,0 +1,8 @@
+@use '../../../styles/design-tokens' as dt;
+
+.levelPicker {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
+}

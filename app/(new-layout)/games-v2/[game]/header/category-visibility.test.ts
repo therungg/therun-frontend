@@ -195,6 +195,65 @@ describe('computeCategoryVisibility', () => {
         expect(result.sections[0].collapsedByDefault).toBe(false);
     });
 
+    it('pulls level groups out of the sections and returns them as levels', () => {
+        const groups = [
+            {
+                id: 1,
+                name: 'World 1',
+                sortOrder: 1,
+                kind: 'normal' as const,
+                rules: null,
+            },
+            {
+                id: 2,
+                name: 'E1M1',
+                sortOrder: 2,
+                kind: 'level' as const,
+                rules: 'lvl',
+            },
+            {
+                id: 3,
+                name: 'E1M2',
+                sortOrder: 3,
+                kind: 'level' as const,
+                rules: null,
+            },
+        ];
+        const cats = [
+            cat({ id: 10, groupId: 1, display: 'Any%' }),
+            cat({
+                id: 20,
+                groupId: 2,
+                display: 'E1M1 — Any%',
+                levelTemplateId: 9,
+            }),
+            cat({
+                id: 30,
+                groupId: 3,
+                display: 'E1M2 — Any%',
+                levelTemplateId: 9,
+                // The fixture's default name (`cat-30`) doesn't carry the
+                // real instance-slug convention — set it explicitly so
+                // `activeCategoryName` below can match a level board by name.
+                name: 'e1m2-any',
+            }),
+        ];
+        const v = computeCategoryVisibility(cats, groups, null, 'e1m2-any');
+        expect(v.sections.map((s) => s.id)).toEqual([1]);
+        expect(
+            v.levels.groups.map((g) => [g.id, g.boards.map((b) => b.id)]),
+        ).toEqual([
+            [2, [20]],
+            [3, [30]],
+        ]);
+        expect(v.levels.activeLevelId).toBe(3);
+    });
+
+    it('returns no levels for a game without level groups', () => {
+        const v = computeCategoryVisibility([cat({ id: 1 })], [], null);
+        expect(v.levels).toEqual({ groups: [], activeLevelId: null });
+    });
+
     it('never collapses the trailing ungrouped section', () => {
         const groups: ResolvedGroup[] = [
             grp({

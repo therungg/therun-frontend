@@ -35,6 +35,8 @@ function buildExcerpt(text: string): string {
 export function RulesPanel({
     rules,
     gameRules,
+    levelRules,
+    levelName,
     emulatorPolicy,
     open,
     onToggle,
@@ -43,6 +45,12 @@ export function RulesPanel({
     rules: string | null | undefined;
     /** Game-level rules — when present, the panel appears even if `rules` (category rules) is empty. */
     gameRules?: string | null | undefined;
+    /** The active level's rules (category_groups.rules, kind: 'level'), when
+     *  the selected board is a level board. Rendered between game rules and
+     *  category rules, headed by `levelName`. */
+    levelRules?: string | null | undefined;
+    /** The level's own name — heads the level rules tier. */
+    levelName?: string | null | undefined;
     /** When present (and no other rules text exists) the panel still appears and the policy line stands in for the excerpt. */
     emulatorPolicy?: EmulatorPolicy;
     open: boolean;
@@ -51,18 +59,21 @@ export function RulesPanel({
 }) {
     const categoryRules = nonEmpty(rules);
     const gameRulesText = nonEmpty(gameRules);
+    const levelRulesText = nonEmpty(levelRules);
     const policyText = emulatorPolicyText(emulatorPolicy);
-    if (!categoryRules && !gameRulesText && !policyText) return null;
+    if (!categoryRules && !gameRulesText && !levelRulesText && !policyText)
+        return null;
 
     // The excerpt always prefers category rules (unchanged from before this
-    // panel could open for game-rules/policy-only games). When there are no
-    // category rules to excerpt, the emulator policy line stands in — it's
-    // the most useful thing a runner can see collapsed on a policy-only
-    // game. Plain game rules with no category rules and no policy still
-    // show no excerpt (unchanged).
+    // panel could open for game-rules/policy-only games), then level rules,
+    // then the emulator policy line — the most useful thing a runner can
+    // see collapsed on a policy-only game. Plain game rules with none of
+    // the above still show no excerpt (unchanged).
     const excerptText = categoryRules
         ? buildExcerpt(categoryRules)
-        : policyText;
+        : levelRulesText
+          ? buildExcerpt(levelRulesText)
+          : policyText;
 
     return (
         <button
@@ -89,15 +100,23 @@ export function RulesPanel({
 export function RulesBody({
     rules,
     gameRules,
+    levelRules,
+    levelName,
     emulatorPolicy,
 }: {
     rules?: string | null;
     /** Game-level rules — rendered first, above category rules, separated by a divider. */
     gameRules?: string | null;
+    /** The active level's rules, when the selected board is a level board —
+     *  rendered between game rules and category rules, headed by `levelName`. */
+    levelRules?: string | null;
+    /** The level's own name — heads the level rules tier. */
+    levelName?: string | null;
     emulatorPolicy?: EmulatorPolicy;
 }) {
     const categoryRules = nonEmpty(rules);
     const gameRulesText = nonEmpty(gameRules);
+    const levelRulesText = nonEmpty(levelRules);
     const policyText = emulatorPolicyText(emulatorPolicy);
 
     return (
@@ -110,7 +129,18 @@ export function RulesBody({
                     {gameRulesText}
                 </ReactMarkdown>
             )}
-            {gameRulesText && categoryRules && (
+            {gameRulesText && (levelRulesText || categoryRules) && (
+                <hr className={styles.rulesDivider} />
+            )}
+            {levelRulesText && (
+                <>
+                    {levelName && <strong>{levelName}</strong>}
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {levelRulesText}
+                    </ReactMarkdown>
+                </>
+            )}
+            {levelRulesText && categoryRules && (
                 <hr className={styles.rulesDivider} />
             )}
             {categoryRules && (

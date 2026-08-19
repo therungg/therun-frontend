@@ -50,16 +50,37 @@ export function BoardMasthead({
     // section (bare hairline + padding, nothing inside) never shows —
     // the components stayed the source of truth, this just decides
     // whether to render *their wrapper*.
-    const { sections: categorySections } = useMemo(
-        () => computeCategoryVisibility(data.categories, data.groups),
-        [data.categories, data.groups],
+    const { sections: categorySections, levels } = useMemo(
+        () =>
+            computeCategoryVisibility(
+                data.categories,
+                data.groups,
+                data.game.categoryDisplayMode,
+                category.name,
+            ),
+        [
+            data.categories,
+            data.groups,
+            data.game.categoryDisplayMode,
+            category.name,
+        ],
     );
     const showCategoryRail =
-        categorySections.length > 0 &&
-        !(
-            categorySections.length === 1 &&
-            categorySections[0].pills.length <= 1
-        );
+        (categorySections.length > 0 &&
+            !(
+                categorySections.length === 1 &&
+                categorySections[0].pills.length <= 1
+            )) ||
+        levels.groups.length > 0;
+
+    // The active level's rules, when the selected board is a level board —
+    // shown as its own tier between game rules and category rules.
+    const activeLevel = data.groups.find(
+        (g) => g.id === category.groupId && g.kind === 'level',
+    );
+    const levelRules = activeLevel?.rules ?? null;
+    const levelName = activeLevel?.name ?? null;
+
     const showFilterTier =
         data.variables.some((v) => v.role === 'subcategory') ||
         Object.keys(data.activeFilters.varFilters).length > 0 ||
@@ -67,6 +88,7 @@ export function BoardMasthead({
     const showRules =
         Boolean(category.rules?.trim()) ||
         Boolean(data.gameMeta.gameRules?.trim()) ||
+        Boolean(levelRules?.trim()) ||
         data.gameMeta.emulatorPolicy === 'allowed' ||
         data.gameMeta.emulatorPolicy === 'banned';
 
@@ -147,6 +169,7 @@ export function BoardMasthead({
                             variableKeys={variableKeys}
                             boardCounts={data.categoryBoardCounts}
                             gameDisplayMode={data.game.categoryDisplayMode}
+                            levelTemplates={data.levelTemplates}
                         />
                     </div>
                 )}
@@ -184,6 +207,8 @@ export function BoardMasthead({
                                 <RulesPanel
                                     rules={category.rules}
                                     gameRules={data.gameMeta.gameRules}
+                                    levelRules={levelRules}
+                                    levelName={levelName}
                                     emulatorPolicy={
                                         data.gameMeta.emulatorPolicy
                                     }
@@ -206,6 +231,7 @@ export function BoardMasthead({
                     groups={data.groups}
                     selectedCategoryName={category.name}
                     variableKeys={variableKeys}
+                    levelTemplates={data.levelTemplates}
                 />
             )}
         </>
