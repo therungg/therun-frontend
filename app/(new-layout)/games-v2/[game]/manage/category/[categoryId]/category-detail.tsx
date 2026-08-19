@@ -145,10 +145,6 @@ function LevelBanner({
                     Level category — saved changes apply to {levelBoardCount}{' '}
                     level board{levelBoardCount === 1 ? '' : 's'}
                 </p>
-                <p className={styles.levelNote}>
-                    Featured applies to every level board too — there is no
-                    per-level Featured for a level category.
-                </p>
             </div>
         );
     }

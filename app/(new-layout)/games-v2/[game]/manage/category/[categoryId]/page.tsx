@@ -132,10 +132,14 @@ export default async function CategoryDetailPage({ params }: Props) {
  * A level category has no stats row and no group — it is a template, not a
  * board — so the editor gets the shape it needs built from the template's own
  * pageData entry, which carries the same board settings any category entry
- * does. The editor's sections only send the fields the moderator changed, so
- * the two flags pageData does not carry (hideRealTime/hideGameTime, which
- * pageData never carries for any category either) read as their defaults here
- * exactly as they do for a zero-stats category.
+ * does. `archived` is fixed false because pageData only contains active
+ * categories: an archived template is not in `levelTemplates` at all, so it
+ * never reaches this page.
+ *
+ * Games whose pageData was baked before 2026-08-19 lack the settings keys;
+ * those fields then read as the column defaults until the game is rebuilt,
+ * and since every section here sends only what the moderator actually
+ * changed, a defaulted value is never written back.
  */
 function templateAsCategory(template: LevelTemplate): ResolvedCategory {
     return {
@@ -154,5 +158,9 @@ function templateAsCategory(template: LevelTemplate): ResolvedCategory {
         sortAscending: template.sortAscending ?? true,
         showMilliseconds: template.showMilliseconds ?? true,
         requireVideo: template.requireVideo ?? false,
+        hideRealTime: template.hideRealTime ?? false,
+        hideGameTime: template.hideGameTime ?? false,
+        rtaFallback: template.rtaFallback ?? false,
+        requireVideoTopN: template.requireVideoTopN ?? null,
     };
 }

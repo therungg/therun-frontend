@@ -17,7 +17,12 @@ import type { ClaimCtaState } from '../claim/claim-cta';
 import { GameHero } from '../header/game-hero';
 import { isoDaysAgo, toSparklineSeries } from '../header/sparkline-data';
 import { ViewTabs } from '../header/view-tabs';
-import { orderStandingsForDisplay, standingsSections } from './order';
+import {
+    dropStandingsCategories,
+    orderStandingsForDisplay,
+    standingsScope,
+    standingsSections,
+} from './order';
 import styles from './standings.module.scss';
 import { StandingsView } from './standings-view';
 
@@ -53,7 +58,13 @@ export default async function GameStandingsPage({ params }: PageProps) {
         );
     }
 
-    const { categories, groups } = await resolveCategory(resolvedGame.id);
+    const { categories: allCategories, groups: allGroups } =
+        await resolveCategory(resolvedGame.id);
+    // Level boards and their groups are out of scope entirely — see
+    // standingsScope. Everything below reads the narrowed lists, exactly as it
+    // read the raw ones before levels existed.
+    const scope = standingsScope(allCategories, allGroups);
+    const { categories, groups } = scope;
     const featured = categories.filter((c) => !c.archived && c.isMain);
     // Standings across a single category is just that category's board. Same
     // threshold decideGameRootView applies to the overview, so the tab band and
@@ -135,7 +146,10 @@ export default async function GameStandingsPage({ params }: PageProps) {
                         <StandingsView
                             gameSlug={resolvedGame.name}
                             data={orderStandingsForDisplay(
-                                standings.standings,
+                                dropStandingsCategories(
+                                    standings.standings,
+                                    scope.excludedIds,
+                                ),
                                 categories,
                                 groups,
                             )}

@@ -39,12 +39,17 @@ const storageKey = (gameId: number) => `console:levelBoards:${gameId}`;
  * ("Any%") rather than their own display ("E1M1 — Any%") — inside a level, the
  * level's name is already the band.
  *
- * Every level board is here, including the archived and the unfeatured ones:
- * the full-game archived disclosure is full-game only and the add dialog
- * refuses level boards, so this band is their one way back. Deliberately not
- * the full matrix, though — no reorder, no group control, no Featured toggle.
- * Each of those is decided at the level category, and the Edit link is the way
- * to the things that aren't.
+ * Every level board the console can see is here, unfeatured ones included —
+ * the add dialog refuses level boards, so this band is the only way to reach
+ * one. Archived boards are handled the same way (marker plus Restore), though
+ * in practice none arrive: pageData carries only active categories, so an
+ * archived board is missing from the console's list entirely — the same
+ * pre-existing limitation the full-game archived disclosure has. The wiring
+ * is correct if that data ever shows up, not a claim that it does.
+ *
+ * Deliberately not the full matrix — no reorder, no group control, no
+ * Featured toggle. Each of those is decided at the level category, and the
+ * Edit link is the way to the things that aren't.
  */
 export function LevelBoardsBand({
     gameId,
@@ -169,10 +174,7 @@ export function LevelBoardsBand({
                                                 </span>
                                                 <button
                                                     type="button"
-                                                    className={
-                                                        styles.quietAction
-                                                    }
-                                                    style={{ opacity: 1 }}
+                                                    className={`${styles.quietAction} ${styles.levelRestore}`}
                                                     disabled={pendingIds.has(
                                                         row.id,
                                                     )}

@@ -67,7 +67,7 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
         ),
     ).toString();
 
-    const decision = decideGameRootView(categories, sp.category);
+    const decision = decideGameRootView(categories, sp.category, groups);
     if (decision.view === 'redirect') {
         redirect(`/games-v2/${encodeURIComponent(resolvedGame.name)}`);
     }

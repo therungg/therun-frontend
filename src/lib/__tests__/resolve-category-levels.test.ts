@@ -212,12 +212,17 @@ describe('resolveCategory — level groups + pageData-only categories', () => {
                 // The board settings a template pushes — the console's
                 // category detail page edits a template as a category, so
                 // they come off the same pageData entry every category uses.
-                // This fixture states none of them, so they read as defaults.
+                // This fixture states none of them, so they read as the
+                // column defaults, exactly as pre-2026-08-19 pageData does.
                 primaryTiming: 'rt',
                 gameTimeLabel: 'igt',
                 sortAscending: true,
                 showMilliseconds: true,
                 requireVideo: false,
+                hideRealTime: false,
+                hideGameTime: false,
+                rtaFallback: false,
+                requireVideoTopN: null,
             },
         ]);
     });

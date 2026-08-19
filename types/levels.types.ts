@@ -17,19 +17,22 @@ export interface LevelTemplate {
     isMain: boolean;
     sortOrder: number;
     imageUrl: string | null;
-    /** Board settings the template pushes to its boards. Optional because a
-     * consumer that only needs a label (the console's level-board band) never
-     * looks at them; the console's category detail page edits a template as a
-     * category and does. */
+    /** Board settings the template pushes to its boards — pageData carries
+     * them on every category entry, `levelTemplates` included, since
+     * 2026-08-19. Optional twice over: a consumer that only needs a label
+     * (the console's level-board band) never looks at them, and pageData
+     * baked before that date lacks the keys, in which case the column
+     * defaults (false/false/false/true/null) apply until the game is
+     * rebuilt. */
     primaryTiming?: 'rt' | 'gt';
     gameTimeLabel?: 'igt' | 'lrt';
-    /** Known gap: the backend's pageData `levelTemplates` entries do not
-     * carry this, so it reads as the `true` default wherever it is filled in.
-     * Display only — the console's editors send only fields the moderator
-     * actually changed, so a defaulted value is never written back. */
     sortAscending?: boolean;
     showMilliseconds?: boolean;
     requireVideo?: boolean;
+    hideRealTime?: boolean;
+    hideGameTime?: boolean;
+    rtaFallback?: boolean;
+    requireVideoTopN?: number | null;
 }
 
 export interface LevelOverview {

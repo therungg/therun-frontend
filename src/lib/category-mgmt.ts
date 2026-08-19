@@ -47,6 +47,12 @@ interface GameCategoryRow {
     sortAscending?: boolean;
     showMilliseconds?: boolean;
     requireVideo?: boolean;
+    // Carried on every pageData category entry since 2026-08-19 (hideRealTime
+    // and hideGameTime above predate that); older baked pageData lacks them
+    // and the column defaults apply until the game is rebuilt. See
+    // docs/frontend-guide-levels.md.
+    rtaFallback?: boolean;
+    requireVideoTopN?: number | null;
 }
 
 interface GamePageData {
@@ -100,10 +106,7 @@ export async function getCategoryVisibility(
     };
 }
 
-export async function listManageCategories(
-    gameId: number,
-): Promise<ManageCategoryRow[]> {
-    const data = await loadPageData(gameId);
+function categoryRowsOf(data: GamePageData): ManageCategoryRow[] {
     const rows: ManageCategoryRow[] = [];
     for (const c of data.ungroupedCategories ?? []) {
         rows.push({
@@ -144,10 +147,13 @@ export async function listManageCategories(
     return rows;
 }
 
-export async function listLevelTemplates(
+export async function listManageCategories(
     gameId: number,
-): Promise<LevelTemplate[]> {
-    const data = await loadPageData(gameId);
+): Promise<ManageCategoryRow[]> {
+    return categoryRowsOf(await loadPageData(gameId));
+}
+
+function levelTemplatesOf(data: GamePageData): LevelTemplate[] {
     return (data.levelTemplates ?? []).map((t) => ({
         id: t.id,
         display: t.display,
@@ -157,12 +163,22 @@ export async function listLevelTemplates(
         imageUrl: t.imageUrl ?? null,
         primaryTiming: t.primaryTiming === 'gametime' ? 'gt' : 'rt',
         gameTimeLabel: t.gameTimeLabel === 'lrt' ? 'lrt' : 'igt',
-        // pageData's levelTemplates entries don't carry sortAscending — the
-        // default here is a known display-only gap, never written back.
+        // Older baked pageData lacks these keys; the column defaults apply
+        // until the game is rebuilt.
         sortAscending: t.sortAscending ?? true,
         showMilliseconds: t.showMilliseconds ?? true,
         requireVideo: t.requireVideo ?? false,
+        hideRealTime: t.hideRealTime ?? false,
+        hideGameTime: t.hideGameTime ?? false,
+        rtaFallback: t.rtaFallback ?? false,
+        requireVideoTopN: t.requireVideoTopN ?? null,
     }));
+}
+
+export async function listLevelTemplates(
+    gameId: number,
+): Promise<LevelTemplate[]> {
+    return levelTemplatesOf(await loadPageData(gameId));
 }
 
 export interface UpdateCategoryBody {
@@ -259,8 +275,7 @@ export interface ManageGroup {
     rules: string | null;
 }
 
-export async function listManageGroups(gameId: number): Promise<ManageGroup[]> {
-    const data = await loadPageData(gameId);
+function manageGroupsOf(data: GamePageData): ManageGroup[] {
     return (data.groups ?? [])
         .map((g) => ({
             id: g.id,
@@ -272,6 +287,31 @@ export async function listManageGroups(gameId: number): Promise<ManageGroup[]> {
             rules: g.rules ?? null,
         }))
         .sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
+export async function listManageGroups(gameId: number): Promise<ManageGroup[]> {
+    return manageGroupsOf(await loadPageData(gameId));
+}
+
+/**
+ * Everything the console's index needs off pageData, from ONE request.
+ *
+ * The three list functions above each load pageData for themselves, which is
+ * right for a caller that wants one of them and wasteful for the console,
+ * which wants all three in the same render — that was three uncached
+ * `GET /v1/games/{id}` calls for one screen.
+ */
+export async function loadConsoleCatalog(gameId: number): Promise<{
+    rows: ManageCategoryRow[];
+    groups: ManageGroup[];
+    levelTemplates: LevelTemplate[];
+}> {
+    const data = await loadPageData(gameId);
+    return {
+        rows: categoryRowsOf(data),
+        groups: manageGroupsOf(data),
+        levelTemplates: levelTemplatesOf(data),
+    };
 }
 
 export interface CreateGroupBody {

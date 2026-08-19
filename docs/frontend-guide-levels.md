@@ -15,7 +15,7 @@ No new routes: everything rides `/v1/games/{id}/groups[/{groupId}]`, `/v1/games/
 - State: synced ⇔ `levelTemplateId != null && !levelOverride`; excluded ⇔ `!active && levelOverride`; level-only ⇔ in a level group with `levelTemplateId == null`.
 
 ## pageData (GET /v1/games/{id}) additions
-- categories (ungrouped + grouped, and `levelTemplates` entries): `name: string`, `levelTemplateId: number|null`, `levelOverride: boolean`
+- categories (ungrouped + grouped, and `levelTemplates` entries): `name: string`, `levelTemplateId: number|null`, `levelOverride: boolean`, and (since 2026-08-19) the remaining board settings `hideRealTime`, `hideGameTime`, `rtaFallback`, `sortAscending`, `requireVideoTopN: number|null` — so a zero-run board or a template can be edited without a stats row. Games not rebuilt since then lack these keys; treat them as optional with the column defaults (`false`/`false`/`false`/`true`/`null`).
 - groups: `kind: 'normal'|'level'`, `rules: string|null`
 - `levelTemplates: CategoryEntry[]` (same entry shape as ungrouped/grouped categories) — templates are **never** present in `ungroupedCategories` or any `groups[].categories`, only here.
 

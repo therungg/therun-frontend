@@ -39,7 +39,18 @@ export function LevelRow({
     const [rulesOpen, setRulesOpen] = useState(false);
     const [rules, setRules] = useState(level.rules ?? '');
     const [error, setError] = useState<string | null>(null);
-    const { isPending, run } = useActionRunner(setError, onChanged);
+    // A rejected rename/rules save leaves the inputs holding text the server
+    // never took. Putting the server's values back with the message means the
+    // row always shows what the level actually is — the moderator can retry
+    // from a true starting point instead of from a fiction.
+    const reportError = (message: string | null) => {
+        setError(message);
+        if (message !== null) {
+            setName(level.name);
+            setRules(level.rules ?? '');
+        }
+    };
+    const { isPending, run } = useActionRunner(reportError, onChanged);
 
     const instanceFor = (templateId: number) =>
         level.instances.find((i) => i.templateId === templateId) ?? null;

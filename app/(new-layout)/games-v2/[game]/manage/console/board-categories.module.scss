@@ -555,6 +555,12 @@ tbody tr:focus-within .quietAction {
     color: var(--bs-secondary-color);
 }
 
+.levelRestore {
+    // The quiet action only reveals itself on row hover in the table; in this
+    // list it is the point of the row, so it stays legible.
+    opacity: 1;
+}
+
 .levelFlag {
     font-size: dt.$font-size-2xs;
     color: var(--bs-secondary-color);

@@ -4,11 +4,7 @@ import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { getSession } from '~src/actions/session.action';
 import { listGameBoardClaims } from '~src/lib/board-claims';
-import {
-    listLevelTemplates,
-    listManageCategories,
-    listManageGroups,
-} from '~src/lib/category-mgmt';
+import { loadConsoleCatalog } from '~src/lib/category-mgmt';
 import {
     buildCategoryRows,
     type CategoryConfigRow,
@@ -103,25 +99,26 @@ export default async function GameAdminConsolePage({ params }: Props) {
     const categoryName = (id: number) =>
         categoryById.get(id) ?? `Category ${id}`;
 
-    const [
-        identifiers,
-        rawRows,
-        groups,
-        levelTemplates,
-        queueRes,
-        reportsRes,
-        manualTimesRes,
-    ] = await Promise.all([
-        getGameIdentifiers(game.id).catch(() => ({
-            slug: null,
-        })),
-        listManageCategories(game.id).catch(() => []),
-        listManageGroups(game.id).catch(() => []),
-        listLevelTemplates(game.id).catch(() => []),
-        resolveSource(listQueue(sessionId, game.id, { limit: 200 }), 'flags'),
-        resolveSource(listGameReports(sessionId, game.id), 'reports'),
-        resolveSource(listManualTimes(sessionId, game.id), 'manual times'),
-    ]);
+    const [identifiers, catalog, queueRes, reportsRes, manualTimesRes] =
+        await Promise.all([
+            getGameIdentifiers(game.id).catch(() => ({
+                slug: null,
+            })),
+            // Rows, groups and level categories all come off pageData — one load,
+            // not three.
+            loadConsoleCatalog(game.id).catch(() => ({
+                rows: [],
+                groups: [],
+                levelTemplates: [],
+            })),
+            resolveSource(
+                listQueue(sessionId, game.id, { limit: 200 }),
+                'flags',
+            ),
+            resolveSource(listGameReports(sessionId, game.id), 'reports'),
+            resolveSource(listManualTimes(sessionId, game.id), 'manual times'),
+        ]);
+    const { rows: rawRows, groups, levelTemplates } = catalog;
     const degradedSources = degradedSourcesOf([
         queueRes,
         reportsRes,

@@ -139,6 +139,15 @@ interface PageDataCategoryFlags {
     showMilliseconds?: boolean;
     requireVideo?: boolean;
     sortAscending?: boolean;
+    // The rest of the board settings — added to every pageData category entry
+    // (levelTemplates included) on 2026-08-19 so a zero-run board or a level
+    // category can be edited without a stats row. Optional because pageData
+    // baked before then lacks the keys; the column defaults apply until the
+    // game is rebuilt. See docs/frontend-guide-levels.md.
+    hideRealTime?: boolean;
+    hideGameTime?: boolean;
+    rtaFallback?: boolean;
+    requireVideoTopN?: number | null;
 }
 
 interface PageDataGroup {
@@ -351,8 +360,12 @@ export async function resolveCategory(
     // empty, must still show up rather than waiting for their first run.
     for (const [id, entry] of entryById) {
         if (seenIds.has(id)) continue;
+        // No display is no category: the slug derives from it, so an entry
+        // without one would join the list under the empty slug and shadow
+        // every lookup that misses.
+        if (!entry.display) continue;
         const grp = groupByCatId.get(id) ?? null;
-        const display = entry.display ?? '';
+        const display = entry.display;
         const basics = deriveCategoryBasics(
             display,
             entry.primaryTiming,
@@ -379,16 +392,14 @@ export async function resolveCategory(
             rules: entry.rules ?? null,
             showMilliseconds: entry.showMilliseconds ?? true,
             requireVideo: entry.requireVideo ?? false,
-            // pageData doesn't carry these — they're wired to real config
-            // only once the board has a stats row (/v1/runs/categories).
-            // Until then these are gaps, not asserted config: a board that
-            // actually sets requireVideoTopN/hideRealTime/hideGameTime/
-            // rtaFallback shows the defaults here until its first run lands
-            // it in the stats branch above.
-            requireVideoTopN: null,
-            hideRealTime: false,
-            hideGameTime: false,
-            rtaFallback: false,
+            // pageData carries these since 2026-08-19; older baked pageData
+            // may lack the keys, in which case the column defaults apply
+            // until the game is rebuilt (a board that really does set one of
+            // them reads as the default in the meantime).
+            requireVideoTopN: entry.requireVideoTopN ?? null,
+            hideRealTime: entry.hideRealTime ?? false,
+            hideGameTime: entry.hideGameTime ?? false,
+            rtaFallback: entry.rtaFallback ?? false,
             levelTemplateId: entry.levelTemplateId ?? null,
             levelOverride: entry.levelOverride ?? false,
         });
@@ -416,13 +427,18 @@ export async function resolveCategory(
             isMain: t.isMain ?? false,
             sortOrder: t.sortOrder ?? 0,
             imageUrl: t.imageUrl ?? null,
+            // A template's board settings, so it can be edited as a category
+            // without a stats row. Older baked pageData may lack these keys;
+            // the column defaults apply until the game is rebuilt.
             primaryTiming: basics.primaryTiming,
             gameTimeLabel: basics.gameTimeLabel,
-            // pageData's levelTemplates entries don't carry sortAscending — the
-            // default here is a known display-only gap, never written back.
             sortAscending: t.sortAscending ?? true,
             showMilliseconds: t.showMilliseconds ?? true,
             requireVideo: t.requireVideo ?? false,
+            hideRealTime: t.hideRealTime ?? false,
+            hideGameTime: t.hideGameTime ?? false,
+            rtaFallback: t.rtaFallback ?? false,
+            requireVideoTopN: t.requireVideoTopN ?? null,
         };
     });
 
