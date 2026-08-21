@@ -1,7 +1,6 @@
 import { cacheLife } from 'next/cache';
 import { NextRequest } from 'next/server';
 import { apiResponse } from '~app/api/response';
-import { editUser } from '~src/lib/edit-user';
 import { getUserRuns } from '~src/lib/get-user-runs';
 
 export async function GET(
@@ -25,22 +24,5 @@ export async function GET(
             maxAge: 300,
             swr: 1500,
         },
-    });
-}
-
-export async function PUT(
-    request: NextRequest,
-    props: {
-        params: Promise<{ user: string }>;
-    },
-) {
-    const params = await props.params;
-    const { user } = params;
-    const data = await request.text();
-    const result = await editUser(user, data);
-
-    return apiResponse({
-        body: result,
-        headers: { 'Cache-Control': 'no-cache' },
     });
 }

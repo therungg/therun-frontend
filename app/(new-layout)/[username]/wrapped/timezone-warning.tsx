@@ -4,8 +4,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
 import { Button } from 'react-bootstrap';
 import { WrappedTitle } from '~app/(new-layout)/[username]/wrapped/wrapped-title';
+import Link from '~src/components/link';
 import { NameAsPatreon } from '~src/components/patreon/patreon-name';
-import { Userform } from '~src/components/user/userform';
 import { UserData } from '~src/lib/get-session-data';
 
 export const TimezoneWarning = ({ user }: { user: UserData }) => {
@@ -39,12 +39,9 @@ export const TimezoneWarning = ({ user }: { user: UserData }) => {
             </div>
             <hr className="mt-4" />
             <div>
-                <Userform
-                    username={user.username}
-                    userData={user}
-                    session={user}
-                    editInfo={true}
-                />
+                <Link href="/settings/profile" className="btn btn-primary">
+                    Set your timezone in Settings
+                </Link>
             </div>
         </div>
     );

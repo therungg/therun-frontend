@@ -4,7 +4,6 @@ import React, { useEffect, useReducer, useState } from 'react';
 import { Col, Row, Tab, Tabs } from 'react-bootstrap';
 import { TwitchEmbed } from 'react-twitch-embed';
 import type { UserRanking } from 'types/leaderboards.types';
-import type { User } from 'types/session.types';
 import { GlobalGameData } from '~app/(new-layout)/[username]/[game]/[run]/run';
 import { LeaderboardPbs } from '~app/(new-layout)/[username]/leaderboard-pbs';
 import { prepareSessions } from '~app/(new-layout)/[username]/prepare-sessions.component';
@@ -74,7 +73,7 @@ export const UserProfile = ({
         }
     }, [lastMessage]);
 
-    if (runs.length === 0) return NoRuns(username, session, userData);
+    if (runs.length === 0) return NoRuns(username, userData);
 
     runs.sort((a, b) => {
         if (a.highlighted && b.highlighted) {
@@ -111,11 +110,7 @@ export const UserProfile = ({
         <>
             <Row className="mb-3">
                 <Col md={12} lg={9}>
-                    <Userform
-                        username={username}
-                        session={session}
-                        userData={userData}
-                    />
+                    <Userform username={username} userData={userData} />
                 </Col>
                 {hasGameTime && (
                     <Col
@@ -310,14 +305,10 @@ export const UserProfile = ({
     );
 };
 
-const NoRuns = (username: string, session: User, userData: UserData) => {
+const NoRuns = (username: string, userData: UserData) => {
     return (
         <>
-            <Userform
-                username={username}
-                session={session}
-                userData={userData}
-            />
+            <Userform username={username} userData={userData} />
             <hr />
             <div className={styles.noRuns}>
                 Unfortunately, {username} has not uploaded runs yet, or their
