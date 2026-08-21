@@ -1,8 +1,24 @@
 import ManageStories from '~app/(new-layout)/stories/manage/manage-stories';
+import { getSession } from '~src/actions/session.action';
 import buildMetadata from '~src/utils/metadata';
+import styles from '../settings.module.scss';
 
 export default async function StoryModeSettingsPage() {
-    return <ManageStories />;
+    const session = await getSession();
+    if (!session.id || !session.username) return null;
+
+    return (
+        <div className={styles.pane}>
+            <header className={styles.paneHeader}>
+                <h1 className={styles.paneTitle}>Story Mode</h1>
+                <p className={styles.paneLede}>
+                    Configure how therun.gg Twitch bot narrates your runs with
+                    live commentary and stats.
+                </p>
+            </header>
+            <ManageStories />
+        </div>
+    );
 }
 
 export const metadata = buildMetadata({

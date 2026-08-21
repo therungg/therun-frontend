@@ -10,6 +10,7 @@ export default async function AppearancePage(props: {
 }) {
     const searchParams = await props.searchParams;
     const session = await getSession();
+    if (!session.id || !session.username) return null;
     const data = await getUserPatreonData({});
     const isAdmin = session.roles?.includes('admin') ?? false;
     const rawTier = isAdmin ? Number(searchParams.tier) : NaN;
