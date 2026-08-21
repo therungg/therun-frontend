@@ -1,7 +1,11 @@
-'use server';
+import { apiFetch } from './api-client';
 
-export const getUploadKey = async (user: string) => {
-    const url = `${process.env.NEXT_PUBLIC_DATA_URL}/users/uploadKey/${user}`;
-
-    return (await fetch(url)).json();
-};
+export async function getUploadKey(username: string, sessionId: string) {
+    return apiFetch<string>(
+        `/users/uploadKey/${encodeURIComponent(username)}`,
+        {
+            sessionId,
+            cache: 'no-store',
+        },
+    );
+}
