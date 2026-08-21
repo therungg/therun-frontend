@@ -21,9 +21,7 @@ export const competeItems: NavItem[] = [
 // Tools group — only shown when logged in
 export const toolsItems: NavItem[] = [
     { href: '/upload', label: 'Upload' },
-    { href: '/livesplit', label: 'LiveSplit Key' },
-    { href: '/change-appearance', label: 'Change Appearance' },
-    { href: '/stories/manage', label: 'Story Mode' },
+    { href: '/settings', label: 'Settings' },
 ];
 
 export const aboutItems: NavItem[] = [

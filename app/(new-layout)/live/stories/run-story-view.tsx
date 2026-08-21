@@ -53,7 +53,9 @@ export const RunStoryView = ({ liveRun }: { liveRun: LiveRun }) => {
                             <p>
                                 You can enable and customize these stories in
                                 your{' '}
-                                <a href="/stories/manage">Stories Dashboard</a>
+                                <a href="/settings/story-mode">
+                                    Stories Dashboard
+                                </a>
                             </p>
                         </div>
                     </Col>
