@@ -185,6 +185,10 @@
     margin-bottom: $spacing-2xl;
 }
 
+.sameGameSection {
+    margin-left: calc(100px + $spacing-lg);
+}
+
 .gameTitle {
     font-size: $font-size-xl;
     font-weight: $heading-font-weight;
@@ -369,5 +373,9 @@
 
     .activityHeader {
         gap: $spacing-md;
+    }
+
+    .sameGameSection {
+        margin-left: 0;
     }
 }
