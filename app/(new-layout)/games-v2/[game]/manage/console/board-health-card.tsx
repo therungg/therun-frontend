@@ -3,9 +3,9 @@ import {
     ExclamationTriangleFill,
     XOctagonFill,
 } from 'react-bootstrap-icons';
+import styles from '~src/components/console-chrome/console.module.scss';
 import Link from '~src/components/link';
 import type { BoardHealth } from '~src/lib/setup/health';
-import styles from './console.module.scss';
 
 const GRADE_LABEL = {
     healthy: 'Healthy',

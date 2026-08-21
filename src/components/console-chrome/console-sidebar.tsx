@@ -1,36 +1,40 @@
 'use client';
 
 import clsx from 'clsx';
+import type { Icon as IconType } from 'react-bootstrap-icons';
 import { AttentionBadge } from './attention-badge';
 import styles from './console.module.scss';
-import { NAV_ICON } from './nav-icons';
-import type { NavGroup, NavItemId } from './nav-model';
+import type { NavGroup } from './nav-types';
 
 interface Props {
     groups: NavGroup[];
-    activeItem: NavItemId | null;
-    onSelect: (id: NavItemId) => void;
-    attentionCount: number;
+    icons: Record<string, IconType>;
+    activeItem: string | null;
+    onSelect: (id: string) => void;
+    attentionCount?: number;
     /** True when one or more attention sources failed to load — the count
      * shown may be an undercount, not a confirmed total. */
     badgeDegraded?: boolean;
+    ariaLabel?: string;
 }
 
 export function ConsoleSidebar({
     groups,
+    icons,
     activeItem,
     onSelect,
-    attentionCount,
+    attentionCount = 0,
     badgeDegraded = false,
+    ariaLabel,
 }: Props) {
     return (
-        <nav aria-label="Game admin console">
+        <nav aria-label={ariaLabel ?? 'Console navigation'}>
             {groups.map((group) => (
                 <div key={group.id} className={styles.navGroup}>
                     <div className={styles.groupLabel}>{group.label}</div>
 
                     {group.items.map((item) => {
-                        const Icon = NAV_ICON[item.id];
+                        const Icon = icons[item.id];
                         const isActive = activeItem === item.id;
                         return (
                             <button
@@ -44,11 +48,13 @@ export function ConsoleSidebar({
                                 aria-current={isActive ? 'page' : undefined}
                                 onClick={() => onSelect(item.id)}
                             >
-                                <Icon
-                                    size={16}
-                                    className={styles.navIcon}
-                                    aria-hidden="true"
-                                />
+                                {Icon && (
+                                    <Icon
+                                        size={16}
+                                        className={styles.navIcon}
+                                        aria-hidden="true"
+                                    />
+                                )}
                                 <span className={styles.navLabel}>
                                     {item.label}
                                 </span>

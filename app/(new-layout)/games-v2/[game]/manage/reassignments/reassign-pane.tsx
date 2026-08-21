@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
-import consoleStyles from '../console/console.module.scss';
 import { CategoryWizard } from './category-wizard';
 import { GameWizard } from './game-wizard';
 import styles from './reassignments.module.scss';

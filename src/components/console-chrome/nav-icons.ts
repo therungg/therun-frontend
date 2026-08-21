@@ -20,7 +20,7 @@ import {
     ShieldLock,
     Trophy,
 } from 'react-bootstrap-icons';
-import type { NavItemId } from './nav-model';
+import type { NavItemId } from '~app/(new-layout)/games-v2/[game]/manage/console/nav-model';
 
 export const NAV_ICON: Record<NavItemId, IconType> = {
     attention: ExclamationTriangle,

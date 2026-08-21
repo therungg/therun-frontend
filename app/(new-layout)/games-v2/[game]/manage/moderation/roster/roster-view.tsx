@@ -8,6 +8,7 @@ import {
     Dash,
     Search,
 } from 'react-bootstrap-icons';
+import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
@@ -20,7 +21,6 @@ import {
     VerificationBadge,
 } from '../../../run-view/run-badges';
 import { BackLink } from '../../../shared/back-link';
-import consoleStyles from '../../console/console.module.scss';
 import type { ModVerb, RunActionTarget } from '../shared/action-model';
 import { ManualTimeDialog } from '../shared/manual-time-dialog';
 import { RunActionDialog } from '../shared/run-action-dialog';
