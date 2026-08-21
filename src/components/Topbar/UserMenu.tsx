@@ -120,13 +120,13 @@ export function UserMenu({ username, picture, sessionError }: UserMenuProps) {
                     Profile
                 </Link>
                 <Link
-                    href="/change-appearance"
+                    href="/settings"
                     className={styles.item}
                     role="menuitem"
                     onClick={() => setOpen(false)}
                 >
                     <span className={styles.itemWithIcon}>
-                        Change appearance
+                        Settings
                         <span className={styles.itemBunny}>
                             <BunnyIcon size={16} />
                         </span>

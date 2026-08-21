@@ -99,7 +99,7 @@ export async function setStoryPreferencesAction(
         return { message: response, type: 'error' };
     }
 
-    revalidatePath('/stories/manage');
+    revalidatePath('/settings/story-mode');
 
     return {
         message: 'Story preferences succesfully updated!',
