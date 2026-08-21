@@ -4,7 +4,7 @@ import type { LegacyPresetEntry } from '~src/components/patreon/legacy-preset-ma
 import type {
     PatronPreferences,
     PerMode,
-} from '../../../../types/patreon.types';
+} from '../../../../../types/patreon.types';
 import styles from './customization.module.scss';
 import { GradientPicker } from './gradient-picker';
 import { PresetsTab } from './presets-tab';

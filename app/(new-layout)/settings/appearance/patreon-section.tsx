@@ -1,13 +1,16 @@
 'use client';
 
-import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { mutate } from 'swr';
+import { savePatreonSettings } from '~src/actions/save-patreon-settings.action';
 import Link from '~src/components/link';
 import { legacyPresetMap } from '~src/components/patreon/legacy-preset-map';
-import type { PatronPreferences, PerMode } from '../../../types/patreon.types';
-import type { User } from '../../../types/session.types';
+import type {
+    PatronPreferences,
+    PerMode,
+} from '../../../../types/patreon.types';
+import type { User } from '../../../../types/session.types';
 import { ContrastWarning } from './customization/contrast-warning';
 import styles from './customization/customization.module.scss';
 import { DisplaySection } from './customization/display-section';
@@ -16,7 +19,6 @@ import { FontSection } from './customization/font-section';
 import { PreviewPane } from './customization/preview-pane';
 import { TierOverview } from './customization/tier-overview';
 import { validatePrefs } from './customization/validation';
-import { LoginWithPatreon } from './login-with-patreon';
 
 export interface UserPatreonData {
     tier: 1 | 2 | 3;
@@ -42,26 +44,7 @@ const EMPTY_PREFERENCES: PatronPreferences = {
     gradientAnimated: false,
 };
 
-export default function PatreonSection({
-    userPatreonData,
-    session,
-    baseUrl,
-    tierOverride,
-}: PatreonSectionProps & { baseUrl: string }) {
-    const isAdmin = session.roles?.includes('admin') ?? false;
-    if (!userPatreonData.tier && !isAdmin) {
-        return <LoginWithPatreon session={session} baseUrl={baseUrl} />;
-    }
-    return (
-        <PatreonSettings
-            session={session}
-            userPatreonData={userPatreonData}
-            tierOverride={tierOverride}
-        />
-    );
-}
-
-function PatreonSettings({
+export default function PatreonSettings({
     userPatreonData,
     session,
     tierOverride,
@@ -96,6 +79,7 @@ function PatreonSettings({
     const [prefs, setPrefs] = useState<PatronPreferences>(initial);
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
     const [legacyBannerDismissed, setLegacyBannerDismissed] = useState(false);
     const router = useRouter();
     const [mode, setMode] = useState<'dark' | 'light'>('dark');
@@ -122,16 +106,17 @@ function PatreonSettings({
 
     const onSave = async () => {
         setSaving(true);
+        setSaveError(null);
         try {
-            const payload: PatronPreferences = {
+            // Clear legacy after any save from the new UI.
+            const r = await savePatreonSettings({
                 ...prefs,
-                // Clear legacy after any save from the new UI.
                 colorPreference: 0,
-            };
-            await axios.post(
-                `/api/users/${session.id}-${session.username}/patreon-settings`,
-                payload,
-            );
+            });
+            if (!r.ok) {
+                setSaveError(r.error);
+                return;
+            }
             await mutate('/api/patreons');
             router.refresh();
             setSaved(true);
@@ -269,6 +254,11 @@ function PatreonSettings({
                 >
                     {saving ? 'Saving…' : saved ? 'Saved' : 'Save'}
                 </button>
+                {saveError && (
+                    <div className={styles.errorText} role="alert">
+                        {saveError}
+                    </div>
+                )}
             </div>
         </div>
     );

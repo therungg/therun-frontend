@@ -1,5 +1,5 @@
 'use client';
-import type { PerMode } from '../../../../types/patreon.types';
+import type { PerMode } from '../../../../../types/patreon.types';
 import styles from './customization.module.scss';
 
 interface SolidPickerProps {

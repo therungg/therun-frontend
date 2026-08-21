@@ -8,9 +8,9 @@ import { buildPatronStyle } from '~src/components/patreon/patron-style';
 import { TwitchLoginButton } from '~src/components/twitch/TwitchLoginButton';
 import { BunnyIcon } from '~src/icons/bunny-icon';
 import { CheckmarkIcon } from '~src/icons/checkmark-icon';
-import type { PatronPreferences } from '../../../types/patreon.types';
-import type { User } from '../../../types/session.types';
-import styles from './change-appearance.module.scss';
+import type { PatronPreferences } from '../../../../types/patreon.types';
+import type { User } from '../../../../types/session.types';
+import styles from './patreon.module.scss';
 
 const DEMO_PREFS: PatronPreferences = {
     hide: false,
@@ -60,13 +60,13 @@ export const LoginWithPatreon = ({
             <div className={styles.invitePage}>
                 <div className={styles.loginPrompt}>
                     To connect your Patreon account, login with Twitch first.
-                    <TwitchLoginButton returnTo="/change-appearance" />
+                    <TwitchLoginButton returnTo="/settings/patreon" />
                 </div>
             </div>
         );
     }
 
-    const redirectUri = `${baseUrl || 'https://therun.gg'}%2fchange-appearance`;
+    const redirectUri = `${baseUrl || 'https://therun.gg'}%2fsettings%2fpatreon`;
     const patreonOAuthUrl = `https://patreon.com/oauth2/authorize?response_type=code&client_id=QLyBxIC3dSTxWEVqx_YJZCJSHHWxyt3LhE8Nue4_aOXmYlMsq9whaL2-VcqyCf1n&scope=identity&redirect_uri=${redirectUri}`;
 
     const demoStyle = buildPatronStyle(DEMO_PREFS, 3, 'dark');

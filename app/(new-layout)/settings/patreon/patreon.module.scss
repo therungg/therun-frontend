@@ -1,4 +1,4 @@
-@use '../styles/design-tokens' as *;
+@use '../../styles/design-tokens' as *;
 
 // Invite page (non-patron view)
 .invitePage {
@@ -304,4 +304,24 @@
     &:hover {
         box-shadow: $shadow-md;
     }
+}
+
+.statusCard {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+    align-items: center;
+    padding: 1.25rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.75rem;
+}
+.statusTitle {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+.statusActions {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
 }
