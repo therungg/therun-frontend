@@ -1,6 +1,6 @@
 # User settings — design
 
-Date: 2026-08-21. Status: approved, not implemented.
+Date: 2026-08-21. Status: IMPLEMENTED on branch `user-settings` (frontend) + `users-bearer-auth` merged to backend main (deployed) — 2026-08-21.
 
 ## Goal
 
@@ -85,3 +85,9 @@ Sequencing: backend branch → push to main (auto-deploys) → frontend branch. 
 - Frontend: vitest for `nav-model`, profile zod schema, action error mapping.
 - Browser pass on dev server: every section, every redirect, Patreon link round-trip, `/manage` console unchanged.
 - Typecheck/lint gated on diff vs main baseline.
+
+## Handoffs (post-implementation)
+
+1. **Patreon OAuth redirect URI** — the Patreon developer portal's registered `redirect_uri` must be changed to `https://therun.gg/settings/patreon`. Until then, "Link your Patreon account" fails with a redirect_uri mismatch in prod. (Code side is done: OAuth init + code-exchange both point at `/settings/patreon`.)
+2. **Backend follow-up** — once this frontend branch is deployed and no caller uses the legacy `{sessionId}-{username}` composite path, delete the composite fallback in `therun/src/api/users/resolve-user-target.ts`.
+3. **Run-level composite paths** — `DELETE`/`PUT /users/{user}/{game}/{run}` still use the composite form; out of scope for this feature.
