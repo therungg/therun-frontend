@@ -2,7 +2,7 @@
 import type { LegacyPresetEntry } from '~src/components/patreon/legacy-preset-map';
 import { LEGACY_PRESETS } from '~src/components/patreon/legacy-preset-map';
 import { buildPatronStyle } from '~src/components/patreon/patron-style';
-import type { PatronPreferences } from '../../../../types/patreon.types';
+import type { PatronPreferences } from '../../../../../types/patreon.types';
 import styles from './customization.module.scss';
 
 const CURATED_IDS = [

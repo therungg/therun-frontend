@@ -2,7 +2,7 @@
 import type {
     PatronPreferences,
     PerMode,
-} from '../../../../types/patreon.types';
+} from '../../../../../types/patreon.types';
 import styles from './customization.module.scss';
 import { TierLock } from './tier-lock';
 

@@ -1,4 +1,4 @@
-import type { PatronPreferences } from '../../../../types/patreon.types';
+import type { PatronPreferences } from '../../../../../types/patreon.types';
 
 const HEX = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
 

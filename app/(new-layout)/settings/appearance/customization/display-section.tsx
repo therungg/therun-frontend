@@ -1,7 +1,7 @@
 'use client';
 import Switch from 'react-switch';
 import { PatreonBunnySvg } from '~app/(new-layout)/patron/patreon-info';
-import type { PatronPreferences } from '../../../../types/patreon.types';
+import type { PatronPreferences } from '../../../../../types/patreon.types';
 import styles from './customization.module.scss';
 
 interface DisplaySectionProps {

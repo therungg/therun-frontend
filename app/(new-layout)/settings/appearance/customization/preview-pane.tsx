@@ -5,7 +5,7 @@ import {
     buildPatronStyle,
     resolveFill,
 } from '~src/components/patreon/patron-style';
-import type { PatronPreferences } from '../../../../types/patreon.types';
+import type { PatronPreferences } from '../../../../../types/patreon.types';
 import styles from './customization.module.scss';
 
 interface PreviewPaneProps {

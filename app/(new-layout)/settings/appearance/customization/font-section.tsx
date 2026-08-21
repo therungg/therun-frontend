@@ -1,5 +1,5 @@
 'use client';
-import type { PatronPreferences } from '../../../../types/patreon.types';
+import type { PatronPreferences } from '../../../../../types/patreon.types';
 import styles from './customization.module.scss';
 import { TierLock } from './tier-lock';
 
