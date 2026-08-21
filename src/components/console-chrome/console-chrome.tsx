@@ -2,27 +2,33 @@
 
 import clsx from 'clsx';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
+import type { Icon as IconType } from 'react-bootstrap-icons';
 import { List } from 'react-bootstrap-icons';
+import { useDialogBehavior } from '~app/(new-layout)/games-v2/[game]/shared/board-dialog';
 import Link from '~src/components/link';
-import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
-import { BackLink } from '../../shared/back-link';
-import { useDialogBehavior } from '../../shared/board-dialog';
 import styles from './console.module.scss';
 import { ConsoleSidebar } from './console-sidebar';
-import type { NavGroup, NavItemId } from './nav-model';
+import type { NavGroup } from './nav-types';
+
+export interface ConsoleHeader {
+    eyebrow: string; // "Admin" | "Settings"
+    title: string; // game display name | "@username"
+    titleHref: string; // where the title links
+    image?: string | null; // optional 3:4 cover (manage passes game.image)
+    actions?: ReactNode; // right-hand slot (manage: "All your games" + BackLink)
+}
 
 interface Props {
-    game: ResolvedGame;
+    header: ConsoleHeader;
     groups: NavGroup[];
-    activeItem: NavItemId | null;
-    onNavigate: (id: NavItemId) => void;
-    attentionCount: number;
+    icons: Record<string, IconType>;
+    activeItem: string | null;
+    onNavigate: (id: string) => void;
+    attentionCount?: number;
     /** True when one or more attention sources failed to load — the badge
      * count may be an undercount, not a confirmed total. */
     badgeDegraded?: boolean;
-    /** How many games this viewer moderates — the "All your games" link to
-     * the cross-game hub only shows when there's more than one. */
-    moderatedGamesCount?: number;
+    navAriaLabel?: string;
     children: ReactNode;
 }
 
@@ -33,13 +39,14 @@ interface Props {
  * Owns only the mobile-sidebar open state; everything else is controlled.
  */
 export function ConsoleChrome({
-    game,
+    header,
     groups,
+    icons,
     activeItem,
     onNavigate,
-    attentionCount,
+    attentionCount = 0,
     badgeDegraded = false,
-    moderatedGamesCount = 0,
+    navAriaLabel,
     children,
 }: Props) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -72,7 +79,7 @@ export function ConsoleChrome({
         return () => mq.removeEventListener('change', onChange);
     }, []);
 
-    const handleSelect = (id: NavItemId) => {
+    const handleSelect = (id: string) => {
         setSidebarOpen(false);
         onNavigate(id);
     };
@@ -93,10 +100,10 @@ export function ConsoleChrome({
                     >
                         <List size={18} aria-hidden="true" />
                     </button>
-                    {game.image && (
+                    {header.image && (
                         <img
                             className={styles.cover}
-                            src={game.image}
+                            src={header.image}
                             alt=""
                             width={44}
                             height={59}
@@ -104,30 +111,21 @@ export function ConsoleChrome({
                         />
                     )}
                     <div>
-                        <div className={styles.eyebrow}>Admin</div>
+                        <div className={styles.eyebrow}>{header.eyebrow}</div>
                         <h1 className={styles.title}>
                             <Link
-                                href={`/games-v2/${encodeURIComponent(game.name)}/manage`}
+                                href={header.titleHref}
                                 className={styles.titleLink}
                             >
-                                {game.display}
+                                {header.title}
                             </Link>
                         </h1>
                     </div>
-                    <div className={styles.headerActions}>
-                        {moderatedGamesCount > 1 && (
-                            <Link
-                                href="/games-v2/manage"
-                                className={styles.allGamesLink}
-                            >
-                                All your games
-                            </Link>
-                        )}
-                        <BackLink
-                            href={`/games-v2/${encodeURIComponent(game.name)}`}
-                            label="Back to leaderboard"
-                        />
-                    </div>
+                    {header.actions && (
+                        <div className={styles.headerActions}>
+                            {header.actions}
+                        </div>
+                    )}
                 </header>
 
                 <div className={styles.body}>
@@ -149,10 +147,12 @@ export function ConsoleChrome({
                         <div className={styles.sidebarInner}>
                             <ConsoleSidebar
                                 groups={groups}
+                                icons={icons}
                                 activeItem={activeItem}
                                 onSelect={handleSelect}
                                 attentionCount={attentionCount}
                                 badgeDegraded={badgeDegraded}
+                                ariaLabel={navAriaLabel}
                             />
                         </div>
                     </aside>

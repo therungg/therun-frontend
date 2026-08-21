@@ -3,12 +3,12 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
+import styles from '~src/components/console-chrome/console.module.scss';
 import type {
     BoardClaimRequest,
     BoardModRole,
 } from '../../../../../../../types/board-claims.types';
 import { PromptDialog } from '../../../shared/prompt-dialog';
-import styles from '../../console/console.module.scss';
 import {
     approveApplicationAction,
     denyApplicationAction,

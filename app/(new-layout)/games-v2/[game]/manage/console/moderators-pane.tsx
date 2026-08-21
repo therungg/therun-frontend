@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
+import styles from '~src/components/console-chrome/console.module.scss';
 import Link from '~src/components/link';
 import type {
     BoardModRole,
@@ -14,7 +15,6 @@ import {
 } from '../../setup/actions/manage-moderators.action';
 import { ConfirmDialog } from '../../shared/confirm-dialog';
 import kit from '../shared/form-kit.module.scss';
-import styles from './console.module.scss';
 
 interface Props {
     gameSlug: string;

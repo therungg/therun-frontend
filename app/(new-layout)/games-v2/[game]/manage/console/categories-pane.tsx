@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import styles from '~src/components/console-chrome/console.module.scss';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type { CategoryConfigRow } from '~src/lib/console/category-rows';
 import { previewCategories } from '~src/lib/console/preview-categories';
@@ -18,7 +19,6 @@ import { buildCategorySeed } from '../../setup/steps/category-seed';
 import type { ReorderChange } from '../game-tab/reorder-changes';
 import { AddCategoryDialog } from './add-category-dialog';
 import { BoardCategoriesTable } from './board-categories-table';
-import styles from './console.module.scss';
 
 interface Props {
     game: ResolvedGame;

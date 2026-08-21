@@ -4,6 +4,7 @@ import moment from 'moment';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
+import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type {
     ResolvedCategory,
@@ -26,7 +27,6 @@ import {
 } from '../../../../run-view/run-badges';
 import { BackLink } from '../../../../shared/back-link';
 import { RunnerDialog } from '../../../boards/runner-dialog';
-import consoleStyles from '../../../console/console.module.scss';
 import { ManualTimeVerdictRow } from '../../attention/manual-time-verdict-row';
 import { deleteRuleAction } from '../../rules/actions/delete-rule.action';
 import type { ModVerb, RunActionTarget } from '../../shared/action-model';
