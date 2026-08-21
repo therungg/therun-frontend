@@ -6,6 +6,7 @@ import { ProfileForm } from './profile-form';
 
 export default async function ProfileSettingsPage() {
     const session = await getSession();
+    if (!session.id || !session.username) return null;
     const userData = await getGlobalUser(session.username);
     return (
         <div className={styles.pane}>

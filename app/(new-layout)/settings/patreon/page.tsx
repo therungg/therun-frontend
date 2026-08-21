@@ -11,6 +11,7 @@ export default async function PatreonSettingsPage(props: {
 }) {
     const searchParams = await props.searchParams;
     const session = await getSession();
+    if (!session.id || !session.username) return null;
     const baseUrl = await getBaseUrl();
     const data = await getUserPatreonData(searchParams);
     const linkFailed = !!searchParams.code && !data;

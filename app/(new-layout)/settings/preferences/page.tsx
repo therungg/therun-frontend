@@ -6,6 +6,7 @@ import { GeneralPreferences } from './general-preferences';
 
 export default async function PreferencesPage() {
     const session = await getSession();
+    if (!session.id || !session.user) return null;
     const prefs = await getUserPreferences(session.user);
     return (
         <div className={styles.pane}>

@@ -8,6 +8,7 @@ import styles from './livesplit.module.scss';
 
 export default async function Livesplit() {
     const session = await getSession();
+    if (!session.id || !session.username) return null;
     const uploadKey = await getUploadKey(session.username, session.id);
 
     return (
