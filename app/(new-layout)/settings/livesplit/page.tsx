@@ -1,37 +1,28 @@
-import { getBaseUrl } from '~src/actions/base-url.action';
 import { getSession } from '~src/actions/session.action';
 import Link from '~src/components/link';
+import { getUploadKey } from '~src/lib/get-upload-key';
 import buildMetadata from '~src/utils/metadata';
+import paneStyles from '../settings.module.scss';
 import { CopyUploadKey } from './copy-upload-key.component';
 import styles from './livesplit.module.scss';
 
 export default async function Livesplit() {
     const session = await getSession();
-    const baseUrl = await getBaseUrl();
-    const data = await fetch(
-        `${baseUrl}/api/users/${session.id}-${session.username}/upload-key`,
-    );
-    const { result } = (await data.json()) as { result: string };
+    const uploadKey = await getUploadKey(session.username, session.id);
 
     return (
-        <div className={styles.page}>
-            <div className={styles.header}>
-                <h1 className={styles.pageTitle}>LiveSplit Key</h1>
-                <p className={styles.subtitle}>
+        <div className={paneStyles.pane}>
+            <header className={paneStyles.paneHeader}>
+                <h1 className={paneStyles.paneTitle}>LiveSplit Key</h1>
+                <p className={paneStyles.paneLede}>
                     Connect LiveSplit to therun.gg for live tracking and
                     automatic uploads
                 </p>
-            </div>
+            </header>
 
-            {session.username ? (
-                <div className={styles.keyCard}>
-                    <CopyUploadKey uploadKey={result} />
-                </div>
-            ) : (
-                <div className={styles.loginPrompt}>
-                    Please log in to access your LiveSplit Key.
-                </div>
-            )}
+            <div className={styles.keyCard}>
+                <CopyUploadKey uploadKey={uploadKey} />
+            </div>
 
             <div className={styles.infoCard}>
                 <div className={styles.infoIcon}>⚡</div>
@@ -142,7 +133,7 @@ export default async function Livesplit() {
 }
 
 export const metadata = buildMetadata({
-    title: 'Your LiveSplit Key',
+    title: 'LiveSplit key',
     description:
         "Get your LiveSplit key to use in The Run's LiveSplit component from here.",
     index: false,
