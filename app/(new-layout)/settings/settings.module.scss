@@ -1,0 +1,32 @@
+.loginRequired {
+    max-width: 40rem;
+    margin: 4rem auto;
+    padding: 0 1rem;
+    text-align: center;
+    display: grid;
+    gap: 1rem;
+    justify-items: center;
+}
+
+// Shared page scaffolding for every section pane.
+.pane {
+    display: grid;
+    gap: 1.5rem;
+    max-width: 56rem;
+}
+
+.paneHeader {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.paneTitle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.paneLede {
+    margin: 0;
+    opacity: 0.75;
+}
