@@ -8,6 +8,7 @@ import { GlobalGameData } from '~app/(new-layout)/[username]/[game]/[run]/run';
 import { LeaderboardPbs } from '~app/(new-layout)/[username]/leaderboard-pbs';
 import { prepareSessions } from '~app/(new-layout)/[username]/prepare-sessions.component';
 import { getRunmap } from '~app/(new-layout)/[username]/runmap.component';
+import { SrcImportTab } from '~app/(new-layout)/[username]/src-import-tab';
 import { LiveRun } from '~app/(new-layout)/live/live.types';
 import { UserStats as UserRaceStats } from '~app/(new-layout)/races/races.types';
 import { Run, RunSession } from '~src/common/types';
@@ -51,6 +52,10 @@ export const UserProfile = ({
     rankings,
 }: UserPageProps) => {
     const session = useSession();
+    const isAdmin = !!session?.roles?.includes('admin');
+    const isOwnProfile =
+        !!session?.username &&
+        session.username.toLowerCase() === username.toLowerCase();
     const [useGameTime, setUseGameTime] = useState(
         hasGameTime && defaultGameTime,
     );
@@ -291,11 +296,20 @@ export const UserProfile = ({
                         withChat={true}
                     />
                 </Tab>
-                {rankings && rankings.length > 0 && (
+                {isAdmin && rankings && rankings.length > 0 && (
                     <Tab eventKey="rankings" title="Leaderboard PBs">
                         <Row>
                             <Col>
                                 <LeaderboardPbs rankings={rankings} />
+                            </Col>
+                        </Row>
+                    </Tab>
+                )}
+                {isAdmin && isOwnProfile && (
+                    <Tab eventKey="import" title="Import runs">
+                        <Row>
+                            <Col>
+                                <SrcImportTab />
                             </Col>
                         </Row>
                     </Tab>

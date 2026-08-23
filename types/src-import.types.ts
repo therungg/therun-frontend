@@ -137,3 +137,68 @@ export interface Paged<T> {
     items: T[];
     total: number;
 }
+
+// ---------------------------------------------------------------------------
+// User import ("import my own runs") — a distinct flow from the mod/board import
+// above. Backend: docs/frontend-guide-src-import.md ("User import (me/import)")
+// + therun `src/db/schema.ts`. Hand-mirrored; re-check on any schema change.
+// ---------------------------------------------------------------------------
+
+export type SrcUserImportStatus = 'queued' | 'running' | 'done' | 'failed';
+export type SrcUserImportPhase = 'fetch' | 'fanout' | 'done';
+
+/** Internal resume state — opaque to the FE, kept for completeness. */
+export interface SrcUserImportCheckpoint {
+    offset?: number;
+    direction?: 'asc' | 'desc';
+    gameIndex?: number;
+}
+
+/** One entry per SRC game the fan-out has visited so far, in srcGameId order. */
+export interface SrcUserImportGameResult {
+    srcGameId: string;
+    srcGameName: string;
+    therunGameId: number | null;
+    childJobId: number | null;
+    outcome: 'imported' | 'skipped' | 'failed';
+    /**
+     * Set when outcome !== 'imported'. Known values: 'game-busy',
+     * `plan-conflicts:<n>`, 'staging' (transient), or a raw error string.
+     */
+    reason: string | null;
+    imported: number;
+    skipped: number;
+    autoCreatedGame: boolean;
+}
+
+export interface SrcUserImportJob {
+    id: number;
+    userId: number;
+    srcUserId: string;
+    srcUserName: string;
+    status: SrcUserImportStatus;
+    phase: SrcUserImportPhase;
+    checkpoint: SrcUserImportCheckpoint | null;
+    gameResults: SrcUserImportGameResult[];
+    runsFetched: number;
+    gamesTotal: number;
+    gamesDone: number;
+    runsImported: number;
+    runsSkipped: number;
+    requestsMade: number;
+    error: string | null;
+    undoneAt: string | null;
+    startedAt: string | null;
+    finishedAt: string | null;
+    createdAt: string;
+}
+
+/** Whether the undo action is offered — exactly the gate the backend enforces. */
+export function canUndoImport(job: SrcUserImportJob | null): boolean {
+    return (
+        !!job &&
+        job.status === 'done' &&
+        job.undoneAt === null &&
+        job.gameResults.some((g) => g.outcome === 'imported')
+    );
+}
