@@ -25,9 +25,6 @@ export default async function AppearancePage(props: {
         <div className={styles.pane}>
             <header className={styles.paneHeader}>
                 <h1 className={styles.paneTitle}>Appearance</h1>
-                <p className={styles.paneLede}>
-                    How your name looks across the site.
-                </p>
             </header>
             {canCustomise ? (
                 <PatreonSettings

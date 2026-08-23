@@ -34,6 +34,64 @@ $rail: 3px; // severity spine / active accent width
     border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
 }
 
+// ---- Plain workspace variant (settings) --------------------
+// No contained frame box (it read as an invisible rectangle on the same-color
+// page); the console becomes header + a floating sidebar panel + content
+// cards, all sitting on the page canvas. Three clean elevation levels:
+// page → panel → recessed input.
+.plain {
+    .frame {
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        overflow: visible;
+    }
+
+    .header {
+        padding-inline: 0;
+        border-bottom: 0;
+    }
+
+    .body {
+        align-items: start;
+        column-gap: dt.$spacing-2xl;
+        padding-top: dt.$spacing-xl;
+    }
+
+    .sidebar {
+        border-right: 0;
+        border-radius: dt.$radius-lg;
+        border: 1px solid
+            var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
+        background: var(
+            --board-surface-bg,
+            color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-secondary-bg) 8%)
+        );
+        box-shadow: var(--board-surface-shadow, none);
+        padding: dt.$spacing-lg;
+    }
+
+    .content {
+        padding: 0;
+    }
+
+    @media (max-width: 768px) {
+        .header {
+            padding-inline: dt.$spacing-lg;
+        }
+        .body {
+            padding-top: dt.$spacing-md;
+        }
+        // Back to the full-height overlay drawer on mobile — undo the floating
+        // panel card treatment so it doesn't render as a rounded, shadowed
+        // sliver.
+        .sidebar {
+            border-radius: 0;
+            box-shadow: none;
+        }
+    }
+}
+
 .cover {
     width: 44px;
     height: 59px; // 3:4
@@ -60,6 +118,129 @@ $rail: 3px; // severity spine / active accent width
     display: flex;
     align-items: center;
     gap: dt.$spacing-lg;
+}
+
+// ---- Identity masthead (settings header) -------------------
+.identity {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-lg;
+    min-width: 0;
+}
+
+.identityAvatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: color-mix(in srgb, var(--bs-body-bg) 80%, var(--bs-secondary-bg));
+    box-shadow: 0 0 0 1px rgba(var(--bs-border-color-rgb), 0.6);
+
+    &[data-fallback] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--bs-secondary-color);
+    }
+}
+
+.identityBody {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.identityEyebrow {
+    @include board.board-eyebrow;
+}
+
+.identityName {
+    font-size: dt.$font-size-2xl;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.identityNameLink {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.identityMeta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+    margin-top: dt.$spacing-xs;
+    font-size: dt.$font-size-xs;
+}
+
+.identityFlag {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    color: var(--bs-secondary-color);
+
+    img {
+        width: 18px;
+        height: 13px;
+        border-radius: 2px;
+        object-fit: cover;
+        box-shadow: 0 0 0 1px rgba(var(--bs-border-color-rgb), 0.5);
+    }
+}
+
+.identityBadge {
+    display: inline-flex;
+    align-items: center;
+    font-size: dt.$font-size-2xs;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 2px dt.$spacing-sm;
+    border-radius: 999px;
+    border: 1px solid transparent;
+
+    &[data-tone='gold'] {
+        color: dt.$accent-gold;
+        border-color: color-mix(in srgb, #{dt.$accent-gold} 45%, transparent);
+        background: color-mix(in srgb, #{dt.$accent-gold} 12%, transparent);
+    }
+    &[data-tone='primary'] {
+        color: var(--bs-primary);
+        border-color: rgba(var(--bs-primary-rgb), 0.4);
+        background: rgba(var(--bs-primary-rgb), 0.1);
+    }
+    &[data-tone='muted'] {
+        color: var(--bs-secondary-color);
+        border-color: rgba(var(--bs-border-color-rgb), 0.7);
+        background: rgba(var(--bs-secondary-rgb), 0.1);
+    }
+}
+
+.identityProfileLink {
+    @include board.board-quiet-link;
+    margin-left: auto;
+    flex-shrink: 0;
+    white-space: nowrap;
+
+    @media (max-width: 640px) {
+        display: none;
+    }
 }
 
 .allGamesLink {

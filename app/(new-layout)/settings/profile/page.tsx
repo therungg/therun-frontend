@@ -9,12 +9,9 @@ export default async function ProfileSettingsPage() {
     if (!session.id || !session.username) return null;
     const userData = await getGlobalUser(session.username);
     return (
-        <div className={styles.pane}>
+        <div className={styles.paneWide}>
             <header className={styles.paneHeader}>
                 <h1 className={styles.paneTitle}>Profile</h1>
-                <p className={styles.paneLede}>
-                    What other runners see on your profile page.
-                </p>
             </header>
             <ProfileForm initial={userData} />
         </div>

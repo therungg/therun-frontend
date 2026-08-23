@@ -13,19 +13,23 @@ import {
 
 export function SettingsChrome({
     username,
+    identity,
     children,
 }: {
     username: string;
+    identity?: ReactNode;
     children: ReactNode;
 }) {
     const pathname = usePathname();
     const router = useRouter();
     return (
         <ConsoleChrome
+            plain
             header={{
                 eyebrow: 'Settings',
                 title: username,
                 titleHref: `/${encodeURIComponent(username)}`,
+                identity,
             }}
             groups={SETTINGS_GROUPS}
             icons={SETTINGS_ICONS}

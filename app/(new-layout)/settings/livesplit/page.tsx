@@ -28,7 +28,7 @@ export default async function Livesplit() {
             <div className={styles.infoCard}>
                 <div className={styles.infoIcon}>⚡</div>
                 <div>
-                    <div className={styles.infoTitle}>What does this do?</div>
+                    <div className={styles.infoTitle}>Your LiveSplit key</div>
                     <div className={styles.infoBody}>
                         Your LiveSplit key connects LiveSplit to therun.gg. Runs
                         are tracked live, and stats update automatically after
@@ -63,7 +63,7 @@ export default async function Livesplit() {
                             </div>
                             <div className={styles.stepBody}>
                                 Open Layout Settings → therun.gg tab → paste
-                                your key. Done!
+                                your key.
                             </div>
                         </div>
                     </div>
