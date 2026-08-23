@@ -14,7 +14,15 @@ export interface UserData {
     banned: false;
     moderatedGames: string[];
     pronouns: string;
-    socials: { youtube: string; twitter: string; twitch: string };
+    aka?: string;
+    bio?: string;
+    country?: string;
+    socials: {
+        youtube: string;
+        twitter: string;
+        twitch: string;
+        bluesky?: string;
+    };
     timezone: string;
     preferences: unknown;
     searchName: string;

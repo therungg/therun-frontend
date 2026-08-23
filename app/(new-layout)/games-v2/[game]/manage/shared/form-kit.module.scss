@@ -1,12 +1,17 @@
 @use '../../../../styles/design-tokens' as dt;
 @use '../../../../styles/board' as board;
 
+// Each section is its own object — the app's theme-tuned panel surface (a real
+// step above the canvas in dark, a white card carried by shadow in light), so a
+// form reads as distinct blocks rather than one undivided wall. Separation is
+// owned here (margin) exactly as the old divider was, so no consumer relies on
+// a parent gap.
 .section {
-    padding-block: dt.$spacing-xl;
-    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.3);
+    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
+    margin-bottom: dt.$spacing-lg;
 
     &:last-child {
-        border-bottom: 0;
+        margin-bottom: 0;
     }
 }
 

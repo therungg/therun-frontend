@@ -1,9 +1,9 @@
 'use client';
 
+import { AttentionBadge } from '~src/components/console-chrome/attention-badge';
+import styles from '~src/components/console-chrome/console.module.scss';
+import { NAV_ICON } from '~src/components/console-chrome/nav-icons';
 import { CONCEPT_TILE, type TileConceptId } from '~src/lib/console/vocabulary';
-import { AttentionBadge } from './attention-badge';
-import styles from './console.module.scss';
-import { NAV_ICON } from './nav-icons';
 import type { NavGroup, NavItemId } from './nav-model';
 
 interface Props {

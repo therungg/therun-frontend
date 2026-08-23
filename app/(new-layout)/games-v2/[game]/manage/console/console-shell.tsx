@@ -2,6 +2,10 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import styles from '~src/components/console-chrome/console.module.scss';
+import { ConsoleChrome } from '~src/components/console-chrome/console-chrome';
+import { NAV_ICON } from '~src/components/console-chrome/nav-icons';
+import Link from '~src/components/link';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type { CategoryConfigRow } from '~src/lib/console/category-rows';
 import { legacyPaneRedirect } from '~src/lib/console/legacy-panes';
@@ -20,12 +24,11 @@ import type {
 } from '../../../../../../types/leaderboards.types';
 import type { LevelTemplate } from '../../../../../../types/levels.types';
 import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
+import { BackLink } from '../../shared/back-link';
 import type { ReorderChange } from '../game-tab/reorder-changes';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import { HistoryDrawer } from '../moderation/configure/history-drawer';
 import { BoardHealthCard } from './board-health-card';
-import styles from './console.module.scss';
-import { ConsoleChrome } from './console-chrome';
 import { ContentRouter } from './content-router';
 import type { GameDetailsData } from './game-details-pane';
 import { historyCloseQuery } from './history-close-query';
@@ -283,13 +286,35 @@ export function ConsoleShell({
     return (
         <>
             <ConsoleChrome
-                game={game}
+                header={{
+                    eyebrow: 'Admin',
+                    title: game.display,
+                    titleHref: `/games-v2/${encodeURIComponent(game.name)}/manage`,
+                    image: game.image,
+                    actions: (
+                        <>
+                            {moderatedGamesCount > 1 && (
+                                <Link
+                                    href="/games-v2/manage"
+                                    className={styles.allGamesLink}
+                                >
+                                    All your games
+                                </Link>
+                            )}
+                            <BackLink
+                                href={`/games-v2/${encodeURIComponent(game.name)}`}
+                                label="Back to leaderboard"
+                            />
+                        </>
+                    ),
+                }}
+                icons={NAV_ICON}
+                navAriaLabel="Game admin console"
                 groups={groups}
                 activeItem={activeSidebarItem}
-                onNavigate={handleNavigate}
+                onNavigate={(id) => handleNavigate(id as NavItemId)}
                 attentionCount={attentionItems.length}
                 badgeDegraded={degradedSources.length > 0}
-                moderatedGamesCount={moderatedGamesCount}
             >
                 {showSetupCard(groups, activeItem) &&
                     (setupCompleteness &&

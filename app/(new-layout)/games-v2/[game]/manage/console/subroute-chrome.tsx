@@ -2,8 +2,12 @@
 
 import { useRouter } from 'next/navigation';
 import { type ReactNode, useMemo } from 'react';
+import styles from '~src/components/console-chrome/console.module.scss';
+import { ConsoleChrome } from '~src/components/console-chrome/console-chrome';
+import { NAV_ICON } from '~src/components/console-chrome/nav-icons';
+import Link from '~src/components/link';
 import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
-import { ConsoleChrome } from './console-chrome';
+import { BackLink } from '../../shared/back-link';
 import { buildNav, type NavFlags, type NavItemId } from './nav-model';
 
 interface Props {
@@ -56,13 +60,35 @@ export function SubrouteChrome({
 
     return (
         <ConsoleChrome
-            game={game}
+            header={{
+                eyebrow: 'Admin',
+                title: game.display,
+                titleHref: `/games-v2/${encodeURIComponent(game.name)}/manage`,
+                image: game.image,
+                actions: (
+                    <>
+                        {moderatedGamesCount > 1 && (
+                            <Link
+                                href="/games-v2/manage"
+                                className={styles.allGamesLink}
+                            >
+                                All your games
+                            </Link>
+                        )}
+                        <BackLink
+                            href={`/games-v2/${encodeURIComponent(game.name)}`}
+                            label="Back to leaderboard"
+                        />
+                    </>
+                ),
+            }}
+            icons={NAV_ICON}
+            navAriaLabel="Game admin console"
             groups={groups}
             activeItem={activeItem}
-            onNavigate={navigate}
+            onNavigate={(id) => navigate(id as NavItemId)}
             attentionCount={attentionCount}
             badgeDegraded={badgeDegraded}
-            moderatedGamesCount={moderatedGamesCount}
         >
             {children}
         </ConsoleChrome>

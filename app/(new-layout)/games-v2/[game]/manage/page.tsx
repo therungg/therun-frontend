@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { getSession } from '~src/actions/session.action';
+import styles from '~src/components/console-chrome/console.module.scss';
 import { listGameBoardClaims } from '~src/lib/board-claims';
 import { loadConsoleCatalog } from '~src/lib/category-mgmt';
 import {
@@ -37,7 +38,6 @@ import type {
 } from '../../../../../types/board-claims.types';
 import type { VariableRow } from '../../../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../../../types/moderation.types';
-import styles from './console/console.module.scss';
 import { ConsoleShell } from './console/console-shell';
 import type { GameDetailsData } from './console/game-details-pane';
 import { loadModDoorClaim, ModDoor } from './mod-door';

@@ -1,5 +1,6 @@
 'use client';
 
+import styles from '~src/components/console-chrome/console.module.scss';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import { previewCategories } from '~src/lib/console/preview-categories';
 import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
@@ -10,7 +11,6 @@ import type {
 } from '../../../../../../types/leaderboards.types';
 import { InvalidateCacheButton } from '../../header/invalidate-cache-button';
 import { CategoryBandPreview } from '../../setup/steps/category-band-preview';
-import styles from '../console/console.module.scss';
 import { GroupsSection } from './groups-section';
 import groupStyles from './groups-section.module.scss';
 

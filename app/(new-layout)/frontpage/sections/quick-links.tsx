@@ -46,7 +46,7 @@ function getLinks(session: { user?: string; roles?: string[] }): QuickLink[] {
             : []),
         isPatron
             ? {
-                  href: '/change-appearance',
+                  href: '/settings/appearance',
                   label: 'Change your Appearance',
                   icon: FaPaintbrush,
                   iconColor: '#e091c9',
@@ -65,7 +65,7 @@ function getLinks(session: { user?: string; roles?: string[] }): QuickLink[] {
             featured: true,
         },
         {
-            href: '/stories/manage',
+            href: '/settings/story-mode',
             label: 'Set up Story Mode Twitch Bot',
             icon: FaRobot,
             iconColor: '#a78bfa',

@@ -1,8 +1,8 @@
 import { Check2, Dot } from 'react-bootstrap-icons';
+import styles from '~src/components/console-chrome/console.module.scss';
 import Link from '~src/components/link';
 import type { BoardCompleteness } from '~src/lib/setup/completeness';
 import { SETUP_STEP_LABELS } from '~src/lib/setup/steps';
-import styles from './console.module.scss';
 
 interface Props {
     gameSlug: string;

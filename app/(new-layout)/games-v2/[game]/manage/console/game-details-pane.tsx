@@ -3,10 +3,10 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
+import styles from '~src/components/console-chrome/console.module.scss';
 import type { GameIdentifiers, GameMetadata } from '~src/lib/game-mgmt';
 import { GameDetailsForm } from '../../setup/game-details-form';
 import kit from '../shared/form-kit.module.scss';
-import styles from './console.module.scss';
 
 export interface GameDetailsData {
     identifiers: GameIdentifiers;

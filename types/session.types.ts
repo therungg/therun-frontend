@@ -9,6 +9,9 @@ export interface User {
     adminedGames?: string[];
     sessionError?: string;
     pronouns?: string;
+    aka?: string;
+    bio?: string;
+    country?: string;
 
     username: string;
     createdAt: string;
@@ -17,7 +20,12 @@ export interface User {
     lastLogin: string;
     login: string;
     banned: false;
-    socials: { youtube: string; twitter: string; twitch: string };
+    socials: {
+        youtube: string;
+        twitter: string;
+        twitch: string;
+        bluesky?: string;
+    };
     timezone: string;
     preferences: UserPreferences;
     searchName: string;

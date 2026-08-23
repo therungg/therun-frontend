@@ -168,7 +168,7 @@ function HeroSection({ session }: { session: { username: string } }) {
                 {session.username && (
                     <p className={styles.heroClaim}>
                         Already a supporter?{' '}
-                        <a href="/change-appearance">Claim your perks →</a>
+                        <a href="/settings/appearance">Claim your perks →</a>
                     </p>
                 )}
             </div>
@@ -533,7 +533,7 @@ function FinalCta({ session }: { session: { username: string } }) {
                 {session.username && (
                     <p className={styles.finalCtaClaim}>
                         Already supporting?{' '}
-                        <a href="/change-appearance">Claim your perks →</a>
+                        <a href="/settings/appearance">Claim your perks →</a>
                     </p>
                 )}
             </div>
