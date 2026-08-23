@@ -15,18 +15,31 @@
     max-width: 56rem;
 }
 
+// Wider variant for panes that carry a companion rail (profile: form +
+// live-preview), so the two columns reach the frame edge instead of leaving
+// a dead right gutter.
+.paneWide {
+    display: grid;
+    gap: 1.5rem;
+    max-width: 76rem;
+}
+
 .paneHeader {
     display: grid;
-    gap: 0.25rem;
+    gap: 0.35rem;
 }
 
 .paneTitle {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
     margin: 0;
 }
 
 .paneLede {
     margin: 0;
-    opacity: 0.75;
+    font-size: 0.9rem;
+    color: var(--bs-secondary-color);
+    max-width: 60ch;
 }

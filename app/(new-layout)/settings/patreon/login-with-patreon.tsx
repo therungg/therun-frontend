@@ -75,11 +75,11 @@ export const LoginWithPatreon = ({
         <div className={styles.invitePage}>
             <div className={styles.inviteHeader}>
                 <BunnyIcon size={48} />
-                <h1>Make your name unforgettable</h1>
+                <h1>Custom name colors</h1>
                 <p className={styles.inviteSubtitle}>
-                    Support therun.gg and stand out on every leaderboard,
-                    profile, and run — animated gradients, custom colors, bold
-                    styles, and more.
+                    Become a Patron to get animated gradients, custom colors,
+                    and bold styles for your name across leaderboards, profiles,
+                    and runs.
                 </p>
             </div>
 
@@ -123,8 +123,8 @@ export const LoginWithPatreon = ({
                     <div className={styles.inviteCardPrimary}>
                         <h3>Become a Patron</h3>
                         <p>
-                            Support therun.gg and unlock visual perks — the site
-                            will always be free and without ads.
+                            therun.gg is free and always will be. Patrons keep
+                            it running and get these perks in return.
                         </p>
                         <Link
                             target="_blank"

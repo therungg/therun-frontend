@@ -11,10 +11,6 @@ export default async function StoryModeSettingsPage() {
         <div className={styles.pane}>
             <header className={styles.paneHeader}>
                 <h1 className={styles.paneTitle}>Story Mode</h1>
-                <p className={styles.paneLede}>
-                    Configure how therun.gg Twitch bot narrates your runs with
-                    live commentary and stats.
-                </p>
             </header>
             <ManageStories />
         </div>

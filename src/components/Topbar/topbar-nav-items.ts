@@ -19,10 +19,7 @@ export const competeItems: NavItem[] = [
 ];
 
 // Tools group — only shown when logged in
-export const toolsItems: NavItem[] = [
-    { href: '/upload', label: 'Upload' },
-    { href: '/settings', label: 'Settings' },
-];
+export const toolsItems: NavItem[] = [{ href: '/upload', label: 'Upload' }];
 
 export const aboutItems: NavItem[] = [
     { href: '/about', label: 'About' },

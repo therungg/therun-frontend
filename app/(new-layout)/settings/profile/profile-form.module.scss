@@ -1,33 +1,201 @@
-.form {
+@use '../../styles/design-tokens' as dt;
+@use '../../styles/board' as board;
+
+// Two columns: the form, and a sticky live-preview rail that fills what used
+// to be dead space on the right. Collapses to a single column on narrow
+// viewports (rail drops below the form).
+.layout {
+    @include board.board-page-columns;
+}
+.formCol {
+    min-width: 0;
     display: grid;
-    gap: 1.5rem;
+    gap: 0; // section separation comes from FormSection's own margin
+}
+.previewCol {
+    min-width: 0;
+
+    @media (max-width: 991.98px) {
+        order: -1; // above the form when stacked, so the mirror is seen first
+    }
 }
 .grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem;
+    gap: dt.$spacing-lg;
     @media (max-width: 640px) {
         grid-template-columns: 1fr;
     }
 }
 .field {
     display: grid;
-    gap: 0.35rem;
+    gap: dt.$spacing-xs;
     span {
-        font-size: 0.85rem;
-        font-weight: 600;
+        @include board.board-dialog-field-label;
+        margin-bottom: 0;
     }
     input,
     select,
     textarea {
         width: 100%;
-        padding: 0.5rem 0.65rem;
-        border-radius: 0.5rem;
-        border: 1px solid var(--bs-border-color);
-        background: var(--bs-body-bg);
-        color: inherit;
+        padding: 0.55rem 0.7rem;
+        font-size: dt.$font-size-sm;
+        border: 1px solid rgba(var(--bs-border-color-rgb), 0.75);
+        border-radius: dt.$radius-md;
+        // Recessed: the field sits a clear step BELOW the card surface (the
+        // app's theme-tuned recess color), so it reads as an input, not text.
+        background: var(
+            --board-recess-bg,
+            color-mix(in srgb, var(--bs-body-bg) 85%, var(--bs-secondary-bg))
+        );
+        color: var(--bs-body-color);
+        transition: border-color dt.$transition-fast,
+            box-shadow dt.$transition-fast;
+
+        &:hover {
+            border-color: rgba(var(--bs-border-color-rgb), 1);
+        }
+
+        &:focus,
+        &:focus-visible {
+            outline: 0;
+            border-color: var(--bs-primary);
+            box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+        }
+
+        &::placeholder {
+            color: var(--bs-tertiary-color);
+        }
+    }
+    textarea {
+        resize: vertical;
     }
 }
 .full {
     grid-column: 1 / -1;
+}
+
+// ---- Live preview rail --------------------------------------
+.previewWrap {
+    position: sticky;
+    top: dt.$spacing-lg;
+    display: grid;
+    gap: dt.$spacing-sm;
+}
+
+.previewLabel {
+    @include board.board-eyebrow;
+}
+
+.previewCard {
+    @include board.board-surface(dt.$spacing-lg);
+    display: grid;
+    gap: dt.$spacing-md;
+}
+
+.previewTop {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+}
+
+.previewAvatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 1px rgba(var(--bs-border-color-rgb), 0.6);
+
+    &[data-fallback] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--bs-secondary-color);
+        background: color-mix(
+            in srgb,
+            var(--bs-body-bg) 80%,
+            var(--bs-secondary-bg)
+        );
+    }
+}
+
+.previewIdent {
+    min-width: 0;
+}
+
+.previewName {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-md;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.previewAka {
+    font-size: dt.$font-size-xs;
+    font-weight: 500;
+    color: var(--bs-secondary-color);
+}
+
+.previewSub {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+    margin-top: dt.$spacing-xs;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.previewFlag {
+    width: 16px;
+    height: 12px;
+    border-radius: 2px;
+    object-fit: cover;
+    box-shadow: 0 0 0 1px rgba(var(--bs-border-color-rgb), 0.5);
+}
+
+.previewPronouns {
+    &::before {
+        content: '·';
+        margin-right: dt.$spacing-sm;
+        color: var(--bs-tertiary-color);
+    }
+}
+
+.previewBio {
+    margin: 0;
+    font-size: dt.$font-size-sm;
+    line-height: 1.45;
+    color: var(--bs-body-color);
+}
+
+.previewSocials {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs;
+}
+
+.previewChip {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-2xs;
+    font-weight: 600;
+    padding: 2px dt.$spacing-sm;
+    border-radius: 999px;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    color: var(--bs-secondary-color);
+}
+
+.previewCaption {
+    margin: 0;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
 }

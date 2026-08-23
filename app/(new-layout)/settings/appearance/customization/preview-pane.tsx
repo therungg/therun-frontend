@@ -57,9 +57,6 @@ export function PreviewPane({
 
             <div className={styles.livePreviewLabel}>
                 <span>Live page preview</span>
-                <span className={styles.livePreviewLabelHint}>
-                    — how your card looks on /live
-                </span>
             </div>
             <div
                 className={styles.liveCard}
@@ -86,12 +83,6 @@ export function PreviewPane({
                 </div>
                 <span className={styles.liveCardTimer}>1:41:23</span>
             </div>
-            {!hidden && (
-                <div className={styles.livePreviewCaption}>
-                    Visitors see these colors next to your name and card — a
-                    signal you support therun.gg.
-                </div>
-            )}
         </>
     );
 }

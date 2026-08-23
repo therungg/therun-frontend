@@ -161,9 +161,6 @@ export default function PatreonSettings({
             )}
             <div className={styles.header}>
                 <h1 className={styles.title}>Nameplate</h1>
-                <p className={styles.subtitle}>
-                    Customize how your username appears across the site.
-                </p>
             </div>
             <TierOverview currentTier={effectiveTier} />
             {hadLegacy && !legacyBannerDismissed && (

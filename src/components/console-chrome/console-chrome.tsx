@@ -16,6 +16,10 @@ export interface ConsoleHeader {
     titleHref: string; // where the title links
     image?: string | null; // optional 3:4 cover (manage passes game.image)
     actions?: ReactNode; // right-hand slot (manage: "All your games" + BackLink)
+    // Optional identity masthead. When present it replaces the eyebrow+title
+    // stack (settings passes <ConsoleIdentity/>); manage/admin omits it and
+    // keeps today's header verbatim.
+    identity?: ReactNode;
 }
 
 interface Props {
@@ -29,6 +33,10 @@ interface Props {
      * count may be an undercount, not a confirmed total. */
     badgeDegraded?: boolean;
     navAriaLabel?: string;
+    /** Settings uses the "plain" workspace look — no outer frame box, the
+     * sidebar becomes a floating panel on the page canvas. Manage/admin omit
+     * it and keep the contained framed console. */
+    plain?: boolean;
     children: ReactNode;
 }
 
@@ -47,6 +55,7 @@ export function ConsoleChrome({
     attentionCount = 0,
     badgeDegraded = false,
     navAriaLabel,
+    plain = false,
     children,
 }: Props) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -85,7 +94,7 @@ export function ConsoleChrome({
     };
 
     return (
-        <div className={styles.shell}>
+        <div className={clsx(styles.shell, plain && styles.plain)}>
             <div className={styles.frame}>
                 <header className={styles.header}>
                     <button
@@ -110,17 +119,23 @@ export function ConsoleChrome({
                             loading="eager"
                         />
                     )}
-                    <div>
-                        <div className={styles.eyebrow}>{header.eyebrow}</div>
-                        <h1 className={styles.title}>
-                            <Link
-                                href={header.titleHref}
-                                className={styles.titleLink}
-                            >
-                                {header.title}
-                            </Link>
-                        </h1>
-                    </div>
+                    {header.identity ? (
+                        header.identity
+                    ) : (
+                        <div>
+                            <div className={styles.eyebrow}>
+                                {header.eyebrow}
+                            </div>
+                            <h1 className={styles.title}>
+                                <Link
+                                    href={header.titleHref}
+                                    className={styles.titleLink}
+                                >
+                                    {header.title}
+                                </Link>
+                            </h1>
+                        </div>
+                    )}
                     {header.actions && (
                         <div className={styles.headerActions}>
                             {header.actions}

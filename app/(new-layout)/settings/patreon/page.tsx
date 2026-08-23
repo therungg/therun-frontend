@@ -20,9 +20,6 @@ export default async function PatreonSettingsPage(props: {
         <div className={styles.pane}>
             <header className={styles.paneHeader}>
                 <h1 className={styles.paneTitle}>Patreon</h1>
-                <p className={styles.paneLede}>
-                    Your supporter status and account link.
-                </p>
             </header>
             {data?.tier ? (
                 <PatreonStatus tier={data.tier} />
