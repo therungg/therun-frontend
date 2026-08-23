@@ -1,5 +1,5 @@
-import UploadKey from '~app/(new-layout)/upload-key/page';
+import Livesplit from '~app/(new-layout)/settings/livesplit/page';
 
 export default async function MoistSetupPage() {
-    return <UploadKey />;
+    return <Livesplit />;
 }

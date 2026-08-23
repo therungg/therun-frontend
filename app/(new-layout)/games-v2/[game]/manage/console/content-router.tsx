@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import styles from '~src/components/console-chrome/console.module.scss';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type { CategoryConfigRow } from '~src/lib/console/category-rows';
 import type {
@@ -28,7 +29,6 @@ import { ActiveBans } from '../moderation/configure/active-bans';
 import { ReassignPane } from '../reassignments/reassign-pane';
 import { SrcImportPane } from '../src-import/src-import-pane';
 import { CategoriesPane } from './categories-pane';
-import styles from './console.module.scss';
 import type { GameDetailsData } from './game-details-pane';
 import { GameDetailsPane } from './game-details-pane';
 import { ModeratorsPane } from './moderators-pane';

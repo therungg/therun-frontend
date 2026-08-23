@@ -300,7 +300,11 @@ export function MobileMenu({ username, featuredPatrons }: MobileMenuProps) {
                 <div className={styles.sections}>
                     {renderSection('Explore', exploreItems)}
                     {renderSection('Compete', competeItems)}
-                    {username && renderSection('Tools', toolsItems)}
+                    {username &&
+                        renderSection('Tools', [
+                            ...toolsItems,
+                            { href: '/settings', label: 'Settings' },
+                        ])}
                     <Can I="view-restricted" a="admins">
                         {adminSection}
                     </Can>

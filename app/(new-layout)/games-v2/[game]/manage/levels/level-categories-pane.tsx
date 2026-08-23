@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { createLevelTemplateAction } from '~src/actions/levels/create-level-template.action';
 import { levelOpAction } from '~src/actions/levels/level-op.action';
+import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import Link from '~src/components/link';
 import type { PrimaryTiming } from '~src/lib/category-mgmt';
-import consoleStyles from '../console/console.module.scss';
 import { InlineError } from '../shared/form-kit';
 import kit from '../shared/form-kit.module.scss';
 import { updateVisibilityAction } from '../visibility/actions/update-visibility.action';

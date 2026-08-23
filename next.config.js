@@ -26,6 +26,26 @@ const nextConfig = {
     async redirects() {
         return [
             {
+                source: '/change-appearance',
+                destination: '/settings/appearance',
+                permanent: false,
+            },
+            {
+                source: '/livesplit',
+                destination: '/settings/livesplit',
+                permanent: false,
+            },
+            {
+                source: '/upload-key',
+                destination: '/settings/livesplit',
+                permanent: false,
+            },
+            {
+                source: '/stories/manage',
+                destination: '/settings/story-mode',
+                permanent: false,
+            },
+            {
                 source: '/game/:path*',
                 destination: '/games/:path*',
                 permanent: true,

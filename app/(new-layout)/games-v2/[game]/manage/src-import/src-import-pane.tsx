@@ -7,9 +7,9 @@ import {
     useState,
     useTransition,
 } from 'react';
+import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 import type { SrcImportJob } from '../../../../../../types/src-import.types';
-import consoleStyles from '../console/console.module.scss';
 import { InlineError } from '../shared/form-kit';
 import kit from '../shared/form-kit.module.scss';
 import { ReviewTabs } from './review-tabs';

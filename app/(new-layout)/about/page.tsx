@@ -105,7 +105,7 @@ const featureGroups: FeatureGroup[] = [
                 title: 'Story Mode',
                 description:
                     'Automated narrative messages posted directly in your Twitch chat as you run. Your viewers get live commentary on splits, PBs, and milestones. Customize tone, pronouns, and language to match your stream.',
-                href: '/stories/manage',
+                href: '/settings/story-mode',
                 linkText: 'Manage stories',
             },
             {
@@ -121,7 +121,7 @@ const featureGroups: FeatureGroup[] = [
                 title: 'Appearance Customization',
                 description:
                     'Patreon supporters get a bunny badge and a custom name color on their profile. A small way to stand out and support the site.',
-                href: '/change-appearance',
+                href: '/settings/appearance',
                 linkText: 'Customize',
             },
             {

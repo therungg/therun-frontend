@@ -2,26 +2,21 @@
 
 import { hasFlag } from 'country-flag-icons';
 import Image from 'next/image';
-import React, { useState } from 'react';
-import { Form } from 'react-bootstrap';
+import React from 'react';
 import {
     Twitch as TwitchIcon,
     Twitter as TwitterIcon,
     Youtube as YoutubeIcon,
 } from 'react-bootstrap-icons';
-import TimezoneSelect from 'react-timezone-select';
 import { countries } from '~src/common/countries';
-import { Button } from '~src/components/Button/Button';
 import { BlueskyIcon } from '~src/icons/bluesky-icon';
 import { Can, subject } from '~src/rbac/Can.component';
+import Link from '../link';
 import { NameAsPatreon } from '../patreon/patreon-name';
 import { Title } from '../title';
 
-//TODO:: Would be better to use some form lib, not sure why i built it this way
-export const Userform = ({ username, session, userData, editInfo = false }) => {
+export const Userform = ({ username, userData }) => {
     'use no memo';
-
-    const [editingInfo, setEditingInfo] = useState(editInfo);
 
     if (userData.socials) {
         if (userData.socials.twitter) {
@@ -39,7 +34,7 @@ export const Userform = ({ username, session, userData, editInfo = false }) => {
         }
     }
 
-    const [form, setForm] = useState({
+    const form = {
         pronouns: userData.pronouns,
         socials: userData.socials,
         bio: userData.bio,
@@ -48,54 +43,28 @@ export const Userform = ({ username, session, userData, editInfo = false }) => {
         timezone:
             userData.timezone ||
             Intl.DateTimeFormat().resolvedOptions().timeZone,
-    });
+    };
 
     return (
         <div>
-            {!editingInfo &&
-                Display({
-                    username:
-                        userData.login &&
-                        userData.login.toLowerCase() !== username.toLowerCase()
-                            ? userData.login
-                            : username,
-                    form,
-                    showTimezone: !!userData.timezone,
-                })}
-            {editingInfo && Edit({ username, form, setForm })}
+            {Display({
+                username:
+                    userData.login &&
+                    userData.login.toLowerCase() !== username.toLowerCase()
+                        ? userData.login
+                        : username,
+                form,
+                showTimezone: !!userData.timezone,
+            })}
 
             <Can I="edit" this={subject('user', username)}>
-                <div className="mt-3 d-flex align-items-center">
-                    <Button
-                        className="w-240p"
-                        onClick={async () => {
-                            if (editingInfo) {
-                                await fetch(
-                                    `/api/users/${session.id}-${username}`,
-                                    {
-                                        method: 'PUT',
-                                        body: JSON.stringify(form),
-                                    },
-                                );
-                            }
-
-                            setEditingInfo(!editingInfo);
-                        }}
+                <div className="mt-3">
+                    <Link
+                        href="/settings/profile"
+                        className="btn btn-outline-secondary btn-sm"
                     >
-                        {editingInfo ? 'Update info' : 'Edit info'}
-                    </Button>
-                    {editingInfo && (
-                        <Button
-                            variant="danger"
-                            className="ms-3"
-                            onClick={() => {
-                                setEditingInfo(false);
-                            }}
-                        >
-                            {/* TODO: Add ms-4 or equivalent instead of empty space */}{' '}
-                            Cancel
-                        </Button>
-                    )}
+                        Edit profile
+                    </Link>
                 </div>
             </Can>
         </div>
@@ -167,219 +136,6 @@ const Display = ({ username, form, showTimezone = false }) => {
                 </div>
             )}
         </div>
-    );
-};
-
-const Edit = ({ username, form, setForm }) => {
-    'use no memo';
-
-    return (
-        <>
-            <Title>
-                <NameAsPatreon name={username} />
-            </Title>
-            <Form className="row g-3">
-                <div className="col col-12 col-lg-6">
-                    <fieldset className="border py-3 px-4">
-                        <legend className="w-auto mb-0">About</legend>
-                        <div className="row g-3">
-                            <Form.Group
-                                className="col-12 col-md-6 col-lg-12 col-xl-6"
-                                controlId="pronouns"
-                            >
-                                <Form.Label>Pronouns</Form.Label>
-                                <Form.Control
-                                    maxLength={25}
-                                    type="text"
-                                    defaultValue={form.pronouns}
-                                    placeholder="Enter pronouns"
-                                    onChange={(e) =>
-                                        setForm({
-                                            ...form,
-                                            pronouns: e.target.value,
-                                        })
-                                    }
-                                />
-                            </Form.Group>
-
-                            <Form.Group
-                                className="col-12 col-md-6 col-lg-12 col-xl-6"
-                                controlId="alias"
-                            >
-                                <Form.Label>Also known as</Form.Label>
-                                <Form.Control
-                                    defaultValue={form.aka}
-                                    maxLength={25}
-                                    type="text"
-                                    placeholder="A.k.a..."
-                                    onChange={(e) =>
-                                        setForm({
-                                            ...form,
-                                            aka: e.target.value,
-                                        })
-                                    }
-                                />
-                            </Form.Group>
-
-                            <Form.Group
-                                className="col-12 col-md-6 col-lg-12 col-xl-6"
-                                controlId="country"
-                            >
-                                <Form.Label>Country</Form.Label>
-                                <Form.Control
-                                    defaultValue={form.country}
-                                    as="select"
-                                    type="text"
-                                    onChange={(e) =>
-                                        setForm({
-                                            ...form,
-                                            country: e.target.value,
-                                        })
-                                    }
-                                >
-                                    <option>Show no country</option>
-                                    {Array.from(
-                                        Object.entries(countries()),
-                                    ).map(([key, value]) => {
-                                        return (
-                                            <option key={key} value={key}>
-                                                {value}
-                                            </option>
-                                        );
-                                    })}
-                                </Form.Control>
-                            </Form.Group>
-
-                            <Form.Group
-                                className="col-12 col-md-6 col-lg-12 col-xl-6"
-                                controlId="timezone"
-                            >
-                                <Form.Label>Timezone</Form.Label>
-                                <TimezoneSelect
-                                    className="timeZoneSelect"
-                                    value={form.timezone}
-                                    onChange={(e) =>
-                                        setForm({ ...form, timezone: e.value })
-                                    }
-                                />
-                            </Form.Group>
-
-                            <Form.Group className="col-12" controlId="bio">
-                                <Form.Label>
-                                    About (max. 100 characters)
-                                </Form.Label>
-                                <Form.Control
-                                    className="h-180p"
-                                    as="textarea"
-                                    maxLength={100}
-                                    type="textarea"
-                                    defaultValue={form.bio}
-                                    placeholder="Enter bio"
-                                    onChange={(e) =>
-                                        setForm({
-                                            ...form,
-                                            bio: e.target.value,
-                                        })
-                                    }
-                                />
-                            </Form.Group>
-                        </div>
-                    </fieldset>
-                </div>
-                <div className="col col-12 col-lg-6">
-                    <fieldset className="border py-3 px-4 h-100">
-                        <legend className="w-auto mb-0">Socials</legend>
-                        <div className="row g-3">
-                            <Form.Group
-                                className="col-12 col-md-6 col-lg-12 col-xl-6"
-                                controlId="youtube"
-                            >
-                                <Form.Label>
-                                    Youtube{' '}
-                                    <YoutubeIcon size={24} color="red" />
-                                </Form.Label>
-                                <Form.Control
-                                    maxLength={100}
-                                    type="text"
-                                    defaultValue={
-                                        form.socials && form.socials.youtube
-                                            ? form.socials.youtube
-                                            : ''
-                                    }
-                                    placeholder="youtube.com/..."
-                                    onChange={(e) =>
-                                        setForm({
-                                            ...form,
-                                            socials: {
-                                                ...form.socials,
-                                                youtube: e.target.value,
-                                            },
-                                        })
-                                    }
-                                />
-                            </Form.Group>
-
-                            <Form.Group
-                                className="col-12 col-md-6 col-lg-12 col-xl-6"
-                                controlId="twitter"
-                            >
-                                <Form.Label>
-                                    Twitter{' '}
-                                    <TwitterIcon size={24} color="#1DA1F2" />
-                                </Form.Label>
-                                <Form.Control
-                                    maxLength={100}
-                                    type="text"
-                                    defaultValue={
-                                        form.socials && form.socials.twitter
-                                            ? form.socials.twitter
-                                            : ''
-                                    }
-                                    placeholder="twitter.com/..."
-                                    onChange={(e) =>
-                                        setForm({
-                                            ...form,
-                                            socials: {
-                                                ...form.socials,
-                                                twitter: e.target.value,
-                                            },
-                                        })
-                                    }
-                                />
-                            </Form.Group>
-
-                            <Form.Group
-                                className="col-12 col-md-6 col-lg-12 col-xl-6"
-                                controlId="bluesky"
-                            >
-                                <Form.Label>
-                                    Bluesky <BlueskyIcon />
-                                </Form.Label>
-                                <Form.Control
-                                    maxLength={100}
-                                    type="text"
-                                    defaultValue={
-                                        form.socials && form.socials.bluesky
-                                            ? form.socials.bluesky
-                                            : ''
-                                    }
-                                    placeholder="bsky.app/profile/..."
-                                    onChange={(e) =>
-                                        setForm({
-                                            ...form,
-                                            socials: {
-                                                ...form.socials,
-                                                bluesky: e.target.value,
-                                            },
-                                        })
-                                    }
-                                />
-                            </Form.Group>
-                        </div>
-                    </fieldset>
-                </div>
-            </Form>
-        </>
     );
 };
 

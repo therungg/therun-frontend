@@ -1,6 +1,6 @@
 'use server';
 
-import type { UserPatreonData } from '~app/(new-layout)/change-appearance/patreon-section';
+import type { UserPatreonData } from '~app/(new-layout)/settings/appearance/patreon-section';
 import { getBaseUrl } from '~src/actions/base-url.action';
 import { getSession } from '~src/actions/session.action';
 import { safeEncodeURI } from '~src/utils/uri';
@@ -24,10 +24,14 @@ export const getUserPatreonData = async (query: {
         const { code } = query;
         const sessionId = session.id;
 
-        const base = safeEncodeURI(`${baseUrl}/change-appearance`);
+        const base = safeEncodeURI(`${baseUrl}/settings/patreon`);
         const loginUrl = `${patreonLoginUrl}?code=${code}&redirect_uri=${base}&session_id=${sessionId}`;
 
         const patreonLinkData = await fetch(loginUrl);
+
+        if (!patreonLinkData.ok) {
+            return null;
+        }
 
         return patreonLinkData.json();
     } else if (session.username) {
