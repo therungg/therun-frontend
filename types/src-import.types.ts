@@ -30,6 +30,13 @@ export interface SrcImportJob {
     playersCount: number;
     playersMatchedCount: number;
     requestsMade: number;
+    /**
+     * Expected total requests, computed up front from per-category run
+     * counts. The importer runs at ~1 request/second, so
+     * requestsMade / estimatedRequests is both progress and a time estimate.
+     * Null when the pre-fetch failed — show no percentage then.
+     */
+    estimatedRequests: number | null;
     error: string | null;
     startedAt: string | null;
     finishedAt: string | null;

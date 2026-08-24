@@ -198,11 +198,14 @@ function JobCard({ job }: { job: SrcImportJob }) {
                 </a>
             </div>
             {inFlight && (
-                <p className={styles.muted}>
-                    Phase: {PHASE_LABEL[job.phase]}. speedrun.com is rate
-                    limited, so large boards take a while — this page updates on
-                    its own.
-                </p>
+                <>
+                    <JobProgress job={job} />
+                    <p className={styles.muted}>
+                        Phase: {PHASE_LABEL[job.phase]}. speedrun.com is rate
+                        limited, so large boards take a while — this page
+                        updates on its own.
+                    </p>
+                </>
             )}
             {job.status === 'failed' && (
                 <div className={`${styles.callout} ${styles.calloutError}`}>
@@ -225,6 +228,46 @@ function JobCard({ job }: { job: SrcImportJob }) {
             </p>
         </section>
     );
+}
+
+/**
+ * Progress + time remaining while the staging walk runs. The importer is
+ * throttled to ~1 request/second and the backend pre-computes how many
+ * requests the whole job needs (estimatedRequests), so requests-made over
+ * that estimate is a faithful percentage AND the remainder is seconds left.
+ * Capped at 99% — only "done" ends the bar. Renders nothing when the
+ * estimate is missing (the pre-fetch is best-effort).
+ */
+function JobProgress({ job }: { job: SrcImportJob }) {
+    if (!job.estimatedRequests || job.estimatedRequests <= 0) return null;
+    const fraction = Math.min(0.99, job.requestsMade / job.estimatedRequests);
+    const pct = Math.floor(fraction * 100);
+    const secondsLeft = Math.max(0, job.estimatedRequests - job.requestsMade);
+    return (
+        <div className={styles.progressRow}>
+            <div
+                className={styles.progressTrack}
+                role="progressbar"
+                aria-valuenow={pct}
+                aria-valuemin={0}
+                aria-valuemax={100}
+            >
+                <div
+                    className={styles.progressFill}
+                    style={{ width: `${pct}%` }}
+                />
+            </div>
+            <span className={styles.progressPct}>{pct}%</span>
+            <span className={styles.muted}>~{fmtEta(secondsLeft)} left</span>
+        </div>
+    );
+}
+
+function fmtEta(seconds: number): string {
+    if (seconds < 60) return `${seconds}s`;
+    const minutes = Math.round(seconds / 60);
+    if (minutes < 60) return `${minutes}m`;
+    return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
 }
 
 function Counter({ label, value }: { label: string; value: number }) {

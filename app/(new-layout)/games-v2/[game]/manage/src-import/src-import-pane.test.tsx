@@ -55,6 +55,7 @@ const job = (over: Partial<SrcImportJob> = {}): SrcImportJob => ({
     playersCount: 0,
     playersMatchedCount: 0,
     requestsMade: 90,
+    estimatedRequests: null,
     error: null,
     startedAt: '2026-08-19T08:00:00.000Z',
     finishedAt: null,
@@ -179,6 +180,29 @@ describe('SrcImportPane', () => {
             }),
         );
         expect(screen.getByRole('radio', { name: 'Runs' })).toBeInTheDocument();
+    });
+
+    it('shows percentage + time left while running, from the request estimate', async () => {
+        vi.mocked(getSrcImportJobAction).mockResolvedValue({
+            result: job({ status: 'running', estimatedRequests: 600 }),
+        });
+        render(<SrcImportPane {...props} />);
+        // 90 of 600 requests → 15%, 510 requests ≈ 510s ≈ 9m left.
+        expect(await screen.findByText('15%')).toBeInTheDocument();
+        expect(screen.getByText('~9m left')).toBeInTheDocument();
+        expect(screen.getByRole('progressbar')).toHaveAttribute(
+            'aria-valuenow',
+            '15',
+        );
+    });
+
+    it('shows no percentage when the estimate is missing', async () => {
+        vi.mocked(getSrcImportJobAction).mockResolvedValue({
+            result: job({ status: 'running' }),
+        });
+        render(<SrcImportPane {...props} />);
+        await screen.findByText(/Phase:/);
+        expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     });
 
     it('shows the failure reason for a failed job and allows a retry', async () => {
