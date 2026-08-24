@@ -9,6 +9,7 @@ import type {
     DuplicateScanInfo,
 } from '../../../../types/duplicate-runs.types';
 import adminStyles from '../admin.module.scss';
+import { isStale, lastActiveLabel, lastActiveMs } from './account-activity';
 import {
     getLatestScanAction,
     listDuplicateFindingsAction,
@@ -19,9 +20,46 @@ import { FindingDetail } from './finding-detail';
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
+/**
+ * Precedence signal: one side recently active, the other stale (or never
+ * recorded), suggests the stale account is an abandoned duplicate of the
+ * same person. Returns null when both sides are fresh or both are stale —
+ * activity alone doesn't distinguish those cases.
+ */
+function accountActivityChip(finding: DuplicateRunFinding): {
+    label: string;
+    className: string;
+    title: string;
+} | null {
+    const aActiveMs = lastActiveMs(
+        finding.userALastLogin,
+        finding.userALastRunActivity,
+    );
+    const bActiveMs = lastActiveMs(
+        finding.userBLastLogin,
+        finding.userBLastRunActivity,
+    );
+    const aStale = isStale(aActiveMs);
+    const bStale = isStale(bActiveMs);
+    if (aStale === bStale) return null;
+
+    const staleIsA = aStale;
+    const staleUsername = staleIsA
+        ? (finding.userA.username ?? `User ${finding.userAId}`)
+        : (finding.userB.username ?? `User ${finding.userBId}`);
+    const staleActiveMs = staleIsA ? aActiveMs : bActiveMs;
+
+    return {
+        label: `likely same person — ${staleUsername} inactive`,
+        className: styles.signalDecisive,
+        title: `${staleUsername}: ${lastActiveLabel(staleActiveMs)}`,
+    };
+}
+
 function signalSummary(signals: DuplicateFindingSignals): {
     label: string;
     className: string;
+    title?: string;
 } {
     const { a, b } = signals;
     if (a.minCreatedAt && b.minCreatedAt) {
@@ -288,7 +326,8 @@ function FindingRow({
     onToggle: () => void;
     onVerdictSubmitted: () => void;
 }) {
-    const summary = signalSummary(finding.signals);
+    const summary =
+        accountActivityChip(finding) ?? signalSummary(finding.signals);
 
     return (
         <>
@@ -325,7 +364,9 @@ function FindingRow({
                     {new Date(finding.lastDupEndedAt).toLocaleDateString()}
                 </td>
                 <td>
-                    <span className={summary.className}>{summary.label}</span>
+                    <span className={summary.className} title={summary.title}>
+                        {summary.label}
+                    </span>
                 </td>
             </tr>
             {expanded && (
