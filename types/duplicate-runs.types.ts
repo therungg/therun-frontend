@@ -33,6 +33,12 @@ export interface DuplicateRunFinding {
     userBId: number;
     userA: { id: number; username: string | null };
     userB: { id: number; username: string | null };
+    /** ISO-8601 UTC datetime; null if the user has never logged in since lastLogin was added. */
+    userALastLogin: string | null;
+    /** ISO-8601 *date* (YYYY-MM-DD, no time component) of the user's most recent activity_daily row; null if none recorded. */
+    userALastRunActivity: string | null;
+    userBLastLogin: string | null;
+    userBLastRunActivity: string | null;
     duplicateCount: number;
     firstDupEndedAt: string;
     lastDupEndedAt: string;
@@ -70,7 +76,14 @@ export interface DuplicateRunDetailRow {
 }
 
 export interface DuplicateRunDetailSide {
-    user: { id: number; username: string | null };
+    user: {
+        id: number;
+        username: string | null;
+        /** ISO-8601 UTC datetime; null if the user has never logged in since lastLogin was added. */
+        lastLogin: string | null;
+        /** ISO-8601 *date* (YYYY-MM-DD, no time component); null if no activity_daily row exists for this user. */
+        lastRunActivity: string | null;
+    };
     dupRows: DuplicateRunDetailRow[];
     /** Capped at 200, newest endedAt first. */
     organicRows: DuplicateRunDetailRow[];
