@@ -1,0 +1,132 @@
+@use '../../styles/design-tokens' as *;
+@use '../../styles/mixins' as *;
+
+// ── Signal chip ──
+.signalChip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3rem 0.6rem;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    border-radius: $radius-sm;
+    background: color-mix(in srgb, var(--bs-secondary) 15%, transparent);
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+
+.signalDecisive {
+    composes: signalChip;
+    background: rgba($accent-green, 0.15);
+    color: $accent-green-bright;
+}
+
+.signalContinuity {
+    composes: signalChip;
+    background: rgba($accent-amber, 0.15);
+    color: $accent-amber;
+}
+
+// ── Expandable row ──
+.rowClickable {
+    cursor: pointer;
+}
+
+.detailRow td {
+    padding: 0;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+}
+
+.detailWrap {
+    padding: $spacing-lg;
+    background: var(--bs-tertiary-bg);
+}
+
+.sideGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $spacing-lg;
+    margin-bottom: $spacing-lg;
+
+    @media (max-width: 720px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.sideCol {
+    background: var(--bs-body-bg);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.25);
+    border-radius: $radius-md;
+    padding: $spacing-md;
+}
+
+.sideUsername {
+    font-size: $font-size-md;
+    font-weight: 700;
+    margin: 0 0 $spacing-xs;
+    color: var(--bs-body-color);
+}
+
+.sideLine {
+    font-size: $font-size-xs;
+    color: var(--bs-secondary-color);
+    margin: 0 0 $spacing-xs;
+}
+
+.dupRowList {
+    list-style: none;
+    margin: $spacing-sm 0 0;
+    padding: 0;
+    font-size: $font-size-xs;
+    color: var(--bs-body-color);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dupRowItem {
+    display: flex;
+    justify-content: space-between;
+    gap: $spacing-sm;
+    padding: 2px 0;
+}
+
+.dupRowExcluded {
+    text-decoration: line-through;
+    color: var(--bs-secondary-color);
+}
+
+.verdictSection {
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.25);
+    padding-top: $spacing-md;
+}
+
+.verdictTextarea {
+    background: color-mix(in srgb, var(--bs-body-bg) 95%, var(--bs-primary) 5%);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    border-radius: $radius-md;
+    padding: $spacing-sm $spacing-md;
+    font-size: $font-size-sm;
+    color: var(--bs-body-color);
+    width: 100%;
+    min-height: 4.5rem;
+    resize: vertical;
+    margin-bottom: $spacing-sm;
+
+    &:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+        outline: none;
+    }
+}
+
+.verdictButtons {
+    display: flex;
+    gap: $spacing-sm;
+    flex-wrap: wrap;
+}
+
+.scanLine {
+    font-size: $font-size-xs;
+    color: var(--bs-secondary-color);
+    margin: $spacing-xs 0 $spacing-lg;
+}
