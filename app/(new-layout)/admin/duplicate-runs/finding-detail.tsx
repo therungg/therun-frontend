@@ -9,6 +9,7 @@ import type {
     DuplicateVerdictInput,
 } from '../../../../types/duplicate-runs.types';
 import adminStyles from '../admin.module.scss';
+import { lastActiveLabel, lastActiveMs } from './account-activity';
 import {
     getDuplicateFindingAction,
     submitVerdictAction,
@@ -122,6 +123,14 @@ export function FindingDetail({
             <h5 className={styles.sideUsername}>
                 {side.user.username ?? `User ${side.user.id}`}
             </h5>
+            <p className={styles.sideLine}>
+                {lastActiveLabel(
+                    lastActiveMs(
+                        side.user.lastLogin,
+                        side.user.lastRunActivity,
+                    ),
+                )}
+            </p>
             <p className={styles.sideLine}>
                 {firstSeenLine(signalsForSide.minCreatedAt)}
             </p>

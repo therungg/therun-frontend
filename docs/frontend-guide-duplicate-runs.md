@@ -57,6 +57,12 @@ export interface DuplicateRunFinding {
     userBId: number;
     userA: { id: number; username: string | null };
     userB: { id: number; username: string | null };
+    /** ISO-8601 UTC datetime; null if the user has never logged in since lastLogin was added. */
+    userALastLogin: string | null;
+    /** ISO-8601 *date* (YYYY-MM-DD, no time component) of the user's most recent activity_daily row; null if none recorded. */
+    userALastRunActivity: string | null;
+    userBLastLogin: string | null;
+    userBLastRunActivity: string | null;
     duplicateCount: number;
     firstDupEndedAt: string;
     lastDupEndedAt: string;
@@ -94,7 +100,14 @@ export interface DuplicateRunDetailRow {
 }
 
 export interface DuplicateRunDetailSide {
-    user: { id: number; username: string | null };
+    user: {
+        id: number;
+        username: string | null;
+        /** ISO-8601 UTC datetime; null if the user has never logged in since lastLogin was added. */
+        lastLogin: string | null;
+        /** ISO-8601 *date* (YYYY-MM-DD, no time component); null if no activity_daily row exists for this user. */
+        lastRunActivity: string | null;
+    };
     dupRows: DuplicateRunDetailRow[];
     /** Capped at 200, newest endedAt first. */
     organicRows: DuplicateRunDetailRow[];
@@ -169,3 +182,12 @@ export interface DuplicateScanInfo {
   scan re-touches every row it examines. Don't render `updatedAt` as "new activity" or use it to
   imply the finding got worse/changed; use `duplicateCount`, `lastDupEndedAt`, or `state` for that
   instead.
+- **Per-account activity fields (`*LastLogin`/`*LastRunActivity`) exist to help spot the "same
+  person, two accounts" case**, which is most findings in practice. Compute each side's overall
+  `lastActive` as the max of its `lastLogin` and `lastRunActivity` (either or both may be `null`;
+  `lastActive` is `null` only when both are). A side whose `lastActive` is stale (no activity in the
+  last 30 days, or `null`) while the *other* side's `lastActive` is recent is a strong signal that
+  the stale side is an abandoned duplicate account belonging to the same person as the active side —
+  worth surfacing prominently in the review UI. This is a heuristic, not proof: don't auto-resolve
+  findings on it, and don't imply account theft/ownership — it only speaks to which account looks
+  currently in use.
