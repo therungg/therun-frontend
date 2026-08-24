@@ -178,6 +178,13 @@ export function MobileMenu({ username, featuredPatrons }: MobileMenuProps) {
                     Exclusions
                 </Link>
                 <Link
+                    href="/admin/duplicate-runs"
+                    className={styles.link}
+                    onClick={close}
+                >
+                    Duplicate runs
+                </Link>
+                <Link
                     href="/admin/role-assignments"
                     className={styles.link}
                     onClick={close}
