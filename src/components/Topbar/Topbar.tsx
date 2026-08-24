@@ -94,6 +94,7 @@ function AdminNavGroup({
                 <Can I="moderate" a="admins">
                     {adminLink('/admin/exclusions', 'Exclusions')}
                     {adminLink('/admin/role-assignments', 'Role Assignments')}
+                    {adminLink('/admin/roles/team', 'Role Team')}
                 </Can>
             </NavGroup>
         </Can>

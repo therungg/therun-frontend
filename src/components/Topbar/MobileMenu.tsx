@@ -184,6 +184,13 @@ export function MobileMenu({ username, featuredPatrons }: MobileMenuProps) {
                 >
                     Role Assignments
                 </Link>
+                <Link
+                    href="/admin/roles/team"
+                    className={styles.link}
+                    onClick={close}
+                >
+                    Role Team
+                </Link>
             </Can>
         </div>
     );
