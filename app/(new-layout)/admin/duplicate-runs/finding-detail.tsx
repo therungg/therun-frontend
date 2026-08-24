@@ -28,13 +28,21 @@ function firstSeenLine(minCreatedAt: string | null): string {
     return `first ingested ${new Date(minCreatedAt).toLocaleString()}`;
 }
 
-function DupRow({ row }: { row: DuplicateRunDetailRow }) {
+function DupRow({
+    row,
+    categoryNames,
+}: {
+    row: DuplicateRunDetailRow;
+    categoryNames: Map<number, string>;
+}) {
+    const categoryLabel =
+        categoryNames.get(row.categoryId) ?? `Category ${row.categoryId}`;
     return (
         <li
             className={`${styles.dupRowItem} ${row.excluded ? styles.dupRowExcluded : ''}`}
         >
             <span>
-                Category {row.categoryId} · {formatTimeMs(row.time)}
+                {categoryLabel} · {formatTimeMs(row.time)}
                 {row.isPb ? ' · PB' : ''}
             </span>
             <span>{new Date(row.endedAt).toLocaleDateString()}</span>
@@ -102,6 +110,9 @@ export function FindingDetail({
 
     const { sides } = detail;
     const isOpen = state === 'open';
+    const categoryNames = new Map(
+        detail.categories.map((c) => [c.id, c.display]),
+    );
 
     const renderSide = (
         side: DuplicateRunDetailSide,
@@ -126,7 +137,11 @@ export function FindingDetail({
             </p>
             <ul className={styles.dupRowList}>
                 {side.dupRows.map((row) => (
-                    <DupRow key={row.id} row={row} />
+                    <DupRow
+                        key={row.id}
+                        row={row}
+                        categoryNames={categoryNames}
+                    />
                 ))}
             </ul>
         </div>

@@ -292,7 +292,21 @@ function FindingRow({
 
     return (
         <>
-            <tr className={styles.rowClickable} onClick={onToggle}>
+            <tr
+                className={styles.rowClickable}
+                onClick={onToggle}
+                role="button"
+                tabIndex={0}
+                aria-expanded={expanded}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                        onToggle();
+                    } else if (e.key === ' ') {
+                        e.preventDefault();
+                        onToggle();
+                    }
+                }}
+            >
                 <td>
                     {finding.userA.username ?? `User ${finding.userAId}`} /{' '}
                     {finding.userB.username ?? `User ${finding.userBId}`}

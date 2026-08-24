@@ -88,6 +88,8 @@ export type DuplicateRunDetailFinding = Omit<
 
 export interface DuplicateRunDetail {
     finding: DuplicateRunDetailFinding;
+    /** Display names for every distinct categoryId appearing in either side's dupRows/organicRows. */
+    categories: Array<{ id: number; display: string }>;
     sides: {
         a: DuplicateRunDetailSide;
         b: DuplicateRunDetailSide;
