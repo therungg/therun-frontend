@@ -91,6 +91,12 @@ export async function apiFetch<T>(
     }
 
     if (res.status === 204) return undefined as T;
-    const json = await res.json();
-    return json.result as T;
+    const raw = await res.text();
+    try {
+        return JSON.parse(raw).result as T;
+    } catch {
+        // Legacy success bodies are plain text (backend `ok("Saved user!")`),
+        // mirroring the plain-text tolerance on the error path above.
+        return undefined as T;
+    }
 }
