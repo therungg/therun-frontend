@@ -180,6 +180,43 @@ category maps to therun's `gametime` timing with the game-time label `lrt` (load
 - Imported runs carry `source === 'src_import'` — badge them as "imported from speedrun.com". Unmatched SRC runners
   become guest rows claimable through the existing Twitch-rename carry flow.
 
+## Console flow
+
+The mod-panel commit console (`app/(new-layout)/games-v2/[game]/manage/src-import/commit-panel.tsx` +
+`plan-preview.tsx`) is a pure `commitStatus` -> UI state machine — `getCommitViewModel(job)` in `commit-panel.tsx`
+maps each `SrcImportCommitStatus` to a primary action, secondary actions, and a `blockedReason`, kept separate from
+rendering so it's unit-testable without the DOM:
+
+| `commitStatus` | Primary action | Secondary | Notes |
+|---|---|---|---|
+| `null` / `planning` | Apply config | — | Shows the read-only `PlanPreview` (below) |
+| `applying` / `importing` / `reconciling` / `undoing` | — (spinner) | — | Polling; no actions offered |
+| `applied` | Import runs | Undo config | The "Only use the speedrun.com leaderboard" checkbox appears here |
+| `imported` | Undo runs | — | If the checkbox was on, reconcile auto-fires (below) |
+| `reconciled` | Reverse SRC-only leaderboard | Undo runs (disabled) | Teardown order: reconcile must be reversed before runs can be undone |
+| `failed` | Retry whichever step failed (keyed on `commitPhase`) | — | `commitError` shown via `InlineError` |
+
+**Plan preview.** While `commitStatus` is `null`/`planning`, `PlanPreview` fetches `GET .../plan` on mount and
+renders create/reuse/skip counts per entity kind plus the run summary, read-only. If `plan.conflicts` is non-empty it
+renders the conflict list in a blocking callout ("Resolve these on the API before applying") and `CommitPanel`
+disables the Apply config button (`applyBlockedByConflicts`) until they clear — overrides are POSTed by the caller
+that resolves conflicts, not by this component.
+
+**The SRC-only checkbox.** Shown only while `commitStatus === 'applied'`. Toggling it calls `setSrcOnlyAction` →
+`POST .../src-only` immediately (not deferred to import) and updates local state optimistically; it does not gate
+Import runs.
+
+**Auto-reconcile after import.** `CommitPanel` watches `job.commitStatus`/`job.srcOnlyLeaderboard` in a `useEffect`
+and, the moment a job reaches `imported` with `srcOnlyLeaderboard` true, fires `reconcileAction` itself (no manual
+button) — `POST .../reconcile`. A `useRef` latch keyed on `job.id` stops it firing twice while the parent's poll
+re-renders the still-`imported` job before the reconcile's own status update lands. A reconcile failure surfaces
+inline without touching `actionError` (kept in a separate `reconcileError` state).
+
+**Reverse SRC-only leaderboard.** Once `commitStatus === 'reconciled'`, the primary button becomes "Reverse SRC-only
+leaderboard" (`reconcileUndoAction` → `POST .../reconcile-undo`). Undo runs is offered but disabled with the hint
+"Reverse the SRC-only leaderboard first" — reconcile must be torn down before runs, matching the backend's teardown
+order.
+
 ## Undo (remove imported runs)
 
 Reverts the run import for a game. Staged/preview data stands and the configuration
