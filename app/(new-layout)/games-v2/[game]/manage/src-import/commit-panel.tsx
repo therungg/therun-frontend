@@ -1,9 +1,13 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import type { SrcImportJob } from '../../../../../../types/src-import.types';
+import { useEffect, useRef, useState, useTransition } from 'react';
+import type {
+    SrcCommitPlan,
+    SrcImportJob,
+} from '../../../../../../types/src-import.types';
 import { InlineError } from '../shared/form-kit';
 import kit from '../shared/form-kit.module.scss';
+import { PlanPreview, planHasConflicts } from './plan-preview';
 import styles from './src-import.module.scss';
 import {
     type ActionResult,
@@ -216,15 +220,49 @@ const ACTION_FN: Record<
  * commit state machine. Each button fires its Task-2 server action, then
  * `onChanged()` so the pane refreshes the job.
  *
- * Auto-firing `reconcile` after `import-runs` when the SRC-only checkbox is
- * set is NOT done here — that belongs to whatever polls the job (a later
- * task). This component only renders the reconcile progress/undo controls.
+ * Once `commitStatus` reaches `imported` and the SRC-only checkbox was set,
+ * this component auto-fires `reconcile` itself (see the effect below) — a
+ * ref latch keyed on the job id keeps it from firing twice while the poll
+ * re-renders this component with the still-`imported` job.
  */
 export function CommitPanel({ job, gameId, gameSlug, onChanged }: Props) {
     const vm = getCommitViewModel(job);
     const [pending, startTransition] = useTransition();
     const [actionError, setActionError] = useState<string | null>(null);
     const [srcOnly, setSrcOnly] = useState(job.srcOnlyLeaderboard);
+    const [plan, setPlan] = useState<SrcCommitPlan | null>(null);
+    const [reconcileError, setReconcileError] = useState<string | null>(null);
+    const reconciledJobId = useRef<number | null>(null);
+
+    useEffect(() => {
+        if (
+            job.commitStatus !== 'imported' ||
+            !job.srcOnlyLeaderboard ||
+            reconciledJobId.current === job.id
+        ) {
+            return;
+        }
+        reconciledJobId.current = job.id;
+        (async () => {
+            const res = await reconcileAction({
+                gameId,
+                gameSlug,
+                jobId: job.id,
+            });
+            if ('error' in res) {
+                setReconcileError(res.error);
+                return;
+            }
+            await onChanged();
+        })();
+    }, [
+        job.commitStatus,
+        job.srcOnlyLeaderboard,
+        job.id,
+        gameId,
+        gameSlug,
+        onChanged,
+    ]);
 
     const runAction = (action: CommitActionKind) => {
         setActionError(null);
@@ -260,20 +298,19 @@ export function CommitPanel({ job, gameId, gameSlug, onChanged }: Props) {
         });
     };
 
+    const hasConflicts = plan !== null && planHasConflicts(plan);
+    const applyBlockedByConflicts =
+        vm.primary?.action === 'apply-config' && hasConflicts;
+
     return (
         <section className={styles.commitCard} aria-label="Commit to therun.gg">
             {vm.showPlanPlaceholder && (
-                <div className={styles.muted}>
-                    {/*
-                     * TODO(Task 4): render <PlanPreview plan={...} /> here —
-                     * category/level/variable create-vs-reuse-vs-skip counts,
-                     * the run summary, and the conflict list that disables
-                     * Apply below. Not built yet, so the panel just points
-                     * back at the review tabs.
-                     */}
-                    Review the staged data in the tabs above, then apply the
-                    configuration to therun.gg.
-                </div>
+                <PlanPreview
+                    gameId={gameId}
+                    gameSlug={gameSlug}
+                    jobId={job.id}
+                    onPlanLoaded={setPlan}
+                />
             )}
 
             {vm.progressLabel && (
@@ -292,6 +329,7 @@ export function CommitPanel({ job, gameId, gameSlug, onChanged }: Props) {
 
             {vm.errorMessage && <InlineError>{vm.errorMessage}</InlineError>}
             {actionError && <InlineError>{actionError}</InlineError>}
+            {reconcileError && <InlineError>{reconcileError}</InlineError>}
 
             {(vm.primary || vm.secondary.length > 0) && (
                 <div className={styles.actionRow}>
@@ -320,13 +358,27 @@ export function CommitPanel({ job, gameId, gameSlug, onChanged }: Props) {
                         <button
                             type="button"
                             className={kit.saveBtn}
-                            disabled={pending || vm.primary.disabled}
+                            disabled={
+                                pending ||
+                                vm.primary.disabled ||
+                                applyBlockedByConflicts
+                            }
+                            title={
+                                applyBlockedByConflicts
+                                    ? 'Resolve the plan conflicts above before applying'
+                                    : undefined
+                            }
                             onClick={() =>
                                 vm.primary && runAction(vm.primary.action)
                             }
                         >
                             {pending ? 'Working…' : vm.primary.label}
                         </button>
+                    )}
+                    {applyBlockedByConflicts && (
+                        <p className={styles.blockedHint}>
+                            Resolve the plan conflicts above before applying.
+                        </p>
                     )}
                     {vm.secondary.map((spec) => (
                         <button

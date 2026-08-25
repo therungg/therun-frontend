@@ -12,6 +12,7 @@ import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 import type { SrcImportJob } from '../../../../../../types/src-import.types';
 import { InlineError } from '../shared/form-kit';
 import kit from '../shared/form-kit.module.scss';
+import { CommitPanel } from './commit-panel';
 import { ReviewTabs } from './review-tabs';
 import styles from './src-import.module.scss';
 import {
@@ -42,8 +43,9 @@ const PHASE_LABEL: Record<SrcImportJob['phase'], string> = {
 
 /**
  * Import pane: paste a speedrun.com game URL, watch the background job, then
- * review what it staged. Dry run — nothing on this pane touches the live
- * board; the commit step is a later phase.
+ * review what it staged before committing it. Fetching and browsing the
+ * staged data is a dry run — nothing is written until the commit controls
+ * below the review tabs are used.
  */
 export function SrcImportPane({ gameId, gameSlug, gameDisplay }: Props) {
     const fetchJob = useCallback(
@@ -96,8 +98,9 @@ export function SrcImportPane({ gameId, gameSlug, gameDisplay }: Props) {
 
             <div className={styles.stack}>
                 <div className={`${styles.callout} ${styles.calloutWarn}`}>
-                    Dry run: nothing on this page changes the live board.
-                    Importing into therun.gg is a separate, later step.
+                    Fetching and reviewing the board below is a dry run —
+                    nothing is written yet. Once the import finishes, the commit
+                    controls under the review tabs DO write to the live board.
                 </div>
 
                 <form className={styles.form} onSubmit={submit}>
@@ -152,7 +155,19 @@ export function SrcImportPane({ gameId, gameSlug, gameDisplay }: Props) {
                 )}
                 {job && <JobCard job={job} />}
                 {job?.status === 'done' && (
-                    <ReviewTabs gameId={gameId} gameSlug={gameSlug} job={job} />
+                    <>
+                        <ReviewTabs
+                            gameId={gameId}
+                            gameSlug={gameSlug}
+                            job={job}
+                        />
+                        <CommitPanel
+                            job={job}
+                            gameId={gameId}
+                            gameSlug={gameSlug}
+                            onChanged={refresh}
+                        />
+                    </>
                 )}
             </div>
         </div>
