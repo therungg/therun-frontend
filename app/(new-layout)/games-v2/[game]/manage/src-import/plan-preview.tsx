@@ -75,7 +75,7 @@ export function PlanPreview({ gameId, gameSlug, jobId, onPlanLoaded }: Props) {
 
     if (loading) {
         return (
-            <div className={styles.jobHead}>
+            <div className={styles.jobHead} role="status" aria-live="polite">
                 <span className={styles.spinner} aria-hidden />
                 <span className={styles.muted}>Loading plan…</span>
             </div>

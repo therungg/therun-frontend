@@ -32,6 +32,7 @@ import {
     importRunsAction,
     reconcileAction,
     reconcileUndoAction,
+    undoRunsAction,
 } from './src-import-actions';
 
 function emptyPlan(over: Partial<SrcCommitPlan> = {}): SrcCommitPlan {
@@ -239,7 +240,7 @@ describe('CommitPanel', () => {
         expect(screen.getByText(/reconciling/i)).toBeInTheDocument();
     });
 
-    it('shows the error and the retry button for the failed phase', async () => {
+    it('failed+runs offers BOTH resume and undo (no single directional retry)', async () => {
         render(
             <CommitPanel
                 job={job({
@@ -251,11 +252,17 @@ describe('CommitPanel', () => {
             />,
         );
         expect(screen.getByText('speedrun.com timed out')).toBeInTheDocument();
-        const retry = screen.getByRole('button', {
-            name: /retry import runs/i,
+        const resume = screen.getByRole('button', {
+            name: /resume import runs/i,
         });
-        expect(retry).toBeEnabled();
-        fireEvent.click(retry);
+        const undo = screen.getByRole('button', { name: /undo runs/i });
+        expect(resume).toBeEnabled();
+        expect(undo).toBeEnabled();
+        // The old ambiguous "Retry import runs" wording is gone.
+        expect(
+            screen.queryByRole('button', { name: /retry import runs/i }),
+        ).not.toBeInTheDocument();
+        fireEvent.click(resume);
         await waitFor(() =>
             expect(importRunsAction).toHaveBeenCalledWith({
                 gameId: 12,
@@ -263,6 +270,66 @@ describe('CommitPanel', () => {
                 jobId: 7,
             }),
         );
+    });
+
+    it('failed+runs undo button reverses direction (calls undoRunsAction)', async () => {
+        render(
+            <CommitPanel
+                job={job({ commitStatus: 'failed', commitPhase: 'runs' })}
+                {...props}
+            />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: /undo runs/i }));
+        await waitFor(() =>
+            expect(undoRunsAction).toHaveBeenCalledWith({
+                gameId: 12,
+                gameSlug: 'sm64',
+                jobId: 7,
+            }),
+        );
+    });
+
+    it('failed+reconcile offers resume and reverse (the C&D reversal path)', async () => {
+        render(
+            <CommitPanel
+                job={job({ commitStatus: 'failed', commitPhase: 'reconcile' })}
+                {...props}
+            />,
+        );
+        const resume = screen.getByRole('button', {
+            name: /resume reconcile/i,
+        });
+        const reverse = screen.getByRole('button', {
+            name: /reverse src-only leaderboard/i,
+        });
+        expect(resume).toBeEnabled();
+        expect(reverse).toBeEnabled();
+        fireEvent.click(reverse);
+        await waitFor(() =>
+            expect(reconcileUndoAction).toHaveBeenCalledWith({
+                gameId: 12,
+                gameSlug: 'sm64',
+                jobId: 7,
+            }),
+        );
+    });
+
+    it('failed+config keeps a single retry apply config (unambiguous)', () => {
+        render(
+            <CommitPanel
+                job={job({ commitStatus: 'failed', commitPhase: 'config' })}
+                {...props}
+            />,
+        );
+        expect(
+            screen.getByRole('button', { name: /retry apply config/i }),
+        ).toBeEnabled();
+        expect(
+            screen.queryByRole('button', { name: /undo runs/i }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: /reverse/i }),
+        ).not.toBeInTheDocument();
     });
 
     it('surfaces an action error inline without crashing', async () => {
@@ -342,6 +409,73 @@ describe('CommitPanel', () => {
         expect(reconcileAction).toHaveBeenCalledTimes(1);
     });
 
+    it('imported+srcOnly shows a manual reconcile control after the auto-fire, and clicking it re-triggers reconcile', async () => {
+        const onChanged = vi.fn();
+        render(
+            <CommitPanel
+                job={job({
+                    commitStatus: 'imported',
+                    srcOnlyLeaderboard: true,
+                })}
+                gameId={12}
+                gameSlug="sm64"
+                onChanged={onChanged}
+            />,
+        );
+        // The one-shot auto-fire runs first.
+        await waitFor(() => expect(reconcileAction).toHaveBeenCalledTimes(1));
+        const manual = await screen.findByRole('button', {
+            name: /run src-only reconcile/i,
+        });
+        // No enabled "Undo runs" that could race the reconcile.
+        expect(
+            screen.queryByRole('button', { name: /undo runs/i }),
+        ).not.toBeInTheDocument();
+        vi.mocked(reconcileAction).mockClear();
+        fireEvent.click(manual);
+        await waitFor(() =>
+            expect(reconcileAction).toHaveBeenCalledWith({
+                gameId: 12,
+                gameSlug: 'sm64',
+                jobId: 7,
+            }),
+        );
+    });
+
+    it('drops the "will start automatically" copy once the auto-reconcile latch has fired', async () => {
+        const onChanged = vi.fn();
+        const { rerender } = render(
+            <CommitPanel
+                job={job({
+                    commitStatus: 'imported',
+                    srcOnlyLeaderboard: true,
+                })}
+                gameId={12}
+                gameSlug="sm64"
+                onChanged={onChanged}
+            />,
+        );
+        await waitFor(() => expect(reconcileAction).toHaveBeenCalledTimes(1));
+        // A poll re-render with the still-'imported' job (latch already set).
+        rerender(
+            <CommitPanel
+                job={job({
+                    commitStatus: 'imported',
+                    srcOnlyLeaderboard: true,
+                })}
+                gameId={12}
+                gameSlug="sm64"
+                onChanged={onChanged}
+            />,
+        );
+        await screen.findByRole('button', {
+            name: /run src-only reconcile/i,
+        });
+        expect(
+            screen.queryByText(/will start automatically/i),
+        ).not.toBeInTheDocument();
+    });
+
     it('does not auto-fire reconcile when srcOnlyLeaderboard is false', async () => {
         render(
             <CommitPanel
@@ -389,21 +523,39 @@ describe('getCommitViewModel', () => {
         });
     });
 
-    it('picks the retry action from commitPhase when failed', () => {
-        expect(
-            getCommitViewModel(
-                job({ commitStatus: 'failed', commitPhase: 'config' }),
-            ).primary?.action,
-        ).toBe('apply-config');
-        expect(
-            getCommitViewModel(
-                job({ commitStatus: 'failed', commitPhase: 'runs' }),
-            ).primary?.action,
-        ).toBe('import-runs');
-        expect(
-            getCommitViewModel(
-                job({ commitStatus: 'failed', commitPhase: 'reconcile' }),
-            ).primary?.action,
-        ).toBe('reconcile');
+    it('failed+config is an unambiguous single forward retry', () => {
+        const vm = getCommitViewModel(
+            job({ commitStatus: 'failed', commitPhase: 'config' }),
+        );
+        expect(vm.primary?.action).toBe('apply-config');
+        expect(vm.secondary).toEqual([]);
+        expect(vm.errorMessage).toBeTruthy();
+    });
+
+    it('failed+runs exposes both import and undo directions', () => {
+        const vm = getCommitViewModel(
+            job({ commitStatus: 'failed', commitPhase: 'runs' }),
+        );
+        expect(vm.primary?.action).toBe('import-runs');
+        expect(vm.secondary.map((s) => s.action)).toEqual(['undo-runs']);
+        expect(vm.secondary[0].disabled).toBe(false);
+    });
+
+    it('failed+reconcile exposes both reconcile and reverse directions', () => {
+        const vm = getCommitViewModel(
+            job({ commitStatus: 'failed', commitPhase: 'reconcile' }),
+        );
+        expect(vm.primary?.action).toBe('reconcile');
+        expect(vm.secondary.map((s) => s.action)).toEqual(['reconcile-undo']);
+        expect(vm.secondary[0].disabled).toBe(false);
+    });
+
+    it('failed with unknown phase surfaces the error but no directional action', () => {
+        const vm = getCommitViewModel(
+            job({ commitStatus: 'failed', commitPhase: null }),
+        );
+        expect(vm.primary).toBeNull();
+        expect(vm.secondary).toEqual([]);
+        expect(vm.errorMessage).toBeTruthy();
     });
 });
