@@ -44,6 +44,8 @@ export interface SrcImportJob {
     // ---- commit phase (docs/frontend-guide-src-import.md "Commit phase") ----
     commitStatus: SrcImportCommitStatus | null;
     commitPhase: SrcImportCommitPhase | null;
+    importedRunsCount: number;
+    importSkippedCount: number;
     configAppliedAt: string | null;
     runsImportedAt: string | null;
     /** "Only use the speedrun.com leaderboard" — set via POST .../src-only, before import-runs runs. */
