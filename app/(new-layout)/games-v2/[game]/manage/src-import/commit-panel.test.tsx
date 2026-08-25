@@ -7,7 +7,10 @@ import {
     waitFor,
 } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { SrcImportJob } from '../../../../../../types/src-import.types';
+import type {
+    SrcCommitPlan,
+    SrcImportJob,
+} from '../../../../../../types/src-import.types';
 
 vi.mock('./src-import-actions', () => ({
     applyConfigAction: vi.fn(async () => ({ result: { jobId: 7 } })),
@@ -19,14 +22,34 @@ vi.mock('./src-import-actions', () => ({
     setSrcOnlyAction: vi.fn(async () => ({
         result: { jobId: 7, srcOnlyLeaderboard: true },
     })),
+    getSrcImportPlanAction: vi.fn(async () => ({ result: emptyPlan() })),
 }));
 
 import { CommitPanel, getCommitViewModel } from './commit-panel';
 import {
     applyConfigAction,
+    getSrcImportPlanAction,
     importRunsAction,
+    reconcileAction,
     reconcileUndoAction,
 } from './src-import-actions';
+
+function emptyPlan(over: Partial<SrcCommitPlan> = {}): SrcCommitPlan {
+    return {
+        categories: [],
+        levels: [],
+        variables: [],
+        conflicts: [],
+        runs: {
+            total: 0,
+            byStatus: { verified: 0, new: 0 },
+            guests: 0,
+            matched: 0,
+            unmappable: 0,
+        },
+        ...over,
+    };
+}
 
 const job = (over: Partial<SrcImportJob> = {}): SrcImportJob => ({
     id: 7,
@@ -251,6 +274,86 @@ describe('CommitPanel', () => {
         expect(
             await screen.findByText('Plan has conflicts'),
         ).toBeInTheDocument();
+    });
+
+    it('renders PlanPreview and disables Apply when the plan has conflicts', async () => {
+        vi.mocked(getSrcImportPlanAction).mockResolvedValueOnce({
+            result: emptyPlan({
+                conflicts: [
+                    { kind: 'category', srcId: 'cat1', message: 'ambiguous' },
+                ],
+            }),
+        });
+        render(<CommitPanel job={job()} {...props} />);
+        await screen.findByText(/ambiguous/i);
+        expect(
+            screen.getByRole('button', { name: /apply config/i }),
+        ).toBeDisabled();
+    });
+
+    it('enables Apply when the loaded plan has no conflicts', async () => {
+        vi.mocked(getSrcImportPlanAction).mockResolvedValueOnce({
+            result: emptyPlan(),
+        });
+        render(<CommitPanel job={job()} {...props} />);
+        await waitFor(() => expect(getSrcImportPlanAction).toHaveBeenCalled());
+        expect(
+            await screen.findByRole('button', { name: /apply config/i }),
+        ).toBeEnabled();
+    });
+
+    it('auto-fires reconcile exactly once for a src-only imported job', async () => {
+        const onChanged = vi.fn();
+        const { rerender } = render(
+            <CommitPanel
+                job={job({
+                    commitStatus: 'imported',
+                    srcOnlyLeaderboard: true,
+                })}
+                gameId={12}
+                gameSlug="sm64"
+                onChanged={onChanged}
+            />,
+        );
+        await waitFor(() =>
+            expect(reconcileAction).toHaveBeenCalledWith({
+                gameId: 12,
+                gameSlug: 'sm64',
+                jobId: 7,
+            }),
+        );
+        await waitFor(() => expect(onChanged).toHaveBeenCalled());
+
+        // A re-render with the same still-'imported' job (as the poll would
+        // produce before commitStatus flips to 'reconciling') must not
+        // re-fire the action.
+        rerender(
+            <CommitPanel
+                job={job({
+                    commitStatus: 'imported',
+                    srcOnlyLeaderboard: true,
+                })}
+                gameId={12}
+                gameSlug="sm64"
+                onChanged={onChanged}
+            />,
+        );
+        await new Promise((r) => setTimeout(r, 0));
+        expect(reconcileAction).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not auto-fire reconcile when srcOnlyLeaderboard is false', async () => {
+        render(
+            <CommitPanel
+                job={job({
+                    commitStatus: 'imported',
+                    srcOnlyLeaderboard: false,
+                })}
+                {...props}
+            />,
+        );
+        await new Promise((r) => setTimeout(r, 0));
+        expect(reconcileAction).not.toHaveBeenCalled();
     });
 });
 

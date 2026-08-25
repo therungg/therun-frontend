@@ -25,6 +25,30 @@ vi.mock('./src-import-actions', () => ({
     listSrcImportRunsAction: vi.fn(async () => ({
         result: { items: [], total: 0 },
     })),
+    getSrcImportPlanAction: vi.fn(async () => ({
+        result: {
+            categories: [],
+            levels: [],
+            variables: [],
+            conflicts: [],
+            runs: {
+                total: 0,
+                byStatus: { verified: 0, new: 0 },
+                guests: 0,
+                matched: 0,
+                unmappable: 0,
+            },
+        },
+    })),
+    applyConfigAction: vi.fn(async () => ({ result: { jobId: 7 } })),
+    importRunsAction: vi.fn(async () => ({ result: { jobId: 7 } })),
+    undoRunsAction: vi.fn(async () => ({ result: { jobId: 7 } })),
+    undoConfigAction: vi.fn(async () => ({ result: { jobId: 7 } })),
+    reconcileAction: vi.fn(async () => ({ result: { jobId: 7 } })),
+    reconcileUndoAction: vi.fn(async () => ({ result: { jobId: 7 } })),
+    setSrcOnlyAction: vi.fn(async () => ({
+        result: { jobId: 7, srcOnlyLeaderboard: true },
+    })),
 }));
 
 import { primaryTime, runPlayerLabel } from './review-tabs';
@@ -101,7 +125,7 @@ describe('SrcImportPane', () => {
             screen.getByRole('button', { name: 'Fetch board' }),
         ).toBeEnabled();
         expect(
-            screen.getByText(/nothing on this page changes the live board/i),
+            screen.getByText(/reviewing the board below is a dry run/i),
         ).toBeInTheDocument();
     });
 
@@ -187,6 +211,11 @@ describe('SrcImportPane', () => {
             }),
         );
         expect(screen.getByRole('radio', { name: 'Runs' })).toBeInTheDocument();
+
+        // CommitPanel mounts alongside the review tabs.
+        expect(
+            await screen.findByRole('button', { name: /apply config/i }),
+        ).toBeInTheDocument();
     });
 
     it('shows percentage + time left while running, from the request estimate', async () => {
