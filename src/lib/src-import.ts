@@ -5,6 +5,7 @@
 // worker runs; the pane polls `getSrcImportJob` itself.
 import type {
     Paged,
+    SrcCommitPlan,
     SrcImportCategory,
     SrcImportJob,
     SrcImportLevel,
@@ -112,6 +113,95 @@ export async function listSrcImportRuns(
     return apiFetch<Paged<SrcImportRun>>(
         `${base(gameId)}/${jobId}/runs${toQuery(query)}`,
         { method: 'GET', sessionId },
+    );
+}
+
+export async function getSrcImportPlan(
+    sessionId: string,
+    gameId: number,
+    jobId: number,
+): Promise<SrcCommitPlan> {
+    return apiFetch<SrcCommitPlan>(`${base(gameId)}/${jobId}/plan`, {
+        method: 'GET',
+        sessionId,
+    });
+}
+
+export async function applySrcImportConfig(
+    sessionId: string,
+    gameId: number,
+    jobId: number,
+): Promise<{ jobId: number }> {
+    return apiFetch<{ jobId: number }>(
+        `${base(gameId)}/${jobId}/apply-config`,
+        { method: 'POST', sessionId },
+    );
+}
+
+export async function importSrcRuns(
+    sessionId: string,
+    gameId: number,
+    jobId: number,
+): Promise<{ jobId: number }> {
+    return apiFetch<{ jobId: number }>(`${base(gameId)}/${jobId}/import-runs`, {
+        method: 'POST',
+        sessionId,
+    });
+}
+
+export async function undoSrcImportRuns(
+    sessionId: string,
+    gameId: number,
+    jobId: number,
+): Promise<{ jobId: number }> {
+    return apiFetch<{ jobId: number }>(`${base(gameId)}/${jobId}/undo-runs`, {
+        method: 'POST',
+        sessionId,
+    });
+}
+
+export async function undoSrcImportConfig(
+    sessionId: string,
+    gameId: number,
+    jobId: number,
+): Promise<{ jobId: number }> {
+    return apiFetch<{ jobId: number }>(`${base(gameId)}/${jobId}/undo-config`, {
+        method: 'POST',
+        sessionId,
+    });
+}
+
+export async function reconcileSrcImport(
+    sessionId: string,
+    gameId: number,
+    jobId: number,
+): Promise<{ jobId: number }> {
+    return apiFetch<{ jobId: number }>(`${base(gameId)}/${jobId}/reconcile`, {
+        method: 'POST',
+        sessionId,
+    });
+}
+
+export async function reconcileUndoSrcImport(
+    sessionId: string,
+    gameId: number,
+    jobId: number,
+): Promise<{ jobId: number }> {
+    return apiFetch<{ jobId: number }>(
+        `${base(gameId)}/${jobId}/reconcile-undo`,
+        { method: 'POST', sessionId },
+    );
+}
+
+export async function setSrcOnlyLeaderboard(
+    sessionId: string,
+    gameId: number,
+    jobId: number,
+    enabled: boolean,
+): Promise<{ jobId: number; srcOnlyLeaderboard: boolean }> {
+    return apiFetch<{ jobId: number; srcOnlyLeaderboard: boolean }>(
+        `${base(gameId)}/${jobId}/src-only`,
+        { method: 'POST', sessionId, body: { enabled } },
     );
 }
 
