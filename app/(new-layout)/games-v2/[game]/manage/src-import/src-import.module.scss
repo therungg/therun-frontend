@@ -429,3 +429,8 @@ $rail: 3px;
     color: var(--bs-secondary-color);
     font-size: dt.$font-size-xs;
 }
+
+.conflictList {
+    margin: 0 0 dt.$spacing-sm;
+    padding-left: dt.$spacing-lg;
+}
