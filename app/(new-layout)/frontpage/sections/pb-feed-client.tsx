@@ -50,16 +50,21 @@ export const PbFeedClient = ({
         ];
         if (usernames.length === 0) return;
 
-        const dataUrl = process.env.NEXT_PUBLIC_DATA_URL;
+        // Same-origin Next route (not NEXT_PUBLIC_DATA_URL directly): a browser
+        // fetch straight to api.therun.gg is cross-origin and the API sets no
+        // Access-Control-Allow-Origin header, so Firefox blocks reading the
+        // 200 response. This route proxies the same payload with an edge cache.
+        // apiResponse returns the UserData object directly (no { result } wrap),
+        // so read `.picture` at the top level.
         Promise.all(
             usernames.map(async (username) => {
                 try {
                     const res = await fetch(
-                        `${dataUrl}/users/global/${username}`,
+                        `/api/users/${encodeURIComponent(username)}/global`,
                     );
                     if (!res.ok) return [username, ''] as const;
                     const json = await res.json();
-                    return [username, json.result?.picture ?? ''] as const;
+                    return [username, json?.picture ?? ''] as const;
                 } catch {
                     return [username, ''] as const;
                 }
