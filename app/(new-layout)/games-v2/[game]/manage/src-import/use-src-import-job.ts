@@ -5,12 +5,23 @@ import type { SrcImportJob } from '../../../../../../types/src-import.types';
 import type { ActionResult } from './src-import-actions';
 
 const TERMINAL = new Set<SrcImportJob['status']>(['done', 'failed']);
+// Commit-phase statuses where a worker is running async and the UI must keep
+// polling until it settles. The staging `status` is already 'done' throughout
+// the commit phase, so without this the poll would stop and the console would
+// sit on "Applying configuration…" forever even after the worker finished.
+const COMMIT_IN_PROGRESS = new Set<NonNullable<SrcImportJob['commitStatus']>>([
+    'applying',
+    'importing',
+    'reconciling',
+    'undoing',
+]);
 export const POLL_MS = 5000;
 
 /**
- * Loads the game's latest import job on mount and keeps polling while it is
- * queued/running. `refresh()` forces an immediate read — the pane calls it
- * right after a POST so the new job shows up without waiting a tick.
+ * Loads the game's latest import job on mount and keeps polling while either
+ * the staging job is queued/running OR a commit-phase worker is in progress.
+ * `refresh()` forces an immediate read — the pane calls it right after a POST
+ * so the new state shows up without waiting a tick.
  */
 export function useSrcImportJob(
     fetcher: () => Promise<ActionResult<SrcImportJob | null>>,
@@ -47,14 +58,23 @@ export function useSrcImportJob(
         };
     }, [read]);
 
-    const inFlight =
-        job !== null && !TERMINAL.has(job.status) ? job.status : null;
+    // Poll while staging is running, or while a commit-phase worker is. The
+    // key changes identity when the reason to poll changes, so the interval
+    // re-subscribes correctly and stops the moment the job settles.
+    const pollKey =
+        job === null
+            ? null
+            : !TERMINAL.has(job.status)
+              ? `status:${job.status}`
+              : job.commitStatus && COMMIT_IN_PROGRESS.has(job.commitStatus)
+                ? `commit:${job.commitStatus}`
+                : null;
 
     useEffect(() => {
-        if (inFlight === null) return;
+        if (pollKey === null) return;
         const interval = setInterval(() => void read(), POLL_MS);
         return () => clearInterval(interval);
-    }, [inFlight, read]);
+    }, [pollKey, read]);
 
     return { job, loading, error, refresh: read };
 }
