@@ -35,8 +35,12 @@ export function decideGameRootView(
     const featured = categories.filter((c) => !c.archived && c.isMain);
 
     if (categoryParam) {
+        // Exact match on the canonical backend slug, then a normalized fallback
+        // (case/space/hyphen-folded) so older display-derived links still land.
         const norm = normalizeSlug(categoryParam);
-        const match = featured.find((c) => c.name === norm);
+        const match =
+            featured.find((c) => c.name === categoryParam) ??
+            featured.find((c) => normalizeSlug(c.name) === norm);
         return match
             ? { view: 'board', category: match }
             : { view: 'redirect' };
