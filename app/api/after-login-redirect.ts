@@ -15,13 +15,17 @@ export async function afterLoginRedirect(request: NextRequest) {
 
     const code = request.nextUrl.searchParams.get('code');
 
+    // Secure only over HTTPS: a Secure cookie is silently dropped on plain
+    // http://localhost, which would break local dev login.
+    const secure = request.nextUrl.protocol === 'https:' ? ' Secure;' : '';
+
     const headers = new Headers();
     if (code) {
         const { id } = (await createSession(code)) || {};
         if (id) {
             headers.append(
                 'Set-Cookie',
-                `session_id=${id}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${MAX_AGE};`,
+                `session_id=${id}; Path=/; HttpOnly;${secure} SameSite=Lax; Max-Age=${MAX_AGE};`,
             );
         }
     }
