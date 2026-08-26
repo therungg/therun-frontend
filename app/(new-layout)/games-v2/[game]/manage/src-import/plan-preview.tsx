@@ -1,13 +1,28 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type {
+    SrcCommitOverrides,
     SrcCommitPlan,
     SrcPlanAction,
+    SrcPlanConflict,
 } from '../../../../../../types/src-import.types';
 import { InlineError } from '../shared/form-kit';
 import styles from './src-import.module.scss';
-import { getSrcImportPlanAction } from './src-import-actions';
+import {
+    getSrcImportPlanAction,
+    setSrcImportOverridesAction,
+} from './src-import-actions';
+
+/** Conflict kind -> the override group that holds it. */
+const GROUP_FOR_KIND: Record<
+    SrcPlanConflict['kind'],
+    keyof SrcCommitOverrides
+> = {
+    category: 'categories',
+    level: 'levels',
+    variable: 'variables',
+};
 
 interface Props {
     gameId: number;
@@ -26,6 +41,34 @@ export function planHasConflicts(plan: SrcCommitPlan): boolean {
 }
 
 const ACTIONS: SrcPlanAction[] = ['create', 'reuse', 'skip'];
+
+/** Maps every SRC id in the plan to its human name, so conflict text can show
+ * "Any%" instead of `02q0zr9k`. Covers categories, levels, and variables —
+ * the three kinds an SRC id can refer to in a conflict message. */
+function buildNameLookup(plan: SrcCommitPlan): Map<string, string> {
+    const byId = new Map<string, string>();
+    for (const c of plan.categories) byId.set(c.srcId, c.name);
+    for (const l of plan.levels) byId.set(l.srcId, l.name);
+    for (const v of plan.variables) byId.set(v.srcId, v.name);
+    return byId;
+}
+
+/** A label for a conflict: its entity's real name where we have one, falling
+ * back to the raw id so nothing silently disappears. */
+function conflictLabel(c: SrcPlanConflict, names: Map<string, string>): string {
+    const name = names.get(c.srcId);
+    return name ? `${c.kind} “${name}”` : `${c.kind} ${c.srcId}`;
+}
+
+/** Backend conflict messages embed raw SRC ids inside quotes (e.g. `bound to
+ * SRC category '02q0zr9k'`). Swap any quoted token we recognise as an SRC id
+ * for its name; quoted names left as-is won't match the id map. */
+function humanizeMessage(message: string, names: Map<string, string>): string {
+    return message.replace(/'([^']+)'/g, (whole, token: string) => {
+        const name = names.get(token);
+        return name ? `“${name}”` : whole;
+    });
+}
 
 function countByAction(
     items: Array<{ action: SrcPlanAction }>,
@@ -49,12 +92,23 @@ export function PlanPreview({ gameId, gameSlug, jobId, onPlanLoaded }: Props) {
     const [plan, setPlan] = useState<SrcCommitPlan | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
+    // srcId of the conflict currently being skipped, so its button can show a
+    // spinner and the rest stay disabled while the POST is in flight.
+    const [skipping, setSkipping] = useState<string | null>(null);
+    const [skipError, setSkipError] = useState<string | null>(null);
+    // The override set we have accumulated from Skip clicks. The backend
+    // REPLACES the stored set on every POST, so we must resend the full set
+    // each time. It starts empty because this is the only surface that writes
+    // overrides — a fresh plan has none stored.
+    const overridesRef = useRef<SrcCommitOverrides>({});
 
     useEffect(() => {
         let cancelled = false;
         setLoading(true);
         setError(null);
         setPlan(null);
+        setSkipError(null);
+        overridesRef.current = {};
         getSrcImportPlanAction({ gameId, gameSlug, jobId }).then((res) => {
             if (cancelled) return;
             if ('error' in res) {
@@ -73,6 +127,33 @@ export function PlanPreview({ gameId, gameSlug, jobId, onPlanLoaded }: Props) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [gameId, gameSlug, jobId]);
 
+    async function skipConflict(c: SrcPlanConflict) {
+        const group = GROUP_FOR_KIND[c.kind];
+        const next: SrcCommitOverrides = {
+            ...overridesRef.current,
+            [group]: {
+                ...overridesRef.current[group],
+                [c.srcId]: { action: 'skip' as SrcPlanAction },
+            },
+        };
+        setSkipping(c.srcId);
+        setSkipError(null);
+        const res = await setSrcImportOverridesAction({
+            gameId,
+            gameSlug,
+            jobId,
+            overrides: next,
+        });
+        setSkipping(null);
+        if ('error' in res) {
+            setSkipError(res.error);
+            return;
+        }
+        overridesRef.current = next;
+        setPlan(res.result);
+        onPlanLoaded?.(res.result);
+    }
+
     if (loading) {
         return (
             <div className={styles.jobHead} role="status" aria-live="polite">
@@ -90,6 +171,7 @@ export function PlanPreview({ gameId, gameSlug, jobId, onPlanLoaded }: Props) {
     const levelCounts = countByAction(plan.levels);
     const variableCounts = countByAction(plan.variables);
     const hasConflicts = planHasConflicts(plan);
+    const names = buildNameLookup(plan);
 
     return (
         <div className={styles.stack}>
@@ -128,14 +210,48 @@ export function PlanPreview({ gameId, gameSlug, jobId, onPlanLoaded }: Props) {
             {hasConflicts ? (
                 <div className={`${styles.callout} ${styles.calloutError}`}>
                     <div>
+                        <p>
+                            {plan.conflicts.length === 1
+                                ? '1 item blocks this import'
+                                : `${plan.conflicts.length} items block this import`}
+                            . Each names a category, level, or variable that
+                            can’t be imported as-is — usually because it points
+                            at something excluded from this import. Apply stays
+                            disabled until they’re cleared.
+                        </p>
                         <ul className={styles.conflictList}>
-                            {plan.conflicts.map((c) => (
-                                <li key={`${c.kind}-${c.srcId}`}>
-                                    {c.kind} {c.srcId}: {c.message}
+                            {plan.conflicts.map((c, i) => (
+                                <li key={`${c.kind}-${c.srcId}-${i}`}>
+                                    <span>
+                                        <strong>
+                                            {conflictLabel(c, names)}
+                                        </strong>
+                                        : {humanizeMessage(c.message, names)}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        className={styles.conflictSkip}
+                                        onClick={() => skipConflict(c)}
+                                        disabled={skipping !== null}
+                                    >
+                                        {skipping === c.srcId ? (
+                                            <>
+                                                <span
+                                                    className={styles.spinner}
+                                                    aria-hidden
+                                                />
+                                                Skipping…
+                                            </>
+                                        ) : (
+                                            'Skip & don’t import'
+                                        )}
+                                    </button>
                                 </li>
                             ))}
                         </ul>
-                        <p>Resolve these on the API before applying.</p>
+                        {skipError ? (
+                            <InlineError>{skipError}</InlineError>
+                        ) : null}
                     </div>
                 </div>
             ) : null}
