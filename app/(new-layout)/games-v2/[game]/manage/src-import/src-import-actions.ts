@@ -7,18 +7,27 @@ import {
     canModerateGame,
 } from '~src/lib/moderation/can-moderate';
 import {
+    applySrcImportConfig,
     getSrcImportJob,
+    getSrcImportPlan,
+    importSrcRuns,
     listSrcImportCategories,
     listSrcImportLevels,
     listSrcImportPlayers,
     listSrcImportRuns,
     listSrcImportVariables,
+    reconcileSrcImport,
+    reconcileUndoSrcImport,
     type SrcImportPlayersQuery,
     type SrcImportRunsQuery,
+    setSrcOnlyLeaderboard,
     startSrcImport,
+    undoSrcImportConfig,
+    undoSrcImportRuns,
 } from '~src/lib/src-import';
 import type {
     Paged,
+    SrcCommitPlan,
     SrcImportCategory,
     SrcImportJob,
     SrcImportLevel,
@@ -140,6 +149,100 @@ export async function listSrcImportRunsAction(input: {
             input.gameId,
             input.jobId,
             input.query,
+        );
+    });
+}
+
+export async function getSrcImportPlanAction(input: {
+    gameId: number;
+    gameSlug: string;
+    jobId: number;
+}): Promise<ActionResult<SrcCommitPlan>> {
+    return run(async () => {
+        const sessionId = await requireBoardMod(input.gameSlug);
+        return getSrcImportPlan(sessionId, input.gameId, input.jobId);
+    });
+}
+
+export async function applyConfigAction(input: {
+    gameId: number;
+    gameSlug: string;
+    jobId: number;
+}): Promise<ActionResult<{ jobId: number }>> {
+    return run(async () => {
+        const sessionId = await requireBoardMod(input.gameSlug);
+        return applySrcImportConfig(sessionId, input.gameId, input.jobId);
+    });
+}
+
+export async function importRunsAction(input: {
+    gameId: number;
+    gameSlug: string;
+    jobId: number;
+}): Promise<ActionResult<{ jobId: number }>> {
+    return run(async () => {
+        const sessionId = await requireBoardMod(input.gameSlug);
+        return importSrcRuns(sessionId, input.gameId, input.jobId);
+    });
+}
+
+export async function undoRunsAction(input: {
+    gameId: number;
+    gameSlug: string;
+    jobId: number;
+}): Promise<ActionResult<{ jobId: number }>> {
+    return run(async () => {
+        const sessionId = await requireBoardMod(input.gameSlug);
+        return undoSrcImportRuns(sessionId, input.gameId, input.jobId);
+    });
+}
+
+export async function undoConfigAction(input: {
+    gameId: number;
+    gameSlug: string;
+    jobId: number;
+}): Promise<ActionResult<{ jobId: number }>> {
+    return run(async () => {
+        const sessionId = await requireBoardMod(input.gameSlug);
+        return undoSrcImportConfig(sessionId, input.gameId, input.jobId);
+    });
+}
+
+export async function reconcileAction(input: {
+    gameId: number;
+    gameSlug: string;
+    jobId: number;
+}): Promise<ActionResult<{ jobId: number }>> {
+    return run(async () => {
+        const sessionId = await requireBoardMod(input.gameSlug);
+        return reconcileSrcImport(sessionId, input.gameId, input.jobId);
+    });
+}
+
+export async function reconcileUndoAction(input: {
+    gameId: number;
+    gameSlug: string;
+    jobId: number;
+}): Promise<ActionResult<{ jobId: number }>> {
+    return run(async () => {
+        const sessionId = await requireBoardMod(input.gameSlug);
+        return reconcileUndoSrcImport(sessionId, input.gameId, input.jobId);
+    });
+}
+
+export async function setSrcOnlyAction(input: {
+    gameId: number;
+    gameSlug: string;
+    jobId: number;
+    enabled: boolean;
+}): Promise<ActionResult<{ jobId: number; srcOnlyLeaderboard: boolean }>> {
+    return run(async () => {
+        const sessionId = await requireBoardMod(input.gameSlug);
+        return setSrcOnlyLeaderboard(
+            sessionId,
+            input.gameId,
+            input.jobId,
+            input.enabled,
         );
     });
 }

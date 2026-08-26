@@ -364,3 +364,73 @@ $rail: 3px;
     border: 1px dashed rgba(var(--bs-border-color-rgb), 0.6);
     border-radius: dt.$radius-md;
 }
+
+// ---- Commit panel --------------------------------------------
+.commitCard {
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-md;
+    padding: dt.$spacing-lg;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+}
+
+.actionRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-md;
+}
+
+// Outline counterpart to kit's saveBtn — "Undo config", "Undo runs",
+// "Reverse SRC-only leaderboard" read as reversals, not the primary path.
+.secondaryBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    border-radius: dt.$radius-md;
+    background: transparent;
+    color: var(--bs-body-color);
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    cursor: pointer;
+    transition:
+        border-color dt.$transition-fast,
+        color dt.$transition-fast;
+
+    &:hover:not(:disabled) {
+        border-color: var(--bs-primary);
+        color: var(--bs-primary);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: default;
+    }
+}
+
+.checkboxRow {
+    display: flex;
+    align-items: flex-start;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+}
+
+.checkboxHint {
+    display: block;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+}
+
+.blockedHint {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+}
+
+.conflictList {
+    margin: 0 0 dt.$spacing-sm;
+    padding-left: dt.$spacing-lg;
+}

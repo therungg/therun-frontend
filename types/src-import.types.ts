@@ -41,7 +41,29 @@ export interface SrcImportJob {
     startedAt: string | null;
     finishedAt: string | null;
     createdAt: string;
+    // ---- commit phase (docs/frontend-guide-src-import.md "Commit phase") ----
+    commitStatus: SrcImportCommitStatus | null;
+    commitPhase: SrcImportCommitPhase | null;
+    importedRunsCount: number;
+    importSkippedCount: number;
+    configAppliedAt: string | null;
+    runsImportedAt: string | null;
+    /** "Only use the speedrun.com leaderboard" — set via POST .../src-only, before import-runs runs. */
+    srcOnlyLeaderboard: boolean;
 }
+
+export type SrcImportCommitStatus =
+    | 'planning'
+    | 'applying'
+    | 'applied'
+    | 'importing'
+    | 'imported'
+    | 'reconciling'
+    | 'reconciled'
+    | 'undoing'
+    | 'failed';
+
+export type SrcImportCommitPhase = 'config' | 'runs' | 'reconcile';
 
 export interface SrcImportCategory {
     id: number;
@@ -143,6 +165,90 @@ export interface SrcImportRun {
 export interface Paged<T> {
     items: T[];
     total: number;
+}
+
+// ---------------------------------------------------------------------------
+// Commit plan (read-only preview) — backend `src-import/commit/types.ts`,
+// docs: docs/frontend-guide-src-import.md "Commit phase" / "Plan types".
+// ---------------------------------------------------------------------------
+
+export type SrcPlanAction = 'create' | 'reuse' | 'skip';
+
+export interface SrcCommitOverrides {
+    categories?: Record<string, { action: SrcPlanAction; therunId?: number }>;
+    levels?: Record<string, { action: SrcPlanAction; therunId?: number }>;
+    variables?: Record<string, { action: SrcPlanAction; therunId?: number }>;
+}
+
+export interface SrcPlanCategory {
+    srcId: string;
+    name: string;
+    type: 'per-game' | 'per-level';
+    action: SrcPlanAction;
+    therunId?: number;
+    therunDisplay?: string;
+    reason?: string;
+}
+
+export interface SrcPlanLevel {
+    srcId: string;
+    name: string;
+    action: SrcPlanAction;
+    therunId?: number;
+    reason?: string;
+}
+
+export interface SrcPlanVariableTarget {
+    kind: 'category' | 'template' | 'instance';
+    therunId?: number;
+    name: string;
+}
+
+export interface SrcPlanVariableValue {
+    srcId: string;
+    label: string;
+    action: 'create' | 'reuse';
+    /**
+     * Set when this SRC value normalized to the same string as an earlier one
+     * and was folded into it. Both srcIds still get a `variable-value` mapping
+     * written on apply-config, pointing at the surviving canonical label.
+     */
+    mergedIntoSrcId?: string;
+}
+
+export interface SrcPlanVariable {
+    srcId: string;
+    name: string;
+    role: 'subcategory' | 'filter';
+    scope: string;
+    targets: SrcPlanVariableTarget[];
+    action: SrcPlanAction;
+    values: SrcPlanVariableValue[];
+    /** The storage key the variable will get (`nameNormalized`). */
+    nameNormalized?: string;
+    reason?: string;
+}
+
+export interface SrcPlanConflict {
+    kind: 'category' | 'level' | 'variable';
+    srcId: string;
+    message: string;
+}
+
+export interface SrcPlanRunSummary {
+    total: number;
+    byStatus: { verified: number; new: number };
+    guests: number;
+    matched: number;
+    unmappable: number;
+}
+
+export interface SrcCommitPlan {
+    categories: SrcPlanCategory[];
+    levels: SrcPlanLevel[];
+    variables: SrcPlanVariable[];
+    conflicts: SrcPlanConflict[];
+    runs: SrcPlanRunSummary;
 }
 
 // ---------------------------------------------------------------------------
