@@ -61,9 +61,38 @@ function conflictLabel(c: SrcPlanConflict, names: Map<string, string>): string {
 }
 
 /** Backend conflict messages embed raw SRC ids inside quotes (e.g. `bound to
- * SRC category '02q0zr9k'`). Swap any quoted token we recognise as an SRC id
- * for its name; quoted names left as-is won't match the id map. */
+ * SRC category '02q0zr9k'`). Turn them into something a moderator can act on:
+ *
+ * 1. Swap any quoted token we recognise as an SRC id for its name. Quoted
+ *    names left as-is won't match the id map, so they pass through untouched.
+ * 2. The "not being imported" conflicts name a category/level that was never
+ *    staged, so its id is in NEITHER the plan nor the backend's staged data —
+ *    unresolvable and meaningless. After step 1 those still carry a raw id
+ *    (straight quotes); rewrite the whole clause into plain words instead.
+ */
 function humanizeMessage(message: string, names: Map<string, string>): string {
+    // The two "not being imported" conflicts get rewritten whole: name the
+    // referent when the plan carries it, otherwise say it plainly. Either way
+    // the raw id and the internal "SRC category/level" wording are dropped.
+    const catMiss = message.match(
+        /^bound to SRC category '([^']+)', which is not being imported$/,
+    );
+    if (catMiss) {
+        const name = names.get(catMiss[1]);
+        return name
+            ? `is scoped to “${name}”, which isn’t part of this import`
+            : 'is scoped to a category that isn’t part of this import';
+    }
+    const lvlMiss = message.match(
+        /^scope is single-level but SRC level '([^']*)' is not being imported$/,
+    );
+    if (lvlMiss) {
+        const name = names.get(lvlMiss[1]);
+        return name
+            ? `is scoped to the level “${name}”, which isn’t part of this import`
+            : 'is scoped to a single level that isn’t part of this import';
+    }
+    // Otherwise, name any embedded ids we recognise and leave the rest.
     return message.replace(/'([^']+)'/g, (whole, token: string) => {
         const name = names.get(token);
         return name ? `“${name}”` : whole;

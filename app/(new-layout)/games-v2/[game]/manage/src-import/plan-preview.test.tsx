@@ -79,9 +79,10 @@ describe('PlanPreview', () => {
         // Conflict entity id -> name: c1 -> Any%, v1 -> Platform.
         expect(await screen.findByText(/category “Any%”/)).toBeInTheDocument();
         expect(screen.getByText(/variable “Platform”/)).toBeInTheDocument();
-        // Embedded id inside the message -> name: c3 -> Glitchless.
+        // Embedded id inside the message -> name: c3 -> Glitchless, and the
+        // "not being imported" clause is rewritten in plain words.
         expect(
-            screen.getByText(/bound to SRC category “Glitchless”/),
+            screen.getByText(/is scoped to “Glitchless”, which isn’t part/),
         ).toBeInTheDocument();
         // Raw ids no longer leak into the rendered text.
         expect(screen.queryByText(/'c3'/)).not.toBeInTheDocument();
@@ -90,6 +91,31 @@ describe('PlanPreview', () => {
         expect(
             screen.queryByText(/Resolve these on the API before applying/),
         ).not.toBeInTheDocument();
+    });
+
+    it('rewrites an unresolvable "not being imported" conflict into plain words', async () => {
+        // zzz999 is not a staged category, so it is in neither the plan nor the
+        // backend's data — its id must not leak into the UI.
+        vi.mocked(getSrcImportPlanAction).mockResolvedValue({
+            result: plan({
+                conflicts: [
+                    {
+                        kind: 'variable',
+                        srcId: 'v1',
+                        message:
+                            "bound to SRC category 'zzz999', which is not being imported",
+                    },
+                ],
+            }),
+        });
+        render(<PlanPreview {...props} />);
+        expect(
+            await screen.findByText(
+                /is scoped to a category that isn’t part of this import/,
+            ),
+        ).toBeInTheDocument();
+        expect(screen.queryByText(/zzz999/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/SRC category/)).not.toBeInTheDocument();
     });
 
     it('renders counts with no conflict note when there are zero conflicts', async () => {
