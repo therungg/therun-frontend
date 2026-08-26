@@ -159,9 +159,9 @@ describe('resolveCategory — level groups + pageData-only categories', () => {
         expect(zeroStats?.totalRunTime ?? 0).toBe(0);
         expect(zeroStats?.totalAttemptCount ?? 0).toBe(0);
         expect(zeroStats?.totalFinishedAttemptCount ?? 0).toBe(0);
-        // The slug is derived from `display`, not the pageData `name` field
-        // (which is set to a deliberately different value in this fixture).
-        expect(zeroStats?.name).toBe(normalizeSlug('100%'));
+        // The slug is the backend `categories.name` (set to a deliberately
+        // different value in this fixture), not derived from `display`.
+        expect(zeroStats?.name).toBe('100');
         expect(zeroStats?.display).toBe('100%');
         expect(zeroStats?.rules).toBe('No major skips.');
         expect(zeroStats?.showMilliseconds).toBe(false);
@@ -227,18 +227,15 @@ describe('resolveCategory — level groups + pageData-only categories', () => {
         ]);
     });
 
-    it('slugs a zero-stats board from display, same as a stats-backed row would, and it is selectable', async () => {
+    it('slugs a zero-stats level board from its backend name and it is selectable', async () => {
         setupFetch();
-        const { categories, selected } = await resolveCategory(
-            1,
-            'E1M1 — Any%',
-        );
+        const { categories, selected } = await resolveCategory(1, 'e1m1-any%');
         const board = categories.find((c) => c.id === 4);
-        // The backend `name` on the wire fixture ('e1m1-any%') is NOT the
-        // slug — it must not leak through. The slug is always derived from
-        // `display`, exactly as a stats-backed row's `name` is.
-        expect(board?.name).toBe(normalizeSlug('E1M1 — Any%'));
-        expect(board?.name).not.toBe('e1m1-any%');
+        // A level instance's slug is its backend `categories.name` (a hyphen
+        // join), NOT `normalizeSlug(display)` — the display's em-dash could
+        // never reproduce it, which is what 404'd these boards.
+        expect(board?.name).toBe('e1m1-any%');
+        expect(board?.name).not.toBe(normalizeSlug('E1M1 — Any%'));
         expect(selected?.id).toBe(4);
     });
 

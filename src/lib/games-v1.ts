@@ -169,21 +169,35 @@ interface PageDataForCats {
 }
 
 /**
+ * The URL slug for a category is its backend `categories.name` — the exact
+ * value `resolveCategory` matches on server-side. This is the single source
+ * of truth: deriving it from the display instead (the old behaviour) diverged
+ * for level instances, whose backend name is a hyphen-join of two searchable
+ * parts (e.g. `e1m1-any%`) that no display normalization can reproduce (the
+ * display uses an em-dash, `E1M1 — Any%`), so their boards 404'd. A template's
+ * name is namespaced (`level-template:<slug>`) and is never a URL, so those —
+ * and any row whose backend name is missing (pageData baked before names were
+ * included) — fall back to `normalizeSlug(display)`.
+ */
+function slugForCategory(
+    backendName: string | undefined,
+    display: string,
+): string {
+    if (backendName && !backendName.startsWith('level-template:')) {
+        return backendName;
+    }
+    return normalizeSlug(display);
+}
+
+/**
  * Derivations shared by both `resolveCategory` branches (stats-backed rows
  * and the pageData-only zero-stats union) — kept in one place so the two
- * branches cannot silently diverge on how a display resolves to a slug or
+ * branches cannot silently diverge on how a category resolves to a slug or
  * how the raw timing strings map to the typed enums.
- *
- * The slug is always `normalizeSlug(display)`, never the backend `name`
- * column — an instance's backend `name` (e.g. `e1m1-any%`) is a real slug,
- * but a template's is namespaced `level-template:<slug>` and is never a URL
- * slug, and every slug lookup in this app (this function's own `selected`
- * search, `root-view.ts`) compares against `normalizeSlug(param)`. Deriving
- * the slug the same way here keeps both branches — and every other slug
- * consumer — consistent.
  */
 function deriveCategoryBasics(
     display: string,
+    backendName: string | undefined,
     primaryTimingRaw: string | undefined,
     gameTimeLabelRaw: string | undefined,
 ): {
@@ -192,7 +206,7 @@ function deriveCategoryBasics(
     gameTimeLabel: 'igt' | 'lrt';
 } {
     return {
-        name: normalizeSlug(display),
+        name: slugForCategory(backendName, display),
         primaryTiming:
             primaryTimingRaw === 'gt' || primaryTimingRaw === 'gametime'
                 ? 'gt'
@@ -322,6 +336,7 @@ export async function resolveCategory(
         const grp = groupByCatId.get(r.category_id) ?? null;
         const basics = deriveCategoryBasics(
             r.category_display,
+            entry?.name,
             r.primary_timing,
             r.game_time_label,
         );
@@ -368,6 +383,7 @@ export async function resolveCategory(
         const display = entry.display;
         const basics = deriveCategoryBasics(
             display,
+            entry.name,
             entry.primaryTiming,
             entry.gameTimeLabel,
         );
@@ -407,8 +423,13 @@ export async function resolveCategory(
 
     let selected: ResolvedCategory | null = null;
     if (categorySlug) {
+        // Exact match on the canonical backend slug, then a normalized fallback
+        // (case/space/hyphen-folded) so older display-derived links still land.
         const norm = normalizeSlug(categorySlug);
-        selected = categories.find((c) => c.name === norm) ?? null;
+        selected =
+            categories.find((c) => c.name === categorySlug) ??
+            categories.find((c) => normalizeSlug(c.name) === norm) ??
+            null;
     }
     if (!selected) selected = categories[0] ?? null;
 
@@ -417,6 +438,7 @@ export async function resolveCategory(
     ).map((t) => {
         const basics = deriveCategoryBasics(
             t.display ?? '',
+            t.name,
             t.primaryTiming,
             t.gameTimeLabel,
         );
