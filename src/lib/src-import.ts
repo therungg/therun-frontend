@@ -5,6 +5,7 @@
 // worker runs; the pane polls `getSrcImportJob` itself.
 import type {
     Paged,
+    SrcCommitOverrides,
     SrcCommitPlan,
     SrcImportCategory,
     SrcImportJob,
@@ -124,6 +125,25 @@ export async function getSrcImportPlan(
     return apiFetch<SrcCommitPlan>(`${base(gameId)}/${jobId}/plan`, {
         method: 'GET',
         sessionId,
+    });
+}
+
+/**
+ * Stores the commit overrides on the job and returns the recomputed plan.
+ * The backend REPLACES the stored set wholesale, so callers must send the full
+ * override set every time — omitting a group clears it. `apply-config` then
+ * commits using whatever was last stored here.
+ */
+export async function setSrcImportOverrides(
+    sessionId: string,
+    gameId: number,
+    jobId: number,
+    overrides: SrcCommitOverrides,
+): Promise<SrcCommitPlan> {
+    return apiFetch<SrcCommitPlan>(`${base(gameId)}/${jobId}/plan`, {
+        method: 'POST',
+        sessionId,
+        body: overrides,
     });
 }
 

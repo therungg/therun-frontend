@@ -20,6 +20,7 @@ import {
     reconcileUndoSrcImport,
     type SrcImportPlayersQuery,
     type SrcImportRunsQuery,
+    setSrcImportOverrides,
     setSrcOnlyLeaderboard,
     startSrcImport,
     undoSrcImportConfig,
@@ -27,6 +28,7 @@ import {
 } from '~src/lib/src-import';
 import type {
     Paged,
+    SrcCommitOverrides,
     SrcCommitPlan,
     SrcImportCategory,
     SrcImportJob,
@@ -161,6 +163,23 @@ export async function getSrcImportPlanAction(input: {
     return run(async () => {
         const sessionId = await requireBoardMod(input.gameSlug);
         return getSrcImportPlan(sessionId, input.gameId, input.jobId);
+    });
+}
+
+export async function setSrcImportOverridesAction(input: {
+    gameId: number;
+    gameSlug: string;
+    jobId: number;
+    overrides: SrcCommitOverrides;
+}): Promise<ActionResult<SrcCommitPlan>> {
+    return run(async () => {
+        const sessionId = await requireBoardMod(input.gameSlug);
+        return setSrcImportOverrides(
+            sessionId,
+            input.gameId,
+            input.jobId,
+            input.overrides,
+        );
     });
 }
 

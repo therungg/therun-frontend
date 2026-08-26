@@ -433,4 +433,45 @@ $rail: 3px;
 .conflictList {
     margin: 0 0 dt.$spacing-sm;
     padding-left: dt.$spacing-lg;
+
+    li {
+        display: flex;
+        gap: dt.$spacing-md;
+        align-items: baseline;
+        justify-content: space-between;
+
+        & + li {
+            margin-top: dt.$spacing-xs;
+        }
+    }
+}
+
+.conflictSkip {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    flex-shrink: 0;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    border-radius: dt.$radius-sm;
+    border: 1px solid currentcolor;
+    background: transparent;
+    color: inherit;
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+        background: color-mix(in srgb, currentcolor 12%, transparent);
+    }
+
+    &:disabled {
+        opacity: 0.55;
+        cursor: default;
+    }
+
+    .spinner {
+        width: 0.75rem;
+        height: 0.75rem;
+        border-width: 2px;
+    }
 }
