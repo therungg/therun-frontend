@@ -193,7 +193,11 @@ export const GameLeaderboards = ({
                                         [
                                             'Highest',
                                             getFormattedString(
-                                                leaderboards.totalRunTimeLeaderboard[0].stat.toString(),
+                                                (
+                                                    leaderboards
+                                                        .totalRunTimeLeaderboard[0]
+                                                        ?.stat ?? 0
+                                                ).toString(),
                                                 false,
                                                 true,
                                             ),
@@ -220,7 +224,11 @@ export const GameLeaderboards = ({
                                         ],
                                         [
                                             'Highest',
-                                            leaderboards.attemptCountLeaderboard[0].stat.toLocaleString(),
+                                            (
+                                                leaderboards
+                                                    .attemptCountLeaderboard[0]
+                                                    ?.stat ?? 0
+                                            ).toLocaleString(),
                                         ],
                                         [
                                             'Average',
@@ -242,7 +250,11 @@ export const GameLeaderboards = ({
                                         ],
                                         [
                                             'Highest',
-                                            leaderboards.finishedAttemptCountLeaderboard[0].stat.toLocaleString(),
+                                            (
+                                                leaderboards
+                                                    .finishedAttemptCountLeaderboard[0]
+                                                    ?.stat ?? 0
+                                            ).toLocaleString(),
                                         ],
                                         [
                                             'Average',

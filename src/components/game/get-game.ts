@@ -30,8 +30,14 @@ export const getGame = async (game: string) => {
 
     const [gameData, globalGameData] = await Promise.all(promises);
 
-    if (!gameData && game.includes(' ')) {
-        return getGame(game.replace(' ', '+'));
+    if (!gameData) {
+        // Retry space-as-plus once; otherwise the game is unknown/empty —
+        // return the falsy value rather than reading `.data` off undefined.
+        // Callers guard with optional chaining (`data?.data?.game`).
+        if (game.includes(' ')) {
+            return getGame(game.replace(' ', '+'));
+        }
+        return gameData;
     }
 
     if (!gameData.data) {
