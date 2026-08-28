@@ -223,3 +223,20 @@ the field agree with its own empty-check and with the VOD field.
   fenced ``` blocks cover that case, and the field's own empty-check already treats whitespace as nothing.
   Consistency with VodBlock and the empty-semantics wins.
 - Trimming on every keystroke (onChange) — would fight the user mid-type; trimming only at save is correct.
+
+## Cycle 12 — Indeterminate Select-all checkbox (roster-view.tsx)
+
+**Changed:** The roster's "Select all" header checkbox now shows the standard indeterminate (dash) state
+when only some visible rows are selected. Added a `partiallySelected` derivation (`!allSelected && some
+visible row selected`), a `selectAllRef`, and an effect that sets `selectAllRef.current.indeterminate`.
+
+**Why:** The box only reflected `allSelected`, so a partial selection rendered it fully unchecked —
+misleading, since clicking it then selects everything rather than what a "half" state would imply. The
+indeterminate dash is the platform-standard signal for "some, not all". `indeterminate` is a DOM property,
+not a JSX attribute, so it needs a ref + effect; `useRef`/`useEffect` were already imported and
+`selected`/`visibleRows` already exist, keeping this contained to the header cell.
+
+**Ideas considered but skipped:**
+- Deriving `partiallySelected` inline in JSX and setting the property in a callback ref — an effect keyed
+  on the boolean is clearer and re-runs exactly when the state flips.
+- A CSS-only `:indeterminate` style — can't set the property from CSS; the DOM property must be assigned.
