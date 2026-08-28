@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useRef, useState, useTransition } from 'react';
 import { Form, Modal } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import {
@@ -52,6 +52,12 @@ export function RunActions({
     const [reason, setReason] = useState('');
     const [pending, startTransition] = useTransition();
     const selfVerdict = useSelfRunVerdict();
+    // Report and Appeal are mutually exclusive (one `reason` textarea, one open
+    // at a time), so a single ref focused on Modal enter covers both. Bootstrap's
+    // own autoFocus lands on the header close button, not the field the user
+    // must fill — onEntered fires after the enter transition, when focus sticks.
+    const reasonRef = useRef<HTMLTextAreaElement>(null);
+    const focusReason = () => reasonRef.current?.focus();
 
     const isRun = model.kind === 'run';
     const isOwnRun = isRun && isSameRunner(sessionUsername, model.runnerName);
@@ -293,7 +299,12 @@ export function RunActions({
                 )}
             </div>
 
-            <Modal show={modal === 'report'} onHide={close} centered>
+            <Modal
+                show={modal === 'report'}
+                onHide={close}
+                onEntered={focusReason}
+                centered
+            >
                 <Modal.Header closeButton>
                     <Modal.Title className="h6">Report this run</Modal.Title>
                 </Modal.Header>
@@ -303,6 +314,7 @@ export function RunActions({
                         spliced video, wrong category…). Minimum 10 characters.
                     </p>
                     <Form.Control
+                        ref={reasonRef}
                         as="textarea"
                         rows={3}
                         value={reason}
@@ -331,7 +343,12 @@ export function RunActions({
                 </Modal.Footer>
             </Modal>
 
-            <Modal show={modal === 'appeal'} onHide={close} centered>
+            <Modal
+                show={modal === 'appeal'}
+                onHide={close}
+                onEntered={focusReason}
+                centered
+            >
                 <Modal.Header closeButton>
                     <Modal.Title className="h6">Appeal rejection</Modal.Title>
                 </Modal.Header>
@@ -341,6 +358,7 @@ export function RunActions({
                         will review your appeal. Minimum 10 characters.
                     </p>
                     <Form.Control
+                        ref={reasonRef}
                         as="textarea"
                         rows={3}
                         value={reason}

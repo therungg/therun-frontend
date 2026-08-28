@@ -56,3 +56,21 @@ rather than stacking two near-identical notices. The now-redundant `title` attri
 **Ideas considered but skipped:**
 - Removing the dead `title` attributes — out of scope for this a11y fix; harmless if left.
 - Per-button separate `.why` lines — rejected; identical cause and wording, one line reads cleaner.
+
+## Cycle 4 — Autofocus Report/Appeal textareas (run-actions.tsx)
+
+**Changed:** Added a `reasonRef` (`HTMLTextAreaElement`) shared by the Report and Appeal modals and an
+`onEntered={focusReason}` handler on each `<Modal>`, so the reason textarea receives focus when the
+modal finishes opening.
+
+**Why:** Both modals demand a ≥10-char reason before the user can submit, yet neither placed focus on
+the field. A keyboard user had to tab past the header close button to reach it. Bootstrap's built-in
+`autoFocus` targets the first focusable node — the header's × button — not the textarea, so it doesn't
+help here. `onEntered` fires after the enter transition, the point at which programmatic focus sticks
+inside a Bootstrap modal. One ref suffices because Report and Appeal are mutually exclusive (single
+`reason` state, `modal` is `'report' | 'appeal' | null`).
+
+**Ideas considered but skipped:**
+- `autoFocus` prop on `Form.Control` — unreliable inside a transitioning Bootstrap modal; `onEntered` is the documented hook.
+- Separate refs per modal — unnecessary; they never coexist.
+- Clearing/selecting existing text on focus — not wanted; `reason` is already reset on close.
