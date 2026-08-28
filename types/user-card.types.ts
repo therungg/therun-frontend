@@ -33,6 +33,12 @@ export interface UserCardStats {
     finishedAttemptCount: number;
     topRuns: UserCardTopRun[];
     latestPb: UserCardLatestPb | null;
+    /**
+     * True when we hold no native run data for this runner and their only
+     * presence is a speedrun.com import. The card shows an "imported" note
+     * instead of empty/zeroed stats. Absent on older backend deploys.
+     */
+    imported?: boolean;
 }
 
 export type UserCardProfile = UserData & {

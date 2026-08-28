@@ -123,7 +123,14 @@ export function UserHoverCard({ username, context }: Props) {
                 </div>
             ) : null}
 
-            {card ? (
+            {card?.imported ? (
+                // No native run data — this runner is on the board only via a
+                // speedrun.com import, so the zeroed stats block would read as
+                // a broken card. Say what it actually is instead.
+                <p className={styles.imported}>Imported from speedrun.com</p>
+            ) : null}
+
+            {card && !card.imported ? (
                 <>
                     <div className={styles.stats}>
                         <span>
