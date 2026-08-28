@@ -274,6 +274,15 @@ export function BoardBulkBar({
             {runnerVerbDisabledReason && (
                 <div className={styles.why}>{runnerVerbDisabledReason}</div>
             )}
+            {hasManual && (
+                // Move… and Mark carry this reason only in `title`, which
+                // browsers hide on a disabled button and screen readers skip.
+                // Mirror the Runner button's visible `.why` fallback so the
+                // manual-time restriction is actually readable.
+                <div className={styles.why}>
+                    Set times can’t be moved or marked — deselect them first.
+                </div>
+            )}
             {ctxError && <div className={styles.why}>{ctxError}</div>}
 
             {modVerb && (

@@ -39,3 +39,20 @@ to earn a constant, and naming them would overstate their reuse.
 - Constants for `-danger`/`-primary` too — rejected as over-extraction (see above).
 - A shared `<ActionButton>` component wrapping the class + type="button" — larger surface change; the
   string constant is the minimal fix for the stated problem. Revisit if a third button variant appears.
+
+## Cycle 3 — Visible disabled-reason for Move/Mark (bulk-bar.tsx)
+
+**Changed:** Added a `.why` line to `leaderboard/bulk-bar.tsx` that shows "Set times can't be moved or
+marked — deselect them first." whenever `hasManual` disables the Move… and Mark bulk buttons.
+
+**Why:** Those two buttons conveyed their disabled reason only through `title`. Browsers do not fire
+`title` on a `disabled` element and screen readers ignore it, so a moderator with a mixed selection
+saw the buttons greyed out with no explanation. The sibling Runner button in the same bar already had
+a visible `.why` fallback (line 274) — this closes the inconsistency by giving Move/Mark the same
+treatment. The two share one cause (`hasManual`) and one message, so a single combined line covers both
+rather than stacking two near-identical notices. The now-redundant `title` attributes were left in place
+(harmless hover affordance for the enabled state's absence; removing them is a separate cleanup).
+
+**Ideas considered but skipped:**
+- Removing the dead `title` attributes — out of scope for this a11y fix; harmless if left.
+- Per-button separate `.why` lines — rejected; identical cause and wording, one line reads cleaner.
