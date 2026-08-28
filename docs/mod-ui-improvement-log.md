@@ -185,3 +185,24 @@ transition-timing `onEntered` workaround outright rather than sitting beside it.
   plus `title` already gives the dialog an accessible name; an id round-trip adds nothing here.
 - `btn-close-white` for dark theme — the previous bootstrap `Modal.Header closeButton` used the default
   `btn-close`; matching it avoids a theme regression, and a themed close button is a separate styling pass.
+
+---
+
+_Named backlog exhausted after cycle 9. From cycle 10 the loop re-surveys the mod-UI directories for new bounded improvements (survey via a scoped Explore pass, files already improved this run excluded)._
+
+## Cycle 10 — Disable role select during approve/deny (mod-applications-card.tsx)
+
+**Changed:** Added `disabled={busy}` to the board-mod-application role `<select>` in
+`manage/moderation/attention/mod-applications-card.tsx`.
+
+**Why:** The Approve and Deny buttons flanking the role dropdown both gate on the already-computed
+`busy = approvePending || denyPending`, but the `<select>` between them didn't — so mid-approve the whole
+action row read as disabled except that one control, which stayed interactive. Behavior was already safe
+(the role is read at click time, not on change), so this is purely the interaction-consistency the survey
+flagged: one attribute, reusing an existing variable, no logic change.
+
+**Ideas considered but skipped:**
+- Adding an `aria-label` to the same unlabeled `<select>` (it has no accessible name) — a real gap, but a
+  distinct a11y fix; kept out to keep this commit single-purpose. Flagged for a later cycle.
+- A busy label on the Deny button (it stays "Deny" while `denyPending`, unlike Approve's "Approving…") —
+  the deny spinner lives in its PromptDialog, so it's low-value; deferred.

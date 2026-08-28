@@ -147,6 +147,7 @@ function ApplicationRow({
                     className="form-select form-select-sm w-auto"
                     value={role}
                     onChange={(e) => setRole(e.target.value as BoardModRole)}
+                    disabled={busy}
                 >
                     <option value="game-mod">Moderator</option>
                     <option value="game-admin">Board admin</option>
