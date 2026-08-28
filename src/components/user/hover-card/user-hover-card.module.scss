@@ -245,3 +245,9 @@ $z-hover-card: 1060;
     font-size: dt.$font-size-2xs;
     color: var(--bs-tertiary-color);
 }
+
+.imported {
+    margin: 0;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+}
