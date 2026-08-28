@@ -230,6 +230,21 @@ export function RosterView({
         visibleRows.length > 0 &&
         visibleRows.every((r) => selected.has(r.runId));
 
+    const partiallySelected =
+        !allSelected &&
+        visibleRows != null &&
+        visibleRows.some((r) => selected.has(r.runId));
+
+    // `indeterminate` isn't a JSX attribute, so drive it off the ref: the
+    // Select-all box shows the standard dash when only some visible rows are
+    // picked, instead of reading as fully unchecked.
+    const selectAllRef = useRef<HTMLInputElement>(null);
+    useEffect(() => {
+        if (selectAllRef.current) {
+            selectAllRef.current.indeterminate = partiallySelected;
+        }
+    }, [partiallySelected]);
+
     const toggleAll = () => {
         if (!visibleRows) return;
         if (allSelected) {
@@ -477,6 +492,7 @@ export function RosterView({
                                     <tr>
                                         <th style={{ width: '1%' }}>
                                             <input
+                                                ref={selectAllRef}
                                                 type="checkbox"
                                                 className="form-check-input"
                                                 aria-label="Select all"

@@ -1,0 +1,96 @@
+@use '../../../../app/(new-layout)/styles/design-tokens' as dt;
+@use '../../../../app/(new-layout)/styles/board' as board;
+
+.card {
+    @include board.board-surface(dt.$spacing-md);
+    box-shadow: dt.$shadow-md;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+    animation: card-in 160ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes card-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card {
+        animation: none;
+    }
+}
+
+// ---- Primary time -----------------------------------------------
+.header {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+}
+
+.rank {
+    @include board.mono-time;
+    font-weight: 700;
+    color: var(--bs-secondary-color);
+}
+
+.time {
+    @include board.mono-time;
+    font-size: dt.$font-size-md;
+    font-weight: 700;
+    color: var(--bs-emphasis-color);
+}
+
+// ---- Fallback / secondary clock -----------------------------------
+.secondary {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: dt.$spacing-sm;
+    padding-top: dt.$spacing-xs;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+}
+
+.secondaryLabel {
+    color: var(--bs-secondary-color);
+}
+
+.secondaryTime {
+    @include board.mono-time;
+    font-size: dt.$font-size-xs;
+}
+
+// ---- Date / video meta ----------------------------------------------
+.meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+}
+
+.runDate {
+    white-space: nowrap;
+}
+
+.videoIndicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+
+    svg {
+        color: var(--bs-secondary-color);
+    }
+}
+
+// ---- Verification status ---------------------------------------------
+.status {
+    display: flex;
+}

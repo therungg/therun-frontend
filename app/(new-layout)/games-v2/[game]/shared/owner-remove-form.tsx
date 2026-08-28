@@ -125,7 +125,17 @@ export function OwnerRemoveForm({
             .then((c) => {
                 if (!cancelled) setClocks(c);
             })
-            .catch(() => {});
+            .catch((err) => {
+                // Not silent: log so a failure is diagnosable rather than
+                // vanishing. `clocks` stays null, so `showSecondary` falls
+                // back to false and the second-clock input is omitted — the
+                // removal/replacement still works on its primary time, it just
+                // can't carry a game time on a dual-timing board until this
+                // succeeds. Surfacing that to the runner (a clocksError state
+                // gating dual-clock replacement, mirroring `rosterError`) is a
+                // larger render change left as a follow-up.
+                console.error('Failed to load board clocks', err);
+            });
         return () => {
             cancelled = true;
         };
