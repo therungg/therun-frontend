@@ -25,6 +25,7 @@ import {
     normalizeVariableName,
 } from '~src/lib/variables/keys';
 import type {
+    LeaderboardEntry,
     ResolvedCategory,
     ResolvedGame,
     ResolvedGroup,
@@ -40,7 +41,6 @@ import { computeDisplayRanks } from '../../leaderboard/display-rank';
 import type { RowSlots } from '../../leaderboard/leaderboard-row';
 import { LeaderboardTable } from '../../leaderboard/leaderboard-table';
 import { relativeDate } from '../../leaderboard/relative-date';
-import { RunInspector } from '../../leaderboard/run-inspector';
 import {
     timingColumnHidden,
     timingColumns,
@@ -48,6 +48,10 @@ import {
 import { BoardDialog } from '../../shared/board-dialog';
 import { reorderCategoriesAction } from '../game-tab/actions/reorder-categories.action';
 import { computeReorderChanges } from '../game-tab/reorder-changes';
+import type {
+    ModVerb,
+    RunActionTarget,
+} from '../moderation/shared/action-model';
 import { moveRunAction } from '../moderation/shared/actions/board-override.action';
 import { loadUserEligibleRunsAction } from '../moderation/shared/actions/eligible-runs.action';
 import {
@@ -56,13 +60,14 @@ import {
 } from '../moderation/shared/actions/exclude.action';
 import { markRunsAction } from '../moderation/shared/actions/marks.action';
 import { restoreRunsAction } from '../moderation/shared/actions/restore.action';
+import { RunActionDialog } from '../moderation/shared/run-action-dialog';
 import { fireUndoToast } from '../moderation/shared/undo-toast';
 import { updateVariableAction } from '../variables/actions/update-variable.action';
 import { AddRunnerRow } from './add-runner-row';
 import { AdjustDialog } from './adjust-dialog';
 import { BoardControls } from './board-controls';
 import styles from './board-curation.module.scss';
-import { rosterEntry, rosterLeaderboard } from './roster-entry';
+import { rosterLeaderboard } from './roster-entry';
 import { RowActions, rosterTimingValue } from './row-actions';
 import {
     defaultCanonicalOf,
@@ -352,12 +357,14 @@ export function BoardCuration({
     const ascending = category?.sortAscending ?? true;
 
     const [showMarkedOnly, setShowMarkedOnly] = useState(false);
-    // Which run the inspector drawer is open on, by id rather than by entry:
-    // a reload rebuilds the rows, and an entry captured by reference would go
-    // stale under the drawer.
-    const [inspectRunId, setInspectRunId] = useState<number | null>(null);
-    // Verb the drawer opens onto (a row's Remove/`x`); cleared on close/step.
-    const [inspectVerb, setInspectVerb] = useState<'remove' | null>(null);
+    // Quick-moderate: a row's Remove/`x` fires this, and a shared
+    // RunActionDialog renders inline over the board. The full mod surface
+    // now lives on the run page — this host only carries the board's
+    // quick-remove path.
+    const [quickAction, setQuickAction] = useState<{
+        entry: LeaderboardEntry;
+        verb: ModVerb;
+    } | null>(null);
     const [boardPageIndex, setBoardPageIndex] = useState(0);
 
     const { rows, total, markedTotal, loading, error, reload } = useBoardData(
@@ -526,26 +533,6 @@ export function BoardCuration({
         );
 
     /**
-     * The moderator view a row click opens — the same drawer the public board
-     * opens, so a mod who clicks a row gets the verbs rather than a read-only
-     * page. Roster rows are always real runs, so there is no set-time
-     * inspector case to route here.
-     */
-    const inspectIndex =
-        inspectRunId == null
-            ? -1
-            : visibleBoardRows.findIndex(
-                  ({ row }) => row.runId === inspectRunId,
-              );
-    const inspectEntry =
-        inspectIndex >= 0
-            ? rosterEntry(
-                  visibleBoardRows[inspectIndex].row,
-                  visibleBoardRows[inspectIndex].rank,
-              )
-            : null;
-
-    /**
      * The board table's own data shape. Curation reads the mod roster
      * endpoint, the public page reads the board endpoint; `rosterEntry` is
      * the only place that knows they describe the same runs.
@@ -582,6 +569,43 @@ export function BoardCuration({
             { row, belowMinimum, timeMs },
         ]),
     );
+
+    // Roster rows are always real runs (runs-only board), so a row's
+    // Remove/`x` opens the shared quick-moderate dialog directly.
+    const onQuickModerate = (entry: LeaderboardEntry, verb: ModVerb) => {
+        setQuickAction({ entry, verb });
+    };
+
+    /**
+     * Builds the shared `RunActionTarget` for a single row's quick-moderate
+     * dialog. Mirrors `LeaderboardPager`'s target construction so Remove's
+     * runner-scope options ("this run" vs "every run this runner has on
+     * this board") keep working from board curation too.
+     */
+    const buildQuickTarget = (entry: LeaderboardEntry): RunActionTarget => {
+        const primaryMs =
+            entry.runId != null
+                ? (byRunId.get(entry.runId)?.timeMs ?? null)
+                : null;
+        return {
+            kind: 'runs',
+            runIds: entry.runId != null ? [entry.runId] : [],
+            label: `${entry.runnerName}'s run`,
+            runTimeMs: primaryMs,
+            runDate: entry.runDate ?? null,
+            runner:
+                entry.userId != null && category != null
+                    ? {
+                          id: entry.userId,
+                          name: entry.runnerName,
+                          categoryId: category.id,
+                          categoryDisplay: category.display,
+                          subcategoryKey,
+                          primaryTiming: timing,
+                      }
+                    : undefined,
+        };
+    };
 
     /**
      * Everything curation shows that the public board does not. Rendered by
@@ -1063,10 +1087,7 @@ export function BoardCuration({
                             selectedKeys={selectedKeys}
                             onToggleSelect={handleToggleSelect}
                             onToggleAllVisible={handleToggleAllVisible}
-                            onModerate={(entry, verb) => {
-                                setInspectVerb(verb ?? null);
-                                setInspectRunId(entry.runId ?? null);
-                            }}
+                            onQuickModerate={onQuickModerate}
                             onBoardRefresh={reload}
                             slots={curationSlots}
                             tbodyFooter={
@@ -1083,50 +1104,19 @@ export function BoardCuration({
                             }
                         />
                     )}
-                    {inspectEntry != null && category && (
-                        <RunInspector
-                            entry={inspectEntry}
+                    {/* Board's quick-remove path: the shared verb form,
+                        inline, over the board. The full mod surface (adjust,
+                        move, evidence, stepping) lives on the run page now. */}
+                    {quickAction && (
+                        <RunActionDialog
                             gameSlug={game.name}
-                            gameId={game.id}
-                            gameDisplay={game.display}
-                            categorySlug={category.name}
-                            categoryDisplay={category.display}
-                            categoryId={category.id}
-                            requireVideo={category.requireVideo}
-                            primaryTiming={timing}
-                            subcategoryDefKeys={subcatVars.map(
-                                (v) => v.nameNormalized,
-                            )}
-                            gameTimeLabel={category.gameTimeLabel}
-                            showMilliseconds={showMilliseconds}
-                            onClose={() => {
-                                setInspectRunId(null);
-                                setInspectVerb(null);
+                            verb={quickAction.verb}
+                            target={buildQuickTarget(quickAction.entry)}
+                            onClose={() => setQuickAction(null)}
+                            onDone={() => {
+                                setQuickAction(null);
+                                reload();
                             }}
-                            onMutated={reload}
-                            initialVerb={inspectVerb ?? undefined}
-                            onPrev={
-                                inspectIndex > 0
-                                    ? () => {
-                                          setInspectVerb(null);
-                                          setInspectRunId(
-                                              visibleBoardRows[inspectIndex - 1]
-                                                  .row.runId,
-                                          );
-                                      }
-                                    : undefined
-                            }
-                            onNext={
-                                inspectIndex < visibleBoardRows.length - 1
-                                    ? () => {
-                                          setInspectVerb(null);
-                                          setInspectRunId(
-                                              visibleBoardRows[inspectIndex + 1]
-                                                  .row.runId,
-                                          );
-                                      }
-                                    : undefined
-                            }
                         />
                     )}
                     {!error && pageCount > 1 && (
