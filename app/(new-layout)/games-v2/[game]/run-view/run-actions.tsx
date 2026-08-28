@@ -1,8 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
-import { Form, Modal } from 'react-bootstrap';
+import { type RefObject, useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import {
     appealRunAction,
@@ -18,6 +17,7 @@ import type {
 import type { LeaderboardRosterRow } from '../../../../../types/moderation.types';
 import { loadOwnerBoardContextAction } from '../leaderboard/actions/load-owner-board-context.action';
 import { MoveDialog } from '../manage/boards/move-dialog';
+import { BoardDialog } from '../shared/board-dialog';
 import { isSameRunner } from '../shared/is-same-runner';
 import { OwnerHideIdentityDialog } from '../shared/owner-hide-identity-dialog';
 import {
@@ -25,6 +25,10 @@ import {
     useSelfRunVerdict,
 } from '../shared/self-run-verdict';
 import type { RunViewModel } from './run-view';
+
+// The default action-button style on this surface. Extracted so the run-page
+// mod buttons stay visually in lockstep — one edit restyles the whole row.
+const BTN_SECONDARY = 'btn btn-sm btn-outline-secondary';
 
 type ModalKind = 'report' | 'appeal' | null;
 // Hide-identity is deliberately NOT in here: its dialog has its own `open`
@@ -48,6 +52,11 @@ export function RunActions({
     const [reason, setReason] = useState('');
     const [pending, startTransition] = useTransition();
     const selfVerdict = useSelfRunVerdict();
+    // Report and Appeal are mutually exclusive (one `reason` textarea, one open
+    // at a time), so a single ref covers both. Passed to BoardDialog as
+    // initialFocusRef, which drops focus onto the field the user must fill when
+    // the dialog opens.
+    const reasonRef = useRef<HTMLTextAreaElement>(null);
 
     const isRun = model.kind === 'run';
     const isOwnRun = isRun && isSameRunner(sessionUsername, model.runnerName);
@@ -189,11 +198,28 @@ export function RunActions({
         });
     };
 
-    const copyLink = () => {
-        navigator.clipboard
-            .writeText(window.location.href)
-            .then(() => toast.success('Link copied to clipboard.'))
-            .catch(() => toast.error('Could not copy link.'));
+    const copyLink = async () => {
+        const url = window.location.href;
+        try {
+            if (navigator.clipboard?.writeText) {
+                await navigator.clipboard.writeText(url);
+            } else {
+                // navigator.clipboard is undefined in non-secure contexts;
+                // fall back to the legacy execCommand path.
+                const textarea = document.createElement('textarea');
+                textarea.value = url;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                const ok = document.execCommand('copy');
+                document.body.removeChild(textarea);
+                if (!ok) throw new Error('execCommand copy failed');
+            }
+            toast.success('Link copied to clipboard.');
+        } catch {
+            toast.error('Could not copy link.');
+        }
     };
 
     return (
@@ -201,7 +227,7 @@ export function RunActions({
             <div className="d-flex flex-wrap gap-2">
                 <button
                     type="button"
-                    className="btn btn-sm btn-outline-secondary"
+                    className={BTN_SECONDARY}
                     onClick={copyLink}
                 >
                     Copy link
@@ -209,7 +235,7 @@ export function RunActions({
                 {canReport && (
                     <button
                         type="button"
-                        className="btn btn-sm btn-outline-secondary"
+                        className={BTN_SECONDARY}
                         onClick={() => setModal('report')}
                     >
                         Report run
@@ -218,24 +244,21 @@ export function RunActions({
                 {canAppeal && (
                     <button
                         type="button"
-                        className="btn btn-sm btn-outline-secondary"
+                        className={BTN_SECONDARY}
                         onClick={() => setModal('appeal')}
                     >
                         Appeal rejection
                     </button>
                 )}
                 {isOwnRun && (
-                    <Link
-                        href={correctHref}
-                        className="btn btn-sm btn-outline-secondary"
-                    >
+                    <Link href={correctHref} className={BTN_SECONDARY}>
                         Correct this time…
                     </Link>
                 )}
                 {canMove && (
                     <button
                         type="button"
-                        className="btn btn-sm btn-outline-secondary"
+                        className={BTN_SECONDARY}
                         onClick={openMove}
                         disabled={ctxPending}
                     >
@@ -245,7 +268,7 @@ export function RunActions({
                 {canOwnerModerate && (
                     <button
                         type="button"
-                        className="btn btn-sm btn-outline-secondary"
+                        className={BTN_SECONDARY}
                         onClick={() => setHideIdentityOpen(true)}
                     >
                         Hide my identity…
@@ -265,7 +288,7 @@ export function RunActions({
                 {canRestore && (
                     <button
                         type="button"
-                        className="btn btn-sm btn-outline-secondary"
+                        className={BTN_SECONDARY}
                         onClick={() =>
                             selfVerdict.requestVerdict(model.id, 'unreject')
                         }
@@ -275,81 +298,35 @@ export function RunActions({
                 )}
             </div>
 
-            <Modal show={modal === 'report'} onHide={close} centered>
-                <Modal.Header closeButton>
-                    <Modal.Title className="h6">Report this run</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <p className="small text-muted">
-                        Tell the moderators why this run looks wrong (fake time,
-                        spliced video, wrong category…). Minimum 10 characters.
-                    </p>
-                    <Form.Control
-                        as="textarea"
-                        rows={3}
-                        value={reason}
-                        onChange={(e) => setReason(e.target.value)}
-                        disabled={pending}
-                        placeholder="Reason for report"
-                    />
-                </Modal.Body>
-                <Modal.Footer>
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-outline-secondary"
-                        onClick={close}
-                        disabled={pending}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-primary"
-                        onClick={submitReport}
-                        disabled={pending || !reasonValid}
-                    >
-                        Submit report
-                    </button>
-                </Modal.Footer>
-            </Modal>
+            <ReasonModal
+                show={modal === 'report'}
+                title="Report this run"
+                description="Tell the moderators why this run looks wrong (fake time, spliced video, wrong category…). Minimum 10 characters."
+                placeholder="Reason for report"
+                submitLabel="Submit report"
+                reason={reason}
+                onReasonChange={setReason}
+                pending={pending}
+                reasonValid={reasonValid}
+                onSubmit={submitReport}
+                onClose={close}
+                textareaRef={reasonRef}
+            />
 
-            <Modal show={modal === 'appeal'} onHide={close} centered>
-                <Modal.Header closeButton>
-                    <Modal.Title className="h6">Appeal rejection</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <p className="small text-muted">
-                        Explain why this run should be reinstated. A moderator
-                        will review your appeal. Minimum 10 characters.
-                    </p>
-                    <Form.Control
-                        as="textarea"
-                        rows={3}
-                        value={reason}
-                        onChange={(e) => setReason(e.target.value)}
-                        disabled={pending}
-                        placeholder="Why should this run be reinstated?"
-                    />
-                </Modal.Body>
-                <Modal.Footer>
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-outline-secondary"
-                        onClick={close}
-                        disabled={pending}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-primary"
-                        onClick={submitAppeal}
-                        disabled={pending || !reasonValid}
-                    >
-                        Submit appeal
-                    </button>
-                </Modal.Footer>
-            </Modal>
+            <ReasonModal
+                show={modal === 'appeal'}
+                title="Appeal rejection"
+                description="Explain why this run should be reinstated. A moderator will review your appeal. Minimum 10 characters."
+                placeholder="Why should this run be reinstated?"
+                submitLabel="Submit appeal"
+                reason={reason}
+                onReasonChange={setReason}
+                pending={pending}
+                reasonValid={reasonValid}
+                onSubmit={submitAppeal}
+                onClose={close}
+                textareaRef={reasonRef}
+            />
 
             <SelfRunVerdictDialog
                 confirmState={selfVerdict.confirmState}
@@ -421,5 +398,91 @@ export function RunActions({
                 />
             )}
         </>
+    );
+}
+
+/**
+ * The Report and Appeal flows are the same modal — a titled prompt, one
+ * ≥10-char reason textarea, Cancel + a submit button gated on the reason —
+ * differing only in copy and submit handler. Extracted so the two can't drift
+ * (autofocus, disabled-while-pending, the min-length gate) and a third
+ * reason-driven action is a one-liner.
+ */
+function ReasonModal({
+    show,
+    title,
+    description,
+    placeholder,
+    submitLabel,
+    reason,
+    onReasonChange,
+    pending,
+    reasonValid,
+    onSubmit,
+    onClose,
+    textareaRef,
+}: {
+    show: boolean;
+    title: string;
+    description: string;
+    placeholder: string;
+    submitLabel: string;
+    reason: string;
+    onReasonChange: (value: string) => void;
+    pending: boolean;
+    reasonValid: boolean;
+    onSubmit: () => void;
+    onClose: () => void;
+    textareaRef: RefObject<HTMLTextAreaElement | null>;
+}) {
+    return (
+        <BoardDialog
+            open={show}
+            onClose={onClose}
+            title={title}
+            size="md"
+            initialFocusRef={textareaRef}
+        >
+            <div className="modal-header">
+                <h2 className="modal-title h6">{title}</h2>
+                <button
+                    type="button"
+                    className="btn-close"
+                    aria-label="Close"
+                    onClick={onClose}
+                    disabled={pending}
+                />
+            </div>
+            <div className="modal-body">
+                <p className="small text-muted">{description}</p>
+                <textarea
+                    ref={textareaRef}
+                    className="form-control"
+                    rows={3}
+                    value={reason}
+                    onChange={(e) => onReasonChange(e.target.value)}
+                    disabled={pending}
+                    placeholder={placeholder}
+                />
+            </div>
+            <div className="modal-footer">
+                <button
+                    type="button"
+                    className={BTN_SECONDARY}
+                    onClick={onClose}
+                    disabled={pending}
+                >
+                    Cancel
+                </button>
+                <button
+                    type="button"
+                    className="btn btn-sm btn-primary"
+                    onClick={onSubmit}
+                    disabled={pending || !reasonValid}
+                >
+                    {submitLabel}
+                </button>
+            </div>
+        </BoardDialog>
     );
 }

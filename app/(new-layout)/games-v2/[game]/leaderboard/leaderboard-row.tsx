@@ -4,9 +4,14 @@ import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { PlayBtn, XLg } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
+import { RunHoverCardAnchor } from '~src/components/run/run-hover-card/run-hover-card-anchor';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { formatRunDate } from '~src/lib/format-run-date';
-import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
+import type {
+    GameTimeLabel,
+    LeaderboardEntry,
+} from '../../../../../types/leaderboards.types';
+import type { ModVerb } from '../manage/moderation/shared/action-model';
 import { CountryFlag } from './country-flag';
 import type { DisplayRank } from './display-rank';
 import styles from './leaderboard.module.scss';
@@ -46,6 +51,9 @@ interface Props {
     }[];
     /** category.showMilliseconds ?? true — precision the board is configured for. */
     showMilliseconds: boolean;
+    /** Board's alternate-clock label (igt/lrt) — passed to the run hover
+     * card so its secondary-clock row reads correctly. */
+    gameTimeLabel?: GameTimeLabel;
     /** category.rtaFallback — an entry with no game time on a GT board is
      * ranked by its real time; the ranked cell shows it with an RTA marker. */
     rtaFallback?: boolean;
@@ -54,9 +62,10 @@ interface Props {
     selected?: boolean;
     /** Shift-click extends a range — the click handler forwards the native event's shiftKey. */
     onToggleSelect?: (key: BoardSelectionKey, shiftKey: boolean) => void;
-    /** Opens the run inspector drawer on this entry; `verb` pre-expands
-     * that form in it (the row's Remove/`x` path). */
-    onModerate?: (entry: LeaderboardEntry, verb?: 'remove') => void;
+    /** Fires a moderation verb on this entry — the host renders the
+     * confirmation dialog (`RunActionDialog`) for it. Every call site
+     * passes an explicit verb; there is no generic "open" mode. */
+    onQuickModerate?: (entry: LeaderboardEntry, verb: ModVerb) => void;
     /** Board page refetch for row-level mutations (quick Verify + its undo). */
     onBoardRefresh?: () => void;
     /** Curation-only additions; absent on the public board. See `RowSlots`. */
@@ -94,10 +103,11 @@ export function LeaderboardRow({
     primaryTiming,
     valueColumns,
     showMilliseconds,
+    gameTimeLabel,
     rtaFallback = false,
     selected = false,
     onToggleSelect,
-    onModerate,
+    onQuickModerate,
     onBoardRefresh,
     slots,
 }: Props) {
@@ -105,11 +115,10 @@ export function LeaderboardRow({
     // name, `userId`/`picture`/`country` nulled, `isGuest: false`. Always key
     // the treatment off this flag, never off the name string.
     const isAnonymous = entry.anonymized === true;
-    // Hover shortcuts: with the pointer on a row, `v`/`x`/`m` fire that row's
-    // Verify / Remove / Moderate — same keys the inspector drawer binds to the
-    // same verbs, so one vocabulary covers both surfaces. `v` and `x` go
-    // through the buttons' DOM nodes rather than duplicated handlers, which
-    // also inherits their render conditions: no button, no shortcut.
+    // Hover shortcuts: with the pointer on a row, `v`/`x` fire that row's
+    // Verify / Remove. They go through the buttons' DOM nodes rather than
+    // duplicated handlers, which also inherits their render conditions: no
+    // button, no shortcut.
     const [hovered, setHovered] = useState(false);
     // Verify and Unverify are mutually exclusive (pending vs verified), so
     // they share the ref — `v` clicks whichever the row shows.
@@ -175,14 +184,11 @@ export function LeaderboardRow({
             } else if (e.key === 'x' && removeRef.current != null) {
                 e.preventDefault();
                 removeRef.current.click();
-            } else if (e.key === 'm' && onModerate != null) {
-                e.preventDefault();
-                onModerate(entry);
             }
         };
         document.addEventListener('keydown', onKeyDown);
         return () => document.removeEventListener('keydown', onKeyDown);
-    }, [shortcutsActive, onModerate, entry]);
+    }, [shortcutsActive]);
 
     const detailHref =
         entry.source === 'manual' && entry.manualTimeId != null
@@ -213,17 +219,10 @@ export function LeaderboardRow({
     // relative` — see `.row` in leaderboard.module.scss) — the whole row is
     // a genuine <a>, not a synthetic click handler, so status-bar preview,
     // cmd/ctrl-click, middle-click and long-press all work natively. Other
-    // interactive cells (runner link, VOD link, kebab/manage) sit above it
-    // via z-index — see leaderboard.module.scss.
-    //
-    // For a moderator the row is a button instead: clicking a row while
-    // moderating means "look at this run", and the inspector is where every
-    // verb lives, so routing to the read-only detail page put a navigation
-    // between the mod and the thing they opened the row to do. The detail
-    // page stays reachable from inside the inspector. This is the one case
-    // where the row is deliberately NOT a link — a mod loses cmd-click to a
-    // new tab and gains the drawer, which is the trade they want.
-    const opensInspector = canManage && onModerate != null;
+    // interactive cells (runner link, VOD link, kebab) sit above it via
+    // z-index — see leaderboard.module.scss. The row is a link for
+    // everyone, moderators included: the full mod surface lives on the run
+    // detail page it links to, not in a drawer over the board.
     const time = (
         value: number | null,
         dimmed: boolean,
@@ -232,53 +231,56 @@ export function LeaderboardRow({
         /** The ranking column — the only one curation's badges belong in. */
         ranked = false,
     ) => (
-        <td className={dimmed ? styles.timeSecondary : styles.time}>
-            {value != null ? (
-                <>
-                    {opensInspector ? (
-                        <button
-                            type="button"
-                            className={`${styles.inspectButton} ${
-                                stretched ? 'stretched-link' : ''
-                            }`}
-                            onClick={() => onModerate?.(entry)}
-                            title={`Open the moderator view for ${entry.runnerName}'s run`}
-                        >
-                            <DurationToFormatted
-                                duration={value}
-                                withMillis={showMilliseconds}
-                            />
-                        </button>
-                    ) : detailHref ? (
-                        <Link
-                            href={detailHref}
-                            className={stretched ? 'stretched-link' : undefined}
-                        >
-                            <DurationToFormatted
-                                duration={value}
-                                withMillis={showMilliseconds}
-                            />
-                        </Link>
+        <RunHoverCardAnchor
+            entry={entry}
+            gameTimeLabel={gameTimeLabel}
+            showMilliseconds={showMilliseconds}
+        >
+            {(handlers) => (
+                <td
+                    className={dimmed ? styles.timeSecondary : styles.time}
+                    ref={handlers.ref as React.Ref<HTMLTableCellElement>}
+                    onPointerEnter={handlers.onPointerEnter}
+                    onPointerLeave={handlers.onPointerLeave}
+                    onFocus={handlers.onFocus}
+                    onBlur={handlers.onBlur}
+                >
+                    {value != null ? (
+                        <>
+                            {detailHref ? (
+                                <Link
+                                    href={detailHref}
+                                    className={
+                                        stretched ? 'stretched-link' : undefined
+                                    }
+                                >
+                                    <DurationToFormatted
+                                        duration={value}
+                                        withMillis={showMilliseconds}
+                                    />
+                                </Link>
+                            ) : (
+                                <DurationToFormatted
+                                    duration={value}
+                                    withMillis={showMilliseconds}
+                                />
+                            )}
+                            {rtaTag && (
+                                <span
+                                    className={styles.rtaTag}
+                                    title="No game time — ranked by real time"
+                                >
+                                    RTA
+                                </span>
+                            )}
+                        </>
                     ) : (
-                        <DurationToFormatted
-                            duration={value}
-                            withMillis={showMilliseconds}
-                        />
+                        '—'
                     )}
-                    {rtaTag && (
-                        <span
-                            className={styles.rtaTag}
-                            title="No game time — ranked by real time"
-                        >
-                            RTA
-                        </span>
-                    )}
-                </>
-            ) : (
-                '—'
+                    {ranked && slots?.timeBadges?.(entry)}
+                </td>
             )}
-            {ranked && slots?.timeBadges?.(entry)}
-        </td>
+        </RunHoverCardAnchor>
     );
 
     // Same primary-first order as the header (leaderboard-table.tsx), so
@@ -311,6 +313,25 @@ export function LeaderboardRow({
             className={`${styles.row} ${podiumClass} ${isCurrentUser ? styles.youRow : ''} ${selected ? styles.rowSelected : ''} ${isAnonymous ? styles.anonRow : ''} ${slots?.rowClassName?.(entry) ?? ''}`}
             onMouseEnter={canManage ? () => setHovered(true) : undefined}
             onMouseLeave={canManage ? () => setHovered(false) : undefined}
+            // Keyboard parity: `hovered` also gates the v/x shortcuts and the
+            // quick-action buttons, so arm it on focus too. onFocus/onBlur
+            // bubble from the row's link and buttons; the containment check
+            // keeps it armed while focus moves between the row's own children
+            // and only disarms when focus truly leaves the row.
+            onFocus={canManage ? () => setHovered(true) : undefined}
+            onBlur={
+                canManage
+                    ? (e) => {
+                          if (
+                              !e.currentTarget.contains(
+                                  e.relatedTarget as Node | null,
+                              )
+                          ) {
+                              setHovered(false);
+                          }
+                      }
+                    : undefined
+            }
         >
             {canManage && (
                 <td className={styles.checkCell}>
@@ -463,49 +484,11 @@ export function LeaderboardRow({
                         <PlayBtn size={16} />
                     </a>
                 )}
-                {/* The runner's own way into the same drawer, in its reduced
-                    owner form. A moderator never sees this — they get
-                    Moderate below, whose surface is a superset, even on their
-                    own run.
-
-                    Outside `.reveal` on purpose: that cluster is hidden until
-                    the row is hovered, which is right for a moderator sweeping
-                    a board full of rows and wrong for the one control a runner
-                    has on the one row that is theirs.
-
-                    `runId == null` is a pure manual set time — the owner path
-                    for those is the manual-times endpoints, not this drawer.
-
-                    `isCurrentUser` alone is NOT an ownership test: it is a
-                    case-insensitive name match (see is-same-runner.ts), and a
-                    guest submission carries a self-reported name that can be
-                    anyone's. An anonymized row is excluded for the mirror
-                    reason — its placeholder is a name a real runner may
-                    legitimately have (see LeaderboardEntry.anonymized). Hence
-                    the account checks: a run with no `userId`, a guest run,
-                    or a redacted row never offers this, whoever is looking.
-                    `openModerate` re-checks the same set.
-
-                    Note what this cannot do: once a runner hides their
-                    identity their row arrives redacted and this button
-                    disappears. Un-hiding therefore lives in the pager's
-                    header, not here (see leaderboard-pager.tsx). */}
-                {!canManage &&
-                    isCurrentUser &&
-                    entry.runId != null &&
-                    entry.userId != null &&
-                    !entry.isGuest &&
-                    entry.anonymized !== true &&
-                    onModerate && (
-                        <button
-                            type="button"
-                            className={styles.ownManageBtn}
-                            onClick={() => onModerate(entry)}
-                            title="Manage your entry"
-                        >
-                            Manage
-                        </button>
-                    )}
+                {/* The owner's way into their own run — reduced self-service
+                    (report, correct, hide/restore, appeal) — now lives on the
+                    run detail page itself (run-view/run-actions.tsx), which
+                    the row's time already links to. No separate row control
+                    is needed for it any more. */}
                 <span className={styles.reveal}>
                     {showQuickVerify && (
                         <QuickVerifyButton
@@ -527,34 +510,24 @@ export function LeaderboardRow({
                     )}
                     {/* The other half of the same judgement, in the same
                         cluster and the same pill — Verify green, Remove
-                        red. Opens the inspector drawer with the remove form
-                        already expanded, rather than a standalone dialog:
-                        the board stays visible behind the judgement (the
+                        red. Fires the remove verb through
+                        `onQuickModerate`, which the host answers with an
+                        inline `RunActionDialog` rather than a drawer: the
+                        board stays visible behind the judgement (the
                         cutoff and custom-time questions are answered by
                         looking at it). */}
-                    {showQuickRemove && onModerate && (
+                    {showQuickRemove && onQuickModerate && (
                         <button
                             ref={removeRef}
                             type="button"
                             className={styles.quickRemove}
                             aria-label={`Remove ${entry.runnerName}'s ${entry.manualTimeId != null ? 'set time' : 'run'}`}
                             title={`Remove ${entry.runnerName}'s ${entry.manualTimeId != null ? 'set time' : 'run'} (x)`}
-                            onClick={() => onModerate(entry, 'remove')}
+                            onClick={() => onQuickModerate(entry, 'remove')}
                         >
                             <XLg size={14} aria-hidden />
                             Remove
                             <kbd className={styles.shortcutKey}>x</kbd>
-                        </button>
-                    )}
-                    {canManage && onModerate && (
-                        <button
-                            type="button"
-                            className={styles.moderateBtn}
-                            onClick={() => onModerate(entry)}
-                            title={`Moderate ${entry.runnerName}'s entry (m)`}
-                        >
-                            Moderate
-                            <kbd className={styles.shortcutKey}>m</kbd>
                         </button>
                     )}
                     {/* The per-row kebab is gone. Everything it held — run

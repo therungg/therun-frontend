@@ -2,6 +2,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
+import type { ModVerb } from '../manage/moderation/shared/action-model';
 import type { DisplayRank } from './display-rank';
 import { LeaderboardRow } from './leaderboard-row';
 
@@ -35,7 +36,8 @@ function renderRow(props: {
     entry?: LeaderboardEntry;
     isCurrentUser: boolean;
     canManage: boolean;
-    onModerate?: (e: LeaderboardEntry) => void;
+    onQuickModerate?: (e: LeaderboardEntry, verb: ModVerb) => void;
+    onBoardRefresh?: () => void;
 }) {
     return render(
         <table>
@@ -51,95 +53,65 @@ function renderRow(props: {
                     primaryTiming="rt"
                     valueColumns={[]}
                     showMilliseconds={false}
-                    onModerate={props.onModerate ?? vi.fn()}
-                    onBoardRefresh={props.canManage ? vi.fn() : undefined}
+                    onQuickModerate={props.onQuickModerate ?? vi.fn()}
+                    onBoardRefresh={
+                        props.onBoardRefresh ??
+                        (props.canManage ? vi.fn() : undefined)
+                    }
                 />
             </tbody>
         </table>,
     );
 }
 
-describe('LeaderboardRow — owner entry point', () => {
-    it('offers Manage on the signed-in runner’s own row', () => {
-        renderRow({ isCurrentUser: true, canManage: false });
-        expect(
-            screen.getByRole('button', { name: 'Manage' }),
-        ).toBeInTheDocument();
-    });
+const detailLink = () =>
+    screen
+        .getAllByRole('link')
+        .find((a) =>
+            a.getAttribute('href')?.startsWith('/games-v2/celeste/run/'),
+        );
 
-    it('calls onModerate with the row’s entry', () => {
-        const onModerate = vi.fn();
-        const own = entry();
-        renderRow({
-            entry: own,
-            isCurrentUser: true,
-            canManage: false,
-            onModerate,
-        });
-        screen.getByRole('button', { name: 'Manage' }).click();
-        expect(onModerate).toHaveBeenCalledWith(own);
-    });
-
-    it('offers nothing on another runner’s row', () => {
+describe('LeaderboardRow — row is a link for everyone', () => {
+    it('renders the ranked time as a link to the run detail page for a non-mod viewer', () => {
         renderRow({ isCurrentUser: false, canManage: false });
-        expect(screen.queryByRole('button', { name: 'Manage' })).toBeNull();
+        expect(detailLink()).toHaveAttribute(
+            'href',
+            '/games-v2/celeste/run/101',
+        );
+    });
+
+    it('renders the ranked time as a link for a moderator too — no drawer button', () => {
+        renderRow({ isCurrentUser: false, canManage: true });
+        expect(detailLink()).toHaveAttribute(
+            'href',
+            '/games-v2/celeste/run/101',
+        );
         expect(screen.queryByRole('button', { name: /Moderate/ })).toBeNull();
     });
 
-    // A pure set time has no run behind it — the owner path for those is the
-    // manual-times endpoints, not the run inspector.
-    it('offers nothing on the runner’s own set time (runId == null)', () => {
-        renderRow({
-            entry: entry({
-                runId: null,
-                manualTimeId: 9,
-                source: 'manual',
-            }),
-            isCurrentUser: true,
-            canManage: false,
-        });
+    it('offers no Manage button on the signed-in runner’s own row', () => {
+        renderRow({ isCurrentUser: true, canManage: false });
         expect(screen.queryByRole('button', { name: 'Manage' })).toBeNull();
     });
+});
 
-    // `isCurrentUser` is a case-insensitive NAME match. A guest submission's
-    // runner name is self-reported free text, so it can carry anyone's name
-    // and must never light up their owner control.
-    it('offers nothing on a guest run bearing the viewer’s name', () => {
+describe('LeaderboardRow — quick-remove', () => {
+    it('fires onQuickModerate with the remove verb', () => {
+        const onQuickModerate = vi.fn();
+        const own = entry();
         renderRow({
-            entry: entry({ isGuest: true, userId: null }),
-            isCurrentUser: true,
-            canManage: false,
+            entry: own,
+            isCurrentUser: false,
+            canManage: true,
+            onQuickModerate,
+            onBoardRefresh: vi.fn(),
         });
-        expect(screen.queryByRole('button', { name: 'Manage' })).toBeNull();
+        screen.getByRole('button', { name: /Remove/ }).click();
+        expect(onQuickModerate).toHaveBeenCalledWith(own, 'remove');
     });
 
-    // The mirror case: an anonymized row's placeholder is a name a real
-    // runner may legitimately have (see LeaderboardEntry.anonymized).
-    it('offers nothing on an anonymized row', () => {
-        renderRow({
-            entry: entry({ anonymized: true, userId: null }),
-            isCurrentUser: true,
-            canManage: false,
-        });
-        expect(screen.queryByRole('button', { name: 'Manage' })).toBeNull();
-    });
-
-    it('offers nothing on a row with no account behind it', () => {
-        renderRow({
-            entry: entry({ userId: null }),
-            isCurrentUser: true,
-            canManage: false,
-        });
-        expect(screen.queryByRole('button', { name: 'Manage' })).toBeNull();
-    });
-
-    // The mod surface is a superset of the owner's: a moderator on their own
-    // row keeps Moderate and must not be downgraded to the reduced control.
-    it('gives a moderator Moderate, not Manage, on their own row', () => {
-        renderRow({ isCurrentUser: true, canManage: true });
-        expect(
-            screen.getByRole('button', { name: /Moderate/ }),
-        ).toBeInTheDocument();
-        expect(screen.queryByRole('button', { name: 'Manage' })).toBeNull();
+    it('is absent for a viewer who cannot manage the board', () => {
+        renderRow({ isCurrentUser: false, canManage: false });
+        expect(screen.queryByRole('button', { name: /Remove/ })).toBeNull();
     });
 });

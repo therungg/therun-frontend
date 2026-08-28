@@ -284,7 +284,9 @@ function DescriptionBlock({
                         type="button"
                         className="btn btn-primary"
                         disabled={isPending}
-                        onClick={() => save(text.trim() === '' ? null : text)}
+                        onClick={() =>
+                            save(text.trim() === '' ? null : text.trim())
+                        }
                     >
                         {isPending ? 'Saving…' : 'Save'}
                     </button>

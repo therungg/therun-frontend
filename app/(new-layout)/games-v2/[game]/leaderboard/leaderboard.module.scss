@@ -250,23 +250,6 @@ tr:focus-within .reveal {
     }
 }
 
-// A moderator's row opens the inspector rather than the run page, so the
-// stretched target is a button. It has to be indistinguishable from the
-// anchor above it — same type, same hover — because the difference is in
-// what it opens, not in what it is.
-.inspectButton {
-    @include board.mono-time;
-    background: none;
-    border: 0;
-    padding: 0;
-    color: inherit;
-    cursor: pointer;
-
-    &:hover {
-        color: var(--bs-primary);
-    }
-}
-
 // Non-ranking time column: same tabular mono treatment, de-emphasized
 // so the eye lands on the ranked column first.
 .timeSecondary {
@@ -525,51 +508,6 @@ tr:focus-within .reveal {
     }
 
     // Touch-target pass: guarantee a ≥44px hit area.
-    @media (pointer: coarse) {
-        padding: dt.$spacing-lg;
-    }
-}
-
-.moderateBtn {
-    @include board.control-pill;
-    border: 1px solid var(--bs-primary);
-    padding: dt.$spacing-xs dt.$spacing-md;
-    background: var(--bs-primary);
-    color: #fff;
-    font-weight: 500;
-
-    &:hover {
-        filter: brightness(1.08);
-    }
-
-    @media (pointer: coarse) {
-        padding: dt.$spacing-lg;
-    }
-
-    // Not a flex button like the two pills — space the hint by hand.
-    .shortcutKey {
-        margin-left: dt.$spacing-xs;
-    }
-}
-
-// The runner's own "Manage" on their own row. Quieter than .moderateBtn —
-// it is one control on one row, not a moderator's working surface — but
-// always visible: it sits outside `.reveal`, so it must read as a control
-// at rest rather than borrow the row's hover state.
-.ownManageBtn {
-    @include board.control-pill;
-    position: relative;
-    z-index: 2;
-    border: 1px solid var(--bs-border-color);
-    padding: dt.$spacing-xs dt.$spacing-md;
-    background: transparent;
-    color: var(--bs-secondary-color);
-
-    &:hover {
-        border-color: var(--bs-primary);
-        color: var(--bs-primary);
-    }
-
     @media (pointer: coarse) {
         padding: dt.$spacing-lg;
     }
