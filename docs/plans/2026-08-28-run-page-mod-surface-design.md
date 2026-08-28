@@ -105,16 +105,32 @@ run page is the single place to view *and* moderate a run.
 
 ## Design
 
-### 1. Board row → link (both hosts)
+### 1. Board row → link, keep quick-moderate (both hosts)
 In `leaderboard-row.tsx`, delete the `opensInspector` branch: the time cell is
-always the stretched `<Link href={detailHref}>`. Remove the `onModerate` prop
-and the kebab/quick-remove/manage buttons that call it (499–553), since the
-drawer they opened no longer exists. The board no longer has an inline mod
-affordance — moderation happens on the run page after clicking through.
+always the stretched `<Link href={detailHref}>`. Row click always navigates.
 
-Both hosts drop all drawer state and render blocks (exact ranges in "Current
-state"). Preserve `leaderboard-pager`'s board-wide `hideIdentityOpen` dialog if
-anything other than the drawer opens it (Risk 1) — otherwise remove it too.
+**Keep the kebab quick-verify/remove.** It no longer opens the drawer — instead
+it fires the verb through the shared `RunActionDialog` (the standalone dialog
+wrapper over `RunActionForm`, already used by the `manage/run/[runId]` console),
+rendered inline on the board. So the board keeps a lightweight moderation
+affordance for the common verbs (approve / remove, plus restore on a rejected
+row) without a drawer; the full surface (Move / Adjust / Hide identity / VOD
+review / timeline undo) is what moves to the run page.
+
+- Replace `onModerate(entry, verb)` with an `onQuickModerate(entry, verb)` prop
+  that opens a board-level `RunActionDialog` (state lives in the host, one
+  dialog instance keyed by the acting entry + verb).
+- The manage/quick buttons on the row (499–553) stay, retargeted to
+  `onQuickModerate`. The verbs offered are status-driven (`verbsForStatus` /
+  `manualVerbsForStatus`), same as the drawer footer.
+- On success the dialog revalidates the board tag and refetches (the old
+  `onMutated` path) so the row updates in place.
+
+Both hosts drop the drawer imports, drawer state, and drawer render blocks
+(exact ranges in "Current state"), and add the single `RunActionDialog` +
+`onQuickModerate` handler. Preserve `leaderboard-pager`'s board-wide
+`hideIdentityOpen` dialog if anything other than the drawer opens it (Risk 1) —
+otherwise remove it.
 
 ### 2. Run-specific hover card (new)
 New `src/components/run/run-hover-card/` mirroring the user hover-card pattern:
@@ -216,11 +232,11 @@ board; here the run page is the surface, so revalidate the run + board tags).
    `HideIdentityDialog`/`EvidenceSection`/`RunActionForm`/vod-review are shared
    with the mod console and/or reused by the new panel — delete ONLY the drawer
    shells, verify every "orphaned" helper has zero remaining importers first.
-3. **Losing the board-level quick-moderate.** Mods currently remove/verify
-   without leaving the board (kebab → drawer). After this, moderation is one
-   click away (row → run page). Accepted per the design goal, but it is a
-   workflow change for mods doing bulk triage — the `manage/moderation/*`
-   console lists remain for bulk work.
+3. **Quick-moderate retargeting.** The kebab quick-verify/remove is retained
+   but now opens `RunActionDialog` inline instead of the drawer. Verify the
+   dialog works standalone from the board without the drawer's surrounding
+   context/state (it already runs standalone in the console, so this is low
+   risk). Bulk triage is unaffected — board rows keep verify/remove.
 4. **Manual page has no history load.** If the manual mod panel wants a
    timeline, `manual/[manualTimeId]/page.tsx` must add a provenance/history
    load. Drawer didn't show manual run-history, so parity = no timeline; skip.
