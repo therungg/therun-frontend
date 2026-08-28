@@ -206,3 +206,20 @@ flagged: one attribute, reusing an existing variable, no logic change.
   distinct a11y fix; kept out to keep this commit single-purpose. Flagged for a later cycle.
 - A busy label on the Deny button (it stays "Deny" while `denyPending`, unlike Approve's "Approving…") —
   the deny spinner lives in its PromptDialog, so it's low-value; deferred.
+
+## Cycle 11 — Trim saved description text (evidence-editor.tsx)
+
+**Changed:** `DescriptionBlock`'s Save now persists `text.trim()` instead of the raw `text` when non-empty
+(`save(text.trim() === '' ? null : text.trim())`).
+
+**Why:** The handler already tested `text.trim() === ''` to decide empty-vs-null but then stored the
+untrimmed value, so `"  note  "` was saved with its surrounding whitespace while an all-whitespace entry
+became null — internally inconsistent. The sibling `VodBlock` (line 103) already trims. Matching it makes
+the field agree with its own empty-check and with the VOD field.
+
+**Ideas considered but skipped:**
+- Leaving leading whitespace intact for markdown (4-space indent = code block) — theoretically meaningful
+  only as the very first characters of a description, which is a vanishingly rare intent for a run note;
+  fenced ``` blocks cover that case, and the field's own empty-check already treats whitespace as nothing.
+  Consistency with VodBlock and the empty-semantics wins.
+- Trimming on every keystroke (onChange) — would fight the user mid-type; trimming only at save is correct.
