@@ -1,8 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { type Ref, useRef, useState, useTransition } from 'react';
-import { Form, Modal } from 'react-bootstrap';
+import { type RefObject, useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import {
     appealRunAction,
@@ -18,6 +17,7 @@ import type {
 import type { LeaderboardRosterRow } from '../../../../../types/moderation.types';
 import { loadOwnerBoardContextAction } from '../leaderboard/actions/load-owner-board-context.action';
 import { MoveDialog } from '../manage/boards/move-dialog';
+import { BoardDialog } from '../shared/board-dialog';
 import { isSameRunner } from '../shared/is-same-runner';
 import { OwnerHideIdentityDialog } from '../shared/owner-hide-identity-dialog';
 import {
@@ -53,11 +53,10 @@ export function RunActions({
     const [pending, startTransition] = useTransition();
     const selfVerdict = useSelfRunVerdict();
     // Report and Appeal are mutually exclusive (one `reason` textarea, one open
-    // at a time), so a single ref focused on Modal enter covers both. Bootstrap's
-    // own autoFocus lands on the header close button, not the field the user
-    // must fill — onEntered fires after the enter transition, when focus sticks.
+    // at a time), so a single ref covers both. Passed to BoardDialog as
+    // initialFocusRef, which drops focus onto the field the user must fill when
+    // the dialog opens.
     const reasonRef = useRef<HTMLTextAreaElement>(null);
-    const focusReason = () => reasonRef.current?.focus();
 
     const isRun = model.kind === 'run';
     const isOwnRun = isRun && isSameRunner(sessionUsername, model.runnerName);
@@ -311,7 +310,6 @@ export function RunActions({
                 reasonValid={reasonValid}
                 onSubmit={submitReport}
                 onClose={close}
-                onEntered={focusReason}
                 textareaRef={reasonRef}
             />
 
@@ -327,7 +325,6 @@ export function RunActions({
                 reasonValid={reasonValid}
                 onSubmit={submitAppeal}
                 onClose={close}
-                onEntered={focusReason}
                 textareaRef={reasonRef}
             />
 
@@ -423,7 +420,6 @@ function ReasonModal({
     reasonValid,
     onSubmit,
     onClose,
-    onEntered,
     textareaRef,
 }: {
     show: boolean;
@@ -437,27 +433,39 @@ function ReasonModal({
     reasonValid: boolean;
     onSubmit: () => void;
     onClose: () => void;
-    onEntered: () => void;
-    textareaRef: Ref<HTMLTextAreaElement>;
+    textareaRef: RefObject<HTMLTextAreaElement | null>;
 }) {
     return (
-        <Modal show={show} onHide={onClose} onEntered={onEntered} centered>
-            <Modal.Header closeButton>
-                <Modal.Title className="h6">{title}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
+        <BoardDialog
+            open={show}
+            onClose={onClose}
+            title={title}
+            size="md"
+            initialFocusRef={textareaRef}
+        >
+            <div className="modal-header">
+                <h2 className="modal-title h6">{title}</h2>
+                <button
+                    type="button"
+                    className="btn-close"
+                    aria-label="Close"
+                    onClick={onClose}
+                    disabled={pending}
+                />
+            </div>
+            <div className="modal-body">
                 <p className="small text-muted">{description}</p>
-                <Form.Control
+                <textarea
                     ref={textareaRef}
-                    as="textarea"
+                    className="form-control"
                     rows={3}
                     value={reason}
                     onChange={(e) => onReasonChange(e.target.value)}
                     disabled={pending}
                     placeholder={placeholder}
                 />
-            </Modal.Body>
-            <Modal.Footer>
+            </div>
+            <div className="modal-footer">
                 <button
                     type="button"
                     className={BTN_SECONDARY}
@@ -474,7 +482,7 @@ function ReasonModal({
                 >
                     {submitLabel}
                 </button>
-            </Modal.Footer>
-        </Modal>
+            </div>
+        </BoardDialog>
     );
 }

@@ -159,3 +159,29 @@ file rather than a new module: it's specific to this surface and has no other co
   server-action specifics into a presentational component; keeping `onSubmit` a plain callback is cleaner.
 - Migrating to the in-house `BoardDialog` at the same time — that's the next, larger backlog item; bundling
   it would have made this diff unreviewable. Deferred deliberately.
+
+## Cycle 9 — Migrate ReasonModal to the in-house BoardDialog (run-actions.tsx)
+
+**Changed:** `ReasonModal` now renders through the shared `BoardDialog` primitive instead of react-bootstrap
+`Modal`. The header/body/footer are plain `modal-*` markup; the reason field is a plain `<textarea
+className="form-control">`. `react-bootstrap`'s `Modal`/`Form` imports are gone from this file. Autofocus
+moved from the cycle-4 `onEntered`/`focusReason` hack to BoardDialog's `initialFocusRef={reasonRef}`, so
+the `focusReason` helper and the `onEntered` prop were removed.
+
+**Why:** Every other dialog on the mod surface (`RunActionDialog`, the curation dialogs) uses `BoardDialog`,
+which brings real focus management — trap, restore-on-close, Escape, background scroll lock, portal — that
+the run page's report/appeal modals didn't share. This was the last named backlog item; it became a clean,
+contained change only because cycle 8 had already isolated the markup into one component. `initialFocusRef`
+is the idiomatic BoardDialog autofocus path (mirrors `run-action-dialog.tsx`), so it replaced the
+transition-timing `onEntered` workaround outright rather than sitting beside it.
+
+**Verification:** `tsc --noEmit` clean for the file; grepped for dangling `Modal`/`Form.`/`focusReason`/
+`react-bootstrap` references — none remain (only the unrelated `modal`/`setModal` open-state, kept).
+
+**Ideas considered but skipped:**
+- Rename the `ModalKind` type / `modal` state to `DialogKind` now that react-bootstrap Modal is gone —
+  cosmetic; a rename touching the open-state plumbing is churn better kept out of a behavior migration.
+- `labelledBy` with a heading id instead of BoardDialog's `title` aria-label fallback — the visible `<h2>`
+  plus `title` already gives the dialog an accessible name; an id round-trip adds nothing here.
+- `btn-close-white` for dark theme — the previous bootstrap `Modal.Header closeButton` used the default
+  `btn-close`; matching it avoids a theme regression, and a themed close button is a separate styling pass.
