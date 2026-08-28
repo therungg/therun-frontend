@@ -137,3 +137,25 @@ no error and no clue why. Logging makes it diagnosable; the toast hands the user
   know the un-hide control might be missing, since the whole point of the note is to prevent a dead end.
 - Optimistically forcing the note visible on error — would risk showing an un-hide control for a state we
   failed to read; telling the user to reload avoids asserting a status we don't have.
+
+## Cycle 8 — Extract shared ReasonModal (run-actions.tsx)
+
+**Changed:** Replaced the two near-identical Report and Appeal `<Modal>` blocks with a single local
+`ReasonModal` component (props: title, description, placeholder, submitLabel, reason, onReasonChange,
+pending, reasonValid, onSubmit, onClose, onEntered, textareaRef) and two call sites.
+
+**Why:** The two modals were copy-paste twins differing only in copy and submit handler, yet each carried
+its own textarea wiring, autofocus (`onEntered`/`ref`), disabled-while-pending, and the ≥10-char submit
+gate. Every earlier cycle that touched this markup (autofocus in cycle 4, BTN_SECONDARY in cycle 2) had to
+edit both copies — exactly the drift risk. One component means those behaviors are defined once and a
+third reason-driven action (e.g. a future "request review") is a single `<ReasonModal>`. Net line count
+rose slightly (+19) — the goal is de-duplication, not fewer lines. Kept as a local component in the same
+file rather than a new module: it's specific to this surface and has no other consumer yet.
+
+**Ideas considered but skipped:**
+- New file `reason-modal.tsx` — premature; a single-file, single-consumer component doesn't earn a module
+  boundary yet. Promote it if a second surface needs it.
+- Folding the submit handlers into the component (passing action + messages) — would drag report/appeal
+  server-action specifics into a presentational component; keeping `onSubmit` a plain callback is cleaner.
+- Migrating to the in-house `BoardDialog` at the same time — that's the next, larger backlog item; bundling
+  it would have made this diff unreviewable. Deferred deliberately.

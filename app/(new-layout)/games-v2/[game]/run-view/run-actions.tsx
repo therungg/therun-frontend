@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useRef, useState, useTransition } from 'react';
+import { type Ref, useRef, useState, useTransition } from 'react';
 import { Form, Modal } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import {
@@ -299,93 +299,37 @@ export function RunActions({
                 )}
             </div>
 
-            <Modal
+            <ReasonModal
                 show={modal === 'report'}
-                onHide={close}
+                title="Report this run"
+                description="Tell the moderators why this run looks wrong (fake time, spliced video, wrong category…). Minimum 10 characters."
+                placeholder="Reason for report"
+                submitLabel="Submit report"
+                reason={reason}
+                onReasonChange={setReason}
+                pending={pending}
+                reasonValid={reasonValid}
+                onSubmit={submitReport}
+                onClose={close}
                 onEntered={focusReason}
-                centered
-            >
-                <Modal.Header closeButton>
-                    <Modal.Title className="h6">Report this run</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <p className="small text-muted">
-                        Tell the moderators why this run looks wrong (fake time,
-                        spliced video, wrong category…). Minimum 10 characters.
-                    </p>
-                    <Form.Control
-                        ref={reasonRef}
-                        as="textarea"
-                        rows={3}
-                        value={reason}
-                        onChange={(e) => setReason(e.target.value)}
-                        disabled={pending}
-                        placeholder="Reason for report"
-                    />
-                </Modal.Body>
-                <Modal.Footer>
-                    <button
-                        type="button"
-                        className={BTN_SECONDARY}
-                        onClick={close}
-                        disabled={pending}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-primary"
-                        onClick={submitReport}
-                        disabled={pending || !reasonValid}
-                    >
-                        Submit report
-                    </button>
-                </Modal.Footer>
-            </Modal>
+                textareaRef={reasonRef}
+            />
 
-            <Modal
+            <ReasonModal
                 show={modal === 'appeal'}
-                onHide={close}
+                title="Appeal rejection"
+                description="Explain why this run should be reinstated. A moderator will review your appeal. Minimum 10 characters."
+                placeholder="Why should this run be reinstated?"
+                submitLabel="Submit appeal"
+                reason={reason}
+                onReasonChange={setReason}
+                pending={pending}
+                reasonValid={reasonValid}
+                onSubmit={submitAppeal}
+                onClose={close}
                 onEntered={focusReason}
-                centered
-            >
-                <Modal.Header closeButton>
-                    <Modal.Title className="h6">Appeal rejection</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <p className="small text-muted">
-                        Explain why this run should be reinstated. A moderator
-                        will review your appeal. Minimum 10 characters.
-                    </p>
-                    <Form.Control
-                        ref={reasonRef}
-                        as="textarea"
-                        rows={3}
-                        value={reason}
-                        onChange={(e) => setReason(e.target.value)}
-                        disabled={pending}
-                        placeholder="Why should this run be reinstated?"
-                    />
-                </Modal.Body>
-                <Modal.Footer>
-                    <button
-                        type="button"
-                        className={BTN_SECONDARY}
-                        onClick={close}
-                        disabled={pending}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-primary"
-                        onClick={submitAppeal}
-                        disabled={pending || !reasonValid}
-                    >
-                        Submit appeal
-                    </button>
-                </Modal.Footer>
-            </Modal>
+                textareaRef={reasonRef}
+            />
 
             <SelfRunVerdictDialog
                 confirmState={selfVerdict.confirmState}
@@ -457,5 +401,80 @@ export function RunActions({
                 />
             )}
         </>
+    );
+}
+
+/**
+ * The Report and Appeal flows are the same modal — a titled prompt, one
+ * ≥10-char reason textarea, Cancel + a submit button gated on the reason —
+ * differing only in copy and submit handler. Extracted so the two can't drift
+ * (autofocus, disabled-while-pending, the min-length gate) and a third
+ * reason-driven action is a one-liner.
+ */
+function ReasonModal({
+    show,
+    title,
+    description,
+    placeholder,
+    submitLabel,
+    reason,
+    onReasonChange,
+    pending,
+    reasonValid,
+    onSubmit,
+    onClose,
+    onEntered,
+    textareaRef,
+}: {
+    show: boolean;
+    title: string;
+    description: string;
+    placeholder: string;
+    submitLabel: string;
+    reason: string;
+    onReasonChange: (value: string) => void;
+    pending: boolean;
+    reasonValid: boolean;
+    onSubmit: () => void;
+    onClose: () => void;
+    onEntered: () => void;
+    textareaRef: Ref<HTMLTextAreaElement>;
+}) {
+    return (
+        <Modal show={show} onHide={onClose} onEntered={onEntered} centered>
+            <Modal.Header closeButton>
+                <Modal.Title className="h6">{title}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <p className="small text-muted">{description}</p>
+                <Form.Control
+                    ref={textareaRef}
+                    as="textarea"
+                    rows={3}
+                    value={reason}
+                    onChange={(e) => onReasonChange(e.target.value)}
+                    disabled={pending}
+                    placeholder={placeholder}
+                />
+            </Modal.Body>
+            <Modal.Footer>
+                <button
+                    type="button"
+                    className={BTN_SECONDARY}
+                    onClick={onClose}
+                    disabled={pending}
+                >
+                    Cancel
+                </button>
+                <button
+                    type="button"
+                    className="btn btn-sm btn-primary"
+                    onClick={onSubmit}
+                    disabled={pending || !reasonValid}
+                >
+                    {submitLabel}
+                </button>
+            </Modal.Footer>
+        </Modal>
     );
 }
