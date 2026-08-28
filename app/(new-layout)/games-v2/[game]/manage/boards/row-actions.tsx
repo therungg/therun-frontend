@@ -122,6 +122,38 @@ export function RowActions({
         return () => document.removeEventListener('mousedown', onDown);
     }, [menuOpen]);
 
+    // Arrow-key roving between menu items. Escape, Tab-trap, autofocus and
+    // focus-restore already come from usePopoverFocus; this only adds the
+    // Up/Down/Home/End movement the WAI-ARIA menu pattern expects. Disabled
+    // items (e.g. an already-Approved run) are skipped.
+    const onMenuKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (
+            e.key !== 'ArrowDown' &&
+            e.key !== 'ArrowUp' &&
+            e.key !== 'Home' &&
+            e.key !== 'End'
+        ) {
+            return;
+        }
+        const items = Array.from(
+            menuRef.current?.querySelectorAll<HTMLButtonElement>(
+                '[role="menuitem"]:not([disabled])',
+            ) ?? [],
+        );
+        if (items.length === 0) return;
+        e.preventDefault();
+        const idx = items.indexOf(document.activeElement as HTMLButtonElement);
+        const next =
+            e.key === 'Home'
+                ? items[0]
+                : e.key === 'End'
+                  ? items[items.length - 1]
+                  : e.key === 'ArrowDown'
+                    ? items[idx < 0 ? 0 : (idx + 1) % items.length]
+                    : items[idx <= 0 ? items.length - 1 : idx - 1];
+        next.focus();
+    };
+
     // ---- Move (dialog extracted to move-dialog.tsx) --------------------
     const [moveOpen, setMoveOpen] = useState(false);
 
@@ -165,7 +197,7 @@ export function RowActions({
                     <button
                         type="button"
                         className={styles.actionBtn}
-                        aria-haspopup="dialog"
+                        aria-haspopup="menu"
                         aria-expanded={menuOpen}
                         onClick={() => setMenuOpen((v) => !v)}
                     >
@@ -174,13 +206,14 @@ export function RowActions({
                     {menuOpen && (
                         <div
                             ref={menuRef}
-                            role="dialog"
-                            aria-modal="true"
+                            role="menu"
                             aria-label={`Run actions for ${row.runnerName}`}
                             className={styles.menuPanel}
+                            onKeyDown={onMenuKeyDown}
                         >
                             <button
                                 type="button"
+                                role="menuitem"
                                 className={styles.menuItem}
                                 onClick={() => {
                                     setMenuOpen(false);
@@ -194,6 +227,7 @@ export function RowActions({
                             </button>
                             <button
                                 type="button"
+                                role="menuitem"
                                 className={styles.menuItem}
                                 onClick={() => {
                                     setMenuOpen(false);
@@ -204,6 +238,7 @@ export function RowActions({
                             </button>
                             <button
                                 type="button"
+                                role="menuitem"
                                 className={styles.menuItem}
                                 onClick={() => {
                                     setMenuOpen(false);

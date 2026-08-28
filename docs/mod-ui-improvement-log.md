@@ -74,3 +74,24 @@ inside a Bootstrap modal. One ref suffices because Report and Appeal are mutuall
 - `autoFocus` prop on `Form.Control` — unreliable inside a transitioning Bootstrap modal; `onEntered` is the documented hook.
 - Separate refs per modal — unnecessary; they never coexist.
 - Clearing/selecting existing text on focus — not wanted; `reason` is already reset on close.
+
+## Cycle 5 — Run… menu semantics + arrow-key roving (row-actions.tsx)
+
+**Changed:** The curation-row Run… popup (Approve/Move/Adjust) was `role="dialog"` + `aria-modal="true"`;
+it's now a proper `role="menu"` with `role="menuitem"` children, the trigger's `aria-haspopup` went
+`"dialog"` → `"menu"`, and an `onMenuKeyDown` handler adds Up/Down/Home/End roving between items
+(disabled items skipped).
+
+**Why:** A 3-item action menu falsely announced itself as a modal dialog, and its items had no arrow-key
+navigation — the two issues the mod-UI audit flagged. Screen readers now describe it as a menu, and
+keyboard users get the movement the WAI-ARIA menu pattern expects. Focus-in, focus-restore, Escape, and
+Tab-trap were already provided by the shared `usePopoverFocus` hook, so this cycle only added the
+missing semantics and arrow keys — the hook was left untouched (it's shared with the filters and
+category-overflow popovers).
+
+**Ideas considered but skipped:**
+- Editing `usePopoverFocus` to own the arrow keys — rejected; it's shared, and menu-only roving doesn't
+  belong in a generic popover hook. Local handler keeps the blast radius to this file.
+- Full roving-tabindex (single tab stop, `tabindex="-1"` on non-active items) — the panel is already a
+  Tab-trap, so plain arrow movement is enough; a tabindex overhaul would be churn without a11y gain here.
+- Dropping the popup to a plain inline button row — loses the compact cluster the curation table needs.
