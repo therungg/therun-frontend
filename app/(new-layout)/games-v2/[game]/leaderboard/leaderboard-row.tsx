@@ -313,6 +313,25 @@ export function LeaderboardRow({
             className={`${styles.row} ${podiumClass} ${isCurrentUser ? styles.youRow : ''} ${selected ? styles.rowSelected : ''} ${isAnonymous ? styles.anonRow : ''} ${slots?.rowClassName?.(entry) ?? ''}`}
             onMouseEnter={canManage ? () => setHovered(true) : undefined}
             onMouseLeave={canManage ? () => setHovered(false) : undefined}
+            // Keyboard parity: `hovered` also gates the v/x shortcuts and the
+            // quick-action buttons, so arm it on focus too. onFocus/onBlur
+            // bubble from the row's link and buttons; the containment check
+            // keeps it armed while focus moves between the row's own children
+            // and only disarms when focus truly leaves the row.
+            onFocus={canManage ? () => setHovered(true) : undefined}
+            onBlur={
+                canManage
+                    ? (e) => {
+                          if (
+                              !e.currentTarget.contains(
+                                  e.relatedTarget as Node | null,
+                              )
+                          ) {
+                              setHovered(false);
+                          }
+                      }
+                    : undefined
+            }
         >
             {canManage && (
                 <td className={styles.checkCell}>

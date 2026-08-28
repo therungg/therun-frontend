@@ -95,3 +95,25 @@ category-overflow popovers).
 - Full roving-tabindex (single tab stop, `tabindex="-1"` on non-active items) — the panel is already a
   Tab-trap, so plain arrow movement is enough; a tabindex overhaul would be churn without a11y gain here.
 - Dropping the popup to a plain inline button row — loses the compact cluster the curation table needs.
+
+## Cycle 6 — Keyboard parity for v/x row shortcuts (leaderboard-row.tsx)
+
+**Changed:** The board row's `<tr>` now sets its `hovered` state on `onFocus`/`onBlur` as well as
+`onMouseEnter`/`onMouseLeave`. The blur handler checks `currentTarget.contains(relatedTarget)` so the
+state stays armed while focus moves among the row's own children (link → verify/remove buttons) and
+disarms only when focus leaves the row.
+
+**Why:** The `v` (verify) and `x` (remove) quick-moderation shortcuts — and the quick-action buttons
+themselves — were gated on `hovered`, which was set purely by mouse events. A keyboard-only moderator
+tabbing through the board could never arm them, so the entire quick-verdict flow was mouse-only. Since
+the row is now a link (focusable), keying focus onto it is the natural trigger; reusing `hovered`
+rather than adding a parallel `focused` state keeps the gate single-sourced (the shortcut effect and
+button visibility already read `hovered`).
+
+**Ideas considered but skipped:**
+- A separate `focused` state OR-ed with `hovered` — redundant; one state driven by both input modes is
+  simpler and can't drift out of sync with the button-visibility gate.
+- CSS `:focus-within` for button visibility — wouldn't arm the JS shortcut effect, which reads state,
+  so the keyboard user would see buttons but `v`/`x` still wouldn't fire. Must be stateful.
+- Rename `hovered` → `active` to reflect its now-dual meaning — deferred; a pure rename touching every
+  reader is churn better done on its own, not folded into a behavior fix.
