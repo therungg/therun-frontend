@@ -17,17 +17,21 @@ import {
 } from '../actions/fetch-page.action';
 import type { BuiltinFilterState } from '../filters/builtin-params';
 import { FiltersPopover } from '../filters/filters-popover';
+import type {
+    ModVerb,
+    RunActionTarget,
+} from '../manage/moderation/shared/action-model';
+import { RunActionDialog } from '../manage/moderation/shared/run-action-dialog';
 import { isSameRunner } from '../shared/is-same-runner';
 import { OwnerHideIdentityDialog } from '../shared/owner-hide-identity-dialog';
+import { buildSubcategoryKey } from '../submit/subcategory-key';
 import { computeBoardRange } from './board-range';
 import { BoardBulkBar } from './bulk-bar';
 import { ExportButton } from './export-button';
 import styles from './leaderboard.module.scss';
 import { YOU_ROW_ID } from './leaderboard-row';
 import { LeaderboardTable } from './leaderboard-table';
-import { ManualInspector } from './manual-inspector';
 import { paginationItems } from './pagination-items';
-import { RunInspector } from './run-inspector';
 import { type BoardSelectionKey, entrySelectionKey } from './selection';
 import type { TimingKey } from './timing-columns';
 
@@ -196,14 +200,14 @@ export function LeaderboardPager({
     // Shift-click range-select anchor — the last row clicked without
     // shift, or the most recent shift-click's endpoint.
     const lastClickedRef = useRef<BoardSelectionKey | null>(null);
-    // Run / set-time inspector (mods only) — tracked by id, not entry
-    // reference, so a page refetch after a verdict re-derives the fresh row.
-    const [inspectRunId, setInspectRunId] = useState<number | null>(null);
-    const [inspectManualId, setInspectManualId] = useState<number | null>(null);
-    // Verb the inspector opens onto (the row's Remove/`x` path). Cleared on
-    // close and on j/k stepping — a stale 'remove' must not re-expand the
-    // form on every step.
-    const [inspectVerb, setInspectVerb] = useState<'remove' | null>(null);
+    // Quick-moderate: the row's kebab (mod) or Manage/Remove (owner) fires
+    // this, and a shared RunActionDialog renders inline over the board. The
+    // full mod surface (verify/reject/adjust/move/etc.) now lives on the run
+    // page — this host only carries the board's quick-verify/remove path.
+    const [quickAction, setQuickAction] = useState<{
+        entry: LeaderboardEntry;
+        verb: ModVerb;
+    } | null>(null);
     // Board-level "you are hidden here" state, seeded server-side and
     // re-read after the dialog acts. Lives here rather than on the row
     // because a hidden runner has no recognisable row — see the prop doc.
@@ -302,39 +306,6 @@ export function LeaderboardPager({
 
     const entries = board.entries;
 
-    // ---- Run / set-time inspector (mods only) ----------------------------
-    // j/k step through the page's rows of the same kind (real runs for the
-    // run inspector, set times for the set-time inspector).
-    const runEntries = entries.filter((e) => e.runId != null);
-    const inspectIndex =
-        inspectRunId == null
-            ? -1
-            : runEntries.findIndex((e) => e.runId === inspectRunId);
-    const inspectEntry = inspectIndex >= 0 ? runEntries[inspectIndex] : null;
-
-    const manualEntries = entries.filter((e) => e.manualTimeId != null);
-    const inspectManualIndex =
-        inspectManualId == null
-            ? -1
-            : manualEntries.findIndex(
-                  (e) => e.manualTimeId === inspectManualId,
-              );
-    const inspectManualEntry =
-        inspectManualIndex >= 0 ? manualEntries[inspectManualIndex] : null;
-
-    // A refetch or page navigation can drop the inspected row off the page
-    // (quiet removal, verified filter) — close rather than show stale data.
-    useEffect(() => {
-        if (inspectRunId != null && inspectEntry == null) {
-            setInspectRunId(null);
-        }
-    }, [inspectRunId, inspectEntry]);
-    useEffect(() => {
-        if (inspectManualId != null && inspectManualEntry == null) {
-            setInspectManualId(null);
-        }
-    }, [inspectManualId, inspectManualEntry]);
-
     const boardRefresh = () => startRefetch(refetchCurrentPage);
 
     /**
@@ -357,36 +328,69 @@ export function LeaderboardPager({
         entry.userId != null &&
         !entry.isGuest &&
         entry.anonymized !== true;
-    // Which surface the drawer opens with. A moderator always gets the mod
-    // one — including on their own run, since it is a superset of the
-    // owner's and downgrading it would take verbs away from someone who has
-    // them.
-    const inspectorMode = canManage ? 'mod' : 'owner';
 
-    // Route the row's Moderate/Remove to the matching inspector, and never
-    // open both at once. `verb` pre-expands that verb's form in the drawer.
-    const openModerate = (entry: LeaderboardEntry, verb?: 'remove') => {
+    // Route the row's kebab (mod) / Manage-Remove (owner) into the shared
+    // quick-moderate dialog, never opening it twice at once.
+    const onQuickModerate = (entry: LeaderboardEntry, verb: ModVerb) => {
         // Non-mods reach this only through their own row's Manage button.
         // Re-checked here rather than trusted from the row: this callback is
-        // handed to every row, and the drawer it opens performs mutations.
+        // handed to every row, and the dialog it opens performs mutations.
         // A non-mod's own row is allowed through as long as it carries SOME
-        // id to inspect (a real run OR a set time) — both RunInspector and
-        // ManualInspector have an owner mode; there is simply nothing to
-        // open for a row with neither.
+        // id to act on (a real run OR a set time).
         if (
             !canManage &&
             (!isOwnEntry(entry) ||
                 (entry.runId == null && entry.manualTimeId == null))
         )
             return;
-        setInspectVerb(verb ?? null);
-        if (entry.runId != null) {
-            setInspectManualId(null);
-            setInspectRunId(entry.runId);
-        } else if (entry.manualTimeId != null) {
-            setInspectRunId(null);
-            setInspectManualId(entry.manualTimeId);
+        setQuickAction({ entry, verb });
+    };
+
+    /**
+     * Builds the shared `RunActionTarget` for a single row's quick-moderate
+     * dialog. Mirrors the drawer's own target construction exactly (see the
+     * removed RunInspector/ManualInspector) so Remove's runner-scope options
+     * ("this run" vs "every run this runner has on this board") keep
+     * working from the board too.
+     */
+    const buildQuickTarget = (entry: LeaderboardEntry): RunActionTarget => {
+        if (entry.source === 'manual' && entry.manualTimeId != null) {
+            return {
+                kind: 'runs',
+                runIds: [],
+                manualTimeIds: [entry.manualTimeId],
+                label: `${entry.runnerName}'s set time`,
+            };
         }
+        const entrySubcategoryKey = buildSubcategoryKey(
+            Object.fromEntries(
+                Object.entries(entry.variables ?? {}).filter(([k]) =>
+                    subcategoryDefKeys.includes(k),
+                ),
+            ),
+        );
+        const primaryMs =
+            primaryTiming === 'gt'
+                ? (entry.gameTime ?? entry.realTime)
+                : entry.realTime;
+        return {
+            kind: 'runs',
+            runIds: entry.runId != null ? [entry.runId] : [],
+            label: `${entry.runnerName}'s run`,
+            runTimeMs: primaryMs,
+            runDate: entry.runDate ?? null,
+            runner:
+                entry.userId != null && categoryId != null
+                    ? {
+                          id: entry.userId,
+                          name: entry.runnerName,
+                          categoryId,
+                          categoryDisplay,
+                          subcategoryKey: entrySubcategoryKey,
+                          primaryTiming,
+                      }
+                    : undefined,
+        };
     };
 
     // ---- Bulk selection (mods only) --------------------------------------
@@ -629,10 +633,10 @@ export function LeaderboardPager({
                 onToggleAllVisible={toggleAllVisible}
                 // Handed to signed-in visitors too: every row gets the
                 // callback, but only the visitor's own row renders a control
-                // that calls it (and `openModerate` re-checks anyway).
-                onModerate={
+                // that calls it (and `onQuickModerate` re-checks anyway).
+                onQuickModerate={
                     canManage || sessionUsername != null
-                        ? openModerate
+                        ? onQuickModerate
                         : undefined
                 }
                 onBoardRefresh={canManage ? boardRefresh : undefined}
@@ -660,115 +664,21 @@ export function LeaderboardPager({
                     gameDisplay={gameDisplay}
                 />
             )}
-            {(canManage ||
-                (inspectEntry != null && isOwnEntry(inspectEntry))) &&
-                inspectEntry != null && (
-                    <RunInspector
-                        entry={inspectEntry}
-                        gameSlug={gameSlug}
-                        gameId={gameId}
-                        gameDisplay={gameDisplay}
-                        mode={inspectorMode}
-                        // The drawer asks; this component owns the dialog.
-                        // Hiding your identity from inside the drawer redacts
-                        // your own row, which fails `isOwnEntry` on the next
-                        // refetch and unmounts the drawer — a dialog rendered
-                        // in there would go with it, mid-read. Up here it
-                        // survives the refetch and keeps showing the result,
-                        // and it is the same instance the board-level note
-                        // opens.
-                        onOpenHideIdentity={() => setHideIdentityOpen(true)}
-                        categorySlug={categorySlug}
-                        rtaFallback={rtaFallback}
-                        categoryDisplay={categoryDisplay}
-                        categoryId={categoryId}
-                        requireVideo={requireVideo}
-                        primaryTiming={primaryTiming}
-                        subcategoryDefKeys={subcategoryDefKeys}
-                        gameTimeLabel={gameTimeLabel}
-                        showMilliseconds={showMilliseconds}
-                        onClose={() => {
-                            setInspectRunId(null);
-                            setInspectVerb(null);
-                        }}
-                        onMutated={boardRefresh}
-                        initialVerb={inspectVerb ?? undefined}
-                        // Stepping is a moderator's sweep through a page of other
-                        // people's runs. An owner has exactly one run in scope —
-                        // j/k would walk them straight onto a stranger's row with
-                        // owner verbs pointed at it.
-                        onPrev={
-                            canManage && inspectIndex > 0
-                                ? () => {
-                                      setInspectVerb(null);
-                                      setInspectRunId(
-                                          runEntries[inspectIndex - 1].runId ??
-                                              null,
-                                      );
-                                  }
-                                : undefined
-                        }
-                        onNext={
-                            canManage && inspectIndex < runEntries.length - 1
-                                ? () => {
-                                      setInspectVerb(null);
-                                      setInspectRunId(
-                                          runEntries[inspectIndex + 1].runId ??
-                                              null,
-                                      );
-                                  }
-                                : undefined
-                        }
-                    />
-                )}
-            {(canManage ||
-                (inspectManualEntry != null &&
-                    isOwnEntry(inspectManualEntry))) &&
-                inspectManualEntry != null && (
-                    <ManualInspector
-                        entry={inspectManualEntry}
-                        gameSlug={gameSlug}
-                        gameId={gameId}
-                        mode={inspectorMode}
-                        categorySlug={categorySlug}
-                        subcategoryDefKeys={subcategoryDefKeys}
-                        gameTimeLabel={gameTimeLabel}
-                        showMilliseconds={showMilliseconds}
-                        onClose={() => {
-                            setInspectManualId(null);
-                            setInspectVerb(null);
-                        }}
-                        onMutated={boardRefresh}
-                        initialVerb={inspectVerb ?? undefined}
-                        // Stepping is a moderator's sweep through a page of
-                        // other people's set times. An owner has exactly one
-                        // set time in scope — see the matching note on
-                        // RunInspector's onPrev/onNext above.
-                        onPrev={
-                            canManage && inspectManualIndex > 0
-                                ? () => {
-                                      setInspectVerb(null);
-                                      setInspectManualId(
-                                          manualEntries[inspectManualIndex - 1]
-                                              .manualTimeId ?? null,
-                                      );
-                                  }
-                                : undefined
-                        }
-                        onNext={
-                            canManage &&
-                            inspectManualIndex < manualEntries.length - 1
-                                ? () => {
-                                      setInspectVerb(null);
-                                      setInspectManualId(
-                                          manualEntries[inspectManualIndex + 1]
-                                              .manualTimeId ?? null,
-                                      );
-                                  }
-                                : undefined
-                        }
-                    />
-                )}
+            {/* Board's quick-verify/remove path: the shared verb form,
+                inline, over the board. The full mod surface (adjust, move,
+                evidence, stepping) lives on the run page now. */}
+            {quickAction && (
+                <RunActionDialog
+                    gameSlug={gameSlug}
+                    verb={quickAction.verb}
+                    target={buildQuickTarget(quickAction.entry)}
+                    onClose={() => setQuickAction(null)}
+                    onDone={() => {
+                        setQuickAction(null);
+                        boardRefresh();
+                    }}
+                />
+            )}
             {canManage && selectedKeys.size > 0 && (
                 <BoardBulkBar
                     gameSlug={gameSlug}

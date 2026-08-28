@@ -15,11 +15,10 @@ import type { SelfAnonymizeState } from '../../../../../types/moderation.types';
 import { LeaderboardPager } from './leaderboard-pager';
 
 const mocks = vi.hoisted(() => ({
-    /** Last props the table was rendered with — `onModerate` is the REAL
-     * gate under test (the row only decides whether to show a button). */
+    /** Last props the table was rendered with — `onQuickModerate` is the
+     * REAL gate under test (the row only decides whether to show a button). */
     tableProps: { current: null as null | Record<string, unknown> },
-    inspectorProps: { current: null as null | Record<string, unknown> },
-    manualInspectorProps: { current: null as null | Record<string, unknown> },
+    dialogProps: { current: null as null | Record<string, unknown> },
     selfAnonymizeStateAction: vi.fn(),
     fetchLeaderboardPage: vi.fn(),
     findRunnerPage: vi.fn(),
@@ -31,16 +30,30 @@ vi.mock('./leaderboard-table', () => ({
         return <div data-testid="table" />;
     },
 }));
-vi.mock('./run-inspector', () => ({
-    RunInspector: (props: Record<string, unknown>) => {
-        mocks.inspectorProps.current = props;
-        return <div data-testid="inspector" />;
-    },
-}));
-vi.mock('./manual-inspector', () => ({
-    ManualInspector: (props: Record<string, unknown>) => {
-        mocks.manualInspectorProps.current = props;
-        return <div data-testid="manual-inspector" />;
+// The board's quick-verify/remove surface, not the old inspector drawer —
+// the shared dialog every mod pane reuses. Stubbed with Done/Close buttons
+// so the un-hide-note tests below can drive its `onDone`.
+vi.mock('../manage/moderation/shared/run-action-dialog', () => ({
+    RunActionDialog: (props: Record<string, unknown>) => {
+        mocks.dialogProps.current = props;
+        return (
+            <div data-testid="run-action-dialog">
+                <button
+                    type="button"
+                    onClick={props.onDone as () => void}
+                    data-testid="dialog-done"
+                >
+                    stub-done
+                </button>
+                <button
+                    type="button"
+                    onClick={props.onClose as () => void}
+                    data-testid="dialog-close"
+                >
+                    stub-close
+                </button>
+            </div>
+        );
     },
 }));
 vi.mock('./bulk-bar', () => ({ BoardBulkBar: () => null }));
@@ -133,35 +146,43 @@ function renderPager(over: {
     );
 }
 
-/** Fire the table's `onModerate` — the gate a row's button would hit. */
-function moderate(e: LeaderboardEntry) {
-    const onModerate = mocks.tableProps.current?.onModerate as
-        | ((e: LeaderboardEntry) => void)
+/** Fire the table's `onQuickModerate` — the gate a row's button would hit. */
+function quickModerate(
+    e: LeaderboardEntry,
+    verb: 'remove' | 'approve' = 'remove',
+) {
+    const onQuickModerate = mocks.tableProps.current?.onQuickModerate as
+        | ((e: LeaderboardEntry, verb: string) => void)
         | undefined;
-    act(() => onModerate?.(e));
-    return onModerate;
+    act(() => onQuickModerate?.(e, verb));
+    return onQuickModerate;
 }
 
 beforeEach(() => {
     vi.clearAllMocks();
     mocks.tableProps.current = null;
-    mocks.inspectorProps.current = null;
-    mocks.manualInspectorProps.current = null;
+    mocks.dialogProps.current = null;
 });
 
-describe('LeaderboardPager — owner gate', () => {
-    it('opens the inspector in owner mode on the visitor’s own run', () => {
+describe('LeaderboardPager — quick-moderate gate', () => {
+    it('mounts RunActionDialog in owner mode on the visitor’s own run', () => {
         renderPager({});
-        moderate(entry());
-        expect(screen.getByTestId('inspector')).toBeInTheDocument();
-        expect(mocks.inspectorProps.current?.mode).toBe('owner');
-        expect(mocks.inspectorProps.current?.gameId).toBe(12);
+        quickModerate(entry());
+        expect(screen.getByTestId('run-action-dialog')).toBeInTheDocument();
+        expect(mocks.dialogProps.current?.verb).toBe('remove');
+        expect(mocks.dialogProps.current?.gameSlug).toBe('celeste');
+        const target = mocks.dialogProps.current?.target as {
+            kind: string;
+            runIds: number[];
+        };
+        expect(target.kind).toBe('runs');
+        expect(target.runIds).toEqual([55]);
     });
 
     it('refuses another runner’s row', () => {
         renderPager({ entries: [entry({ runnerName: 'Someone' })] });
-        moderate(entry({ runnerName: 'Someone' }));
-        expect(screen.queryByTestId('inspector')).toBeNull();
+        quickModerate(entry({ runnerName: 'Someone' }));
+        expect(screen.queryByTestId('run-action-dialog')).toBeNull();
     });
 
     // A guest run's runner name is self-reported free text, so a name match
@@ -169,33 +190,35 @@ describe('LeaderboardPager — owner gate', () => {
     it('refuses a guest run bearing the visitor’s name', () => {
         const guest = entry({ isGuest: true, userId: null });
         renderPager({ entries: [guest] });
-        moderate(guest);
-        expect(screen.queryByTestId('inspector')).toBeNull();
+        quickModerate(guest);
+        expect(screen.queryByTestId('run-action-dialog')).toBeNull();
     });
 
     // And the mirror: an anonymized placeholder can collide with a real name.
     it('refuses an anonymized row bearing the visitor’s name', () => {
         const anon = entry({ anonymized: true, userId: null });
         renderPager({ entries: [anon] });
-        moderate(anon);
-        expect(screen.queryByTestId('inspector')).toBeNull();
+        quickModerate(anon);
+        expect(screen.queryByTestId('run-action-dialog')).toBeNull();
     });
 
-    it('opens ManualInspector in owner mode on the visitor’s own set time', () => {
+    it('mounts RunActionDialog for the visitor’s own set time, targeting the manual time', () => {
         const manual = entry({
             runId: null,
             manualTimeId: 3,
             source: 'manual',
         });
         renderPager({ entries: [manual] });
-        moderate(manual);
-        expect(screen.queryByTestId('inspector')).toBeNull();
-        expect(screen.getByTestId('manual-inspector')).toBeInTheDocument();
-        expect(mocks.manualInspectorProps.current?.mode).toBe('owner');
-        // A single row is in scope for an owner — no stepping to a
-        // stranger's set time.
-        expect(mocks.manualInspectorProps.current?.onPrev).toBeUndefined();
-        expect(mocks.manualInspectorProps.current?.onNext).toBeUndefined();
+        quickModerate(manual);
+        expect(screen.getByTestId('run-action-dialog')).toBeInTheDocument();
+        const target = mocks.dialogProps.current?.target as {
+            kind: string;
+            runIds: number[];
+            manualTimeIds?: number[];
+        };
+        expect(target.kind).toBe('runs');
+        expect(target.runIds).toEqual([]);
+        expect(target.manualTimeIds).toEqual([3]);
     });
 
     it('refuses another runner’s set time', () => {
@@ -206,11 +229,11 @@ describe('LeaderboardPager — owner gate', () => {
             runnerName: 'Someone',
         });
         renderPager({ entries: [manual] });
-        moderate(manual);
-        expect(screen.queryByTestId('manual-inspector')).toBeNull();
+        quickModerate(manual);
+        expect(screen.queryByTestId('run-action-dialog')).toBeNull();
     });
 
-    it('gives a moderator mod mode on a set time, even someone else’s', () => {
+    it('lets a moderator quick-moderate a set time, even someone else’s', () => {
         const manual = entry({
             runId: null,
             manualTimeId: 3,
@@ -218,19 +241,38 @@ describe('LeaderboardPager — owner gate', () => {
             runnerName: 'Someone',
         });
         renderPager({ canManage: true, entries: [manual] });
-        moderate(manual);
-        expect(mocks.manualInspectorProps.current?.mode).toBe('mod');
+        quickModerate(manual);
+        expect(screen.getByTestId('run-action-dialog')).toBeInTheDocument();
     });
 
-    it('gives a moderator mod mode, even on their own run', () => {
+    it('lets a moderator quick-moderate, even on their own run', () => {
         renderPager({ canManage: true });
-        moderate(entry());
-        expect(mocks.inspectorProps.current?.mode).toBe('mod');
+        quickModerate(entry());
+        expect(screen.getByTestId('run-action-dialog')).toBeInTheDocument();
     });
 
-    it('hands the table no moderate callback at all when signed out', () => {
+    it('hands the table no quick-moderate callback at all when signed out', () => {
         renderPager({ sessionUsername: null });
-        expect(mocks.tableProps.current?.onModerate).toBeUndefined();
+        expect(mocks.tableProps.current?.onQuickModerate).toBeUndefined();
+    });
+
+    it('closes the dialog and refetches the board on Done', async () => {
+        mocks.fetchLeaderboardPage.mockResolvedValue(board([entry()]));
+        renderPager({ canManage: true });
+        quickModerate(entry());
+        fireEvent.click(screen.getByTestId('dialog-done'));
+        await waitFor(() =>
+            expect(screen.queryByTestId('run-action-dialog')).toBeNull(),
+        );
+        expect(mocks.fetchLeaderboardPage).toHaveBeenCalled();
+    });
+
+    it('closes the dialog without refetching on Close', () => {
+        renderPager({ canManage: true });
+        quickModerate(entry());
+        fireEvent.click(screen.getByTestId('dialog-close'));
+        expect(screen.queryByTestId('run-action-dialog')).toBeNull();
+        expect(mocks.fetchLeaderboardPage).not.toHaveBeenCalled();
     });
 });
 
@@ -303,76 +345,6 @@ describe('LeaderboardPager — un-hide affordance', () => {
             />,
         );
         expect(screen.getByText(/shown on this board as/)).toBeInTheDocument();
-    });
-
-    /** Open the hoisted dialog the way the drawer does. */
-    function openHideIdentityFromDrawer() {
-        const open = mocks.inspectorProps.current
-            ?.onOpenHideIdentity as () => void;
-        expect(open).toBeTypeOf('function');
-        act(() => open());
-    }
-
-    // Hiding from inside the drawer redacts the row and takes the drawer's
-    // own entry point with it — without this re-read the note (the only
-    // remaining way back) would not appear until a full page load.
-    it('appears after a hide started from the drawer', async () => {
-        mocks.selfAnonymizeStateAction.mockResolvedValue({
-            ok: true,
-            state: hidden,
-        });
-        mocks.fetchLeaderboardPage.mockResolvedValue(board([entry()]));
-        renderPager({});
-        moderate(entry());
-        openHideIdentityFromDrawer();
-        fireEvent.click(
-            screen.getByRole('button', { name: 'stub-unhide-done' }),
-        );
-        await waitFor(() =>
-            expect(
-                screen.getByText(/shown on this board as/),
-            ).toBeInTheDocument(),
-        );
-    });
-
-    // The whole reason the dialog lives here and not in the drawer. Its own
-    // success triggers the board refetch; the refetched row comes back
-    // anonymized, which fails `isOwnEntry` and unmounts the drawer. A dialog
-    // rendered inside the drawer would be torn off screen before the runner
-    // read its answer — which can be "a moderator's rule still hides you".
-    it('survives the board refetch its own success triggers, even as the drawer unmounts', async () => {
-        mocks.selfAnonymizeStateAction.mockResolvedValue({
-            ok: true,
-            state: hidden,
-        });
-        // What the board returns once the runner is hidden: the same row,
-        // anonymized and stripped of its userId.
-        mocks.fetchLeaderboardPage.mockResolvedValue(
-            board([
-                entry({
-                    runnerName: 'Anonymous runner #2',
-                    userId: null,
-                    anonymized: true,
-                }),
-            ]),
-        );
-        renderPager({});
-        moderate(entry());
-        expect(screen.getByTestId('inspector')).toBeInTheDocument();
-        openHideIdentityFromDrawer();
-
-        fireEvent.click(
-            screen.getByRole('button', { name: 'stub-unhide-done' }),
-        );
-
-        // The drawer goes, exactly as designed…
-        await waitFor(() =>
-            expect(screen.queryByTestId('inspector')).toBeNull(),
-        );
-        // …and the dialog is still on screen, still the runner's to close.
-        expect(
-            screen.getByRole('button', { name: 'stub-unhide-done' }),
-        ).toBeInTheDocument();
     });
 
     it('re-reads after the un-hide dialog acts, rather than assuming', async () => {
