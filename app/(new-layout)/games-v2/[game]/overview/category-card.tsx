@@ -54,15 +54,10 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
     const boardHref = buildBoardHref(gameSlug, {
         categorySlug: category.name,
     });
-    const verified = wr?.verificationStatus === 'verified';
 
     return (
         <article
-            className={
-                verified
-                    ? `${styles.plaque} ${styles.plaqueGold}`
-                    : styles.plaque
-            }
+            className={styles.plaque}
             style={{ '--i': index } as CSSProperties}
         >
             <div className={styles.plaqueBody}>
@@ -84,13 +79,7 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
                 </div>
                 {wr ? (
                     <div className={styles.record}>
-                        <span
-                            className={
-                                verified
-                                    ? styles.recordTimeGold
-                                    : styles.recordTime
-                            }
-                        >
+                        <span className={styles.recordTime}>
                             {formatRecord(
                                 wr.time as number,
                                 category.showMilliseconds ?? true,
