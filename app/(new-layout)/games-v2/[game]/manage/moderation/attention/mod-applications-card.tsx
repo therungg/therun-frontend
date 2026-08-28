@@ -145,6 +145,7 @@ function ApplicationRow({
             <div className={styles.actionRow}>
                 <select
                     className="form-select form-select-sm w-auto"
+                    aria-label="Role to grant"
                     value={role}
                     onChange={(e) => setRole(e.target.value as BoardModRole)}
                     disabled={busy}

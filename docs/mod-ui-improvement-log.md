@@ -240,3 +240,16 @@ not a JSX attribute, so it needs a ref + effect; `useRef`/`useEffect` were alrea
 - Deriving `partiallySelected` inline in JSX and setting the property in a callback ref — an effect keyed
   on the boolean is clearer and re-runs exactly when the state flips.
 - A CSS-only `:indeterminate` style — can't set the property from CSS; the DOM property must be assigned.
+
+## Cycle 13 — aria-label on the role select (mod-applications-card.tsx)
+
+**Changed:** Added `aria-label="Role to grant"` to the board-mod-application role `<select>`.
+
+**Why:** The dropdown had no associated label of any kind, so a screen reader announced only its current
+value ("Moderator") with no indication of what the control sets. This is the a11y gap deferred in cycle 10
+(which added its `disabled` state); a one-attribute fix gives it an accessible name.
+
+**Ideas considered but skipped:**
+- A visible `<label>` instead of `aria-label` — the compact action row has no room for visible label text;
+  the surrounding "Approve/Deny" context makes the control's purpose clear to sighted users, so an
+  accessible name for AT is the right-sized fix.
