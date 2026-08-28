@@ -98,21 +98,6 @@
     padding: dt.$spacing-md;
 }
 
-
-// Verified world record: the plate's top edge in gold — the engraved
-// accent. It recolours the existing 1px border rather than thickening it,
-// so a verified card and its unverified neighbour keep identical box
-// metrics and their contents stay on the same baseline across a row.
-// Gold's loud carrier is the numeral; up here it only needs to whisper.
-.plaqueGold {
-    border-top-color: dt.$accent-gold;
-
-    &:hover,
-    &:focus-within {
-        border-top-color: dt.$accent-gold;
-    }
-}
-
 // Entrance: plaques rise onto the wall once, with a short stagger driven
 // by the card's own index — no nth-child ceiling that silently stops
 // staggering past a fixed count. Capped so a long wall doesn't crawl.
@@ -203,7 +188,6 @@
 }
 
 .recordTime,
-.recordTimeGold,
 .recordTimeEmpty {
     @include board.mono-time;
     font-size: dt.$font-size-3xl;
@@ -211,10 +195,6 @@
     letter-spacing: -0.02em;
     line-height: 1;
     color: var(--bs-emphasis-color);
-}
-
-.recordTimeGold {
-    color: dt.$accent-gold;
 }
 
 .recordTimeEmpty {
