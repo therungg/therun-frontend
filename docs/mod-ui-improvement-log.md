@@ -253,3 +253,22 @@ value ("Moderator") with no indication of what the control sets. This is the a11
 - A visible `<label>` instead of `aria-label` — the compact action row has no room for visible label text;
   the surrounding "Approve/Deny" context makes the control's purpose clear to sighted users, so an
   accessible name for AT is the right-sized fix.
+
+## Cycle 14 — Extract triage-card button-class constants (needs-attention.tsx)
+
+**Changed:** Added `BTN_SECONDARY` / `BTN_DANGER` / `BTN_SUCCESS` module constants and replaced all 13
+inline copies of the three Bootstrap button-class strings — 3 plain + 3 inside `clsx()` for secondary,
+5 plain for danger, 2 plain for success.
+
+**Why:** Same duplication-drift problem cycle 2 fixed on the run page, at larger scale: the triage-card
+actions hand-repeated these class strings across ~13 sites, some as `className="…"` and some as the first
+argument of a `clsx(…)` call. One constant per variant means a restyle is one edit and the variants stay
+in lockstep. Pure no-behavior refactor — counted the exact literals first (6/5/2), replaced both the plain
+and clsx-arg forms, and confirmed only the three `const` definitions remain plus matching usage counts.
+
+**Ideas considered but skipped:**
+- Not extracting `BTN_SUCCESS` (only 2 uses) — kept it for family consistency (it's the same edit pattern
+  and a future third success button is now a one-liner); 2 is still a genuine repeat, not a one-off.
+- Reusing the run-page `BTN_SECONDARY` via a shared module — the two live in different feature areas with no
+  existing shared button module; a cross-surface button-class module is a broader change, not this cycle's.
+- A shared `<TriageButton>` component — larger surface change; the string constants are the minimal fix.

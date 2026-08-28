@@ -53,6 +53,13 @@ import {
 /** data-triage-card attribute name shared between the selector and the query. */
 const TRIAGE_CARD_ATTR = 'data-triage-card';
 
+// The triage-card action buttons repeat these three Bootstrap class strings
+// across ~13 sites (some inside clsx()). Named once so the whole card family
+// restyles from one place and the variants can't drift.
+const BTN_SECONDARY = 'btn btn-sm btn-outline-secondary';
+const BTN_DANGER = 'btn btn-sm btn-outline-danger';
+const BTN_SUCCESS = 'btn btn-sm btn-success';
+
 type SourceFilter = 'all' | AttentionSource;
 type CategoryFilter = 'any' | number;
 
@@ -500,10 +507,7 @@ export function NeedsAttention({
                         </p>
                         <button
                             type="button"
-                            className={clsx(
-                                'btn btn-sm btn-outline-secondary',
-                                styles.retryBtn,
-                            )}
+                            className={clsx(BTN_SECONDARY, styles.retryBtn)}
                             onClick={() => router.refresh()}
                         >
                             Retry
@@ -557,7 +561,7 @@ export function NeedsAttention({
                             <button
                                 type="button"
                                 className={clsx(
-                                    'btn btn-sm btn-outline-secondary',
+                                    BTN_SECONDARY,
                                     styles.degradedRetry,
                                 )}
                                 onClick={() => router.refresh()}
@@ -634,21 +638,21 @@ export function NeedsAttention({
                     <div className={styles.bulkActions}>
                         <button
                             type="button"
-                            className="btn btn-sm btn-success"
+                            className={BTN_SUCCESS}
                             onClick={triggerBatchApprove}
                         >
                             Approve selected
                         </button>
                         <button
                             type="button"
-                            className="btn btn-sm btn-outline-danger"
+                            className={BTN_DANGER}
                             onClick={triggerBatchRemove}
                         >
                             Remove selected…
                         </button>
                         <button
                             type="button"
-                            className="btn btn-sm btn-outline-secondary"
+                            className={BTN_SECONDARY}
                             onClick={() => setSelectedForBatch(new Set())}
                         >
                             Clear
@@ -870,14 +874,14 @@ function SingleItemCard({
                 <div className={styles.actions}>
                     <button
                         type="button"
-                        className="btn btn-sm btn-success"
+                        className={BTN_SUCCESS}
                         onClick={() => act('approve', runsTarget)}
                     >
                         Approve
                     </button>
                     <button
                         type="button"
-                        className="btn btn-sm btn-outline-danger"
+                        className={BTN_DANGER}
                         onClick={() => act('remove', runsTarget)}
                     >
                         Remove…
@@ -885,7 +889,7 @@ function SingleItemCard({
                     {item.verificationStatus === 'rejected' && (
                         <button
                             type="button"
-                            className="btn btn-sm btn-outline-secondary"
+                            className={BTN_SECONDARY}
                             onClick={() => act('restore', runsTarget)}
                         >
                             Restore
@@ -895,16 +899,13 @@ function SingleItemCard({
                         <>
                             <Link
                                 href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${item.userId}`}
-                                className={clsx(
-                                    'btn btn-sm btn-outline-secondary',
-                                    styles.pushEnd,
-                                )}
+                                className={clsx(BTN_SECONDARY, styles.pushEnd)}
                             >
                                 View runner
                             </Link>
                             <button
                                 type="button"
-                                className="btn btn-sm btn-outline-danger"
+                                className={BTN_DANGER}
                                 onClick={() => {
                                     const t = banTarget(item, gameDisplay);
                                     if (t) act('ban', t);
@@ -1054,7 +1055,7 @@ function RunnerGroupCard({
                     {userId != null && (
                         <Link
                             href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${userId}`}
-                            className="btn btn-sm btn-outline-secondary"
+                            className={BTN_SECONDARY}
                         >
                             View runner
                         </Link>
@@ -1062,7 +1063,7 @@ function RunnerGroupCard({
                     {runIds.length > 0 && (
                         <button
                             type="button"
-                            className="btn btn-sm btn-outline-danger"
+                            className={BTN_DANGER}
                             onClick={removeAll}
                         >
                             Remove all
@@ -1071,7 +1072,7 @@ function RunnerGroupCard({
                     {userId != null && firstWithCat && (
                         <button
                             type="button"
-                            className="btn btn-sm btn-outline-danger"
+                            className={BTN_DANGER}
                             onClick={banAll}
                         >
                             Ban runner…
