@@ -117,3 +117,23 @@ button visibility already read `hovered`).
   so the keyboard user would see buttons but `v`/`x` still wouldn't fire. Must be stateful.
 - Rename `hovered` → `active` to reflect its now-dual meaning — deferred; a pure rename touching every
   reader is churn better done on its own, not folded into a behavior fix.
+
+## Cycle 7 — Stop swallowing the self-hidden refresh error (leaderboard-pager.tsx)
+
+**Changed:** `refreshSelfHidden`'s empty `.catch(() => {})` now logs the error (`console.error`) and
+raises a toast: "Could not refresh your hidden-identity status. Reload the page to manage it." Added the
+`react-toastify` import the file lacked.
+
+**Why:** The function's own docstring calls it load-bearing — it feeds the un-hide note, the only control
+left once a runner hides their identity (hiding removes the run-drawer entry point). Its single call site
+is the hide-identity dialog's `onDone`. If the refresh fails on the first hide, the note never appears and
+the runner is stranded behind a one-way door until a manual page reload — with the old empty catch, with
+no error and no clue why. Logging makes it diagnosable; the toast hands the user the exact recovery step.
+
+**Ideas considered but skipped:**
+- Auto-retry the action — a transient blip might self-heal, but a retry loop on a mutation-adjacent read
+  adds complexity; the toast's "reload" is a reliable, understandable fallback. Revisit if failures prove common.
+- Leaving it best-effort but only `console.error` — insufficient; the user, not just the console, needs to
+  know the un-hide control might be missing, since the whole point of the note is to prevent a dead end.
+- Optimistically forcing the note visible on error — would risk showing an un-hide control for a state we
+  failed to read; telling the user to reload avoids asserting a status we don't have.

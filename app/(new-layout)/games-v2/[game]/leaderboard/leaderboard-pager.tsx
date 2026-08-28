@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useTransition } from 'react';
+import { toast } from 'react-toastify';
 import { selfAnonymizeStateAction } from '~src/actions/run-user-actions.action';
 import type { LeaderboardQuery } from '~src/lib/leaderboards-v1';
 import { normalizeVariableName } from '~src/lib/variables/keys';
@@ -240,9 +241,16 @@ export function LeaderboardPager({
             .then((res) => {
                 if ('ok' in res) setHiddenState(res.state);
             })
-            .catch(() => {
-                // Best-effort refresh; a failure here just leaves the note
-                // showing whatever it showed before.
+            .catch((err) => {
+                // Not silent: this refresh feeds the un-hide note, the only
+                // control left once your identity is hidden (see the docstring
+                // above). If it never appears because this failed, a swallowed
+                // error would strand the runner behind a one-way door until a
+                // manual reload — so log it and tell them the recovery path.
+                console.error('Failed to refresh self-hidden state', err);
+                toast.error(
+                    'Could not refresh your hidden-identity status. Reload the page to manage it.',
+                );
             });
     };
 
