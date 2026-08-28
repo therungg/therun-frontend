@@ -272,3 +272,50 @@ and clsx-arg forms, and confirmed only the three `const` definitions remain plus
 - Reusing the run-page `BTN_SECONDARY` via a shared module — the two live in different feature areas with no
   existing shared button module; a cross-surface button-class module is a broader change, not this cycle's.
 - A shared `<TriageButton>` component — larger surface change; the string constants are the minimal fix.
+
+## Cycle 15 — Stop swallowing the board-clocks load error (owner-remove-form.tsx)
+
+**Changed:** Replaced the empty `.catch(() => {})` on the board-clocks load with a `console.error` + an
+explanatory comment.
+
+**Why:** It was the only undocumented silent error-swallow left on the mod surface, and it broke the
+file's own convention — the sibling roster-load effect routes its failure into `rosterError` state with a
+comment on why "failed load ≠ empty." When the clocks fetch failed, `clocks` stayed null, so
+`showSecondary` fell back to false and the second-clock input silently vanished; on a dual-timing board a
+replacement time then can't carry its game time. Logging makes the failure diagnosable and the comment
+documents the fallback and the larger follow-up.
+
+**Ideas considered but skipped:**
+- Fully surfacing it with a `clocksError` state gating dual-clock replacement (mirroring `rosterError`) —
+  the correct end state, but it touches the confirm render flow; too large for one safe cycle. Documented
+  as a follow-up in the code comment.
+
+---
+
+## Loop complete — surface surveyed and clean
+
+A final fresh survey of the mod-UI directories (leaderboard/, manage/boards/, manage/moderation/,
+run-view/, shared/) after cycle 15 found nothing else worth a safe bounded change: the surface is
+heavily commented, with consistent disabled/busy states, correct aria wiring, and guarded async effects.
+The one remaining survey candidate (a Deny button busy label) is already covered by the deny
+PromptDialog's own spinner, so it was deliberately not changed. **The loop is stopping here rather than
+inventing low-value churn.**
+
+**Run summary — 15 cycles, all on branch `mod-ui-loop`, all Biome-passed, nothing pushed:**
+1. copy-link works in insecure contexts (run-actions)
+2. extract `BTN_SECONDARY` constant (run-actions)
+3. visible disabled-reason for Move/Mark (bulk-bar)
+4. autofocus Report/Appeal textarea (run-actions)
+5. Run… popup is a real menu + arrow-key roving (row-actions)
+6. arm v/x quick-mod shortcuts on focus, not just hover (leaderboard-row)
+7. surface the self-hidden refresh failure (leaderboard-pager)
+8. extract shared `ReasonModal` (run-actions)
+9. migrate `ReasonModal` to in-house `BoardDialog` (run-actions)
+10. disable role select during approve/deny (mod-applications-card)
+11. trim saved description text (evidence-editor)
+12. indeterminate Select-all checkbox (roster-view)
+13. label the role select (mod-applications-card)
+14. extract triage-card button-class constants (needs-attention)
+15. stop swallowing the board-clocks load error (owner-remove-form)
+
+Next step is Joey's: review, then cherry-pick / open a PR from `mod-ui-loop`.
