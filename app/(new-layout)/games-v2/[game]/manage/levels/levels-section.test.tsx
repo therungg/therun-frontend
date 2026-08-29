@@ -38,4 +38,33 @@ describe('LevelsSection', () => {
                 .getAttribute('aria-selected'),
         ).toBe('true');
     });
+
+    it('re-lands on templates when content-router swaps panes via a key change', () => {
+        // Mirrors how content-router renders the 'levels' and
+        // 'level-categories' cases: same component type at the same tree
+        // position, distinguished only by a `key` prop. Without a key
+        // change React would reconcile this as an update, not a remount,
+        // and `initialTab` would be inert after the first mount.
+        const { rerender } = render(
+            <LevelsSection
+                key="levels"
+                gameId={1}
+                gameSlug="g"
+                templates={[]}
+            />,
+        );
+        expect(screen.getByTestId('levels-pane')).toBeTruthy();
+
+        rerender(
+            <LevelsSection
+                key="level-categories"
+                gameId={1}
+                gameSlug="g"
+                templates={[]}
+                initialTab="templates"
+            />,
+        );
+        expect(screen.getByTestId('templates-pane')).toBeTruthy();
+        expect(screen.queryByTestId('levels-pane')).toBeNull();
+    });
 });
