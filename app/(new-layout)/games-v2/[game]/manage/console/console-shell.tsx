@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styles from '~src/components/console-chrome/console.module.scss';
 import { ConsoleChrome } from '~src/components/console-chrome/console-chrome';
 import { NAV_ICON } from '~src/components/console-chrome/nav-icons';
+import type { NavBadge } from '~src/components/console-chrome/nav-types';
 import Link from '~src/components/link';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type { CategoryConfigRow } from '~src/lib/console/category-rows';
@@ -34,6 +35,7 @@ import { ContentRouter } from './content-router';
 import type { GameDetailsData } from './game-details-pane';
 import { historyCloseQuery } from './history-close-query';
 import {
+    buildFooterNav,
     buildNav,
     sidebarActiveItem as deriveSidebarActiveItem,
     type NavFlags,
@@ -99,9 +101,56 @@ export function ConsoleShell({
     syncJob,
 }: ConsoleShellProps) {
     const groups = useMemo(() => buildNav(flags), [flags]);
+    const footerItems = useMemo(() => buildFooterNav(flags), [flags]);
     const router = useRouter();
     const searchParams = useSearchParams();
     const pathname = usePathname();
+
+    const base = `/games-v2/${encodeURIComponent(game.name)}/manage`;
+
+    // Real links for every sidebar destination. History stays a button — it
+    // is an overlay, and writing ?pane=history from inside the console would
+    // yank the pane out from under the drawer (see handleNavigate).
+    const hrefFor = useCallback(
+        (id: string): string | undefined => {
+            if (id === 'history') return undefined;
+            if (id === 'setup')
+                return `/games-v2/${encodeURIComponent(game.name)}/setup`;
+            if (id === 'overview') return base;
+            return `${base}?pane=${id}`;
+        },
+        [game.name, base],
+    );
+
+    // Ambient sidebar status from data the shell already holds. The count
+    // pill wins over a dot when both could apply.
+    const badges = useMemo(() => {
+        const map: Record<string, NavBadge | undefined> = {
+            attention: {
+                count: attentionItems.length,
+                degraded: degradedSources.length > 0,
+            },
+        };
+        const pending = modApplications?.length ?? 0;
+        if (pending > 0) map.moderators = { count: pending };
+        if (syncJob?.status === 'queued' || syncJob?.status === 'running') {
+            map.import = { dot: 'info' };
+        } else if (syncJob?.status === 'failed') {
+            map.import = { dot: 'danger' };
+        }
+        if (boardHealth?.items.some((i) => i.severity === 'blocker')) {
+            map.overview = { dot: 'danger' };
+        } else if (boardHealth?.items.some((i) => i.severity === 'warning')) {
+            map.overview = { dot: 'warning' };
+        }
+        return map;
+    }, [
+        attentionItems.length,
+        degradedSources.length,
+        modApplications,
+        syncJob,
+        boardHealth,
+    ]);
 
     // A `?pane=` deep link (used by sub-route pages navigating back) decides
     // the pane. Anything else — a bare /manage — resolves to `null`, the tile
@@ -226,6 +275,11 @@ export function ConsoleShell({
             router.push(`/games-v2/${encodeURIComponent(game.name)}/setup`);
             return;
         }
+        if (id === 'overview') {
+            router.push(base, { scroll: false });
+            setActiveItem(null);
+            return;
+        }
         // Opening History from the sidebar is an overlay, not a navigation —
         // it must NOT touch the URL or activeItem. Writing `?pane=history`
         // here would make `initialActive` (which excludes `history` as a
@@ -317,12 +371,9 @@ export function ConsoleShell({
                 groups={groups}
                 activeItem={activeSidebarItem}
                 onNavigate={(id) => handleNavigate(id as NavItemId)}
-                badges={{
-                    attention: {
-                        count: attentionItems.length,
-                        degraded: degradedSources.length > 0,
-                    },
-                }}
+                badges={badges}
+                hrefFor={hrefFor}
+                footerItems={footerItems}
             >
                 {showSetupCard(groups, activeItem) &&
                     (setupCompleteness &&
