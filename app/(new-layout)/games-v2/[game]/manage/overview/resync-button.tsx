@@ -24,6 +24,9 @@ interface Props {
     lastJobCreatedAt: string | null;
     /** Whether an import job is currently running — disables re-sync. */
     running: boolean;
+    /** Global admins bypass the once-per-day cooldown (the backend enforces the
+     * same rule), so the button never disables on the timer for them. */
+    bypassCooldown?: boolean;
     /** Fired after a resync is accepted, so the pane can jump to the import
      * view and watch progress. */
     onStarted: () => void;
@@ -39,6 +42,7 @@ export function ResyncButton({
     gameSlug,
     lastJobCreatedAt,
     running,
+    bypassCooldown = false,
     onStarted,
 }: Props) {
     const [pending, startTransition] = useTransition();
@@ -48,7 +52,7 @@ export function ResyncButton({
     const readyAt = lastJobCreatedAt
         ? new Date(lastJobCreatedAt).getTime() + DAY_MS
         : 0;
-    const throttled = readyAt > now;
+    const throttled = !bypassCooldown && readyAt > now;
 
     const disabled = pending || running || throttled;
 
