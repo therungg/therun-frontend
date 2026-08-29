@@ -179,8 +179,14 @@ export function ContentRouter(props: ContentRouterProps) {
                 />
             );
         case 'levels':
+            // Keyed by pane id: ConsoleShell deliberately doesn't remount on
+            // a pane switch (see console-shell.tsx), so without a key change
+            // here React would reconcile 'levels' <-> 'level-categories' as
+            // an update on the same LevelsSection instance and initialTab
+            // would only take effect on the very first mount.
             return (
                 <LevelsSection
+                    key="levels"
                     gameId={game.id}
                     gameSlug={game.name}
                     templates={props.levelTemplates}
@@ -191,6 +197,7 @@ export function ContentRouter(props: ContentRouterProps) {
             // landing on the templates tab (see hiddenLandingIds in nav-model.ts).
             return (
                 <LevelsSection
+                    key="level-categories"
                     gameId={game.id}
                     gameSlug={game.name}
                     templates={props.levelTemplates}
