@@ -197,20 +197,24 @@ export function LeaderboardRow({
               ? `/games-v2/${encodeURIComponent(gameSlug)}/run/${entry.runId}`
               : null;
 
+    // Podium color follows the tie-resolved rank (display-rank.ts), not the
+    // entry's own backend rank — a runner tied for 1st is gold even where the
+    // backend numbered it 2, and its label ("=1") and medal now agree.
+    const podiumRank = displayRank.rank;
     const podiumClass =
-        entry.rank === 1
+        podiumRank === 1
             ? styles.rank1Row
-            : entry.rank === 2
+            : podiumRank === 2
               ? styles.rank2Row
-              : entry.rank === 3
+              : podiumRank === 3
                 ? styles.rank3Row
                 : '';
     const rankClass =
-        entry.rank === 1
+        podiumRank === 1
             ? styles.rank1
-            : entry.rank === 2
+            : podiumRank === 2
               ? styles.rank2
-              : entry.rank === 3
+              : podiumRank === 3
                 ? styles.rank3
                 : '';
 
@@ -361,23 +365,31 @@ export function LeaderboardRow({
                 </td>
             )}
             <td className={`${styles.rank} ${rankClass}`}>
-                {displayRank.tied && (
-                    <>
-                        <span className="visually-hidden">Tied for rank </span>
-                        <span className={styles.tieMark} aria-hidden="true">
-                            =
+                {/* Flex row so the tie "=" mark sits vertically centered on
+                    the medal ball and the balls line up in one right-aligned
+                    column whether or not a row carries the mark. */}
+                <span className={styles.rankInner}>
+                    {displayRank.tied && (
+                        <>
+                            <span className="visually-hidden">
+                                Tied for rank{' '}
+                            </span>
+                            <span className={styles.tieMark} aria-hidden="true">
+                                =
+                            </span>
+                        </>
+                    )}
+                    {/* Podium ranks get a solid medal badge — a fixed left
+                        anchor that reads at a glance, where a tinted numeral
+                        didn't. */}
+                    {podiumRank <= 3 ? (
+                        <span className={`${styles.medal} ${rankClass}`}>
+                            {displayRank.label.replace(/^=/, '')}
                         </span>
-                    </>
-                )}
-                {/* Podium ranks get a solid medal badge — a fixed left anchor
-                    that reads at a glance, where a tinted numeral didn't. */}
-                {entry.rank <= 3 ? (
-                    <span className={`${styles.medal} ${rankClass}`}>
-                        {displayRank.label.replace(/^=/, '')}
-                    </span>
-                ) : (
-                    displayRank.label.replace(/^=/, '')
-                )}
+                    ) : (
+                        displayRank.label.replace(/^=/, '')
+                    )}
+                </span>
             </td>
             <td className={styles.runner}>
                 <span className={styles.runnerCell}>

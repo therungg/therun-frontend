@@ -10,15 +10,45 @@
 // predicts. grid/table mirror this file's own board.
 // ============================================================
 
-// ---- Masthead plate --------------------------------------------
-.plate {
+// ---- Masthead: two bands ---------------------------------------
+// Band 1 — game overview.
+.gamePlate {
+    @include board.board-surface(0);
+    overflow: hidden;
+    padding: dt.$spacing-md dt.$spacing-xl;
+    margin-bottom: dt.$spacing-md;
+}
+
+// Band 2 — the category-selector rail.
+.catPlate {
     @include board.board-surface(0);
     overflow: hidden;
     margin-bottom: dt.$spacing-sm;
 }
 
-.plateTop {
-    padding: dt.$spacing-md dt.$spacing-xl;
+// The category band — the board's own header, a surface above the table.
+.catBand {
+    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-2xl;
+    margin-bottom: dt.$spacing-sm;
+}
+
+.catBandTitle {
+    @include board.board-skeleton;
+    height: 1.6rem;
+    width: 8rem;
+    border-radius: dt.$radius-sm;
+}
+
+.catBandRecord {
+    @include board.board-skeleton;
+    height: 1.4rem;
+    width: 12rem;
+    border-radius: dt.$radius-sm;
+    flex-shrink: 0;
 }
 
 // The condensed game line. Cover-bound: the 53px cover is taller than the
@@ -86,6 +116,10 @@
 // ---- Page grid ----------------------------------------------
 .grid {
     @include board.board-page-columns;
+}
+
+.colMain {
+    min-width: 0;
 }
 
 // ---- Board table ---------------------------------------------

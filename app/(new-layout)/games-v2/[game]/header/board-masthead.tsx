@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ClaimCtaState } from '../claim/claim-cta';
 import { hasBuiltinFilters } from '../filters/builtin-params';
 import { FilterBar } from '../filters/filter-bar';
-import { RulesPanel } from '../rules/rules-panel';
 import type { GamePageData } from '../types';
 import { AccentFromCover } from './accent-from-cover';
 import { effectiveSubcategoryLabel } from './board-identity';
@@ -22,8 +21,6 @@ interface Props {
     back?: { href: string; label: string };
     /** The board's active subcategory key, used for submit-link context only — never displayed. */
     subcategoryKey: string;
-    rulesOpen: boolean;
-    onToggleRules: () => void;
 }
 
 export function BoardMasthead({
@@ -33,8 +30,6 @@ export function BoardMasthead({
     claim,
     back,
     subcategoryKey,
-    rulesOpen,
-    onToggleRules,
 }: Props) {
     const category = data.selectedCategory;
     const suffix = effectiveSubcategoryLabel(
@@ -73,22 +68,14 @@ export function BoardMasthead({
             )) ||
         levels.groups.length > 0;
 
-    // The active level's rules, when the selected board is a level board —
-    // shown as its own tier between game rules and category rules.
-    // `data.activeLevel` is derived once in data.ts.
-    const levelRules = data.activeLevel?.rules ?? null;
-    const levelName = data.activeLevel?.name ?? null;
-
     const showFilterTier =
         data.variables.some((v) => v.role === 'subcategory') ||
         Object.keys(data.activeFilters.varFilters).length > 0 ||
         hasBuiltinFilters(data.activeFilters.builtins);
-    const showRules =
-        Boolean(category.rules?.trim()) ||
-        Boolean(data.gameMeta.gameRules?.trim()) ||
-        Boolean(levelRules?.trim()) ||
-        data.gameMeta.emulatorPolicy === 'allowed' ||
-        data.gameMeta.emulatorPolicy === 'banned';
+
+    // Band 2 exists only if it has content — a single-category game with no
+    // filters renders no empty selector plate.
+    const showSelectorBand = showCategoryRail || showFilterTier;
 
     // Owns the sentinel/observer (moved up from StickyBoardBar) so the plate
     // can react to `stuck` too: once the bar takes over, the plate's rail
@@ -113,12 +100,17 @@ export function BoardMasthead({
 
     return (
         <>
-            <div className={styles.plate} ref={plateRef}>
+            {/* The topbar: game overview (band 1) then the category selector
+                (band 2). AccentFromCover writes --board-accent(-soft) to this
+                wrapper; the game plate spends it as its flat 5% cover tint
+                (system.md signature #4 — the plate's game-identity tint). */}
+            <div className={styles.bands} ref={plateRef}>
                 <AccentFromCover
                     coverUrl={data.gameMeta.coverUrl ?? data.game.image ?? null}
                     targetRef={plateRef}
                 />
-                <div className={styles.plateTop}>
+                {/* Band 1 — game overview. */}
+                <div className={styles.gamePlate}>
                     <GameHero
                         variant="condensed"
                         game={data.game}
@@ -138,13 +130,19 @@ export function BoardMasthead({
                     />
                 </div>
 
-                {/* The public moderation log still lives at ?view=moderation
+                {/* Band 2 — the category selector: the rail, filter tier and
+                    rules as hairline-divided sections. The category's own
+                    header (name + record + stats) is a separate band rendered
+                    directly above the board (see game-page.tsx). */}
+                {showSelectorBand && (
+                    <div className={styles.catPlate}>
+                        {/* The public moderation log still lives at ?view=moderation
                     and is still linked from the board's own mod affordances —
                     it just no longer spends a header row on a tab pair. The
                     header is for choosing a board, and a second tab strip
                     directly above the category rail read as one more row of
                     the same undifferentiated stack. */}
-                {/* Category rail / filter tier / rules toggle — each its own
+                        {/* Category rail / filter tier / rules toggle — each its own
                     hairline-divided section of the same plate, not a second
                     stacked card.
                     `inert` (React 19) — same precedent as game-page.tsx's
@@ -158,60 +156,36 @@ export function BoardMasthead({
                     that section's subtree uninteractive/unfocusable for
                     descendants (there's no way for a child to opt back
                     in). */}
-                {showCategoryRail && (
-                    <div className={styles.plateSection} inert={stuck}>
-                        <CategoryRail
-                            categories={data.categories}
-                            groups={data.groups}
-                            selectedCategoryName={category.name}
-                            variableKeys={variableKeys}
-                            boardCounts={data.categoryBoardCounts}
-                            gameDisplayMode={data.game.categoryDisplayMode}
-                            levelTemplates={data.levelTemplates}
-                        />
-                    </div>
-                )}
-                {/* Filter tier and Rules share one plate row (density: each
-                    used to own a full-width row whose content ended before
-                    the halfway point). Rules only falls back to its own row
-                    when there's no tier to share with. */}
-                {(showFilterTier || showRules) && (
-                    <div
-                        className={`${styles.plateSection} ${
-                            showFilterTier && showRules
-                                ? styles.plateSectionSplit
-                                : ''
-                        }`}
-                        inert={stuck}
-                    >
-                        {showFilterTier && (
-                            <FilterBar
-                                defs={data.variables}
-                                selectedSubcategoryValues={
-                                    data.activeFilters.subcategoryValues
-                                }
-                                selectedVarFilters={
-                                    data.activeFilters.varFilters
-                                }
-                                subcategoryValueCounts={
-                                    data.subcategoryValueCounts
-                                }
-                                totalItems={data.leaderboard.totalItems}
-                                builtins={data.activeFilters.builtins}
-                            />
-                        )}
-                        {showRules && (
-                            <div className={styles.plateRulesSlot}>
-                                <RulesPanel
-                                    rules={category.rules}
-                                    gameRules={data.gameMeta.gameRules}
-                                    levelRules={levelRules}
-                                    levelName={levelName}
-                                    emulatorPolicy={
-                                        data.gameMeta.emulatorPolicy
+                        {showCategoryRail && (
+                            <div className={styles.plateSection} inert={stuck}>
+                                <CategoryRail
+                                    categories={data.categories}
+                                    groups={data.groups}
+                                    selectedCategoryName={category.name}
+                                    variableKeys={variableKeys}
+                                    boardCounts={data.categoryBoardCounts}
+                                    gameDisplayMode={
+                                        data.game.categoryDisplayMode
                                     }
-                                    open={rulesOpen}
-                                    onToggle={onToggleRules}
+                                    levelTemplates={data.levelTemplates}
+                                />
+                            </div>
+                        )}
+                        {showFilterTier && (
+                            <div className={styles.plateSection} inert={stuck}>
+                                <FilterBar
+                                    defs={data.variables}
+                                    selectedSubcategoryValues={
+                                        data.activeFilters.subcategoryValues
+                                    }
+                                    selectedVarFilters={
+                                        data.activeFilters.varFilters
+                                    }
+                                    subcategoryValueCounts={
+                                        data.subcategoryValueCounts
+                                    }
+                                    totalItems={data.leaderboard.totalItems}
+                                    builtins={data.activeFilters.builtins}
                                 />
                             </div>
                         )}

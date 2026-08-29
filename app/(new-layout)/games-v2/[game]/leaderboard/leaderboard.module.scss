@@ -174,11 +174,22 @@ tr:focus-within .reveal {
     @include board.board-rank;
 }
 
+// The cell's flex row: right-aligned so every medal ball lands in the same
+// column, centered so the tie "=" mark and the ball share a midline, nowrap
+// so the mark + the 1.45rem ball never break onto a second line.
+.rankInner {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 3px;
+    width: 100%;
+    white-space: nowrap;
+}
+
 // Tie marker: muted so the shared numeral (not the "=") reads first.
 .tieMark {
     color: var(--bs-tertiary-color);
     font-weight: 400;
-    margin-right: 1px;
 }
 
 .rank1 {
