@@ -8,6 +8,7 @@ import type {
     ResolvedGroup,
     VariableRow,
 } from '../../../../../types/leaderboards.types';
+import type { LevelTemplate } from '../../../../../types/levels.types';
 import type { BoardPolicyRow } from '../../../../../types/moderation.types';
 
 export interface WizardData {
@@ -15,6 +16,7 @@ export interface WizardData {
     stats: QuickStats;
     categories: ResolvedCategory[];
     groups: ResolvedGroup[];
+    levelTemplates: LevelTemplate[];
     variables: VariableRow[];
     policies: BoardPolicyRow[];
     moderators: GameModerator[];

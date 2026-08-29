@@ -19,6 +19,7 @@ import { StepCategories } from './steps/step-categories';
 import { StepCategorySetup } from './steps/step-category-setup';
 import { StepDetails } from './steps/step-details';
 import { StepGroups } from './steps/step-groups';
+import { StepLevels } from './steps/step-levels';
 import { StepVariables } from './steps/step-variables';
 import type { WizardData } from './types';
 
@@ -217,6 +218,10 @@ function CurrentStep({
                     onAdvance={onAdvance}
                     onBack={onBack}
                 />
+            );
+        case 'levels':
+            return (
+                <StepLevels data={data} onAdvance={onAdvance} onBack={onBack} />
             );
         case 'groups':
             return (
