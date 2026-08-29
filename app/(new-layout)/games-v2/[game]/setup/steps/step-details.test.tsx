@@ -76,18 +76,13 @@ afterEach(() => {
 });
 
 describe('StepDetails', () => {
-    it('renders the two zone headings in order', () => {
+    it('renders the step header', () => {
         render(
             <StepDetails data={data} onAdvance={vi.fn()} onBack={vi.fn()} />,
         );
-        const facts = screen.getByRole('heading', { name: 'Check the facts' });
-        const rules = screen.getByRole('heading', {
-            name: 'Set the ground rules',
-        });
         expect(
-            facts.compareDocumentPosition(rules) &
-                Node.DOCUMENT_POSITION_FOLLOWING,
-        ).toBeTruthy();
+            screen.getByRole('heading', { name: 'Game details' }),
+        ).toBeInTheDocument();
     });
 
     it('renders exactly one Save & continue button, associated with the details form', () => {

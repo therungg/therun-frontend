@@ -580,10 +580,7 @@ function GameDetailsFormInner({
         >
             {sectioned ? (
                 <div className={styles.sectionedCol}>
-                    <FormSection
-                        title="Identity"
-                        lede="How the board is found and pictured."
-                    >
+                    <FormSection title="Identity">
                         {coverField}
                         {slugField}
                     </FormSection>
