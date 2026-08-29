@@ -463,7 +463,7 @@ export function GroupsSection({
                                             className={styles.modeSelect}
                                             value={g.displayMode ?? 'pills'}
                                             disabled={pending}
-                                            aria-label={`Selector for ${g.name}`}
+                                            aria-label={`Display for ${g.name}`}
                                             onChange={(e) =>
                                                 setDisplayMode(
                                                     g,
