@@ -99,7 +99,6 @@ export function StepDetails({ data, onAdvance }: StepProps) {
         <section className={styles.detailsColumn}>
             <StepHeader step="details" title="Game details" />
 
-            <h3 className={styles.zoneTitle}>Check the facts</h3>
             <div className={styles.section}>
                 <GameDetailsForm
                     identifiers={data.identifiers}
@@ -119,7 +118,6 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                 />
             </div>
 
-            <h3 className={styles.zoneTitle}>Set the ground rules</h3>
             <div className={styles.section}>
                 <div className={styles.pairRow}>
                     <div>
@@ -292,9 +290,6 @@ export function StepDetails({ data, onAdvance }: StepProps) {
             )}
             {formError && <div className={styles.errorNote}>{formError}</div>}
             <div className={styles.detailsFooter}>
-                <p className={styles.footerHint}>
-                    Saves the details and rules, then moves on to Categories.
-                </p>
                 <button
                     type="submit"
                     form="game-details-form"
