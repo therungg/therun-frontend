@@ -155,7 +155,20 @@ export function CategoryRail({
                                     // and the rail has no room for a popover
                                     // that would have to reimplement all three.
                                     <select
-                                        className={styles.categorySelect}
+                                        // Green only when this group actually
+                                        // holds the selected category — matches
+                                        // the `value` logic below, so a group
+                                        // showing "Pick a category…" no longer
+                                        // reads as chosen.
+                                        className={`${styles.categorySelect} ${
+                                            section.pills.some(
+                                                (c) =>
+                                                    c.name ===
+                                                    optimisticSelectedName,
+                                            )
+                                                ? styles.categorySelectActive
+                                                : ''
+                                        }`}
                                         value={
                                             section.pills.some(
                                                 (c) =>

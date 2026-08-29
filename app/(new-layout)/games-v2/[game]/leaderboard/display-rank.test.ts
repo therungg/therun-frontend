@@ -26,9 +26,9 @@ describe('computeDisplayRanks', () => {
         const entries = [entry(1, 1000), entry(2, 2000), entry(3, 3000)];
         const ranks = computeDisplayRanks(entries, 'rt');
         expect(ranks).toEqual([
-            { label: '1', tied: false },
-            { label: '2', tied: false },
-            { label: '3', tied: false },
+            { label: '1', tied: false, rank: 1 },
+            { label: '2', tied: false, rank: 2 },
+            { label: '3', tied: false, rank: 3 },
         ]);
     });
 
@@ -36,9 +36,9 @@ describe('computeDisplayRanks', () => {
         const entries = [entry(1, 1000), entry(2, 1000), entry(3, 3000)];
         const ranks = computeDisplayRanks(entries, 'rt');
         expect(ranks).toEqual([
-            { label: '=1', tied: true },
-            { label: '=1', tied: true },
-            { label: '3', tied: false },
+            { label: '=1', tied: true, rank: 1 },
+            { label: '=1', tied: true, rank: 1 },
+            { label: '3', tied: false, rank: 3 },
         ]);
     });
 
@@ -51,10 +51,10 @@ describe('computeDisplayRanks', () => {
         ];
         const ranks = computeDisplayRanks(entries, 'rt');
         expect(ranks).toEqual([
-            { label: '=1', tied: true },
-            { label: '=1', tied: true },
-            { label: '=1', tied: true },
-            { label: '4', tied: false },
+            { label: '=1', tied: true, rank: 1 },
+            { label: '=1', tied: true, rank: 1 },
+            { label: '=1', tied: true, rank: 1 },
+            { label: '4', tied: false, rank: 4 },
         ]);
     });
 
@@ -67,10 +67,10 @@ describe('computeDisplayRanks', () => {
         ];
         const ranks = computeDisplayRanks(entries, 'rt');
         expect(ranks).toEqual([
-            { label: '=1', tied: true },
-            { label: '=1', tied: true },
-            { label: '=3', tied: true },
-            { label: '=3', tied: true },
+            { label: '=1', tied: true, rank: 1 },
+            { label: '=1', tied: true, rank: 1 },
+            { label: '=3', tied: true, rank: 3 },
+            { label: '=3', tied: true, rank: 3 },
         ]);
     });
 
@@ -78,8 +78,8 @@ describe('computeDisplayRanks', () => {
         const entries = [entry(1, null), entry(2, null)];
         const ranks = computeDisplayRanks(entries, 'rt');
         expect(ranks).toEqual([
-            { label: '1', tied: false },
-            { label: '2', tied: false },
+            { label: '1', tied: false, rank: 1 },
+            { label: '2', tied: false, rank: 2 },
         ]);
     });
 
@@ -88,8 +88,8 @@ describe('computeDisplayRanks', () => {
         const rt2000 = { ...entry(2, 2000), gameTime: 500 };
         const ranks = computeDisplayRanks([rt1000, rt2000], 'gt');
         expect(ranks).toEqual([
-            { label: '=1', tied: true },
-            { label: '=1', tied: true },
+            { label: '=1', tied: true, rank: 1 },
+            { label: '=1', tied: true, rank: 1 },
         ]);
     });
 });

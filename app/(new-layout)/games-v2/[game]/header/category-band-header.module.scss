@@ -1,0 +1,133 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+// The board's own header (category-band-header.tsx). A contained board
+// surface directly above the leaderboard: the category as the headline with
+// its stats beside it and its record in gold mono — masthead vocabulary
+// signature #4. Presence from scale/type/spacing/containment only; no wash,
+// no gradient, no filled card.
+.band {
+    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-md dt.$spacing-2xl;
+    margin-bottom: dt.$spacing-sm;
+}
+
+.subject {
+    min-width: 0;
+}
+
+// The category is the subject — the headline. One rank above the game line
+// (band 1, condensed at 2xl), kept restrained: the containment above the
+// board already does the emphasizing.
+.title {
+    margin: 0;
+    font-size: dt.$font-size-2xl;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+}
+
+// One quiet facts line — the category's scale as tertiary text, not a row of
+// stat tiles.
+.facts {
+    margin: dt.$spacing-xs 0 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-tertiary-color);
+}
+
+// The record cluster, divided from the subject by a hairline. Gold lives in
+// the trophy glyph and the mono time only — never a fill or a border box.
+.record {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: dt.$spacing-lg;
+    row-gap: dt.$spacing-xs;
+    padding-left: dt.$spacing-2xl;
+    border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+
+    @media (max-width: 575.98px) {
+        // Wraps under the subject: the divider becomes a top rule.
+        width: 100%;
+        padding-left: 0;
+        padding-top: dt.$spacing-md;
+        border-left: 0;
+        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    }
+}
+
+// The eyebrow takes the whole top line so the holder and the time sit
+// together on the line below it.
+.recordLabel {
+    flex-basis: 100%;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: dt.$font-size-2xs;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    font-weight: 700;
+    color: dt.$accent-gold;
+}
+
+.recordHolder {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    min-width: 0;
+}
+
+.recordName {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 0;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+
+    // UserLink paints usernames brand-green site-wide; here that second
+    // accent would fight the gold. The name reads as emphasis text, green
+    // only on hover.
+    :global(a) {
+        color: var(--bs-emphasis-color);
+        text-decoration: none;
+
+        &:hover {
+            color: var(--bs-primary);
+        }
+    }
+}
+
+.recordVod {
+    display: inline-flex;
+    align-items: center;
+    color: var(--bs-secondary-color);
+    transition: color dt.$transition-fast;
+
+    &:hover {
+        color: var(--bs-primary);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 2px;
+        border-radius: dt.$radius-sm;
+    }
+}
+
+// The record itself — gold mono, the cluster's one piece of scale.
+.recordTime {
+    @include board.mono-time;
+    margin-left: auto;
+    color: dt.$accent-gold;
+    font-size: dt.$font-size-xl;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    white-space: nowrap;
+}

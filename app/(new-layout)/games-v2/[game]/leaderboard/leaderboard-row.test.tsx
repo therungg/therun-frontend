@@ -30,7 +30,7 @@ const entry = (over: Partial<LeaderboardEntry> = {}): LeaderboardEntry => ({
     ...over,
 });
 
-const displayRank: DisplayRank = { label: '4', tied: false };
+const displayRank: DisplayRank = { label: '4', tied: false, rank: 4 };
 
 function renderRow(props: {
     entry?: LeaderboardEntry;

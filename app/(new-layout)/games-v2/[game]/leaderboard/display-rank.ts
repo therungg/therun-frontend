@@ -17,6 +17,12 @@ export interface DisplayRank {
     label: string;
     /** True when this entry shares its primary time with an adjacent entry. */
     tied: boolean;
+    /**
+     * The tie-resolved rank number, shared across a whole tie group. The
+     * medal/podium color follows THIS, not the entry's own backend rank — a
+     * runner tied for 1st gets gold even where the backend numbered it 2.
+     */
+    rank: number;
 }
 
 /**
@@ -48,7 +54,11 @@ export function computeDisplayRanks(
             timingValue(next, primaryTiming) === value;
         if (!tiedWithPrev) groupRank = entry.rank;
         const tied = tiedWithPrev || tiedWithNext;
-        out.push({ label: tied ? `=${groupRank}` : `${groupRank}`, tied });
+        out.push({
+            label: tied ? `=${groupRank}` : `${groupRank}`,
+            tied,
+            rank: groupRank,
+        });
     }
     return out;
 }

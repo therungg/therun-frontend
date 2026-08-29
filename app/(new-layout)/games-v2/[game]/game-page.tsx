@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import type { Race } from '~app/(new-layout)/races/races.types';
 import Link from '~src/components/link';
 import { buildBoardHref } from '~src/lib/board-url';
@@ -14,12 +14,12 @@ import { hasBuiltinFilters } from './filters/builtin-params';
 import { BoardNavProvider, useBoardNavState } from './filters/use-board-nav';
 import styles from './game-page.module.scss';
 import { BoardMasthead } from './header/board-masthead';
+import { CategoryBandHeader } from './header/category-band-header';
 import { GameHero } from './header/game-hero';
 import mastheadStyles from './header/masthead.module.scss';
 import { formatSubcategoryKey, type LabelVariableDef } from './labels';
 import { LeaderboardPager } from './leaderboard/leaderboard-pager';
 import { ModerationLogView } from './leaderboard/moderation/moderation-log-view';
-import { RulesBody } from './rules/rules-panel';
 import { Sidebar } from './sidebar/sidebar';
 import { SubmitDialogProvider } from './submit-dialog/submit-dialog-context';
 import { SubmitLink } from './submit-dialog/submit-link';
@@ -68,8 +68,6 @@ export function GamePage({
         () => data.variables.map((v) => v.nameNormalized),
         [data.variables],
     );
-    const [rulesOpen, setRulesOpen] = useState(false);
-    useEffect(() => setRulesOpen(false), [data.selectedCategory.id]);
     // Single owner of every board-URL-push transition (category/subcategory
     // pills, verified toggle, Filters popover) — see use-board-nav.ts.
     // Hooks run unconditionally, so this is created even on the
@@ -177,22 +175,7 @@ export function GamePage({
                         claim={claim}
                         back={backToWall}
                         subcategoryKey={subcategoryKey}
-                        rulesOpen={rulesOpen}
-                        onToggleRules={() => setRulesOpen((o) => !o)}
                     />
-                    {rulesOpen &&
-                        (data.selectedCategory.rules?.trim() ||
-                            data.gameMeta.gameRules?.trim() ||
-                            data.activeLevel?.rules?.trim() ||
-                            data.gameMeta.emulatorPolicy) && (
-                            <RulesBody
-                                rules={data.selectedCategory.rules}
-                                gameRules={data.gameMeta.gameRules}
-                                levelRules={data.activeLevel?.rules}
-                                levelName={data.activeLevel?.name}
-                                emulatorPolicy={data.gameMeta.emulatorPolicy}
-                            />
-                        )}
                     <div className={styles.grid}>
                         <div
                             className={`${styles.colMain} ${boardNav.isPending ? styles.colMainPending : ''}`}
@@ -223,6 +206,12 @@ export function GamePage({
                                 />
                             ) : (
                                 <>
+                                    {/* The board's own header: the category
+                                        named as the subject, its stats, and
+                                        its record in gold mono — a separate
+                                        band directly above the board, under
+                                        the game/selector topbar. */}
+                                    <CategoryBandHeader data={data} />
                                     {data.invalidCombination ? (
                                         <InvalidCombinationNotice
                                             gameSlug={data.game.name}

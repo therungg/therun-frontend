@@ -156,9 +156,12 @@
 // a moderator picks one outright. It carries the active chip's weight rather
 // than a resting chip's: whatever the form, the current category is the one
 // thing in this header that has to read as chosen.
+// The select falls back to a RESTING chip. The green active weight is a
+// separate modifier (`.categorySelectActive`) the consumer adds only when
+// this select's own value is the active board — an always-green select reads
+// as always-selected (the Levels dropdown looked chosen on every board).
 .categorySelect {
     @include board.board-chip;
-    @include board.board-chip-active;
 
     font-size: dt.$font-size-base;
     padding: dt.$spacing-sm dt.$spacing-lg;
@@ -171,6 +174,12 @@
     @media (pointer: coarse) {
         padding-block: dt.$spacing-md;
     }
+}
+
+// Defined after `.categorySelect` so its fill/border/color win at equal
+// specificity. Applied when the select's current value is the active board.
+.categorySelectActive {
+    @include board.board-chip-active;
 }
 
 .emptyGroup {
@@ -350,28 +359,58 @@
 }
 
 
-// ---- The plate ------------------------------------------------------
-// Game identity + category selector: ONE surface. Hero up top (`.plateTop`),
-// then the category rail / filter tier / rules toggle each as their own
-// hairline-divided `.plateSection` below it. Deliberately NOT sticky — the
-// slim bar takes that job.
-.plate {
-    @include board.board-surface(0);
-    overflow: hidden;
-    // Density pass (Task 6 fix): one step down from the old selector
-    // card's spacing-lg gap — this margin is the whole visible seam
-    // between the plate and the table on the board view, and the
-    // per-section wrapping below (`.plateSection`) added enough of its
-    // own chrome that the board-view rows-above-fold target needed this
-    // extra sliver back.
+// ---- Two bands ------------------------------------------------------
+// Game identity (band 1) and the category you're on (band 2) are two
+// separate board surfaces with a real gap between them, not one stacked
+// plate. The wrapper is the accent target (AccentFromCover writes
+// --board-accent(-soft) here) and owns the header's bottom margin; the
+// category band's emphasis header is what actually spends the accent.
+// Deliberately NOT sticky — the slim bar takes that job.
+.bands {
+    // Density pass carried over from the old single plate: this margin is
+    // the whole visible seam between the header and the table on the board
+    // view.
     margin-bottom: dt.$spacing-sm;
 }
 
-.plateTop {
+// Band 1 — game overview. The plate's game-identity tint: a flat 5%-alpha
+// cover-art color (AccentFromCover → --board-accent-soft on `.bands`). Unset
+// → transparent. A flat fill, never a gradient or wash (system.md #4).
+.gamePlate {
+    @include board.board-surface(0);
+    overflow: hidden;
     padding: 0 dt.$spacing-xl;
-    // Per-game identity: a flat 5%-alpha cover-art tint (AccentFromCover).
-    // Unset custom prop → transparent. No border, no gradient.
-    background: var(--board-accent-soft, transparent);
+    margin-bottom: dt.$spacing-md;
+    // Layered OVER board-surface's panel color (which set background-color) —
+    // a translucent flat fill, so the surface shows through at 95%. Not a
+    // gradient: both stops are the same 5% color.
+    background-image: linear-gradient(
+        var(--board-accent-soft, transparent),
+        var(--board-accent-soft, transparent)
+    );
+}
+
+// Band 2 — the category band. The emphasized surface: its header (`.emph`)
+// names the board you're on, then the category rail / filter tier / rules
+// toggle each follow as their own hairline-divided `.plateSection`.
+.catPlate {
+    @include board.board-surface(0);
+    overflow: hidden;
+
+    // Rules removed; the selector carries fewer rows, so its sections get
+    // even, comfortable vertical breathing rather than the tight xs padding
+    // that left the first category group ~2px under the top border.
+    > .plateSection {
+        padding-block: dt.$spacing-md;
+    }
+
+    // The first section IS the top — no divider, and its top padding matches
+    // the rail's inter-group gap so the first group sits the same distance
+    // from the border as the groups sit from each other.
+    > .plateSection:first-child {
+        border-top: 0;
+        padding-top: dt.$spacing-lg;
+    }
 }
 
 // One section of the plate below the hero: category rail, filter tier, or
