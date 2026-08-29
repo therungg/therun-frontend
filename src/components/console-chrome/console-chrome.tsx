@@ -8,7 +8,7 @@ import { useDialogBehavior } from '~app/(new-layout)/games-v2/[game]/shared/boar
 import Link from '~src/components/link';
 import styles from './console.module.scss';
 import { ConsoleSidebar } from './console-sidebar';
-import type { NavGroup } from './nav-types';
+import type { NavBadge, NavGroup, NavItem } from './nav-types';
 
 export interface ConsoleHeader {
     eyebrow: string; // "Admin" | "Settings"
@@ -28,10 +28,9 @@ interface Props {
     icons: Record<string, IconType>;
     activeItem: string | null;
     onNavigate: (id: string) => void;
-    attentionCount?: number;
-    /** True when one or more attention sources failed to load — the badge
-     * count may be an undercount, not a confirmed total. */
-    badgeDegraded?: boolean;
+    badges?: Record<string, NavBadge | undefined>;
+    hrefFor?: (id: string) => string | undefined;
+    footerItems?: NavItem[];
     navAriaLabel?: string;
     /** Settings uses the "plain" workspace look — no outer frame box, the
      * sidebar becomes a floating panel on the page canvas. Manage/admin omit
@@ -52,8 +51,9 @@ export function ConsoleChrome({
     icons,
     activeItem,
     onNavigate,
-    attentionCount = 0,
-    badgeDegraded = false,
+    badges,
+    hrefFor,
+    footerItems,
     navAriaLabel,
     plain = false,
     children,
@@ -165,8 +165,10 @@ export function ConsoleChrome({
                                 icons={icons}
                                 activeItem={activeItem}
                                 onSelect={handleSelect}
-                                attentionCount={attentionCount}
-                                badgeDegraded={badgeDegraded}
+                                badges={badges}
+                                hrefFor={hrefFor}
+                                onLinkNavigate={closeSidebar}
+                                footerItems={footerItems}
                                 ariaLabel={navAriaLabel}
                             />
                         </div>

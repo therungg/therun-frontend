@@ -367,6 +367,49 @@ $rail: 3px; // severity spine / active accent width
     color: #fff;
 }
 
+// Anchor variant of .navItem — same box, link semantics.
+.navLink {
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: none;
+    }
+}
+
+// Ambient status dot (sync running/failed, health) — quieter than .count.
+.dot {
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+
+    &[data-tone='info'] {
+        background: var(--bs-primary);
+    }
+    &[data-tone='warning'] {
+        background: dt.$accent-amber;
+    }
+    &[data-tone='danger'] {
+        background: dt.$accent-red;
+    }
+}
+
+// Utility doors under the nav — not panes, so visually apart: a hairline
+// above, quieter text.
+.navFooter {
+    margin-top: dt.$spacing-xl;
+    padding-top: dt.$spacing-lg;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    .navItem {
+        color: var(--bs-secondary-color);
+        font-weight: 500;
+    }
+}
+
 .soon {
     font-size: dt.$font-size-2xs;
     text-transform: uppercase;

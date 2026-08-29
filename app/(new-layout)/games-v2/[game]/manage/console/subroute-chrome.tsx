@@ -87,8 +87,9 @@ export function SubrouteChrome({
             groups={groups}
             activeItem={activeItem}
             onNavigate={(id) => navigate(id as NavItemId)}
-            attentionCount={attentionCount}
-            badgeDegraded={badgeDegraded}
+            badges={{
+                attention: { count: attentionCount, degraded: badgeDegraded },
+            }}
         >
             {children}
         </ConsoleChrome>
