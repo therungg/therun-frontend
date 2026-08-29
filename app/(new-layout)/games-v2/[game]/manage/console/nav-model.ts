@@ -164,17 +164,20 @@ export function sidebarActiveItem(
 
 /**
  * The setup-nudge slot (SetupChecklistCard while setup is incomplete,
- * BoardHealthCard once it's done) belongs on the tile grid — the front door,
- * where every viewer arrives — and above Board-group panes, where a board
+ * BoardHealthCard once it's done) sits above Board-group panes, where a board
  * admin is already in a "configure this board" mindset. It has no business
  * sitting above triage panes (Needs attention, Bans...): a moderator mid-queue
  * doesn't need a "finish setup" nag competing for their attention.
+ *
+ * The front door (`activeItem == null`) is deliberately excluded: BoardOverview
+ * renders the same card inside its own rail, so the shell must not also stack
+ * one above it.
  */
 export function showSetupCard(
     groups: NavGroup[],
     activeItem: NavItemId | null,
 ): boolean {
-    if (activeItem == null) return true;
+    if (activeItem == null) return false;
     const boardGroup = groups.find((g) => g.id === 'board');
     return boardGroup?.items.some((it) => it.id === activeItem) ?? false;
 }

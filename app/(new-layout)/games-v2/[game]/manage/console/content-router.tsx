@@ -4,6 +4,8 @@ import type { ReactNode } from 'react';
 import styles from '~src/components/console-chrome/console.module.scss';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type { CategoryConfigRow } from '~src/lib/console/category-rows';
+import type { BoardCompleteness } from '~src/lib/setup/completeness';
+import type { BoardHealth } from '~src/lib/setup/health';
 import type {
     BoardClaimRequest,
     GameModerator,
@@ -16,6 +18,7 @@ import type {
 } from '../../../../../../types/leaderboards.types';
 import type { LevelTemplate } from '../../../../../../types/levels.types';
 import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
+import type { SrcImportJob } from '../../../../../../types/src-import.types';
 import { VariablesGrid } from '../../setup/steps/variables/variables-grid';
 import { BoardCuration } from '../boards/board-curation';
 import { GameTab } from '../game-tab/game-tab';
@@ -26,6 +29,7 @@ import type { AttentionItem } from '../moderation/attention/attention-model';
 import { ModApplicationsCard } from '../moderation/attention/mod-applications-card';
 import { NeedsAttention } from '../moderation/attention/needs-attention';
 import { ActiveBans } from '../moderation/configure/active-bans';
+import { BoardOverview } from '../overview/board-overview';
 import { ReassignPane } from '../reassignments/reassign-pane';
 import { SrcImportPane } from '../src-import/src-import-pane';
 import { CategoriesPane } from './categories-pane';
@@ -33,7 +37,6 @@ import type { GameDetailsData } from './game-details-pane';
 import { GameDetailsPane } from './game-details-pane';
 import { ModeratorsPane } from './moderators-pane';
 import type { NavGroup, NavItemId } from './nav-model';
-import { TileGrid } from './tile-grid';
 
 export interface ContentRouterProps {
     activeItem: NavItemId | null;
@@ -74,6 +77,13 @@ export interface ContentRouterProps {
     onNavigate: (id: NavItemId) => void;
     /** Live attention total for the grid's badge. */
     attentionCount: number;
+    /** Board overview (the front door) — setup/health rail + import status. */
+    setupCompleteness?: BoardCompleteness | null;
+    boardHealth?: BoardHealth | null;
+    syncJob?: SrcImportJob | null;
+    /** Whether this viewer can reach the moderation queue — gates the
+     * overview's Needs-attention KPI. */
+    canModerate: boolean;
     onGroupsChange: (g: ManageGroup[]) => void;
     onRowChange: (
         categoryId: number,
@@ -115,7 +125,6 @@ export function ContentRouter(props: ContentRouterProps) {
         modApplications,
         moderators,
         onNavigate,
-        attentionCount,
     } = props;
 
     switch (activeItem) {
@@ -259,12 +268,19 @@ export function ContentRouter(props: ContentRouterProps) {
             );
         case null:
             return (
-                <TileGrid
-                    groups={props.navGroups}
-                    onNavigate={onNavigate}
-                    attentionCount={attentionCount}
-                    badgeDegraded={degradedSources.length > 0}
+                <BoardOverview
+                    game={game}
+                    rows={props.rows}
+                    attentionItems={attentionItems}
+                    moderators={moderators ?? []}
                     pendingApplications={modApplications?.length ?? 0}
+                    setupCompleteness={props.setupCompleteness}
+                    boardHealth={props.boardHealth}
+                    syncJob={props.syncJob}
+                    navGroups={props.navGroups}
+                    canModerate={props.canModerate}
+                    onNavigate={onNavigate}
+                    onEditCategory={props.onEditCategory}
                 />
             );
         default:

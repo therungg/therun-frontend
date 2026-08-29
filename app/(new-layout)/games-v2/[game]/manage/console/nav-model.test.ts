@@ -110,11 +110,11 @@ describe('showSetupCard', () => {
         expect(showSetupCard(groups, 'bans')).toBe(false);
     });
 
-    it('shows on the tile grid — the front door is where a setup nag belongs', () => {
-        expect(showSetupCard([], null)).toBe(true);
+    it('hides on the front door — BoardOverview renders the card in its own rail', () => {
+        expect(showSetupCard([], null)).toBe(false);
         expect(
             showSetupCard(buildNav({ ...NO_FLAGS, canModerate: true }), null),
-        ).toBe(true);
+        ).toBe(false);
     });
 
     it('stays out of every triage pane now that none of them is a default', () => {
