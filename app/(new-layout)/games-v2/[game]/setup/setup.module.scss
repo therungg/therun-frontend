@@ -717,6 +717,10 @@ $rail-collapse: 900px;
 // ---- Step section anatomy -----------------------------------
 .section {
     @include board.board-surface(dt.$spacing-xl);
+    // Force block: this class is also applied to a <label> (the Category
+    // selector), and an inline label flows next to the segmented toggle above
+    // it instead of stacking as its own card.
+    display: block;
     margin-bottom: dt.$spacing-lg;
 }
 
