@@ -8,7 +8,12 @@ import { NAV_ICON } from '~src/components/console-chrome/nav-icons';
 import Link from '~src/components/link';
 import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
 import { BackLink } from '../../shared/back-link';
-import { buildNav, type NavFlags, type NavItemId } from './nav-model';
+import {
+    buildFooterNav,
+    buildNav,
+    type NavFlags,
+    type NavItemId,
+} from './nav-model';
 
 interface Props {
     game: ResolvedGame;
@@ -42,20 +47,22 @@ export function SubrouteChrome({
 }: Props) {
     const router = useRouter();
     const groups = useMemo(() => buildNav(flags), [flags]);
+    const footerItems = useMemo(() => buildFooterNav(flags), [flags]);
     const base = `/games-v2/${encodeURIComponent(game.name)}/manage`;
 
+    // Every sidebar door on a sub-route page is a real cross-page link — even
+    // History, which the console opens as a drawer on arrival (?pane=history).
+    const hrefFor = (id: string): string => {
+        if (id === 'setup')
+            return `/games-v2/${encodeURIComponent(game.name)}/setup`;
+        if (id === 'overview') return base;
+        return `${base}?pane=${id}`;
+    };
+
+    // Fallback for onNavigate — the links from hrefFor cover normal clicks;
+    // this only matters for callers that navigate programmatically.
     const navigate = (id: NavItemId) => {
-        if (id === 'roster') {
-            router.push(`${base}/moderation/roster`);
-            return;
-        }
-        if (id === 'reports') {
-            router.push(`${base}?pane=attention&kind=report`);
-            return;
-        }
-        // `history` carries `?pane=history` too, so the console opens the
-        // drawer on arrival instead of just landing on the default pane.
-        router.push(`${base}?pane=${id}`);
+        router.push(hrefFor(id));
     };
 
     return (
@@ -87,6 +94,8 @@ export function SubrouteChrome({
             groups={groups}
             activeItem={activeItem}
             onNavigate={(id) => navigate(id as NavItemId)}
+            hrefFor={hrefFor}
+            footerItems={footerItems}
             badges={{
                 attention: { count: attentionCount, degraded: badgeDegraded },
             }}
