@@ -5,7 +5,6 @@ import {
     type TimingChoice,
     timingChoiceOf,
 } from '~src/lib/setup/board-defaults';
-import { RULES_STARTER_TEMPLATE } from '~src/lib/setup/rules-template';
 import { updateGameMetadataAction } from '../actions/update-game-metadata.action';
 import { GameDetailsForm } from '../game-details-form';
 import styles from '../setup.module.scss';
@@ -24,9 +23,6 @@ export function StepDetails({ data, onAdvance }: StepProps) {
             data.metadata.primaryTiming ?? 'rt',
             data.metadata.gameTimeLabel ?? 'igt',
         ),
-    );
-    const [rulesTemplate, setRulesTemplate] = useState(
-        data.metadata.rulesTemplate ?? RULES_STARTER_TEMPLATE,
     );
     const [gameRules, setGameRules] = useState(data.metadata.gameRules ?? '');
     const [emulatorPolicy, setEmulatorPolicy] = useState<
@@ -77,7 +73,6 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                             : timing === 'lrt'
                               ? 'lrt'
                               : 'igt',
-                    rulesTemplate: rulesTemplate.trim() || null,
                     gameRules: gameRules.trim() || null,
                     emulatorPolicy,
                     hideRealTime: timing === 'rt' ? false : !showSecondary,
@@ -250,20 +245,6 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                     rows={4}
                     value={gameRules}
                     onChange={(e) => setGameRules(e.target.value)}
-                />
-            </div>
-
-            <div className={styles.section}>
-                <h4 className="h6">Category rules template</h4>
-                <p className="text-muted small mb-2">
-                    Seeds the rules of every category you feature. Fill in the
-                    [brackets].
-                </p>
-                <textarea
-                    className="form-control font-monospace"
-                    rows={7}
-                    value={rulesTemplate}
-                    onChange={(e) => setRulesTemplate(e.target.value)}
                 />
             </div>
 
