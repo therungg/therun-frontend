@@ -819,6 +819,24 @@ $rail-collapse: 900px;
     @include board.board-table;
 }
 
+// Keeps a wide settings table from forcing the step body to scroll sideways.
+.tableScroll {
+    overflow-x: auto;
+    margin-bottom: dt.$spacing-md;
+}
+
+// Center the checkbox under its header; keep the header centered to match.
+.colCenter {
+    text-align: center;
+}
+
+// The trailing actions column hugs its buttons and sits hard right.
+.colActions {
+    width: 1%;
+    text-align: right;
+    white-space: nowrap;
+}
+
 // ---- Field labels + hover explanations ----------------------
 .fieldLabel {
     display: flex;
