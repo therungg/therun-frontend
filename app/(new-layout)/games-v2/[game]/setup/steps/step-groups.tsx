@@ -262,16 +262,14 @@ export function StepGroups({ data, onAdvance }: StepProps) {
                 <span className="h6 d-block mb-1">Category selector</span>
                 <select
                     className="form-select form-select-sm"
-                    style={{ maxWidth: 280 }}
+                    style={{ width: 'fit-content' }}
                     value={displayMode}
                     disabled={isSaving}
                     onChange={(e) =>
                         saveDisplayMode(e.target.value as CategoryDisplayMode)
                     }
                 >
-                    <option value="auto">
-                        Auto: pills, then a dropdown once there are many
-                    </option>
+                    <option value="auto">Auto (pills, then dropdown)</option>
                     <option value="pills">Always pills</option>
                     <option value="dropdown">Always a dropdown</option>
                 </select>
