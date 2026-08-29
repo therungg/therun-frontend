@@ -185,12 +185,10 @@ describe('CategoryMatrix', () => {
         expect(min.placeholder).toBe('10:00');
     });
 
-    it('names the two rules sources, and draws the absence as the same em dash every unset cell uses', () => {
+    it('marks a category with its own rules Custom, and the absence as the same em dash every unset cell uses', () => {
         renderMatrix();
-        const onTemplate = screen.getByLabelText(
-            'Rules for Any% — board template',
-        );
-        expect(onTemplate.textContent).toBe('Template');
+        const custom = screen.getByLabelText('Rules for Any% — own text');
+        expect(custom.textContent).toBe('Custom');
 
         const unset = screen.getByLabelText('Rules for 16 Star — not set');
         expect(unset.textContent).toBe('—');
@@ -221,9 +219,6 @@ describe('CategoryMatrix', () => {
         fireEvent.click(screen.getByLabelText('Rules for 16 Star — not set'));
         const dialog = screen.getByRole('dialog', { name: '16 Star rules' });
         expect(dialog).toBeTruthy();
-        expect(
-            within(dialog).getByRole('button', { name: 'Use board template' }),
-        ).toBeTruthy();
     });
 
     it('puts the icon beside the name it belongs to, not in a column of its own', () => {

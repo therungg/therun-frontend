@@ -26,14 +26,12 @@ describe('buildCategorySeed', () => {
                 gameTimeLabel: null,
                 hideRealTime: false,
                 hideGameTime: false,
-                rulesTemplate: null,
             }),
         ).toEqual({
             primaryTiming: 'realtime',
             gameTimeLabel: 'igt',
             hideRealTime: false,
             hideGameTime: false,
-            rulesTemplate: null,
         });
     });
 
@@ -44,14 +42,12 @@ describe('buildCategorySeed', () => {
                 gameTimeLabel: null,
                 hideRealTime: false,
                 hideGameTime: false,
-                rulesTemplate: null,
             }),
         ).toEqual({
             primaryTiming: 'realtime',
             gameTimeLabel: 'igt',
             hideRealTime: false,
             hideGameTime: false,
-            rulesTemplate: null,
         });
     });
 
@@ -62,32 +58,12 @@ describe('buildCategorySeed', () => {
                 gameTimeLabel: null,
                 hideRealTime: true,
                 hideGameTime: false,
-                rulesTemplate: null,
             }),
         ).toEqual({
             primaryTiming: 'gametime',
             gameTimeLabel: 'igt',
             hideRealTime: true,
             hideGameTime: false,
-            rulesTemplate: null,
-        });
-    });
-
-    it('carries the rules template through verbatim', () => {
-        expect(
-            buildCategorySeed({
-                primaryTiming: 'rt',
-                gameTimeLabel: null,
-                hideRealTime: false,
-                hideGameTime: true,
-                rulesTemplate: 'No major skips.',
-            }),
-        ).toEqual({
-            primaryTiming: 'realtime',
-            gameTimeLabel: 'igt',
-            hideRealTime: false,
-            hideGameTime: true,
-            rulesTemplate: 'No major skips.',
         });
     });
 
@@ -98,72 +74,25 @@ describe('buildCategorySeed', () => {
                 gameTimeLabel: null,
                 hideRealTime: true,
                 hideGameTime: true,
-                rulesTemplate: null,
             }),
         ).toEqual({
             primaryTiming: 'realtime',
             gameTimeLabel: 'igt',
             hideRealTime: false,
             hideGameTime: false,
-            rulesTemplate: null,
         });
     });
 });
 
 describe('seedUpdateBody', () => {
-    it('writes rules when the category currently has none', () => {
+    it('writes the seed timing and never touches rules', () => {
         expect(
-            seedUpdateBody(
-                {
-                    primaryTiming: 'realtime',
-                    gameTimeLabel: 'igt',
-                    hideRealTime: false,
-                    hideGameTime: true,
-                    rulesTemplate: 'No skips.',
-                },
-                true,
-            ),
-        ).toEqual({
-            primaryTiming: 'realtime',
-            gameTimeLabel: 'igt',
-            hideRealTime: false,
-            hideGameTime: true,
-            rules: 'No skips.',
-        });
-    });
-
-    it('never overwrites a category that already has rules', () => {
-        expect(
-            seedUpdateBody(
-                {
-                    primaryTiming: 'realtime',
-                    gameTimeLabel: 'igt',
-                    hideRealTime: false,
-                    hideGameTime: false,
-                    rulesTemplate: 'No skips.',
-                },
-                false,
-            ),
-        ).toEqual({
-            primaryTiming: 'realtime',
-            gameTimeLabel: 'igt',
-            hideRealTime: false,
-            hideGameTime: false,
-        });
-    });
-
-    it('omits rules when the game has no template to apply, even if the category is empty', () => {
-        expect(
-            seedUpdateBody(
-                {
-                    primaryTiming: 'gametime',
-                    gameTimeLabel: 'igt',
-                    hideRealTime: true,
-                    hideGameTime: false,
-                    rulesTemplate: null,
-                },
-                true,
-            ),
+            seedUpdateBody({
+                primaryTiming: 'gametime',
+                gameTimeLabel: 'igt',
+                hideRealTime: true,
+                hideGameTime: false,
+            }),
         ).toEqual({
             primaryTiming: 'gametime',
             gameTimeLabel: 'igt',
@@ -171,43 +100,17 @@ describe('seedUpdateBody', () => {
             hideGameTime: false,
         });
     });
-
-    it('omits rules when the template is blank/whitespace-only', () => {
-        expect(
-            seedUpdateBody(
-                {
-                    primaryTiming: 'realtime',
-                    gameTimeLabel: 'igt',
-                    hideRealTime: false,
-                    hideGameTime: false,
-                    rulesTemplate: '   ',
-                },
-                true,
-            ),
-        ).toEqual({
-            primaryTiming: 'realtime',
-            gameTimeLabel: 'igt',
-            hideRealTime: false,
-            hideGameTime: false,
-        });
-    });
 });
 
 describe('computeCategoryChanges', () => {
-    it('flags the feature-on transition as becomingMain, seedless facts included', () => {
+    it('flags the feature-on transition as becomingMain', () => {
         const categories = [mkCat({ id: 1, isMain: false, rules: null })];
         const changes = computeCategoryChanges(
             [{ id: 1, main: true }],
             categories,
         );
         expect(changes).toEqual([
-            {
-                id: 1,
-                main: true,
-                restore: false,
-                becomingMain: true,
-                currentRulesEmpty: true,
-            },
+            { id: 1, main: true, restore: false, becomingMain: true },
         ]);
     });
 
@@ -218,13 +121,7 @@ describe('computeCategoryChanges', () => {
             categories,
         );
         expect(changes).toEqual([
-            {
-                id: 1,
-                main: false,
-                restore: false,
-                becomingMain: false,
-                currentRulesEmpty: true,
-            },
+            { id: 1, main: false, restore: false, becomingMain: false },
         ]);
     });
 
@@ -239,25 +136,8 @@ describe('computeCategoryChanges', () => {
             categories,
         );
         expect(changes).toEqual([
-            {
-                id: 1,
-                main: true,
-                restore: true,
-                becomingMain: false,
-                currentRulesEmpty: true,
-            },
+            { id: 1, main: true, restore: true, becomingMain: false },
         ]);
-    });
-
-    it('computes currentRulesEmpty from the category, not the seed', () => {
-        const categories = [
-            mkCat({ id: 1, isMain: false, rules: 'Existing rules.' }),
-        ];
-        const changes = computeCategoryChanges(
-            [{ id: 1, main: true }],
-            categories,
-        );
-        expect(changes[0].currentRulesEmpty).toBe(false);
     });
 
     it('skips rows whose isMain value is unchanged', () => {

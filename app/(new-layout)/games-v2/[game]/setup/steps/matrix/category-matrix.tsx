@@ -251,7 +251,7 @@ export function CategoryMatrix({
                             >
                                 {section.items.map((c) => {
                                     const min = categoryMinMs(c, data.policies);
-                                    const rules = rulesState(c, defaults);
+                                    const rules = rulesState(c);
                                     return (
                                         <tr key={c.id}>
                                             {/* The icon sits with the name it
@@ -584,13 +584,8 @@ export function CategoryMatrix({
                     title={`${rulesCategory.display} rules`}
                     lede="Shown on the leaderboard, and what a runner is held to."
                     initial={rulesCategory.rules ?? ''}
-                    template={defaults.rulesTemplate}
                     busy={isSaving}
-                    placeholder={
-                        defaults.rulesTemplate
-                            ? 'Empty — the board template is one click away.'
-                            : 'No rules set for this category.'
-                    }
+                    placeholder="No rules set for this category."
                     onClose={() => setRulesFor(null)}
                     onSave={(text) => {
                         // Empty clears the rules rather than storing

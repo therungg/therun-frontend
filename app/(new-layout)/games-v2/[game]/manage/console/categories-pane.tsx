@@ -97,18 +97,6 @@ export function CategoriesPane({
         [rows, groups],
     );
 
-    // A category whose own rules are still empty may take the game's rules
-    // template when it joins the board; one that already has rules must never
-    // have them clobbered. Unknown ids count as "has rules" — the conservative
-    // side of a write we can't verify.
-    const rulesEmptyIds = useMemo(() => {
-        const ids = new Set<number>();
-        for (const c of boardCategories) {
-            if (!(c.rules ?? '').trim()) ids.add(c.id);
-        }
-        return ids;
-    }, [boardCategories]);
-
     const seed = metadata ? buildCategorySeed(metadata) : null;
 
     return (
@@ -148,7 +136,6 @@ export function CategoriesPane({
                 game={game}
                 pool={pool}
                 seed={seed}
-                rulesEmptyIds={rulesEmptyIds}
                 onAdded={(ids) => {
                     for (const id of ids) onRowChange(id, { isMain: true });
                 }}

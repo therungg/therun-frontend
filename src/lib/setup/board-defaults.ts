@@ -224,15 +224,10 @@ export type RulesState = 'default' | 'custom' | 'none';
  * text is byte-identical to the template after trimming — the common case
  * right after "apply template", and the one the matrix renders as a blank.
  */
-export function rulesState(
-    category: ResolvedCategory,
-    defaults: BoardDefaults,
-): RulesState {
-    const own = (category.rules ?? '').trim();
-    if (!own) return 'none';
-    const template = (defaults.rulesTemplate ?? '').trim();
-    if (template && own === template) return 'default';
-    return 'custom';
+export function rulesState(category: ResolvedCategory): RulesState {
+    // Rules are authored per category — there is no board-level template to
+    // match against, so a category either has its own rules or none.
+    return (category.rules ?? '').trim() ? 'custom' : 'none';
 }
 
 /** The category's own minimum in ms, or null when it has none of its own. */
@@ -282,7 +277,8 @@ export function deviates(
             return own !== null && own !== defaults.minMs;
         }
         case 'rules':
-            return rulesState(category, defaults) !== 'default';
+            // No board rules template to deviate from any more.
+            return false;
         case 'ranking':
             return (category.sortAscending ?? true) !== defaults.sortAscending;
         case 'milliseconds':

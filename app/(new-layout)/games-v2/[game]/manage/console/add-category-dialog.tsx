@@ -26,8 +26,6 @@ interface Props {
      * without configure) — the category is then featured as-is.
      */
     seed: CategorySeed | null;
-    /** Ids whose own rules are still empty — gates the seed's rules template. */
-    rulesEmptyIds: Set<number>;
     /** Ids that landed on the board, so the caller can update its rows. */
     onAdded: (ids: number[]) => void;
 }
@@ -52,7 +50,6 @@ export function AddCategoryDialog({
     game,
     pool,
     seed,
-    rulesEmptyIds,
     onAdded,
 }: Props) {
     const [query, setQuery] = useState('');
@@ -137,12 +134,7 @@ export function AddCategoryDialog({
                     gameId: game.id,
                     categoryId: id,
                     isMain: true,
-                    ...(seed
-                        ? {
-                              seed,
-                              currentRulesEmpty: rulesEmptyIds.has(id),
-                          }
-                        : {}),
+                    ...(seed ? { seed } : {}),
                 });
                 done++;
                 setProgress(`Adding ${done} / ${ids.length}…`);

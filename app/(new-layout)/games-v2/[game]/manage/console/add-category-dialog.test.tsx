@@ -28,7 +28,6 @@ const SEED = {
     gameTimeLabel: 'igt' as const,
     hideRealTime: false,
     hideGameTime: false,
-    rulesTemplate: 'No glitches.',
 };
 
 function row(patch: Partial<ManageCategoryRow>): ManageCategoryRow {
@@ -65,7 +64,6 @@ function renderDialog(
             game={GAME}
             pool={POOL}
             seed={SEED}
-            rulesEmptyIds={new Set([2])}
             onAdded={onAdded}
             {...props}
         />,
@@ -106,7 +104,6 @@ describe('AddCategoryDialog', () => {
                     categoryId: 2,
                     isMain: true,
                     seed: SEED,
-                    currentRulesEmpty: true,
                 }),
             ),
         );
@@ -126,6 +123,5 @@ describe('AddCategoryDialog', () => {
         );
         const body = mocks.curateCategoryAction.mock.calls[0][0];
         expect(body.seed).toBeUndefined();
-        expect(body.currentRulesEmpty).toBeUndefined();
     });
 });
