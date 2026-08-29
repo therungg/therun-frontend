@@ -23,8 +23,7 @@ import { VariablesGrid } from '../../setup/steps/variables/variables-grid';
 import { BoardCuration } from '../boards/board-curation';
 import { GameTab } from '../game-tab/game-tab';
 import type { ReorderChange } from '../game-tab/reorder-changes';
-import { LevelCategoriesPane } from '../levels/level-categories-pane';
-import { LevelsPane } from '../levels/levels-pane';
+import { LevelsSection } from '../levels/levels-section';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import { ModApplicationsCard } from '../moderation/attention/mod-applications-card';
 import { NeedsAttention } from '../moderation/attention/needs-attention';
@@ -181,15 +180,22 @@ export function ContentRouter(props: ContentRouterProps) {
             );
         case 'levels':
             return (
-                <LevelsPane
+                <LevelsSection
                     gameId={game.id}
                     gameSlug={game.name}
                     templates={props.levelTemplates}
                 />
             );
         case 'level-categories':
+            // Merged into the Levels pane; the old id survives as a deep link
+            // landing on the templates tab (see hiddenLandingIds in nav-model.ts).
             return (
-                <LevelCategoriesPane gameId={game.id} gameSlug={game.name} />
+                <LevelsSection
+                    gameId={game.id}
+                    gameSlug={game.name}
+                    templates={props.levelTemplates}
+                    initialTab="templates"
+                />
             );
         case 'variables':
             // The wizard's step 4 without the wizard: same grid, same staging
