@@ -30,7 +30,7 @@ describe('SETUP_STEPS', () => {
         expect(SETUP_STEPS.map((s) => s.label)).toEqual([
             'Game details',
             'Categories',
-            'Groups',
+            'Category groups',
             'Category settings',
             'Subcategories & filters',
             'Boards',

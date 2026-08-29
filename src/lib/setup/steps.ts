@@ -24,7 +24,7 @@ export interface SetupStepMeta {
 export const SETUP_STEPS: SetupStepMeta[] = [
     { id: 'details', num: 1, label: 'Game details', skippable: true },
     { id: 'categories', num: 2, label: 'Categories', skippable: true },
-    { id: 'groups', num: 3, label: 'Groups', skippable: true },
+    { id: 'groups', num: 3, label: 'Category groups', skippable: true },
     {
         id: 'category-setup',
         num: 4,
