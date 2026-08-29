@@ -119,7 +119,7 @@ export function StepDetails({ data, onAdvance }: StepProps) {
             </div>
 
             <div className={styles.section}>
-                <div className={styles.pairRow}>
+                <div className={styles.settingsGrid}>
                     <div>
                         <h4 className="h6">Timing</h4>
                         <div
@@ -205,57 +205,58 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                             display setting keep it.
                         </p>
                     </div>
+                    <div>
+                        <h4 className="h6">Emulator policy</h4>
+                        <div
+                            className={styles.segmented}
+                            role="radiogroup"
+                            aria-label="Emulator policy"
+                        >
+                            <button
+                                type="button"
+                                role="radio"
+                                aria-checked={emulatorPolicy === null}
+                                className={
+                                    emulatorPolicy === null
+                                        ? styles.segmentActive
+                                        : undefined
+                                }
+                                onClick={() => setEmulatorPolicy(null)}
+                            >
+                                Not specified
+                            </button>
+                            <button
+                                type="button"
+                                role="radio"
+                                aria-checked={emulatorPolicy === 'allowed'}
+                                className={
+                                    emulatorPolicy === 'allowed'
+                                        ? styles.segmentActive
+                                        : undefined
+                                }
+                                onClick={() => setEmulatorPolicy('allowed')}
+                            >
+                                Allowed
+                            </button>
+                            <button
+                                type="button"
+                                role="radio"
+                                aria-checked={emulatorPolicy === 'banned'}
+                                className={
+                                    emulatorPolicy === 'banned'
+                                        ? styles.segmentActive
+                                        : undefined
+                                }
+                                onClick={() => setEmulatorPolicy('banned')}
+                            >
+                                Banned
+                            </button>
+                        </div>
+                        <p className="text-muted small mb-0">
+                            Shown with the rules on every board.
+                        </p>
+                    </div>
                 </div>
-                <div className={styles.settingsDivider} />
-                <h4 className="h6">Emulator policy</h4>
-                <div
-                    className={styles.segmented}
-                    role="radiogroup"
-                    aria-label="Emulator policy"
-                >
-                    <button
-                        type="button"
-                        role="radio"
-                        aria-checked={emulatorPolicy === null}
-                        className={
-                            emulatorPolicy === null
-                                ? styles.segmentActive
-                                : undefined
-                        }
-                        onClick={() => setEmulatorPolicy(null)}
-                    >
-                        Not specified
-                    </button>
-                    <button
-                        type="button"
-                        role="radio"
-                        aria-checked={emulatorPolicy === 'allowed'}
-                        className={
-                            emulatorPolicy === 'allowed'
-                                ? styles.segmentActive
-                                : undefined
-                        }
-                        onClick={() => setEmulatorPolicy('allowed')}
-                    >
-                        Allowed
-                    </button>
-                    <button
-                        type="button"
-                        role="radio"
-                        aria-checked={emulatorPolicy === 'banned'}
-                        className={
-                            emulatorPolicy === 'banned'
-                                ? styles.segmentActive
-                                : undefined
-                        }
-                        onClick={() => setEmulatorPolicy('banned')}
-                    >
-                        Banned
-                    </button>
-                </div>
-                <p className="text-muted small mb-0">
-                    Shown with the rules on every board.
-                </p>
             </div>
 
             <div className={styles.section}>

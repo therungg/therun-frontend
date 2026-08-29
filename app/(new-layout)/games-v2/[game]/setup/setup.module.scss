@@ -780,6 +780,19 @@ $rail-collapse: 900px;
     gap: dt.$spacing-2xl;
 }
 
+// The board-default settings (Timing, Time columns, Emulator policy) laid out
+// as a two-column grid so the panel reads as an organized set rather than a
+// long vertical stack. Collapses to one column on narrow widths.
+.settingsGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: dt.$spacing-xl dt.$spacing-2xl;
+
+    @media (max-width: 640px) {
+        grid-template-columns: 1fr;
+    }
+}
+
 .statTile {
     @include board.board-surface(dt.$spacing-lg);
     text-align: center;
