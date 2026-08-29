@@ -357,10 +357,26 @@ button.kpi {
     font-size: dt.$font-size-sm;
     cursor: pointer;
     margin-top: dt.$spacing-sm;
-    &:hover {
+    &:hover:not(:disabled) {
         border-color: var(--bs-primary);
         color: var(--bs-primary);
     }
+    &:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+    }
+}
+.railHint {
+    margin: dt.$spacing-sm 0 0;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    text-align: center;
+}
+.railErr {
+    margin: dt.$spacing-sm 0 0;
+    font-size: dt.$font-size-2xs;
+    color: dt.$accent-red;
+    text-align: center;
 }
 .divider {
     height: 1px;

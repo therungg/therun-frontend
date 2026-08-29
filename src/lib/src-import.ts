@@ -32,6 +32,23 @@ export async function startSrcImport(
     });
 }
 
+/**
+ * One-click re-sync: re-pulls everything from the source and auto-applies
+ * (import new/changed + remove upstream-removed runs) with no review. No URL —
+ * the backend derives it from the game's existing mappings. Throttled to once
+ * per day per game server-side; a 429 ApiError carries the next-available time.
+ * See docs/plans/2026-08-29-src-resync-design.md (backend).
+ */
+export async function startSrcResync(
+    sessionId: string,
+    gameId: number,
+): Promise<{ jobId: number }> {
+    return apiFetch<{ jobId: number }>(`${base(gameId)}/resync`, {
+        method: 'POST',
+        sessionId,
+    });
+}
+
 export async function getSrcImportJob(
     sessionId: string,
     gameId: number,

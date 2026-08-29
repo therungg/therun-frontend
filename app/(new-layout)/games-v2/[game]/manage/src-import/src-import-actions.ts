@@ -23,6 +23,7 @@ import {
     setSrcImportOverrides,
     setSrcOnlyLeaderboard,
     startSrcImport,
+    startSrcResync,
     undoSrcImportConfig,
     undoSrcImportRuns,
 } from '~src/lib/src-import';
@@ -202,6 +203,21 @@ export async function importRunsAction(input: {
     return run(async () => {
         const sessionId = await requireBoardMod(input.gameSlug);
         return importSrcRuns(sessionId, input.gameId, input.jobId);
+    });
+}
+
+/**
+ * One-click re-sync (auto-applied, throttled once/day/game server-side). No URL
+ * — the backend derives it from the game's mappings. A 429 rejection surfaces
+ * as an ActionResult error. See docs/plans/2026-08-29-src-resync-design.md.
+ */
+export async function resyncAction(input: {
+    gameId: number;
+    gameSlug: string;
+}): Promise<ActionResult<{ jobId: number }>> {
+    return run(async () => {
+        const sessionId = await requireBoardMod(input.gameSlug);
+        return startSrcResync(sessionId, input.gameId);
     });
 }
 
