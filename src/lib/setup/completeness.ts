@@ -6,6 +6,7 @@ import type {
 export type SetupStepId =
     | 'details'
     | 'categories'
+    | 'levels'
     | 'groups'
     | 'category-setup'
     | 'variables'
@@ -59,6 +60,7 @@ export interface BoardCompleteness {
 export const SETUP_STEP_ORDER: SetupStepId[] = [
     'details',
     'categories',
+    'levels',
     'groups',
     'category-setup',
     'variables',
@@ -153,6 +155,15 @@ export function computeCompleteness(
             } hidden`,
         });
     }
+
+    // Levels aren't modeled by CompletenessInput yet — this placeholder just
+    // keeps `steps` aligned with SETUP_STEP_ORDER until a later task teaches
+    // this builder about individual-level boards.
+    steps.push({
+        step: 'levels',
+        status: 'done',
+        summary: 'No levels yet',
+    });
 
     // Grouping is optional, so "no groups" is a finished state, not a todo.
     // The one unfinished shape is several groups with categories loose
