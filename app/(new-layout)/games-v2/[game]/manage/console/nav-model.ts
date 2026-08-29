@@ -121,7 +121,10 @@ function itemVisible(
     flags: NavFlags,
 ): boolean {
     if (itemId === 'overview') return anyConsoleAccess(flags);
-    if (itemId === 'reassign') return flags.canReassign;
+    // Merge (game/category reassignment) is temporarily hidden while the
+    // backend merge endpoints are disabled. Restore by returning
+    // `flags.canReassign`.
+    if (itemId === 'reassign') return false;
     if (itemId === 'moderators') return flags.canEditMods;
     if (groupId === 'moderate') return flags.canModerate;
     if (itemId === 'categories') return flags.canConfigure || flags.canModerate;

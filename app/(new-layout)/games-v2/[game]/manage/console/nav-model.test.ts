@@ -68,7 +68,6 @@ describe('buildNav', () => {
             'game-details',
             'moderators',
             'import',
-            'reassign',
         ]);
     });
 
@@ -123,12 +122,18 @@ describe('buildNav', () => {
         }
     });
 
-    it('gates moderators and reassign on their own flags', () => {
+    it('gates moderators on its own flag', () => {
         expect(ids({ ...NO_FLAGS, canEditMods: true })).toContain('moderators');
-        expect(ids({ ...NO_FLAGS, canReassign: true })).toContain('reassign');
         expect(ids({ ...NO_FLAGS, canConfigure: true })).not.toContain(
             'moderators',
         );
+    });
+
+    it('hides reassign/merge even with the flag (temporarily disabled)', () => {
+        expect(ids({ ...NO_FLAGS, canReassign: true })).not.toContain(
+            'reassign',
+        );
+        expect(ids(ALL)).not.toContain('reassign');
     });
 });
 
