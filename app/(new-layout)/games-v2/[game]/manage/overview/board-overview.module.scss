@@ -1,0 +1,472 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/board' as board;
+
+// ============================================================
+// Board overview — the console front door.
+// Same craft vocabulary as the console: border-based depth,
+// subtle surface tint, severity accents. Scannable summary first.
+// ============================================================
+
+.wrap {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-2xl;
+}
+
+// ---- Status line -------------------------------------------
+.statusLine {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: dt.$spacing-md;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin-top: calc(#{dt.$spacing-lg} * -1);
+}
+
+.statusPill {
+    @include board.board-pill;
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+}
+.statusPill.live {
+    background: color-mix(in srgb, #{dt.$accent-green} 16%, transparent);
+    color: color-mix(in srgb, #{dt.$accent-green} 78%, var(--bs-body-color));
+}
+.statusPill.setup {
+    background: color-mix(in srgb, #{dt.$accent-amber} 18%, transparent);
+    color: color-mix(in srgb, #{dt.$accent-amber} 80%, var(--bs-body-color));
+}
+.beat {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: currentColor;
+}
+.sep {
+    color: var(--bs-tertiary-color);
+}
+.publicLink {
+    color: var(--bs-primary);
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: auto;
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+// ---- KPI row -----------------------------------------------
+.kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+    gap: dt.$spacing-lg;
+}
+
+.kpi {
+    @include board.board-surface(dt.$spacing-lg);
+    border-radius: dt.$radius-md;
+    position: relative;
+    overflow: clip;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+}
+button.kpi {
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    transition: border-color 0.12s ease;
+    &:hover {
+        border-color: rgba(var(--bs-border-color-rgb), 0.9);
+    }
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 2px;
+    }
+}
+
+.kpiLabel {
+    font-size: dt.$font-size-2xs;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+    font-weight: 600;
+}
+.kpiVal {
+    font-size: dt.$font-size-2xl;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+
+    small {
+        font-size: dt.$font-size-md;
+        font-weight: 500;
+        color: var(--bs-tertiary-color);
+    }
+}
+.kpiSub {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+}
+.kpiSub.up {
+    color: color-mix(in srgb, #{dt.$accent-green} 80%, var(--bs-body-color));
+}
+
+// Attention KPI carries a severity spine + red numeral when non-zero.
+.kpi.flag::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 3px;
+    background: dt.$accent-red;
+}
+.kpi.flag .kpiVal {
+    color: dt.$accent-red;
+}
+
+// ---- Main grid ---------------------------------------------
+.grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 22rem;
+    gap: dt.$spacing-xl;
+    align-items: start;
+
+    @media (max-width: 1024px) {
+        grid-template-columns: 1fr;
+    }
+}
+.rail {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-lg;
+    min-width: 0;
+}
+
+// ---- Card --------------------------------------------------
+.card {
+    @include board.board-surface(0);
+    border-radius: dt.$radius-lg;
+    overflow: clip;
+}
+.cardHead {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-lg dt.$spacing-xl;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+}
+.cardTitle {
+    font-size: dt.$font-size-md;
+    font-weight: 700;
+    margin: 0;
+}
+.cardCount {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-tertiary-color);
+    @include board.mono-time;
+}
+.cardLink {
+    margin-left: auto;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    color: var(--bs-primary);
+    text-decoration: none;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    &:hover {
+        text-decoration: underline;
+    }
+}
+.cardBody {
+    padding: dt.$spacing-lg dt.$spacing-xl;
+}
+
+// ---- Categories table --------------------------------------
+.tableScroll {
+    overflow-x: auto;
+}
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: dt.$font-size-sm;
+
+    th,
+    td {
+        padding: dt.$spacing-md dt.$spacing-xl;
+        text-align: right;
+        white-space: nowrap;
+    }
+    th:first-child,
+    td:first-child {
+        text-align: left;
+    }
+    thead th {
+        font-size: dt.$font-size-2xs;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--bs-secondary-color);
+        font-weight: 600;
+        padding-block: dt.$spacing-sm;
+    }
+    tbody td {
+        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    }
+    tbody tr {
+        cursor: pointer;
+    }
+    tbody tr:hover {
+        background: rgba(var(--bs-secondary-rgb), 0.06);
+    }
+    .num {
+        font-variant-numeric: tabular-nums;
+    }
+    .muted {
+        color: var(--bs-tertiary-color);
+    }
+    .time {
+        @include board.mono-time;
+        color: var(--bs-tertiary-color);
+    }
+}
+.catName {
+    font-weight: 600;
+}
+.tag {
+    display: inline-block;
+    font-size: dt.$font-size-2xs;
+    font-weight: 600;
+    padding: 0.1rem 0.45rem;
+    border-radius: dt.$radius-sm;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.tag.feat {
+    background: rgba(var(--bs-primary-rgb), 0.12);
+    color: var(--bs-primary);
+}
+.barCell {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    justify-content: flex-end;
+}
+.bar {
+    width: 3rem;
+    height: 0.3rem;
+    border-radius: 3px;
+    background: rgba(var(--bs-secondary-rgb), 0.18);
+    overflow: hidden;
+    i {
+        display: block;
+        height: 100%;
+        background: var(--bs-primary);
+        border-radius: 3px;
+    }
+}
+.tableFoot {
+    padding: dt.$spacing-md dt.$spacing-xl;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    font-size: dt.$font-size-sm;
+    color: var(--bs-tertiary-color);
+}
+.tableFoot button {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: var(--bs-primary);
+    font-weight: 600;
+    cursor: pointer;
+    &:hover {
+        text-decoration: underline;
+    }
+}
+.emptyRow {
+    padding: dt.$spacing-2xl dt.$spacing-xl;
+    text-align: center;
+    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-sm;
+}
+
+// ---- Import & sync card ------------------------------------
+.syncRow {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    padding-block: dt.$spacing-xs;
+    font-size: dt.$font-size-sm;
+}
+.syncK {
+    color: var(--bs-secondary-color);
+}
+.syncV {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+.syncV.mono {
+    @include board.mono-time;
+}
+.syncStatus {
+    text-transform: capitalize;
+}
+.syncStatus.done {
+    color: color-mix(in srgb, #{dt.$accent-green} 80%, var(--bs-body-color));
+}
+.syncStatus.failed {
+    color: dt.$accent-red;
+}
+.syncStatus.running {
+    color: color-mix(in srgb, #{dt.$accent-amber} 82%, var(--bs-body-color));
+}
+.phaseBar {
+    display: flex;
+    gap: dt.$spacing-xs;
+    margin: dt.$spacing-md 0 dt.$spacing-sm;
+
+    span {
+        flex: 1;
+        height: 0.25rem;
+        border-radius: 2px;
+        background: rgba(var(--bs-secondary-rgb), 0.18);
+    }
+    span.on {
+        background: color-mix(in srgb, #{dt.$accent-green} 70%, transparent);
+    }
+}
+.syncEmpty {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: 0 0 dt.$spacing-md;
+}
+.railBtn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border-radius: dt.$radius-md;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.8);
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    font-weight: 600;
+    font-size: dt.$font-size-sm;
+    cursor: pointer;
+    margin-top: dt.$spacing-sm;
+    &:hover {
+        border-color: var(--bs-primary);
+        color: var(--bs-primary);
+    }
+}
+.divider {
+    height: 1px;
+    background: rgba(var(--bs-border-color-rgb), 0.4);
+    margin: dt.$spacing-md 0;
+}
+
+// ---- Moderators card ---------------------------------------
+.modRow {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    padding-block: dt.$spacing-sm;
+}
+.avatar {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    flex: none;
+    display: grid;
+    place-items: center;
+    font-size: dt.$font-size-2xs;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+}
+.modName {
+    font-weight: 600;
+    font-size: dt.$font-size-sm;
+}
+.modRole {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    text-transform: capitalize;
+}
+.modYou {
+    margin-left: auto;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    font-weight: 600;
+}
+.appNote {
+    margin-top: dt.$spacing-md;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border-radius: dt.$radius-md;
+    background: color-mix(in srgb, #{dt.$accent-amber} 15%, transparent);
+    color: color-mix(in srgb, #{dt.$accent-amber} 82%, var(--bs-body-color));
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    width: 100%;
+    text-align: left;
+    border: 0;
+    cursor: pointer;
+    &:hover {
+        filter: brightness(1.05);
+    }
+}
+
+// ---- Jump-to tiles -----------------------------------------
+.jump {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+}
+.jumpLabel {
+    font-size: dt.$font-size-2xs;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+    font-weight: 600;
+    margin: 0;
+}
+.tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+    gap: dt.$spacing-md;
+}
+.tile {
+    @include board.board-surface(dt.$spacing-lg);
+    border-radius: dt.$radius-md;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    transition: border-color 0.12s ease;
+    &:hover {
+        border-color: var(--bs-primary);
+    }
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 2px;
+    }
+}
+.tileTop {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    color: var(--bs-primary);
+}
+.tileAction {
+    font-weight: 600;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
+}
+.tileBlurb {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+}

@@ -24,6 +24,7 @@ import type {
 } from '../../../../../../types/leaderboards.types';
 import type { LevelTemplate } from '../../../../../../types/levels.types';
 import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
+import type { SrcImportJob } from '../../../../../../types/src-import.types';
 import { BackLink } from '../../shared/back-link';
 import type { ReorderChange } from '../game-tab/reorder-changes';
 import type { AttentionItem } from '../moderation/attention/attention-model';
@@ -72,6 +73,8 @@ export interface ConsoleShellProps {
     boardHealth?: BoardHealth | null;
     gameDetails?: GameDetailsData | null;
     moderators?: GameModerator[];
+    /** Latest import job for this board — the overview's Import & sync card. */
+    syncJob?: SrcImportJob | null;
 }
 
 export function ConsoleShell({
@@ -93,6 +96,7 @@ export function ConsoleShell({
     boardHealth,
     gameDetails,
     moderators,
+    syncJob,
 }: ConsoleShellProps) {
     const groups = useMemo(() => buildNav(flags), [flags]);
     const router = useRouter();
@@ -365,6 +369,10 @@ export function ConsoleShell({
                     navGroups={groups}
                     onNavigate={handleNavigate}
                     attentionCount={attentionItems.length}
+                    setupCompleteness={setupCompleteness}
+                    boardHealth={boardHealth}
+                    syncJob={syncJob}
+                    canModerate={flags.canModerate}
                     onGroupsChange={setManageGroups}
                     onRowChange={applyRowPatch}
                     onRowsReorder={applyRowsReorder}

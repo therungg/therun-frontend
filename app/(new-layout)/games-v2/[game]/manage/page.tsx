@@ -30,6 +30,7 @@ import {
     variableFactsFromRows,
 } from '~src/lib/setup/completeness';
 import { type BoardHealth, computeBoardHealth } from '~src/lib/setup/health';
+import { getSrcImportJob } from '~src/lib/src-import';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata from '~src/utils/metadata';
 import type {
@@ -99,25 +100,31 @@ export default async function GameAdminConsolePage({ params }: Props) {
     const categoryName = (id: number) =>
         categoryById.get(id) ?? `Category ${id}`;
 
-    const [identifiers, catalog, queueRes, reportsRes, manualTimesRes] =
-        await Promise.all([
-            getGameIdentifiers(game.id).catch(() => ({
-                slug: null,
-            })),
-            // Rows, groups and level categories all come off pageData — one load,
-            // not three.
-            loadConsoleCatalog(game.id).catch(() => ({
-                rows: [],
-                groups: [],
-                levelTemplates: [],
-            })),
-            resolveSource(
-                listQueue(sessionId, game.id, { limit: 200 }),
-                'flags',
-            ),
-            resolveSource(listGameReports(sessionId, game.id), 'reports'),
-            resolveSource(listManualTimes(sessionId, game.id), 'manual times'),
-        ]);
+    const [
+        identifiers,
+        catalog,
+        queueRes,
+        reportsRes,
+        manualTimesRes,
+        syncJob,
+    ] = await Promise.all([
+        getGameIdentifiers(game.id).catch(() => ({
+            slug: null,
+        })),
+        // Rows, groups and level categories all come off pageData — one load,
+        // not three.
+        loadConsoleCatalog(game.id).catch(() => ({
+            rows: [],
+            groups: [],
+            levelTemplates: [],
+        })),
+        resolveSource(listQueue(sessionId, game.id, { limit: 200 }), 'flags'),
+        resolveSource(listGameReports(sessionId, game.id), 'reports'),
+        resolveSource(listManualTimes(sessionId, game.id), 'manual times'),
+        // The board's latest import job — feeds the overview's Import & sync
+        // card. Best-effort: a failure just renders the "no import" state.
+        getSrcImportJob(sessionId, game.id).catch(() => null),
+    ]);
     const { rows: rawRows, groups, levelTemplates } = catalog;
     const degradedSources = degradedSourcesOf([
         queueRes,
@@ -268,6 +275,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 boardHealth={boardHealth}
                 gameDetails={gameDetails}
                 moderators={moderators}
+                syncJob={syncJob}
             />
         </Suspense>
     );
