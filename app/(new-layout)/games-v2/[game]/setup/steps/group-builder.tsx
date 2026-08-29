@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { ArrowDownShort, ArrowUpShort } from 'react-bootstrap-icons';
 import { createGroupAction } from '~src/actions/category-group/create-group.action';
 import { deleteGroupAction } from '~src/actions/category-group/delete-group.action';
 import { renameGroupAction } from '~src/actions/category-group/rename-group.action';
+import { reorderGroupsAction } from '~src/actions/category-group/reorder-groups.action';
 import { setGroupDisplayModeAction } from '~src/actions/category-group/set-group-display-mode.action';
 import { setGroupHiddenAction } from '~src/actions/category-group/set-group-hidden.action';
 import type {
@@ -176,6 +178,31 @@ export function GroupBuilder({
         });
     };
 
+    // Reorder is the group's own sortOrder — the order they appear on the
+    // board — persisted immediately like the other group edits. Optimistic so
+    // the preview and the board columns reflow on click; reverted on refusal.
+    const move = (index: number, dir: -1 | 1) => {
+        const target = index + dir;
+        if (target < 0 || target >= groups.length) return;
+        const next = groups.slice();
+        const [g] = next.splice(index, 1);
+        next.splice(target, 0, g);
+        const previous = groups;
+        onGroupsChange(next);
+        startPending(async () => {
+            setError(null);
+            const res = await reorderGroupsAction({
+                gameSlug: game.name,
+                gameId: game.id,
+                groupIds: next.map((x) => x.id),
+            });
+            if ('error' in res) {
+                setError(res.error);
+                onGroupsChange(previous);
+            }
+        });
+    };
+
     // Deleting an empty group is trivially undoable (make it again); deleting
     // one with categories in it silently ungroups them, so that one asks.
     const requestRemove = (group: ResolvedGroup) => {
@@ -225,6 +252,10 @@ export function GroupBuilder({
                     <table className={styles.table}>
                         <thead>
                             <tr>
+                                <th
+                                    className={styles.colOrder}
+                                    aria-label="Order"
+                                />
                                 <th>Group</th>
                                 <th>Shown</th>
                                 <th className={styles.colCenter}>Collapsed</th>
@@ -236,10 +267,43 @@ export function GroupBuilder({
                             </tr>
                         </thead>
                         <tbody>
-                            {groups.map((g) => {
+                            {groups.map((g, i) => {
                                 const count = countByGroupId.get(g.id) ?? 0;
                                 return (
                                     <tr key={g.id}>
+                                        <td className={styles.colOrder}>
+                                            <span className={styles.nudgeGroup}>
+                                                <button
+                                                    type="button"
+                                                    className={styles.nudgeBtn}
+                                                    aria-label={`Move ${g.name} up`}
+                                                    disabled={
+                                                        pending || i === 0
+                                                    }
+                                                    onClick={() => move(i, -1)}
+                                                >
+                                                    <ArrowUpShort
+                                                        size={18}
+                                                        aria-hidden
+                                                    />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className={styles.nudgeBtn}
+                                                    aria-label={`Move ${g.name} down`}
+                                                    disabled={
+                                                        pending ||
+                                                        i === groups.length - 1
+                                                    }
+                                                    onClick={() => move(i, 1)}
+                                                >
+                                                    <ArrowDownShort
+                                                        size={18}
+                                                        aria-hidden
+                                                    />
+                                                </button>
+                                            </span>
+                                        </td>
                                         <td className="fw-semibold">
                                             {editingId === g.id ? (
                                                 <input

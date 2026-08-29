@@ -837,6 +837,12 @@ $rail-collapse: 900px;
     white-space: nowrap;
 }
 
+// The leading reorder column hugs its up/down nudges.
+.colOrder {
+    width: 1%;
+    white-space: nowrap;
+}
+
 // ---- Field labels + hover explanations ----------------------
 .fieldLabel {
     display: flex;
