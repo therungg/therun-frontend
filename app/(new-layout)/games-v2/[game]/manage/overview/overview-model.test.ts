@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ManageCategoryRow } from '~src/lib/category-mgmt';
+import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import { buildOverviewStats, timeAgo, topFeaturedRows } from './overview-model';
 
@@ -19,6 +19,18 @@ function row(p: Partial<ManageCategoryRow>): ManageCategoryRow {
     } as ManageCategoryRow;
 }
 
+function group(id: number, kind: 'normal' | 'level'): ManageGroup {
+    return {
+        id,
+        name: `Group ${id}`,
+        sortOrder: 0,
+        hiddenByDefault: false,
+        displayMode: null,
+        kind,
+        rules: null,
+    };
+}
+
 function item(...sources: AttentionItem['sources']): AttentionItem {
     return {
         key: sources.join('-'),
@@ -31,7 +43,9 @@ function item(...sources: AttentionItem['sources']): AttentionItem {
 }
 
 describe('buildOverviewStats', () => {
-    it('counts featured, off-board, archived and sums finished runs', () => {
+    it('counts full-game categories apart from levels and sums all runs', () => {
+        // group 20 is a level, so a row in it is a level board — excluded from
+        // the full-game category counts but still summed into finished runs.
         const rows = [
             row({
                 id: 1,
@@ -63,17 +77,27 @@ describe('buildOverviewStats', () => {
                 active: false,
                 totalFinishedAttemptCount: 5,
             }),
+            row({
+                id: 6,
+                isMain: true,
+                active: true,
+                totalFinishedAttemptCount: 40,
+                groupId: 20,
+            }),
         ];
         const stats = buildOverviewStats({
             rows,
+            groups: [group(10, 'normal'), group(20, 'level')],
             attentionItems: [],
             moderatorCount: 3,
             pendingApplications: 2,
         });
-        expect(stats.featured).toBe(2);
+        expect(stats.featured).toBe(2); // ids 1, 2 (id 6 is a level board)
         expect(stats.offBoardWithRuns).toBe(1); // id 3 (id 4 has no runs)
         expect(stats.archived).toBe(1); // id 5
-        expect(stats.finishedRuns).toBe(165);
+        expect(stats.levels).toBe(1); // group 20
+        expect(stats.categoryGroups).toBe(1); // group 10
+        expect(stats.finishedRuns).toBe(205); // includes level board id 6
         expect(stats.moderatorCount).toBe(3);
         expect(stats.pendingApplications).toBe(2);
     });
@@ -81,6 +105,7 @@ describe('buildOverviewStats', () => {
     it('buckets attention by source, grouping appeals with claims', () => {
         const stats = buildOverviewStats({
             rows: [],
+            groups: [],
             attentionItems: [
                 item('flag'),
                 item('flag'),

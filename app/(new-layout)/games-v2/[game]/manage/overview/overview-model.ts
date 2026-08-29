@@ -2,7 +2,8 @@
 // fetching — everything the dashboard shows is computed here from data the
 // /manage page already loads, so the numbers are trivially testable and can't
 // drift from the panels that render them.
-import type { ManageCategoryRow } from '~src/lib/category-mgmt';
+import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
+import { splitLevelBoards } from '~src/lib/levels/display';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 
 export interface AttentionBreakdown {
@@ -14,13 +15,18 @@ export interface AttentionBreakdown {
 }
 
 export interface OverviewStats {
-    /** Featured + active categories: what the public board actually shows. */
+    /** Featured + active full-game categories: what the board's category band
+     * shows. Excludes level boards (counted under `levels`). */
     featured: number;
-    /** Categories with runs that aren't on the board (the add-dialog pool). */
+    /** Full-game categories with runs that aren't on the board (add-dialog pool). */
     offBoardWithRuns: number;
-    /** Archived (inactive) categories still carrying runs. */
+    /** Archived (inactive) full-game categories. */
     archived: number;
-    /** Sum of finished runs across every category with runs. */
+    /** Individual levels — category groups with kind 'level'. */
+    levels: number;
+    /** Category groups (kind 'normal') — the band's grouping structure. */
+    categoryGroups: number;
+    /** Sum of finished runs across every board, levels included. */
     finishedRuns: number;
     attention: AttentionBreakdown;
     moderatorCount: number;
@@ -29,18 +35,27 @@ export interface OverviewStats {
 
 export function buildOverviewStats(input: {
     rows: ManageCategoryRow[];
+    groups: ManageGroup[];
     attentionItems: AttentionItem[];
     moderatorCount: number;
     pendingApplications: number;
 }): OverviewStats {
-    const { rows, attentionItems, moderatorCount, pendingApplications } = input;
+    const {
+        rows,
+        groups,
+        attentionItems,
+        moderatorCount,
+        pendingApplications,
+    } = input;
+
+    // A level board is a category sitting in a kind:'level' group; everything
+    // else is a full-game category. The overview counts and lists them apart.
+    const { fullGame } = splitLevelBoards(rows, groups);
 
     let featured = 0;
     let offBoardWithRuns = 0;
     let archived = 0;
-    let finishedRuns = 0;
-    for (const r of rows) {
-        finishedRuns += r.totalFinishedAttemptCount;
+    for (const r of fullGame) {
         if (!r.active) {
             archived += 1;
         } else if (r.isMain) {
@@ -48,6 +63,18 @@ export function buildOverviewStats(input: {
         } else if (r.totalFinishedAttemptCount > 0) {
             offBoardWithRuns += 1;
         }
+    }
+
+    // Finished runs is a whole-board headline, so it spans every row (level
+    // boards included), not just the full-game slice.
+    let finishedRuns = 0;
+    for (const r of rows) finishedRuns += r.totalFinishedAttemptCount;
+
+    let levels = 0;
+    let categoryGroups = 0;
+    for (const g of groups) {
+        if (g.kind === 'level') levels += 1;
+        else categoryGroups += 1;
     }
 
     // A merged row can carry several sources (flagged AND reported), so these
@@ -68,6 +95,8 @@ export function buildOverviewStats(input: {
         featured,
         offBoardWithRuns,
         archived,
+        levels,
+        categoryGroups,
         finishedRuns,
         attention: {
             total: attentionItems.length,

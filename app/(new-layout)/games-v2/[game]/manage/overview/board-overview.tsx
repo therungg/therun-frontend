@@ -3,8 +3,9 @@
 import { BoxArrowUpRight } from 'react-bootstrap-icons';
 import { NAV_ICON } from '~src/components/console-chrome/nav-icons';
 import Link from '~src/components/link';
-import type { ManageCategoryRow } from '~src/lib/category-mgmt';
+import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import { CONCEPT_TILE, type TileConceptId } from '~src/lib/console/vocabulary';
+import { splitLevelBoards } from '~src/lib/levels/display';
 import type { BoardCompleteness } from '~src/lib/setup/completeness';
 import type { BoardHealth } from '~src/lib/setup/health';
 import type { GameModerator } from '../../../../../../types/board-claims.types';
@@ -47,6 +48,9 @@ function humanRole(role: string): string {
 interface Props {
     game: Pick<ResolvedGame, 'name' | 'display'>;
     rows: ManageCategoryRow[];
+    /** Category groups — splits level boards out of the category table and
+     * supplies the group/level counts. */
+    groups: ManageGroup[];
     attentionItems: AttentionItem[];
     moderators: GameModerator[];
     pendingApplications: number;
@@ -70,6 +74,7 @@ interface Props {
 export function BoardOverview({
     game,
     rows,
+    groups,
     attentionItems,
     moderators,
     pendingApplications,
@@ -83,11 +88,15 @@ export function BoardOverview({
 }: Props) {
     const stats = buildOverviewStats({
         rows,
+        groups,
         attentionItems,
         moderatorCount: moderators.length,
         pendingApplications,
     });
-    const { shown: topRows, remaining } = topFeaturedRows(rows, 6);
+    // The category table lists full-game categories only — level boards are
+    // counted under stats.levels and reached via the Levels pane, not mixed in.
+    const { fullGame } = splitLevelBoards(rows, groups);
+    const { shown: topRows, remaining } = topFeaturedRows(fullGame, 6);
     const maxRuns = Math.max(
         1,
         ...topRows.map((r) => r.totalFinishedAttemptCount),
@@ -125,9 +134,11 @@ export function BoardOverview({
                     </span>
                 )}
                 <span>
-                    {stats.featured} featured
-                    {stats.offBoardWithRuns > 0 &&
-                        ` · ${stats.offBoardWithRuns} more with runs`}
+                    {stats.featured} categor{stats.featured === 1 ? 'y' : 'ies'}
+                    {stats.categoryGroups > 0 &&
+                        ` · ${stats.categoryGroups} group${stats.categoryGroups === 1 ? '' : 's'}`}
+                    {stats.levels > 0 &&
+                        ` · ${stats.levels} level${stats.levels === 1 ? '' : 's'}`}
                 </span>
                 <Link
                     className={styles.publicLink}
@@ -141,14 +152,24 @@ export function BoardOverview({
             {/* KPI row */}
             <div className={styles.kpis}>
                 <div className={styles.kpi}>
-                    <span className={styles.kpiLabel}>On board</span>
+                    <span className={styles.kpiLabel}>Categories</span>
                     <span className={styles.kpiVal}>{stats.featured}</span>
                     <span className={styles.kpiSub}>
-                        {stats.archived > 0
-                            ? `${stats.archived} archived`
-                            : 'featured categories'}
+                        {stats.categoryGroups > 0
+                            ? `in ${stats.categoryGroups} group${stats.categoryGroups === 1 ? '' : 's'}`
+                            : stats.archived > 0
+                              ? `${stats.archived} archived`
+                              : 'on the board'}
                     </span>
                 </div>
+
+                {stats.levels > 0 && (
+                    <div className={styles.kpi}>
+                        <span className={styles.kpiLabel}>Levels</span>
+                        <span className={styles.kpiVal}>{stats.levels}</span>
+                        <span className={styles.kpiSub}>individual levels</span>
+                    </div>
+                )}
 
                 <div className={styles.kpi}>
                     <span className={styles.kpiLabel}>Finished runs</span>
