@@ -38,7 +38,7 @@ export function CategoryBandPreview({
     groups,
     gameDisplayMode,
 }: Props) {
-    const { sections } = computeCategoryVisibility(
+    const { sections, levels } = computeCategoryVisibility(
         categories,
         groups,
         gameDisplayMode,
@@ -136,6 +136,24 @@ export function CategoryBandPreview({
                                             >
                                                 {section.pills.length}
                                             </span>
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {levels.groups.length > 0 && (
+                        <div className={band.block}>
+                            <span className={band.endcap}>Levels</span>
+                            <div className={band.well}>
+                                <div className={band.chips}>
+                                    {levels.groups.map((g) => (
+                                        <span
+                                            key={g.id}
+                                            className={`${band.chip} ${styles.previewChip}`}
+                                        >
+                                            {g.name}
                                         </span>
                                     ))}
                                 </div>
