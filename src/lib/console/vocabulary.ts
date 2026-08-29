@@ -39,7 +39,7 @@ export const CONCEPT_LABEL: Record<ConceptId, string> = {
     setup: 'Setup wizard',
     'game-details': 'Game details',
     categories: 'Categories',
-    groups: 'Groups',
+    groups: 'Category groups',
     levels: 'Levels',
     'level-categories': 'Level categories',
     moderators: 'Moderators',

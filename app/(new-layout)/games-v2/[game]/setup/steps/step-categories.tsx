@@ -411,9 +411,7 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                 </div>
             )}
             <div className={styles.detailsFooter}>
-                <p className={styles.footerHint}>
-                    {progress ?? 'Saves your picks, then moves on to Groups.'}
-                </p>
+                {progress && <p className={styles.footerHint}>{progress}</p>}
                 <button
                     type="button"
                     className={styles.primaryAction}
