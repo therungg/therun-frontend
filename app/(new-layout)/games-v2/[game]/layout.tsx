@@ -36,7 +36,9 @@ export default async function GameThemeLayout({
                 <div
                     className={styles.backdrop}
                     style={{
-                        backgroundImage: `url(${JSON.stringify(theme.backgroundUrl).slice(1, -1)})`,
+                        // Keep the JSON quotes: url("...") is a quoted CSS string, so
+                        // JSON-escaped backslashes/quotes in the URL can't break out of it.
+                        backgroundImage: `url(${JSON.stringify(theme.backgroundUrl)})`,
                     }}
                     aria-hidden
                 />
