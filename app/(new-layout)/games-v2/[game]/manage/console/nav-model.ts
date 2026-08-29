@@ -30,6 +30,9 @@ export interface NavItem {
     label: string;
     /** Reserved/not-yet-built items render a "coming soon" placeholder. */
     reserved?: boolean;
+    /** Set when the item's button opens a dialog/drawer rather than
+     * navigating — renders `aria-haspopup="dialog"`. */
+    hasPopup?: boolean;
 }
 
 export interface NavGroup {
@@ -143,7 +146,11 @@ export function buildFooterNav(flags: NavFlags): NavItem[] {
         items.push({ id: 'setup', label: CONCEPT_LABEL.setup });
     }
     if (flags.canModerate) {
-        items.push({ id: 'history', label: CONCEPT_LABEL.history });
+        items.push({
+            id: 'history',
+            label: CONCEPT_LABEL.history,
+            hasPopup: true,
+        });
     }
     return items;
 }

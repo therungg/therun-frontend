@@ -134,14 +134,14 @@ export function ConsoleShell({
         const pending = modApplications?.length ?? 0;
         if (pending > 0) map.moderators = { count: pending };
         if (syncJob?.status === 'queued' || syncJob?.status === 'running') {
-            map.import = { dot: 'info' };
+            map.import = { dot: 'info', dotLabel: 'Import running' };
         } else if (syncJob?.status === 'failed') {
-            map.import = { dot: 'danger' };
+            map.import = { dot: 'danger', dotLabel: 'Import failed' };
         }
         if (boardHealth?.items.some((i) => i.severity === 'blocker')) {
-            map.overview = { dot: 'danger' };
+            map.overview = { dot: 'danger', dotLabel: 'Board has a blocker' };
         } else if (boardHealth?.items.some((i) => i.severity === 'warning')) {
-            map.overview = { dot: 'warning' };
+            map.overview = { dot: 'warning', dotLabel: 'Board has warnings' };
         }
         return map;
     }, [
@@ -217,8 +217,9 @@ export function ConsoleShell({
         useState<ManageGroup[]>(initialGroups);
     const [historyOpen, setHistoryOpen] = useState(false);
 
-    // Needs attention is out of the console for now, so there is no live
-    // count to poll or badge — the tab title is just the plain page name.
+    // The browser tab title stays the plain page name — it doesn't track
+    // the active pane or any live count. The sidebar badge above is what
+    // shows the server-rendered Needs attention count.
     // Restores whatever the browser tab's title was before this component
     // mounted.
     const originalTitleRef = useRef<string | null>(null);
@@ -321,9 +322,11 @@ export function ConsoleShell({
             .flatMap((g) => g.items)
             .find((it) => it.id === activeItem);
         if (item) return item.label;
-        // Attention is a hidden landing pane (deep-linkable but not in the
-        // nav), so it never appears in `groups` — label it directly.
-        if (activeItem === 'attention') return CONCEPT_LABEL.attention;
+        // `level-categories` is a hidden landing pane (deep-linkable but
+        // merged into the Levels pane's tab, so it never appears in
+        // `groups`) — label it directly.
+        if (activeItem === 'level-categories')
+            return CONCEPT_LABEL['level-categories'];
         return 'Admin console';
     }, [groups, activeItem]);
 

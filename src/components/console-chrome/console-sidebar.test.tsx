@@ -87,6 +87,66 @@ describe('ConsoleSidebar', () => {
         expect(dot).toBeTruthy();
     });
 
+    it('gives a status dot a visually-hidden text alternative', () => {
+        render(
+            <ConsoleSidebar
+                groups={[
+                    {
+                        id: 'g',
+                        label: 'G',
+                        items: [{ id: 'import', label: 'Import' }],
+                    },
+                ]}
+                icons={{}}
+                activeItem={null}
+                onSelect={() => {}}
+                badges={{
+                    import: { dot: 'danger', dotLabel: 'Import failed' },
+                }}
+            />,
+        );
+        expect(screen.getByText('Import failed')).toBeTruthy();
+    });
+
+    it('suppresses the dot once count is present, even a zero count', () => {
+        render(
+            <ConsoleSidebar
+                groups={[
+                    {
+                        id: 'g',
+                        label: 'G',
+                        items: [{ id: 'attention', label: 'Needs attention' }],
+                    },
+                ]}
+                icons={{}}
+                activeItem={null}
+                onSelect={() => {}}
+                badges={{ attention: { count: 0, dot: 'info' } }}
+            />,
+        );
+        const button = screen.getByRole('button', { name: /Needs attention/ });
+        expect(button.querySelector('[data-tone="info"]')).toBeNull();
+    });
+
+    it('marks a popup footer item with aria-haspopup', () => {
+        render(
+            <ConsoleSidebar
+                groups={GROUPS}
+                icons={{}}
+                activeItem={null}
+                onSelect={() => {}}
+                footerItems={[
+                    { id: 'history', label: 'History', hasPopup: true },
+                ]}
+            />,
+        );
+        expect(
+            screen
+                .getByRole('button', { name: 'History' })
+                .getAttribute('aria-haspopup'),
+        ).toBe('dialog');
+    });
+
     it('renders footer items after the groups and routes their clicks through onSelect', () => {
         const onSelect = vi.fn();
         render(

@@ -6,6 +6,9 @@ export interface NavItem {
     id: string;
     label: string;
     reserved?: boolean;
+    /** Set when the item's button opens a dialog/drawer rather than
+     * navigating — renders `aria-haspopup="dialog"`. */
+    hasPopup?: boolean;
 }
 
 export interface NavGroup {
@@ -20,4 +23,6 @@ export interface NavBadge {
     count?: number;
     degraded?: boolean;
     dot?: 'info' | 'warning' | 'danger';
+    /** Text alternative for the dot — it's otherwise a color-only signal. */
+    dotLabel?: string;
 }

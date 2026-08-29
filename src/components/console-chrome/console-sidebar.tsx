@@ -72,12 +72,19 @@ export function ConsoleSidebar({
                         degraded={badge.degraded}
                     />
                 )}
-                {badge?.dot && !badge.count && (
-                    <span
-                        className={styles.dot}
-                        data-tone={badge.dot}
-                        aria-hidden="true"
-                    />
+                {badge?.dot && badge.count == null && (
+                    <>
+                        <span
+                            className={styles.dot}
+                            data-tone={badge.dot}
+                            aria-hidden="true"
+                        />
+                        {badge.dotLabel && (
+                            <span className="visually-hidden">
+                                {badge.dotLabel}
+                            </span>
+                        )}
+                    </>
                 )}
             </>
         );
@@ -101,6 +108,7 @@ export function ConsoleSidebar({
                 type="button"
                 className={className}
                 aria-current={isActive ? 'page' : undefined}
+                aria-haspopup={item.hasPopup ? 'dialog' : undefined}
                 onClick={() => onSelect(item.id)}
             >
                 {content}
