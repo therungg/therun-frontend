@@ -148,14 +148,15 @@ export function CategoryBandPreview({
                             <span className={band.endcap}>Levels</span>
                             <div className={band.well}>
                                 <div className={band.chips}>
-                                    {levels.groups.map((g) => (
-                                        <span
-                                            key={g.id}
-                                            className={`${band.chip} ${styles.previewChip}`}
-                                        >
-                                            {g.name}
-                                        </span>
-                                    ))}
+                                    {/* The real board picks levels with a
+                                     * native <select> (see LevelPicker), so the
+                                     * preview shows an inert dropdown, not
+                                     * chips. */}
+                                    <span
+                                        className={`${band.categorySelect} ${styles.previewChip}`}
+                                    >
+                                        {levels.groups[0].name}
+                                    </span>
                                 </div>
                             </div>
                         </div>
