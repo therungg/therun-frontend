@@ -17,6 +17,7 @@ import { SetupChecklistCard } from '../console/setup-checklist-card';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import styles from './board-overview.module.scss';
 import { buildOverviewStats, timeAgo, topFeaturedRows } from './overview-model';
+import { ResyncButton } from './resync-button';
 
 // The four staging phases the import worker walks (SrcImportPhase), in order —
 // drives the progress bar's filled-segment count.
@@ -46,7 +47,7 @@ function humanRole(role: string): string {
 }
 
 interface Props {
-    game: Pick<ResolvedGame, 'name' | 'display'>;
+    game: Pick<ResolvedGame, 'id' | 'name' | 'display'>;
     rows: ManageCategoryRow[];
     /** Category groups — splits level boards out of the category table and
      * supplies the group/level counts. */
@@ -443,15 +444,26 @@ export function BoardOverview({
                                     </p>
                                 )}
                                 <div className={styles.divider} />
-                                <button
-                                    type="button"
-                                    className={styles.railBtn}
-                                    onClick={() => onNavigate('import')}
-                                >
-                                    {syncJob
-                                        ? 'Run a new import'
-                                        : 'Run import'}
-                                </button>
+                                {syncJob ? (
+                                    <ResyncButton
+                                        gameId={game.id}
+                                        gameSlug={game.name}
+                                        lastJobCreatedAt={syncJob.createdAt}
+                                        running={
+                                            syncJob.status === 'queued' ||
+                                            syncJob.status === 'running'
+                                        }
+                                        onStarted={() => onNavigate('import')}
+                                    />
+                                ) : (
+                                    <button
+                                        type="button"
+                                        className={styles.railBtn}
+                                        onClick={() => onNavigate('import')}
+                                    >
+                                        Run import
+                                    </button>
+                                )}
                             </div>
                         </section>
                     )}
