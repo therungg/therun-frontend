@@ -8,9 +8,6 @@ interface Props {
     /** Body copy under the title — what this text is for. */
     lede: string;
     initial: string;
-    /** Board template, offered as a one-click fill. Absent on the board's own
-     *  template dialog, which has nothing above it to inherit from. */
-    template?: string | null;
     busy: boolean;
     placeholder: string;
     onSave: (text: string) => void;
@@ -31,7 +28,6 @@ export function RulesDialog({
     title,
     lede,
     initial,
-    template,
     busy,
     placeholder,
     onSave,
@@ -81,16 +77,6 @@ export function RulesDialog({
                 </div>
 
                 <div className={styles.dialogFooter}>
-                    {template && (
-                        <button
-                            type="button"
-                            className={styles.rulesChip}
-                            disabled={busy || text.trim() === template.trim()}
-                            onClick={() => setText(template)}
-                        >
-                            Use board template
-                        </button>
-                    )}
                     <span className={styles.dialogSpacer} />
                     <button
                         type="button"

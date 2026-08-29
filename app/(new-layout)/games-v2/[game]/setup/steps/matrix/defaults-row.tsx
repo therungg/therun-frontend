@@ -24,7 +24,6 @@ import { setBoardMinimumAction } from '../../actions/set-board-minimum.action';
 import { setCategoryMinimumAction } from '../../actions/set-category-minimum.action';
 import { updateGameMetadataAction } from '../../actions/update-game-metadata.action';
 import styles from './matrix.module.scss';
-import { RulesDialog } from './rules-dialog';
 
 interface Props {
     gameSlug: string;
@@ -89,7 +88,6 @@ export function DefaultsRow({
     useEffect(() => {
         setMinMs(defaults.minMs);
     }, [defaults.minMs]);
-    const [openTemplate, setOpenTemplate] = useState(false);
     const [offer, setOffer] = useState<Offer | null>(null);
 
     /**
@@ -193,7 +191,6 @@ export function DefaultsRow({
         });
     };
 
-    const hasTemplate = (defaults.rulesTemplate ?? '').trim().length > 0;
     // The clock the board does not rank by — the only one there is a decision
     // about, since the ranking one can never be hidden.
     const otherLabel = timingLabel(
@@ -307,23 +304,7 @@ export function DefaultsRow({
                     />
                 </td>
 
-                <td>
-                    <button
-                        type="button"
-                        className={`${styles.rulesChip} ${
-                            hasTemplate
-                                ? styles.rulesCustom
-                                : styles.rulesDefault
-                        }`}
-                        aria-haspopup="dialog"
-                        aria-label={`Board rules template — ${
-                            hasTemplate ? 'set' : 'not set'
-                        }`}
-                        onClick={() => setOpenTemplate((v) => !v)}
-                    >
-                        {hasTemplate ? 'Template' : '—'}
-                    </button>
-                </td>
+                <td />
 
                 <td>
                     <select
@@ -421,25 +402,6 @@ export function DefaultsRow({
                                 Don&rsquo;t change
                             </button>
                         </div>
-                    </td>
-                </tr>
-            )}
-
-            {openTemplate && (
-                <tr>
-                    <td colSpan={columnCount}>
-                        <RulesDialog
-                            title="Board rules template"
-                            lede="Starting text for categories with no rules of their own. Changing it does not rewrite the ones already using it."
-                            initial={defaults.rulesTemplate ?? ''}
-                            busy={isSaving}
-                            placeholder="No template. Every category writes its own rules."
-                            onClose={() => setOpenTemplate(false)}
-                            onSave={(text) => {
-                                save({ rulesTemplate: text || null });
-                                setOpenTemplate(false);
-                            }}
-                        />
                     </td>
                 </tr>
             )}

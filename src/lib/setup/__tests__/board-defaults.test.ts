@@ -171,31 +171,14 @@ describe('deviates', () => {
 });
 
 describe('rulesState', () => {
-    const defaults = boardDefaults(makeMetadata(), []);
-
-    it('is default when the text matches the template', () => {
-        expect(rulesState(makeCategory(), defaults)).toBe('default');
-    });
-
-    it('ignores surrounding whitespace when comparing to the template', () => {
-        const cat = makeCategory({ rules: `\n  ${TEMPLATE}  \n` });
-        expect(rulesState(cat, defaults)).toBe('default');
-    });
-
     it('is none for empty rules', () => {
-        expect(rulesState(makeCategory({ rules: '   ' }), defaults)).toBe(
-            'none',
+        expect(rulesState(makeCategory({ rules: '   ' }))).toBe('none');
+    });
+
+    it('is custom for a category with its own rules', () => {
+        expect(rulesState(makeCategory({ rules: 'Anything goes.' }))).toBe(
+            'custom',
         );
-    });
-
-    it('is custom for text that differs from the template', () => {
-        const cat = makeCategory({ rules: 'Anything goes.' });
-        expect(rulesState(cat, defaults)).toBe('custom');
-    });
-
-    it('is custom, not default, when the board has no template at all', () => {
-        const bare = boardDefaults(makeMetadata({ rulesTemplate: null }), []);
-        expect(rulesState(makeCategory(), bare)).toBe('custom');
     });
 });
 

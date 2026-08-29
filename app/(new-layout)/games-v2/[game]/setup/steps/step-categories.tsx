@@ -221,12 +221,7 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                         categoryId: next.id,
                         isMain: next.main,
                         ...(next.restore ? { active: true } : {}),
-                        ...(next.becomingMain
-                            ? {
-                                  seed,
-                                  currentRulesEmpty: next.currentRulesEmpty,
-                              }
-                            : {}),
+                        ...(next.becomingMain ? { seed } : {}),
                     });
                     done++;
                     setProgress(`Saving ${done} / ${changed.length}…`);

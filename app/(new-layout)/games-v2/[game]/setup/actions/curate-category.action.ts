@@ -31,8 +31,6 @@ interface Input {
      * every category the game had ever seen; that column is gone.)
      */
     seed?: CategorySeed;
-    /** Whether the category's current rules were empty before this call — gates whether `seed.rulesTemplate` gets written. */
-    currentRulesEmpty?: boolean;
 }
 
 export async function curateCategoryAction(
@@ -77,10 +75,7 @@ export async function curateCategoryAction(
         updateTag(`game-cats:${input.gameId}`);
 
         if (input.isMain === true && input.seed) {
-            const seedBody: UpdateCategoryBody = seedUpdateBody(
-                input.seed,
-                input.currentRulesEmpty ?? false,
-            );
+            const seedBody: UpdateCategoryBody = seedUpdateBody(input.seed);
             await updateCategory(
                 user.id,
                 input.gameId,

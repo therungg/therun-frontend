@@ -6,25 +6,20 @@ export interface CategorySeed {
     gameTimeLabel: 'igt' | 'lrt';
     hideRealTime: boolean;
     hideGameTime: boolean;
-    rulesTemplate: string | null;
 }
 
 /**
  * What a newly-Featured category should seed from — the game's own default
- * timing (primary clock AND the step-1 time-columns choice) and rules
- * template, so a category that's never been touched doesn't land on the
- * board with no timing and no rules. Pure so the `'rt'|'gt'|null` ->
- * `'realtime'|'gametime'` mapping (feature-on transition in
+ * timing (primary clock AND the step-1 time-columns choice), so a category
+ * that's never been touched doesn't land on the board with no timing. Rules
+ * are authored per category, so nothing is seeded there. Pure so the
+ * `'rt'|'gt'|null` -> `'realtime'|'gametime'` mapping (feature-on transition in
  * step-categories.tsx) is testable without rendering the step.
  */
 export function buildCategorySeed(
     metadata: Pick<
         GameMetadata,
-        | 'primaryTiming'
-        | 'gameTimeLabel'
-        | 'hideRealTime'
-        | 'hideGameTime'
-        | 'rulesTemplate'
+        'primaryTiming' | 'gameTimeLabel' | 'hideRealTime' | 'hideGameTime'
     >,
 ): CategorySeed {
     // Both-hidden is invalid (the update action rejects it); legacy games can
@@ -37,34 +32,24 @@ export function buildCategorySeed(
         gameTimeLabel: metadata.gameTimeLabel === 'lrt' ? 'lrt' : 'igt',
         hideRealTime: bothHidden ? false : metadata.hideRealTime,
         hideGameTime: bothHidden ? false : metadata.hideGameTime,
-        rulesTemplate: metadata.rulesTemplate,
     };
 }
 
 /**
- * The body curate-category.action.ts actually writes for a seed: timing
- * always applies, but the rules template only overwrites a category whose
- * own rules are still empty — re-curation of a category that already has
- * rules (or was merely restored from Archived) must never clobber them.
+ * The body curate-category.action.ts actually writes for a seed: the game's
+ * default timing. Rules are never seeded — they're authored per category.
  */
-export function seedUpdateBody(
-    seed: CategorySeed,
-    currentRulesEmpty: boolean,
-): {
+export function seedUpdateBody(seed: CategorySeed): {
     primaryTiming: 'realtime' | 'gametime';
     gameTimeLabel: 'igt' | 'lrt';
     hideRealTime: boolean;
     hideGameTime: boolean;
-    rules?: string;
 } {
     return {
         primaryTiming: seed.primaryTiming,
         gameTimeLabel: seed.gameTimeLabel,
         hideRealTime: seed.hideRealTime,
         hideGameTime: seed.hideGameTime,
-        ...(currentRulesEmpty && seed.rulesTemplate?.trim()
-            ? { rules: seed.rulesTemplate }
-            : {}),
     };
 }
 
@@ -76,8 +61,6 @@ export interface CategoryChange {
     restore: boolean;
     /** True only on the actual feature-on transition (`isMain` false -> true) — the one case that seeds. Re-curation (already Featured, or a restore that was already `isMain`) stays seedless. */
     becomingMain: boolean;
-    /** Whether the category's own rules were empty before this change — gates `seedUpdateBody`'s rules write. */
-    currentRulesEmpty: boolean;
 }
 
 /**
@@ -103,7 +86,6 @@ export function computeCategoryChanges(
                 main: r.main,
                 restore,
                 becomingMain: r.main && !wasMain,
-                currentRulesEmpty: !(orig.rules ?? '').trim(),
             },
         ];
     });
