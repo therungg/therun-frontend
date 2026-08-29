@@ -454,32 +454,28 @@ export function GroupsSection({
                                             Collapsed
                                         </label>
 
-                                        {/* "Follow board" is the first option
-                                            and the normal answer: a per-group
-                                            override earns its place only where
-                                            one group genuinely differs. */}
+                                        {/* Pills is the default and the normal
+                                            answer: a per-group override earns
+                                            its place only where one group
+                                            genuinely differs. An unset group
+                                            draws pills, so it reads as Pills. */}
                                         <select
                                             className={styles.modeSelect}
-                                            value={g.displayMode ?? ''}
+                                            value={g.displayMode ?? 'pills'}
                                             disabled={pending}
                                             aria-label={`Selector for ${g.name}`}
                                             onChange={(e) =>
                                                 setDisplayMode(
                                                     g,
-                                                    e.target.value === ''
-                                                        ? null
-                                                        : (e.target
-                                                              .value as CategoryDisplayMode),
+                                                    e.target
+                                                        .value as CategoryDisplayMode,
                                                 )
                                             }
                                         >
-                                            <option value="">
-                                                Follow board
-                                            </option>
+                                            <option value="pills">Pills</option>
                                             <option value="auto">
                                                 Auto (by count)
                                             </option>
-                                            <option value="pills">Pills</option>
                                             <option value="dropdown">
                                                 Dropdown
                                             </option>

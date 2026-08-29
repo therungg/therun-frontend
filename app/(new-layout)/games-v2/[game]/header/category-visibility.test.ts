@@ -300,13 +300,26 @@ describe('computeCategoryVisibility — display mode', () => {
         Array.from({ length: n }, (_, i) => cat({ id: i + 1, groupId }));
 
     it('auto stays on pills while the band still fits', () => {
-        const result = computeCategoryVisibility(many(AUTO_PILL_LIMIT), []);
+        const result = computeCategoryVisibility(
+            many(AUTO_PILL_LIMIT),
+            [],
+            'auto',
+        );
         expect(result.sections[0].displayMode).toBe('pills');
     });
 
     it('auto reaches for a dropdown one past the limit', () => {
-        const result = computeCategoryVisibility(many(AUTO_PILL_LIMIT + 1), []);
+        const result = computeCategoryVisibility(
+            many(AUTO_PILL_LIMIT + 1),
+            [],
+            'auto',
+        );
         expect(result.sections[0].displayMode).toBe('dropdown');
+    });
+
+    it('an unset board defaults to pills, even past the auto limit', () => {
+        const result = computeCategoryVisibility(many(AUTO_PILL_LIMIT + 1), []);
+        expect(result.sections[0].displayMode).toBe('pills');
     });
 
     it('the game default carries the flat case, which has no group row', () => {

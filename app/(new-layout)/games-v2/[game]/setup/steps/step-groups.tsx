@@ -2,15 +2,12 @@
 
 import { useMemo, useState, useTransition } from 'react';
 import { ArrowDownShort, ArrowUpShort } from 'react-bootstrap-icons';
-import { toast } from 'react-toastify';
 import { compareByBoardOrder } from '~src/lib/console/category-order';
 import type {
-    CategoryDisplayMode,
     ResolvedCategory,
     ResolvedGroup,
 } from '../../../../../../types/leaderboards.types';
 import { curateCategoryAction } from '../actions/curate-category.action';
-import { updateGameMetadataAction } from '../actions/update-game-metadata.action';
 import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
 import { CategoryBandPreview } from './category-band-preview';
@@ -85,31 +82,9 @@ export function StepGroups({ data, onAdvance }: StepProps) {
             ),
         [data.categories, levelGroupIds],
     );
-    // Board-wide selector default. Written on change rather than at save:
-    // it is one scalar with a live preview, and holding it hostage to the
-    // step's save button would make the preview lie about what is stored.
-    const [displayMode, setDisplayMode] = useState<CategoryDisplayMode>(
-        data.game.categoryDisplayMode ?? 'auto',
-    );
     const [rowErrors, setRowErrors] = useState<Map<number, string>>(new Map());
     const [progress, setProgress] = useState<string | null>(null);
     const [isSaving, startSaving] = useTransition();
-
-    const saveDisplayMode = (next: CategoryDisplayMode) => {
-        const previous = displayMode;
-        setDisplayMode(next);
-        startSaving(async () => {
-            const res = await updateGameMetadataAction({
-                gameSlug: data.game.name,
-                gameId: data.game.id,
-                categoryDisplayMode: next,
-            });
-            if ('error' in res) {
-                toast.error(res.error);
-                setDisplayMode(previous);
-            }
-        });
-    };
 
     const groupIdOf = (id: number): number | null =>
         layout === 'grouped' ? (assignments.get(id) ?? null) : null;
@@ -297,33 +272,12 @@ export function StepGroups({ data, onAdvance }: StepProps) {
                 </button>
             </div>
 
-            {/* The layout question above is "are there groups?"; this one is
-                "how does the reader pick?" — separate decisions, and this one
-                is the only one that applies to a flat list too. */}
-            <label className={styles.section}>
-                <span className="h6 d-block mb-1">Category selector</span>
-                <select
-                    className="form-select form-select-sm"
-                    style={{ width: 'fit-content' }}
-                    value={displayMode}
-                    disabled={isSaving}
-                    onChange={(e) =>
-                        saveDisplayMode(e.target.value as CategoryDisplayMode)
-                    }
-                >
-                    <option value="auto">Auto (pills, then dropdown)</option>
-                    <option value="pills">Always pills</option>
-                    <option value="dropdown">Always a dropdown</option>
-                </select>
-            </label>
-
             <CategoryBandPreview
                 categories={previewCategories}
                 groups={[
                     ...(layout === 'grouped' ? groups : []),
                     ...levelGroups,
                 ]}
-                gameDisplayMode={displayMode}
             />
 
             {layout === 'grouped' && (
