@@ -218,7 +218,11 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 slug: identifiers.slug,
                 moderatorCount: moderators.length,
                 configured: metadata.configured,
-                groupCount: groups.length,
+                // Category groups only — each individual level is its own
+                // kind:'level' group, but those are the "Levels" step, not
+                // the category-grouping structure, so they must not inflate
+                // the group count or trip the ungrouped-orphan blocker.
+                groupCount: groups.filter((g) => g.kind !== 'level').length,
                 ungroupedMainCount: categories.filter(
                     (c) =>
                         !c.archived && (c.isMain ?? false) && c.groupId == null,

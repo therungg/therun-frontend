@@ -85,7 +85,10 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         slug: identifiers.slug,
         moderatorCount: moderators.length,
         configured: metadata.configured,
-        groupCount: catData.groups.length,
+        // Category groups only — level groups (each individual level is its
+        // own kind:'level' group) belong to the Levels step, not the
+        // category-grouping structure.
+        groupCount: catData.groups.filter((g) => g.kind !== 'level').length,
         levelGroupCount: catData.groups.filter((g) => g.kind === 'level')
             .length,
         ungroupedMainCount: catData.categories.filter(
