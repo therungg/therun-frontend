@@ -16,6 +16,7 @@ import {
     ListCheck,
     ListOl,
     ListUl,
+    Palette,
     PersonX,
     ShieldLock,
     Speedometer2,
@@ -32,6 +33,7 @@ export const NAV_ICON: Record<NavItemId, IconType> = {
     history: ClockHistory,
     setup: ListCheck,
     'game-details': Controller,
+    theme: Palette,
     categories: ListUl,
     groups: Collection,
     // Stacked levels, and the template that fans out across them.

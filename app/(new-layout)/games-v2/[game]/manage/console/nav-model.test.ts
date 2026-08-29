@@ -66,9 +66,17 @@ describe('buildNav', () => {
         ]);
         expect(byId.get('game')?.map((i) => i.id)).toEqual([
             'game-details',
+            'theme',
             'moderators',
             'import',
         ]);
+    });
+
+    it('gates theme on the same flag as game details', () => {
+        expect(ids({ ...NO_FLAGS, canConfigure: true })).toContain('theme');
+        expect(ids({ ...NO_FLAGS, canConfigure: false })).not.toContain(
+            'theme',
+        );
     });
 
     it('restores Needs attention to the Queue group for moderators', () => {

@@ -14,6 +14,7 @@ export type ConceptId =
     | 'history'
     | 'setup'
     | 'game-details'
+    | 'theme'
     | 'categories'
     | 'groups'
     | 'levels'
@@ -38,6 +39,7 @@ export const CONCEPT_LABEL: Record<ConceptId, string> = {
     history: 'History',
     setup: 'Setup wizard',
     'game-details': 'Game details',
+    theme: 'Theme',
     categories: 'Categories',
     groups: 'Category groups',
     levels: 'Levels',
@@ -76,6 +78,7 @@ export const TILE_CONCEPT_IDS = [
     'history',
     'setup',
     'game-details',
+    'theme',
     'categories',
     'groups',
     'levels',
@@ -125,6 +128,10 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
     'game-details': {
         action: 'Edit the game’s details',
         blurb: 'Cover art, release info, the board’s URL, and how it’s matched to IGDB.',
+    },
+    theme: {
+        action: 'Customize the board’s look',
+        blurb: 'Pick a color and an optional background image for this board.',
     },
     categories: {
         action: 'Configure categories',
