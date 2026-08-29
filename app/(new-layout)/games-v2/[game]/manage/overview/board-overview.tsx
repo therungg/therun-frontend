@@ -87,6 +87,8 @@ interface Props {
     /** Permission-filtered console nav — decides which cards and tiles show. */
     navGroups: NavGroup[];
     canModerate: boolean;
+    /** Global admin — bypasses the re-sync once-per-day cooldown. */
+    isAdmin: boolean;
     onNavigate: (id: NavItemId) => void;
     onEditCategory: (categoryId: number) => void;
 }
@@ -110,6 +112,7 @@ export function BoardOverview({
     syncJob,
     navGroups,
     canModerate,
+    isAdmin,
     onNavigate,
     onEditCategory,
 }: Props) {
@@ -514,6 +517,7 @@ export function BoardOverview({
                                             syncJob.status === 'queued' ||
                                             syncJob.status === 'running'
                                         }
+                                        bypassCooldown={isAdmin}
                                         onStarted={() => onNavigate('import')}
                                     />
                                 ) : (

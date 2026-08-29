@@ -293,6 +293,7 @@ export function ContentRouter(props: ContentRouterProps) {
                     syncJob={props.syncJob}
                     navGroups={props.navGroups}
                     canModerate={props.canModerate}
+                    isAdmin={props.canSiteBan}
                     onNavigate={onNavigate}
                     onEditCategory={props.onEditCategory}
                 />
