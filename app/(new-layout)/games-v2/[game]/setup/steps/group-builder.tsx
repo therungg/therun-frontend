@@ -228,7 +228,7 @@ export function GroupBuilder({
                                 <th>Group</th>
                                 <th>Shown</th>
                                 <th className={styles.colCenter}>Collapsed</th>
-                                <th>Selector</th>
+                                <th>Display</th>
                                 <th
                                     className={styles.colActions}
                                     aria-label="Actions"
@@ -299,7 +299,7 @@ export function GroupBuilder({
                                             <select
                                                 className="form-select form-select-sm"
                                                 style={{ width: 'auto' }}
-                                                aria-label={`Selector for ${g.name}`}
+                                                aria-label={`Display for ${g.name}`}
                                                 // Unset groups draw pills, so an
                                                 // unset group reads as Pills here.
                                                 value={g.displayMode ?? 'pills'}
