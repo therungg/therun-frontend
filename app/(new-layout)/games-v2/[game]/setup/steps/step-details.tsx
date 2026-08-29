@@ -236,9 +236,6 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                                 Banned
                             </button>
                         </div>
-                        <p className="text-muted small mb-0">
-                            Shown with the rules on every board.
-                        </p>
                     </div>
                 </div>
             </div>
