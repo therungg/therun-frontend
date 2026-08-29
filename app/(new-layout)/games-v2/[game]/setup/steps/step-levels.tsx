@@ -14,6 +14,7 @@ import { curateCategoryAction } from '../actions/curate-category.action';
 import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
 import { CategoryBandPreview } from './category-band-preview';
+import { buildCategorySeed } from './category-seed';
 import {
     buildLevelSetupPlan,
     type ExistingLevels,
@@ -56,6 +57,12 @@ function duplicateNames(raw: string): string[] {
 export function StepLevels({ data, onAdvance }: StepProps) {
     const gameSlug = data.game.name;
     const gameId = data.game.id;
+    // Same seed the feature-on path in step-categories.tsx uses: a newly
+    // Featured category shouldn't land on the board with no timing.
+    const seed = useMemo(
+        () => buildCategorySeed(data.metadata),
+        [data.metadata],
+    );
 
     const levelGroups = useMemo(
         () =>
@@ -203,28 +210,37 @@ export function StepLevels({ data, onAdvance }: StepProps) {
                 if ('error' in res) return op.display;
                 templateIdBySubSlug.set(slug(op.display), res.result.id);
             } else if (op.kind === 'move-category') {
-                const groupId = groupIdByLevelSlug.get(slug(op.levelName))!;
+                const groupId = groupIdByLevelSlug.get(slug(op.levelName));
+                if (groupId === undefined) return op.levelName;
                 const res = await curateCategoryAction({
                     gameSlug,
                     gameId,
                     categoryId: op.categoryId,
                     groupId,
+                    isMain: true,
+                    seed,
                 });
                 if ('error' in res) return op.levelName;
             } else if (op.kind === 'create-level-only-board') {
-                const groupId = groupIdByLevelSlug.get(slug(op.levelName))!;
+                const groupId = groupIdByLevelSlug.get(slug(op.levelName));
+                if (groupId === undefined) return op.display;
                 const res = await createLevelBoardAction({
                     gameSlug,
                     gameId,
                     display: op.display,
                     groupId,
+                    // Fresh level-only boards must appear on the public board
+                    // immediately (createCategory defaults isMain: false).
+                    isMain: true,
                 });
                 if ('error' in res) return op.display;
             } else if (op.kind === 'set-exclusion') {
-                const groupId = groupIdByLevelSlug.get(slug(op.levelName))!;
+                const groupId = groupIdByLevelSlug.get(slug(op.levelName));
+                if (groupId === undefined) return op.levelName;
                 const templateId = templateIdBySubSlug.get(
                     slug(op.subcategoryName),
-                )!;
+                );
+                if (templateId === undefined) return op.subcategoryName;
                 const res = await levelOpAction({
                     gameSlug,
                     gameId,

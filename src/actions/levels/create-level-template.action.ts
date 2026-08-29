@@ -34,6 +34,10 @@ export async function createLevelTemplateAction(
     const { gameSlug: _gameSlug, gameId, ...body } = input;
 
     try {
+        // createLevelTemplate defaults isMain: true, and materialise copies
+        // the template's isMain onto its instances, so level boards created
+        // via a subcategory template are already featured with no extra
+        // work here.
         const result = await createLevelTemplate(user.id, gameId, body);
         updateTag(`game-cats:${gameId}`);
         return { result };
