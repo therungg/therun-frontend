@@ -94,6 +94,22 @@ export async function levelOp(
     });
 }
 
+export interface CreateLevelOnlyBoardBody {
+    display: string;
+    groupId: number;
+}
+
+export async function createLevelOnlyBoard(
+    sessionId: string,
+    gameId: number,
+    body: CreateLevelOnlyBoardBody,
+): Promise<{ id: number; created: number }> {
+    return apiFetch<{ id: number; created: number }>(
+        `/v1/games/${gameId}/categories`,
+        { method: 'POST', body, sessionId },
+    );
+}
+
 export async function fetchLevelOverview(
     sessionId: string,
     gameId: number,
