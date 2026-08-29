@@ -171,8 +171,7 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                         </div>
                         <p className="text-muted small mb-0">
                             The default timing method for this board’s
-                            categories. LRT (load-removed time) works exactly
-                            like IGT. It only changes what the clock is called.
+                            categories.
                         </p>
                     </div>
                     <div>
