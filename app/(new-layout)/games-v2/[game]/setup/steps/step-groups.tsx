@@ -23,11 +23,32 @@ type Layout = 'flat' | 'grouped';
 const UNGROUPED = 'ungrouped';
 
 export function StepGroups({ data, onAdvance }: StepProps) {
-    // Only what step 2 chose to show. Grouping a hidden category would be
-    // filing something nobody can see.
+    // Level groups (kind: 'level') are individual levels, owned by the levels
+    // pane — never category groups. Excluding them here keeps every level from
+    // rendering as its own group column in this step.
+    const levelGroupIds = useMemo(
+        () =>
+            new Set(
+                data.groups.filter((g) => g.kind === 'level').map((g) => g.id),
+            ),
+        [data.groups],
+    );
+    const nonLevelGroups = useMemo(
+        () => data.groups.filter((g) => g.kind !== 'level'),
+        [data.groups],
+    );
+    // Only what step 2 chose to show, and only full-game categories — a level
+    // board belongs to its level, not to the category-group grid. Grouping a
+    // hidden category would be filing something nobody can see.
     const mains = useMemo(
-        () => data.categories.filter((c) => !c.archived && (c.isMain ?? false)),
-        [data.categories],
+        () =>
+            data.categories.filter(
+                (c) =>
+                    !c.archived &&
+                    (c.isMain ?? false) &&
+                    !(c.groupId != null && levelGroupIds.has(c.groupId)),
+            ),
+        [data.categories, levelGroupIds],
     );
 
     const [assignments, setAssignments] = useState<Map<number, number | null>>(
@@ -42,9 +63,27 @@ export function StepGroups({ data, onAdvance }: StepProps) {
     );
     const [orderDirty, setOrderDirty] = useState(false);
     const byId = useMemo(() => new Map(mains.map((c) => [c.id, c])), [mains]);
-    const [groups, setGroups] = useState<ResolvedGroup[]>(data.groups);
+    const [groups, setGroups] = useState<ResolvedGroup[]>(nonLevelGroups);
     const [layout, setLayout] = useState<Layout>(
-        data.groups.length > 0 ? 'grouped' : 'flat',
+        nonLevelGroups.length > 0 ? 'grouped' : 'flat',
+    );
+    // Levels aren't edited on this step, but the band preview still shows them
+    // (as their own dropdown) so it matches the public board. Fed in untouched
+    // alongside the drafted category tier.
+    const levelGroups = useMemo(
+        () => data.groups.filter((g) => g.kind === 'level'),
+        [data.groups],
+    );
+    const levelBoards = useMemo(
+        () =>
+            data.categories.filter(
+                (c) =>
+                    !c.archived &&
+                    (c.isMain ?? false) &&
+                    c.groupId != null &&
+                    levelGroupIds.has(c.groupId),
+            ),
+        [data.categories, levelGroupIds],
     );
     // Board-wide selector default. Written on change rather than at save:
     // it is one scalar with a live preview, and holding it hostage to the
@@ -132,7 +171,7 @@ export function StepGroups({ data, onAdvance }: StepProps) {
             // Flat layout is one scope: number by global draft position.
             orderedIds.forEach((id, i) => draftSort.set(id, i + 1));
         }
-        return orderedIds
+        const drafted = orderedIds
             .map((id) => byId.get(id))
             .filter((c): c is ResolvedCategory => c != null)
             .map((c) => ({
@@ -140,8 +179,11 @@ export function StepGroups({ data, onAdvance }: StepProps) {
                 groupId: groupIdOf(c.id),
                 sortOrder: draftSort.get(c.id) ?? 0,
             }));
+        // Level boards ride along untouched so the preview's Levels dropdown
+        // renders; they're not part of the drafted category tier.
+        return [...drafted, ...levelBoards];
         // groupIdOf closes over assignments+layout, and both drive the result.
-    }, [columns, orderedIds, byId, assignments, layout]);
+    }, [columns, orderedIds, byId, assignments, layout, levelBoards]);
 
     const ungroupedCount = columns[columns.length - 1].categories.length;
     const groupingOk =
@@ -277,7 +319,10 @@ export function StepGroups({ data, onAdvance }: StepProps) {
 
             <CategoryBandPreview
                 categories={previewCategories}
-                groups={layout === 'grouped' ? groups : []}
+                groups={[
+                    ...(layout === 'grouped' ? groups : []),
+                    ...levelGroups,
+                ]}
                 gameDisplayMode={displayMode}
             />
 
