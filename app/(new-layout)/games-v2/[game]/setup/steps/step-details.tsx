@@ -167,21 +167,9 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                                 LRT
                             </button>
                         </div>
-                        <p className="text-muted small mb-0">
-                            The default timing method for this board’s
-                            categories.
-                        </p>
                     </div>
                     <div>
                         <h4 className="h6">Time columns</h4>
-                        <p className="text-muted small mb-2">
-                            {timing === 'rt'
-                                ? 'Real time'
-                                : timing === 'lrt'
-                                  ? 'Load-removed time'
-                                  : 'In-game time'}{' '}
-                            is always shown.
-                        </p>
                         <div className="form-check">
                             <input
                                 type="checkbox"
@@ -200,10 +188,6 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                                 {timing === 'rt' ? 'game time' : 'real time'}
                             </label>
                         </div>
-                        <p className="text-muted small mt-2 mb-0">
-                            Applies to every board. Categories with their own
-                            display setting keep it.
-                        </p>
                     </div>
                     <div>
                         <h4 className="h6">Emulator policy</h4>
