@@ -10,7 +10,10 @@ import type { BoardCompleteness } from '~src/lib/setup/completeness';
 import type { BoardHealth } from '~src/lib/setup/health';
 import type { GameModerator } from '../../../../../../types/board-claims.types';
 import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
-import type { SrcImportJob } from '../../../../../../types/src-import.types';
+import type {
+    SrcCommitChangeSummary,
+    SrcImportJob,
+} from '../../../../../../types/src-import.types';
 import { BoardHealthCard } from '../console/board-health-card';
 import type { NavGroup, NavItemId } from '../console/nav-model';
 import { SetupChecklistCard } from '../console/setup-checklist-card';
@@ -44,6 +47,29 @@ function avatarStyle(name: string): { background: string } {
 
 function humanRole(role: string): string {
     return role.replace(/[-_]/g, ' ');
+}
+
+/**
+ * The delta a re-sync produced, shown under the import status so a moderator
+ * sees what changed rather than a bare "done". Lists only non-zero counts; an
+ * all-zero summary reads "No changes".
+ */
+function ChangeSummaryLine({ summary }: { summary: SrcCommitChangeSummary }) {
+    const parts: string[] = [];
+    if (summary.added > 0) parts.push(`${summary.added} added`);
+    if (summary.updated > 0) parts.push(`${summary.updated} updated`);
+    if (summary.removed > 0) parts.push(`${summary.removed} removed`);
+    if (summary.archived > 0) {
+        parts.push(
+            `${summary.archived} categor${summary.archived === 1 ? 'y' : 'ies'} archived`,
+        );
+    }
+    return (
+        <p className={styles.changeSummary}>
+            <span className={styles.changeLabel}>Last sync changed</span>
+            {parts.length > 0 ? parts.join(' · ') : 'No changes'}
+        </p>
+    );
 }
 
 interface Props {
@@ -436,6 +462,11 @@ export function BoardOverview({
                                                 );
                                             })}
                                         </div>
+                                        {syncJob.changeSummary && (
+                                            <ChangeSummaryLine
+                                                summary={syncJob.changeSummary}
+                                            />
+                                        )}
                                     </>
                                 ) : (
                                     <p className={styles.syncEmpty}>
