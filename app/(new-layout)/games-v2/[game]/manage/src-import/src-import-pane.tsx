@@ -237,6 +237,29 @@ function JobCard({ job }: { job: SrcImportJob }) {
                 <Counter label="Matched" value={job.playersMatchedCount} />
                 <Counter label="API requests" value={job.requestsMade} />
             </div>
+            {job.changeSummary && (
+                <>
+                    <p className={styles.muted}>What this import changed</p>
+                    <div className={styles.counters}>
+                        <Counter
+                            label="Runs added"
+                            value={job.changeSummary.added}
+                        />
+                        <Counter
+                            label="Runs updated"
+                            value={job.changeSummary.updated}
+                        />
+                        <Counter
+                            label="Runs removed"
+                            value={job.changeSummary.removed}
+                        />
+                        <Counter
+                            label="Categories archived"
+                            value={job.changeSummary.archived}
+                        />
+                    </div>
+                </>
+            )}
             <p className={styles.muted}>
                 Started {job.startedAt ? fmtDate(job.startedAt) : '—'}
                 {job.finishedAt ? ` · finished ${fmtDate(job.finishedAt)}` : ''}

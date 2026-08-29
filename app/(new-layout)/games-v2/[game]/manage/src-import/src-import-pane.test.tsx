@@ -91,6 +91,8 @@ const job = (over: Partial<SrcImportJob> = {}): SrcImportJob => ({
     configAppliedAt: null,
     runsImportedAt: null,
     srcOnlyLeaderboard: false,
+    kind: 'manual',
+    changeSummary: null,
     ...over,
 });
 
