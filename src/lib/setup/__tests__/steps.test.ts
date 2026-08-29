@@ -22,6 +22,7 @@ describe('SETUP_STEPS', () => {
         expect(SETUP_STEPS.map((s) => s.id)).toEqual([
             'details',
             'categories',
+            'levels',
             'groups',
             'category-setup',
             'variables',
@@ -30,6 +31,7 @@ describe('SETUP_STEPS', () => {
         expect(SETUP_STEPS.map((s) => s.label)).toEqual([
             'Game details',
             'Categories',
+            'Levels',
             'Category groups',
             'Category settings',
             'Subcategories & filters',
@@ -57,7 +59,7 @@ describe('SETUP_STEPS', () => {
 
     it('derives labels and indexes from the same list', () => {
         expect(SETUP_STEP_LABELS.boards).toBe('Boards');
-        expect(setupStepIndex('category-setup')).toBe(3);
+        expect(setupStepIndex('category-setup')).toBe(4);
         // Unknown ids are impossible via SetupStepId, but the lookup must not
         // silently report position 0 for one.
         expect(setupStepIndex('nope' as never)).toBe(-1);

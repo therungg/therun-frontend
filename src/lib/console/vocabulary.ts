@@ -174,6 +174,7 @@ export const STEP_CONCEPTS: Record<SetupStepId, ConceptId[]> = {
     // The URL slug lives inside the Game details pane, not beside it.
     details: ['game-details', 'timing', 'rules'],
     categories: ['categories'],
+    levels: ['levels'],
     groups: ['groups'],
     'category-setup': ['categories'],
     variables: ['variables'],
