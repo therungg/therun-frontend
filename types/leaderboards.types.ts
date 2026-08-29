@@ -22,8 +22,8 @@ export interface ResolvedGroup {
      */
     hiddenByDefault?: boolean;
     /**
-     * How this group draws its categories on the board. Absent/null inherits
-     * the game's `categoryDisplayMode`, which itself falls back to 'auto'.
+     * How this group draws its categories on the board. Absent/null defaults
+     * to pills (the board-wide default is no longer settable).
      * Backed by category_groups.display_mode.
      */
     displayMode?: CategoryDisplayMode | null;

@@ -123,6 +123,14 @@ export function computeCategoryVisibility(
     // this group.") above the level picker, which owns these boards.
     const levelsOnly = fullGame.length === 0 && levels.groups.length > 0;
     if (trivial) {
+        // One group collapses to a flat, unlabeled list — but its Pills /
+        // Dropdown choice still applies to that list. Carry the sole group's
+        // mode into the flattened section so setting one group to Dropdown
+        // actually renders a dropdown.
+        const soleGroup =
+            usedGroupIds.size === 1
+                ? (nonLevelGroups.find((g) => usedGroupIds.has(g.id)) ?? null)
+                : null;
         return {
             sections: levelsOnly
                 ? []
@@ -132,11 +140,8 @@ export function computeCategoryVisibility(
                           name: null,
                           pills: fullGame,
                           collapsedByDefault: false,
-                          // The flat case has no group row to carry an
-                          // override, which is exactly why the game-level
-                          // default exists.
                           displayMode: resolveDisplayMode(
-                              null,
+                              soleGroup?.displayMode,
                               gameDisplayMode,
                               fullGame.length,
                           ),

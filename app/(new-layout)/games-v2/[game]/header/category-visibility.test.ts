@@ -352,6 +352,23 @@ describe('computeCategoryVisibility — display mode', () => {
         ]);
     });
 
+    it('one group set to dropdown keeps dropdown when it flattens', () => {
+        const groups: ResolvedGroup[] = [
+            grp({
+                id: 10,
+                name: 'Main',
+                sortOrder: 0,
+                displayMode: 'dropdown',
+            }),
+        ];
+        const result = computeCategoryVisibility(many(2, 10), groups);
+        // One group flattens to a single unlabeled section, but its dropdown
+        // choice still applies.
+        expect(result.sections).toHaveLength(1);
+        expect(result.sections[0].name).toBeNull();
+        expect(result.sections[0].displayMode).toBe('dropdown');
+    });
+
     it('a stated auto beats an inherited dropdown, then counts', () => {
         const groups: ResolvedGroup[] = [
             grp({
