@@ -3,6 +3,7 @@
 import { cacheLife, cacheTag } from 'next/cache';
 import type { CategoryDisplayMode } from '../../types/leaderboards.types';
 import { apiFetch } from './api-client';
+import { type GameTheme, parseGameTheme } from './game-theme';
 
 export interface GameLink {
     label: string;
@@ -53,6 +54,7 @@ export interface UpdateGameBody {
     showMilliseconds?: boolean | null;
     /** Board-wide default for the category selector; groups may override. */
     categoryDisplayMode?: CategoryDisplayMode | null;
+    theme?: GameTheme | null;
 }
 
 export interface GameCompanyMeta {
@@ -117,6 +119,8 @@ export interface GameMetadata {
      */
     sortAscending: boolean | null;
     showMilliseconds: boolean | null;
+    /** Mod-set board theme; null = default look. */
+    theme: GameTheme | null;
 }
 
 interface GameMetadataPageData {
@@ -141,6 +145,7 @@ interface GameMetadataPageData {
         hideGameTime?: boolean | null;
         sortAscending?: boolean | null;
         showMilliseconds?: boolean | null;
+        theme?: unknown;
     };
     seriesGames?:
         | {
@@ -243,6 +248,7 @@ export async function getGameMetadata(gameId: number): Promise<GameMetadata> {
         // state the matrix renders differently from "defaults to true".
         sortAscending: data?.game?.sortAscending ?? null,
         showMilliseconds: data?.game?.showMilliseconds ?? null,
+        theme: parseGameTheme(data?.game?.theme),
     };
 }
 
