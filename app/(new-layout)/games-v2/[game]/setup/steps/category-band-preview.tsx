@@ -88,19 +88,26 @@ export function CategoryBandPreview({
                                             No categories in this group.
                                         </span>
                                     ) : section.displayMode === 'dropdown' ? (
-                                        // Inert like the chips: a picture of
-                                        // the control, not the control.
-                                        <span
+                                        // A real select, same as the live rail
+                                        // (see CategoryRail) and the Levels
+                                        // preview below: the mod can expand it
+                                        // to check the dropdown works. It drives
+                                        // nothing — this is still a preview.
+                                        <select
                                             className={`${band.categorySelect} ${styles.previewChip}`}
+                                            aria-label={
+                                                section.name
+                                                    ? `Category in ${section.name}`
+                                                    : 'Category'
+                                            }
+                                            defaultValue={section.pills[0].id}
                                         >
-                                            {section.pills[0].display}
-                                            <span
-                                                aria-hidden
-                                                className={band.chipCount}
-                                            >
-                                                {section.pills.length}
-                                            </span>
-                                        </span>
+                                            {section.pills.map((c) => (
+                                                <option key={c.id} value={c.id}>
+                                                    {c.display}
+                                                </option>
+                                            ))}
+                                        </select>
                                     ) : (
                                         section.pills.map((c) => (
                                             <span

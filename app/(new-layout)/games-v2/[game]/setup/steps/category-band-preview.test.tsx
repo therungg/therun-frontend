@@ -68,4 +68,28 @@ describe('CategoryBandPreview', () => {
                 .map((o) => o.textContent),
         ).toEqual(['Bob-omb', 'Whomp']);
     });
+
+    it('renders a group set to Dropdown as a real, expandable select', () => {
+        render(
+            <CategoryBandPreview
+                categories={[
+                    cat({ id: 1, display: 'Any%', groupId: 10 }),
+                    cat({ id: 2, name: 'hundo', display: '100%', groupId: 10 }),
+                    cat({ id: 3, name: 'low', display: 'Low%', groupId: 11 }),
+                ]}
+                groups={[
+                    group({ id: 10, name: 'Main', displayMode: 'dropdown' }),
+                    group({ id: 11, name: 'Other' }),
+                ]}
+            />,
+        );
+        const picker = screen.getByRole('combobox', {
+            name: 'Category in Main',
+        });
+        expect(
+            within(picker)
+                .getAllByRole('option')
+                .map((o) => o.textContent),
+        ).toEqual(['Any%', '100%']);
+    });
 });
