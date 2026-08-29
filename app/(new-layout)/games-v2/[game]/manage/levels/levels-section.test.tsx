@@ -67,4 +67,36 @@ describe('LevelsSection', () => {
         expect(screen.getByTestId('templates-pane')).toBeTruthy();
         expect(screen.queryByTestId('levels-pane')).toBeNull();
     });
+
+    it('switches tabs with arrow keys using a roving tabindex', () => {
+        render(<LevelsSection gameId={1} gameSlug="g" templates={[]} />);
+        const levelsTab = screen.getByRole('tab', { name: 'Levels' });
+        const templatesTab = screen.getByRole('tab', {
+            name: 'Level categories',
+        });
+        expect(levelsTab.getAttribute('tabindex')).toBe('0');
+        expect(templatesTab.getAttribute('tabindex')).toBe('-1');
+
+        fireEvent.keyDown(levelsTab, { key: 'ArrowRight' });
+        expect(screen.getByTestId('templates-pane')).toBeTruthy();
+        expect(templatesTab.getAttribute('aria-selected')).toBe('true');
+        expect(templatesTab.getAttribute('tabindex')).toBe('0');
+        expect(levelsTab.getAttribute('tabindex')).toBe('-1');
+
+        fireEvent.keyDown(templatesTab, { key: 'ArrowLeft' });
+        expect(screen.getByTestId('levels-pane')).toBeTruthy();
+        expect(levelsTab.getAttribute('aria-selected')).toBe('true');
+    });
+
+    it('wires each tab to its panel via aria-controls / aria-labelledby', () => {
+        render(<LevelsSection gameId={1} gameSlug="g" templates={[]} />);
+        const levelsTab = screen.getByRole('tab', { name: 'Levels' });
+        const panel = screen.getByRole('tabpanel');
+        expect(levelsTab.getAttribute('aria-controls')).toBe(
+            panel.getAttribute('id'),
+        );
+        expect(panel.getAttribute('aria-labelledby')).toBe(
+            levelsTab.getAttribute('id'),
+        );
+    });
 });

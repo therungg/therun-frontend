@@ -32,11 +32,17 @@ describe('legacyPaneRedirect', () => {
             kind: 'pane',
             pane: 'categories',
         });
-        // The game-level variables pane is gone — variables are
-        // category-scoped, so the bare link lands on the index too.
-        expect(legacyPaneRedirect('variables', null)).toEqual({
-            kind: 'pane',
-            pane: 'categories',
+    });
+
+    it('leaves bare ?pane=variables alone — the game-level Variables pane is back', () => {
+        expect(legacyPaneRedirect('variables', null)).toBeNull();
+    });
+
+    it('still redirects ?pane=variables&cat=N to the category detail', () => {
+        expect(legacyPaneRedirect('variables', '12')).toEqual({
+            kind: 'detail',
+            categoryId: 12,
+            hash: 'variables',
         });
     });
 
