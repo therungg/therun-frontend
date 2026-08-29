@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import type {
     ResolvedCategory,
@@ -34,23 +34,38 @@ function group(over: Partial<ResolvedGroup>): ResolvedGroup {
 }
 
 describe('CategoryBandPreview', () => {
-    it('shows level category groups under a Levels endcap', () => {
+    it('shows level groups under a Levels endcap as an expandable dropdown', () => {
         render(
             <CategoryBandPreview
                 categories={[
                     cat({ id: 1, display: 'Any%', groupId: null }),
-                    // A level board: a category sitting in a kind:'level' group.
+                    // Level boards: categories sitting in kind:'level' groups.
                     cat({
                         id: 2,
-                        name: 'bob-omb',
-                        display: 'Bob-omb Battlefield',
+                        name: 'bob',
+                        display: 'Bob-omb',
                         groupId: 20,
                     }),
+                    cat({
+                        id: 3,
+                        name: 'whomp',
+                        display: 'Whomp',
+                        groupId: 21,
+                    }),
                 ]}
-                groups={[group({ id: 20, name: 'Bob-omb', kind: 'level' })]}
+                groups={[
+                    group({ id: 20, name: 'Bob-omb', kind: 'level' }),
+                    group({ id: 21, name: 'Whomp', kind: 'level' }),
+                ]}
             />,
         );
         expect(screen.getByText('Levels')).toBeInTheDocument();
-        expect(screen.getByText('Bob-omb')).toBeInTheDocument();
+        // A real <select> the mod can expand, one option per level.
+        const picker = screen.getByRole('combobox', { name: 'Levels' });
+        expect(
+            within(picker)
+                .getAllByRole('option')
+                .map((o) => o.textContent),
+        ).toEqual(['Bob-omb', 'Whomp']);
     });
 });
