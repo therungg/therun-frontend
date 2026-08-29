@@ -221,108 +221,140 @@ export function GroupBuilder({
                     version of the game.
                 </p>
             ) : (
-                <ul className={styles.rows}>
-                    {groups.map((g) => {
-                        const count = countByGroupId.get(g.id) ?? 0;
-                        return (
-                            <li key={g.id} className={styles.rowItem}>
-                                {editingId === g.id ? (
-                                    <input
-                                        className="form-control form-control-sm"
-                                        style={{ maxWidth: '16rem' }}
-                                        value={editName}
-                                        maxLength={60}
-                                        aria-label={`Rename ${g.name}`}
-                                        disabled={pending}
-                                        onChange={(e) =>
-                                            setEditName(e.target.value)
-                                        }
-                                        onBlur={() => commitRename(g)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                                e.preventDefault();
-                                                commitRename(g);
-                                            }
-                                            if (e.key === 'Escape')
-                                                setEditingId(null);
-                                        }}
-                                    />
-                                ) : (
-                                    <span className="fw-semibold">
-                                        {g.name}
-                                    </span>
-                                )}
-                                <span className="text-muted small">
-                                    {count} shown{' '}
-                                    {count === 1 ? 'category' : 'categories'}
-                                </span>
-                                <label className="text-muted small d-flex align-items-center gap-1 mb-0">
-                                    <input
-                                        type="checkbox"
-                                        className="form-check-input mt-0"
-                                        checked={g.hiddenByDefault ?? false}
-                                        disabled={pending}
-                                        onChange={(e) =>
-                                            setHidden(g, e.target.checked)
-                                        }
-                                    />
-                                    Collapsed by default
-                                </label>
-                                <label className="text-muted small d-flex align-items-center gap-1 mb-0">
-                                    <span className="visually-hidden">
-                                        Selector for {g.name}
-                                    </span>
-                                    <select
-                                        className="form-select form-select-sm"
-                                        style={{ width: 'auto' }}
-                                        value={g.displayMode ?? ''}
-                                        disabled={pending}
-                                        onChange={(e) =>
-                                            setDisplayMode(
-                                                g,
-                                                e.target.value === ''
-                                                    ? null
-                                                    : (e.target
-                                                          .value as CategoryDisplayMode),
-                                            )
-                                        }
-                                    >
-                                        <option value="">Follow board</option>
-                                        <option value="auto">
-                                            Auto (by count)
-                                        </option>
-                                        <option value="pills">Pills</option>
-                                        <option value="dropdown">
-                                            Dropdown
-                                        </option>
-                                    </select>
-                                </label>
-                                <span className={styles.spacer} />
-                                {editingId !== g.id && (
-                                    <button
-                                        type="button"
-                                        className="btn btn-sm btn-link px-1"
-                                        disabled={pending}
-                                        onClick={() => {
-                                            setEditingId(g.id);
-                                            setEditName(g.name);
-                                        }}
-                                    >
-                                        Rename
-                                    </button>
-                                )}
-                                <button
-                                    type="button"
-                                    className="btn btn-sm btn-link px-1"
-                                    disabled={pending}
-                                    onClick={() => requestRemove(g)}
-                                >
-                                    Delete
-                                </button>
-                            </li>
-                        );
-                    })}
-                </ul>
+                <div className={styles.tableScroll}>
+                    <table className={styles.table}>
+                        <thead>
+                            <tr>
+                                <th>Group</th>
+                                <th>Shown</th>
+                                <th className={styles.colCenter}>Collapsed</th>
+                                <th>Selector</th>
+                                <th
+                                    className={styles.colActions}
+                                    aria-label="Actions"
+                                />
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {groups.map((g) => {
+                                const count = countByGroupId.get(g.id) ?? 0;
+                                return (
+                                    <tr key={g.id}>
+                                        <td className="fw-semibold">
+                                            {editingId === g.id ? (
+                                                <input
+                                                    className="form-control form-control-sm"
+                                                    style={{
+                                                        maxWidth: '16rem',
+                                                    }}
+                                                    value={editName}
+                                                    maxLength={60}
+                                                    aria-label={`Rename ${g.name}`}
+                                                    disabled={pending}
+                                                    onChange={(e) =>
+                                                        setEditName(
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    onBlur={() =>
+                                                        commitRename(g)
+                                                    }
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            commitRename(g);
+                                                        }
+                                                        if (e.key === 'Escape')
+                                                            setEditingId(null);
+                                                    }}
+                                                />
+                                            ) : (
+                                                g.name
+                                            )}
+                                        </td>
+                                        <td className="text-muted small text-nowrap">
+                                            {count}{' '}
+                                            {count === 1
+                                                ? 'category'
+                                                : 'categories'}
+                                        </td>
+                                        <td className={styles.colCenter}>
+                                            <input
+                                                type="checkbox"
+                                                className="form-check-input mt-0"
+                                                aria-label={`Collapse ${g.name} by default`}
+                                                checked={
+                                                    g.hiddenByDefault ?? false
+                                                }
+                                                disabled={pending}
+                                                onChange={(e) =>
+                                                    setHidden(
+                                                        g,
+                                                        e.target.checked,
+                                                    )
+                                                }
+                                            />
+                                        </td>
+                                        <td>
+                                            <select
+                                                className="form-select form-select-sm"
+                                                style={{ width: 'auto' }}
+                                                aria-label={`Selector for ${g.name}`}
+                                                value={g.displayMode ?? ''}
+                                                disabled={pending}
+                                                onChange={(e) =>
+                                                    setDisplayMode(
+                                                        g,
+                                                        e.target.value === ''
+                                                            ? null
+                                                            : (e.target
+                                                                  .value as CategoryDisplayMode),
+                                                    )
+                                                }
+                                            >
+                                                <option value="">
+                                                    Follow board
+                                                </option>
+                                                <option value="auto">
+                                                    Auto (by count)
+                                                </option>
+                                                <option value="pills">
+                                                    Pills
+                                                </option>
+                                                <option value="dropdown">
+                                                    Dropdown
+                                                </option>
+                                            </select>
+                                        </td>
+                                        <td className={styles.colActions}>
+                                            {editingId !== g.id && (
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-sm btn-link px-1"
+                                                    disabled={pending}
+                                                    onClick={() => {
+                                                        setEditingId(g.id);
+                                                        setEditName(g.name);
+                                                    }}
+                                                >
+                                                    Rename
+                                                </button>
+                                            )}
+                                            <button
+                                                type="button"
+                                                className="btn btn-sm btn-link px-1"
+                                                disabled={pending}
+                                                onClick={() => requestRemove(g)}
+                                            >
+                                                Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
             )}
 
             {error && <div className={`${styles.errorNote} mt-2`}>{error}</div>}
