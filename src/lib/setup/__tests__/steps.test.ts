@@ -18,7 +18,7 @@ describe('SETUP_STEPS', () => {
         expect(SETUP_STEPS.map((s) => s.id)).toEqual(SETUP_STEP_ORDER);
     });
 
-    it('is the six-step category-centric wizard', () => {
+    it('is the seven-step category-centric wizard', () => {
         expect(SETUP_STEPS.map((s) => s.id)).toEqual([
             'details',
             'categories',

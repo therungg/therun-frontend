@@ -97,6 +97,7 @@ export async function levelOp(
 export interface CreateLevelOnlyBoardBody {
     display: string;
     groupId: number;
+    isMain?: boolean;
 }
 
 export async function createLevelOnlyBoard(
