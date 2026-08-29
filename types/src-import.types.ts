@@ -50,6 +50,19 @@ export interface SrcImportJob {
     runsImportedAt: string | null;
     /** "Only use the speedrun.com leaderboard" — set via POST .../src-only, before import-runs runs. */
     srcOnlyLeaderboard: boolean;
+    /** 'resync' = one-click re-sync (auto-applied); 'manual' = reviewed import. */
+    kind: SrcImportJobKind;
+    /** What this commit changed — filled during the commit; null before it runs. */
+    changeSummary: SrcCommitChangeSummary | null;
+}
+
+export type SrcImportJobKind = 'manual' | 'resync';
+
+export interface SrcCommitChangeSummary {
+    added: number;
+    updated: number;
+    removed: number;
+    archived: number;
 }
 
 export type SrcImportCommitStatus =
@@ -58,12 +71,14 @@ export type SrcImportCommitStatus =
     | 'applied'
     | 'importing'
     | 'imported'
+    | 'pruning'
+    | 'pruned'
     | 'reconciling'
     | 'reconciled'
     | 'undoing'
     | 'failed';
 
-export type SrcImportCommitPhase = 'config' | 'runs' | 'reconcile';
+export type SrcImportCommitPhase = 'config' | 'runs' | 'prune' | 'reconcile';
 
 export interface SrcImportCategory {
     id: number;

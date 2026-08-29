@@ -344,6 +344,21 @@ button.kpi {
     color: var(--bs-secondary-color);
     margin: 0 0 dt.$spacing-md;
 }
+.changeSummary {
+    margin: dt.$spacing-md 0 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
+    font-variant-numeric: tabular-nums;
+}
+.changeLabel {
+    display: block;
+    font-size: dt.$font-size-2xs;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--bs-tertiary-color);
+    font-weight: 600;
+    margin-bottom: 2px;
+}
 .railBtn {
     display: block;
     width: 100%;
