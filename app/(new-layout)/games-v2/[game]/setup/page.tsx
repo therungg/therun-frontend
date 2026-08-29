@@ -86,6 +86,8 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         moderatorCount: moderators.length,
         configured: metadata.configured,
         groupCount: catData.groups.length,
+        levelGroupCount: catData.groups.filter((g) => g.kind === 'level')
+            .length,
         ungroupedMainCount: catData.categories.filter(
             (c) => !c.archived && (c.isMain ?? false) && c.groupId == null,
         ).length,
