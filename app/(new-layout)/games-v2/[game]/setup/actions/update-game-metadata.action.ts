@@ -8,6 +8,7 @@ import {
     type UpdateGameBody,
     updateGame,
 } from '~src/lib/game-mgmt';
+import { type GameTheme, parseGameTheme } from '~src/lib/game-theme';
 import { confirmPermission } from '~src/rbac/confirm-permission';
 import { normalizeDiscordInvite } from '~src/utils/discord-invite';
 import type { CategoryDisplayMode } from '../../../../../../types/leaderboards.types';
@@ -36,6 +37,7 @@ interface Input {
     showMilliseconds?: boolean | null;
     /** Board-wide default for how the category selector draws. */
     categoryDisplayMode?: CategoryDisplayMode | null;
+    theme?: GameTheme | null;
 }
 
 export async function updateGameMetadataAction(
@@ -101,6 +103,12 @@ export async function updateGameMetadataAction(
         return { error: 'Cannot hide both real time and game time.' };
     }
 
+    if (input.theme !== undefined && input.theme !== null) {
+        if (parseGameTheme(input.theme) === null) {
+            return { error: 'Invalid theme.' };
+        }
+    }
+
     const body: UpdateGameBody = {};
     if (input.coverUrl !== undefined) body.coverUrl = input.coverUrl;
     if (input.summaryOverride !== undefined)
@@ -133,6 +141,7 @@ export async function updateGameMetadataAction(
         body.showMilliseconds = input.showMilliseconds;
     if (input.categoryDisplayMode !== undefined)
         body.categoryDisplayMode = input.categoryDisplayMode;
+    if (input.theme !== undefined) body.theme = input.theme;
 
     if (Object.keys(body).length === 0) {
         return { result: { updated: false } };
