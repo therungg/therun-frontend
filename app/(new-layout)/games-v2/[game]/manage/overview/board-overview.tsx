@@ -419,18 +419,6 @@ export function BoardOverview({
                                                 ) ?? '—'}
                                             </span>
                                         </div>
-                                        {syncJob.importedRunsCount > 0 && (
-                                            <div className={styles.syncRow}>
-                                                <span className={styles.syncK}>
-                                                    Runs imported
-                                                </span>
-                                                <span
-                                                    className={`${styles.syncV} ${styles.mono}`}
-                                                >
-                                                    {syncJob.importedRunsCount.toLocaleString()}
-                                                </span>
-                                            </div>
-                                        )}
                                         <div className={styles.syncRow}>
                                             <span className={styles.syncK}>
                                                 Players matched
@@ -441,6 +429,48 @@ export function BoardOverview({
                                                 {syncJob.playersMatchedCount.toLocaleString()}
                                             </span>
                                         </div>
+                                        <div className={styles.syncRow}>
+                                            <span className={styles.syncK}>
+                                                Players unmatched
+                                            </span>
+                                            <span
+                                                className={`${styles.syncV} ${styles.mono}`}
+                                            >
+                                                {Math.max(
+                                                    0,
+                                                    syncJob.playersCount -
+                                                        syncJob.playersMatchedCount,
+                                                ).toLocaleString()}
+                                            </span>
+                                        </div>
+                                        {syncJob.runsImportedAt && (
+                                            <>
+                                                <div className={styles.syncRow}>
+                                                    <span
+                                                        className={styles.syncK}
+                                                    >
+                                                        Runs matched
+                                                    </span>
+                                                    <span
+                                                        className={`${styles.syncV} ${styles.mono}`}
+                                                    >
+                                                        {syncJob.importedRunsCount.toLocaleString()}
+                                                    </span>
+                                                </div>
+                                                <div className={styles.syncRow}>
+                                                    <span
+                                                        className={styles.syncK}
+                                                    >
+                                                        Runs unmatched
+                                                    </span>
+                                                    <span
+                                                        className={`${styles.syncV} ${styles.mono}`}
+                                                    >
+                                                        {syncJob.importSkippedCount.toLocaleString()}
+                                                    </span>
+                                                </div>
+                                            </>
+                                        )}
                                         <div
                                             className={styles.phaseBar}
                                             aria-hidden
