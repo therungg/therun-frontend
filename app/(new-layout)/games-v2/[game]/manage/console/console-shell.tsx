@@ -317,8 +317,12 @@ export function ConsoleShell({
                 groups={groups}
                 activeItem={activeSidebarItem}
                 onNavigate={(id) => handleNavigate(id as NavItemId)}
-                attentionCount={attentionItems.length}
-                badgeDegraded={degradedSources.length > 0}
+                badges={{
+                    attention: {
+                        count: attentionItems.length,
+                        degraded: degradedSources.length > 0,
+                    },
+                }}
             >
                 {showSetupCard(groups, activeItem) &&
                     (setupCompleteness &&

@@ -13,3 +13,11 @@ export interface NavGroup {
     label: string;
     items: NavItem[];
 }
+
+/** Ambient per-item status: a count pill (optionally marked degraded when a
+ * source failed and the count may be an undercount) or a small status dot. */
+export interface NavBadge {
+    count?: number;
+    degraded?: boolean;
+    dot?: 'info' | 'warning' | 'danger';
+}
