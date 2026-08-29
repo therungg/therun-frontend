@@ -271,6 +271,7 @@ export function ContentRouter(props: ContentRouterProps) {
                 <BoardOverview
                     game={game}
                     rows={props.rows}
+                    groups={props.groups}
                     attentionItems={attentionItems}
                     moderators={moderators ?? []}
                     pendingApplications={modApplications?.length ?? 0}
