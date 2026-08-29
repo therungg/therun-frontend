@@ -391,7 +391,7 @@ export function BoardOverview({
                                     className={styles.cardLink}
                                     onClick={() => onNavigate('import')}
                                 >
-                                    Open →
+                                    View details →
                                 </button>
                             </header>
                             <div className={styles.cardBody}>

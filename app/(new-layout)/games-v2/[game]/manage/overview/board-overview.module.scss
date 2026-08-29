@@ -359,22 +359,24 @@ button.kpi {
     font-weight: 600;
     margin-bottom: 2px;
 }
+// The card's primary action (re-sync / first import) — filled accent so it's the
+// obvious click, with the "View details" header link left as the quiet way into
+// the manual console.
 .railBtn {
     display: block;
     width: 100%;
     text-align: center;
     padding: dt.$spacing-sm dt.$spacing-md;
     border-radius: dt.$radius-md;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.8);
-    background: var(--bs-body-bg);
-    color: var(--bs-body-color);
+    border: 1px solid var(--bs-primary);
+    background: var(--bs-primary);
+    color: #fff;
     font-weight: 600;
     font-size: dt.$font-size-sm;
     cursor: pointer;
     margin-top: dt.$spacing-sm;
     &:hover:not(:disabled) {
-        border-color: var(--bs-primary);
-        color: var(--bs-primary);
+        filter: brightness(1.06);
     }
     &:disabled {
         opacity: 0.55;
