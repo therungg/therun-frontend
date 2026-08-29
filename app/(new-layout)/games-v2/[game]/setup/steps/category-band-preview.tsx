@@ -149,14 +149,21 @@ export function CategoryBandPreview({
                             <div className={band.well}>
                                 <div className={band.chips}>
                                     {/* The real board picks levels with a
-                                     * native <select> (see LevelPicker), so the
-                                     * preview shows an inert dropdown, not
-                                     * chips. */}
-                                    <span
+                                     * native <select> (see LevelPicker). A real
+                                     * select here lets the mod expand it to see
+                                     * every level; it drives nothing — this is
+                                     * still a preview. */}
+                                    <select
                                         className={`${band.categorySelect} ${styles.previewChip}`}
+                                        aria-label="Levels"
+                                        defaultValue={levels.groups[0].id}
                                     >
-                                        {levels.groups[0].name}
-                                    </span>
+                                        {levels.groups.map((g) => (
+                                            <option key={g.id} value={g.id}>
+                                                {g.name}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
                         </div>
