@@ -300,26 +300,23 @@ export function GroupBuilder({
                                                 className="form-select form-select-sm"
                                                 style={{ width: 'auto' }}
                                                 aria-label={`Selector for ${g.name}`}
-                                                value={g.displayMode ?? ''}
+                                                // Unset groups draw pills, so an
+                                                // unset group reads as Pills here.
+                                                value={g.displayMode ?? 'pills'}
                                                 disabled={pending}
                                                 onChange={(e) =>
                                                     setDisplayMode(
                                                         g,
-                                                        e.target.value === ''
-                                                            ? null
-                                                            : (e.target
-                                                                  .value as CategoryDisplayMode),
+                                                        e.target
+                                                            .value as CategoryDisplayMode,
                                                     )
                                                 }
                                             >
-                                                <option value="">
-                                                    Follow board
+                                                <option value="pills">
+                                                    Pills
                                                 </option>
                                                 <option value="auto">
                                                     Auto (by count)
-                                                </option>
-                                                <option value="pills">
-                                                    Pills
                                                 </option>
                                                 <option value="dropdown">
                                                     Dropdown

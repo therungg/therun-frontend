@@ -59,14 +59,15 @@ export interface CategoryVisibility {
  * against how many categories the section actually holds.
  *
  * Two NULL levels both mean "inherit": a group with no mode of its own takes
- * the game's, and a game with none takes 'auto'.
+ * the game's, and a game with none defaults to pills — the board-wide default
+ * is no longer settable, so an unset group just draws pills.
  */
 function resolveDisplayMode(
     groupMode: string | null | undefined,
     gameMode: string | null | undefined,
     categoryCount: number,
 ): ResolvedDisplayMode {
-    const stated = groupMode ?? gameMode ?? 'auto';
+    const stated = groupMode ?? gameMode ?? 'pills';
     if (stated === 'pills' || stated === 'dropdown') return stated;
     return categoryCount > AUTO_PILL_LIMIT ? 'dropdown' : 'pills';
 }
