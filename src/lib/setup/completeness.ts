@@ -46,6 +46,8 @@ export interface CompletenessInput {
      */
     subcategoryVariableCount?: number;
     filterVariableCount?: number;
+    /** Count of `kind:'level'` category groups, for the levels step's summary. */
+    levelGroupCount?: number;
 }
 
 export interface BoardCompleteness {
@@ -156,13 +158,15 @@ export function computeCompleteness(
         });
     }
 
-    // Levels aren't modeled by CompletenessInput yet — this placeholder just
-    // keeps `steps` aligned with SETUP_STEP_ORDER until a later task teaches
-    // this builder about individual-level boards.
+    // Levels are optional and there is no signal for whether a game "should"
+    // have levels, so this step is always done — only the summary reflects
+    // the count. (A todo-when-empty rule would break the fully-set-up-board
+    // invariant for every game without individual levels.)
+    const levelCount = input.levelGroupCount ?? 0;
     steps.push({
         step: 'levels',
         status: 'done',
-        summary: 'No levels yet',
+        summary: levelCount > 0 ? `${levelCount} levels` : 'No levels yet',
     });
 
     // Grouping is optional, so "no groups" is a finished state, not a todo.

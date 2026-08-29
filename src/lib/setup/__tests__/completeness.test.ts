@@ -370,6 +370,31 @@ describe('computeCompleteness', () => {
         });
     });
 
+    // Levels are optional and there is no signal for whether a game "should"
+    // have levels — so the step is always done, and only the summary varies
+    // with the count (an incomplete-then-blank status would break the
+    // fully-set-up-board invariant above).
+    describe('levels step', () => {
+        const step = (c: ReturnType<typeof computeCompleteness>) =>
+            c.steps.find((s) => s.step === 'levels');
+
+        it('is done with "No levels yet" when there are no level groups', () => {
+            const c = computeCompleteness(input({ levelGroupCount: 0 }));
+            expect(step(c)).toMatchObject({
+                status: 'done',
+                summary: 'No levels yet',
+            });
+        });
+
+        it('is done with a count summary when level groups exist', () => {
+            const c = computeCompleteness(input({ levelGroupCount: 2 }));
+            expect(step(c)).toMatchObject({
+                status: 'done',
+                summary: '2 levels',
+            });
+        });
+    });
+
     // Variables (now the per-category splits/filters) are one section of the
     // editor, not something users know by that name — the category-setup
     // summary is driven by rules only and never mentions them.
