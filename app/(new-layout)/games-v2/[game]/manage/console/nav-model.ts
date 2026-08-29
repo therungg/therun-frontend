@@ -5,6 +5,7 @@
 import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 
 export type NavItemId =
+    | 'overview'
     | 'attention'
     | 'roster'
     | 'reports'
@@ -22,7 +23,7 @@ export type NavItemId =
     | 'reassign'
     | 'import';
 
-export type NavGroupId = 'moderate' | 'board';
+export type NavGroupId = 'overview' | 'moderate' | 'structure' | 'game';
 
 export interface NavItem {
     id: NavItemId;
@@ -49,58 +50,60 @@ export interface NavFlags {
     canSiteBan?: boolean;
 }
 
+// Grouped by how often a moderator touches them, not by concept: Overview is
+// the front door, Queue is the daily loop, Structure is the board's shape,
+// Game is occasional administration. Setup and History are NOT nav items any
+// more — Setup leaves the console and History is an overlay, so both live in
+// the utility footer (buildFooterNav) where their different behavior is
+// visually honest.
 const ALL_GROUPS: NavGroup[] = [
     {
+        id: 'overview',
+        // No caption — a one-item "group" for the front door.
+        label: '',
+        items: [{ id: 'overview', label: CONCEPT_LABEL.overview }],
+    },
+    {
         id: 'moderate',
-        label: 'Moderate',
+        label: 'Queue',
         items: [
-            // Needs attention, Browse runs (roster) and Reports (a
-            // pre-filtered view of the attention pane) are pulled from the
-            // console for now. Their panes/routes still exist — only these
-            // entry points are gone, so restoring them is re-adding the
-            // items here.
+            { id: 'attention', label: CONCEPT_LABEL.attention },
             { id: 'bans', label: CONCEPT_LABEL.bans },
-            { id: 'history', label: CONCEPT_LABEL.history },
         ],
     },
     {
-        id: 'board',
-        label: 'Board',
+        id: 'structure',
+        label: 'Structure',
         items: [
-            // Leaves the console for the wizard rather than opening a pane —
-            // see handleNavigate in console-shell.tsx. It's the permanent
-            // door back into setup, which is why it sits first and stays
-            // visible after the board is live; the setup checklist card only
-            // covers the not-yet-finished case.
-            { id: 'setup', label: CONCEPT_LABEL.setup },
-            { id: 'game-details', label: CONCEPT_LABEL['game-details'] },
-            // The category index: the door to every per-category setting, and
-            // the featured/archived screen that used to be its own pane.
-            // Order matches the wizard: details 1, categories 2, groups 3.
+            { id: 'boards', label: CONCEPT_LABEL.boards },
             { id: 'categories', label: CONCEPT_LABEL.categories },
             { id: 'groups', label: CONCEPT_LABEL.groups },
-            // Individual levels sit with the groups they are: a level IS a
-            // category group (kind: 'level'), and the level categories are
-            // the templates every level's boards are materialised from.
+            // One item now: the level categories (templates) are a tab inside
+            // the Levels pane. ?pane=level-categories still deep-links there.
             { id: 'levels', label: CONCEPT_LABEL.levels },
-            {
-                id: 'level-categories',
-                label: CONCEPT_LABEL['level-categories'],
-            },
-            // The wizard's step 4, mounted as a pane: the same VariablesGrid,
-            // spanning every featured category. Structure used to be reachable
-            // only by opening a category and scrolling — which meant the one
-            // screen that shows where categories disagree had no door.
             { id: 'variables', label: CONCEPT_LABEL.variables },
-            { id: 'boards', label: CONCEPT_LABEL.boards },
+        ],
+    },
+    {
+        id: 'game',
+        label: 'Game',
+        items: [
+            { id: 'game-details', label: CONCEPT_LABEL['game-details'] },
             { id: 'moderators', label: CONCEPT_LABEL.moderators },
-            { id: 'reassign', label: CONCEPT_LABEL.reassign },
-            // Dry-run import from speedrun.com — reachable by any moderator,
-            // matching the backend's `import-board` action.
             { id: 'import', label: CONCEPT_LABEL.import },
+            { id: 'reassign', label: CONCEPT_LABEL.reassign },
         ],
     },
 ];
+
+function anyConsoleAccess(flags: NavFlags): boolean {
+    return (
+        flags.canModerate ||
+        flags.canConfigure ||
+        flags.canEditMods ||
+        flags.canReassign
+    );
+}
 
 /**
  * The category index is reachable by ANY moderator, because Minimum time is —
@@ -114,6 +117,7 @@ function itemVisible(
     itemId: NavItemId,
     flags: NavFlags,
 ): boolean {
+    if (itemId === 'overview') return anyConsoleAccess(flags);
     if (itemId === 'reassign') return flags.canReassign;
     if (itemId === 'moderators') return flags.canEditMods;
     if (groupId === 'moderate') return flags.canModerate;
@@ -131,13 +135,28 @@ export function buildNav(flags: NavFlags): NavGroup[] {
     })).filter((g) => g.items.length > 0);
 }
 
+/** The utility footer under the nav: doors that are not panes. Setup leaves
+ * the console for the wizard; History opens an overlay drawer. */
+export function buildFooterNav(flags: NavFlags): NavItem[] {
+    const items: NavItem[] = [];
+    if (flags.canConfigure) {
+        items.push({ id: 'setup', label: CONCEPT_LABEL.setup });
+    }
+    if (flags.canModerate) {
+        items.push({ id: 'history', label: CONCEPT_LABEL.history });
+    }
+    return items;
+}
+
 /**
  * Sidebar items that are never a content pane: `history` is an overlay,
- * `roster` and `setup` leave the console for their own routes, and `reports`
- * normalizes into the attention pane. Used by `isLandingPaneId` so neither can
- * land the console on one of them.
+ * `roster` and `setup` leave the console for their own routes, `reports`
+ * normalizes into the attention pane, and `overview` is the front door
+ * (`activeItem === null`), not a pane id anyone can land on. Used by
+ * `isLandingPaneId` so none of these can land the console on itself.
  */
 const NON_LANDING_IDS: readonly NavItemId[] = [
+    'overview',
     'history',
     'roster',
     'reports',
@@ -145,29 +164,25 @@ const NON_LANDING_IDS: readonly NavItemId[] = [
 ];
 
 /**
- * Reports isn't a real pane — `handleNavigate('reports')` lands on the
- * `attention` pane pre-filtered by `?kind=report`, so `activeItem` is always
- * `'attention'` whether the viewer got there via "Needs attention" or
- * "Reports". The sidebar highlight has to be derived from the `kind` query
- * param (not stored) so it stays correct when NeedsAttention's own kind-chip
- * dismiss button rewrites the URL out from under the shell.
+ * The sidebar highlight: the front door (activeItem null) IS the Overview
+ * item. `kind=report` used to promote the highlight to a separate Reports
+ * item; that item is retired, so the attention pane is simply current
+ * whatever its filter.
  */
 export function sidebarActiveItem(
     activeItem: NavItemId | null,
-    kind: string | null,
+    _kind: string | null,
 ): NavItemId | null {
-    if (activeItem === 'attention' && kind === 'report') {
-        return 'reports';
-    }
+    if (activeItem === null) return 'overview';
     return activeItem;
 }
 
 /**
  * The setup-nudge slot (SetupChecklistCard while setup is incomplete,
- * BoardHealthCard once it's done) sits above Board-group panes, where a board
- * admin is already in a "configure this board" mindset. It has no business
- * sitting above triage panes (Needs attention, Bans...): a moderator mid-queue
- * doesn't need a "finish setup" nag competing for their attention.
+ * BoardHealthCard once it's done) sits above Structure/Game panes, where a
+ * board admin is already in a "configure this board" mindset. It has no
+ * business sitting above triage panes (Needs attention, Bans...): a moderator
+ * mid-queue doesn't need a "finish setup" nag competing for their attention.
  *
  * The front door (`activeItem == null`) is deliberately excluded: BoardOverview
  * renders the same card inside its own rail, so the shell must not also stack
@@ -178,16 +193,19 @@ export function showSetupCard(
     activeItem: NavItemId | null,
 ): boolean {
     if (activeItem == null) return false;
-    const boardGroup = groups.find((g) => g.id === 'board');
-    return boardGroup?.items.some((it) => it.id === activeItem) ?? false;
+    return groups.some(
+        (g) =>
+            (g.id === 'structure' || g.id === 'game') &&
+            g.items.some((it) => it.id === activeItem),
+    );
 }
 
 /**
- * `history`, `roster`, `reports` and `setup` are never a landing pane — see
- * NON_LANDING_IDS above and the mount-time comment in console-shell.tsx. Both
- * the `?pane=` URL reader and the per-game localStorage last-pane reader share
- * this same guard so a stored/URL id from either source is held to the same
- * bar.
+ * `overview`, `history`, `roster`, `reports` and `setup` are never a landing
+ * pane — see NON_LANDING_IDS above and the mount-time comment in
+ * console-shell.tsx. Both the `?pane=` URL reader and the per-game
+ * localStorage last-pane reader share this same guard so a stored/URL id from
+ * either source is held to the same bar.
  */
 export function isLandingPaneId(
     id: string | null | undefined,
@@ -202,14 +220,13 @@ export function isLandingPaneId(
 
 /**
  * Panes that stay out of the sidebar nav but remain valid deep-link
- * landings. Needs attention was pulled from the nav "for now" (see
- * ALL_GROUPS), but the cross-game hub rows, the Moderators pane's
- * pending-applications note, the legacy /manage/moderation/* redirects and
- * the Reports normalization all still target `?pane=attention` — the deep
- * link must keep opening the pane even while no sidebar item points at it.
+ * landings. Needs attention is back in the nav (see ALL_GROUPS), so it no
+ * longer needs to be listed here. `level-categories` merged into the Levels
+ * pane but stays deep-linkable — it lands on the Levels pane's templates tab
+ * (see content-router.tsx).
  */
 function hiddenLandingIds(flags: NavFlags): NavItemId[] {
-    return flags.canModerate ? ['attention'] : [];
+    return flags.canConfigure ? ['level-categories'] : [];
 }
 
 /**

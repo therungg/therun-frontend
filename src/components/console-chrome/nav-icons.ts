@@ -18,11 +18,13 @@ import {
     ListUl,
     PersonX,
     ShieldLock,
+    Speedometer2,
     Trophy,
 } from 'react-bootstrap-icons';
 import type { NavItemId } from '~app/(new-layout)/games-v2/[game]/manage/console/nav-model';
 
 export const NAV_ICON: Record<NavItemId, IconType> = {
+    overview: Speedometer2,
     attention: ExclamationTriangle,
     roster: ListOl,
     reports: Flag,

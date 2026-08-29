@@ -6,6 +6,7 @@
 import type { SetupStepId } from '../setup/completeness';
 
 export type ConceptId =
+    | 'overview'
     | 'attention'
     | 'roster'
     | 'reports'
@@ -29,6 +30,7 @@ export type ConceptId =
     | 'boards';
 
 export const CONCEPT_LABEL: Record<ConceptId, string> = {
+    overview: 'Overview',
     attention: 'Needs attention',
     roster: 'Browse runs',
     reports: 'Reports',
