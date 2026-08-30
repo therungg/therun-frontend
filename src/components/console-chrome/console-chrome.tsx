@@ -11,7 +11,7 @@ import { ConsoleSidebar } from './console-sidebar';
 import type { NavBadge, NavGroup, NavItem } from './nav-types';
 
 export interface ConsoleHeader {
-    eyebrow: string; // "Admin" | "Settings"
+    eyebrow?: string; // optional label above the title (e.g. "Settings")
     title: string; // game display name | "@username"
     titleHref: string; // where the title links
     image?: string | null; // optional 3:4 cover (manage passes game.image)
@@ -123,9 +123,11 @@ export function ConsoleChrome({
                         header.identity
                     ) : (
                         <div>
-                            <div className={styles.eyebrow}>
-                                {header.eyebrow}
-                            </div>
+                            {header.eyebrow && (
+                                <div className={styles.eyebrow}>
+                                    {header.eyebrow}
+                                </div>
+                            )}
                             <h1 className={styles.title}>
                                 <Link
                                     href={header.titleHref}
