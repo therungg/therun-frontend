@@ -1,0 +1,31 @@
+// Fixed full-viewport background art. Lives inside <main> (z-index 1 in the
+// root layout), so z-index -1 paints it above the site canvas but under all
+// content; the z-index 10 topbar renders over it, which is the point — the
+// theme covers the topbar. The scrim is not optional: panels are readable
+// over arbitrary art because the art only really shows in the gutters.
+.backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background-size: cover;
+    background-position: center;
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            180deg,
+            rgba(6, 8, 7, 0.5) 0%,
+            rgba(6, 8, 7, 0.78) 60%
+        );
+    }
+}
+
+:global([data-bs-theme='light']) .backdrop::after {
+    background: linear-gradient(
+        180deg,
+        rgba(250, 250, 250, 0.6) 0%,
+        rgba(250, 250, 250, 0.86) 60%
+    );
+}

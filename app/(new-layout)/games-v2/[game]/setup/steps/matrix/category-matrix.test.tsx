@@ -63,6 +63,7 @@ const metadata = {
     hideGameTime: false,
     sortAscending: true,
     showMilliseconds: true,
+    theme: null,
 } as GameMetadata;
 
 function makeData(): WizardData {

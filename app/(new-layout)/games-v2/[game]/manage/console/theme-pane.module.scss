@@ -1,0 +1,89 @@
+.controls {
+    display: grid;
+    gap: 1rem;
+    max-width: 28rem;
+    margin-block: 1.25rem;
+}
+
+.field {
+    display: grid;
+    gap: 0.375rem;
+
+    > span {
+        font-size: 0.8125rem;
+        font-weight: 600;
+    }
+}
+
+.hueSlider {
+    // The track IS the picker: full spectrum, thumb picks the hue.
+    appearance: none;
+    height: 0.75rem;
+    border-radius: 999px;
+    background: linear-gradient(
+        90deg,
+        hsl(0 60% 50%),
+        hsl(60 60% 50%),
+        hsl(120 60% 50%),
+        hsl(180 60% 50%),
+        hsl(240 60% 50%),
+        hsl(300 60% 50%),
+        hsl(360 60% 50%)
+    );
+}
+
+.bgRow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.bgThumb {
+    width: 96px;
+    height: 54px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid var(--bs-border-color);
+}
+
+// Miniature board rendered with the DERIVED vars from deriveThemeVars —
+// the preview and the real board share one derivation, so it cannot lie.
+.preview {
+    padding: 1.25rem;
+    border-radius: 8px;
+    background: var(--board-recess-bg);
+    max-width: 28rem;
+}
+
+.previewPanel {
+    background: var(--board-surface-bg);
+    border: 1px solid var(--board-surface-border);
+    border-radius: 6px;
+    padding: 0.875rem;
+}
+
+.previewAccent {
+    height: 0.5rem;
+    width: 40%;
+    border-radius: 999px;
+    background: var(--board-accent);
+    margin-bottom: 0.75rem;
+}
+
+.previewRows {
+    display: grid;
+    gap: 0.5rem;
+
+    > span {
+        height: 0.625rem;
+        border-radius: 3px;
+        background: rgba(255, 255, 255, 0.12);
+
+        &:nth-child(2) {
+            width: 85%;
+        }
+        &:nth-child(3) {
+            width: 70%;
+        }
+    }
+}

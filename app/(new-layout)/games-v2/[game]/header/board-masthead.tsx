@@ -105,10 +105,17 @@ export function BoardMasthead({
                 wrapper; the game plate spends it as its flat 5% cover tint
                 (system.md signature #4 — the plate's game-identity tint). */}
             <div className={styles.bands} ref={plateRef}>
-                <AccentFromCover
-                    coverUrl={data.gameMeta.coverUrl ?? data.game.image ?? null}
-                    targetRef={plateRef}
-                />
+                {data.gameMeta.theme == null ? (
+                    // Inline-written accent would override the theme's
+                    // stylesheet accent — sampled color yields to the mod's
+                    // explicit choice.
+                    <AccentFromCover
+                        coverUrl={
+                            data.gameMeta.coverUrl ?? data.game.image ?? null
+                        }
+                        targetRef={plateRef}
+                    />
+                ) : null}
                 {/* Band 1 — game overview. */}
                 <div className={styles.gamePlate}>
                     <GameHero

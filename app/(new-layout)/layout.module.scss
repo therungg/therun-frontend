@@ -8,9 +8,9 @@ $secondary: var(--bs-secondary);
     background:
         linear-gradient(
             180deg,
-            color-mix(in srgb, var(--bs-body-bg) 85%, var(--bs-primary) 15%) 0%,
-            color-mix(in srgb, var(--bs-body-bg) 95%, var(--bs-primary) 5%) 150px,
-            var(--bs-body-bg) 300px
+            color-mix(in srgb, var(--site-canvas-bg, var(--bs-body-bg)) 85%, var(--site-canvas-primary, var(--bs-primary)) 15%) 0%,
+            color-mix(in srgb, var(--site-canvas-bg, var(--bs-body-bg)) 95%, var(--site-canvas-primary, var(--bs-primary)) 5%) 150px,
+            var(--site-canvas-bg, var(--bs-body-bg)) 300px
         );
 }
 
