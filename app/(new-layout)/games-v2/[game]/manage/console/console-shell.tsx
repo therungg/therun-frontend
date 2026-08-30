@@ -400,7 +400,7 @@ export function ConsoleShell({
                 <h2
                     ref={paneHeadingRef}
                     tabIndex={-1}
-                    className={`visually-hidden-focusable ${styles.paneHeading}`}
+                    className="visually-hidden"
                 >
                     {activeLabel}
                 </h2>
