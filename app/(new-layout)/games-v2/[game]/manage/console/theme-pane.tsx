@@ -13,8 +13,9 @@ import { getBackgroundUploadUrlAction } from './actions/get-background-upload-ur
 import paneStyles from './theme-pane.module.scss';
 
 const DEFAULT_DRAFT: GameTheme = {
-    hue: 145, // brand-green neighborhood as the starting point
-    saturation: 40,
+    panelColor: '#161c18', // current dark-panel neighborhood
+    accentColor: '#4aa06a', // brand-green neighborhood
+    backgroundColor: '#0d0f0d', // current canvas
     backgroundUrl: null,
     panelOpacity: 0.92,
 };
@@ -113,37 +114,39 @@ export function ThemePane({ metadata, game }: Props) {
             </div>
 
             <p className={styles.paneLede}>
-                Give {game.name}&rsquo;s board its own look. Pick a color and
-                optionally a background image — panel and text contrast are
-                handled automatically, in both light and dark mode.
+                Give {game.name}&rsquo;s board its own look. Pick the panel,
+                accent, and page-background colors and optionally a background
+                image — text contrast is handled automatically.
             </p>
 
             <div className={paneStyles.controls}>
                 <label className={paneStyles.field}>
-                    <span>Color</span>
+                    <span>Panel color</span>
                     <input
-                        type="range"
-                        min={0}
-                        max={359}
-                        value={t.hue}
-                        className={paneStyles.hueSlider}
+                        type="color"
+                        value={t.panelColor}
                         onChange={(e) =>
-                            setDraft({ ...t, hue: Number(e.target.value) })
+                            setDraft({ ...t, panelColor: e.target.value })
                         }
                     />
                 </label>
                 <label className={paneStyles.field}>
-                    <span>Vividness</span>
+                    <span>Accent color</span>
                     <input
-                        type="range"
-                        min={20}
-                        max={70}
-                        value={t.saturation}
+                        type="color"
+                        value={t.accentColor}
                         onChange={(e) =>
-                            setDraft({
-                                ...t,
-                                saturation: Number(e.target.value),
-                            })
+                            setDraft({ ...t, accentColor: e.target.value })
+                        }
+                    />
+                </label>
+                <label className={paneStyles.field}>
+                    <span>Page background</span>
+                    <input
+                        type="color"
+                        value={t.backgroundColor}
+                        onChange={(e) =>
+                            setDraft({ ...t, backgroundColor: e.target.value })
                         }
                     />
                 </label>
