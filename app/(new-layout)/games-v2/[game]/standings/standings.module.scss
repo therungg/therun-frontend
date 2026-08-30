@@ -463,8 +463,9 @@ $col-score: 7.5rem;
 // An em dash, not a 0.0% — the runner has no run here, and printing a score
 // they never earned would misread as a bad result rather than an absence.
 .cellAbsent {
+    // --bs-tertiary-color already carries the muted alpha; stacking opacity on
+    // top halved it again (~0.25 effective), which vanished on mid-tone panels.
     color: var(--bs-tertiary-color);
-    opacity: 0.5;
 }
 
 // ---- Empty ---------------------------------------------------

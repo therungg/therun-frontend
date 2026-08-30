@@ -106,11 +106,12 @@
     text-transform: uppercase;
     letter-spacing: 0.4px;
     white-space: nowrap;
-    color: rgba(96, 140, 89, 0.65);
+    // Follow the themed bar's muted text; fallback to the brand green off-theme.
+    color: var(--site-topbar-muted, rgba(96, 140, 89, 0.65));
     line-height: 1;
 
     :global([data-bs-theme='dark']) & {
-        color: rgba(125, 168, 118, 0.6);
+        color: var(--site-topbar-muted, rgba(125, 168, 118, 0.6));
     }
 }
 
