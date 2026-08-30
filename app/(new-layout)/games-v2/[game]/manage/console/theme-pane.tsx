@@ -259,13 +259,60 @@ export function ThemePane({ metadata, game }: Props) {
                 )}
             </div>
 
+            <div className={paneStyles.previewLabel} aria-hidden>
+                Preview
+            </div>
             <div className={paneStyles.preview} style={previewVars} aria-hidden>
-                <div className={paneStyles.previewPanel}>
-                    <div className={paneStyles.previewAccent} />
-                    <div className={paneStyles.previewRows}>
-                        <span />
-                        <span />
-                        <span />
+                <div
+                    className={paneStyles.previewTopbar}
+                    data-topbar={t.topbar}
+                >
+                    <span className={paneStyles.previewBrand} />
+                    <span className={paneStyles.previewNav}>
+                        <i />
+                        <i />
+                        <i />
+                    </span>
+                </div>
+                <div className={paneStyles.previewCanvas}>
+                    {previewTheme.backgroundUrl && (
+                        <div
+                            className={paneStyles.previewBackdrop}
+                            style={{
+                                backgroundImage: `url(${previewTheme.backgroundUrl})`,
+                            }}
+                        />
+                    )}
+                    <div className={paneStyles.previewPanel}>
+                        <div className={paneStyles.previewMast}>
+                            <span className={paneStyles.previewMastTitle} />
+                            <span className={paneStyles.previewPill}>PB</span>
+                        </div>
+                        <div className={paneStyles.previewBoard}>
+                            <div
+                                className={`${paneStyles.previewRow} ${paneStyles.previewRowLead}`}
+                            >
+                                <span className={paneStyles.previewRank}>
+                                    1
+                                </span>
+                                <span className={paneStyles.previewName} />
+                                <span className={paneStyles.previewTime} />
+                            </div>
+                            <div className={paneStyles.previewRow}>
+                                <span className={paneStyles.previewRank}>
+                                    2
+                                </span>
+                                <span className={paneStyles.previewName} />
+                                <span className={paneStyles.previewTime} />
+                            </div>
+                            <div className={paneStyles.previewRow}>
+                                <span className={paneStyles.previewRank}>
+                                    3
+                                </span>
+                                <span className={paneStyles.previewName} />
+                                <span className={paneStyles.previewTime} />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
