@@ -16,7 +16,6 @@ import type {
 } from '../../../../../../types/src-import.types';
 import { BoardHealthCard } from '../console/board-health-card';
 import type { NavGroup, NavItemId } from '../console/nav-model';
-import { SetupChecklistCard } from '../console/setup-checklist-card';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import styles from './board-overview.module.scss';
 import { buildOverviewStats, timeAgo, topFeaturedRows } from './overview-model';
@@ -371,17 +370,12 @@ export function BoardOverview({
 
                 {/* Rail */}
                 <div className={styles.rail}>
-                    {setupIncomplete && setupCompleteness ? (
-                        <SetupChecklistCard
-                            gameSlug={game.name}
-                            completeness={setupCompleteness}
-                        />
-                    ) : boardHealth ? (
+                    {!setupIncomplete && boardHealth && (
                         <BoardHealthCard
                             gameSlug={game.name}
                             health={boardHealth}
                         />
-                    ) : null}
+                    )}
 
                     {showImport && (
                         <section className={styles.card}>
