@@ -190,11 +190,12 @@ export function sidebarActiveItem(
 }
 
 /**
- * The setup-nudge slot (SetupChecklistCard while setup is incomplete,
- * BoardHealthCard once it's done) sits above Structure/Game panes, where a
- * board admin is already in a "configure this board" mindset. It has no
- * business sitting above triage panes (Needs attention, Bans...): a moderator
- * mid-queue doesn't need a "finish setup" nag competing for their attention.
+ * The board-health slot (BoardHealthCard, shown once setup is done) sits above
+ * Structure/Game panes, where a board admin is already in a "configure this
+ * board" mindset. It has no business sitting above triage panes (Needs
+ * attention, Bans...): a moderator mid-queue doesn't need it competing for
+ * their attention. While setup is still incomplete the slot shows nothing —
+ * the Setup wizard sidebar dot carries that signal instead.
  *
  * The front door (`activeItem == null`) is deliberately excluded: BoardOverview
  * renders the same card inside its own rail, so the shell must not also stack

@@ -43,7 +43,6 @@ import {
     resolveInitialPane,
     showSetupCard,
 } from './nav-model';
-import { SetupChecklistCard } from './setup-checklist-card';
 
 export interface ConsoleShellProps {
     game: ResolvedGame;
@@ -122,6 +121,15 @@ export function ConsoleShell({
         [game.name, base],
     );
 
+    // The board still has setup steps outstanding (the final 'boards' step is
+    // done only once the mod marks the board configured). Drives the sidebar
+    // dot on the Setup wizard item — the standing "finish setup" signal now
+    // that the inline checklist card is gone.
+    const setupIncomplete =
+        setupCompleteness != null &&
+        setupCompleteness.steps.find((s) => s.step === 'boards')?.status !==
+            'done';
+
     // Ambient sidebar status from data the shell already holds. The count
     // pill wins over a dot when both could apply.
     const badges = useMemo(() => {
@@ -138,6 +146,9 @@ export function ConsoleShell({
         } else if (syncJob?.status === 'failed') {
             map.import = { dot: 'danger', dotLabel: 'Import failed' };
         }
+        if (setupIncomplete) {
+            map.setup = { dot: 'warning', dotLabel: 'Setup incomplete' };
+        }
         if (boardHealth?.items.some((i) => i.severity === 'blocker')) {
             map.overview = { dot: 'danger', dotLabel: 'Board has a blocker' };
         } else if (boardHealth?.items.some((i) => i.severity === 'warning')) {
@@ -150,6 +161,7 @@ export function ConsoleShell({
         modApplications,
         syncJob,
         boardHealth,
+        setupIncomplete,
     ]);
 
     // A `?pane=` deep link (used by sub-route pages navigating back) decides
@@ -378,19 +390,13 @@ export function ConsoleShell({
                 footerItems={footerItems}
             >
                 {showSetupCard(groups, activeItem) &&
-                    (setupCompleteness &&
-                    setupCompleteness.steps.find((s) => s.step === 'boards')
-                        ?.status !== 'done' ? (
-                        <SetupChecklistCard
-                            gameSlug={game.name}
-                            completeness={setupCompleteness}
-                        />
-                    ) : boardHealth ? (
+                    !setupIncomplete &&
+                    boardHealth && (
                         <BoardHealthCard
                             gameSlug={game.name}
                             health={boardHealth}
                         />
-                    ) : null)}
+                    )}
                 <h2
                     ref={paneHeadingRef}
                     tabIndex={-1}
