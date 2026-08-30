@@ -348,7 +348,6 @@ export function ConsoleShell({
         <>
             <ConsoleChrome
                 header={{
-                    eyebrow: 'Admin',
                     title: game.display,
                     titleHref: `/games-v2/${encodeURIComponent(game.name)}/manage`,
                     image: game.image,
