@@ -23,6 +23,7 @@
     --bs-body-color: var(--site-topbar-color, inherit);
     --bs-emphasis-color: var(--site-topbar-emphasis, inherit);
     --bs-secondary-color: var(--site-topbar-muted, inherit);
+    --bs-tertiary-color: var(--site-topbar-muted, inherit);
 
     @media (min-width: 1200px) {
         padding: 0 2.5rem;

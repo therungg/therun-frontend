@@ -63,15 +63,17 @@ interface TextSet {
 const LIGHT_TEXT: TextSet = {
     body: '#e8eaed',
     emphasis: '#ffffff',
-    secondary: 'rgba(232, 234, 237, 0.75)',
-    tertiary: 'rgba(232, 234, 237, 0.5)',
+    secondary: 'rgba(232, 234, 237, 0.78)',
+    // Tertiary kept high enough to stay legible on mid-tone surfaces, where a
+    // low alpha composites toward the background and contrast collapses.
+    tertiary: 'rgba(232, 234, 237, 0.62)',
     light: true,
 };
 const DARK_TEXT: TextSet = {
     body: '#1a1d1a',
     emphasis: '#000000',
-    secondary: 'rgba(26, 29, 26, 0.7)',
-    tertiary: 'rgba(26, 29, 26, 0.5)',
+    secondary: 'rgba(26, 29, 26, 0.74)',
+    tertiary: 'rgba(26, 29, 26, 0.62)',
     light: false,
 };
 

@@ -38,7 +38,10 @@
         right: 10px;
         bottom: 1px;
         height: 2px;
-        background-color: var(--bs-primary);
+        // On a themed topbar the bar can BE the accent, so --bs-primary would
+        // vanish. --site-topbar-emphasis is guaranteed to contrast the bar;
+        // fallback keeps the default green underline off-theme.
+        background-color: var(--site-topbar-emphasis, var(--bs-primary));
         border-radius: 1px;
         transform: scaleX(0);
         transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -117,7 +120,9 @@
 }
 
 .active {
-    color: var(--bs-primary);
+    // --site-topbar-emphasis (set only on a themed bar) contrasts the bar;
+    // fallback to the default green active color when the bar is untouched.
+    color: var(--site-topbar-emphasis, var(--bs-primary));
     opacity: 1;
 
     &::after {
@@ -125,7 +130,7 @@
     }
 
     :global([data-bs-theme='dark']) & {
-        color: #7DA876;
+        color: var(--site-topbar-emphasis, #7da876);
     }
 }
 
