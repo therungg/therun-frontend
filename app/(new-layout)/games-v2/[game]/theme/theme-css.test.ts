@@ -18,20 +18,45 @@ describe('deriveThemeVars', () => {
         expect(v['--bs-primary']).toBe('#4aa06a');
         expect(v['--bs-primary-rgb']).toBe('74, 160, 106');
     });
-    it('chooses light text on a dark panel', () => {
-        const v = deriveThemeVars(base, 'dark');
-        expect(v['--bs-emphasis-color']).toBe('#ffffff');
-        expect(v['--bs-body-color']).toBe('#e8eaed');
+    it('sets panel text (--board-ink) from the panel color', () => {
+        // dark panel → light ink
+        const dark = deriveThemeVars(base, 'dark');
+        expect(dark['--board-ink']).toBe('#e8eaed');
+        expect(dark['--board-ink-emphasis']).toBe('#ffffff');
+        // light panel → dark ink
+        const lightPanel = deriveThemeVars(
+            { ...base, panelColor: '#f2f2f2' },
+            'dark',
+        );
+        expect(lightPanel['--board-ink']).toBe('#1a1d1a');
+        expect(lightPanel['--board-ink-emphasis']).toBe('#000000');
     });
-    it('chooses dark text on a light panel', () => {
-        const v = deriveThemeVars({ ...base, panelColor: '#f2f2f2' }, 'dark');
-        expect(v['--bs-emphasis-color']).toBe('#000000');
-        expect(v['--bs-body-color']).toBe('#1a1d1a');
+    it('sets canvas text (global --bs-*) from the background, not the panel', () => {
+        // dark background → light canvas text
+        expect(deriveThemeVars(base, 'dark')['--bs-body-color']).toBe(
+            '#e8eaed',
+        );
+        // light background + dark panel (the masthead bug): canvas text must go
+        // dark to contrast the page, while panel ink stays light for the panels.
+        const lightBg = deriveThemeVars(
+            { ...base, backgroundColor: '#4aa72e' },
+            'dark',
+        );
+        expect(lightBg['--bs-body-color']).toBe('#1a1d1a');
+        expect(lightBg['--bs-emphasis-color']).toBe('#000000');
+        expect(lightBg['--board-ink']).toBe('#e8eaed'); // panel #161c18 still light
     });
-    it('chooses dark text on a mid-gray panel (best contrast, not the < 0.4 threshold)', () => {
-        const v = deriveThemeVars({ ...base, panelColor: '#a0a0a0' }, 'dark');
-        expect(v['--bs-body-color']).toBe('#1a1d1a');
-        expect(v['--bs-emphasis-color']).toBe('#000000');
+    it('picks the higher-contrast text on a mid-gray surface (best-of-two)', () => {
+        expect(
+            deriveThemeVars({ ...base, panelColor: '#a0a0a0' }, 'dark')[
+                '--board-ink'
+            ],
+        ).toBe('#1a1d1a');
+        expect(
+            deriveThemeVars({ ...base, backgroundColor: '#a0a0a0' }, 'dark')[
+                '--bs-body-color'
+            ],
+        ).toBe('#1a1d1a');
     });
     it('derives recesses darker than the panel', () => {
         const v = deriveThemeVars(base, 'dark');

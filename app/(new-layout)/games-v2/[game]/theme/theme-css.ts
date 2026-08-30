@@ -51,11 +51,51 @@ function contrastRatio(a: number, b: number): number {
     return (hi + 0.05) / (lo + 0.05);
 }
 
+interface TextSet {
+    body: string;
+    emphasis: string;
+    secondary: string;
+    tertiary: string;
+    /** True when the light set was chosen (surface is dark). */
+    light: boolean;
+}
+
+const LIGHT_TEXT: TextSet = {
+    body: '#e8eaed',
+    emphasis: '#ffffff',
+    secondary: 'rgba(232, 234, 237, 0.75)',
+    tertiary: 'rgba(232, 234, 237, 0.5)',
+    light: true,
+};
+const DARK_TEXT: TextSet = {
+    body: '#1a1d1a',
+    emphasis: '#000000',
+    secondary: 'rgba(26, 29, 26, 0.7)',
+    tertiary: 'rgba(26, 29, 26, 0.5)',
+    light: false,
+};
+
 /**
- * Every themed custom property, derived from the three picked colors. Panel
- * luminance chooses a light or dark text set so contrast survives any input;
- * recesses mix the panel toward black; the accent drives both --board-accent
- * and --bs-primary. Rank-metal, verify-state, and live colors stay un-themed.
+ * Best-of-two readable text for a surface: pick whichever of the light/dark
+ * body colors has the higher WCAG contrast against the surface. A fixed
+ * luminance threshold picks the worse color across mid-tones — this does not.
+ */
+function readableText(surface: Rgb): TextSet {
+    const lum = luminance(surface);
+    return contrastRatio(lum, luminance(hexToRgb(LIGHT_TEXT.body))) >=
+        contrastRatio(lum, luminance(hexToRgb(DARK_TEXT.body)))
+        ? LIGHT_TEXT
+        : DARK_TEXT;
+}
+
+/**
+ * Every themed custom property, derived from the three picked colors. Text is
+ * chosen PER SURFACE: the canvas set (global --bs-* text vars) contrasts with
+ * backgroundColor so the masthead/nav read against the page; the panel set
+ * (--board-ink*) contrasts with panelColor and is re-asserted onto --bs-* by
+ * the board-surface mixin, so text inside a panel reads against the panel.
+ * Recesses mix the panel toward black; the accent drives --board-accent and
+ * --bs-primary. Rank-metal, verify-state, and live colors stay un-themed.
  * The board owns its colors, so the result does not depend on `scheme`.
  */
 export function deriveThemeVars(
@@ -64,10 +104,8 @@ export function deriveThemeVars(
 ): Record<string, string> {
     const panel = hexToRgb(theme.panelColor);
     const accent = hexToRgb(theme.accentColor);
-    const panelLum = luminance(panel);
-    const useLightText =
-        contrastRatio(panelLum, luminance(hexToRgb('#e8eaed'))) >=
-        contrastRatio(panelLum, luminance(hexToRgb('#1a1d1a')));
+    const panelText = readableText(panel);
+    const canvasText = readableText(hexToRgb(theme.backgroundColor));
 
     // Panels go translucent only over a background image.
     const surfaceBg =
@@ -75,23 +113,9 @@ export function deriveThemeVars(
             ? `rgba(${panel.r}, ${panel.g}, ${panel.b}, ${theme.panelOpacity})`
             : theme.panelColor;
 
-    const text = useLightText
-        ? {
-              body: '#e8eaed',
-              emphasis: '#ffffff',
-              secondary: 'rgba(232, 234, 237, 0.75)',
-              tertiary: 'rgba(232, 234, 237, 0.5)',
-          }
-        : {
-              body: '#1a1d1a',
-              emphasis: '#000000',
-              secondary: 'rgba(26, 29, 26, 0.7)',
-              tertiary: 'rgba(26, 29, 26, 0.5)',
-          };
-
     return {
         '--board-surface-bg': surfaceBg,
-        '--board-surface-border': useLightText
+        '--board-surface-border': panelText.light
             ? 'rgba(255, 255, 255, 0.09)'
             : 'rgba(0, 0, 0, 0.1)',
         '--board-recess-bg': toHex(mix(panel, BLACK, 0.18)),
@@ -102,10 +126,16 @@ export function deriveThemeVars(
         '--site-canvas-primary': theme.accentColor,
         '--bs-primary': theme.accentColor,
         '--bs-primary-rgb': `${accent.r}, ${accent.g}, ${accent.b}`,
-        '--bs-body-color': text.body,
-        '--bs-emphasis-color': text.emphasis,
-        '--bs-secondary-color': text.secondary,
-        '--bs-tertiary-color': text.tertiary,
+        // Canvas text: global --bs-* vars, contrast against backgroundColor.
+        '--bs-body-color': canvasText.body,
+        '--bs-emphasis-color': canvasText.emphasis,
+        '--bs-secondary-color': canvasText.secondary,
+        '--bs-tertiary-color': canvasText.tertiary,
+        // Panel text: --board-ink*, re-asserted onto --bs-* by board-surface.
+        '--board-ink': panelText.body,
+        '--board-ink-emphasis': panelText.emphasis,
+        '--board-ink-secondary': panelText.secondary,
+        '--board-ink-tertiary': panelText.tertiary,
     };
 }
 
