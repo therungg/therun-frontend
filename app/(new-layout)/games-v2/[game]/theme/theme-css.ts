@@ -147,13 +147,34 @@ function block(selector: string, vars: Record<string, string>): string {
 }
 
 /**
- * The stylesheet injected by the game layout. Values are built exclusively
- * from validated integers — nothing user-typed is interpolated, and the
+ * Vars that must stay on the global color-mode node: the root `.background`
+ * gradient (an ancestor of everything, including the site topbar) reads these,
+ * so they can't be scoped down to the game content. The topbar's own surface
+ * is hardcoded and doesn't read them, so leaving them global is harmless.
+ */
+const GLOBAL_KEYS = new Set(['--site-canvas-bg', '--site-canvas-primary']);
+
+/**
+ * The stylesheet injected by the game layout. Nothing user-typed is
+ * interpolated (values are hex/rgba built from validated colors), and the
  * background URL never enters CSS (the backdrop div carries it inline).
+ *
+ * Scope split: canvas-background vars stay on `[data-bs-theme]` for the root
+ * gradient; everything else (panel/accent/text, incl. the `--bs-*` overrides)
+ * is scoped to `.main-container` — the wrapper around game content — so the
+ * theme never bleeds into the site topbar, which lives outside it. The board
+ * owns its colors, so the scoped block is scheme-independent (emitted once).
  */
 export function buildThemeCss(theme: GameTheme): string {
+    const vars = deriveThemeVars(theme, 'dark');
+    const global: Record<string, string> = {};
+    const scoped: Record<string, string> = {};
+    for (const [k, v] of Object.entries(vars)) {
+        (GLOBAL_KEYS.has(k) ? global : scoped)[k] = v;
+    }
     return [
-        block("[data-bs-theme='dark']", deriveThemeVars(theme, 'dark')),
-        block("[data-bs-theme='light']", deriveThemeVars(theme, 'light')),
+        block("[data-bs-theme='dark']", global),
+        block("[data-bs-theme='light']", global),
+        block('.main-container', scoped),
     ].join('\n');
 }

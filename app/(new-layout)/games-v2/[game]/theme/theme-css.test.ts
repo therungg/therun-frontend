@@ -88,11 +88,24 @@ describe('deriveThemeVars', () => {
 });
 
 describe('buildThemeCss', () => {
-    it('emits one block per scheme and never leaks a url()', () => {
+    it('scopes theme vars: canvas-bg global, board/text under .main-container', () => {
         const css = buildThemeCss(base);
         expect(css).toContain("[data-bs-theme='dark'] {");
         expect(css).toContain("[data-bs-theme='light'] {");
-        expect(css).toContain('--board-surface-bg: #161c18;');
+        expect(css).toContain('.main-container {');
         expect(css).not.toContain('url(');
+
+        const scopeIdx = css.indexOf('.main-container {');
+        const globalPart = css.slice(0, scopeIdx);
+        const scopedPart = css.slice(scopeIdx);
+
+        // Canvas background stays global — the root .background gradient reads it.
+        expect(globalPart).toContain('--site-canvas-bg: #0d0f0d;');
+        // Panel + text vars are scoped so they never reach the site topbar.
+        expect(scopedPart).toContain('--board-surface-bg: #161c18;');
+        expect(scopedPart).toContain('--bs-body-color:');
+        expect(scopedPart).toContain('--board-ink:');
+        expect(globalPart).not.toContain('--bs-body-color');
+        expect(globalPart).not.toContain('--board-surface-bg');
     });
 });
