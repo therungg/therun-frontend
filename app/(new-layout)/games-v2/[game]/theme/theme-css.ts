@@ -113,7 +113,7 @@ export function deriveThemeVars(
             ? `rgba(${panel.r}, ${panel.g}, ${panel.b}, ${theme.panelOpacity})`
             : theme.panelColor;
 
-    return {
+    const vars: Record<string, string> = {
         '--board-surface-bg': surfaceBg,
         '--board-surface-border': panelText.light
             ? 'rgba(255, 255, 255, 0.09)'
@@ -137,6 +137,21 @@ export function deriveThemeVars(
         '--board-ink-secondary': panelText.secondary,
         '--board-ink-tertiary': panelText.tertiary,
     };
+
+    // Optional topbar tint: paint the site topbar the accent or panel color
+    // with readable text derived from it. 'default' leaves the topbar alone
+    // (no vars emitted → the Topbar's own fallback background stands).
+    if (theme.topbar === 'accent' || theme.topbar === 'panel') {
+        const barHex =
+            theme.topbar === 'accent' ? theme.accentColor : theme.panelColor;
+        const barText = readableText(hexToRgb(barHex));
+        vars['--site-topbar-bg'] = barHex;
+        vars['--site-topbar-color'] = barText.body;
+        vars['--site-topbar-emphasis'] = barText.emphasis;
+        vars['--site-topbar-muted'] = barText.secondary;
+    }
+
+    return vars;
 }
 
 function block(selector: string, vars: Record<string, string>): string {
@@ -152,7 +167,15 @@ function block(selector: string, vars: Record<string, string>): string {
  * so they can't be scoped down to the game content. The topbar's own surface
  * is hardcoded and doesn't read them, so leaving them global is harmless.
  */
-const GLOBAL_KEYS = new Set(['--site-canvas-bg', '--site-canvas-primary']);
+const GLOBAL_KEYS = new Set([
+    '--site-canvas-bg',
+    '--site-canvas-primary',
+    // The topbar lives outside .main-container, so its vars must stay global.
+    '--site-topbar-bg',
+    '--site-topbar-color',
+    '--site-topbar-emphasis',
+    '--site-topbar-muted',
+]);
 
 /**
  * The stylesheet injected by the game layout. Nothing user-typed is

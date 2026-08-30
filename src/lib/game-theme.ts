@@ -5,12 +5,22 @@
  * readable text from them, so a stored theme is legible by construction.
  * See docs/plans/2026-08-30-per-element-game-theme-design.md.
  */
+/** Site-topbar treatment on this game's board. */
+export type TopbarStyle = 'default' | 'accent' | 'panel';
+
+export const TOPBAR_STYLES: readonly TopbarStyle[] = [
+    'default',
+    'accent',
+    'panel',
+];
+
 export interface GameTheme {
     panelColor: string; // lowercase #rrggbb — board/table surface
     accentColor: string; // lowercase #rrggbb — links, highlights, active
     backgroundColor: string; // lowercase #rrggbb — page canvas
     backgroundUrl: string | null;
     panelOpacity: number; // 0.85–1.0
+    topbar: TopbarStyle; // topbar treatment; 'default' leaves it untouched
 }
 
 const HEX_COLOR_PATTERN = /^#[0-9a-f]{6}$/;
@@ -45,11 +55,14 @@ export function parseGameTheme(raw: unknown): GameTheme | null {
         panelOpacity > 1
     )
         return null;
+    const topbar = (t.topbar as TopbarStyle) ?? 'default';
+    if (!TOPBAR_STYLES.includes(topbar)) return null;
     return {
         panelColor,
         accentColor,
         backgroundColor,
         backgroundUrl: (backgroundUrl as string | null) ?? null,
         panelOpacity,
+        topbar,
     };
 }

@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { getMyBoardClaim } from '~src/lib/board-claims';
+import { getGameMetadata } from '~src/lib/game-mgmt';
 import { listGameModerators } from '~src/lib/game-moderators';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { getPublicModLog } from '~src/lib/moderation/public-mod-log';
@@ -20,6 +21,7 @@ import { GamePage } from './game-page';
 import { loadGameOverviewData } from './overview/data';
 import { GameOverviewPage } from './overview/overview-page';
 import { decideGameRootView } from './root-view';
+import { GameThemeStyle } from './theme/game-theme-style';
 import type { GamePageSearchParams } from './types';
 
 export const maxDuration = 60;
@@ -94,14 +96,22 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
     // /v1/me/anonymize is down, it just can't offer the un-hide control (see
     // LeaderboardPager's `selfHidden`).
     const raceKey = encodeURIComponent(resolvedGame.display);
-    const [moderators, raceStats, activeRaces, selfHidden] = await Promise.all([
-        listGameModerators(resolvedGame.id),
-        getRaceGameStatsByGame(raceKey).catch(() => null),
-        getAllActiveRacesByGame(raceKey).catch(() => []),
-        session?.id && decision.view === 'board'
-            ? selfAnonymizeState(session.id, resolvedGame.id).catch(() => null)
-            : Promise.resolve(null),
-    ]);
+    const [moderators, raceStats, activeRaces, selfHidden, gameMeta] =
+        await Promise.all([
+            listGameModerators(resolvedGame.id),
+            getRaceGameStatsByGame(raceKey).catch(() => null),
+            getAllActiveRacesByGame(raceKey).catch(() => []),
+            session?.id && decision.view === 'board'
+                ? selfAnonymizeState(session.id, resolvedGame.id).catch(
+                      () => null,
+                  )
+                : Promise.resolve(null),
+            // Theme rides along so it never costs a serial round trip. Injected
+            // on the board page only (not the shared layout), so /manage etc.
+            // stay neutral. Fails soft — a metadata blip just skips theming.
+            getGameMetadata(resolvedGame.id).catch(() => null),
+        ]);
+    const theme = gameMeta?.theme ?? null;
     const showRaces = (raceStats?.stats?.totalRaces ?? 0) > 0;
 
     let claim: ClaimCtaState | null = null;
@@ -126,16 +136,19 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
             sessionUsername,
         );
         return (
-            <GameOverviewPage
-                data={data}
-                canManage={canManage}
-                canModerate={canManageRuns}
-                claim={claim}
-                moderators={moderators}
-                showRaces={showRaces}
-                activeRaces={activeRaces}
-                initialSearch={initialSearch}
-            />
+            <>
+                <GameThemeStyle theme={theme} />
+                <GameOverviewPage
+                    data={data}
+                    canManage={canManage}
+                    canModerate={canManageRuns}
+                    claim={claim}
+                    moderators={moderators}
+                    showRaces={showRaces}
+                    activeRaces={activeRaces}
+                    initialSearch={initialSearch}
+                />
+            </>
         );
     }
 
@@ -160,19 +173,22 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
             : null;
 
     return (
-        <GamePage
-            data={data}
-            canManage={canManage}
-            canManageRuns={canManageRuns}
-            canSiteBan={canSiteBan}
-            claim={claim}
-            moderators={moderators}
-            activeRaces={activeRaces}
-            view={boardView}
-            initialModLog={initialModLog}
-            selfHidden={selfHidden}
-            initialSearch={initialSearch}
-        />
+        <>
+            <GameThemeStyle theme={theme} />
+            <GamePage
+                data={data}
+                canManage={canManage}
+                canManageRuns={canManageRuns}
+                canSiteBan={canSiteBan}
+                claim={claim}
+                moderators={moderators}
+                activeRaces={activeRaces}
+                view={boardView}
+                initialModLog={initialModLog}
+                selfHidden={selfHidden}
+                initialSearch={initialSearch}
+            />
+        </>
     );
 }
 
