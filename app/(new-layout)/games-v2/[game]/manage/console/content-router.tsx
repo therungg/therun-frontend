@@ -36,6 +36,7 @@ import type { GameDetailsData } from './game-details-pane';
 import { GameDetailsPane } from './game-details-pane';
 import { ModeratorsPane } from './moderators-pane';
 import type { NavGroup, NavItemId } from './nav-model';
+import { ThemePane } from './theme-pane';
 
 export interface ContentRouterProps {
     activeItem: NavItemId | null;
@@ -246,6 +247,18 @@ export function ContentRouter(props: ContentRouterProps) {
                 />
             ) : (
                 <Placeholder title="Details & metadata">
+                    Couldn’t load game details — reload the page.
+                </Placeholder>
+            );
+        case 'theme':
+            return props.gameDetails ? (
+                <ThemePane
+                    identifiers={props.gameDetails.identifiers}
+                    metadata={props.gameDetails.metadata}
+                    game={props.gameDetails.game}
+                />
+            ) : (
+                <Placeholder title="Theme">
                     Couldn’t load game details — reload the page.
                 </Placeholder>
             );

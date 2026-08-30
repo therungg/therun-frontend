@@ -13,6 +13,7 @@ export type NavItemId =
     | 'history'
     | 'setup'
     | 'game-details'
+    | 'theme'
     | 'categories'
     | 'groups'
     | 'levels'
@@ -92,6 +93,7 @@ const ALL_GROUPS: NavGroup[] = [
         label: 'Game',
         items: [
             { id: 'game-details', label: CONCEPT_LABEL['game-details'] },
+            { id: 'theme', label: CONCEPT_LABEL.theme },
             { id: 'moderators', label: CONCEPT_LABEL.moderators },
             { id: 'import', label: CONCEPT_LABEL.import },
             { id: 'reassign', label: CONCEPT_LABEL.reassign },
