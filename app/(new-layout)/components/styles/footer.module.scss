@@ -24,7 +24,9 @@
     transition: color $transition-fast;
 
     &:hover {
-        color: var(--bs-primary);
+        // On a themed footer the bar can be the accent, so --bs-primary would
+        // vanish; --site-topbar-emphasis contrasts the bar. Default off-theme.
+        color: var(--site-topbar-emphasis, var(--bs-primary));
     }
 }
 

@@ -48,3 +48,14 @@ $secondary: var(--bs-secondary);
     z-index: 1;
     color: var(--bs-body-color);
 }
+
+// Global footer chrome mirrors the topbar: on a themed board where the owner
+// set Topbar to accent/panel, the footer takes the same bar color + readable
+// text (bookending the page). Off-theme / default-topbar, --site-topbar-* are
+// unset so it stays transparent with default text — no visual change.
+.footer {
+    background: var(--site-topbar-bg, transparent);
+    --bs-body-color: var(--site-topbar-color, inherit);
+    --bs-secondary-color: var(--site-topbar-muted, inherit);
+    --bs-emphasis-color: var(--site-topbar-emphasis, inherit);
+}
