@@ -20,6 +20,15 @@
     );
     box-shadow: var(--board-surface-shadow, none);
     padding: $padding;
+    // Themed boards derive text PER surface: the canvas sets the global --bs-*
+    // text vars from backgroundColor; a panel re-points them to the panel-ink
+    // set (from panelColor) so text inside the panel reads against the panel,
+    // not the canvas. Unthemed boards leave --board-ink* unset, so these fall
+    // back to `inherit` — the panel keeps the global values and nothing changes.
+    --bs-body-color: var(--board-ink, inherit);
+    --bs-emphasis-color: var(--board-ink-emphasis, inherit);
+    --bs-secondary-color: var(--board-ink-secondary, inherit);
+    --bs-tertiary-color: var(--board-ink-tertiary, inherit);
 }
 
 // ---- Typography --------------------------------------------
