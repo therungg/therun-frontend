@@ -65,14 +65,17 @@ describe('deriveThemeVars', () => {
         expect(v['--board-recess-bg']).toMatch(/^#[0-9a-f]{6}$/);
         expect(v['--board-recess-strong-bg']).toMatch(/^#[0-9a-f]{6}$/);
     });
-    it('applies panelOpacity to the surface only when an image is set', () => {
+    it('composites the translucent panel over a scrim only when an image is set', () => {
         const themed = {
             ...base,
             backgroundUrl: 'https://x/i.webp',
             panelOpacity: 0.9,
         };
+        // Panel tint on top, half-opacity black scrim beneath, so a bright
+        // background region can't bleed through the translucent gap.
         expect(deriveThemeVars(themed, 'dark')['--board-surface-bg']).toBe(
-            'rgba(22, 28, 24, 0.9)',
+            'linear-gradient(0deg, rgba(22, 28, 24, 0.9), rgba(22, 28, 24, 0.9)),' +
+                ' linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5))',
         );
         // no image → opacity ignored, surface stays opaque hex
         expect(
@@ -80,6 +83,20 @@ describe('deriveThemeVars', () => {
                 '--board-surface-bg'
             ],
         ).toBe('#161c18');
+    });
+    it('derives readable on-accent text (dark text for a light accent)', () => {
+        // dark accent → light label
+        expect(
+            deriveThemeVars({ ...base, accentColor: '#123024' }, 'dark')[
+                '--board-on-accent'
+            ],
+        ).toBe('#ffffff');
+        // white accent (e.g. an imported speedrun.com primaryColor) → dark label
+        expect(
+            deriveThemeVars({ ...base, accentColor: '#ffffff' }, 'dark')[
+                '--board-on-accent'
+            ],
+        ).toBe('#000000');
     });
     it('is identical across schemes (board owns its colors)', () => {
         expect(deriveThemeVars(base, 'dark')).toEqual(

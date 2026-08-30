@@ -86,7 +86,7 @@
 .railDotActive {
     border-color: var(--bs-primary);
     background: var(--bs-primary);
-    color: #fff;
+    color: var(--board-on-accent, #fff);
 }
 
 .railDotDone {

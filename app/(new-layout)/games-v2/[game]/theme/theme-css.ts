@@ -108,11 +108,23 @@ export function deriveThemeVars(
     const accent = hexToRgb(theme.accentColor);
     const panelText = readableText(panel);
     const canvasText = readableText(hexToRgb(theme.backgroundColor));
+    // Text that sits ON an accent-filled surface (active pill, primary button).
+    // Luminance-aware so a light accent (e.g. a white primaryColor imported
+    // from speedrun.com) gets dark text instead of hardcoded white-on-white.
+    const accentText = readableText(accent);
 
-    // Panels go translucent only over a background image.
+    // Panels go translucent only over a background image. When they do, the
+    // panel tint is composited over a darkening scrim so a bright patch of the
+    // background image can't bleed through the translucent gap and wash out the
+    // panel text — the panel keeps a hint of translucency for depth, but the
+    // image contributes at most a few percent. Two stacked background layers:
+    // the panel tint on top, a half-opacity black scrim beneath. Solid-color
+    // themes (no image) keep a flat opaque panel.
+    const panelTint = `rgba(${panel.r}, ${panel.g}, ${panel.b}, ${theme.panelOpacity})`;
     const surfaceBg =
         theme.backgroundUrl && theme.panelOpacity < 1
-            ? `rgba(${panel.r}, ${panel.g}, ${panel.b}, ${theme.panelOpacity})`
+            ? `linear-gradient(0deg, ${panelTint}, ${panelTint}),` +
+              ` linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5))`
             : theme.panelColor;
 
     const vars: Record<string, string> = {
@@ -124,6 +136,7 @@ export function deriveThemeVars(
         '--board-recess-strong-bg': toHex(mix(panel, BLACK, 0.3)),
         '--board-accent': theme.accentColor,
         '--board-accent-soft': `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.08)`,
+        '--board-on-accent': accentText.emphasis,
         '--site-canvas-bg': theme.backgroundColor,
         '--site-canvas-primary': theme.accentColor,
         '--bs-primary': theme.accentColor,
