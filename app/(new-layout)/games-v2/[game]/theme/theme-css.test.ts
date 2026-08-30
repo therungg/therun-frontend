@@ -7,6 +7,7 @@ const base = {
     backgroundColor: '#0d0f0d',
     backgroundUrl: null,
     panelOpacity: 1,
+    topbar: 'default' as const,
 };
 
 describe('deriveThemeVars', () => {
@@ -85,6 +86,23 @@ describe('deriveThemeVars', () => {
             deriveThemeVars(base, 'light'),
         );
     });
+    it('emits no topbar vars when topbar is default', () => {
+        const v = deriveThemeVars(base, 'dark');
+        expect(v['--site-topbar-bg']).toBeUndefined();
+        expect(v['--site-topbar-color']).toBeUndefined();
+    });
+    it('paints the topbar the accent color with readable text', () => {
+        const v = deriveThemeVars({ ...base, topbar: 'accent' }, 'dark');
+        expect(v['--site-topbar-bg']).toBe('#4aa06a');
+        // accent #4aa06a is light-ish → dark topbar text
+        expect(v['--site-topbar-color']).toBe('#1a1d1a');
+    });
+    it('paints the topbar the panel color with readable text', () => {
+        const v = deriveThemeVars({ ...base, topbar: 'panel' }, 'dark');
+        expect(v['--site-topbar-bg']).toBe('#161c18');
+        // panel #161c18 is dark → light topbar text
+        expect(v['--site-topbar-color']).toBe('#e8eaed');
+    });
 });
 
 describe('buildThemeCss', () => {
@@ -107,5 +125,11 @@ describe('buildThemeCss', () => {
         expect(scopedPart).toContain('--board-ink:');
         expect(globalPart).not.toContain('--bs-body-color');
         expect(globalPart).not.toContain('--board-surface-bg');
+    });
+    it('emits the topbar background globally (topbar is outside .main-container)', () => {
+        const css = buildThemeCss({ ...base, topbar: 'accent' });
+        const scopeIdx = css.indexOf('.main-container {');
+        const globalPart = css.slice(0, scopeIdx);
+        expect(globalPart).toContain('--site-topbar-bg: #4aa06a;');
     });
 });

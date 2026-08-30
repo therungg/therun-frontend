@@ -5,7 +5,11 @@ import { type CSSProperties, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import styles from '~src/components/console-chrome/console.module.scss';
 import type { GameIdentifiers, GameMetadata } from '~src/lib/game-mgmt';
-import type { GameTheme } from '~src/lib/game-theme';
+import {
+    type GameTheme,
+    TOPBAR_STYLES,
+    type TopbarStyle,
+} from '~src/lib/game-theme';
 import { updateGameMetadataAction } from '../../setup/actions/update-game-metadata.action';
 import { deriveThemeVars } from '../../theme/theme-css';
 import kit from '../shared/form-kit.module.scss';
@@ -18,6 +22,13 @@ const DEFAULT_DRAFT: GameTheme = {
     backgroundColor: '#0d0f0d', // current canvas
     backgroundUrl: null,
     panelOpacity: 0.92,
+    topbar: 'default',
+};
+
+const TOPBAR_LABELS: Record<TopbarStyle, string> = {
+    default: 'Default',
+    accent: 'Accent',
+    panel: 'Panel',
 };
 
 interface Props {
@@ -150,6 +161,32 @@ export function ThemePane({ metadata, game }: Props) {
                         }
                     />
                 </label>
+                <div className={paneStyles.field}>
+                    <span>Topbar</span>
+                    <div
+                        className={paneStyles.segmented}
+                        role="group"
+                        aria-label="Topbar color"
+                    >
+                        {TOPBAR_STYLES.map((style) => (
+                            <button
+                                key={style}
+                                type="button"
+                                aria-pressed={t.topbar === style}
+                                className={
+                                    t.topbar === style
+                                        ? paneStyles.segActive
+                                        : paneStyles.seg
+                                }
+                                onClick={() =>
+                                    setDraft({ ...t, topbar: style })
+                                }
+                            >
+                                {TOPBAR_LABELS[style]}
+                            </button>
+                        ))}
+                    </div>
+                </div>
                 <div className={paneStyles.field}>
                     <span>Background image</span>
                     {t.backgroundUrl ? (

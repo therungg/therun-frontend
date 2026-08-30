@@ -21,6 +21,43 @@
     gap: 0.75rem;
 }
 
+.segmented {
+    display: inline-flex;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+    overflow: hidden;
+    width: fit-content;
+}
+
+.seg,
+.segActive {
+    appearance: none;
+    border: 0;
+    padding: 0.375rem 0.875rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    color: var(--bs-secondary-color);
+
+    & + & {
+        border-left: 1px solid var(--bs-border-color);
+    }
+
+    &:hover {
+        color: var(--bs-body-color);
+    }
+}
+
+.segActive {
+    background: var(--bs-primary);
+    color: #fff;
+
+    &:hover {
+        color: #fff;
+    }
+}
+
 .bgThumb {
     width: 96px;
     height: 54px;

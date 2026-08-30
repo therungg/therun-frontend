@@ -9,11 +9,20 @@
         height: 56px;
         padding: 0 1.5rem;
     }
-    background: rgba(255, 255, 255, 0.72);
+    background: var(--site-topbar-bg, rgba(255, 255, 255, 0.72));
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+
+    // On a themed board the game layout emits --site-topbar-* (opaque bg +
+    // readable text). Re-point the topbar's text vars to that set; unthemed
+    // pages leave them unset, so these fall back to `inherit` and nothing
+    // changes. The board owns these colors regardless of the site color mode.
+    color: var(--site-topbar-color, inherit);
+    --bs-body-color: var(--site-topbar-color, inherit);
+    --bs-emphasis-color: var(--site-topbar-emphasis, inherit);
+    --bs-secondary-color: var(--site-topbar-muted, inherit);
 
     @media (min-width: 1200px) {
         padding: 0 2.5rem;
@@ -24,7 +33,7 @@
     }
 
     :global([data-bs-theme='dark']) & {
-        background: rgba(18, 26, 17, 0.8);
+        background: var(--site-topbar-bg, rgba(18, 26, 17, 0.8));
         border-bottom-color: rgba(255, 255, 255, 0.06);
     }
 }

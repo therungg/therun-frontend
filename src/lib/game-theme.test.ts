@@ -7,6 +7,7 @@ const valid = {
     backgroundColor: '#0d0f0d',
     backgroundUrl: 'https://media.therun.gg/backgrounds/12-1.webp',
     panelOpacity: 0.9,
+    topbar: 'accent' as const,
 };
 
 describe('parseGameTheme', () => {
@@ -21,6 +22,13 @@ describe('parseGameTheme', () => {
         expect(
             parseGameTheme({ ...valid, panelColor: '#161C18' })?.panelColor,
         ).toBe('#161c18');
+    });
+    it("defaults topbar to 'default' when absent", () => {
+        const { topbar: _omit, ...noTopbar } = valid;
+        expect(parseGameTheme(noTopbar)?.topbar).toBe('default');
+    });
+    it('returns null for an invalid topbar value', () => {
+        expect(parseGameTheme({ ...valid, topbar: 'rainbow' })).toBeNull();
     });
     it.each([
         ['undefined', undefined],
