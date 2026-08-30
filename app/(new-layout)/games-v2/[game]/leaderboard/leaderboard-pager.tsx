@@ -566,205 +566,217 @@ export function LeaderboardPager({
                     )}
                 </p>
             )}
-            {(board.totalItems > 0 || filtersActive) && (
-                <div className={styles.boardMetaBar}>
-                    <span className={styles.metaLead}>
-                        {range && (
-                            <span className={styles.rangeIndicator}>
-                                Showing{' '}
-                                <span>
-                                    {range.first.toLocaleString()}–
-                                    {range.last.toLocaleString()}
-                                </span>{' '}
-                                of <span>{range.total.toLocaleString()}</span>
-                            </span>
-                        )}
-                        {hasPendingLoaded && (
-                            <span className={styles.pendingNote}>
-                                Includes runs awaiting verification
-                            </span>
-                        )}
-                        {findMeStatus === 'not-found' && (
-                            <span className={styles.notFoundNote}>
-                                {query.verified
-                                    ? 'Not on this board — pending runs are hidden by the Verified filter.'
-                                    : 'Not on this board yet'}
-                            </span>
-                        )}
-                    </span>
-                    <span className={styles.metaControls}>
-                        {showFindMe && (
-                            <button
-                                type="button"
-                                className={styles.findMeBtn}
-                                disabled={isPending}
-                                onClick={findMe}
-                            >
-                                {findMeStatus === 'searching'
-                                    ? 'Finding…'
-                                    : 'Find me'}
-                            </button>
-                        )}
-                        <ExportButton
-                            query={query}
-                            gameSlug={gameSlug}
-                            categorySlug={categorySlug}
-                            subcategoryKey={subcategoryKey}
-                            showMilliseconds={showMilliseconds}
-                        />
-                        <FiltersPopover
-                            defs={variableDefs}
-                            selectedVarFilters={selectedVarFilters}
-                            builtins={builtins}
-                            facets={facets}
-                        />
-                    </span>
-                </div>
-            )}
-            <LeaderboardTable
-                leaderboard={board}
-                sessionUsername={sessionUsername}
-                canManage={canManage}
-                gameSlug={gameSlug}
-                variableKeys={variableKeys}
-                valueColumns={valueColumns}
-                primaryTiming={primaryTiming}
-                gameTimeLabel={gameTimeLabel}
-                filtersActive={filtersActive}
-                showMilliseconds={showMilliseconds}
-                categorySlug={categorySlug}
-                subcategoryKey={subcategoryKey}
-                subcategoryDefKeys={subcategoryDefKeys}
-                rtaFallback={rtaFallback}
-                selectedKeys={selectedKeys}
-                onToggleSelect={toggleSelect}
-                onToggleAllVisible={toggleAllVisible}
-                // Handed to signed-in visitors too: every row gets the
-                // callback, but only the visitor's own row renders a control
-                // that calls it (and `onQuickModerate` re-checks anyway).
-                onQuickModerate={
-                    canManage || sessionUsername != null
-                        ? onQuickModerate
-                        : undefined
-                }
-                onBoardRefresh={canManage ? boardRefresh : undefined}
-            />
-            {/* Un-hide lives out here, not on a row: a hidden runner's row is
+            {/* One panel for the whole leaderboard: count row, table, and pager
+                sit together on a board surface instead of floating on the
+                (possibly themed) canvas. */}
+            <div className={styles.boardBlock}>
+                {(board.totalItems > 0 || filtersActive) && (
+                    <div className={styles.boardMetaBar}>
+                        <span className={styles.metaLead}>
+                            {range && (
+                                <span className={styles.rangeIndicator}>
+                                    Showing{' '}
+                                    <span>
+                                        {range.first.toLocaleString()}–
+                                        {range.last.toLocaleString()}
+                                    </span>{' '}
+                                    of{' '}
+                                    <span>{range.total.toLocaleString()}</span>
+                                </span>
+                            )}
+                            {hasPendingLoaded && (
+                                <span className={styles.pendingNote}>
+                                    Includes runs awaiting verification
+                                </span>
+                            )}
+                            {findMeStatus === 'not-found' && (
+                                <span className={styles.notFoundNote}>
+                                    {query.verified
+                                        ? 'Not on this board — pending runs are hidden by the Verified filter.'
+                                        : 'Not on this board yet'}
+                                </span>
+                            )}
+                        </span>
+                        <span className={styles.metaControls}>
+                            {showFindMe && (
+                                <button
+                                    type="button"
+                                    className={styles.findMeBtn}
+                                    disabled={isPending}
+                                    onClick={findMe}
+                                >
+                                    {findMeStatus === 'searching'
+                                        ? 'Finding…'
+                                        : 'Find me'}
+                                </button>
+                            )}
+                            <ExportButton
+                                query={query}
+                                gameSlug={gameSlug}
+                                categorySlug={categorySlug}
+                                subcategoryKey={subcategoryKey}
+                                showMilliseconds={showMilliseconds}
+                            />
+                            <FiltersPopover
+                                defs={variableDefs}
+                                selectedVarFilters={selectedVarFilters}
+                                builtins={builtins}
+                                facets={facets}
+                            />
+                        </span>
+                    </div>
+                )}
+                <LeaderboardTable
+                    leaderboard={board}
+                    sessionUsername={sessionUsername}
+                    canManage={canManage}
+                    gameSlug={gameSlug}
+                    variableKeys={variableKeys}
+                    valueColumns={valueColumns}
+                    primaryTiming={primaryTiming}
+                    gameTimeLabel={gameTimeLabel}
+                    filtersActive={filtersActive}
+                    showMilliseconds={showMilliseconds}
+                    categorySlug={categorySlug}
+                    subcategoryKey={subcategoryKey}
+                    subcategoryDefKeys={subcategoryDefKeys}
+                    rtaFallback={rtaFallback}
+                    selectedKeys={selectedKeys}
+                    onToggleSelect={toggleSelect}
+                    onToggleAllVisible={toggleAllVisible}
+                    // Handed to signed-in visitors too: every row gets the
+                    // callback, but only the visitor's own row renders a control
+                    // that calls it (and `onQuickModerate` re-checks anyway).
+                    onQuickModerate={
+                        canManage || sessionUsername != null
+                            ? onQuickModerate
+                            : undefined
+                    }
+                    onBoardRefresh={canManage ? boardRefresh : undefined}
+                />
+                {/* Un-hide lives out here, not on a row: a hidden runner's row is
                 a placeholder nobody can recognise as theirs. */}
-            {/* Mounted on open, not on `hidden`: a successful lift flips
+                {/* Mounted on open, not on `hidden`: a successful lift flips
                 `hiddenState.hidden` to false, and a `hidden`-keyed guard
                 would tear the dialog off screen mid-read — including the
                 case where it has to say the runner is still hidden by a
                 moderator's overlapping rule. */}
-            {hideIdentityOpen && (
-                <OwnerHideIdentityDialog
-                    open
-                    onClose={() => setHideIdentityOpen(false)}
-                    onDone={() => {
-                        // Re-read rather than assume: a lift can leave an
-                        // overlapping moderator rule standing, in which case
-                        // the runner is still hidden and the note must stay.
-                        refreshSelfHidden();
-                        boardRefresh();
-                    }}
-                    gameId={gameId}
-                    gameSlug={gameSlug}
-                    gameDisplay={gameDisplay}
-                />
-            )}
-            {/* Board's quick-verify/remove path: the shared verb form,
+                {hideIdentityOpen && (
+                    <OwnerHideIdentityDialog
+                        open
+                        onClose={() => setHideIdentityOpen(false)}
+                        onDone={() => {
+                            // Re-read rather than assume: a lift can leave an
+                            // overlapping moderator rule standing, in which case
+                            // the runner is still hidden and the note must stay.
+                            refreshSelfHidden();
+                            boardRefresh();
+                        }}
+                        gameId={gameId}
+                        gameSlug={gameSlug}
+                        gameDisplay={gameDisplay}
+                    />
+                )}
+                {/* Board's quick-verify/remove path: the shared verb form,
                 inline, over the board. The full mod surface (adjust, move,
                 evidence, stepping) lives on the run page now. */}
-            {quickAction && (
-                <RunActionDialog
-                    gameSlug={gameSlug}
-                    verb={quickAction.verb}
-                    target={buildQuickTarget(quickAction.entry)}
-                    onClose={() => setQuickAction(null)}
-                    onDone={() => {
-                        setQuickAction(null);
-                        boardRefresh();
-                    }}
-                />
-            )}
-            {canManage && selectedKeys.size > 0 && (
-                <BoardBulkBar
-                    gameSlug={gameSlug}
-                    categorySlug={categorySlug}
-                    canSiteBan={canSiteBan}
-                    subcategoryDefKeys={subcategoryDefKeys}
-                    entries={entries}
-                    selectedKeys={selectedKeys}
-                    onClear={clearSelection}
-                    onMutated={handleBulkMutated}
-                    busy={isRefetching}
-                />
-            )}
-            {board.totalPages > 1 && (
-                <nav
-                    className={styles.paginationBar}
-                    aria-label="Leaderboard pages"
-                >
-                    <button
-                        type="button"
-                        className={styles.pageBtn}
-                        disabled={isPending || board.page === 1}
-                        onClick={() => goTo(board.page - 1)}
+                {quickAction && (
+                    <RunActionDialog
+                        gameSlug={gameSlug}
+                        verb={quickAction.verb}
+                        target={buildQuickTarget(quickAction.entry)}
+                        onClose={() => setQuickAction(null)}
+                        onDone={() => {
+                            setQuickAction(null);
+                            boardRefresh();
+                        }}
+                    />
+                )}
+                {canManage && selectedKeys.size > 0 && (
+                    <BoardBulkBar
+                        gameSlug={gameSlug}
+                        categorySlug={categorySlug}
+                        canSiteBan={canSiteBan}
+                        subcategoryDefKeys={subcategoryDefKeys}
+                        entries={entries}
+                        selectedKeys={selectedKeys}
+                        onClear={clearSelection}
+                        onMutated={handleBulkMutated}
+                        busy={isRefetching}
+                    />
+                )}
+                {board.totalPages > 1 && (
+                    <nav
+                        className={styles.paginationBar}
+                        aria-label="Leaderboard pages"
                     >
-                        ‹ Previous
-                    </button>
-                    {paginationItems(board.page, board.totalPages).map(
-                        (item, i) =>
-                            item === 'gap' ? (
-                                <span
-                                    // eslint-disable-next-line react/no-array-index-key
-                                    key={`gap-${i}`}
-                                    className={styles.pageGap}
-                                    aria-hidden
-                                >
-                                    …
-                                </span>
-                            ) : (
-                                <button
-                                    key={item}
-                                    type="button"
-                                    className={
-                                        item === board.page
-                                            ? `${styles.pageBtn} ${styles.pageBtnCurrent}`
-                                            : styles.pageBtn
-                                    }
-                                    aria-current={
-                                        item === board.page ? 'page' : undefined
-                                    }
-                                    disabled={isPending}
-                                    onClick={() => goTo(item)}
-                                >
-                                    {item.toLocaleString()}
-                                </button>
-                            ),
-                    )}
-                    <button
-                        type="button"
-                        className={styles.pageBtn}
-                        disabled={isPending || board.page === board.totalPages}
-                        onClick={() => goTo(board.page + 1)}
+                        <button
+                            type="button"
+                            className={styles.pageBtn}
+                            disabled={isPending || board.page === 1}
+                            onClick={() => goTo(board.page - 1)}
+                        >
+                            ‹ Previous
+                        </button>
+                        {paginationItems(board.page, board.totalPages).map(
+                            (item, i) =>
+                                item === 'gap' ? (
+                                    <span
+                                        // eslint-disable-next-line react/no-array-index-key
+                                        key={`gap-${i}`}
+                                        className={styles.pageGap}
+                                        aria-hidden
+                                    >
+                                        …
+                                    </span>
+                                ) : (
+                                    <button
+                                        key={item}
+                                        type="button"
+                                        className={
+                                            item === board.page
+                                                ? `${styles.pageBtn} ${styles.pageBtnCurrent}`
+                                                : styles.pageBtn
+                                        }
+                                        aria-current={
+                                            item === board.page
+                                                ? 'page'
+                                                : undefined
+                                        }
+                                        disabled={isPending}
+                                        onClick={() => goTo(item)}
+                                    >
+                                        {item.toLocaleString()}
+                                    </button>
+                                ),
+                        )}
+                        <button
+                            type="button"
+                            className={styles.pageBtn}
+                            disabled={
+                                isPending || board.page === board.totalPages
+                            }
+                            onClick={() => goTo(board.page + 1)}
+                        >
+                            Next ›
+                        </button>
+                    </nav>
+                )}
+                {navError != null && (
+                    <div
+                        className={`${styles.pagerError} ${styles.pagerErrorBar}`}
                     >
-                        Next ›
-                    </button>
-                </nav>
-            )}
-            {navError != null && (
-                <div className={`${styles.pagerError} ${styles.pagerErrorBar}`}>
-                    <span>Couldn't load page {navError}.</span>
-                    <button
-                        type="button"
-                        className={styles.pagerErrorRetry}
-                        onClick={() => goTo(navError)}
-                    >
-                        Retry
-                    </button>
-                </div>
-            )}
+                        <span>Couldn't load page {navError}.</span>
+                        <button
+                            type="button"
+                            className={styles.pagerErrorRetry}
+                            onClick={() => goTo(navError)}
+                        >
+                            Retry
+                        </button>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

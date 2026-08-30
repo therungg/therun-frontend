@@ -1,9 +1,15 @@
 @use '../../../styles/design-tokens' as dt;
 @use '../../../styles/board' as board;
 
-.wrapper {
+// The whole leaderboard unit — count row, table, pager — on ONE board surface,
+// so nothing floats bare on a themed canvas. The inner table is no longer its
+// own panel (that would double-border); it's just a horizontal scroll region.
+.boardBlock {
     @include board.board-surface(0);
     overflow: hidden;
+}
+
+.wrapper {
     overflow-x: auto;
 }
 
@@ -563,7 +569,8 @@ tr:focus-within .reveal {
     justify-content: center;
     align-items: center;
     gap: dt.$spacing-xs;
-    margin-block: dt.$spacing-lg;
+    // Inside the board panel now (a footer row), so pad instead of margin.
+    padding: dt.$spacing-md dt.$spacing-lg;
 }
 
 .pageBtn {
@@ -634,9 +641,10 @@ tr:focus-within .reveal {
     justify-content: space-between;
     flex-wrap: wrap;
     gap: dt.$spacing-sm;
-    // Density pass (Task 6 fix): one step down — the last sliver of fixed
-    // chrome between the masthead and the table on the board view.
-    margin-block-end: dt.$spacing-xs;
+    // The panel's header row now (count + export/filters), so it carries the
+    // top padding and a hairline under, flush with the table below.
+    padding: dt.$spacing-md dt.$spacing-lg;
+    border-bottom: 1px solid var(--board-surface-border, var(--bs-border-color));
 }
 
 .metaLead {
