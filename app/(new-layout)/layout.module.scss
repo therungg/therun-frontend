@@ -3,6 +3,11 @@ $secondary: var(--bs-secondary);
 
 .background {
     position: relative;
+    // Sticky-footer column: main grows to fill, so the footer sits at the
+    // viewport bottom on short pages instead of floating mid-screen with the
+    // canvas showing below it (visible now that the footer has a bar color).
+    display: flex;
+    flex-direction: column;
     min-height: 100vh;
     z-index: 0;
     background:
@@ -47,6 +52,11 @@ $secondary: var(--bs-secondary);
     position: relative;
     z-index: 1;
     color: var(--bs-body-color);
+}
+
+// Grow to fill the flex column so the footer is pushed to the bottom edge.
+.main {
+    flex: 1 0 auto;
 }
 
 // Global footer chrome mirrors the topbar: on a themed board where the owner
