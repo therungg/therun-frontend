@@ -28,6 +28,11 @@ describe('deriveThemeVars', () => {
         expect(v['--bs-emphasis-color']).toBe('#000000');
         expect(v['--bs-body-color']).toBe('#1a1d1a');
     });
+    it('chooses dark text on a mid-gray panel (best contrast, not the < 0.4 threshold)', () => {
+        const v = deriveThemeVars({ ...base, panelColor: '#a0a0a0' }, 'dark');
+        expect(v['--bs-body-color']).toBe('#1a1d1a');
+        expect(v['--bs-emphasis-color']).toBe('#000000');
+    });
     it('derives recesses darker than the panel', () => {
         const v = deriveThemeVars(base, 'dark');
         expect(v['--board-recess-bg']).toBe('#121714'); // panel mixed 18% toward black

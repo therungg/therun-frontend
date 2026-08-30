@@ -15,23 +15,6 @@
     }
 }
 
-.hueSlider {
-    // The track IS the picker: full spectrum, thumb picks the hue.
-    appearance: none;
-    height: 0.75rem;
-    border-radius: 999px;
-    background: linear-gradient(
-        90deg,
-        hsl(0 60% 50%),
-        hsl(60 60% 50%),
-        hsl(120 60% 50%),
-        hsl(180 60% 50%),
-        hsl(240 60% 50%),
-        hsl(300 60% 50%),
-        hsl(360 60% 50%)
-    );
-}
-
 .bgRow {
     display: flex;
     align-items: center;

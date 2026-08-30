@@ -44,6 +44,13 @@ function luminance({ r, g, b }: Rgb): number {
 
 const BLACK: Rgb = { r: 0, g: 0, b: 0 };
 
+/** WCAG contrast ratio between two relative luminances (1–21). */
+function contrastRatio(a: number, b: number): number {
+    const hi = Math.max(a, b);
+    const lo = Math.min(a, b);
+    return (hi + 0.05) / (lo + 0.05);
+}
+
 /**
  * Every themed custom property, derived from the three picked colors. Panel
  * luminance chooses a light or dark text set so contrast survives any input;
@@ -57,7 +64,10 @@ export function deriveThemeVars(
 ): Record<string, string> {
     const panel = hexToRgb(theme.panelColor);
     const accent = hexToRgb(theme.accentColor);
-    const useLightText = luminance(panel) < 0.4;
+    const panelLum = luminance(panel);
+    const useLightText =
+        contrastRatio(panelLum, luminance(hexToRgb('#e8eaed'))) >=
+        contrastRatio(panelLum, luminance(hexToRgb('#1a1d1a')));
 
     // Panels go translucent only over a background image.
     const surfaceBg =
