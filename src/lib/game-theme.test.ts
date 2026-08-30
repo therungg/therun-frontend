@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { parseGameTheme } from './game-theme';
 
 const valid = {
-    hue: 280,
-    saturation: 55,
+    panelColor: '#161c18',
+    accentColor: '#4aa06a',
+    backgroundColor: '#0d0f0d',
     backgroundUrl: 'https://media.therun.gg/backgrounds/12-1.webp',
     panelOpacity: 0.9,
 };
@@ -16,13 +17,18 @@ describe('parseGameTheme', () => {
         const t = { ...valid, backgroundUrl: null, panelOpacity: 1 };
         expect(parseGameTheme(t)).toEqual(t);
     });
+    it('lowercase-normalizes hex colors', () => {
+        expect(
+            parseGameTheme({ ...valid, panelColor: '#161C18' })?.panelColor,
+        ).toBe('#161c18');
+    });
     it.each([
         ['undefined', undefined],
         ['null', null],
         ['non-object', 7],
-        ['hue out of range', { ...valid, hue: 360 }],
-        ['fractional hue', { ...valid, hue: 1.5 }],
-        ['saturation out of range', { ...valid, saturation: 71 }],
+        ['panelColor without #', { ...valid, panelColor: '161c18' }],
+        ['3-digit hex', { ...valid, panelColor: '#abc' }],
+        ['non-hex char', { ...valid, accentColor: '#gggggg' }],
         ['opacity out of range', { ...valid, panelOpacity: 0.5 }],
         ['non-https url', { ...valid, backgroundUrl: 'javascript:x' }],
     ])('returns null for %s', (_l, raw) => {
