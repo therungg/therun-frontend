@@ -12,6 +12,7 @@ import {
 } from '~src/lib/game-theme';
 import { updateGameMetadataAction } from '../../setup/actions/update-game-metadata.action';
 import { deriveThemeVars } from '../../theme/theme-css';
+import { normalizeThemeColors } from '../../theme/theme-normalize';
 import kit from '../shared/form-kit.module.scss';
 import { getBackgroundUploadUrlAction } from './actions/get-background-upload-url.action';
 import paneStyles from './theme-pane.module.scss';
@@ -91,9 +92,17 @@ export function ThemePane({ metadata, game }: Props) {
     };
 
     const t = draft ?? DEFAULT_DRAFT;
+    // Preview the READABILITY-ADJUSTED colors — the backend nudges the picked
+    // colors to the legibility margins on save (normalizeThemeColors, mirrored
+    // here), so the preview shows exactly what will be stored. The picker
+    // swatches stay bound to the raw `draft` so dragging is smooth.
+    const previewTheme = { ...t, ...normalizeThemeColors(t) };
     // Custom-property keys aren't in CSSProperties; the double cast is the
     // standard escape hatch for style={{ '--x': ... }} objects.
-    const previewVars = deriveThemeVars(t, 'dark') as unknown as CSSProperties;
+    const previewVars = deriveThemeVars(
+        previewTheme,
+        'dark',
+    ) as unknown as CSSProperties;
 
     return (
         <div className={styles.surface}>
