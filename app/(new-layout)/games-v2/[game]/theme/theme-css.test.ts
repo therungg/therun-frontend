@@ -1,54 +1,68 @@
 import { describe, expect, it } from 'vitest';
 import { buildThemeCss, deriveThemeVars } from './theme-css';
 
-const base = { hue: 280, saturation: 55, backgroundUrl: null, panelOpacity: 1 };
+const base = {
+    panelColor: '#161c18',
+    accentColor: '#4aa06a',
+    backgroundColor: '#0d0f0d',
+    backgroundUrl: null,
+    panelOpacity: 1,
+};
 
 describe('deriveThemeVars', () => {
-    it('keeps dark surfaces at the reference lightness steps', () => {
-        const dark = deriveThemeVars(base, 'dark');
-        expect(dark['--board-surface-bg']).toBe('hsl(280 14% 11%)');
-        expect(dark['--board-recess-bg']).toBe('hsl(280 17% 5.5%)');
-        expect(dark['--board-accent']).toBe('hsl(280 55% 45%)');
-        expect(dark['--site-canvas-bg']).toBe('hsl(280 17% 5%)');
-        expect(dark['--site-canvas-primary']).toBe('hsl(280 55% 40%)');
+    it('maps the picked colors onto the board surface, accent and canvas', () => {
+        const v = deriveThemeVars(base, 'dark');
+        expect(v['--board-surface-bg']).toBe('#161c18');
+        expect(v['--board-accent']).toBe('#4aa06a');
+        expect(v['--site-canvas-bg']).toBe('#0d0f0d');
+        expect(v['--bs-primary']).toBe('#4aa06a');
+        expect(v['--bs-primary-rgb']).toBe('74, 160, 106');
     });
-    it('keeps light surfaces white with a whisper canvas tint', () => {
-        const light = deriveThemeVars(base, 'light');
-        expect(light['--board-surface-bg']).toBe('hsl(0 0% 100%)');
-        expect(light['--site-canvas-bg']).toBe('hsl(280 30% 98%)');
+    it('chooses light text on a dark panel', () => {
+        const v = deriveThemeVars(base, 'dark');
+        expect(v['--bs-emphasis-color']).toBe('#ffffff');
+        expect(v['--bs-body-color']).toBe('#e8eaed');
     });
-    it('applies panelOpacity to surfaces only when an image is set', () => {
+    it('chooses dark text on a light panel', () => {
+        const v = deriveThemeVars({ ...base, panelColor: '#f2f2f2' }, 'dark');
+        expect(v['--bs-emphasis-color']).toBe('#000000');
+        expect(v['--bs-body-color']).toBe('#1a1d1a');
+    });
+    it('derives recesses darker than the panel', () => {
+        const v = deriveThemeVars(base, 'dark');
+        expect(v['--board-recess-bg']).toBe('#121714'); // panel mixed 18% toward black
+        expect(v['--board-recess-bg']).toMatch(/^#[0-9a-f]{6}$/);
+        expect(v['--board-recess-strong-bg']).toMatch(/^#[0-9a-f]{6}$/);
+    });
+    it('applies panelOpacity to the surface only when an image is set', () => {
         const themed = {
             ...base,
             backgroundUrl: 'https://x/i.webp',
             panelOpacity: 0.9,
         };
         expect(deriveThemeVars(themed, 'dark')['--board-surface-bg']).toBe(
-            'hsl(280 14% 11% / 0.9)',
+            'rgba(22, 28, 24, 0.9)',
         );
-        expect(deriveThemeVars(themed, 'light')['--board-surface-bg']).toBe(
-            'hsl(0 0% 100% / 0.9)',
-        );
-        // no image → opacity ignored, surfaces stay opaque
+        // no image → opacity ignored, surface stays opaque hex
         expect(
             deriveThemeVars({ ...base, panelOpacity: 0.9 }, 'dark')[
                 '--board-surface-bg'
             ],
-        ).toBe('hsl(280 14% 11%)');
+        ).toBe('#161c18');
     });
-    it('never emits text or rank colors', () => {
-        const keys = Object.keys(deriveThemeVars(base, 'dark')).join(' ');
-        expect(keys).not.toMatch(/color|gold|silver|bronze|emphasis/);
+    it('is identical across schemes (board owns its colors)', () => {
+        expect(deriveThemeVars(base, 'dark')).toEqual(
+            deriveThemeVars(base, 'light'),
+        );
     });
 });
 
 describe('buildThemeCss', () => {
-    it('emits one block per scheme with every var, and nothing user-typed', () => {
+    it('emits one block per scheme and never leaks a url()', () => {
         const css = buildThemeCss(base);
         expect(css).toContain("[data-bs-theme='dark'] {");
         expect(css).toContain("[data-bs-theme='light'] {");
-        expect(css).toContain('--board-surface-bg: hsl(280 14% 11%);');
-        // only numbers we generated: no url() ever appears in the stylesheet
+        expect(css).toContain('--board-surface-bg: #161c18;');
         expect(css).not.toContain('url(');
     });
 });
