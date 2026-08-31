@@ -22,6 +22,7 @@ vi.mock('./src-import-actions', () => ({
     setSrcOnlyAction: vi.fn(async () => ({
         result: { jobId: 7, srcOnlyLeaderboard: true },
     })),
+    setFlagsAction: vi.fn(async () => ({ result: {} })),
     getSrcImportPlanAction: vi.fn(async () => ({ result: emptyPlan() })),
 }));
 
@@ -32,6 +33,7 @@ import {
     importRunsAction,
     reconcileAction,
     reconcileUndoAction,
+    setFlagsAction,
     undoRunsAction,
 } from './src-import-actions';
 
@@ -82,6 +84,9 @@ const job = (over: Partial<SrcImportJob> = {}): SrcImportJob => ({
     configAppliedAt: null,
     runsImportedAt: null,
     srcOnlyLeaderboard: false,
+    kind: 'manual',
+    changeSummary: null,
+    commitFlags: null,
     ...over,
 });
 
@@ -98,6 +103,36 @@ describe('CommitPanel', () => {
         expect(
             screen.getByRole('button', { name: /apply config/i }),
         ).toBeEnabled();
+    });
+
+    it('shows the Import options panel in the plan stage, defaulting all on', () => {
+        render(<CommitPanel job={job()} {...props} />);
+        expect(screen.getByText(/import options/i)).toBeInTheDocument();
+        expect(
+            screen.getByRole('checkbox', { name: /import guest runs/i }),
+        ).toBeChecked();
+    });
+
+    it('persists a flag toggle via setFlagsAction with only the changed key', async () => {
+        render(<CommitPanel job={job()} {...props} />);
+        fireEvent.click(
+            screen.getByRole('checkbox', { name: /import guest runs/i }),
+        );
+        await waitFor(() => {
+            expect(setFlagsAction).toHaveBeenCalledWith({
+                gameId: 12,
+                gameSlug: 'sm64',
+                jobId: 7,
+                flags: { importGuests: false },
+            });
+        });
+    });
+
+    it('hides the Import options panel once config is applied', () => {
+        render(
+            <CommitPanel job={job({ commitStatus: 'applied' })} {...props} />,
+        );
+        expect(screen.queryByText(/import options/i)).not.toBeInTheDocument();
     });
 
     it('calls applyConfigAction and onChanged on Apply config', async () => {
