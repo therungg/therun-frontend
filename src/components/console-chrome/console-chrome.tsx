@@ -36,6 +36,10 @@ interface Props {
      * sidebar becomes a floating panel on the page canvas. Manage/admin omit
      * it and keep the contained framed console. */
     plain?: boolean;
+    /** The manage console's open layout: no frame box, no header row — the
+     * game's identity (cover, name, exits) lives in a sidebar masthead and
+     * the content sits directly on the page canvas. Settings omits it. */
+    cockpit?: boolean;
     children: ReactNode;
 }
 
@@ -56,6 +60,7 @@ export function ConsoleChrome({
     footerItems,
     navAriaLabel,
     plain = false,
+    cockpit = false,
     children,
 }: Props) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -92,6 +97,93 @@ export function ConsoleChrome({
         setSidebarOpen(false);
         onNavigate(id);
     };
+
+    if (cockpit) {
+        const sidebarBody = (
+            <>
+                <div className={styles.mast}>
+                    {header.image && (
+                        <img
+                            className={styles.mastCover}
+                            src={header.image}
+                            alt=""
+                            width={48}
+                            height={64}
+                            loading="eager"
+                        />
+                    )}
+                    <div className={styles.mastText}>
+                        <div className={styles.eyebrow}>
+                            {header.eyebrow ?? 'Admin console'}
+                        </div>
+                        <h1 className={styles.mastTitle}>
+                            <Link
+                                href={header.titleHref}
+                                className={styles.titleLink}
+                            >
+                                {header.title}
+                            </Link>
+                        </h1>
+                    </div>
+                </div>
+                <ConsoleSidebar
+                    groups={groups}
+                    icons={icons}
+                    activeItem={activeItem}
+                    onSelect={handleSelect}
+                    badges={badges}
+                    hrefFor={hrefFor}
+                    onLinkNavigate={closeSidebar}
+                    footerItems={footerItems}
+                    ariaLabel={navAriaLabel}
+                />
+                {header.actions && (
+                    <div className={styles.mastExits}>{header.actions}</div>
+                )}
+            </>
+        );
+        return (
+            <div className={styles.cockpit}>
+                <div className={styles.topbar}>
+                    <button
+                        type="button"
+                        className={clsx(
+                            styles.menuToggle,
+                            'btn btn-sm btn-outline-secondary',
+                        )}
+                        aria-label="Toggle navigation"
+                        aria-expanded={sidebarOpen}
+                        onClick={() => setSidebarOpen((v) => !v)}
+                    >
+                        <List size={18} aria-hidden="true" />
+                    </button>
+                    <span className={styles.topbarTitle}>{header.title}</span>
+                </div>
+                <div className={styles.cockpitBody}>
+                    {sidebarOpen && (
+                        <button
+                            type="button"
+                            className={styles.scrim}
+                            aria-label="Close navigation"
+                            onClick={closeSidebar}
+                        />
+                    )}
+                    <aside
+                        ref={sidebarRef}
+                        className={clsx(
+                            styles.spine,
+                            !sidebarOpen && styles.sidebarHidden,
+                        )}
+                    >
+                        <div className={styles.spineInner}>{sidebarBody}</div>
+                    </aside>
+                    <section className={styles.cockpitContent}>
+                        {children}
+                    </section>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={clsx(styles.shell, plain && styles.plain)}>

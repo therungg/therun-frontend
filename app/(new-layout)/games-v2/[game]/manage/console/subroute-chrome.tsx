@@ -90,6 +90,7 @@ export function SubrouteChrome({
             }}
             icons={NAV_ICON}
             navAriaLabel="Game admin console"
+            cockpit
             groups={groups}
             activeItem={activeItem}
             onNavigate={(id) => navigate(id as NavItemId)}
