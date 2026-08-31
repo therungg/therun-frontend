@@ -54,9 +54,32 @@ export interface SrcImportJob {
     kind: SrcImportJobKind;
     /** What this commit changed — filled during the commit; null before it runs. */
     changeSummary: SrcCommitChangeSummary | null;
+    /**
+     * Per-job moderator commit toggles, set via POST .../flags before commit.
+     * Null (or a missing key) means the backend default — see resolveCommitFlags
+     * on the backend; every default preserves the prior import behavior.
+     */
+    commitFlags: SrcImportCommitFlags | null;
 }
 
 export type SrcImportJobKind = 'manual' | 'resync';
+
+/**
+ * Moderator toggles honored during the commit (mirror of the backend
+ * SrcImportCommitFlags). All keys optional; a missing key resolves to its
+ * behavior-preserving default (all booleans true, themeMode 'overwrite').
+ * Category/theme flags are consumed at apply-config, the run flags at
+ * import-runs; the backend freezes them once runs start importing.
+ */
+export interface SrcImportCommitFlags {
+    importTheme?: boolean;
+    themeMode?: 'overwrite' | 'if-unset';
+    importMiscCategories?: boolean;
+    importLevelCategories?: boolean;
+    importPending?: boolean;
+    importGuests?: boolean;
+    setMinTimeFloor?: boolean;
+}
 
 export interface SrcCommitChangeSummary {
     added: number;

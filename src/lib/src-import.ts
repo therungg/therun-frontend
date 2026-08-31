@@ -8,6 +8,7 @@ import type {
     SrcCommitOverrides,
     SrcCommitPlan,
     SrcImportCategory,
+    SrcImportCommitFlags,
     SrcImportJob,
     SrcImportLevel,
     SrcImportMatchKind,
@@ -240,6 +241,24 @@ export async function setSrcOnlyLeaderboard(
         `${base(gameId)}/${jobId}/src-only`,
         { method: 'POST', sessionId, body: { enabled } },
     );
+}
+
+/**
+ * Patch-merges the moderator commit flags onto the job (partial body — only the
+ * keys sent change; unrelated flags are kept). Returns the resolved flag set
+ * (defaults filled). The backend 409s once runs have started importing.
+ */
+export async function setSrcImportFlags(
+    sessionId: string,
+    gameId: number,
+    jobId: number,
+    flags: SrcImportCommitFlags,
+): Promise<SrcImportCommitFlags> {
+    return apiFetch<SrcImportCommitFlags>(`${base(gameId)}/${jobId}/flags`, {
+        method: 'POST',
+        sessionId,
+        body: flags,
+    });
 }
 
 function toQuery(q: object): string {

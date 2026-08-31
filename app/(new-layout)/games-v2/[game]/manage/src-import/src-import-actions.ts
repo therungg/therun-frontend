@@ -20,6 +20,7 @@ import {
     reconcileUndoSrcImport,
     type SrcImportPlayersQuery,
     type SrcImportRunsQuery,
+    setSrcImportFlags,
     setSrcImportOverrides,
     setSrcOnlyLeaderboard,
     startSrcImport,
@@ -32,6 +33,7 @@ import type {
     SrcCommitOverrides,
     SrcCommitPlan,
     SrcImportCategory,
+    SrcImportCommitFlags,
     SrcImportJob,
     SrcImportLevel,
     SrcImportPlayer,
@@ -278,6 +280,23 @@ export async function setSrcOnlyAction(input: {
             input.gameId,
             input.jobId,
             input.enabled,
+        );
+    });
+}
+
+export async function setFlagsAction(input: {
+    gameId: number;
+    gameSlug: string;
+    jobId: number;
+    flags: SrcImportCommitFlags;
+}): Promise<ActionResult<SrcImportCommitFlags>> {
+    return run(async () => {
+        const sessionId = await requireBoardMod(input.gameSlug);
+        return setSrcImportFlags(
+            sessionId,
+            input.gameId,
+            input.jobId,
+            input.flags,
         );
     });
 }

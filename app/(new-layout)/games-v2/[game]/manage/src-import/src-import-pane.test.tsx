@@ -93,6 +93,7 @@ const job = (over: Partial<SrcImportJob> = {}): SrcImportJob => ({
     srcOnlyLeaderboard: false,
     kind: 'manual',
     changeSummary: null,
+    commitFlags: null,
     ...over,
 });
 
