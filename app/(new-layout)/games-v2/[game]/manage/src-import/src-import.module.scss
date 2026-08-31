@@ -430,6 +430,47 @@ $rail: 3px;
     font-size: dt.$font-size-xs;
 }
 
+// "Import options" — the moderator commit-flag toggles, shown while the plan
+// is being reviewed (before Apply config), the same lifecycle slot as the
+// SRC-only checkbox.
+.optionsPanel {
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    border-radius: dt.$radius-md;
+    padding: dt.$spacing-md dt.$spacing-lg;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+.optionsTitle {
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    margin: 0;
+}
+
+.optionsHint {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+    margin: 0;
+}
+
+.themeModeRow {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+    padding-left: dt.$spacing-lg;
+}
+
+.themeModeSelect {
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    border-radius: dt.$radius-md;
+    padding: 0.15rem 0.4rem;
+    font-size: dt.$font-size-xs;
+}
+
 .conflictList {
     margin: 0 0 dt.$spacing-sm;
     padding-left: dt.$spacing-lg;

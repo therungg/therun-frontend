@@ -3,10 +3,12 @@
 import { useEffect, useRef, useState, useTransition } from 'react';
 import type {
     SrcCommitPlan,
+    SrcImportCommitFlags,
     SrcImportJob,
 } from '../../../../../../types/src-import.types';
 import { InlineError } from '../shared/form-kit';
 import kit from '../shared/form-kit.module.scss';
+import { ImportOptions, resolveCommitFlags } from './import-options';
 import { PlanPreview, planHasConflicts } from './plan-preview';
 import styles from './src-import.module.scss';
 import {
@@ -15,6 +17,7 @@ import {
     importRunsAction,
     reconcileAction,
     reconcileUndoAction,
+    setFlagsAction,
     setSrcOnlyAction,
     undoConfigAction,
     undoRunsAction,
@@ -272,6 +275,9 @@ export function CommitPanel({ job, gameId, gameSlug, onChanged }: Props) {
     const [pending, startTransition] = useTransition();
     const [actionError, setActionError] = useState<string | null>(null);
     const [srcOnly, setSrcOnly] = useState(job.srcOnlyLeaderboard);
+    const [flags, setFlagsState] = useState(
+        resolveCommitFlags(job.commitFlags),
+    );
     const [plan, setPlan] = useState<SrcCommitPlan | null>(null);
     const [reconcileError, setReconcileError] = useState<string | null>(null);
     // Whether the one-shot AUTO reconcile has fired for the current job this
@@ -354,6 +360,26 @@ export function CommitPanel({ job, gameId, gameSlug, onChanged }: Props) {
         });
     };
 
+    const onFlagsChange = (patch: SrcImportCommitFlags) => {
+        // Optimistic: reflect the toggle immediately, then persist the patch.
+        // The backend patch-merges, so we only ever send the changed key(s).
+        setFlagsState((prev) => ({ ...prev, ...patch }));
+        setActionError(null);
+        startTransition(async () => {
+            const res = await setFlagsAction({
+                gameId,
+                gameSlug,
+                jobId: job.id,
+                flags: patch,
+            });
+            if ('error' in res) {
+                setActionError(res.error);
+                return;
+            }
+            await onChanged();
+        });
+    };
+
     const hasConflicts = plan !== null && planHasConflicts(plan);
     const applyBlockedByConflicts =
         vm.primary?.action === 'apply-config' && hasConflicts;
@@ -423,6 +449,17 @@ export function CommitPanel({ job, gameId, gameSlug, onChanged }: Props) {
                         reconciling the board will start automatically.
                     </p>
                 ))}
+
+            {/* Import options are consumed at apply-config, so they are only
+                offered while the plan is still being reviewed (before the first
+                commit step). The backend also freezes them once importing. */}
+            {vm.primary?.action === 'apply-config' && (
+                <ImportOptions
+                    flags={flags}
+                    disabled={pending}
+                    onChange={onFlagsChange}
+                />
+            )}
 
             {vm.errorMessage && <InlineError>{vm.errorMessage}</InlineError>}
             {actionError && <InlineError>{actionError}</InlineError>}
