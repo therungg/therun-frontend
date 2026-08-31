@@ -8,7 +8,144 @@
 // ============================================================
 
 $sidebar-width: 16rem;
+$spine-width: 15.5rem; // cockpit sidebar column
 $rail: 3px; // severity spine / active accent width
+
+// ---- Cockpit layout (manage console) ------------------------
+// No frame box, no header row. The sidebar is the console's spine:
+// game identity on top, nav in the middle, exits at the bottom —
+// content sits directly on the page canvas, one hairline away.
+// Confidence comes from space, not borders.
+.cockpit {
+    // nothing on the wrapper itself; the page container provides margins
+}
+
+.cockpitBody {
+    display: grid;
+    grid-template-columns: $spine-width minmax(0, 1fr);
+    align-items: stretch;
+    min-height: 70vh;
+}
+
+.spine {
+    border-right: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    padding-right: dt.$spacing-xl;
+}
+
+.spineInner {
+    position: sticky;
+    top: dt.$spacing-lg;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xl;
+    max-height: calc(100dvh - #{dt.$spacing-3xl});
+    overflow-y: auto;
+    padding-bottom: dt.$spacing-lg;
+    scrollbar-width: thin;
+}
+
+.mast {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    padding-bottom: dt.$spacing-lg;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+}
+
+.mastCover {
+    width: 48px;
+    height: 64px; // 3:4
+    border-radius: dt.$radius-md;
+    object-fit: cover;
+    box-shadow: dt.$shadow-sm;
+    flex-shrink: 0;
+}
+
+.mastText {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.mastTitle {
+    font-size: dt.$font-size-md;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+// Exit doors (back to leaderboard, all your games) — quiet links,
+// visually apart from the nav below a hairline.
+.mastExits {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: dt.$spacing-sm;
+    padding-top: dt.$spacing-lg;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+}
+
+.topbar {
+    display: none;
+}
+
+.cockpitContent {
+    min-width: 0;
+    padding: dt.$spacing-xs 0 dt.$spacing-3xl dt.$spacing-3xl;
+}
+
+@media (max-width: 768px) {
+    .cockpitBody {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .topbar {
+        display: flex;
+        align-items: center;
+        gap: dt.$spacing-md;
+        padding-bottom: dt.$spacing-md;
+        margin-bottom: dt.$spacing-md;
+        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    }
+
+    .topbarTitle {
+        font-weight: 700;
+        letter-spacing: -0.01em;
+    }
+
+    // Same overlay drawer as the framed console's .sidebar below.
+    .spine {
+        position: fixed;
+        inset-block: 0;
+        left: 0;
+        width: min(20rem, 85vw);
+        z-index: dt.$z-drawer;
+        background: var(--bs-body-bg);
+        border-right: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+        padding: dt.$spacing-lg;
+        overflow-y: auto;
+        @include board.board-overlay-enter(slide-left);
+
+        &.sidebarHidden {
+            display: none;
+        }
+    }
+
+    .spineInner {
+        position: static;
+        max-height: none;
+    }
+
+    .cockpitContent {
+        padding: 0 0 dt.$spacing-2xl;
+    }
+}
 
 // ---- Shell layout ------------------------------------------
 .shell {
@@ -281,9 +418,9 @@ $rail: 3px; // severity spine / active accent width
 .groupLabel {
     font-size: dt.$font-size-2xs;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 700;
-    color: var(--bs-secondary-color);
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    color: var(--bs-tertiary-color);
     padding: 0 dt.$spacing-sm dt.$spacing-xs;
 }
 
@@ -471,14 +608,21 @@ $rail: 3px; // severity spine / active accent width
     border-radius: dt.$radius-lg;
 }
 
+// The one pane anatomy: optional group eyebrow, a headline-weight title,
+// actions on the baseline, lede below. Structure comes from type scale and
+// space — no hairline underneath.
 .paneHeader {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
     gap: dt.$spacing-md;
     padding-bottom: dt.$spacing-md;
-    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
     margin-bottom: dt.$spacing-xl;
+}
+
+.paneEyebrow {
+    @include board.board-eyebrow;
+    margin-bottom: dt.$spacing-xs;
 }
 
 .paneActions {
@@ -496,9 +640,10 @@ $rail: 3px; // severity spine / active accent width
 }
 
 .paneTitle {
-    font-size: dt.$font-size-lg;
+    font-size: dt.$font-size-2xl;
     font-weight: 700;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
     margin: 0;
 }
 
@@ -515,6 +660,10 @@ $rail: 3px; // severity spine / active accent width
 // unifying their cards + inputs with the console's token language.
 .content {
     padding: dt.$spacing-2xl;
+}
+
+.content,
+.cockpitContent {
     min-width: 0;
 
     :global(.bg-light-subtle) {

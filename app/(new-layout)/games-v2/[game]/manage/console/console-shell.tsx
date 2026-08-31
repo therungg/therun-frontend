@@ -382,6 +382,7 @@ export function ConsoleShell({
                 }}
                 icons={NAV_ICON}
                 navAriaLabel="Game admin console"
+                cockpit
                 groups={groups}
                 activeItem={activeSidebarItem}
                 onNavigate={(id) => handleNavigate(id as NavItemId)}
