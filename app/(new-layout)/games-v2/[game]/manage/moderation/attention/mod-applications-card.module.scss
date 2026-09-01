@@ -1,0 +1,121 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/board' as board;
+
+// ============================================================
+// Moderator applications — a contained callout above the queue.
+// One board surface; rows separated by hairlines, not boxes.
+// ============================================================
+
+.card {
+    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
+    margin-bottom: dt.$spacing-2xl;
+}
+
+.head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    padding-bottom: dt.$spacing-sm;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+}
+
+.title {
+    font-size: dt.$font-size-md;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0;
+}
+
+.headCount {
+    @include board.mono-time;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.row {
+    padding: dt.$spacing-lg 0 dt.$spacing-md;
+
+    & + & {
+        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    }
+}
+
+.rowTop {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: dt.$spacing-md;
+}
+
+.applicant {
+    font-weight: 600;
+}
+
+.signals {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.motivation {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    white-space: pre-wrap;
+    margin: dt.$spacing-sm 0 dt.$spacing-md;
+    max-width: 70ch;
+}
+
+.rowActions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
+}
+
+.roleSelect {
+    font-size: dt.$font-size-sm;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    border-radius: dt.$radius-md;
+    background: color-mix(
+        in srgb,
+        var(--bs-body-bg) 90%,
+        var(--bs-secondary-bg) 10%
+    );
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    color: var(--bs-body-color);
+    transition: border-color dt.$transition-fast;
+
+    &:hover {
+        border-color: rgba(var(--bs-primary-rgb), 0.5);
+    }
+    &:focus-visible {
+        outline: 0;
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+    }
+    &:disabled {
+        opacity: 0.6;
+    }
+}
+
+.approveBtn {
+    @include board.board-btn-primary;
+    padding: dt.$spacing-xs dt.$spacing-lg;
+}
+
+// Quiet destructive tier — accent-red text per the one-red rule, no
+// filled chrome at rest (denying opens a confirm dialog anyway).
+.denyBtn {
+    @include board.control-pill;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    color: dt.$accent-red;
+
+    &:hover {
+        background: color-mix(in srgb, #{dt.$accent-red} 8%, transparent);
+        color: dt.$accent-red;
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(dt.$accent-red, 0.5);
+    }
+}

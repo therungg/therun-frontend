@@ -47,3 +47,10 @@
     display: flex;
     gap: dt.$spacing-sm;
 }
+
+// Quiet secondary tier for Cancel — the verdict button beside it keeps
+// the Bootstrap success/danger carve-out.
+.cancelBtn {
+    @include board.control-pill;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+}

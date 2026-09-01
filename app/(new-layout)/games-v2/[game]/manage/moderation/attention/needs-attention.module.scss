@@ -58,6 +58,73 @@ $rail: 3px;
     color: var(--bs-secondary-color);
 }
 
+// ---- Source filter chips (calm segmented row) ---------------
+.chipRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-xs;
+}
+
+.filterChip {
+    @include board.control-pill;
+}
+
+.filterChipActive {
+    @include board.control-pill-active;
+}
+
+// ---- Secondary (non-verdict) card action --------------------
+// The control-pill tier with a visible edge so it holds its own next
+// to the filled verdict buttons — same recipe as the console's
+// live-banner refresh pill.
+.quietBtn {
+    @include board.control-pill;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: none;
+    }
+}
+
+// ---- Severity tally (pane-header overview) ------------------
+.tally {
+    display: inline-flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: dt.$spacing-lg;
+}
+
+.tallyItem {
+    display: inline-flex;
+    align-items: baseline;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.tallyNum {
+    @include board.mono-time;
+    font-weight: 600;
+}
+
+.tallyDot {
+    align-self: center;
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--bs-secondary);
+
+    &[data-sev='high'] {
+        background: dt.$accent-red;
+    }
+    &[data-sev='medium'] {
+        background: dt.$accent-amber;
+    }
+}
+
 // ---- Dismissible URL-driven kind filter (e.g. arriving via "Reports") --
 .kindChip {
     display: inline-flex;
@@ -101,6 +168,22 @@ $rail: 3px;
     font-size: dt.$font-size-2xs;
     color: var(--bs-tertiary-color);
     margin-bottom: dt.$spacing-sm;
+
+    kbd {
+        font-family: dt.$font-mono;
+        font-size: dt.$font-size-2xs;
+        line-height: 1.4;
+        padding: 0 dt.$spacing-xs;
+        margin-right: 2px;
+        border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+        border-radius: dt.$radius-sm;
+        background: color-mix(
+            in srgb,
+            var(--bs-body-bg) 94%,
+            var(--bs-secondary-bg) 6%
+        );
+        color: var(--bs-secondary-color);
+    }
 }
 
 .queuePosition {
@@ -119,11 +202,18 @@ $rail: 3px;
 // ---- A single run / claim card -----------------------------
 .card {
     position: relative;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border: 1px solid
+        var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
     border-left-width: $rail;
     border-left-color: var(--bs-secondary);
     border-radius: dt.$radius-md;
-    background: var(--bs-body-bg);
+    // Lifted a clear step above the canvas (system.md signature 5), with
+    // the severity spine kept as the card's leading edge.
+    background: var(
+        --board-surface-bg,
+        color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-secondary-bg) 8%)
+    );
+    box-shadow: var(--board-surface-shadow, none);
     padding: dt.$spacing-lg dt.$spacing-xl;
     transition: box-shadow dt.$transition-base, border-color dt.$transition-fast;
 
@@ -301,8 +391,14 @@ $rail: 3px;
 
 // ---- Runner group (multiple items) -------------------------
 .group {
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border: 1px solid
+        var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
     border-radius: dt.$radius-md;
+    background: var(
+        --board-surface-bg,
+        color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-secondary-bg) 8%)
+    );
+    box-shadow: var(--board-surface-shadow, none);
     overflow: hidden;
 }
 
@@ -343,6 +439,16 @@ $rail: 3px;
     color: var(--bs-secondary-color);
 }
 
+.groupCountNum {
+    @include board.mono-time;
+    font-weight: 600;
+}
+
+// ---- Guest badge (no linked account) ------------------------
+.guestBadge {
+    @include board.board-pill;
+}
+
 .groupBody {
     display: flex;
     flex-direction: column;
@@ -351,9 +457,15 @@ $rail: 3px;
     border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
 }
 
-// nested cards inside a group sit flush (group provides the frame)
+// nested cards inside a group sit flush (group provides the frame and
+// the lift; a shadowed card inside a shadowed card would double-count)
 .groupBody .card {
-    background: color-mix(in srgb, var(--bs-body-bg) 96%, var(--bs-secondary-bg) 4%);
+    background: transparent;
+    box-shadow: none;
+
+    &:hover {
+        background: rgba(var(--bs-secondary-rgb), 0.06);
+    }
 }
 
 // ---- Empty state -------------------------------------------
@@ -370,6 +482,11 @@ $rail: 3px;
 
 .emptyTitle {
     @include board.board-empty-title;
+}
+
+.emptyText {
+    margin: 0;
+    color: var(--bs-secondary-color);
 }
 
 .emptyLinks {
