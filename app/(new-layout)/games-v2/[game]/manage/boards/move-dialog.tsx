@@ -234,7 +234,7 @@ export function MoveDialog({
                 </label>
                 <select
                     id="move-category"
-                    className="form-select form-select-sm mb-2"
+                    className={styles.dialogSelect}
                     value={targetCategoryId}
                     onChange={(e) => {
                         setTargetCategoryId(Number(e.target.value));

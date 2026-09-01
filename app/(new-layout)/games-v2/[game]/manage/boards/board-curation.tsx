@@ -5,10 +5,13 @@ import { useEffect, useMemo, useState, useTransition } from 'react';
 import {
     ArrowLeftShort,
     ArrowRightShort,
+    BoxArrowUpRight,
     PinAngleFill,
+    Trophy,
 } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import { reorderGroupsAction } from '~src/actions/category-group/reorder-groups.action';
+import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { buildBoardHref, buildBoardQuery } from '~src/lib/board-url';
@@ -48,6 +51,7 @@ import {
 import { BoardDialog } from '../../shared/board-dialog';
 import { reorderCategoriesAction } from '../game-tab/actions/reorder-categories.action';
 import { computeReorderChanges } from '../game-tab/reorder-changes';
+import type { ModVerb } from '../moderation/shared/action-model';
 import { moveRunAction } from '../moderation/shared/actions/board-override.action';
 import { loadUserEligibleRunsAction } from '../moderation/shared/actions/eligible-runs.action';
 import {
@@ -357,7 +361,7 @@ export function BoardCuration({
     // stale under the drawer.
     const [inspectRunId, setInspectRunId] = useState<number | null>(null);
     // Verb the drawer opens onto (a row's Remove/`x`); cleared on close/step.
-    const [inspectVerb, setInspectVerb] = useState<'remove' | null>(null);
+    const [inspectVerb, setInspectVerb] = useState<ModVerb | null>(null);
     const [boardPageIndex, setBoardPageIndex] = useState(0);
 
     const { rows, total, markedTotal, loading, error, reload } = useBoardData(
@@ -764,18 +768,63 @@ export function BoardCuration({
           )
         : 0;
 
+    // Console mounts wear the console's pane anatomy; the wizard embeds the
+    // same board without it. The door back to the exact public board being
+    // curated sits in the header's action slot — every moderator gets it,
+    // not just configurers. The wizard context has no public board yet.
+    const paneIntro = context === 'console' && (
+        <div className={styles.paneIntro}>
+            <header className={consoleStyles.paneHeader}>
+                <div>
+                    <div className={consoleStyles.paneEyebrow}>Structure</div>
+                    <h2 className={consoleStyles.paneTitle}>Boards</h2>
+                </div>
+                {category && (
+                    <div className={consoleStyles.paneActions}>
+                        <Link
+                            className={styles.boardLink}
+                            href={buildBoardHref(game.name, {
+                                categorySlug: category.name,
+                                subcategoryKey,
+                            })}
+                        >
+                            View public board
+                            <BoxArrowUpRight size={12} aria-hidden />
+                        </Link>
+                    </div>
+                )}
+            </header>
+            <p className={consoleStyles.paneLede}>
+                The public leaderboard with moderator actions on every run.
+            </p>
+        </div>
+    );
+
     if (featured.length === 0) {
         return (
-            <div className={styles.empty}>
-                <p className={styles.emptyTitle}>
-                    No categories are featured yet.
-                </p>
-                {canConfigure && (
-                    <p className={styles.emptyHint}>
-                        Feature at least one category to see its board here.
+            <section
+                className={styles.root}
+                aria-label={
+                    context === 'wizard' ? 'Board preview' : 'Board curation'
+                }
+            >
+                {paneIntro}
+                <div className={styles.empty}>
+                    <Trophy
+                        size={28}
+                        className={styles.emptyIcon}
+                        aria-hidden
+                    />
+                    <p className={styles.emptyTitle}>
+                        No categories are featured yet.
                     </p>
-                )}
-            </div>
+                    {canConfigure && (
+                        <p className={styles.emptyHint}>
+                            Feature at least one category to see its board here.
+                        </p>
+                    )}
+                </div>
+            </section>
         );
     }
 
@@ -786,42 +835,7 @@ export function BoardCuration({
                 context === 'wizard' ? 'Board preview' : 'Board curation'
             }
         >
-            {(canConfigure || context === 'console') && category && (
-                <div className={styles.paneTopRow}>
-                    {/* The door back to the exact public board being curated —
-                        every moderator gets it, not just configurers. The
-                        wizard context has no public board to point at yet. */}
-                    {context === 'console' ? (
-                        <Link
-                            className={styles.boardLink}
-                            href={buildBoardHref(game.name, {
-                                categorySlug: category.name,
-                                subcategoryKey,
-                            })}
-                        >
-                            View public board ↗
-                        </Link>
-                    ) : (
-                        <span />
-                    )}
-                    {canConfigure && (
-                        <BoardControls
-                            gameSlug={game.name}
-                            gameId={game.id}
-                            category={category}
-                            timing={timing}
-                            policies={policies}
-                            subcatVars={subcatVars}
-                            selectedValues={selectedValues}
-                            reorderMode={reorderMode}
-                            onToggleReorderMode={() =>
-                                setReorderMode((v) => !v)
-                            }
-                            reload={reload}
-                        />
-                    )}
-                </div>
-            )}
+            {paneIntro}
 
             <div className={styles.categorySwitch}>
                 {sections.map((section, idx) => {
@@ -990,47 +1004,77 @@ export function BoardCuration({
                 reorderBusy={isReordering}
             />
 
-            {(markedTotal > 0 || showMarkedOnly) && (
-                <div className={styles.markedBar}>
-                    <button
-                        type="button"
-                        aria-pressed={showMarkedOnly}
-                        className={`${styles.toolbarBtn} ${showMarkedOnly ? styles.toolbarBtnActive : ''}`}
-                        onClick={() => {
-                            setShowMarkedOnly((v) => !v);
-                            setBoardPageIndex(0);
-                        }}
-                    >
-                        <PinAngleFill size={11} aria-hidden />
-                        {markedTotal} marked
-                    </button>
+            {/* One composed toolbar directly above the table: the board's
+                scan line (run count, marked-pile filter) on the left, the
+                configure controls on the right. */}
+            {(markedTotal > 0 ||
+                showMarkedOnly ||
+                (canConfigure && category)) && (
+                <div className={styles.toolbar}>
+                    <div className={styles.toolbarFilters}>
+                        {!loading && !error && (
+                            <span className={styles.boardCount}>
+                                {pagerTotal}{' '}
+                                {showMarkedOnly ? 'marked runs' : 'runs'}
+                            </span>
+                        )}
+                        {(markedTotal > 0 || showMarkedOnly) && (
+                            <button
+                                type="button"
+                                aria-pressed={showMarkedOnly}
+                                className={`${styles.toolbarBtn} ${showMarkedOnly ? styles.toolbarBtnActive : ''}`}
+                                onClick={() => {
+                                    setShowMarkedOnly((v) => !v);
+                                    setBoardPageIndex(0);
+                                }}
+                            >
+                                <PinAngleFill size={11} aria-hidden />
+                                {markedTotal} marked
+                            </button>
+                        )}
+                    </div>
+                    {canConfigure && category && (
+                        <BoardControls
+                            gameSlug={game.name}
+                            gameId={game.id}
+                            category={category}
+                            timing={timing}
+                            policies={policies}
+                            subcatVars={subcatVars}
+                            selectedValues={selectedValues}
+                            reorderMode={reorderMode}
+                            onToggleReorderMode={() =>
+                                setReorderMode((v) => !v)
+                            }
+                            reload={reload}
+                        />
+                    )}
                 </div>
             )}
 
             {selectedRunIds.size > 0 && (
                 <div className={styles.selectionBar}>
-                    <span>{selectedRunIds.size} selected</span>
-                    <span aria-hidden="true">&middot;</span>
+                    <span className={styles.selectionCount}>
+                        {selectedRunIds.size} selected
+                    </span>
                     <button
                         type="button"
-                        className={styles.selectionAction}
+                        className={styles.selectionBtn}
                         onClick={handleBulkAccept}
                         disabled={isBulkAccepting}
                     >
                         Accept
                     </button>
-                    <span aria-hidden="true">&middot;</span>
                     <button
                         type="button"
-                        className={styles.selectionAction}
+                        className={styles.selectionBtn}
                         onClick={openBulkBan}
                     >
                         Ban…
                     </button>
-                    <span aria-hidden="true">&middot;</span>
                     <button
                         type="button"
-                        className={styles.selectionAction}
+                        className={styles.selectionClear}
                         onClick={clearSelection}
                     >
                         Clear
@@ -1042,7 +1086,17 @@ export function BoardCuration({
                 <div className={styles.wrapper}>
                     {error && <div className={styles.errorNote}>{error}</div>}
                     {!error && loading && rows.length === 0 && (
-                        <p className={styles.loadingNote}>Loading board…</p>
+                        <div
+                            className={styles.loadingRows}
+                            role="status"
+                            aria-label="Loading board"
+                        >
+                            <div className={styles.loadingRow} />
+                            <div className={styles.loadingRow} />
+                            <div className={styles.loadingRow} />
+                            <div className={styles.loadingRow} />
+                            <div className={styles.loadingRow} />
+                        </div>
                     )}
                     {!error && (!loading || rows.length > 0) && (
                         <LeaderboardTable
@@ -1063,7 +1117,7 @@ export function BoardCuration({
                             selectedKeys={selectedKeys}
                             onToggleSelect={handleToggleSelect}
                             onToggleAllVisible={handleToggleAllVisible}
-                            onModerate={(entry, verb) => {
+                            onQuickModerate={(entry, verb) => {
                                 setInspectVerb(verb ?? null);
                                 setInspectRunId(entry.runId ?? null);
                             }}
