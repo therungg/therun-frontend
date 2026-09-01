@@ -638,12 +638,18 @@ export function RunnerView({
                                                                 />
                                                             </td>
                                                             <td className="text-end">
-                                                                <div className="d-inline-flex gap-1">
+                                                                <div
+                                                                    className={
+                                                                        styles.rowActions
+                                                                    }
+                                                                >
                                                                     {status ===
                                                                         'pending' && (
                                                                         <button
                                                                             type="button"
-                                                                            className="btn btn-sm btn-outline-success"
+                                                                            className={
+                                                                                styles.approveBtn
+                                                                            }
                                                                             onClick={() =>
                                                                                 openRunsAction(
                                                                                     'approve',
@@ -659,7 +665,9 @@ export function RunnerView({
                                                                     )}
                                                                     <button
                                                                         type="button"
-                                                                        className="btn btn-sm btn-outline-danger"
+                                                                        className={
+                                                                            styles.removeBtn
+                                                                        }
                                                                         onClick={() =>
                                                                             openRunsAction(
                                                                                 'remove',
@@ -673,7 +681,9 @@ export function RunnerView({
                                                                         Remove…
                                                                     </button>
                                                                     <a
-                                                                        className="btn btn-sm btn-outline-secondary"
+                                                                        className={
+                                                                            styles.pillBtn
+                                                                        }
                                                                         href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/run/${r.runId}`}
                                                                     >
                                                                         Open
@@ -707,7 +717,11 @@ export function RunnerView({
                                                             duration={m.timeMs}
                                                         />
                                                     </span>
-                                                    <span className="badge text-bg-secondary">
+                                                    <span
+                                                        className={
+                                                            styles.timingPill
+                                                        }
+                                                    >
                                                         {m.timing === 'gametime'
                                                             ? 'GT'
                                                             : 'RT'}
@@ -717,10 +731,16 @@ export function RunnerView({
                                                             m.verificationStatus
                                                         }
                                                     />
-                                                    <div className="ms-auto d-inline-flex gap-1">
+                                                    <div
+                                                        className={
+                                                            styles.manualActions
+                                                        }
+                                                    >
                                                         <button
                                                             type="button"
-                                                            className="btn btn-sm btn-outline-primary"
+                                                            className={
+                                                                styles.pillBtn
+                                                            }
                                                             onClick={() =>
                                                                 setDialog({
                                                                     kind: 'manual',
@@ -733,7 +753,9 @@ export function RunnerView({
                                                         </button>
                                                         <button
                                                             type="button"
-                                                            className="btn btn-sm btn-outline-danger"
+                                                            className={
+                                                                styles.removeBtn
+                                                            }
                                                             onClick={() =>
                                                                 setDeletingManualId(
                                                                     deletingManualId ===
@@ -1029,7 +1051,7 @@ export function RunnerView({
                             </span>
                         </div>
                         {modLog.length === 0 ? (
-                            <p className="text-muted small mb-0">
+                            <p className={styles.mutedSmall}>
                                 No moderation events involve this runner.
                             </p>
                         ) : (

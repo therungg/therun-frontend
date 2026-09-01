@@ -57,6 +57,36 @@
     thead tr {
         background: rgba(var(--bs-body-color-rgb), 0.04);
     }
+
+    :global(.form-check-input) {
+        @include board.board-input-rules;
+    }
+}
+
+// Sortable column header: same eyebrow type as the <th> it lives in, plus
+// the interactive states the system requires on everything clickable.
+.sortBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    border: 0;
+    background: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    text-transform: inherit;
+    letter-spacing: inherit;
+    cursor: pointer;
+    transition: color dt.$transition-fast;
+
+    &:hover {
+        color: var(--bs-emphasis-color);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
 }
 
 // Times are data: mono, tabular, right-aligned — the system's signature.
