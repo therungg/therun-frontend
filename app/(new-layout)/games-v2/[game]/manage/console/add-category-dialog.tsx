@@ -277,10 +277,7 @@ export function AddCategoryDialog({
                 {error && <p className={styles.pickerError}>{error}</p>}
             </div>
             <div className={styles.dialogFooter}>
-                <span
-                    className={styles.pickerMeta}
-                    style={{ marginRight: 'auto' }}
-                >
+                <span className={`${styles.pickerMeta} ${styles.footMeta}`}>
                     {progress ?? `${selected.size} selected`}
                 </span>
                 <button

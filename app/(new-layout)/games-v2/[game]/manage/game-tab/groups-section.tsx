@@ -294,12 +294,6 @@ export function GroupsSection({
 
     return (
         <section>
-            <p className={styles.lede}>
-                Organize categories on the public game page. With more than one
-                group, the category rail splits into labeled sections in this
-                order.
-            </p>
-
             <div className={styles.panel}>
                 <div className={styles.createRow}>
                     <input
@@ -414,7 +408,13 @@ export function GroupsSection({
                                                     {g.name}
                                                 </span>
                                                 <span className={styles.count}>
-                                                    {count}{' '}
+                                                    <span
+                                                        className={
+                                                            styles.countNum
+                                                        }
+                                                    >
+                                                        {count}
+                                                    </span>{' '}
                                                     {count === 1
                                                         ? 'category'
                                                         : 'categories'}

@@ -58,8 +58,13 @@
 }
 
 .nameInput {
+    @include board.board-input-rules;
     font-weight: 600;
     max-width: 18rem;
+}
+
+.rulesInput {
+    @include board.board-input-rules;
 }
 
 .checklist {
@@ -113,6 +118,11 @@
     margin-top: dt.$spacing-lg;
 }
 
+.createControl {
+    @include board.board-input-rules;
+    width: auto;
+}
+
 .hint {
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
@@ -125,4 +135,96 @@
 
 .empty {
     @include board.board-empty;
+}
+
+.emptyIcon {
+    @include board.board-empty-icon;
+}
+
+.emptyTitle {
+    @include board.board-empty-title;
+}
+
+.emptyBlurb {
+    margin: 0;
+}
+
+// ---- Pane header helpers ------------------------------------
+.titleRow {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+}
+
+// ---- Panel wrapper for the level rows -----------------------
+.panel {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+// ---- Loading skeleton ---------------------------------------
+.loading {
+    @include board.board-skeleton;
+    min-height: 8rem;
+    border-radius: dt.$radius-md;
+}
+
+// ---- Actions ------------------------------------------------
+// Repair is the pane's one primary action when boards are missing.
+.repairAction {
+    @include board.board-btn-primary;
+}
+
+.rowActions {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    white-space: nowrap;
+}
+
+.quietAction {
+    @include board.board-quiet-link;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: default;
+    }
+}
+
+// Destructive tint on the quiet archive action (one-red rule).
+.archiveAction {
+    color: dt.$accent-red;
+
+    &:hover {
+        color: dt.$accent-red-light;
+    }
+}
+
+.pillAction {
+    @include board.control-pill;
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    text-decoration: none;
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: default;
+    }
+}
+
+// ---- Sync state ---------------------------------------------
+// A board count that trails the level total needs a caution accent.
+.countBehind {
+    color: dt.$accent-amber;
+    font-weight: 600;
+}
+
+.dash {
+    color: var(--bs-tertiary-color);
 }

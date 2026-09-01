@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { Plus } from 'react-bootstrap-icons';
 import styles from '~src/components/console-chrome/console.module.scss';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type { CategoryConfigRow } from '~src/lib/console/category-rows';
@@ -18,6 +19,7 @@ import { CategoryBandPreview } from '../../setup/steps/category-band-preview';
 import { buildCategorySeed } from '../../setup/steps/category-seed';
 import type { ReorderChange } from '../game-tab/reorder-changes';
 import { AddCategoryDialog } from './add-category-dialog';
+import boardStyles from './board-categories.module.scss';
 import { BoardCategoriesTable } from './board-categories-table';
 
 interface Props {
@@ -101,18 +103,24 @@ export function CategoriesPane({
 
     return (
         <section className={styles.surface}>
-            <div className={styles.paneHeader}>
-                <h2 className={styles.paneTitle}>{CONCEPT_LABEL.categories}</h2>
+            <header className={styles.paneHeader}>
+                <div>
+                    <div className={styles.paneEyebrow}>Structure</div>
+                    <h2 className={styles.paneTitle}>
+                        {CONCEPT_LABEL.categories}
+                    </h2>
+                </div>
                 <div className={styles.paneActions}>
                     <button
                         type="button"
-                        className="btn btn-sm btn-primary"
+                        className={boardStyles.primaryAction}
                         onClick={() => setAddOpen(true)}
                     >
-                        + Add category to board
+                        <Plus size={16} aria-hidden="true" />
+                        Add category to board
                     </button>
                 </div>
-            </div>
+            </header>
             <p className={styles.paneLede}>
                 The categories on your board right now, in the order the public
                 page shows them.

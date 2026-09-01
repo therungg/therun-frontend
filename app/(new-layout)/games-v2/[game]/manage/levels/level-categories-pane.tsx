@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Check2, ChevronRight, Dash, Diagram3 } from 'react-bootstrap-icons';
 import { createLevelTemplateAction } from '~src/actions/levels/create-level-template.action';
 import { levelOpAction } from '~src/actions/levels/level-op.action';
 import consoleStyles from '~src/components/console-chrome/console.module.scss';
@@ -78,12 +79,19 @@ export function LevelCategoriesPane({ gameId, gameSlug }: Props) {
 
     return (
         <section className={consoleStyles.surface}>
-            <div className={consoleStyles.paneHeader}>
-                <h2 className={consoleStyles.paneTitle}>Level categories</h2>
-                <span className={consoleStyles.paneCount}>
-                    {templates.length}
-                </span>
-            </div>
+            <header className={consoleStyles.paneHeader}>
+                <div>
+                    <div className={consoleStyles.paneEyebrow}>Structure</div>
+                    <div className={styles.titleRow}>
+                        <h2 className={consoleStyles.paneTitle}>
+                            Level categories
+                        </h2>
+                        <span className={consoleStyles.paneCount}>
+                            {templates.length}
+                        </span>
+                    </div>
+                </div>
+            </header>
             <p className={consoleStyles.paneLede}>
                 The categories every level gets. Edit one here and the change
                 applies to each level&rsquo;s board.
@@ -91,80 +99,120 @@ export function LevelCategoriesPane({ gameId, gameSlug }: Props) {
 
             <InlineError>{error}</InlineError>
 
-            {loading && <p className="text-muted">Loading level categories…</p>}
+            {loading && (
+                <div
+                    className={styles.loading}
+                    role="status"
+                    aria-label="Loading level categories"
+                />
+            )}
 
             {!loading && !error && templates.length === 0 && (
                 <div className={styles.empty}>
-                    No level categories yet. Add one and every level gets a
-                    board for it.
+                    <Diagram3
+                        size={26}
+                        className={styles.emptyIcon}
+                        aria-hidden="true"
+                    />
+                    <p className={styles.emptyTitle}>No level categories yet</p>
+                    <p className={styles.emptyBlurb}>
+                        Add one and every level gets a board for it.
+                    </p>
                 </div>
             )}
 
             {templates.length > 0 && (
-                <table className={styles.table}>
-                    <thead>
-                        <tr>
-                            <th>Category</th>
-                            <th>Featured</th>
-                            <th>On levels</th>
-                            <th aria-label="Actions" />
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {templates.map((t) => (
-                            <tr key={t.id}>
-                                <td>{t.display}</td>
-                                <td>{t.isMain ? 'Featured' : '—'}</td>
-                                <td>
-                                    <span className={styles.count}>
-                                        {t.synced}/{t.total}
-                                    </span>
-                                    {t.excluded > 0 && (
-                                        <span
-                                            className={`${styles.pill} ${styles.pillExcluded} ms-2`}
-                                        >
-                                            {t.excluded} excluded
-                                        </span>
-                                    )}
-                                    {t.overridden > 0 && (
-                                        <span
-                                            className={`${styles.pill} ${styles.pillOverridden} ms-2`}
-                                        >
-                                            {t.overridden} edited on a level
-                                        </span>
-                                    )}
-                                </td>
-                                <td>
-                                    <div className="d-flex gap-2">
-                                        <Link
-                                            href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/category/${t.id}`}
-                                        >
-                                            Edit
-                                        </Link>
-                                        <button
-                                            type="button"
-                                            className="btn btn-sm btn-outline-secondary"
-                                            aria-label={`Push ${t.display} now`}
-                                            disabled={isPending}
-                                            onClick={() => push(t.id)}
-                                        >
-                                            Push now
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="btn btn-sm btn-outline-danger"
-                                            aria-label={`Archive ${t.display}`}
-                                            disabled={isPending}
-                                            onClick={() => archive(t.id)}
-                                        >
-                                            Archive
-                                        </button>
-                                    </div>
-                                </td>
+                <div className={styles.panel}>
+                    <table className={styles.table}>
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th className="text-center">Featured</th>
+                                <th>On levels</th>
+                                <th aria-label="Actions" />
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {templates.map((t) => (
+                                <tr key={t.id}>
+                                    <td className={styles.name}>{t.display}</td>
+                                    <td className="text-center">
+                                        {t.isMain ? (
+                                            <Check2
+                                                size={14}
+                                                className={styles.check}
+                                                aria-label="featured"
+                                            />
+                                        ) : (
+                                            <Dash
+                                                size={14}
+                                                className={styles.dash}
+                                                aria-label="not featured"
+                                            />
+                                        )}
+                                    </td>
+                                    <td>
+                                        <span
+                                            className={`${styles.count} ${
+                                                t.synced < t.total
+                                                    ? styles.countBehind
+                                                    : ''
+                                            }`}
+                                        >
+                                            {t.synced}/{t.total}
+                                        </span>
+                                        {t.excluded > 0 && (
+                                            <span
+                                                className={`${styles.pill} ${styles.pillExcluded} ms-2`}
+                                            >
+                                                {t.excluded} excluded
+                                            </span>
+                                        )}
+                                        {t.overridden > 0 && (
+                                            <span
+                                                className={`${styles.pill} ${styles.pillOverridden} ms-2`}
+                                            >
+                                                {t.overridden} edited on a level
+                                            </span>
+                                        )}
+                                    </td>
+                                    <td>
+                                        <div className={styles.rowActions}>
+                                            <button
+                                                type="button"
+                                                className={styles.quietAction}
+                                                aria-label={`Push ${t.display} now`}
+                                                disabled={isPending}
+                                                onClick={() => push(t.id)}
+                                            >
+                                                Push now
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className={`${styles.quietAction} ${styles.archiveAction}`}
+                                                aria-label={`Archive ${t.display}`}
+                                                disabled={isPending}
+                                                onClick={() => archive(t.id)}
+                                            >
+                                                Archive
+                                            </button>
+                                            <Link
+                                                className={styles.pillAction}
+                                                href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/category/${t.id}`}
+                                            >
+                                                Edit
+                                                <ChevronRight
+                                                    size={11}
+                                                    aria-hidden="true"
+                                                />
+                                            </Link>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             )}
 
             <form
@@ -175,7 +223,7 @@ export function LevelCategoriesPane({ gameId, gameSlug }: Props) {
                 }}
             >
                 <input
-                    className="form-control form-control-sm w-auto"
+                    className={`form-control form-control-sm ${styles.createControl}`}
                     aria-label="New level category"
                     placeholder="Category name"
                     value={display}
@@ -183,7 +231,7 @@ export function LevelCategoriesPane({ gameId, gameSlug }: Props) {
                     onChange={(e) => setDisplay(e.target.value)}
                 />
                 <select
-                    className="form-select form-select-sm w-auto"
+                    className={`form-select form-select-sm ${styles.createControl}`}
                     aria-label="Primary timing"
                     value={timing}
                     disabled={isPending}

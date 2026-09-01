@@ -597,7 +597,11 @@ export function BoardCategoriesTable({
                                                             >
                                                                 {i + 1}
                                                             </span>
-                                                            <span className="d-inline-flex flex-column">
+                                                            <span
+                                                                className={
+                                                                    styles.orderArrows
+                                                                }
+                                                            >
                                                                 <button
                                                                     type="button"
                                                                     className={
@@ -845,7 +849,7 @@ export function BoardCategoriesTable({
                                 style={{ width: `${share}%` }}
                             />
                         </div>
-                        <span className="text-muted small">
+                        <span className={styles.coverageNote}>
                             {boardRows.length} categor
                             {boardRows.length === 1 ? 'y carries' : 'ies carry'}{' '}
                             {share}% of this game's finished runs
@@ -900,8 +904,7 @@ export function BoardCategoriesTable({
                                         </span>
                                         <button
                                             type="button"
-                                            className={styles.quietAction}
-                                            style={{ opacity: 1 }}
+                                            className={`${styles.quietAction} ${styles.restoreAction}`}
                                             disabled={pendingIds.has(row.id)}
                                             onClick={() =>
                                                 setVisibility(

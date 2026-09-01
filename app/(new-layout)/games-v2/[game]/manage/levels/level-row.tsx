@@ -137,7 +137,7 @@ export function LevelRow({
             {rulesOpen && (
                 <div className={styles.rulesBox}>
                     <textarea
-                        className="form-control form-control-sm"
+                        className={`form-control form-control-sm ${styles.rulesInput}`}
                         aria-label={`Rules for ${level.name}`}
                         rows={3}
                         value={rules}
@@ -192,7 +192,7 @@ export function LevelRow({
                             </span>
                             <button
                                 type="button"
-                                className="btn btn-sm btn-outline-secondary"
+                                className={styles.pillAction}
                                 aria-label={`Resync ${i.display} on ${level.name}`}
                                 disabled={isPending}
                                 onClick={() => resync(i.categoryId)}
