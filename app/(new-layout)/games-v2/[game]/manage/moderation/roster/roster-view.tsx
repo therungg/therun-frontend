@@ -77,7 +77,7 @@ function SortableTh({
         <th className={alignClass} aria-sort={active ? sort.direction : 'none'}>
             <button
                 type="button"
-                className="btn btn-link btn-sm p-0 text-decoration-none text-body fw-semibold d-inline-flex align-items-center gap-1"
+                className={styles.sortBtn}
                 onClick={() => onSort(sortKey)}
             >
                 {label}
@@ -309,13 +309,18 @@ export function RosterView({
     return (
         <div>
             <div className={consoleStyles.paneHeader}>
-                <h1 className={consoleStyles.paneTitle}>
-                    Browse runs — {gameDisplay}
-                </h1>
+                <div>
+                    <div className={consoleStyles.paneEyebrow}>Queue</div>
+                    <h1 className={consoleStyles.paneTitle}>Browse runs</h1>
+                </div>
                 <div className={consoleStyles.paneActions}>
                     <BackLink href={consoleHref} label="Back to console" />
                 </div>
             </div>
+            <p className={consoleStyles.paneLede}>
+                Every run on a {gameDisplay} board: filter, sort, and act in
+                bulk.
+            </p>
 
             <div className={styles.filters}>
                 <div className="row g-2 align-items-end">
