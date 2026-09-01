@@ -133,7 +133,7 @@ export function ManualTimeVerdictRow({
             <div className={styles.confirmRow}>
                 <button
                     type="button"
-                    className="btn btn-sm btn-outline-secondary"
+                    className={styles.cancelBtn}
                     onClick={() => {
                         setVerdict(null);
                         setReason('');

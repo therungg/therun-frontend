@@ -17,6 +17,7 @@ import {
     ShieldCheck,
     X,
 } from 'react-bootstrap-icons';
+import chrome from '~src/components/console-chrome/console.module.scss';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
@@ -53,12 +54,22 @@ import {
 /** data-triage-card attribute name shared between the selector and the query. */
 const TRIAGE_CARD_ATTR = 'data-triage-card';
 
-// The triage-card action buttons repeat these three Bootstrap class strings
-// across ~13 sites (some inside clsx()). Named once so the whole card family
-// restyles from one place and the variants can't drift.
-const BTN_SECONDARY = 'btn btn-sm btn-outline-secondary';
+// The triage-card action buttons are named once so the whole card family
+// restyles from one place and the variants can't drift. Verdict actions
+// (approve/remove) keep the Bootstrap success/danger vocabulary per the
+// moderation verdict-action carve-out in system.md; secondary actions use
+// the board control-pill tier via this pane's own module.
+const BTN_SECONDARY = styles.quietBtn;
 const BTN_DANGER = 'btn btn-sm btn-outline-danger';
 const BTN_SUCCESS = 'btn btn-sm btn-success';
+
+const SOURCE_FILTERS: Array<{ value: SourceFilter; label: string }> = [
+    { value: 'all', label: 'All' },
+    { value: 'flag', label: 'Flags' },
+    { value: 'report', label: 'Reports' },
+    { value: 'appeal', label: 'Appeals' },
+    { value: 'self_claim', label: 'Self-claims' },
+];
 
 type SourceFilter = 'all' | AttentionSource;
 type CategoryFilter = 'any' | number;
@@ -216,6 +227,14 @@ export function NeedsAttention({
     }, [items, sourceFilter, kindFilter, categoryFilter]);
 
     const groups = useMemo(() => groupByRunner(filtered), [filtered]);
+
+    // Severity tally for the pane header — the scan-first overview of the
+    // whole queue (unfiltered, like the sidebar badge).
+    const sevTally = useMemo(() => {
+        const t: Record<FlagSeverity, number> = { high: 0, medium: 0, low: 0 };
+        for (const it of items) t[it.severity] += 1;
+        return t;
+    }, [items]);
 
     // The exact key order cards render in — respects collapsed runner
     // groups, shared by the roving j/k handler and the queue-position badge.
@@ -427,28 +446,67 @@ export function NeedsAttention({
 
     return (
         <div>
+            <header className={chrome.paneHeader}>
+                <div>
+                    <div className={chrome.paneEyebrow}>Queue</div>
+                    <h2 className={chrome.paneTitle}>Needs attention</h2>
+                </div>
+                <div className={chrome.paneActions}>
+                    {items.length > 0 && (
+                        <span className={styles.tally}>
+                            {(['high', 'medium', 'low'] as const).map(
+                                (sev) =>
+                                    sevTally[sev] > 0 && (
+                                        <span
+                                            key={sev}
+                                            className={styles.tallyItem}
+                                        >
+                                            <span
+                                                className={styles.tallyDot}
+                                                data-sev={sev}
+                                                aria-hidden="true"
+                                            />
+                                            <span className={styles.tallyNum}>
+                                                {sevTally[sev]}
+                                            </span>
+                                            {sev}
+                                        </span>
+                                    ),
+                            )}
+                        </span>
+                    )}
+                </div>
+            </header>
+            <p className={chrome.paneLede}>
+                Open flags, reports, appeals and self-claims on this game&apos;s
+                boards, highest severity first.
+            </p>
             <div className={styles.toolbar}>
                 <div className={styles.field}>
-                    <label
-                        htmlFor="attention-source"
-                        className={styles.fieldLabel}
-                    >
+                    <span className={styles.fieldLabel} id="attention-source">
                         Source
-                    </label>
-                    <select
-                        id="attention-source"
-                        className={styles.select}
-                        value={sourceFilter}
-                        onChange={(e) =>
-                            setSourceFilter(e.target.value as SourceFilter)
-                        }
+                    </span>
+                    <div
+                        className={styles.chipRow}
+                        role="group"
+                        aria-labelledby="attention-source"
                     >
-                        <option value="all">All sources</option>
-                        <option value="flag">Flags</option>
-                        <option value="report">Reports</option>
-                        <option value="appeal">Appeals</option>
-                        <option value="self_claim">Self-claims</option>
-                    </select>
+                        {SOURCE_FILTERS.map(({ value, label }) => (
+                            <button
+                                key={value}
+                                type="button"
+                                className={clsx(
+                                    styles.filterChip,
+                                    sourceFilter === value &&
+                                        styles.filterChipActive,
+                                )}
+                                aria-pressed={sourceFilter === value}
+                                onClick={() => setSourceFilter(value)}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
                 <div className={styles.field}>
                     <label
@@ -490,7 +548,9 @@ export function NeedsAttention({
                     </span>
                 )}
                 <div className={styles.count}>
-                    {filtered.length} item{filtered.length === 1 ? '' : 's'}
+                    {filtered.length === items.length
+                        ? `${filtered.length} item${filtered.length === 1 ? '' : 's'}`
+                        : `${filtered.length} of ${items.length}`}
                 </div>
             </div>
 
@@ -521,7 +581,7 @@ export function NeedsAttention({
                             aria-hidden="true"
                         />
                         <p className={styles.emptyTitle}>All clear</p>
-                        <p className="mb-0">
+                        <p className={styles.emptyText}>
                             Nothing needs attention right now.
                         </p>
                         <div className={styles.emptyLinks}>
@@ -571,10 +631,18 @@ export function NeedsAttention({
                         </div>
                     )}
                     <p className={styles.hint}>
-                        j/k navigate ·{' '}
-                        {isSelfClaimSelected
-                            ? 'v verify · r reject'
-                            : 'v approve · r remove · x select'}
+                        <kbd>j</kbd>
+                        <kbd>k</kbd> navigate ·{' '}
+                        {isSelfClaimSelected ? (
+                            <>
+                                <kbd>v</kbd> verify · <kbd>r</kbd> reject
+                            </>
+                        ) : (
+                            <>
+                                <kbd>v</kbd> approve · <kbd>r</kbd> remove ·{' '}
+                                <kbd>x</kbd> select
+                            </>
+                        )}
                         {queuePos && (
                             <span className={styles.queuePosition}>
                                 {queuePos.n} of {queuePos.m}
@@ -735,7 +803,7 @@ function ItemMeta({ item }: { item: AttentionItem }) {
                 {isGuest ? (
                     <>
                         {item.runnerName}{' '}
-                        <span className="badge text-bg-secondary">guest</span>
+                        <span className={styles.guestBadge}>guest</span>
                     </>
                 ) : (
                     <UserLink username={item.runnerName} />
@@ -1049,7 +1117,8 @@ function RunnerGroupCard({
                     )}
                 </button>
                 <span className={styles.groupCountText}>
-                    {items.length} items needing attention
+                    <span className={styles.groupCountNum}>{items.length}</span>{' '}
+                    open
                 </span>
                 <div className={clsx(styles.actions, styles.pushEnd)}>
                     {userId != null && (

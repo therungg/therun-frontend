@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
-import styles from '~src/components/console-chrome/console.module.scss';
 import type {
     BoardClaimRequest,
     BoardModRole,
@@ -13,6 +12,7 @@ import {
     approveApplicationAction,
     denyApplicationAction,
 } from './actions/decide-application.action';
+import styles from './mod-applications-card.module.scss';
 
 interface Props {
     gameSlug: string;
@@ -42,10 +42,10 @@ export function ModApplicationsCard({ gameSlug, applications }: Props) {
     };
 
     return (
-        <section className="mb-4">
-            <div className={styles.paneHeader}>
-                <h2 className={styles.paneTitle}>Moderator applications</h2>
-                <span className={styles.paneCount}>
+        <section className={styles.card}>
+            <div className={styles.head}>
+                <h2 className={styles.title}>Moderator applications</h2>
+                <span className={styles.headCount}>
                     {remaining.length} pending
                 </span>
             </div>
@@ -132,19 +132,17 @@ function ApplicationRow({
     };
 
     return (
-        <div className={`${styles.item} ${styles.sevLow} mb-2`}>
-            <div className={styles.itemTop}>
-                <strong>{request.username}</strong>
-                <span className="text-muted small">
+        <div className={styles.row}>
+            <div className={styles.rowTop}>
+                <span className={styles.applicant}>{request.username}</span>
+                <span className={styles.signals}>
                     {s.runsOnGame} runs on this game · {s.totalRuns} total
                 </span>
             </div>
-            <p className="mb-2 mt-1 small" style={{ whiteSpace: 'pre-wrap' }}>
-                {request.motivation}
-            </p>
-            <div className={styles.actionRow}>
+            <p className={styles.motivation}>{request.motivation}</p>
+            <div className={styles.rowActions}>
                 <select
-                    className="form-select form-select-sm w-auto"
+                    className={styles.roleSelect}
                     aria-label="Role to grant"
                     value={role}
                     onChange={(e) => setRole(e.target.value as BoardModRole)}
@@ -155,7 +153,7 @@ function ApplicationRow({
                 </select>
                 <button
                     type="button"
-                    className="btn btn-sm btn-primary"
+                    className={styles.approveBtn}
                     disabled={busy}
                     onClick={handleApprove}
                 >
@@ -163,7 +161,7 @@ function ApplicationRow({
                 </button>
                 <button
                     type="button"
-                    className="btn btn-sm btn-outline-danger"
+                    className={styles.denyBtn}
                     disabled={busy}
                     onClick={() => setDenyOpen(true)}
                 >

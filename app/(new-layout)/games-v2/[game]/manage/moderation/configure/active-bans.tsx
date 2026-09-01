@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState, useTransition } from 'react';
-import { PersonSlash, ShieldCheck } from 'react-bootstrap-icons';
+import { ShieldCheck } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
+import chrome from '~src/components/console-chrome/console.module.scss';
 import { UserLink } from '~src/components/links/links';
 import type { GameExclusionRuleRow } from '../../../../../../../types/moderation.types';
 import { deleteRuleAction } from '../rules/actions/delete-rule.action';
@@ -53,80 +54,94 @@ function BanRow({
     };
 
     return (
-        <div className={styles.card}>
-            <div className={styles.cardRow}>
-                <div className={styles.cardMeta}>
+        <>
+            <tr className={styles.row}>
+                <td className={styles.runnerCell}>
                     <span className={styles.runner}>
                         <UserLink username={rule.targetDisplayName} />
                     </span>
-                    <span className={styles.metaLine}>
-                        Banned from{' '}
-                        {rule.categoryName ?? <em>the whole game</em>} · by{' '}
-                        {rule.excludedByName}
-                    </span>
-                    <span className={styles.metaDate}>
-                        {new Date(rule.createdAt).toLocaleDateString()}
-                    </span>
                     {rule.reason && (
-                        <div className={styles.banReason}>{rule.reason}</div>
+                        <span className={styles.banReason}>{rule.reason}</span>
                     )}
-                </div>
-
-                {!expanded ? (
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-outline-danger"
-                        onClick={() => {
-                            setExpanded(true);
-                            setError(null);
-                        }}
-                    >
-                        <PersonSlash
-                            size={13}
-                            aria-hidden="true"
-                            className="me-1"
-                        />
-                        Lift ban
-                    </button>
-                ) : (
-                    <div className={styles.liftForm}>
-                        <textarea
-                            className={styles.liftTextarea}
-                            rows={2}
-                            placeholder={`Reason (min ${MIN_REASON} chars)`}
-                            value={reason}
-                            onChange={(e) => setReason(e.target.value)}
-                            disabled={isPending}
-                        />
-                        {error && (
-                            <div className={styles.errorAlert}>{error}</div>
-                        )}
-                        <div className={styles.liftActions}>
-                            <button
-                                type="button"
-                                className="btn btn-sm btn-outline-secondary"
-                                onClick={() => {
-                                    setExpanded(false);
-                                    setReason('');
-                                    setError(null);
-                                }}
+                </td>
+                <td>
+                    {rule.categoryName ? (
+                        <span className={styles.scopePill}>
+                            {rule.categoryName}
+                        </span>
+                    ) : (
+                        <span className={styles.scopePillGame}>Whole game</span>
+                    )}
+                </td>
+                <td className={styles.byCell}>{rule.excludedByName}</td>
+                <td className={styles.dateCell}>
+                    {new Date(rule.createdAt).toLocaleDateString()}
+                </td>
+                <td className={styles.actionCell}>
+                    {!expanded && (
+                        <button
+                            type="button"
+                            className={styles.liftBtn}
+                            onClick={() => {
+                                setExpanded(true);
+                                setError(null);
+                            }}
+                        >
+                            Lift ban
+                        </button>
+                    )}
+                </td>
+            </tr>
+            {expanded && (
+                <tr className={styles.liftRow}>
+                    <td colSpan={5}>
+                        <div className={styles.liftForm}>
+                            <label
+                                htmlFor={`lift-reason-${rule.ruleId}`}
+                                className={styles.liftLabel}
+                            >
+                                Reason for lifting (min {MIN_REASON} characters)
+                            </label>
+                            <textarea
+                                id={`lift-reason-${rule.ruleId}`}
+                                className={styles.liftTextarea}
+                                rows={2}
+                                value={reason}
+                                onChange={(e) => setReason(e.target.value)}
                                 disabled={isPending}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="button"
-                                className="btn btn-sm btn-danger"
-                                onClick={handleLift}
-                                disabled={isPending || !reasonOk}
-                            >
-                                {isPending ? 'Lifting…' : 'Confirm lift'}
-                            </button>
+                            />
+                            {error && (
+                                <div className={styles.errorAlert} role="alert">
+                                    {error}
+                                </div>
+                            )}
+                            <div className={styles.liftActions}>
+                                <button
+                                    type="button"
+                                    className={styles.cancelBtn}
+                                    onClick={() => {
+                                        setExpanded(false);
+                                        setReason('');
+                                        setError(null);
+                                    }}
+                                    disabled={isPending}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    className={styles.confirmBtn}
+                                    onClick={handleLift}
+                                    disabled={isPending || !reasonOk}
+                                >
+                                    {isPending ? 'Lifting…' : 'Confirm lift'}
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                )}
-            </div>
-        </div>
+                    </td>
+                </tr>
+            )}
+        </>
     );
 }
 
@@ -157,15 +172,30 @@ export function ActiveBans({ gameSlug }: Props) {
 
     return (
         <section className={styles.section}>
-            <h2 className={styles.heading}>Active bans</h2>
-            <p className={styles.description}>
+            <header className={chrome.paneHeader}>
+                <div>
+                    <div className={chrome.paneEyebrow}>Queue</div>
+                    <h2 className={chrome.paneTitle}>Active bans</h2>
+                </div>
+                <div className={chrome.paneActions}>
+                    {!loading && !error && rules.length > 0 && (
+                        <span className={chrome.paneCount}>
+                            {rules.length} active
+                        </span>
+                    )}
+                </div>
+            </header>
+            <p className={chrome.paneLede}>
                 Standing exclusions that keep a runner off this game&apos;s
-                boards. Lifting a ban reinstates their affected runs.
+                boards. Lifting one reinstates the affected runs.
             </p>
 
             {loading ? (
-                <div className={styles.loading}>
-                    <span>Loading active bans…</span>
+                <div className={styles.loading} role="status">
+                    <span className={styles.srOnly}>Loading active bans</span>
+                    <div className={styles.skeletonRow} aria-hidden="true" />
+                    <div className={styles.skeletonRow} aria-hidden="true" />
+                    <div className={styles.skeletonRow} aria-hidden="true" />
                 </div>
             ) : error ? (
                 <div className={styles.errorAlert} role="alert">
@@ -179,20 +209,37 @@ export function ActiveBans({ gameSlug }: Props) {
                         aria-hidden="true"
                     />
                     <p className={styles.emptyTitle}>No active bans</p>
-                    <p className="mb-0">
+                    <p className={styles.emptyText}>
                         This game has no standing exclusions.
                     </p>
                 </div>
             ) : (
-                <div className={styles.stack}>
-                    {rules.map((rule) => (
-                        <BanRow
-                            key={rule.ruleId}
-                            gameSlug={gameSlug}
-                            rule={rule}
-                            onLifted={onLifted}
-                        />
-                    ))}
+                <div className={styles.tableWrap}>
+                    <table className={styles.table}>
+                        <thead>
+                            <tr>
+                                <th>Runner</th>
+                                <th>Scope</th>
+                                <th>Banned by</th>
+                                <th>Date</th>
+                                <th>
+                                    <span className={styles.srOnly}>
+                                        Actions
+                                    </span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {rules.map((rule) => (
+                                <BanRow
+                                    key={rule.ruleId}
+                                    gameSlug={gameSlug}
+                                    rule={rule}
+                                    onLifted={onLifted}
+                                />
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             )}
         </section>
