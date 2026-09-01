@@ -11,14 +11,30 @@
     gap: dt.$spacing-lg;
 }
 
+// Console-only pane intro — the shared paneHeader/paneEyebrow/paneTitle/
+// paneLede anatomy comes from console.module.scss; this wrapper only trims
+// the lede's trailing margin so the root's own flex gap sets the rhythm.
+.paneIntro {
+    > :last-child {
+        margin-bottom: 0;
+    }
+}
+
+// The door back to the exact public board being curated, in the pane
+// header's action slot.
+.boardLink {
+    @include board.control-pill;
+    font-size: dt.$font-size-xs;
+    text-decoration: none;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+}
+
 // ---- Board controls toolbar (Task 12: Minimum / Reorder / Set default /
-// Display) — right-aligned, quiet icon+label control-pills so it reads as
-// part of the leaderboard's own control language rather than an admin bar
-// bolted on top.
-// Console-only top row: "View public board" on the left, BoardControls'
-// right-aligned toolbar opposite (a bare span holds the left slot when the
-// viewer can't see one side, so space-between keeps both anchored).
-.paneTopRow {
+// Display) — one composed row directly above the table: the board's scan
+// line (run count, marked-pile chip) on the left, BoardControls' quiet
+// icon+label control-pills on the right, so it reads as part of the
+// leaderboard's own control language rather than an admin bar bolted on top.
+.toolbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -26,10 +42,17 @@
     gap: dt.$spacing-xs;
 }
 
-.boardLink {
-    @include board.control-pill;
-    font-size: dt.$font-size-xs;
-    text-decoration: none;
+.toolbarFilters {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+}
+
+.boardCount {
+    @include board.mono-time;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
 }
 
 .controlsBar {
@@ -267,19 +290,42 @@
     }
 }
 
-// ---- Marked-pile filter chip ----
-// Quiet, left-aligned (unlike .controlsBar's right-aligned Task 12 toolbar)
-// since it sits with the bands/switcher, not the config controls.
-.markedBar {
-    display: flex;
-}
-
+// ---- Batch-selection bar ----
+// The console's sticky glass bar (system.md: glass is reserved for sticky
+// bars floating above scrolled content) — it rides above the table while
+// the moderator scrolls a long board with rows selected.
 .selectionBar {
+    @include board.board-glass;
+    position: sticky;
+    top: dt.$spacing-sm;
+    z-index: dt.$z-sticky;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: dt.$spacing-sm;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    border-radius: dt.$radius-lg;
+    box-shadow: dt.$shadow-sm;
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
+}
+
+.selectionCount {
+    @include board.mono-time;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    margin-right: dt.$spacing-sm;
+}
+
+.selectionBtn {
+    @include board.control-pill;
+    font-size: dt.$font-size-xs;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+}
+
+.selectionClear {
+    @include board.board-quiet-link;
+    margin-left: auto;
 }
 
 // ---- Board pager ----
@@ -297,10 +343,6 @@
     font-size: dt.$font-size-xs;
     color: var(--bs-secondary-color);
     font-variant-numeric: tabular-nums;
-}
-
-.selectionAction {
-    @include board.board-quiet-link;
 }
 
 // A row pinned in place by a pending removal (see PendingRemoval in
@@ -525,6 +567,29 @@
     @include board.board-dialog-textarea;
 }
 
+// The Move dialog's category select — same recipe as .dialogInput (recessed
+// fill, token border/radius, primary focus ring) on a native <select>, in
+// place of raw Bootstrap's form-select.
+.dialogSelect {
+    @include board.board-input-rules;
+    display: block;
+    width: 100%;
+    font-size: dt.$font-size-sm;
+    padding: dt.$spacing-sm;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    background: color-mix(
+        in srgb,
+        var(--bs-body-bg) 90%,
+        var(--bs-secondary-bg) 10%
+    );
+    color: var(--bs-body-color);
+    margin-bottom: dt.$spacing-sm;
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
+
 // Single-line sibling of .dialogTextarea — same recipe (dt tokens for
 // font-size/padding/border/radius/width, same focus ring) minus `resize`,
 // which only makes sense on a multi-line control. Used by the Remove
@@ -696,6 +761,10 @@
     @include board.board-empty;
 }
 
+.emptyIcon {
+    @include board.board-empty-icon;
+}
+
 .emptyTitle {
     @include board.board-empty-title;
 }
@@ -706,11 +775,19 @@
     margin: 0;
 }
 
-.loadingNote {
+// First-load placeholder inside the table surface: a stack of shimmer rows
+// shaped like the board rows about to replace them.
+.loadingRows {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
     padding: dt.$spacing-lg;
-    text-align: center;
-    color: var(--bs-secondary-color);
-    font-size: dt.$font-size-sm;
+}
+
+.loadingRow {
+    @include board.board-skeleton;
+    height: 2.25rem;
+    border-radius: dt.$radius-sm;
 }
 
 // In-table empty state (the ghost row always renders below it, so an empty

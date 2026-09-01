@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useId, useMemo, useState, useTransition } from 'react';
+import { BoxArrowUpRight } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import Link from '~src/components/link';
 import type { RunTreatment } from '../../../../../../types/bans.types';
@@ -270,7 +271,8 @@ export function RunnerDialog({
                         <Link
                             href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${row.userId}?from=${dossierFrom}`}
                         >
-                            View full runner page ↗
+                            View full runner page{' '}
+                            <BoxArrowUpRight size={12} aria-hidden />
                         </Link>
                     </p>
                 )}
