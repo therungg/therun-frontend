@@ -213,9 +213,12 @@ export function ContentRouter(props: ContentRouterProps) {
             return (
                 <div className={styles.surface}>
                     <div className={styles.paneHeader}>
-                        <h2 className={styles.paneTitle}>
-                            Subcategories &amp; filters
-                        </h2>
+                        <div>
+                            <div className={styles.paneEyebrow}>Structure</div>
+                            <h2 className={styles.paneTitle}>
+                                Subcategories &amp; filters
+                            </h2>
+                        </div>
                     </div>
                     <VariablesGrid
                         game={game}
