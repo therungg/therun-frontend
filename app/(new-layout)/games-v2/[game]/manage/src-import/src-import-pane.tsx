@@ -7,11 +7,11 @@ import {
     useState,
     useTransition,
 } from 'react';
+import { BoxArrowUpRight } from 'react-bootstrap-icons';
 import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 import type { SrcImportJob } from '../../../../../../types/src-import.types';
 import { InlineError } from '../shared/form-kit';
-import kit from '../shared/form-kit.module.scss';
 import { CommitPanel } from './commit-panel';
 import { ReviewTabs } from './review-tabs';
 import styles from './src-import.module.scss';
@@ -86,22 +86,25 @@ export function SrcImportPane({ gameId, gameSlug, gameDisplay }: Props) {
     return (
         <div className={consoleStyles.surface}>
             <div className={consoleStyles.paneHeader}>
-                <h2 className={consoleStyles.paneTitle}>
-                    {CONCEPT_LABEL.import}
-                </h2>
+                <div>
+                    <div className={consoleStyles.paneEyebrow}>Game</div>
+                    <h2 className={consoleStyles.paneTitle}>
+                        {CONCEPT_LABEL.import}
+                    </h2>
+                </div>
             </div>
             <p className={consoleStyles.paneLede}>
-                Fetch the {gameDisplay} board from speedrun.com — categories,
-                subcategories and filters, runs, and players — and review it
-                here before anything is written.
+                Fetch the {gameDisplay} board from speedrun.com (categories,
+                subcategories and filters, runs, players) and review it here
+                before anything is written.
             </p>
 
             <div className={styles.stack}>
-                <div className={`${styles.callout} ${styles.calloutWarn}`}>
-                    Fetching and reviewing the board below is a dry run —
-                    nothing is written yet. Once the import finishes, the commit
-                    controls under the review tabs DO write to the live board.
-                </div>
+                <p className={styles.note}>
+                    Fetching and reviewing the board below is a dry run: nothing
+                    is written yet. Only the commit controls at the bottom write
+                    to the live board.
+                </p>
 
                 <form className={styles.form} onSubmit={submit}>
                     <div className={styles.field}>
@@ -124,20 +127,20 @@ export function SrcImportPane({ gameId, gameSlug, gameDisplay }: Props) {
                                 disabled={pending || inFlight}
                                 required
                             />
+                            <button
+                                type="submit"
+                                className={styles.fetchBtn}
+                                disabled={pending || inFlight || !url}
+                            >
+                                {pending ? 'Starting…' : 'Fetch board'}
+                            </button>
                         </span>
                     </div>
-                    <button
-                        type="submit"
-                        className={kit.saveBtn}
-                        disabled={pending || inFlight || !url}
-                    >
-                        {pending ? 'Starting…' : 'Fetch board'}
-                    </button>
                 </form>
                 {submitError && <InlineError>{submitError}</InlineError>}
                 {inFlight && (
                     <p className={styles.muted}>
-                        An import is already running for this game — wait for it
+                        An import is already running for this game. Wait for it
                         to finish before starting another.
                     </p>
                 )}
@@ -209,16 +212,23 @@ function JobCard({ job }: { job: SrcImportJob }) {
                     target="_blank"
                     rel="noreferrer noopener"
                 >
-                    {job.srcUrl}
+                    View on speedrun.com
+                    <BoxArrowUpRight size={12} aria-hidden />
                 </a>
+                <span className={styles.jobTimes}>
+                    Started {job.startedAt ? fmtDate(job.startedAt) : '—'}
+                    {job.finishedAt
+                        ? ` · finished ${fmtDate(job.finishedAt)}`
+                        : ''}
+                </span>
             </div>
             {inFlight && (
                 <>
                     <JobProgress job={job} />
                     <p className={styles.muted}>
                         Phase: {PHASE_LABEL[job.phase]}. speedrun.com is rate
-                        limited, so large boards take a while — this page
-                        updates on its own.
+                        limited, so large boards take a while. This page updates
+                        on its own.
                     </p>
                 </>
             )}
@@ -238,8 +248,8 @@ function JobCard({ job }: { job: SrcImportJob }) {
                 <Counter label="API requests" value={job.requestsMade} />
             </div>
             {job.changeSummary && (
-                <>
-                    <p className={styles.muted}>What this import changed</p>
+                <div className={styles.changedBand}>
+                    <p className={styles.bandLabel}>What this import changed</p>
                     <div className={styles.counters}>
                         <Counter
                             label="Runs added"
@@ -258,12 +268,8 @@ function JobCard({ job }: { job: SrcImportJob }) {
                             value={job.changeSummary.archived}
                         />
                     </div>
-                </>
+                </div>
             )}
-            <p className={styles.muted}>
-                Started {job.startedAt ? fmtDate(job.startedAt) : '—'}
-                {job.finishedAt ? ` · finished ${fmtDate(job.finishedAt)}` : ''}
-            </p>
         </section>
     );
 }

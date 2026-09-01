@@ -204,36 +204,45 @@ export function PlanPreview({ gameId, gameSlug, jobId, onPlanLoaded }: Props) {
 
     return (
         <div className={styles.stack}>
-            <div className={styles.counters}>
-                {ACTIONS.map((action) => (
-                    <Counter
-                        key={`categories-${action}`}
-                        label={`Categories: ${action}`}
-                        value={categoryCounts[action]}
-                    />
-                ))}
-                {ACTIONS.map((action) => (
-                    <Counter
-                        key={`levels-${action}`}
-                        label={`Levels: ${action}`}
-                        value={levelCounts[action]}
-                    />
-                ))}
-                {ACTIONS.map((action) => (
-                    <Counter
-                        key={`variables-${action}`}
-                        label={`Variables: ${action}`}
-                        value={variableCounts[action]}
-                    />
-                ))}
+            <div className={styles.band}>
+                <p className={styles.bandLabel}>Configuration plan</p>
+                <div className={styles.counters}>
+                    {ACTIONS.map((action) => (
+                        <Counter
+                            key={`categories-${action}`}
+                            label={`Categories: ${action}`}
+                            value={categoryCounts[action]}
+                        />
+                    ))}
+                    {ACTIONS.map((action) => (
+                        <Counter
+                            key={`levels-${action}`}
+                            label={`Levels: ${action}`}
+                            value={levelCounts[action]}
+                        />
+                    ))}
+                    {ACTIONS.map((action) => (
+                        <Counter
+                            key={`variables-${action}`}
+                            label={`Variables: ${action}`}
+                            value={variableCounts[action]}
+                        />
+                    ))}
+                </div>
             </div>
-            <div className={styles.counters}>
-                <Counter label="Runs total" value={plan.runs.total} />
-                <Counter label="Verified" value={plan.runs.byStatus.verified} />
-                <Counter label="New" value={plan.runs.byStatus.new} />
-                <Counter label="Guests" value={plan.runs.guests} />
-                <Counter label="Matched" value={plan.runs.matched} />
-                <Counter label="Unmappable" value={plan.runs.unmappable} />
+            <div className={styles.band}>
+                <p className={styles.bandLabel}>Runs to import</p>
+                <div className={styles.counters}>
+                    <Counter label="Runs total" value={plan.runs.total} />
+                    <Counter
+                        label="Verified"
+                        value={plan.runs.byStatus.verified}
+                    />
+                    <Counter label="New" value={plan.runs.byStatus.new} />
+                    <Counter label="Guests" value={plan.runs.guests} />
+                    <Counter label="Matched" value={plan.runs.matched} />
+                    <Counter label="Unmappable" value={plan.runs.unmappable} />
+                </div>
             </div>
 
             {hasConflicts ? (
@@ -244,7 +253,7 @@ export function PlanPreview({ gameId, gameSlug, jobId, onPlanLoaded }: Props) {
                                 ? '1 item blocks this import'
                                 : `${plan.conflicts.length} items block this import`}
                             . Each names a category, level, or variable that
-                            can’t be imported as-is — usually because it points
+                            can’t be imported as-is, usually because it points
                             at something excluded from this import. Apply stays
                             disabled until they’re cleared.
                         </p>
