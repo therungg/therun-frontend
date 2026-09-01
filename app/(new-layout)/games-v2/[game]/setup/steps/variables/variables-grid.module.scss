@@ -73,6 +73,10 @@
     @include board.board-empty-title;
 }
 
+.emptyIcon {
+    @include board.board-empty-icon;
+}
+
 .emptyNote {
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
@@ -179,16 +183,20 @@
     cursor: pointer;
 
     // A filled disclosure triangle rather than a chevron: it reads as "this
-    // opens" rather than as a direction, which is what it means.
-    &::after {
-        content: '▾';
-        font-size: dt.$font-size-sm;
-        line-height: 1;
+    // opens" rather than as a direction, which is what it means. Drawn as a
+    // react-bootstrap-icons CaretDownFill in the markup, not a text glyph.
+    svg {
         transition: transform dt.$transition-fast;
     }
 
-    &[aria-expanded='false']::after {
+    &[aria-expanded='false'] svg {
         transform: rotate(-90deg);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        svg {
+            transition: none;
+        }
     }
 
     &:hover {
@@ -226,13 +234,13 @@
     letter-spacing: -0.01em;
     color: var(--bs-emphasis-color);
     background: var(--bs-body-bg);
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
-    border-radius: dt.$radius-sm;
+    border: 1px solid;
     padding: 0 dt.$spacing-xs;
+    @include board.board-input-rules;
 
+    &:focus,
     &:focus-visible {
-        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
-        outline-offset: 1px;
+        outline: 0;
     }
 }
 
@@ -254,8 +262,8 @@
     cursor: pointer;
 
     &:hover:not(:disabled) {
-        border-color: rgba(var(--bs-danger-rgb), 0.6);
-        color: var(--bs-danger);
+        border-color: rgba(dt.$accent-red, 0.6);
+        color: dt.$accent-red;
     }
 }
 
@@ -272,6 +280,8 @@
     padding: dt.$spacing-sm dt.$spacing-lg;
     border-top: 1px solid rgba(dt.$accent-amber, 0.35);
     border-bottom: 1px solid rgba(dt.$accent-amber, 0.35);
+    // The severity spine: this strip is a medium-severity attention item.
+    border-left: 3px solid dt.$accent-amber;
     background: rgba(dt.$accent-amber, 0.08);
 }
 
@@ -421,8 +431,8 @@
     }
 
     &:hover:not(:disabled) {
-        color: var(--bs-danger);
-        border-color: rgba(var(--bs-danger-rgb), 0.4);
+        color: dt.$accent-red;
+        border-color: rgba(dt.$accent-red, 0.4);
     }
 
     &:disabled {
@@ -443,6 +453,9 @@
 // corner, the easiest thing on the grid to miss. Given the primary accent and
 // a tick more weight so it reads as an action, not a decoration.
 .addOption {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
     font: inherit;
     font-size: dt.$font-size-2xs;
     font-weight: 600;
@@ -507,8 +520,8 @@
     font-size: dt.$font-size-2xs;
 
     &:hover:not(:disabled) {
-        border-color: rgba(var(--bs-danger-rgb), 0.6);
-        color: var(--bs-danger);
+        border-color: rgba(dt.$accent-red, 0.6);
+        color: dt.$accent-red;
     }
 }
 
@@ -519,9 +532,11 @@
     gap: dt.$spacing-sm;
     flex-wrap: wrap;
     padding: dt.$spacing-sm dt.$spacing-lg;
-    border-top: 1px solid rgba(var(--bs-danger-rgb), 0.35);
-    border-bottom: 1px solid rgba(var(--bs-danger-rgb), 0.35);
-    background: rgba(var(--bs-danger-rgb), 0.07);
+    border-top: 1px solid rgba(dt.$accent-red, 0.35);
+    border-bottom: 1px solid rgba(dt.$accent-red, 0.35);
+    // High severity: the one action here that destroys leaderboards.
+    border-left: 3px solid dt.$accent-red;
+    background: rgba(dt.$accent-red, 0.07);
 }
 
 .deleteWarning {
@@ -533,9 +548,9 @@
 
 .deleteConfirm {
     @include board.board-chip;
-    border-color: rgba(var(--bs-danger-rgb), 0.7);
-    background: rgba(var(--bs-danger-rgb), 0.12);
-    color: var(--bs-danger);
+    border-color: rgba(dt.$accent-red, 0.7);
+    background: rgba(dt.$accent-red, 0.12);
+    color: dt.$accent-red;
     font-weight: 600;
 }
 
@@ -733,22 +748,14 @@
     text-underline-offset: 3px;
     text-decoration-color: rgba(var(--bs-border-color-rgb), 0.8);
 
-    &::after {
-        content: '✎';
-        font-size: dt.$font-size-2xs;
-        color: var(--bs-tertiary-color);
-        opacity: 0;
-        transition: opacity dt.$transition-fast;
-    }
-
     &:hover {
         color: var(--bs-emphasis-color);
         text-decoration-color: currentcolor;
     }
 
-    &:hover::after,
-    &:focus-visible::after,
-    &[aria-expanded='true']::after {
+    &:hover .optionEditIcon,
+    &:focus-visible .optionEditIcon,
+    &[aria-expanded='true'] .optionEditIcon {
         opacity: 1;
     }
 
@@ -756,6 +763,15 @@
         outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
         outline-offset: 2px;
     }
+}
+
+// The hover-revealed edit mark on an option header. An icon in the markup
+// (react-bootstrap-icons Pencil), not a ::after glyph.
+.optionEditIcon {
+    flex: none;
+    color: var(--bs-tertiary-color);
+    opacity: 0;
+    transition: opacity dt.$transition-fast;
 }
 
 // How many other spellings resolve to this option — the only hint that a
@@ -793,8 +809,8 @@
 
 .optionRemove {
     @include board.board-chip;
-    border-color: rgba(var(--bs-danger-rgb), 0.5);
-    color: var(--bs-danger);
+    border-color: rgba(dt.$accent-red, 0.5);
+    color: dt.$accent-red;
 }
 
 .optionNote {
@@ -829,10 +845,16 @@
     font: inherit;
     font-size: dt.$font-size-2xs;
     padding: 0.1rem dt.$spacing-xs;
-    border-radius: dt.$radius-sm;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border: 1px solid;
     background: transparent;
     color: var(--bs-body-color);
+    @include board.board-input-rules;
+    border-radius: dt.$radius-sm;
+
+    &:focus,
+    &:focus-visible {
+        outline: 0;
+    }
 }
 
 .defaultNone {
@@ -847,7 +869,10 @@
 // creates a whole object with leaderboards behind it, and the control that
 // does it should stand where the object will stand.
 .addAction {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
     width: 100%;
     padding: dt.$spacing-lg;
     font: inherit;
@@ -899,14 +924,14 @@
     font: inherit;
     font-size: dt.$font-size-sm;
     padding: dt.$spacing-xs dt.$spacing-sm;
-    border-radius: dt.$radius-sm;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    border: 1px solid;
     background: var(--bs-body-bg);
     color: var(--bs-body-color);
+    @include board.board-input-rules;
 
+    &:focus,
     &:focus-visible {
-        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
-        outline-offset: 1px;
+        outline: 0;
     }
 }
 
@@ -917,13 +942,13 @@
 .addError {
     margin: 0;
     font-size: dt.$font-size-sm;
-    color: var(--bs-danger);
+    color: dt.$accent-red;
 }
 
 .addWarning {
     margin: 0;
     font-size: dt.$font-size-sm;
-    color: var(--bs-warning-text-emphasis, #997404);
+    color: dt.$accent-amber;
 }
 
 .addCategories {
@@ -958,7 +983,7 @@
 .dialogBackdrop {
     position: fixed;
     inset: 0;
-    z-index: 1080;
+    z-index: dt.$z-dialog;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -975,8 +1000,9 @@
     border-radius: dt.$radius-lg;
     background: var(--board-surface-bg, var(--bs-body-bg));
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+    box-shadow: dt.$shadow-lg;
     overflow: hidden;
+    @include board.board-overlay-enter;
 }
 
 .dialogHeader {
@@ -1055,8 +1081,7 @@ details[open] > .noteSummary::before {
     font: inherit;
     font-size: dt.$font-size-sm;
     padding: dt.$spacing-xs dt.$spacing-sm;
-    border-radius: dt.$radius-sm;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    border: 1px solid;
     background: var(--bs-body-bg);
     color: var(--bs-body-color);
     display: block;
@@ -1064,10 +1089,11 @@ details[open] > .noteSummary::before {
     max-width: 34rem;
     margin-top: dt.$spacing-sm;
     resize: vertical;
+    @include board.board-input-rules;
 
+    &:focus,
     &:focus-visible {
-        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
-        outline-offset: 1px;
+        outline: 0;
     }
 }
 

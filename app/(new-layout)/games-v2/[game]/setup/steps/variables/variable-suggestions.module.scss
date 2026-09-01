@@ -80,14 +80,18 @@
 }
 
 // Reserved status green — the bars stay monochrome so this reads as state.
+// The one brand green (system.md's one-green rule), not $accent-green.
 .pillAdded {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
     flex: none;
     font-size: dt.$font-size-xs;
     font-weight: 600;
     padding: 0.1rem 0.5rem;
     border-radius: 999px;
-    color: dt.$accent-green;
-    background: rgba(76, 175, 80, 0.12);
+    color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.1);
     white-space: nowrap;
 }
 
@@ -216,7 +220,7 @@
 
 .coveredNote {
     font-size: dt.$font-size-sm;
-    color: dt.$accent-green;
+    color: var(--bs-primary);
 }
 
 .gapNote {
@@ -234,32 +238,19 @@
     margin-top: dt.$spacing-xs;
 }
 
+// The action hierarchy, at card scale: primary = board-btn-primary,
+// secondary = control-pill. Padding slimmed so a footer of two actions
+// stays quieter than the pane's own primary action.
 .addPrimary {
-    font-size: dt.$font-size-sm;
-    font-weight: 600;
+    @include board.board-btn-primary;
     padding: 0.3rem 0.85rem;
-    border-radius: dt.$radius-sm;
-    border: 1px solid var(--bs-primary);
-    background: var(--bs-primary);
-    color: #fff;
-    cursor: pointer;
 
-    &:hover {
-        filter: brightness(1.08);
+    @media (pointer: coarse) {
+        min-height: 44px;
     }
 }
 
 .addSecondary {
-    font-size: dt.$font-size-sm;
-    font-weight: 600;
+    @include board.control-pill;
     padding: 0.3rem 0.85rem;
-    border-radius: dt.$radius-sm;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.7);
-    background: transparent;
-    color: var(--bs-body-color);
-    cursor: pointer;
-
-    &:hover {
-        background: rgba(var(--bs-border-color-rgb), 0.2);
-    }
 }

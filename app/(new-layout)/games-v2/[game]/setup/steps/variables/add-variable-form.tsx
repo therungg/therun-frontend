@@ -161,14 +161,14 @@ export function AddVariableForm({
                 />
             </label>
             <p className={styles.addNote}>
-                What runners set in their splits — runs are matched on this.
+                What runners set in their splits: runs are matched on this.
                 Defaults to the display name; change it only if the two differ.
             </p>
 
             <label className={styles.addField}>
                 <span className={styles.addLabel}>
-                    {SECTION[role].options}, one per line — add other accepted
-                    spellings after a comma
+                    {SECTION[role].options}, one per line (other accepted
+                    spellings after a comma)
                 </span>
                 <textarea
                     className={styles.addTextarea}
@@ -245,7 +245,7 @@ export function AddVariableForm({
             {collision && <p className={styles.addError}>{collision}</p>}
             {offList && (
                 <p className={styles.addWarning}>
-                    Few runners set &ldquo;{name.trim()}&rdquo; — it isn&rsquo;t
+                    Few runners set &ldquo;{name.trim()}&rdquo;: it isn&rsquo;t
                     among the suggested variables. You can still add it.
                 </p>
             )}
@@ -257,7 +257,7 @@ export function AddVariableForm({
                               selectedIds.length === 1
                                   ? 'category is'
                                   : 'categories are'
-                          } multiplied by ${options.length} — every one splits into ${options.length} subcategories with their own records.`
+                          } multiplied by ${options.length}: every one splits into ${options.length} subcategories with their own records.`
                         : 'A subcategory group needs at least two options to split anything.'
                     : `Added to ${selectedIds.length} ${
                           selectedIds.length === 1 ? 'category' : 'categories'

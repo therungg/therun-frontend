@@ -1,10 +1,12 @@
 'use client';
 
 import { BoxArrowUpRight } from 'react-bootstrap-icons';
+import chrome from '~src/components/console-chrome/console.module.scss';
 import { NAV_ICON } from '~src/components/console-chrome/nav-icons';
 import Link from '~src/components/link';
+import { DurationToFormatted } from '~src/components/util/datetime';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
-import { CONCEPT_TILE, type TileConceptId } from '~src/lib/console/vocabulary';
+import { CONCEPT_TILE } from '~src/lib/console/vocabulary';
 import { splitLevelBoards } from '~src/lib/levels/display';
 import type { BoardCompleteness } from '~src/lib/setup/completeness';
 import type { BoardHealth } from '~src/lib/setup/health';
@@ -22,12 +24,12 @@ import { buildOverviewStats, timeAgo, topFeaturedRows } from './overview-model';
 import { ResyncButton } from './resync-button';
 
 // The four staging phases the import worker walks (SrcImportPhase), in order —
-// drives the progress bar's filled-segment count.
+// drives the progress bar's filled-segment count while a job is running.
 const IMPORT_PHASES = ['meta', 'runs', 'matching', 'done'] as const;
 
-// Concepts the dashboard already gives a dedicated panel; everything else the
-// viewer can reach becomes a "Jump to" tile so the front door still leads
-// everywhere the sidebar does.
+// Concepts the overview already surfaces directly; everything else the viewer
+// can reach becomes a quiet destination link so nothing is unreachable from
+// the front door.
 const FEATURED_ON_DASHBOARD = new Set<NavItemId>([
     'categories',
     'moderators',
@@ -36,17 +38,18 @@ const FEATURED_ON_DASHBOARD = new Set<NavItemId>([
     'attention',
 ]);
 
-const AVATAR_HUES = [210, 160, 32, 280, 340, 130];
-function avatarStyle(name: string): { background: string } {
-    let h = 0;
-    for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) | 0;
-    const hue = AVATAR_HUES[Math.abs(h) % AVATAR_HUES.length];
-    return { background: `hsl(${hue} 55% 42%)` };
-}
+const SEV_CLASS = {
+    high: 'sevHigh',
+    medium: 'sevMedium',
+    low: 'sevLow',
+} as const;
 
-function humanRole(role: string): string {
-    return role.replace(/[-_]/g, ' ');
-}
+const SOURCE_LABEL = {
+    flag: 'flag',
+    report: 'report',
+    appeal: 'appeal',
+    self_claim: 'claim',
+} as const;
 
 /**
  * The delta a re-sync produced, shown under the import status so a moderator
@@ -93,11 +96,11 @@ interface Props {
 }
 
 /**
- * The console front door. A scannable board summary — KPIs, the featured
- * categories with their stats, board health, import status and the mod team —
- * built entirely from data the /manage page already loads (plus the latest
- * import job). Replaces the navigation-only tile grid: the sidebar is still the
- * fast path; this is the "what's the state of my board?" view.
+ * The console front door. Leads with the queue state (does anything need a
+ * moderator right now?), then the board's vitals, the category table, board
+ * health and import status — built entirely from data the /manage page
+ * already loads. The sidebar is still the fast path; this is the "what's the
+ * state of my board?" view.
  */
 export function BoardOverview({
     game,
@@ -140,45 +143,148 @@ export function BoardOverview({
         setupCompleteness.steps.find((s) => s.step === 'boards')?.status !==
             'done';
 
-    // The demoted tile grid: every reachable concept that isn't already a
-    // dashboard panel, so nothing becomes unreachable from the front door.
+    // Every reachable concept that isn't already surfaced above, as one quiet
+    // row of doors — the sidebar stays the real navigation.
     const jumpItems = navGroups
         .flatMap((g) => g.items)
         .filter(
             (it) => !FEATURED_ON_DASHBOARD.has(it.id) && it.id in CONCEPT_TILE,
         );
 
+    // Items arrive sorted severity desc, oldest first within a severity — so
+    // the first rows are exactly what a moderator should judge first.
+    const attentionTotal = stats.attention.total;
+    const topSeverity = attentionItems[0]?.severity ?? null;
+    const previewItems = attentionItems.slice(0, 3);
+    const oldestCreatedAt =
+        attentionItems.length > 0
+            ? attentionItems.reduce(
+                  (min, it) => (it.createdAt < min ? it.createdAt : min),
+                  attentionItems[0].createdAt,
+              )
+            : null;
+
+    const breakdownParts: string[] = [];
+    if (stats.attention.flags > 0) {
+        breakdownParts.push(
+            `${stats.attention.flags} flag${stats.attention.flags === 1 ? '' : 's'}`,
+        );
+    }
+    if (stats.attention.reports > 0) {
+        breakdownParts.push(
+            `${stats.attention.reports} report${stats.attention.reports === 1 ? '' : 's'}`,
+        );
+    }
+    if (stats.attention.claims > 0) {
+        breakdownParts.push(
+            `${stats.attention.claims} claim${stats.attention.claims === 1 ? '' : 's'}`,
+        );
+    }
+    const oldestAgo = timeAgo(oldestCreatedAt);
+    if (oldestAgo) breakdownParts.push(`oldest ${oldestAgo}`);
+
+    const lastSyncAgo = timeAgo(
+        syncJob?.runsImportedAt ?? syncJob?.finishedAt ?? syncJob?.createdAt,
+    );
+
     return (
         <div className={styles.wrap}>
-            <div className={styles.statusLine}>
-                {setupIncomplete ? (
-                    <span className={`${styles.statusPill} ${styles.setup}`}>
-                        <span className={styles.beat} aria-hidden />
-                        Setup in progress
-                    </span>
-                ) : (
-                    <span className={`${styles.statusPill} ${styles.live}`}>
-                        <span className={styles.beat} aria-hidden />
-                        Board is live
-                    </span>
-                )}
-                <span>
-                    {stats.featured} categor{stats.featured === 1 ? 'y' : 'ies'}
-                    {stats.categoryGroups > 0 &&
-                        ` · ${stats.categoryGroups} group${stats.categoryGroups === 1 ? '' : 's'}`}
-                    {stats.levels > 0 &&
-                        ` · ${stats.levels} level${stats.levels === 1 ? '' : 's'}`}
-                </span>
-                <Link
-                    className={styles.publicLink}
-                    href={`/games-v2/${encodeURIComponent(game.name)}`}
-                >
-                    View public page
-                    <BoxArrowUpRight size={12} aria-hidden className="ms-1" />
-                </Link>
-            </div>
+            <header className={chrome.paneHeader}>
+                <div>
+                    <div className={chrome.paneEyebrow}>Console</div>
+                    <h2 className={chrome.paneTitle}>Overview</h2>
+                </div>
+                <div className={chrome.paneActions}>
+                    <Link
+                        className={styles.publicLink}
+                        href={`/games-v2/${encodeURIComponent(game.name)}`}
+                    >
+                        View public board
+                        <BoxArrowUpRight size={12} aria-hidden />
+                    </Link>
+                </div>
+            </header>
+            <p className={chrome.paneLede}>
+                What needs a moderator, and the board's vitals.
+            </p>
 
-            {/* KPI row */}
+            {/* Status headline: the queue state before anything else. */}
+            {canModerate && (
+                <section
+                    className={styles.status}
+                    data-sev={attentionTotal > 0 ? topSeverity : undefined}
+                    aria-label="Queue status"
+                >
+                    <div className={styles.statusHead}>
+                        <span className={styles.statusCount}>
+                            {attentionTotal}
+                        </span>
+                        <div className={styles.statusText}>
+                            <h3 className={styles.statusTitle}>
+                                {attentionTotal === 0
+                                    ? 'All clear'
+                                    : 'Waiting for review'}
+                            </h3>
+                            <p className={styles.statusSub}>
+                                {attentionTotal === 0
+                                    ? 'No flags, reports or claims waiting.'
+                                    : breakdownParts.join(' · ')}
+                            </p>
+                        </div>
+                        {attentionTotal > 0 && (
+                            <button
+                                type="button"
+                                className={styles.statusOpen}
+                                onClick={() => onNavigate('attention')}
+                            >
+                                Open the queue
+                            </button>
+                        )}
+                    </div>
+                    {previewItems.length > 0 && (
+                        <ul className={styles.previewList}>
+                            {previewItems.map((item) => (
+                                <li key={item.key}>
+                                    <button
+                                        type="button"
+                                        className={`${styles.previewRow} ${styles[SEV_CLASS[item.severity]]}`}
+                                        onClick={() => onNavigate('attention')}
+                                    >
+                                        <span className={styles.previewRunner}>
+                                            {item.runnerName}
+                                        </span>
+                                        <span className={styles.previewCat}>
+                                            {item.categoryName}
+                                        </span>
+                                        <span className={styles.previewTime}>
+                                            <DurationToFormatted
+                                                duration={item.timeMs}
+                                                withMillis
+                                            />
+                                        </span>
+                                        <span className={styles.previewSource}>
+                                            {item.sources
+                                                .map((s) => SOURCE_LABEL[s])
+                                                .join(' · ')}
+                                        </span>
+                                        <span className={styles.previewAge}>
+                                            {timeAgo(item.createdAt)}
+                                        </span>
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                    {attentionTotal > previewItems.length && (
+                        <p className={styles.previewMore}>
+                            + {attentionTotal - previewItems.length} more in the
+                            queue
+                        </p>
+                    )}
+                </section>
+            )}
+
+            {/* Vitals band */}
             <div className={styles.kpis}>
                 <div className={styles.kpi}>
                     <span className={styles.kpiLabel}>Categories</span>
@@ -208,38 +314,22 @@ export function BoardOverview({
                     <span className={styles.kpiSub}>across all boards</span>
                 </div>
 
-                {canModerate && (
-                    <button
-                        type="button"
-                        className={`${styles.kpi} ${stats.attention.total > 0 ? styles.flag : ''}`}
-                        onClick={() => onNavigate('attention')}
-                    >
-                        <span className={styles.kpiLabel}>Needs attention</span>
-                        <span className={styles.kpiVal}>
-                            {stats.attention.total}
-                        </span>
-                        <span className={styles.kpiSub}>
-                            {stats.attention.total === 0
-                                ? 'nothing waiting'
-                                : `${stats.attention.flags} flags · ${stats.attention.reports} reports · ${stats.attention.claims} claims`}
-                        </span>
-                    </button>
-                )}
-
                 {showModerators && (
                     <button
                         type="button"
-                        className={styles.kpi}
+                        className={styles.kpiBtn}
                         onClick={() => onNavigate('moderators')}
                     >
                         <span className={styles.kpiLabel}>Moderators</span>
                         <span className={styles.kpiVal}>
                             {stats.moderatorCount}
                         </span>
-                        <span className={styles.kpiSub}>
+                        <span
+                            className={`${styles.kpiSub} ${pendingApplications > 0 ? styles.kpiSubAlert : ''}`}
+                        >
                             {pendingApplications > 0
                                 ? `${pendingApplications} application${pendingApplications === 1 ? '' : 's'} waiting`
-                                : 'team'}
+                                : 'on the team'}
                         </span>
                     </button>
                 )}
@@ -247,16 +337,12 @@ export function BoardOverview({
                 {showImport && (
                     <button
                         type="button"
-                        className={styles.kpi}
+                        className={styles.kpiBtn}
                         onClick={() => onNavigate('import')}
                     >
-                        <span className={styles.kpiLabel}>Last import</span>
+                        <span className={styles.kpiLabel}>Last sync</span>
                         <span className={styles.kpiVal}>
-                            {timeAgo(
-                                syncJob?.runsImportedAt ??
-                                    syncJob?.finishedAt ??
-                                    syncJob?.createdAt,
-                            ) ?? 'Never'}
+                            {lastSyncAgo ?? 'Never'}
                         </span>
                         <span className={styles.kpiSub}>
                             {syncJob ? syncJob.status : 'no import yet'}
@@ -270,97 +356,92 @@ export function BoardOverview({
                 {/* Categories */}
                 <section className={styles.card}>
                     <header className={styles.cardHead}>
-                        <h2 className={styles.cardTitle}>Categories</h2>
+                        <h3 className={styles.cardEyebrow}>Categories</h3>
                         <span className={styles.cardCount}>
-                            {stats.featured} on board
+                            {stats.featured}
                         </span>
                         <button
                             type="button"
                             className={styles.cardLink}
                             onClick={() => onNavigate('categories')}
                         >
-                            Manage →
+                            Manage
                         </button>
                     </header>
                     {topRows.length === 0 ? (
-                        <p className={styles.emptyRow}>
-                            No categories on the board yet.
-                        </p>
+                        <div className={styles.cardEmpty}>
+                            <p className={styles.cardEmptyTitle}>
+                                No categories on the board yet
+                            </p>
+                        </div>
                     ) : (
                         <>
-                            <div className={styles.tableScroll}>
-                                <table className={styles.table}>
-                                    <thead>
-                                        <tr>
-                                            <th>Category</th>
-                                            <th>Status</th>
-                                            <th>Finished runs</th>
-                                            <th>Runners</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {topRows.map((r) => (
-                                            <tr
-                                                key={r.id}
-                                                onClick={() =>
-                                                    onEditCategory(r.id)
+                            <table className={styles.table}>
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Finished runs</th>
+                                        <th>Runners</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {topRows.map((r) => (
+                                        <tr
+                                            key={r.id}
+                                            tabIndex={0}
+                                            onClick={() => onEditCategory(r.id)}
+                                            onKeyDown={(e) => {
+                                                if (
+                                                    e.key === 'Enter' ||
+                                                    e.key === ' '
+                                                ) {
+                                                    e.preventDefault();
+                                                    onEditCategory(r.id);
                                                 }
-                                            >
-                                                <td>
-                                                    <span
-                                                        className={
-                                                            styles.catName
-                                                        }
-                                                    >
-                                                        {r.display}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <span
-                                                        className={`${styles.tag} ${styles.feat}`}
-                                                    >
-                                                        Featured
-                                                    </span>
-                                                </td>
-                                                <td className={styles.num}>
-                                                    <span
-                                                        className={
-                                                            styles.barCell
-                                                        }
-                                                    >
-                                                        <span
-                                                            className={
-                                                                styles.bar
-                                                            }
-                                                            aria-hidden
-                                                        >
-                                                            <i
-                                                                style={{
-                                                                    width: `${Math.round((r.totalFinishedAttemptCount / maxRuns) * 100)}%`,
-                                                                }}
-                                                            />
-                                                        </span>
-                                                        {r.totalFinishedAttemptCount.toLocaleString()}
-                                                    </span>
-                                                </td>
-                                                <td
-                                                    className={`${styles.num} ${styles.muted}`}
+                                            }}
+                                        >
+                                            <td>
+                                                <span
+                                                    className={styles.catName}
                                                 >
-                                                    {r.uniqueRunners.toLocaleString()}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                                    {r.display}
+                                                </span>
+                                            </td>
+                                            <td className={styles.num}>
+                                                <span
+                                                    className={styles.barCell}
+                                                >
+                                                    <span
+                                                        className={styles.bar}
+                                                        aria-hidden
+                                                    >
+                                                        <i
+                                                            style={{
+                                                                width: `${Math.round((r.totalFinishedAttemptCount / maxRuns) * 100)}%`,
+                                                            }}
+                                                        />
+                                                    </span>
+                                                    {r.totalFinishedAttemptCount.toLocaleString()}
+                                                </span>
+                                            </td>
+                                            <td
+                                                className={`${styles.num} ${styles.numMuted}`}
+                                            >
+                                                {r.uniqueRunners.toLocaleString()}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                             {remaining > 0 && (
                                 <div className={styles.tableFoot}>
                                     + {remaining} more featured ·{' '}
                                     <button
                                         type="button"
+                                        className={styles.tableFootLink}
                                         onClick={() => onNavigate('categories')}
                                     >
-                                        See all categories →
+                                        See all categories
                                     </button>
                                 </div>
                             )}
@@ -368,106 +449,76 @@ export function BoardOverview({
                     )}
                 </section>
 
-                {/* Rail */}
+                {/* Rail: health / setup progress + import status */}
                 <div className={styles.rail}>
-                    {!setupIncomplete && boardHealth && (
-                        <BoardHealthCard
-                            gameSlug={game.name}
-                            health={boardHealth}
-                        />
+                    {setupIncomplete && setupCompleteness ? (
+                        <section className={styles.railCard}>
+                            <header className={styles.railHead}>
+                                <h3 className={styles.railEyebrow}>
+                                    Setup progress
+                                </h3>
+                            </header>
+                            <div className={styles.setupMeter} aria-hidden>
+                                <div
+                                    className={styles.setupFill}
+                                    style={{
+                                        width: `${Math.round((setupCompleteness.doneCount / Math.max(1, setupCompleteness.totalCount)) * 100)}%`,
+                                    }}
+                                />
+                            </div>
+                            <p className={styles.setupSub}>
+                                {setupCompleteness.doneCount} of{' '}
+                                {setupCompleteness.totalCount} steps done
+                            </p>
+                            <button
+                                type="button"
+                                className={styles.railBtn}
+                                onClick={() => onNavigate('setup')}
+                            >
+                                Continue setup
+                            </button>
+                        </section>
+                    ) : (
+                        boardHealth && (
+                            <BoardHealthCard
+                                gameSlug={game.name}
+                                health={boardHealth}
+                                className={styles.railFlush}
+                            />
+                        )
                     )}
 
                     {showImport && (
-                        <section className={styles.card}>
-                            <header className={styles.cardHead}>
-                                <h2 className={styles.cardTitle}>
+                        <section className={styles.railCard}>
+                            <header className={styles.railHead}>
+                                <h3 className={styles.railEyebrow}>
                                     Import &amp; sync
-                                </h2>
+                                </h3>
                                 <button
                                     type="button"
-                                    className={styles.cardLink}
+                                    className={styles.railLink}
                                     onClick={() => onNavigate('import')}
                                 >
-                                    View details →
+                                    Details
                                 </button>
                             </header>
-                            <div className={styles.cardBody}>
-                                {syncJob ? (
-                                    <>
-                                        <div className={styles.syncRow}>
-                                            <span className={styles.syncK}>
-                                                Status
+                            {syncJob ? (
+                                <>
+                                    <div className={styles.syncStatusRow}>
+                                        <span
+                                            className={styles.syncPill}
+                                            data-status={syncJob.status}
+                                        >
+                                            {syncJob.status}
+                                        </span>
+                                        {lastSyncAgo && (
+                                            <span className={styles.syncAge}>
+                                                {lastSyncAgo}
                                             </span>
-                                            <span
-                                                className={`${styles.syncV} ${styles.syncStatus} ${styles[syncJob.status] ?? ''}`}
-                                            >
-                                                {syncJob.status}
-                                            </span>
-                                        </div>
-                                        <div className={styles.syncRow}>
-                                            <span className={styles.syncK}>
-                                                Last activity
-                                            </span>
-                                            <span className={styles.syncV}>
-                                                {timeAgo(
-                                                    syncJob.runsImportedAt ??
-                                                        syncJob.finishedAt ??
-                                                        syncJob.createdAt,
-                                                ) ?? '—'}
-                                            </span>
-                                        </div>
-                                        <div className={styles.syncRow}>
-                                            <span className={styles.syncK}>
-                                                Players matched
-                                            </span>
-                                            <span
-                                                className={`${styles.syncV} ${styles.mono}`}
-                                            >
-                                                {syncJob.playersMatchedCount.toLocaleString()}
-                                            </span>
-                                        </div>
-                                        <div className={styles.syncRow}>
-                                            <span className={styles.syncK}>
-                                                Players unmatched
-                                            </span>
-                                            <span
-                                                className={`${styles.syncV} ${styles.mono}`}
-                                            >
-                                                {Math.max(
-                                                    0,
-                                                    syncJob.playersCount -
-                                                        syncJob.playersMatchedCount,
-                                                ).toLocaleString()}
-                                            </span>
-                                        </div>
-                                        {syncJob.runsImportedAt && (
-                                            <>
-                                                <div className={styles.syncRow}>
-                                                    <span
-                                                        className={styles.syncK}
-                                                    >
-                                                        Runs matched
-                                                    </span>
-                                                    <span
-                                                        className={`${styles.syncV} ${styles.mono}`}
-                                                    >
-                                                        {syncJob.importedRunsCount.toLocaleString()}
-                                                    </span>
-                                                </div>
-                                                <div className={styles.syncRow}>
-                                                    <span
-                                                        className={styles.syncK}
-                                                    >
-                                                        Runs unmatched
-                                                    </span>
-                                                    <span
-                                                        className={`${styles.syncV} ${styles.mono}`}
-                                                    >
-                                                        {syncJob.importSkippedCount.toLocaleString()}
-                                                    </span>
-                                                </div>
-                                            </>
                                         )}
+                                    </div>
+                                    {(syncJob.status === 'queued' ||
+                                        syncJob.status === 'running') && (
                                         <div
                                             className={styles.phaseBar}
                                             aria-hidden
@@ -489,139 +540,87 @@ export function BoardOverview({
                                                 );
                                             })}
                                         </div>
-                                        {syncJob.changeSummary && (
-                                            <ChangeSummaryLine
-                                                summary={syncJob.changeSummary}
-                                            />
-                                        )}
-                                    </>
-                                ) : (
-                                    <p className={styles.syncEmpty}>
-                                        No import has been run for this board
-                                        yet.
-                                    </p>
-                                )}
-                                <div className={styles.divider} />
-                                {syncJob ? (
-                                    <ResyncButton
-                                        gameId={game.id}
-                                        gameSlug={game.name}
-                                        lastJobCreatedAt={syncJob.createdAt}
-                                        running={
-                                            syncJob.status === 'queued' ||
-                                            syncJob.status === 'running'
-                                        }
-                                        bypassCooldown={isAdmin}
-                                        onStarted={() => onNavigate('import')}
-                                    />
-                                ) : (
-                                    <button
-                                        type="button"
-                                        className={styles.railBtn}
-                                        onClick={() => onNavigate('import')}
-                                    >
-                                        Run import
-                                    </button>
-                                )}
-                            </div>
-                        </section>
-                    )}
-
-                    {showModerators && (
-                        <section className={styles.card}>
-                            <header className={styles.cardHead}>
-                                <h2 className={styles.cardTitle}>Moderators</h2>
-                                <span className={styles.cardCount}>
-                                    {moderators.length}
-                                </span>
+                                    )}
+                                    <div className={styles.syncRow}>
+                                        <span className={styles.syncK}>
+                                            Players matched
+                                        </span>
+                                        <span className={styles.syncV}>
+                                            {syncJob.playersMatchedCount.toLocaleString()}
+                                            {' / '}
+                                            {syncJob.playersCount.toLocaleString()}
+                                        </span>
+                                    </div>
+                                    {syncJob.runsImportedAt && (
+                                        <div className={styles.syncRow}>
+                                            <span className={styles.syncK}>
+                                                Runs matched
+                                            </span>
+                                            <span className={styles.syncV}>
+                                                {syncJob.importedRunsCount.toLocaleString()}
+                                                {syncJob.importSkippedCount > 0
+                                                    ? ` (${syncJob.importSkippedCount.toLocaleString()} skipped)`
+                                                    : ''}
+                                            </span>
+                                        </div>
+                                    )}
+                                    {syncJob.changeSummary && (
+                                        <ChangeSummaryLine
+                                            summary={syncJob.changeSummary}
+                                        />
+                                    )}
+                                </>
+                            ) : (
+                                <p className={styles.syncEmpty}>
+                                    No import has been run for this board yet.
+                                </p>
+                            )}
+                            <div className={styles.divider} />
+                            {syncJob ? (
+                                <ResyncButton
+                                    gameId={game.id}
+                                    gameSlug={game.name}
+                                    lastJobCreatedAt={syncJob.createdAt}
+                                    running={
+                                        syncJob.status === 'queued' ||
+                                        syncJob.status === 'running'
+                                    }
+                                    bypassCooldown={isAdmin}
+                                    onStarted={() => onNavigate('import')}
+                                />
+                            ) : (
                                 <button
                                     type="button"
-                                    className={styles.cardLink}
-                                    onClick={() => onNavigate('moderators')}
+                                    className={styles.railBtn}
+                                    onClick={() => onNavigate('import')}
                                 >
-                                    Manage →
+                                    Run import
                                 </button>
-                            </header>
-                            <div className={styles.cardBody}>
-                                {moderators.slice(0, 4).map((m) => (
-                                    <div
-                                        key={m.assignmentId}
-                                        className={styles.modRow}
-                                    >
-                                        <span
-                                            className={styles.avatar}
-                                            style={avatarStyle(m.username)}
-                                            aria-hidden
-                                        >
-                                            {m.username.slice(0, 2)}
-                                        </span>
-                                        <span>
-                                            <span className={styles.modName}>
-                                                {m.username}
-                                            </span>
-                                            <br />
-                                            <span className={styles.modRole}>
-                                                {humanRole(m.role)}
-                                            </span>
-                                        </span>
-                                    </div>
-                                ))}
-                                {moderators.length > 4 && (
-                                    <div className={styles.modRole}>
-                                        + {moderators.length - 4} more
-                                    </div>
-                                )}
-                                {moderators.length === 0 && (
-                                    <p className={styles.syncEmpty}>
-                                        No moderators yet.
-                                    </p>
-                                )}
-                                {pendingApplications > 0 && (
-                                    <button
-                                        type="button"
-                                        className={styles.appNote}
-                                        onClick={() => onNavigate('moderators')}
-                                    >
-                                        {pendingApplications} application
-                                        {pendingApplications === 1 ? '' : 's'}{' '}
-                                        waiting — review
-                                    </button>
-                                )}
-                            </div>
+                            )}
                         </section>
                     )}
                 </div>
             </div>
 
-            {/* Jump to */}
+            {/* Other destinations: one quiet row, not a wall of boxes. */}
             {jumpItems.length > 0 && (
-                <section className={styles.jump} aria-label="Jump to">
-                    <h3 className={styles.jumpLabel}>Jump to</h3>
-                    <div className={styles.tiles}>
-                        {jumpItems.map((item) => {
-                            const Icon = NAV_ICON[item.id];
-                            const tile = CONCEPT_TILE[item.id as TileConceptId];
-                            return (
-                                <button
-                                    key={item.id}
-                                    type="button"
-                                    className={styles.tile}
-                                    onClick={() => onNavigate(item.id)}
-                                >
-                                    <span className={styles.tileTop}>
-                                        <Icon size={18} aria-hidden />
-                                    </span>
-                                    <span className={styles.tileAction}>
-                                        {tile.action}
-                                    </span>
-                                    <span className={styles.tileBlurb}>
-                                        {tile.blurb}
-                                    </span>
-                                </button>
-                            );
-                        })}
-                    </div>
-                </section>
+                <nav className={styles.jump} aria-label="Also in this console">
+                    <span className={styles.jumpLabel}>Also here</span>
+                    {jumpItems.map((item) => {
+                        const Icon = NAV_ICON[item.id];
+                        return (
+                            <button
+                                key={item.id}
+                                type="button"
+                                className={styles.jumpLink}
+                                onClick={() => onNavigate(item.id)}
+                            >
+                                <Icon size={14} aria-hidden />
+                                {item.label}
+                            </button>
+                        );
+                    })}
+                </nav>
             )}
         </div>
     );

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { CaretDownFill, Pencil, Plus } from 'react-bootstrap-icons';
 import type { BoardBucket, VariableGroup } from '~src/lib/setup/variable-view';
 import { driftSides } from '~src/lib/setup/variable-view';
 import {
@@ -236,7 +237,9 @@ export function VariablePalette({
                                 e.stopPropagation();
                                 setOpen((v) => !v);
                             }}
-                        />
+                        >
+                            <CaretDownFill size={12} aria-hidden />
+                        </button>
                     </>
                 )}
             </div>
@@ -438,6 +441,13 @@ export function VariablePalette({
                                                             }
                                                         </span>
                                                     )}
+                                                    <Pencil
+                                                        size={12}
+                                                        className={
+                                                            styles.optionEditIcon
+                                                        }
+                                                        aria-hidden
+                                                    />
                                                 </button>
                                             </th>
                                         ))}
@@ -459,7 +469,8 @@ export function VariablePalette({
                                                     setAddingOption((v) => !v);
                                                 }}
                                             >
-                                                + Option
+                                                <Plus size={14} aria-hidden />
+                                                Option
                                             </button>
                                         </th>
 

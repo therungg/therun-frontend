@@ -3,9 +3,9 @@ import {
     ExclamationTriangleFill,
     XOctagonFill,
 } from 'react-bootstrap-icons';
-import styles from '~src/components/console-chrome/console.module.scss';
 import Link from '~src/components/link';
 import type { BoardHealth } from '~src/lib/setup/health';
+import styles from './board-health-card.module.scss';
 
 const GRADE_LABEL = {
     healthy: 'Healthy',
@@ -13,45 +13,44 @@ const GRADE_LABEL = {
     'at-risk': 'At risk',
 } as const;
 
-const GRADE_CLASS = {
-    healthy: styles.sevPillLow,
-    'needs-attention': styles.sevPillMedium,
-    'at-risk': styles.sevPillHigh,
-} as const;
-
 interface Props {
     gameSlug: string;
     health: BoardHealth;
+    /** Layout hook for the overview rail (zeroes the above-pane margin). */
+    className?: string;
 }
 
-export function BoardHealthCard({ gameSlug, health }: Props) {
+export function BoardHealthCard({ gameSlug, health, className }: Props) {
     return (
-        <div className={styles.inlineCard}>
-            <span className={`${styles.pill} ${GRADE_CLASS[health.grade]}`}>
-                Board health: {GRADE_LABEL[health.grade]}
-            </span>
-            <div>
+        <div className={`${styles.card} ${className ?? ''}`}>
+            <div className={styles.head}>
+                <h3 className={styles.eyebrow}>Board health</h3>
+                <span className={styles.grade} data-grade={health.grade}>
+                    {GRADE_LABEL[health.grade]}
+                </span>
+            </div>
+            <div className={styles.list}>
                 {health.items.map((item) => (
                     <div
                         key={`${item.pane ?? 'none'}-${item.label}`}
-                        className={styles.healthRow}
+                        className={styles.row}
                     >
                         {item.severity === 'blocker' ? (
                             <XOctagonFill
                                 size={12}
-                                className={styles.healthIconBlocker}
+                                className={styles.iconBlocker}
                                 aria-hidden
                             />
                         ) : item.severity === 'warning' ? (
                             <ExclamationTriangleFill
                                 size={12}
-                                className={styles.healthIconWarning}
+                                className={styles.iconWarning}
                                 aria-hidden
                             />
                         ) : (
                             <DashLg
                                 size={12}
-                                className={styles.healthIconInfo}
+                                className={styles.iconInfo}
                                 aria-hidden
                             />
                         )}
