@@ -1,79 +1,235 @@
-.controls {
-    display: grid;
-    gap: 1rem;
-    max-width: 28rem;
-    margin-block: 1.25rem;
-}
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/board' as board;
 
-.field {
+// The theme pane is a precision instrument: the color controls sit in one
+// panel on the left, the live preview stands beside them on the right, and
+// the two never scroll apart.
+.layout {
     display: grid;
-    gap: 0.375rem;
+    grid-template-columns: minmax(0, 24rem) minmax(0, 30rem);
+    gap: dt.$spacing-2xl;
+    align-items: start;
 
-    > span {
-        font-size: 0.8125rem;
-        font-weight: 600;
+    @media (max-width: 900px) {
+        grid-template-columns: minmax(0, 1fr);
     }
 }
 
-.bgRow {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+.controls {
+    @include board.board-surface(dt.$spacing-xl);
+    display: grid;
+    gap: dt.$spacing-xl;
 }
 
+.controlLabel {
+    @include board.board-eyebrow;
+}
+
+// ---- Color swatches ----------------------------------------
+// The three color pickers as one row of designed objects: a color well over
+// its name, the hex value in mono beside it — a palette, not three stacked
+// form controls.
+.swatchRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-lg;
+    margin-top: dt.$spacing-sm;
+}
+
+.swatch {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin: 0;
+}
+
+.swatchInput {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    border-radius: dt.$radius-md;
+    background: none;
+    cursor: pointer;
+    transition: border-color dt.$transition-fast,
+        box-shadow dt.$transition-fast;
+
+    &::-webkit-color-swatch-wrapper {
+        padding: 3px;
+    }
+
+    &::-webkit-color-swatch {
+        border: 0;
+        border-radius: calc(#{dt.$radius-md} - 3px);
+    }
+
+    &::-moz-color-swatch {
+        border: 0;
+        border-radius: calc(#{dt.$radius-md} - 3px);
+    }
+
+    &:hover {
+        border-color: rgba(var(--bs-primary-rgb), 0.5);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+}
+
+.swatchText {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.swatchName {
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
+}
+
+.swatchHex {
+    @include board.mono-time;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    text-transform: uppercase;
+}
+
+// ---- Topbar segmented control ------------------------------
 .segmented {
-    display: inline-flex;
-    border: 1px solid var(--bs-border-color);
-    border-radius: 6px;
-    overflow: hidden;
+    @include board.board-segmented;
+    margin-top: dt.$spacing-sm;
+    margin-bottom: 0;
     width: fit-content;
 }
 
-.seg,
-.segActive {
-    appearance: none;
-    border: 0;
-    padding: 0.375rem 0.875rem;
-    font-size: 0.8125rem;
+.seg {
+    @include board.board-segment;
     font-weight: 600;
-    cursor: pointer;
-    background: transparent;
-    color: var(--bs-secondary-color);
-
-    & + & {
-        border-left: 1px solid var(--bs-border-color);
-    }
-
-    &:hover {
-        color: var(--bs-body-color);
-    }
 }
 
 .segActive {
-    background: var(--bs-primary);
-    color: #fff;
+    @include board.board-segment;
+    @include board.board-segment-active;
+    font-weight: 600;
+}
 
-    &:hover {
-        color: #fff;
-    }
+// ---- Background image ---------------------------------------
+.bgRow {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    margin-top: dt.$spacing-sm;
 }
 
 .bgThumb {
     width: 96px;
     height: 54px;
     object-fit: cover;
-    border-radius: 4px;
-    border: 1px solid var(--bs-border-color);
+    border-radius: dt.$radius-sm;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+}
+
+// Dashed drop-zone-shaped trigger: an object waiting for an image, not
+// another gray button.
+.uploadTile {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin-top: dt.$spacing-sm;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    border: 1px dashed rgba(var(--bs-border-color-rgb), 0.7);
+    border-radius: dt.$radius-md;
+    background: none;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color dt.$transition-fast, color dt.$transition-fast;
+
+    &:hover {
+        border-color: rgba(var(--bs-primary-rgb), 0.6);
+        color: var(--bs-emphasis-color);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
+}
+
+.uploadHint {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    margin-top: dt.$spacing-xs;
+}
+
+.removeImage {
+    @include board.board-quiet-link;
+    font-size: dt.$font-size-sm;
+
+    &:hover {
+        color: dt.$accent-red;
+    }
+}
+
+// ---- Panel opacity ------------------------------------------
+.rangeRow {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    margin-top: dt.$spacing-sm;
+}
+
+.range {
+    flex: 1;
+    max-width: 14rem;
+    accent-color: var(--bs-primary);
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 2px;
+    }
+}
+
+.rangeValue {
+    @include board.mono-time;
+    font-size: dt.$font-size-sm;
+    min-width: 3ch;
+    text-align: right;
+}
+
+// ---- Remove theme (pane action) -----------------------------
+.removeTheme {
+    @include board.board-quiet-link;
+    font-size: dt.$font-size-sm;
+
+    &:hover {
+        color: dt.$accent-red;
+    }
+}
+
+// ---- Preview ------------------------------------------------
+.previewCol {
+    position: sticky;
+    top: dt.$spacing-lg;
+
+    @media (max-width: 900px) {
+        position: static;
+    }
 }
 
 .previewLabel {
-    margin-top: 1.5rem;
-    margin-bottom: 0.5rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--bs-secondary-color);
+    @include board.board-eyebrow;
+    margin-bottom: dt.$spacing-sm;
 }
 
 // Miniature of the real board — topbar + canvas + a themed panel — rendered
@@ -82,13 +238,12 @@
 // the panel are built from `currentColor` so they track the readable panel
 // ink automatically; the same trick keeps the topbar dots legible.
 .preview {
-    max-width: 30rem;
-    border-radius: 10px;
+    border-radius: dt.$radius-lg;
     overflow: hidden;
-    border: 1px solid var(--bs-border-color);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
     // A neutral frame around the mini-site so its own edges read as a window,
     // not part of the themed content.
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    box-shadow: dt.$shadow-md;
 }
 
 // Site topbar strip. `default` falls back to the real dark-topbar surface;
@@ -96,9 +251,9 @@
 .previewTopbar {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: dt.$spacing-sm;
     height: 2rem;
-    padding-inline: 0.75rem;
+    padding-inline: dt.$spacing-md;
     background: var(--site-topbar-bg, rgba(18, 26, 17, 0.92));
     color: var(--site-topbar-color, rgba(232, 234, 237, 0.9));
     border-bottom: 1px solid rgba(0, 0, 0, 0.25);
@@ -114,7 +269,7 @@
 
 .previewNav {
     display: inline-flex;
-    gap: 0.5rem;
+    gap: dt.$spacing-sm;
     margin-left: auto;
 
     > i {
@@ -130,7 +285,7 @@
 // the optional background image layered on top.
 .previewCanvas {
     position: relative;
-    padding: 1.25rem 1.125rem 1.5rem;
+    padding: dt.$spacing-xl dt.$spacing-lg dt.$spacing-2xl;
     background: var(--site-canvas-bg);
 }
 
@@ -152,8 +307,8 @@
     position: relative;
     background: var(--board-surface-bg);
     border: 1px solid var(--board-surface-border);
-    border-radius: 8px;
-    padding: 0.875rem;
+    border-radius: dt.$radius-md;
+    padding: dt.$spacing-md;
     color: var(--board-ink);
 }
 
@@ -161,8 +316,8 @@
     display: flex;
     align-items: center;
     gap: 0.625rem;
-    padding-bottom: 0.75rem;
-    margin-bottom: 0.75rem;
+    padding-bottom: dt.$spacing-md;
+    margin-bottom: dt.$spacing-md;
     border-bottom: 1px solid var(--board-surface-border);
 }
 
@@ -180,7 +335,7 @@
     font-size: 0.625rem;
     font-weight: 700;
     line-height: 1;
-    padding: 0.25rem 0.5rem;
+    padding: dt.$spacing-xs dt.$spacing-sm;
     border-radius: 999px;
     background: var(--board-accent);
     color: var(--board-on-accent);
@@ -195,8 +350,8 @@
     display: flex;
     align-items: center;
     gap: 0.625rem;
-    padding: 0.375rem 0.5rem;
-    border-radius: 5px;
+    padding: 0.375rem dt.$spacing-sm;
+    border-radius: dt.$radius-sm;
 }
 
 // #1 row highlighted the way the real board flags the leader.

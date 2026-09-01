@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
+import { PeopleFill } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import styles from '~src/components/console-chrome/console.module.scss';
 import Link from '~src/components/link';
@@ -15,6 +16,7 @@ import {
 } from '../../setup/actions/manage-moderators.action';
 import { ConfirmDialog } from '../../shared/confirm-dialog';
 import kit from '../shared/form-kit.module.scss';
+import pane from './moderators-pane.module.scss';
 
 interface Props {
     gameSlug: string;
@@ -104,10 +106,16 @@ export function ModeratorsPane({
 
     return (
         <section className={styles.surface}>
-            <div className={styles.paneHeader}>
-                <h2 className={styles.paneTitle}>Moderators</h2>
+            <header className={styles.paneHeader}>
+                <div>
+                    <div className={styles.paneEyebrow}>Game</div>
+                    <h2 className={styles.paneTitle}>Moderators</h2>
+                </div>
                 <span className={styles.paneCount}>{mods.length}</span>
-            </div>
+            </header>
+            <p className={styles.paneLede}>
+                The team that verifies runs and configures this board.
+            </p>
             {pendingApplications > 0 && (
                 <div className={styles.noteInfo}>
                     {pendingApplications} pending application
@@ -115,61 +123,91 @@ export function ModeratorsPane({
                     <Link
                         href={`/games-v2/${encodeURIComponent(gameSlug)}/manage?pane=attention`}
                     >
-                        review in Needs attention
+                        Review in Needs attention
                     </Link>
                 </div>
             )}
-            <div className="mb-3">
-                {mods.map((m) => (
-                    <div key={m.assignmentId} className={styles.modRow}>
-                        <strong>{m.username}</strong>
-                        <span className={styles.pill}>
-                            {m.role === 'game-admin'
-                                ? 'board admin'
-                                : 'moderator'}
-                        </span>
-                        <span className="text-muted small">
-                            since {new Date(m.createdAt).toLocaleDateString()}
-                        </span>
-                        <button
-                            type="button"
-                            className="btn btn-sm btn-outline-danger ms-auto"
-                            disabled={isPending}
-                            onClick={() => removeMod(m)}
-                        >
-                            Remove
-                        </button>
-                    </div>
-                ))}
-                {mods.length === 0 && (
-                    <div className={`${styles.modRow} text-muted`}>
-                        No moderators on record yet.
-                    </div>
-                )}
-            </div>
-            <div className={`d-flex gap-2 ${styles.inviteRow}`}>
-                <input
-                    className="form-control w-auto"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Twitch username"
-                />
-                <select
-                    className="form-select w-auto"
-                    value={role}
-                    onChange={(e) => setRole(e.target.value as BoardModRole)}
+            {mods.length > 0 ? (
+                <ul className={pane.roster}>
+                    {mods.map((m) => (
+                        <li key={m.assignmentId} className={pane.row}>
+                            <span className={pane.avatar} aria-hidden="true">
+                                {m.username.slice(0, 1).toUpperCase()}
+                            </span>
+                            <span className={pane.name}>{m.username}</span>
+                            <span
+                                className={
+                                    m.role === 'game-admin'
+                                        ? pane.rolePillAdmin
+                                        : pane.rolePill
+                                }
+                            >
+                                {m.role === 'game-admin'
+                                    ? 'Board admin'
+                                    : 'Moderator'}
+                            </span>
+                            <span className={pane.since}>
+                                since{' '}
+                                {new Date(m.createdAt).toLocaleDateString()}
+                            </span>
+                            <button
+                                type="button"
+                                className={pane.removeBtn}
+                                disabled={isPending}
+                                onClick={() => removeMod(m)}
+                            >
+                                Remove
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+                <div className={pane.empty}>
+                    <PeopleFill
+                        size={28}
+                        className={pane.emptyIcon}
+                        aria-hidden
+                    />
+                    <p className={pane.emptyTitle}>No moderators yet</p>
+                    <p>Add the first one by Twitch username below.</p>
+                </div>
+            )}
+            <div>
+                <div className={pane.addLabel} id="add-moderator-label">
+                    Add a moderator
+                </div>
+                <div
+                    className={pane.addRow}
+                    role="group"
+                    aria-labelledby="add-moderator-label"
                 >
-                    <option value="game-mod">Moderator</option>
-                    <option value="game-admin">Board admin</option>
-                </select>
-                <button
-                    type="button"
-                    className={kit.saveBtn}
-                    disabled={isPending || !username.trim()}
-                    onClick={addMod}
-                >
-                    Add
-                </button>
+                    <input
+                        className="form-control"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        placeholder="Twitch username"
+                        aria-label="Twitch username"
+                    />
+                    <select
+                        className="form-select"
+                        value={role}
+                        onChange={(e) =>
+                            setRole(e.target.value as BoardModRole)
+                        }
+                        aria-label="Role"
+                    >
+                        <option value="game-mod">Moderator</option>
+                        <option value="game-admin">Board admin</option>
+                    </select>
+                    <button
+                        type="button"
+                        className={kit.saveBtn}
+                        disabled={isPending || !username.trim()}
+                        onClick={addMod}
+                    >
+                        Add
+                    </button>
+                </div>
             </div>
             <ConfirmDialog
                 open={confirmRemove != null}

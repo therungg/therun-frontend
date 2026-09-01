@@ -116,7 +116,7 @@ export function IgdbSourceCard({
                 {canRematch ? (
                     <button
                         type="button"
-                        className="btn btn-sm btn-outline-secondary"
+                        className={styles.secondaryAction}
                         disabled={disabled || isBusy}
                         onClick={() => setSearchOpen((o) => !o)}
                     >
@@ -135,7 +135,7 @@ export function IgdbSourceCard({
                     (resetRows.length > 0 ? (
                         <button
                             type="button"
-                            className="btn btn-sm btn-outline-secondary"
+                            className={styles.secondaryAction}
                             disabled={disabled || isBusy}
                             onClick={() => setResetOpen(true)}
                         >
@@ -164,7 +164,7 @@ export function IgdbSourceCard({
                         />
                         <button
                             type="button"
-                            className="btn btn-sm btn-outline-secondary"
+                            className={styles.secondaryAction}
                             disabled={isBusy || !query.trim()}
                             onClick={search}
                         >
@@ -204,7 +204,7 @@ export function IgdbSourceCard({
                                     </span>
                                     <button
                                         type="button"
-                                        className="btn btn-sm btn-outline-primary ms-auto"
+                                        className={`${styles.secondaryAction} ms-auto`}
                                         disabled={isBusy}
                                         onClick={() => setPendingApply(r)}
                                     >
@@ -217,7 +217,9 @@ export function IgdbSourceCard({
                 </div>
             )}
             {error && (
-                <div className="alert alert-danger mt-2 mb-0 py-2">{error}</div>
+                <div role="alert" className={`${styles.errorNote} mt-2 mb-0`}>
+                    {error}
+                </div>
             )}
             <ConfirmDialog
                 open={pendingApply != null}

@@ -26,8 +26,11 @@ export function GameDetailsPane({
 
     return (
         <div className={styles.surface}>
-            <div className={styles.paneHeader}>
-                <h2 className={styles.paneTitle}>Details &amp; metadata</h2>
+            <header className={styles.paneHeader}>
+                <div>
+                    <div className={styles.paneEyebrow}>Game</div>
+                    <h2 className={styles.paneTitle}>Details &amp; metadata</h2>
+                </div>
                 <div className={styles.paneActions}>
                     <button
                         type="submit"
@@ -38,9 +41,9 @@ export function GameDetailsPane({
                         {busy ? 'Saving…' : 'Save details'}
                     </button>
                 </div>
-            </div>
+            </header>
             <p className={styles.paneLede}>
-                Shown on the public game page and in the setup wizard.
+                Cover, facts, and links shown on the public game page.
             </p>
             <GameDetailsForm
                 identifiers={identifiers}

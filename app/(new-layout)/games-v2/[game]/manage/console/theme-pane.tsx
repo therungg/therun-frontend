@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { type CSSProperties, useRef, useState } from 'react';
+import { Upload } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import styles from '~src/components/console-chrome/console.module.scss';
 import type { GameIdentifiers, GameMetadata } from '~src/lib/game-mgmt';
@@ -106,13 +107,16 @@ export function ThemePane({ metadata, game }: Props) {
 
     return (
         <div className={styles.surface}>
-            <div className={styles.paneHeader}>
-                <h2 className={styles.paneTitle}>Theme</h2>
+            <header className={styles.paneHeader}>
+                <div>
+                    <div className={styles.paneEyebrow}>Game</div>
+                    <h2 className={styles.paneTitle}>Theme</h2>
+                </div>
                 <div className={styles.paneActions}>
                     {metadata.theme != null && (
                         <button
                             type="button"
-                            className="btn btn-sm btn-outline-danger"
+                            className={paneStyles.removeTheme}
                             disabled={busy}
                             onClick={() => {
                                 setDraft(null);
@@ -131,186 +135,274 @@ export function ThemePane({ metadata, game }: Props) {
                         {busy ? 'Saving…' : 'Save theme'}
                     </button>
                 </div>
-            </div>
+            </header>
 
             <p className={styles.paneLede}>
-                Give {game.name}&rsquo;s board its own look. Pick the panel,
-                accent, and page-background colors and optionally a background
-                image — text contrast is handled automatically.
+                Colors and an optional background image for the public board.
+                Text contrast adjusts automatically.
             </p>
 
-            <div className={paneStyles.controls}>
-                <label className={paneStyles.field}>
-                    <span>Panel color</span>
-                    <input
-                        type="color"
-                        value={t.panelColor}
-                        onChange={(e) =>
-                            setDraft({ ...t, panelColor: e.target.value })
-                        }
-                    />
-                </label>
-                <label className={paneStyles.field}>
-                    <span>Accent color</span>
-                    <input
-                        type="color"
-                        value={t.accentColor}
-                        onChange={(e) =>
-                            setDraft({ ...t, accentColor: e.target.value })
-                        }
-                    />
-                </label>
-                <label className={paneStyles.field}>
-                    <span>Page background</span>
-                    <input
-                        type="color"
-                        value={t.backgroundColor}
-                        onChange={(e) =>
-                            setDraft({ ...t, backgroundColor: e.target.value })
-                        }
-                    />
-                </label>
-                <div className={paneStyles.field}>
-                    <span>Topbar</span>
-                    <div
-                        className={paneStyles.segmented}
-                        role="group"
-                        aria-label="Topbar color"
-                    >
-                        {TOPBAR_STYLES.map((style) => (
-                            <button
-                                key={style}
-                                type="button"
-                                aria-pressed={t.topbar === style}
-                                className={
-                                    t.topbar === style
-                                        ? paneStyles.segActive
-                                        : paneStyles.seg
-                                }
-                                onClick={() =>
-                                    setDraft({ ...t, topbar: style })
-                                }
-                            >
-                                {TOPBAR_LABELS[style]}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-                <div className={paneStyles.field}>
-                    <span>Background image</span>
-                    {t.backgroundUrl ? (
-                        <div className={paneStyles.bgRow}>
-                            {/* Backend media CDN; plain img is fine here. */}
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                                src={t.backgroundUrl}
-                                alt=""
-                                className={paneStyles.bgThumb}
-                            />
-                            <button
-                                type="button"
-                                className="btn btn-sm btn-outline-secondary"
-                                disabled={busy}
-                                onClick={() =>
-                                    setDraft({ ...t, backgroundUrl: null })
-                                }
-                            >
-                                Remove image
-                            </button>
+            <div className={paneStyles.layout}>
+                <div className={paneStyles.controls}>
+                    <div>
+                        <div className={paneStyles.controlLabel}>Colors</div>
+                        <div className={paneStyles.swatchRow}>
+                            <label className={paneStyles.swatch}>
+                                <input
+                                    type="color"
+                                    className={paneStyles.swatchInput}
+                                    value={t.panelColor}
+                                    onChange={(e) =>
+                                        setDraft({
+                                            ...t,
+                                            panelColor: e.target.value,
+                                        })
+                                    }
+                                />
+                                <span className={paneStyles.swatchText}>
+                                    <span className={paneStyles.swatchName}>
+                                        Panel
+                                    </span>
+                                    <span className={paneStyles.swatchHex}>
+                                        {t.panelColor}
+                                    </span>
+                                </span>
+                            </label>
+                            <label className={paneStyles.swatch}>
+                                <input
+                                    type="color"
+                                    className={paneStyles.swatchInput}
+                                    value={t.accentColor}
+                                    onChange={(e) =>
+                                        setDraft({
+                                            ...t,
+                                            accentColor: e.target.value,
+                                        })
+                                    }
+                                />
+                                <span className={paneStyles.swatchText}>
+                                    <span className={paneStyles.swatchName}>
+                                        Accent
+                                    </span>
+                                    <span className={paneStyles.swatchHex}>
+                                        {t.accentColor}
+                                    </span>
+                                </span>
+                            </label>
+                            <label className={paneStyles.swatch}>
+                                <input
+                                    type="color"
+                                    className={paneStyles.swatchInput}
+                                    value={t.backgroundColor}
+                                    onChange={(e) =>
+                                        setDraft({
+                                            ...t,
+                                            backgroundColor: e.target.value,
+                                        })
+                                    }
+                                />
+                                <span className={paneStyles.swatchText}>
+                                    <span className={paneStyles.swatchName}>
+                                        Page background
+                                    </span>
+                                    <span className={paneStyles.swatchHex}>
+                                        {t.backgroundColor}
+                                    </span>
+                                </span>
+                            </label>
                         </div>
-                    ) : (
-                        <button
-                            type="button"
-                            className="btn btn-sm btn-outline-secondary"
-                            disabled={busy}
-                            onClick={() => fileInput.current?.click()}
-                        >
-                            Upload image (PNG/JPEG/WEBP, max 6 MB)
-                        </button>
-                    )}
-                    <input
-                        ref={fileInput}
-                        type="file"
-                        accept="image/png,image/jpeg,image/webp"
-                        hidden
-                        onChange={(e) => {
-                            const f = e.target.files?.[0];
-                            if (f) void uploadBackground(f);
-                            e.target.value = '';
-                        }}
-                    />
-                </div>
-                {t.backgroundUrl != null && (
-                    <label className={paneStyles.field}>
-                        <span>Panel opacity</span>
-                        <input
-                            type="range"
-                            min={85}
-                            max={100}
-                            value={Math.round(t.panelOpacity * 100)}
-                            onChange={(e) =>
-                                setDraft({
-                                    ...t,
-                                    panelOpacity: Number(e.target.value) / 100,
-                                })
-                            }
-                        />
-                    </label>
-                )}
-            </div>
-
-            <div className={paneStyles.previewLabel} aria-hidden>
-                Preview
-            </div>
-            <div className={paneStyles.preview} style={previewVars} aria-hidden>
-                <div
-                    className={paneStyles.previewTopbar}
-                    data-topbar={t.topbar}
-                >
-                    <span className={paneStyles.previewBrand} />
-                    <span className={paneStyles.previewNav}>
-                        <i />
-                        <i />
-                        <i />
-                    </span>
-                </div>
-                <div className={paneStyles.previewCanvas}>
-                    {previewTheme.backgroundUrl && (
+                    </div>
+                    <div>
+                        <div className={paneStyles.controlLabel}>Topbar</div>
                         <div
-                            className={paneStyles.previewBackdrop}
-                            style={{
-                                backgroundImage: `url(${previewTheme.backgroundUrl})`,
+                            className={paneStyles.segmented}
+                            role="group"
+                            aria-label="Topbar color"
+                        >
+                            {TOPBAR_STYLES.map((style) => (
+                                <button
+                                    key={style}
+                                    type="button"
+                                    aria-pressed={t.topbar === style}
+                                    className={
+                                        t.topbar === style
+                                            ? paneStyles.segActive
+                                            : paneStyles.seg
+                                    }
+                                    onClick={() =>
+                                        setDraft({ ...t, topbar: style })
+                                    }
+                                >
+                                    {TOPBAR_LABELS[style]}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div>
+                        <div className={paneStyles.controlLabel}>
+                            Background image
+                        </div>
+                        {t.backgroundUrl ? (
+                            <div className={paneStyles.bgRow}>
+                                {/* Backend media CDN; plain img is fine here. */}
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                    src={t.backgroundUrl}
+                                    alt=""
+                                    className={paneStyles.bgThumb}
+                                />
+                                <button
+                                    type="button"
+                                    className={paneStyles.removeImage}
+                                    disabled={busy}
+                                    onClick={() =>
+                                        setDraft({ ...t, backgroundUrl: null })
+                                    }
+                                >
+                                    Remove image
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                <button
+                                    type="button"
+                                    className={paneStyles.uploadTile}
+                                    disabled={busy}
+                                    onClick={() => fileInput.current?.click()}
+                                >
+                                    <Upload size={16} aria-hidden />
+                                    Upload image
+                                </button>
+                                <div className={paneStyles.uploadHint}>
+                                    PNG, JPEG, or WEBP, up to 6 MB.
+                                </div>
+                            </>
+                        )}
+                        <input
+                            ref={fileInput}
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp"
+                            hidden
+                            onChange={(e) => {
+                                const f = e.target.files?.[0];
+                                if (f) void uploadBackground(f);
+                                e.target.value = '';
                             }}
                         />
-                    )}
-                    <div className={paneStyles.previewPanel}>
-                        <div className={paneStyles.previewMast}>
-                            <span className={paneStyles.previewMastTitle} />
-                            <span className={paneStyles.previewPill}>PB</span>
-                        </div>
-                        <div className={paneStyles.previewBoard}>
-                            <div
-                                className={`${paneStyles.previewRow} ${paneStyles.previewRowLead}`}
+                    </div>
+                    {t.backgroundUrl != null && (
+                        <div>
+                            <label
+                                className={paneStyles.controlLabel}
+                                htmlFor="theme-panel-opacity"
                             >
-                                <span className={paneStyles.previewRank}>
-                                    1
+                                Panel opacity
+                            </label>
+                            <div className={paneStyles.rangeRow}>
+                                <input
+                                    id="theme-panel-opacity"
+                                    type="range"
+                                    className={paneStyles.range}
+                                    min={85}
+                                    max={100}
+                                    value={Math.round(t.panelOpacity * 100)}
+                                    onChange={(e) =>
+                                        setDraft({
+                                            ...t,
+                                            panelOpacity:
+                                                Number(e.target.value) / 100,
+                                        })
+                                    }
+                                />
+                                <span className={paneStyles.rangeValue}>
+                                    {Math.round(t.panelOpacity * 100)}%
                                 </span>
-                                <span className={paneStyles.previewName} />
-                                <span className={paneStyles.previewTime} />
                             </div>
-                            <div className={paneStyles.previewRow}>
-                                <span className={paneStyles.previewRank}>
-                                    2
-                                </span>
-                                <span className={paneStyles.previewName} />
-                                <span className={paneStyles.previewTime} />
-                            </div>
-                            <div className={paneStyles.previewRow}>
-                                <span className={paneStyles.previewRank}>
-                                    3
-                                </span>
-                                <span className={paneStyles.previewName} />
-                                <span className={paneStyles.previewTime} />
+                        </div>
+                    )}
+                </div>
+
+                <div className={paneStyles.previewCol}>
+                    <div className={paneStyles.previewLabel} aria-hidden>
+                        Preview
+                    </div>
+                    <div
+                        className={paneStyles.preview}
+                        style={previewVars}
+                        aria-hidden
+                    >
+                        <div
+                            className={paneStyles.previewTopbar}
+                            data-topbar={t.topbar}
+                        >
+                            <span className={paneStyles.previewBrand} />
+                            <span className={paneStyles.previewNav}>
+                                <i />
+                                <i />
+                                <i />
+                            </span>
+                        </div>
+                        <div className={paneStyles.previewCanvas}>
+                            {previewTheme.backgroundUrl && (
+                                <div
+                                    className={paneStyles.previewBackdrop}
+                                    style={{
+                                        backgroundImage: `url(${previewTheme.backgroundUrl})`,
+                                    }}
+                                />
+                            )}
+                            <div className={paneStyles.previewPanel}>
+                                <div className={paneStyles.previewMast}>
+                                    <span
+                                        className={paneStyles.previewMastTitle}
+                                    />
+                                    <span className={paneStyles.previewPill}>
+                                        PB
+                                    </span>
+                                </div>
+                                <div className={paneStyles.previewBoard}>
+                                    <div
+                                        className={`${paneStyles.previewRow} ${paneStyles.previewRowLead}`}
+                                    >
+                                        <span
+                                            className={paneStyles.previewRank}
+                                        >
+                                            1
+                                        </span>
+                                        <span
+                                            className={paneStyles.previewName}
+                                        />
+                                        <span
+                                            className={paneStyles.previewTime}
+                                        />
+                                    </div>
+                                    <div className={paneStyles.previewRow}>
+                                        <span
+                                            className={paneStyles.previewRank}
+                                        >
+                                            2
+                                        </span>
+                                        <span
+                                            className={paneStyles.previewName}
+                                        />
+                                        <span
+                                            className={paneStyles.previewTime}
+                                        />
+                                    </div>
+                                    <div className={paneStyles.previewRow}>
+                                        <span
+                                            className={paneStyles.previewRank}
+                                        >
+                                            3
+                                        </span>
+                                        <span
+                                            className={paneStyles.previewName}
+                                        />
+                                        <span
+                                            className={paneStyles.previewTime}
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
