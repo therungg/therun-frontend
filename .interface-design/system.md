@@ -72,6 +72,27 @@ everywhere in games-v2:
 - **Name the domain thing.** "runs", "board", "category", "verification" —
   never "items", "content", "entries" where a real word exists.
 
+## Console cockpit (redesign, 2026-09-01)
+
+The manage console dropped its framed-box chrome for an **open cockpit** (user-directed: the old
+console "looked uninspired… no overview"). Rules for every console surface:
+
+- **Chrome:** no frame box, no header row. `ConsoleChrome cockpit` renders a sidebar **spine**
+  (game cover + name masthead → nav groups → exit doors under a hairline) beside content sitting
+  directly on the page canvas, one hairline between them. Mobile keeps the overlay drawer behind
+  a slim topbar. Settings keeps the old framed/plain variants.
+- **Pane anatomy, everywhere:** `paneEyebrow` (the sidebar group: Queue/Structure/Game) over a
+  headline-scale `paneTitle` (`$font-size-2xl`, −0.02em), actions on the baseline, `paneLede`
+  below. No hairline under pane headers — structure comes from type scale and space.
+- **Overview is a control room, not a tile grid:** status headline (calm "All clear" or a
+  severity-led count), mono KPI band, top needs-attention preview rows (severity spines), health
+  + setup rail, import & sync card, and one quiet "Also here" row of remaining doors.
+- **Boards pane renders the real public `LeaderboardTable`** with curation slots
+  (`onQuickModerate`, selection, `tbodyFooter` add-runner ghost row) instead of a parallel mod
+  table — the board a moderator curates is the board runners see.
+- Active bans, roster, moderators are board-tables/roster rows on the shared vocabulary; the
+  moderators pane's monogram avatar uses `board-avatar`.
+
 ## Components
 
 - `console.module.scss` — shared console styles: `.shell`, `.sidebar`, `.navGroup`, `.navItem`/`.active`, `.surface`, `.severitySpine`/`--high`/`--med`/`--low`, `.time` (mono tabular), `.metaRow`, `.actionRow`, `.empty`.

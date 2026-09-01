@@ -391,7 +391,7 @@ describe('VariablesGrid', () => {
 
     it('adds an option, in the column where it will appear', () => {
         renderGrid();
-        fireEvent.click(screen.getByRole('button', { name: '+ Option' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Option' }));
         fireEvent.change(screen.getByLabelText('Name'), {
             target: { value: 'Wii' },
         });
@@ -411,7 +411,7 @@ describe('VariablesGrid', () => {
 
     it('refuses an option that already exists rather than silently merging it', () => {
         renderGrid();
-        fireEvent.click(screen.getByRole('button', { name: '+ Option' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Option' }));
         fireEvent.change(screen.getByLabelText('Name'), {
             target: { value: 'emulator' },
         });
@@ -426,7 +426,7 @@ describe('VariablesGrid', () => {
     it('asks where unmatched runs go when creating, instead of taking the first', () => {
         renderGrid();
         fireEvent.click(
-            screen.getByRole('button', { name: '+ Add a subcategory group' }),
+            screen.getByRole('button', { name: 'Add a subcategory group' }),
         );
         fireEvent.change(screen.getByLabelText('Subcategory display name'), {
             target: { value: 'Region' },
@@ -468,7 +468,7 @@ describe('VariablesGrid', () => {
     it('lets the display name and the LiveSplit variable be set apart on create', () => {
         renderGrid();
         fireEvent.click(
-            screen.getByRole('button', { name: '+ Add a subcategory group' }),
+            screen.getByRole('button', { name: 'Add a subcategory group' }),
         );
         fireEvent.change(screen.getByLabelText('Subcategory display name'), {
             target: { value: 'Solo or Co-op?' },
