@@ -1,0 +1,108 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/board' as board;
+
+// Roster rows: avatar/monogram, name, role pill, quiet remove. One person
+// per row, scannable top to bottom.
+.roster {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    margin: 0 0 dt.$spacing-2xl;
+    padding: 0;
+    list-style: none;
+}
+
+.row {
+    @include board.board-surface(dt.$spacing-sm dt.$spacing-lg);
+    border-radius: dt.$radius-md;
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    font-size: dt.$font-size-sm;
+}
+
+.name {
+    font-weight: 600;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rolePill {
+    @include board.board-pill;
+    flex-shrink: 0;
+}
+
+// Board admin carries the one brand green; a plain moderator stays neutral.
+.rolePillAdmin {
+    @include board.board-pill;
+    flex-shrink: 0;
+    background: rgba(var(--bs-primary-rgb), 0.12);
+    color: var(--bs-primary);
+    border-color: rgba(var(--bs-primary-rgb), 0.3);
+}
+
+.since {
+    margin-left: auto;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    white-space: nowrap;
+}
+
+// Quiet destructive: neutral at rest, $accent-red on hover (one-red rule).
+.removeBtn {
+    @include board.board-quiet-link;
+    flex-shrink: 0;
+
+    &:hover {
+        color: dt.$accent-red;
+    }
+}
+
+// ---- Empty state --------------------------------------------
+.empty {
+    @include board.board-empty;
+    margin-bottom: dt.$spacing-2xl;
+}
+
+.emptyIcon {
+    @include board.board-empty-icon;
+}
+
+.emptyTitle {
+    @include board.board-empty-title;
+}
+
+// ---- Add row ------------------------------------------------
+.addLabel {
+    @include board.board-eyebrow;
+    margin-bottom: dt.$spacing-sm;
+}
+
+.addRow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+
+    input {
+        max-width: 16rem;
+    }
+
+    select {
+        width: auto;
+    }
+}
+
+.avatar {
+    @include board.board-avatar(dt.$avatar-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: dt.$font-size-xs;
+    font-weight: 700;
+    color: var(--bs-secondary-color);
+    background: color-mix(in srgb, var(--bs-body-bg) 85%, var(--bs-secondary-bg));
+    flex-shrink: 0;
+}

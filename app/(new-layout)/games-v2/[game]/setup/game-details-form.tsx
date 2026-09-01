@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useTransition } from 'react';
+import { Plus } from 'react-bootstrap-icons';
 import type {
     GameIdentifiers,
     GameLink,
@@ -329,7 +330,7 @@ function GameDetailsFormInner({
                         }}
                     />
                 )}
-                <div>
+                <div className="d-flex flex-column align-items-start gap-1">
                     <input
                         ref={fileInputRef}
                         id="cover-upload"
@@ -343,7 +344,7 @@ function GameDetailsFormInner({
                     />
                     <button
                         type="button"
-                        className="btn btn-sm btn-outline-primary d-block"
+                        className={styles.secondaryAction}
                         disabled={isUploading || isSaving}
                         onClick={() => fileInputRef.current?.click()}
                     >
@@ -356,7 +357,7 @@ function GameDetailsFormInner({
                     {coverUrl.trim() && (
                         <button
                             type="button"
-                            className="btn btn-sm btn-link px-0 d-block"
+                            className={styles.skipAction}
                             disabled={isUploading || isSaving}
                             onClick={() => setCoverUrl('')}
                         >
@@ -512,7 +513,7 @@ function GameDetailsFormInner({
                     <button
                         key={preset.label}
                         type="button"
-                        className="btn btn-sm btn-outline-secondary"
+                        className={styles.secondaryAction}
                         disabled={
                             links.length >= 10 ||
                             links.some((l) => l.label === preset.label)
@@ -524,7 +525,8 @@ function GameDetailsFormInner({
                             ])
                         }
                     >
-                        + {preset.label}
+                        <Plus size={16} aria-hidden />
+                        {preset.label}
                     </button>
                 ))}
             </div>
@@ -551,7 +553,7 @@ function GameDetailsFormInner({
                     />
                     <button
                         type="button"
-                        className="btn btn-sm btn-outline-danger"
+                        className={styles.dangerAction}
                         onClick={() => removeLink(index)}
                     >
                         Remove
@@ -560,10 +562,11 @@ function GameDetailsFormInner({
             ))}
             <button
                 type="button"
-                className="btn btn-sm btn-outline-secondary"
+                className={styles.secondaryAction}
                 disabled={links.length >= 10}
                 onClick={addLink}
             >
+                <Plus size={16} aria-hidden />
                 Add link
             </button>
         </>

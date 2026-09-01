@@ -714,6 +714,17 @@ $rail-collapse: 900px;
     }
 }
 
+// Quiet destructive row action (remove a link row): tertiary tier that turns
+// $accent-red on hover — never Bootstrap's danger (one-red rule).
+.dangerAction {
+    @include board.board-quiet-link;
+    font-size: dt.$font-size-sm;
+
+    &:hover {
+        color: dt.$accent-red;
+    }
+}
+
 // ---- Step section anatomy -----------------------------------
 .section {
     @include board.board-surface(dt.$spacing-xl);
