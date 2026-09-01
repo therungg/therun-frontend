@@ -1,0 +1,90 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/board' as board;
+
+// ============================================================
+// Board health — one quiet card. Rendered above CONFIGURE panes
+// (console-shell) and inside the overview's rail; the rail passes
+// a className zeroing the bottom margin.
+// ============================================================
+
+.card {
+    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
+    margin-bottom: dt.$spacing-lg;
+}
+
+.head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    margin-bottom: dt.$spacing-sm;
+}
+
+.eyebrow {
+    @include board.board-eyebrow;
+}
+
+// Grade pill, on the console's severity map: at-risk→red,
+// needs-attention→amber, healthy→neutral.
+.grade {
+    @include board.board-pill;
+
+    &[data-grade='at-risk'] {
+        background: color-mix(in srgb, #{dt.$accent-red} 16%, transparent);
+        color: dt.$accent-red;
+        border-color: transparent;
+    }
+    &[data-grade='needs-attention'] {
+        background: color-mix(in srgb, #{dt.$accent-amber} 18%, transparent);
+        color: color-mix(in srgb, #{dt.$accent-amber} 80%, var(--bs-body-color));
+        border-color: transparent;
+    }
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.row {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+
+    a {
+        color: inherit;
+        text-decoration-color: rgba(var(--bs-border-color-rgb), 0.8);
+        transition: color dt.$transition-fast;
+
+        &:hover {
+            color: var(--bs-primary);
+        }
+        &:focus-visible {
+            outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+            outline-offset: 1px;
+        }
+    }
+}
+
+.iconBlocker {
+    color: dt.$accent-red;
+    flex-shrink: 0;
+    position: relative;
+    top: 1px;
+}
+
+.iconWarning {
+    color: dt.$accent-amber;
+    flex-shrink: 0;
+    position: relative;
+    top: 1px;
+}
+
+.iconInfo {
+    color: var(--bs-tertiary-color);
+    flex-shrink: 0;
+    position: relative;
+    top: 1px;
+}

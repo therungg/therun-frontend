@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { Collection, Diagram3, Funnel, Plus } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import { compareByBoardOrder } from '~src/lib/console/category-order';
 import type {
@@ -893,11 +894,15 @@ export function VariablesGrid({
     if (mains.length === 0) {
         return (
             <div className={styles.empty}>
+                <Collection
+                    size={24}
+                    className={styles.emptyIcon}
+                    aria-hidden
+                />
                 <p className={styles.emptyTitle}>No featured categories yet</p>
                 <p className={styles.emptyNote}>
-                    Feature at least one category first — subcategories and
-                    filters are configured per featured category, so there is
-                    nothing to structure yet.
+                    Feature at least one category first. Subcategories and
+                    filters are configured per featured category.
                 </p>
             </div>
         );
@@ -1235,13 +1240,26 @@ function VariableSection({
                         </span>
                     ))}
                     <span className={styles.builtInsNote}>
-                        built in — nothing to configure
+                        built in (nothing to configure)
                     </span>
                 </div>
             )}
 
             {groups.length === 0 ? (
                 <div className={styles.empty}>
+                    {role === 'subcategory' ? (
+                        <Diagram3
+                            size={24}
+                            className={styles.emptyIcon}
+                            aria-hidden
+                        />
+                    ) : (
+                        <Funnel
+                            size={24}
+                            className={styles.emptyIcon}
+                            aria-hidden
+                        />
+                    )}
                     <p className={styles.emptyTitle}>
                         {role === 'subcategory'
                             ? 'No subcategories'
@@ -1249,7 +1267,7 @@ function VariableSection({
                     </p>
                     <p className={styles.emptyNote}>
                         {role === 'subcategory'
-                            ? 'Every featured category is a single leaderboard. Add a subcategory group when a category is really several leaderboards — Platform, Region, Glitches — each with its own record.'
+                            ? 'Every featured category is a single leaderboard. Add a subcategory group when a category is really several leaderboards (Platform, Region, Glitches), each with its own record.'
                             : 'Add a filter when runners should be able to narrow a leaderboard by something the run carries, without it becoming a subcategory.'}
                     </p>
                 </div>
@@ -1334,7 +1352,8 @@ function VariableSection({
                     disabled={busy}
                     onClick={() => setAdding(true)}
                 >
-                    + {copy.add}
+                    <Plus size={16} aria-hidden />
+                    {copy.add}
                 </button>
             )}
         </section>

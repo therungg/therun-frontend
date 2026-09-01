@@ -3,8 +3,9 @@
 
 // ============================================================
 // Board overview — the console front door.
-// Same craft vocabulary as the console: border-based depth,
-// subtle surface tint, severity accents. Scannable summary first.
+// Control-room reading order: the status headline first (do I
+// need to work right now?), then the board's vitals, then the
+// deeper panels. Severity is the organizing principle.
 // ============================================================
 
 .wrap {
@@ -13,126 +14,258 @@
     gap: dt.$spacing-2xl;
 }
 
-// ---- Status line -------------------------------------------
-.statusLine {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: dt.$spacing-md;
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-    margin-top: calc(#{dt.$spacing-lg} * -1);
-}
-
-.statusPill {
-    @include board.board-pill;
+.publicLink {
+    @include board.board-quiet-link;
     display: inline-flex;
     align-items: center;
     gap: dt.$spacing-xs;
-}
-.statusPill.live {
-    background: color-mix(in srgb, #{dt.$accent-green} 16%, transparent);
-    color: color-mix(in srgb, #{dt.$accent-green} 78%, var(--bs-body-color));
-}
-.statusPill.setup {
-    background: color-mix(in srgb, #{dt.$accent-amber} 18%, transparent);
-    color: color-mix(in srgb, #{dt.$accent-amber} 80%, var(--bs-body-color));
-}
-.beat {
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 50%;
-    background: currentColor;
-}
-.sep {
-    color: var(--bs-tertiary-color);
-}
-.publicLink {
-    color: var(--bs-primary);
     text-decoration: none;
-    font-weight: 600;
-    margin-left: auto;
-    &:hover {
-        text-decoration: underline;
+    white-space: nowrap;
+}
+
+// ---- Status headline ---------------------------------------
+// The one block a moderator reads before anything else. Carries a
+// severity spine when work is waiting; sits calm and spineless when
+// the queue is empty.
+.status {
+    @include board.board-surface(dt.$spacing-xl dt.$spacing-2xl);
+    position: relative;
+    overflow: clip;
+
+    &[data-sev='high']::before,
+    &[data-sev='medium']::before,
+    &[data-sev='low']::before {
+        content: '';
+        position: absolute;
+        inset-block: 0;
+        inset-inline-start: 0;
+        width: 3px;
+    }
+    &[data-sev='high']::before {
+        background: dt.$accent-red;
+    }
+    &[data-sev='medium']::before {
+        background: dt.$accent-amber;
+    }
+    &[data-sev='low']::before {
+        background: var(--bs-secondary);
     }
 }
 
-// ---- KPI row -----------------------------------------------
-.kpis {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
-    gap: dt.$spacing-lg;
+.statusHead {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xl;
 }
 
-.kpi {
-    @include board.board-surface(dt.$spacing-lg);
-    border-radius: dt.$radius-md;
-    position: relative;
-    overflow: clip;
+// The focal number. Mono tabular like every count in the console.
+.statusCount {
+    @include board.mono-time;
+    font-size: dt.$font-size-display;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--bs-tertiary-color);
+
+    .status[data-sev='high'] & {
+        color: dt.$accent-red;
+    }
+    .status[data-sev='medium'] & {
+        color: color-mix(in srgb, #{dt.$accent-amber} 85%, var(--bs-body-color));
+    }
+    .status[data-sev='low'] & {
+        color: var(--bs-emphasis-color);
+    }
+}
+
+.statusText {
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: dt.$spacing-xs;
+    gap: 2px;
 }
-button.kpi {
-    cursor: pointer;
+
+.statusTitle {
+    font-size: dt.$font-size-xl;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.1;
+    margin: 0;
+}
+
+.statusSub {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.statusOpen {
+    @include board.board-btn-primary;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+// ---- Queue preview rows ------------------------------------
+.previewList {
+    list-style: none;
+    margin: dt.$spacing-lg 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+.previewRow {
+    position: relative;
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm dt.$spacing-lg;
+    width: 100%;
     text-align: left;
     font: inherit;
     color: inherit;
-    transition: border-color 0.12s ease;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-left-width: 3px;
+    border-left-color: var(--bs-secondary);
+    border-radius: dt.$radius-md;
+    background: var(--bs-body-bg);
+    cursor: pointer;
+    transition: border-color dt.$transition-fast,
+        background-color dt.$transition-fast;
+
     &:hover {
-        border-color: rgba(var(--bs-border-color-rgb), 0.9);
+        background: var(--bs-tertiary-bg);
     }
     &:focus-visible {
         outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
-        outline-offset: 2px;
+        outline-offset: 1px;
+    }
+}
+
+.sevHigh {
+    border-left-color: dt.$accent-red;
+}
+.sevMedium {
+    border-left-color: dt.$accent-amber;
+}
+.sevLow {
+    border-left-color: var(--bs-secondary);
+}
+
+.previewRunner {
+    font-weight: 600;
+    font-size: dt.$font-size-sm;
+}
+
+.previewCat {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.previewTime {
+    @include board.mono-time;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.previewSource {
+    @include board.board-eyebrow;
+    color: var(--bs-tertiary-color);
+}
+
+.previewAge {
+    margin-left: auto;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    white-space: nowrap;
+}
+
+.previewMore {
+    margin: dt.$spacing-sm 0 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+    font-variant-numeric: tabular-nums;
+}
+
+// ---- KPI band ----------------------------------------------
+// One surface, hairline-divided cells: the board's vitals as a
+// single instrument strip, not a wall of boxes.
+.kpis {
+    @include board.board-surface(0);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+    gap: 1px;
+    background: var(
+        --board-surface-border,
+        rgba(var(--bs-border-color-rgb), 0.5)
+    );
+    overflow: clip;
+}
+
+%kpi-cell {
+    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    min-width: 0;
+}
+
+.kpi {
+    @extend %kpi-cell;
+}
+
+.kpiBtn {
+    @extend %kpi-cell;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    transition: background-color dt.$transition-fast;
+
+    &:hover {
+        background: var(--bs-tertiary-bg);
+    }
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: -2px;
     }
 }
 
 .kpiLabel {
-    font-size: dt.$font-size-2xs;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--bs-secondary-color);
-    font-weight: 600;
+    @include board.board-eyebrow;
+    color: var(--bs-tertiary-color);
 }
+
 .kpiVal {
-    font-size: dt.$font-size-2xl;
+    @include board.mono-time;
+    font-size: dt.$font-size-xl;
     font-weight: 700;
     letter-spacing: -0.02em;
-    font-variant-numeric: tabular-nums;
     line-height: 1.1;
-
-    small {
-        font-size: dt.$font-size-md;
-        font-weight: 500;
-        color: var(--bs-tertiary-color);
-    }
 }
+
 .kpiSub {
     font-size: dt.$font-size-2xs;
     color: var(--bs-tertiary-color);
-}
-.kpiSub.up {
-    color: color-mix(in srgb, #{dt.$accent-green} 80%, var(--bs-body-color));
+    font-variant-numeric: tabular-nums;
 }
 
-// Attention KPI carries a severity spine + red numeral when non-zero.
-.kpi.flag::before {
-    content: '';
-    position: absolute;
-    inset-block: 0;
-    inset-inline-start: 0;
-    width: 3px;
-    background: dt.$accent-red;
-}
-.kpi.flag .kpiVal {
-    color: dt.$accent-red;
+.kpiSubAlert {
+    color: color-mix(in srgb, #{dt.$accent-amber} 80%, var(--bs-body-color));
+    font-weight: 600;
 }
 
 // ---- Main grid ---------------------------------------------
 .grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 22rem;
+    grid-template-columns: minmax(0, 1fr) 21rem;
     gap: dt.$spacing-xl;
     align-items: start;
 
@@ -140,6 +273,7 @@ button.kpi {
         grid-template-columns: 1fr;
     }
 }
+
 .rail {
     display: flex;
     flex-direction: column;
@@ -147,121 +281,98 @@ button.kpi {
     min-width: 0;
 }
 
-// ---- Card --------------------------------------------------
+// The health card carries its own above-pane bottom margin; inside
+// the rail the column gap does the spacing.
+.railFlush {
+    margin-bottom: 0;
+}
+
+// ---- Categories card ---------------------------------------
 .card {
     @include board.board-surface(0);
-    border-radius: dt.$radius-lg;
     overflow: clip;
 }
+
 .cardHead {
     display: flex;
     align-items: baseline;
     gap: dt.$spacing-sm;
-    padding: dt.$spacing-lg dt.$spacing-xl;
-    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-}
-.cardTitle {
-    font-size: dt.$font-size-md;
-    font-weight: 700;
-    margin: 0;
-}
-.cardCount {
-    font-size: dt.$font-size-sm;
-    color: var(--bs-tertiary-color);
-    @include board.mono-time;
-}
-.cardLink {
-    margin-left: auto;
-    font-size: dt.$font-size-sm;
-    font-weight: 600;
-    color: var(--bs-primary);
-    text-decoration: none;
-    background: none;
-    border: 0;
-    cursor: pointer;
-    &:hover {
-        text-decoration: underline;
-    }
-}
-.cardBody {
-    padding: dt.$spacing-lg dt.$spacing-xl;
+    padding: dt.$spacing-lg dt.$spacing-xl dt.$spacing-md;
 }
 
-// ---- Categories table --------------------------------------
-.tableScroll {
-    overflow-x: auto;
+.cardEyebrow {
+    @include board.board-eyebrow;
 }
+
+.cardCount {
+    @include board.board-section-count;
+}
+
+.cardLink {
+    @include board.board-quiet-link;
+    margin-left: auto;
+    white-space: nowrap;
+}
+
 .table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: dt.$font-size-sm;
+    @include board.board-table;
 
     th,
     td {
-        padding: dt.$spacing-md dt.$spacing-xl;
         text-align: right;
-        white-space: nowrap;
     }
     th:first-child,
     td:first-child {
         text-align: left;
+        padding-inline-start: dt.$spacing-xl;
     }
-    thead th {
-        font-size: dt.$font-size-2xs;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: var(--bs-secondary-color);
-        font-weight: 600;
-        padding-block: dt.$spacing-sm;
+    th:last-child,
+    td:last-child {
+        padding-inline-end: dt.$spacing-xl;
     }
     tbody td {
-        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+        padding-block: dt.$spacing-sm;
     }
     tbody tr {
         cursor: pointer;
     }
-    tbody tr:hover {
-        background: rgba(var(--bs-secondary-rgb), 0.06);
+    tbody tr:last-child td {
+        border-bottom: 0;
     }
-    .num {
-        font-variant-numeric: tabular-nums;
-    }
-    .muted {
-        color: var(--bs-tertiary-color);
-    }
-    .time {
-        @include board.mono-time;
-        color: var(--bs-tertiary-color);
+    tbody tr:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: -2px;
     }
 }
+
+.num {
+    @include board.mono-time;
+    font-size: dt.$font-size-sm;
+    white-space: nowrap;
+}
+
+.numMuted {
+    color: var(--bs-secondary-color);
+}
+
 .catName {
     font-weight: 600;
 }
-.tag {
-    display: inline-block;
-    font-size: dt.$font-size-2xs;
-    font-weight: 600;
-    padding: 0.1rem 0.45rem;
-    border-radius: dt.$radius-sm;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-}
-.tag.feat {
-    background: rgba(var(--bs-primary-rgb), 0.12);
-    color: var(--bs-primary);
-}
+
 .barCell {
     display: inline-flex;
     align-items: center;
     gap: dt.$spacing-sm;
     justify-content: flex-end;
 }
+
 .bar {
     width: 3rem;
     height: 0.3rem;
     border-radius: 3px;
     background: rgba(var(--bs-secondary-rgb), 0.18);
     overflow: hidden;
+
     i {
         display: block;
         height: 100%;
@@ -269,65 +380,114 @@ button.kpi {
         border-radius: 3px;
     }
 }
+
 .tableFoot {
     padding: dt.$spacing-md dt.$spacing-xl;
     border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
     font-size: dt.$font-size-sm;
     color: var(--bs-tertiary-color);
+    font-variant-numeric: tabular-nums;
 }
-.tableFoot button {
-    background: none;
-    border: 0;
-    padding: 0;
-    color: var(--bs-primary);
-    font-weight: 600;
-    cursor: pointer;
-    &:hover {
-        text-decoration: underline;
-    }
-}
-.emptyRow {
-    padding: dt.$spacing-2xl dt.$spacing-xl;
-    text-align: center;
-    color: var(--bs-tertiary-color);
+
+.tableFootLink {
+    @include board.board-quiet-link;
     font-size: dt.$font-size-sm;
 }
 
-// ---- Import & sync card ------------------------------------
-.syncRow {
+.cardEmpty {
+    @include board.board-empty;
+    padding-block: dt.$spacing-2xl;
+}
+
+.cardEmptyTitle {
+    @include board.board-empty-title;
+}
+
+// ---- Rail cards --------------------------------------------
+.railCard {
+    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
+}
+
+.railHead {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
     gap: dt.$spacing-md;
-    padding-block: dt.$spacing-xs;
+    margin-bottom: dt.$spacing-md;
+}
+
+.railEyebrow {
+    @include board.board-eyebrow;
+}
+
+.railLink {
+    @include board.board-quiet-link;
+    white-space: nowrap;
+}
+
+// Setup progress (shown while the board isn't live yet).
+.setupMeter {
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(var(--bs-border-color-rgb), 0.5);
+    overflow: hidden;
+    margin-bottom: dt.$spacing-sm;
+}
+
+.setupFill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--bs-primary);
+    transition: width dt.$transition-base;
+}
+
+.setupSub {
     font-size: dt.$font-size-sm;
-}
-.syncK {
     color: var(--bs-secondary-color);
-}
-.syncV {
-    font-weight: 600;
+    margin: 0 0 dt.$spacing-md;
     font-variant-numeric: tabular-nums;
 }
-.syncV.mono {
-    @include board.mono-time;
+
+// ---- Import & sync card ------------------------------------
+.syncStatusRow {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin-bottom: dt.$spacing-sm;
 }
-.syncStatus {
+
+.syncPill {
+    @include board.board-pill;
     text-transform: capitalize;
+
+    &[data-status='done'] {
+        background: rgba(var(--bs-primary-rgb), 0.12);
+        color: var(--bs-primary);
+        border-color: transparent;
+    }
+    &[data-status='failed'] {
+        background: color-mix(in srgb, #{dt.$accent-red} 16%, transparent);
+        color: dt.$accent-red;
+        border-color: transparent;
+    }
+    &[data-status='running'],
+    &[data-status='queued'] {
+        background: color-mix(in srgb, #{dt.$accent-amber} 18%, transparent);
+        color: color-mix(in srgb, #{dt.$accent-amber} 80%, var(--bs-body-color));
+        border-color: transparent;
+    }
 }
-.syncStatus.done {
-    color: color-mix(in srgb, #{dt.$accent-green} 80%, var(--bs-body-color));
+
+.syncAge {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    font-variant-numeric: tabular-nums;
 }
-.syncStatus.failed {
-    color: dt.$accent-red;
-}
-.syncStatus.running {
-    color: color-mix(in srgb, #{dt.$accent-amber} 82%, var(--bs-body-color));
-}
+
 .phaseBar {
     display: flex;
     gap: dt.$spacing-xs;
-    margin: dt.$spacing-md 0 dt.$spacing-sm;
+    margin: dt.$spacing-sm 0;
 
     span {
         flex: 1;
@@ -336,170 +496,95 @@ button.kpi {
         background: rgba(var(--bs-secondary-rgb), 0.18);
     }
     span.on {
-        background: color-mix(in srgb, #{dt.$accent-green} 70%, transparent);
+        background: rgba(var(--bs-primary-rgb), 0.7);
     }
 }
+
+.syncRow {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    padding-block: dt.$spacing-xs;
+    font-size: dt.$font-size-sm;
+}
+
+.syncK {
+    color: var(--bs-secondary-color);
+}
+
+.syncV {
+    @include board.mono-time;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+}
+
+.changeSummary {
+    margin: dt.$spacing-sm 0 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
+    font-variant-numeric: tabular-nums;
+}
+
+.changeLabel {
+    @include board.board-eyebrow;
+    display: block;
+    color: var(--bs-tertiary-color);
+    margin-bottom: 2px;
+}
+
 .syncEmpty {
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
     margin: 0 0 dt.$spacing-md;
 }
-.changeSummary {
-    margin: dt.$spacing-md 0 0;
-    font-size: dt.$font-size-sm;
-    color: var(--bs-body-color);
-    font-variant-numeric: tabular-nums;
-}
-.changeLabel {
-    display: block;
-    font-size: dt.$font-size-2xs;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--bs-tertiary-color);
-    font-weight: 600;
-    margin-bottom: 2px;
-}
-// The card's primary action (re-sync / first import) — filled accent so it's the
-// obvious click, with the "View details" header link left as the quiet way into
-// the manual console.
-.railBtn {
-    display: block;
-    width: 100%;
-    text-align: center;
-    padding: dt.$spacing-sm dt.$spacing-md;
-    border-radius: dt.$radius-md;
-    border: 1px solid var(--bs-primary);
-    background: var(--bs-primary);
-    color: #fff;
-    font-weight: 600;
-    font-size: dt.$font-size-sm;
-    cursor: pointer;
-    margin-top: dt.$spacing-sm;
-    &:hover:not(:disabled) {
-        filter: brightness(1.06);
-    }
-    &:disabled {
-        opacity: 0.55;
-        cursor: not-allowed;
-    }
-}
-.railHint {
-    margin: dt.$spacing-sm 0 0;
-    font-size: dt.$font-size-2xs;
-    color: var(--bs-tertiary-color);
-    text-align: center;
-}
-.railErr {
-    margin: dt.$spacing-sm 0 0;
-    font-size: dt.$font-size-2xs;
-    color: dt.$accent-red;
-    text-align: center;
-}
+
 .divider {
     height: 1px;
     background: rgba(var(--bs-border-color-rgb), 0.4);
     margin: dt.$spacing-md 0;
 }
 
-// ---- Moderators card ---------------------------------------
-.modRow {
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-md;
-    padding-block: dt.$spacing-sm;
-}
-.avatar {
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-    flex: none;
-    display: grid;
-    place-items: center;
-    font-size: dt.$font-size-2xs;
-    font-weight: 700;
-    color: #fff;
-    text-transform: uppercase;
-}
-.modName {
-    font-weight: 600;
-    font-size: dt.$font-size-sm;
-}
-.modRole {
-    font-size: dt.$font-size-2xs;
-    color: var(--bs-tertiary-color);
-    text-transform: capitalize;
-}
-.modYou {
-    margin-left: auto;
-    font-size: dt.$font-size-2xs;
-    color: var(--bs-tertiary-color);
-    font-weight: 600;
-}
-.appNote {
-    margin-top: dt.$spacing-md;
-    padding: dt.$spacing-sm dt.$spacing-md;
-    border-radius: dt.$radius-md;
-    background: color-mix(in srgb, #{dt.$accent-amber} 15%, transparent);
-    color: color-mix(in srgb, #{dt.$accent-amber} 82%, var(--bs-body-color));
-    font-size: dt.$font-size-sm;
-    font-weight: 600;
+// The card's primary action (re-sync / first import).
+.railBtn {
+    @include board.board-btn-primary;
     width: 100%;
-    text-align: left;
-    border: 0;
-    cursor: pointer;
-    &:hover {
-        filter: brightness(1.05);
-    }
 }
 
-// ---- Jump-to tiles -----------------------------------------
-.jump {
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-md;
-}
-.jumpLabel {
-    font-size: dt.$font-size-2xs;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--bs-secondary-color);
-    font-weight: 600;
-    margin: 0;
-}
-.tiles {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
-    gap: dt.$spacing-md;
-}
-.tile {
-    @include board.board-surface(dt.$spacing-lg);
-    border-radius: dt.$radius-md;
-    text-align: left;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-xs;
-    transition: border-color 0.12s ease;
-    &:hover {
-        border-color: var(--bs-primary);
-    }
-    &:focus-visible {
-        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
-        outline-offset: 2px;
-    }
-}
-.tileTop {
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-sm;
-    color: var(--bs-primary);
-}
-.tileAction {
-    font-weight: 600;
-    font-size: dt.$font-size-sm;
-    color: var(--bs-body-color);
-}
-.tileBlurb {
+.railHint {
+    margin: dt.$spacing-sm 0 0;
     font-size: dt.$font-size-2xs;
     color: var(--bs-tertiary-color);
+    text-align: center;
+}
+
+.railErr {
+    margin: dt.$spacing-sm 0 0;
+    font-size: dt.$font-size-2xs;
+    color: dt.$accent-red;
+    text-align: center;
+}
+
+// ---- Destinations row --------------------------------------
+// One quiet line of doors; the sidebar remains the real navigation.
+.jump {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm dt.$spacing-xl;
+    padding-top: dt.$spacing-lg;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+}
+
+.jumpLabel {
+    @include board.board-eyebrow;
+    color: var(--bs-tertiary-color);
+}
+
+.jumpLink {
+    @include board.board-quiet-link;
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-sm;
 }

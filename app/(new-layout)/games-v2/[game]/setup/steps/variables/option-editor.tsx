@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { ArrowLeft, ArrowRight } from 'react-bootstrap-icons';
 import type { BoardBucket } from '~src/lib/setup/variable-view';
 import { SECTION, type VariableRoleId } from '~src/lib/variables/language';
 import styles from './variables-grid.module.scss';
@@ -127,7 +128,7 @@ export function OptionEditor({
                             aria-label={`Move ${bucket.label} left`}
                             onClick={() => move(-1)}
                         >
-                            ←
+                            <ArrowLeft size={16} aria-hidden />
                         </button>
                         <button
                             type="button"
@@ -136,7 +137,7 @@ export function OptionEditor({
                             aria-label={`Move ${bucket.label} right`}
                             onClick={() => move(1)}
                         >
-                            →
+                            <ArrowRight size={16} aria-hidden />
                         </button>
                         <button
                             type="button"

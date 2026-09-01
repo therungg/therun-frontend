@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { Check, GripVertical } from 'react-bootstrap-icons';
 import type { CategoryVariableSuggestion } from '~src/lib/leaderboard-variables';
 import { normalizeVariableName } from '~src/lib/variables/keys';
 import type { VariableRoleId } from '~src/lib/variables/language';
@@ -224,7 +225,10 @@ function SuggestionCard({
                     prettier title here only adds a second name to reconcile. */}
                 <span className={styles.name}>{s.variable}</span>
                 {state !== 'new' && (
-                    <span className={styles.pillAdded}>✓ {addedRoleText}</span>
+                    <span className={styles.pillAdded}>
+                        <Check size={14} aria-hidden />
+                        {addedRoleText}
+                    </span>
                 )}
             </div>
 
@@ -259,7 +263,7 @@ function SuggestionCard({
                             title={b.aliases.join(', ')}
                         >
                             <span className={styles.dragHandle} aria-hidden>
-                                ⠿
+                                <GripVertical size={12} />
                             </span>
                             {b.label === '' ? '(blank)' : b.label}
                             {b.aliases.length > 1 && (
