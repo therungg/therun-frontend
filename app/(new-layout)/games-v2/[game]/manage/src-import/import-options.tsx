@@ -68,7 +68,7 @@ const TOGGLES: Array<{ key: ToggleKey; label: string; hint: string }> = [
     {
         key: 'setMinTimeFloor',
         label: 'Set a minimum-time floor',
-        hint: 'Flag impossibly-fast runs — below 90% of the fastest imported time.',
+        hint: 'Flag impossibly-fast runs (below 90% of the fastest imported time).',
     },
 ];
 

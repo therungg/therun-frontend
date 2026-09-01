@@ -391,6 +391,14 @@ export function CommitPanel({ job, gameId, gameSlug, onChanged }: Props) {
 
     return (
         <section className={styles.commitCard} aria-label="Commit to therun.gg">
+            <div className={styles.commitHead}>
+                <span className={styles.commitEyebrow}>Commit</span>
+                <h3 className={styles.commitTitle}>Write to the live board</h3>
+                <p className={styles.commitLede}>
+                    Everything above is a dry run. The actions here change the
+                    live board.
+                </p>
+            </div>
             {vm.showPlanPlaceholder && (
                 <PlanPreview
                     gameId={gameId}
@@ -427,7 +435,7 @@ export function CommitPanel({ job, gameId, gameSlug, onChanged }: Props) {
                     <div className={styles.stack}>
                         <p className={styles.muted}>
                             “Only use the speedrun.com leaderboard” is on. The
-                            SRC-only reconcile is not running — start it
+                            SRC-only reconcile is not running. Start it
                             manually.
                         </p>
                         <button
@@ -445,7 +453,7 @@ export function CommitPanel({ job, gameId, gameSlug, onChanged }: Props) {
                         role="status"
                         aria-live="polite"
                     >
-                        “Only use the speedrun.com leaderboard” is on —
+                        “Only use the speedrun.com leaderboard” is on:
                         reconciling the board will start automatically.
                     </p>
                 ))}

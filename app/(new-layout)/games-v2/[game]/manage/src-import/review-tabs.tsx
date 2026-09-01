@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Dash } from 'react-bootstrap-icons';
 import { getFormattedString } from '~src/components/util/datetime';
 import type {
     Paged,
@@ -73,7 +74,7 @@ export function ReviewTabs({
                 options={TABS}
                 onChange={(v) => setTab(v as Tab)}
             />
-            <div style={{ marginTop: '0.75rem' }}>
+            <div className={styles.tabBody}>
                 {tab === 'categories' && <CategoriesTab state={categories} />}
                 {tab === 'levels' && <LevelsTab state={levels} />}
                 {tab === 'variables' && (
@@ -290,7 +291,13 @@ function LevelsTab({ state }: { state: LoadState<SrcImportLevel[]> }) {
 
 function Rules({ text }: { text: string | null }) {
     const [open, setOpen] = useState(false);
-    if (!text) return <span className={styles.muted}>—</span>;
+    if (!text) {
+        return (
+            <span className={styles.muted}>
+                <Dash size={16} aria-hidden />
+            </span>
+        );
+    }
     if (text.length <= 140 || open) {
         return <div className={styles.rules}>{text}</div>;
     }
@@ -299,7 +306,7 @@ function Rules({ text }: { text: string | null }) {
             {text.slice(0, 140)}…{' '}
             <button
                 type="button"
-                className="btn btn-link btn-sm p-0 align-baseline"
+                className={styles.moreLink}
                 onClick={() => setOpen(true)}
             >
                 more
@@ -400,28 +407,27 @@ function VariablesTab({
                                             </div>
                                         </td>
                                         <td>
-                                            {v.values.map((val) => (
-                                                <span
-                                                    key={val.id}
-                                                    className={`${styles.pill} ${
-                                                        val.id ===
-                                                        v.defaultValueId
-                                                            ? styles.pillPrimary
-                                                            : ''
-                                                    }`}
-                                                    style={{
-                                                        marginRight: '0.25rem',
-                                                    }}
-                                                    title={
-                                                        val.id ===
-                                                        v.defaultValueId
-                                                            ? 'default'
-                                                            : undefined
-                                                    }
-                                                >
-                                                    {val.label}
-                                                </span>
-                                            ))}
+                                            <div className={styles.pillRow}>
+                                                {v.values.map((val) => (
+                                                    <span
+                                                        key={val.id}
+                                                        className={`${styles.pill} ${
+                                                            val.id ===
+                                                            v.defaultValueId
+                                                                ? styles.pillPrimary
+                                                                : ''
+                                                        }`}
+                                                        title={
+                                                            val.id ===
+                                                            v.defaultValueId
+                                                                ? 'default'
+                                                                : undefined
+                                                        }
+                                                    >
+                                                        {val.label}
+                                                    </span>
+                                                ))}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -537,7 +543,11 @@ function PlayerRow({ p }: { p: SrcImportPlayer }) {
                 )}
             </td>
             <td>
-                {p.therunUsername ?? <span className={styles.muted}>—</span>}
+                {p.therunUsername ?? (
+                    <span className={styles.muted}>
+                        <Dash size={16} aria-hidden />
+                    </span>
+                )}
             </td>
             <td>
                 <span className={`${styles.pill} ${pill}`}>
@@ -586,7 +596,7 @@ function RunsTab({
     return (
         <>
             <div className={styles.toolbar}>
-                <label className={styles.field} style={{ flex: '0 1 auto' }}>
+                <label className={styles.field}>
                     <span className={styles.label}>Category</span>
                     <select
                         className={styles.select}
@@ -620,10 +630,7 @@ function RunsTab({
                     </select>
                 </label>
                 {levels.length > 0 && selectedType !== 'per-game' && (
-                    <label
-                        className={styles.field}
-                        style={{ flex: '0 1 auto' }}
-                    >
+                    <label className={styles.field}>
                         <span className={styles.label}>Level</span>
                         <select
                             className={styles.select}
@@ -744,8 +751,7 @@ function RunRow({
                         {runPlayerLabel(p)}
                         {'twitchLogin' in p && p.twitchLogin && (
                             <span
-                                className={styles.muted}
-                                style={{ marginLeft: '0.25rem' }}
+                                className={`${styles.muted} ${styles.gapLeft}`}
                                 title="Twitch login on speedrun.com"
                             >
                                 (twitch: {p.twitchLogin})
@@ -753,8 +759,7 @@ function RunRow({
                         )}
                         {'therunUsername' in p && p.therunUsername && (
                             <span
-                                className={`${styles.pill} ${styles.pillPrimary}`}
-                                style={{ marginLeft: '0.25rem' }}
+                                className={`${styles.pill} ${styles.pillPrimary} ${styles.gapLeft}`}
                                 title="Matched therun.gg user"
                             >
                                 {p.therunUsername}
@@ -824,7 +829,7 @@ function Pager({
         <div className={styles.pager}>
             <button
                 type="button"
-                className="btn btn-sm btn-outline-secondary"
+                className={styles.pagerBtn}
                 disabled={page <= 1}
                 onClick={() => onPage(page - 1)}
             >
@@ -835,7 +840,7 @@ function Pager({
             </span>
             <button
                 type="button"
-                className="btn btn-sm btn-outline-secondary"
+                className={styles.pagerBtn}
                 disabled={page >= pages}
                 onClick={() => onPage(page + 1)}
             >
