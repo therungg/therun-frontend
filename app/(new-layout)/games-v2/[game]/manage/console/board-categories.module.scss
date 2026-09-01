@@ -125,6 +125,11 @@
     }
 }
 
+.orderArrows {
+    display: inline-flex;
+    flex-direction: column;
+}
+
 tbody tr:hover .orderBtn,
 tbody tr:focus-within .orderBtn {
     opacity: 1;
@@ -301,6 +306,11 @@ tbody tr:focus-within .quietAction {
     transition: width dt.$transition-base;
 }
 
+.coverageNote {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
 .footRow {
     display: flex;
     align-items: baseline;
@@ -348,6 +358,12 @@ tbody tr:focus-within .quietAction {
 
 .archivedName {
     margin-right: auto;
+}
+
+// A quiet action that is the point of its row (Restore in the archived and
+// level lists) stays legible instead of waiting for hover.
+.restoreAction {
+    opacity: 1;
 }
 
 // ---- Empty board ----------------------------------------------
@@ -428,6 +444,11 @@ tbody tr:focus-within .quietAction {
 
 .pickerError {
     @include board.board-dialog-field-error;
+}
+
+// The selection count holds the dialog footer's left edge.
+.footMeta {
+    margin-right: auto;
 }
 
 .pickerFoot {
@@ -553,12 +574,6 @@ tbody tr:focus-within .quietAction {
 .levelRowName {
     margin-right: auto;
     color: var(--bs-secondary-color);
-}
-
-.levelRestore {
-    // The quiet action only reveals itself on row hover in the table; in this
-    // list it is the point of the row, so it stays legible.
-    opacity: 1;
 }
 
 .levelFlag {

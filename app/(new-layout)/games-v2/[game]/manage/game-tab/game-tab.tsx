@@ -44,9 +44,17 @@ export function GameTab({
 }: Props) {
     return (
         <section className={styles.surface}>
-            <div className={styles.paneHeader}>
-                <h2 className={styles.paneTitle}>{CONCEPT_LABEL.groups}</h2>
-            </div>
+            <header className={styles.paneHeader}>
+                <div>
+                    <div className={styles.paneEyebrow}>Structure</div>
+                    <h2 className={styles.paneTitle}>{CONCEPT_LABEL.groups}</h2>
+                </div>
+            </header>
+            <p className={styles.paneLede}>
+                Organize categories on the public game page. With more than one
+                group, the category rail splits into labeled sections in this
+                order.
+            </p>
             {/* Grouping is the one edit whose whole point is what the band
                 looks like afterwards — the wizard's step 3 shows it, so this
                 does too. */}

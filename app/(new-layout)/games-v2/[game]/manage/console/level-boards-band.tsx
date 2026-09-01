@@ -174,7 +174,7 @@ export function LevelBoardsBand({
                                                 </span>
                                                 <button
                                                     type="button"
-                                                    className={`${styles.quietAction} ${styles.levelRestore}`}
+                                                    className={`${styles.quietAction} ${styles.restoreAction}`}
                                                     disabled={pendingIds.has(
                                                         row.id,
                                                     )}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { ListNested } from 'react-bootstrap-icons';
 import { createLevelAction } from '~src/actions/levels/create-level.action';
 import { levelOpAction } from '~src/actions/levels/level-op.action';
 import consoleStyles from '~src/components/console-chrome/console.module.scss';
@@ -66,44 +67,74 @@ export function LevelsPane({ gameId, gameSlug, templates }: Props) {
 
     return (
         <section className={consoleStyles.surface}>
-            <div className={consoleStyles.paneHeader}>
-                <h2 className={consoleStyles.paneTitle}>Levels</h2>
-                <span className={consoleStyles.paneCount}>{levels.length}</span>
+            <header className={consoleStyles.paneHeader}>
+                <div>
+                    <div className={consoleStyles.paneEyebrow}>Structure</div>
+                    <div className={styles.titleRow}>
+                        <h2 className={consoleStyles.paneTitle}>Levels</h2>
+                        <span className={consoleStyles.paneCount}>
+                            {levels.length}
+                        </span>
+                    </div>
+                </div>
                 {missingBoards && (
-                    <button
-                        type="button"
-                        className={kit.saveBtn}
-                        disabled={isPending}
-                        onClick={materialise}
-                    >
-                        Materialise missing boards
-                    </button>
+                    <div className={consoleStyles.paneActions}>
+                        <button
+                            type="button"
+                            className={styles.repairAction}
+                            disabled={isPending}
+                            onClick={materialise}
+                        >
+                            Materialise missing boards
+                        </button>
+                    </div>
                 )}
-            </div>
+            </header>
+            <p className={consoleStyles.paneLede}>
+                Name each level, set its rules, and choose which level
+                categories it carries.
+            </p>
 
             <InlineError>{error}</InlineError>
 
-            {loading && <p className="text-muted">Loading levels…</p>}
+            {loading && (
+                <div
+                    className={styles.loading}
+                    role="status"
+                    aria-label="Loading levels"
+                />
+            )}
 
             {!loading && !error && levels.length === 0 && (
                 <div className={styles.empty}>
-                    No levels yet.{' '}
-                    {templates.length === 0
-                        ? 'Add a level, then define the level categories every level gets.'
-                        : 'Add a level — every level category gets a board on it.'}
+                    <ListNested
+                        size={26}
+                        className={styles.emptyIcon}
+                        aria-hidden="true"
+                    />
+                    <p className={styles.emptyTitle}>No levels yet</p>
+                    <p className={styles.emptyBlurb}>
+                        {templates.length === 0
+                            ? 'Add a level, then define the level categories every level gets.'
+                            : 'Add a level: every level category gets a board on it.'}
+                    </p>
                 </div>
             )}
 
-            {levels.map((level) => (
-                <LevelRow
-                    key={level.id}
-                    gameId={gameId}
-                    gameSlug={gameSlug}
-                    level={level}
-                    templates={summaries}
-                    onChanged={reload}
-                />
-            ))}
+            {levels.length > 0 && (
+                <div className={styles.panel}>
+                    {levels.map((level) => (
+                        <LevelRow
+                            key={level.id}
+                            gameId={gameId}
+                            gameSlug={gameSlug}
+                            level={level}
+                            templates={summaries}
+                            onChanged={reload}
+                        />
+                    ))}
+                </div>
+            )}
 
             <form
                 className={styles.createRow}
@@ -113,7 +144,7 @@ export function LevelsPane({ gameId, gameSlug, templates }: Props) {
                 }}
             >
                 <input
-                    className="form-control form-control-sm w-auto"
+                    className={`form-control form-control-sm ${styles.createControl}`}
                     aria-label="New level name"
                     placeholder="Level name"
                     value={name}
