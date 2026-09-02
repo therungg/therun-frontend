@@ -56,6 +56,8 @@ export const UserLink = ({
 }: UserLinkProps) => {
     const { data: patreons, isLoading } = usePatreons();
 
+    if (!username) return null;
+
     if (!username.startsWith('/')) username = `/${username}`;
 
     username = decodeURIComponent(username);
