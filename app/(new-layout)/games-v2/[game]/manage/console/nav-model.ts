@@ -131,7 +131,11 @@ function itemVisible(
     if (groupId === 'moderate') return flags.canModerate;
     if (itemId === 'categories') return flags.canConfigure || flags.canModerate;
     if (itemId === 'boards') return flags.canModerate || flags.canConfigure;
-    if (itemId === 'import') return flags.canModerate || flags.canConfigure;
+    // Import is pulled from the console for now — server actions in
+    // src-import-actions.ts also refuse to run. Restore by returning
+    // `flags.canModerate || flags.canConfigure` here (and flipping
+    // IMPORT_DISABLED back to false there).
+    if (itemId === 'import') return false;
     return flags.canConfigure;
 }
 

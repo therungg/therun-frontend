@@ -44,12 +44,21 @@ import type {
 export type ActionResult<T> = { result: T } | { error: string };
 
 /**
+ * Kill switch: the board import is pulled from the console for now (nav item
+ * hidden, `showImport` false everywhere it gates board-overview). This blocks
+ * the server actions too, so a direct call can't reach it once the door is
+ * gone. Flip back to `false` to restore — nothing else needs to change.
+ */
+const IMPORT_DISABLED = true;
+
+/**
  * The backend owns the real four-step auth chain (therun mod → SRC identity →
  * SRC mod). This only keeps non-moderators from reaching the API at all,
  * mirroring the console door: `import-board` is held by the same people who
  * can moderate or configure the board.
  */
 async function requireBoardMod(gameSlug: string): Promise<string> {
+    if (IMPORT_DISABLED) throw new Error('Import is temporarily disabled.');
     const session = await getSession();
     if (!session?.id || !session.username) throw new Error('Not signed in');
     if (
