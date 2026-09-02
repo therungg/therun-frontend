@@ -5,10 +5,12 @@ import { Alert, Badge, Button, Form, Spinner, Table } from 'react-bootstrap';
 import type {
     SrcUserImportGameResult,
     SrcUserImportJob,
+    SrcUserSyncStatus,
 } from 'types/src-import.types';
 import { canUndoImport } from 'types/src-import.types';
 import {
     getMyImportJob,
+    getMySyncStatus,
     startMyImport,
     startMyImportFromExport,
     undoMyImport,
@@ -49,6 +51,13 @@ export function SrcImportTab() {
     const [srcUsername, setSrcUsername] = useState('');
     const [confirmUndo, setConfirmUndo] = useState(false);
     const fileRef = useRef<HTMLInputElement>(null);
+    const [sync, setSync] = useState<SrcUserSyncStatus | null>(null);
+
+    useEffect(() => {
+        getMySyncStatus().then((r) => {
+            if (!('error' in r)) setSync(r.status);
+        });
+    }, []);
 
     const refresh = useCallback(async () => {
         const res = await getMyImportJob();
@@ -148,6 +157,28 @@ export function SrcImportTab() {
                 — into therun.gg. Runs are matched to your account through your
                 linked Twitch, so you can only import your own.
             </p>
+
+            {sync && (
+                <Alert
+                    variant={sync.optOut ? 'secondary' : 'info'}
+                    className="mb-3"
+                >
+                    <strong>Automatic sync</strong>{' '}
+                    {sync.optOut
+                        ? 'is off.'
+                        : `runs daily. Last sync: ${sync.lastAt ? new Date(sync.lastAt).toLocaleString() : 'not yet'}.`}{' '}
+                    {sync.lastJob?.summary && (
+                        <span>
+                            Last run: {sync.lastJob.summary.added} added,{' '}
+                            {sync.lastJob.summary.linked} linked,{' '}
+                            {sync.lastJob.summary.updated} updated,{' '}
+                            {sync.lastJob.summary.vanished} no longer on
+                            speedrun.com.
+                        </span>
+                    )}{' '}
+                    <a href="/settings/sync">Settings</a>
+                </Alert>
+            )}
 
             {error && (
                 <Alert
