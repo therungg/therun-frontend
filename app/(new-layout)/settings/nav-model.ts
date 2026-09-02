@@ -1,5 +1,6 @@
 // Pure IA for /settings. No React, no fetching.
 import {
+    ArrowRepeat,
     BookHalf,
     Gear,
     Heart,
@@ -13,6 +14,7 @@ import type { NavGroup } from '~src/components/console-chrome/nav-types';
 export type SettingsItemId =
     | 'profile'
     | 'preferences'
+    | 'sync'
     | 'patreon'
     | 'appearance'
     | 'livesplit'
@@ -25,6 +27,7 @@ export const SETTINGS_GROUPS: NavGroup[] = [
         items: [
             { id: 'profile', label: 'Profile' },
             { id: 'preferences', label: 'General preferences' },
+            { id: 'sync', label: 'Run sync' },
         ],
     },
     {
@@ -48,6 +51,7 @@ export const SETTINGS_GROUPS: NavGroup[] = [
 export const SETTINGS_ICONS: Record<SettingsItemId, IconType> = {
     profile: PersonCircle,
     preferences: Gear,
+    sync: ArrowRepeat,
     patreon: Heart,
     appearance: Palette,
     livesplit: Key,
