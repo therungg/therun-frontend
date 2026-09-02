@@ -342,6 +342,8 @@ export interface SrcUserImportJob {
     startedAt: string | null;
     finishedAt: string | null;
     createdAt: string;
+    kind: 'import' | 'sync';
+    summary: SrcUserSyncSummary | null;
 }
 
 /** Whether the undo action is offered — exactly the gate the backend enforces. */
@@ -352,4 +354,43 @@ export function canUndoImport(job: SrcUserImportJob | null): boolean {
         job.undoneAt === null &&
         job.gameResults.some((g) => g.outcome === 'imported')
     );
+}
+
+// ---------------------------------------------------------------------------
+// Automatic sync of the user's own SRC runs — a background counterpart to the
+// one-shot import above. Backend: docs/frontend-guide-src-import.md
+// ("Automatic sync").
+// ---------------------------------------------------------------------------
+
+export interface SrcUserSyncSummary {
+    fetched: number;
+    added: number;
+    linked: number;
+    updated: number;
+    vanished: number;
+    restored: number;
+    skipped: number;
+    skippedReasons: Record<string, number>;
+    errors: string[];
+}
+
+export type SrcLookupResult = 'matched' | 'no-match' | 'ambiguous' | 'stale';
+
+export interface SrcUserSyncStatus {
+    optOut: boolean;
+    lastAt: string | null;
+    nextAt: string | null;
+    identity: {
+        srcUserId: string;
+        srcUsername: string | null;
+        verifiedAt: string | null;
+    } | null;
+    lookupResult: SrcLookupResult | null;
+    lastJob: {
+        id: number;
+        status: 'queued' | 'running' | 'done' | 'failed';
+        finishedAt: string | null;
+        error: string | null;
+        summary: SrcUserSyncSummary | null;
+    } | null;
 }
