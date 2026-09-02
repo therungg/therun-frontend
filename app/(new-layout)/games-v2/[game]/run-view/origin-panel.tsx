@@ -1,5 +1,6 @@
 import Link from '~src/components/link';
 import { originSummary } from '~src/lib/run-view/origin-summary';
+import { srcRunUrl } from '~src/lib/src-links';
 import { safeEncodeURI } from '~src/utils/uri';
 import styles from './origin-panel.module.scss';
 import type { RunViewModel } from './run-view';
@@ -9,6 +10,7 @@ export function OriginPanel({ model }: { model: RunViewModel }) {
     if (!summary) return null;
 
     const ingestedAt = model.origin?.ingestedAt ?? null;
+    const srcRunId = model.origin?.srcRunId ?? null;
     const showSplitsLink =
         summary.showSplitsLink && model.userId != null && !model.isGuest;
     const pendingSelfClaim =
@@ -19,6 +21,15 @@ export function OriginPanel({ model }: { model: RunViewModel }) {
         <div className={styles.surface}>
             <div className="d-flex flex-wrap align-items-center gap-2">
                 <span>{summary.line}</span>
+                {srcRunId && (
+                    <a
+                        href={srcRunUrl(srcRunId)}
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                        View on speedrun.com
+                    </a>
+                )}
                 {pendingSelfClaim && (
                     <span className={styles.warnPill}>
                         Self-reported · unverified

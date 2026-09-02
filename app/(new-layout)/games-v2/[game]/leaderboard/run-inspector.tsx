@@ -30,6 +30,7 @@ import { Vod } from '~src/components/run/dashboard/vod';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { formatRunDate } from '~src/lib/format-run-date';
 import { describeEvent } from '~src/lib/run-view/describe-event';
+import { srcRunUrl } from '~src/lib/src-links';
 import { isEmbeddableVod } from '~src/lib/vod-url';
 import type {
     GameTimeLabel,
@@ -1077,6 +1078,18 @@ export function RunInspector({
                                     <span title={formatRunDate(entry.runDate)}>
                                         {relativeDate(entry.runDate)}
                                     </span>
+                                </>
+                            )}
+                            {entry.srcRunId && (
+                                <>
+                                    {' · '}
+                                    <a
+                                        href={srcRunUrl(entry.srcRunId)}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                    >
+                                        via speedrun.com
+                                    </a>
                                 </>
                             )}
                         </div>

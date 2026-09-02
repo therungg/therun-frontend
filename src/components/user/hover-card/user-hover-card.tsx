@@ -5,6 +5,7 @@ import { Trophy } from 'react-bootstrap-icons';
 import { nameHue } from '~app/(new-layout)/games-v2/[game]/leaderboard/avatar-hue';
 import { relativeDate } from '~app/(new-layout)/games-v2/[game]/leaderboard/relative-date';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
+import { srcUserUrl } from '~src/lib/src-links';
 import { formatCount, formatHours } from '~src/utils/format-stats';
 import type {
     UserCardContext,
@@ -98,6 +99,16 @@ export function UserHoverCard({ username, context }: Props) {
                         ) : null}
                         {memberSince ? (
                             <span>Runner since {memberSince}</span>
+                        ) : null}
+                        {card?.srcUsername ? (
+                            <a
+                                href={srcUserUrl(card.srcUsername)}
+                                target="_blank"
+                                rel="noreferrer"
+                                className={styles.srcLink}
+                            >
+                                speedrun.com
+                            </a>
                         ) : null}
                     </span>
                 </div>

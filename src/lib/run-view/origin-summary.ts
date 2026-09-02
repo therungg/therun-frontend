@@ -36,5 +36,10 @@ export function originSummary(
                 line: 'Time asserted by a moderator',
                 showSplitsLink: false,
             };
+        case 'src_import':
+            return {
+                line: 'Imported from speedrun.com',
+                showSplitsLink: false,
+            };
     }
 }

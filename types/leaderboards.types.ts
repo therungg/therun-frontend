@@ -207,6 +207,12 @@ export interface LeaderboardEntry {
     // backing finished_run (runId is null). Defaults to 'run' when absent.
     source?: 'run' | 'manual';
     manualTimeId?: number | null;
+    /**
+     * speedrun.com run id when the row came in through the SRC importer.
+     * Rendered as a "via speedrun.com" link — CC BY-NC attribution. Null
+     * for native runs and manual times; absent on older backend deploys.
+     */
+    srcRunId?: string | null;
     // Runner metadata batch-joined by the backend; null for guests and
     // absent on older backend deploys.
     picture?: string | null;
@@ -337,12 +343,16 @@ export type RunOriginPath =
     | 'guest_submit'
     | 'submission'
     | 'manual_mod'
-    | 'manual_self';
+    | 'manual_self'
+    | 'src_import';
 
 export interface RunOrigin {
     path: RunOriginPath | null;
     submittedBy: RunOriginRef | null;
     speedrunRunId: string | null;
+    /** speedrun.com run id for imported runs (not speedrunRunId, which is
+     *  therun's own timer run). Attribution link target. */
+    srcRunId?: string | null;
     ingestedAt: string | null;
 }
 

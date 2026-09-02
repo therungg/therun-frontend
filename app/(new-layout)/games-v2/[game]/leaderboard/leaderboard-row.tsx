@@ -1,12 +1,13 @@
 'use client';
 
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { PlayBtn, XLg } from 'react-bootstrap-icons';
+import { BoxArrowUpRight, PlayBtn, XLg } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { RunHoverCardAnchor } from '~src/components/run/run-hover-card/run-hover-card-anchor';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { formatRunDate } from '~src/lib/format-run-date';
+import { srcRunUrl } from '~src/lib/src-links';
 import type {
     GameTimeLabel,
     LeaderboardEntry,
@@ -484,6 +485,20 @@ export function LeaderboardRow({
             </td>
             <td className={styles.trailing}>
                 {slots?.actions?.(entry)}
+                {/* Attribution: speedrun.com's data is CC BY-NC, so an
+                    imported row credits the source with a link back. */}
+                {entry.srcRunId && (
+                    <a
+                        href={srcRunUrl(entry.srcRunId)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={styles.iconLink}
+                        aria-label="via speedrun.com"
+                        title="via speedrun.com"
+                    >
+                        <BoxArrowUpRight size={13} />
+                    </a>
+                )}
                 {entry.vodUrl && (
                     <a
                         href={entry.vodUrl}
