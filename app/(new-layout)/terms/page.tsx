@@ -101,6 +101,13 @@ export default function Terms() {
                     removed or attributed differently, contact us.
                 </li>
                 <li>
+                    Leaderboard data on speedrun.com is published under the
+                    Creative Commons BY-NC 4.0 licence. Imported runs are shown
+                    with a link back to speedrun.com as the source, as that
+                    licence asks. We don&apos;t sell imported data or put it
+                    behind a paywall.
+                </li>
+                <li>
                     Speedrun.com is not affiliated with The Run. Their site has
                     its own rules.
                 </li>
