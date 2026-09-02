@@ -26,7 +26,6 @@ declare global {
             PROD_API_KEY: string;
             TWITCH_OAUTH_SECRET: string;
             PATREON_OAUTH_CLIENT_ID: string;
-            NEXT_PUBLIC_ANALYTICS_MEASUREMENT_ID: string;
             SMTP_HOST: string;
             SMTP_PASSWORD: string;
         }
