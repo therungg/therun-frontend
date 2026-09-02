@@ -1,6 +1,9 @@
 'use server';
 
-import type { SrcUserImportJob } from 'types/src-import.types';
+import type {
+    SrcUserImportJob,
+    SrcUserSyncStatus,
+} from 'types/src-import.types';
 import { getSession } from '~src/actions/session.action';
 import { ApiError, apiFetch } from '~src/lib/api-client';
 
@@ -78,6 +81,44 @@ export async function undoMyImport(): Promise<StartResult> {
             sessionId: session.id,
             method: 'POST',
         });
+    } catch (e) {
+        return toError(e);
+    }
+}
+
+const ME_SYNC = '/src-import/me/sync';
+export type SyncStatusResult =
+    | { status: SrcUserSyncStatus }
+    | SrcImportActionError;
+
+/** Automatic-sync status for the caller: opt-out flag, linked identity, last job. */
+export async function getMySyncStatus(): Promise<SyncStatusResult> {
+    const session = await getSession();
+    if (!session?.id) return { error: 'You must be signed in.' };
+    try {
+        const status = await apiFetch<SrcUserSyncStatus>(ME_SYNC, {
+            sessionId: session.id,
+            method: 'GET',
+        });
+        return { status };
+    } catch (e) {
+        return toError(e);
+    }
+}
+
+/** Toggle the automatic sync of the caller's speedrun.com runs. */
+export async function setMySyncOptOut(
+    optOut: boolean,
+): Promise<SyncStatusResult> {
+    const session = await getSession();
+    if (!session?.id) return { error: 'You must be signed in.' };
+    try {
+        const status = await apiFetch<SrcUserSyncStatus>(ME_SYNC, {
+            sessionId: session.id,
+            method: 'PATCH',
+            body: { optOut },
+        });
+        return { status };
     } catch (e) {
         return toError(e);
     }
