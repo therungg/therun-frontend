@@ -39,6 +39,11 @@ export interface UserCardStats {
      * instead of empty/zeroed stats. Absent on older backend deploys.
      */
     imported?: boolean;
+    /**
+     * speedrun.com display name when the account is linked. The card shows
+     * a profile link. Absent on older backend deploys.
+     */
+    srcUsername?: string | null;
 }
 
 export type UserCardProfile = UserData & {

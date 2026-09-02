@@ -41,7 +41,6 @@
         "@eslint/compat": "^1.4.0",
         "@formkit/auto-animate": "^0.8.1",
         "@gsap/react": "^2.1.1",
-        "@next/third-parties": "^16.0.4",
         "@nivo/annotations": "^0.99.0",
         "@nivo/bump": "^0.99.0",
         "@nivo/core": "^0.99.0",

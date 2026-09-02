@@ -8,6 +8,7 @@ import { Header } from './header';
 import './styles/_imports.scss';
 import { Footer } from './components/footer';
 import { NavigationProgress } from './components/navigation-progress';
+import { PolicyNotice } from './components/policy-notice';
 import { Content } from './content';
 import styles from './layout.module.scss';
 import { SessionErrorGate } from './session-error-gate';
@@ -33,6 +34,7 @@ export default function RootLayout({
                 <header className={styles.header}>
                     <Header />
                 </header>
+                <PolicyNotice />
                 <main className={styles.main}>
                     <Content>
                         <SessionErrorGate>{children}</SessionErrorGate>

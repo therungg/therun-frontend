@@ -37,6 +37,11 @@ describe('originSummary', () => {
             originSummary({ ...base, path: 'manual_mod' }, 'joey')?.line,
         ).toBe('Time asserted by a moderator');
     });
+    test('src import', () => {
+        const s = originSummary({ ...base, path: 'src_import' }, 'joey');
+        expect(s?.line).toBe('Imported from speedrun.com');
+        expect(s?.showSplitsLink).toBe(false);
+    });
     test('null origin and null path both hide the panel', () => {
         expect(originSummary(undefined, 'joey')).toBeNull();
         expect(originSummary({ ...base, path: null }, 'joey')).toBeNull();

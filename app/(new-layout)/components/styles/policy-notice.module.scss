@@ -1,0 +1,42 @@
+@use '../../styles/design-tokens' as *;
+
+.notice {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-md;
+    padding: $spacing-sm $spacing-lg;
+    border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    background: var(--bs-tertiary-bg);
+    color: var(--bs-body-color);
+}
+
+.text {
+    margin: 0;
+    font-size: $font-size-sm;
+    line-height: 1.5;
+
+    a {
+        color: var(--bs-primary);
+    }
+}
+
+.dismiss {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 0;
+    border-radius: $radius-sm;
+    background: transparent;
+    color: var(--bs-secondary-color);
+    transition: color $transition-fast, background $transition-fast;
+
+    &:hover {
+        color: var(--bs-body-color);
+        background: rgba(var(--bs-primary-rgb), 0.1);
+    }
+}

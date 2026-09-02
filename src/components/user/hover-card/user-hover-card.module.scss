@@ -251,3 +251,14 @@ $z-hover-card: 1060;
     font-size: dt.$font-size-2xs;
     color: var(--bs-secondary-color);
 }
+
+.srcLink {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--bs-border-color);
+    text-underline-offset: 2px;
+
+    &:hover {
+        color: var(--bs-primary);
+    }
+}
