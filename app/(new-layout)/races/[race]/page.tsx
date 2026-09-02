@@ -9,7 +9,6 @@ import {
     getTimeAndMmrLeaderboards,
 } from '~src/lib/races';
 import buildMetadata from '~src/utils/metadata';
-import { safeEncodeURI } from '~src/utils/uri';
 
 interface PageProps {
     params: Promise<{ race: string }>;
@@ -31,8 +30,8 @@ export default async function RaceDetailPage(props: PageProps) {
 
     const { timeLeaderboards, mmrLeaderboards } =
         await getTimeAndMmrLeaderboards(
-            safeEncodeURI(race.game),
-            safeEncodeURI(race.category),
+            race.game,
+            race.category,
             1,
             3,
             new Date().toISOString().slice(0, 7),

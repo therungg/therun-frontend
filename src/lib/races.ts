@@ -47,7 +47,7 @@ export const getPaginatedFinishedRacesByGame: PaginationFetcher<Race> = async (
 ): Promise<PaginatedRaces> => {
     const races = await fetch(
         `${racesApiUrl}?page=${page}&pageSize=${pageSize}&game=${
-            params?.game ?? ''
+            params?.game ? encodeURIComponent(String(params.game)) : ''
         }`,
         {
             next: { revalidate: 0 },
@@ -84,9 +84,12 @@ export const getRacesByIds = async (ids: string[]): Promise<Race[]> => {
 export const getAllActiveRacesByGame = async (
     game: string,
 ): Promise<Race[]> => {
-    const races = await fetch(`${racesApiUrl}/active?game=${game}`, {
-        next: { revalidate: 0 },
-    });
+    const races = await fetch(
+        `${racesApiUrl}/active?game=${encodeURIComponent(game)}`,
+        {
+            next: { revalidate: 0 },
+        },
+    );
 
     return (await races.json()).result as Race[];
 };
@@ -96,7 +99,7 @@ export const getRaceParticipationsByUser = async (
 ): Promise<RaceParticipant[] | undefined> => {
     if (!user) return;
 
-    const url = `${racesApiUrl}/participations/${user}`;
+    const url = `${racesApiUrl}/participations/${encodeURIComponent(user)}`;
 
     const races = await fetch(url, { next: { revalidate: 0 } });
 
@@ -104,7 +107,7 @@ export const getRaceParticipationsByUser = async (
 };
 
 export const getUserRaceStats = async (user: string) => {
-    const url = `${racesApiUrl}/stats/users/${user}`;
+    const url = `${racesApiUrl}/stats/users/${encodeURIComponent(user)}`;
 
     const raceStats = await fetch(url, { next: { revalidate: 0 } });
 
@@ -112,7 +115,7 @@ export const getUserRaceStats = async (user: string) => {
 };
 
 export const getDetailedUserStats = async (user: string) => {
-    const url = `${racesApiUrl}/stats/users/${user}/detailed`;
+    const url = `${racesApiUrl}/stats/users/${encodeURIComponent(user)}/detailed`;
 
     const raceStats = await fetch(url, { next: { revalidate: 0 } });
 
@@ -166,19 +169,34 @@ export const getRaceGameStatsByGame = async (
     cacheLife('minutes');
     cacheTag('race-game-stats');
 
-    const url = `${racesApiUrl}/stats/games/${game}`;
+    const url = `${racesApiUrl}/stats/games/${encodeURIComponent(game)}`;
 
     const stats = await fetch(url);
 
     return (await stats.json()).result as RaceGameStatsByGame;
 };
 
-export const getRaceCategoryStats = async (game: string, category: string) => {
-    const url = `${racesApiUrl}/stats/games/${game}/${category}`;
+export const getRaceCategoryStats = async (
+    game: string,
+    category: string,
+): Promise<RaceGameStatsByCategory | null> => {
+    const url = `${racesApiUrl}/stats/games/${encodeURIComponent(
+        game,
+    )}/${encodeURIComponent(category)}`;
 
     const stats = await fetch(url, { next: { revalidate: 60 } });
 
-    return (await stats.json()).result as RaceGameStatsByCategory;
+    if (!stats.ok) {
+        return null;
+    }
+
+    const body = await stats.text();
+
+    try {
+        return JSON.parse(body).result as RaceGameStatsByCategory;
+    } catch {
+        return null;
+    }
 };
 
 export const getRaceMessages = async (
@@ -217,7 +235,9 @@ export const getTimeLeaderboards = async (
         searchParams.set('unique', 'true');
     }
 
-    const url = `${racesApiUrl}/timeLeaderboards/${game}/${category}?${searchParams.toString()}`;
+    const url = `${racesApiUrl}/timeLeaderboards/${encodeURIComponent(
+        game,
+    )}/${encodeURIComponent(category)}?${searchParams.toString()}`;
 
     const messages = await fetch(url, { next: { revalidate: 0 } });
 
@@ -235,7 +255,9 @@ export const getMmrLeaderboards = async (
     searchParams.set('page', page.toString());
     searchParams.set('pageSize', pageSize.toString());
 
-    const url = `${racesApiUrl}/mmrLeaderboards/${game}/${category}?${searchParams.toString()}`;
+    const url = `${racesApiUrl}/mmrLeaderboards/${encodeURIComponent(
+        game,
+    )}/${encodeURIComponent(category)}?${searchParams.toString()}`;
 
     const messages = await fetch(url, { next: { revalidate: 0 } });
 

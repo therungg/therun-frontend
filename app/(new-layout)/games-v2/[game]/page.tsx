@@ -95,12 +95,11 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
     // critical path either. Fails soft — a board still renders if
     // /v1/me/anonymize is down, it just can't offer the un-hide control (see
     // LeaderboardPager's `selfHidden`).
-    const raceKey = encodeURIComponent(resolvedGame.display);
     const [moderators, raceStats, activeRaces, selfHidden, gameMeta] =
         await Promise.all([
             listGameModerators(resolvedGame.id),
-            getRaceGameStatsByGame(raceKey).catch(() => null),
-            getAllActiveRacesByGame(raceKey).catch(() => []),
+            getRaceGameStatsByGame(resolvedGame.display).catch(() => null),
+            getAllActiveRacesByGame(resolvedGame.display).catch(() => []),
             session?.id && decision.view === 'board'
                 ? selfAnonymizeState(session.id, resolvedGame.id).catch(
                       () => null,

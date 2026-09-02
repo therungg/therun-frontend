@@ -12,7 +12,6 @@ import {
     getTimeLeaderboards,
 } from '~src/lib/races';
 import buildMetadata from '~src/utils/metadata';
-import { safeEncodeURI } from '~src/utils/uri';
 
 interface PageProps {
     params: Promise<{ game: string }>;
@@ -35,24 +34,13 @@ export default async function RaceGameStatsPage(props: PageProps) {
     const timesPromises = stats.categories.map((category) => {
         const categoryName = category.displayValue.split('#')[1];
 
-        return getTimeLeaderboards(
-            safeEncodeURI(params.game),
-            safeEncodeURI(categoryName),
-            1,
-            3,
-            false,
-        );
+        return getTimeLeaderboards(params.game, categoryName, 1, 3, false);
     });
 
     const mmrPromises = stats.categories.map((category) => {
         const categoryName = category.displayValue.split('#')[1];
 
-        return getMmrLeaderboards(
-            safeEncodeURI(params.game),
-            safeEncodeURI(categoryName),
-            1,
-            3,
-        );
+        return getMmrLeaderboards(params.game, categoryName, 1, 3);
     });
 
     const allPromises = Promise.all([

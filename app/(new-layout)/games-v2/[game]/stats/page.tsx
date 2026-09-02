@@ -199,9 +199,7 @@ export default async function GameStatsPage({ params }: PageProps) {
             () => ({ status: 'error' }) as const,
         ),
         getGlobalStats().catch(() => null),
-        getRaceGameStatsByGame(encodeURIComponent(resolvedGame.display)).catch(
-            () => null,
-        ),
+        getRaceGameStatsByGame(resolvedGame.display).catch(() => null),
     ]);
 
     const countryRows: BreakdownRow[] = (() => {

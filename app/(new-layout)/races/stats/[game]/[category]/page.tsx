@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import {
     PaginatedRaceMmrStats,
     PaginatedRaceTimeStats,
@@ -52,13 +53,17 @@ export default async function RaceCategoryStatsPage(props: PageProps) {
         top10TimeThisMonthUnique,
         top10TimeThisMonth,
     ] = (await Promise.all(promises)) as [
-        RaceGameStatsByCategory,
+        RaceGameStatsByCategory | null,
         PaginatedRaceMmrStats,
         PaginatedRaceTimeStats,
         PaginatedRaceTimeStats,
         PaginatedRaceTimeStats,
         PaginatedRaceTimeStats,
     ];
+
+    if (!categoryStats) {
+        notFound();
+    }
 
     const keys = [
         'top10-month-unique',
@@ -105,6 +110,8 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
     if (!gameName || !categoryName) return buildMetadata();
 
     const categoryStats = await getRaceCategoryStats(gameName, categoryName);
+
+    if (!categoryStats) return buildMetadata();
 
     const [game, category] = categoryStats.stats.displayValue.split('#');
 

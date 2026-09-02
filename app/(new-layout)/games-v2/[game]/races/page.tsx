@@ -86,7 +86,7 @@ export default async function GameRacesPage({ params }: PageProps) {
 
     const gameKey = raceGameKey(resolvedGame.display);
     const raceStats: RaceGameStatsByGame | null = await getRaceGameStatsByGame(
-        gameKey,
+        resolvedGame.display,
     ).catch(() => null);
     // No stats object at all = the race API has never seen this game.
     if (!raceStats?.stats || raceStats.stats.totalRaces < 1)
@@ -139,14 +139,14 @@ export default async function GameRacesPage({ params }: PageProps) {
             isoDaysAgo(0),
         ).catch(() => []),
         getPaginatedFinishedRacesByGame(1, 10, '', [], {
-            game: gameKey,
+            game: resolvedGame.display,
         }).catch(() => null),
-        getAllActiveRacesByGame(gameKey).catch(() => []),
+        getAllActiveRacesByGame(resolvedGame.display).catch(() => []),
         Promise.all(
             shownCategories.map((c) =>
                 getTimeAndMmrLeaderboards(
-                    gameKey,
-                    encodeURIComponent(categoryName(c)),
+                    resolvedGame.display,
+                    categoryName(c),
                     1,
                     3,
                 ).catch(() => ({ timeLeaderboards: [], mmrLeaderboards: [] })),

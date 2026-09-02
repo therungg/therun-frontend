@@ -115,9 +115,7 @@ export default async function GameStandingsPage({ params }: PageProps) {
                 isoDaysAgo(90),
                 isoDaysAgo(0),
             ).catch(() => []),
-            getRaceGameStatsByGame(
-                encodeURIComponent(resolvedGame.display),
-            ).catch(() => null),
+            getRaceGameStatsByGame(resolvedGame.display).catch(() => null),
         ]);
 
     return (
