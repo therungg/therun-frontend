@@ -54,9 +54,15 @@ export function SrcImportTab() {
     const [sync, setSync] = useState<SrcUserSyncStatus | null>(null);
 
     useEffect(() => {
-        getMySyncStatus().then((r) => {
+        let cancelled = false;
+        (async () => {
+            const r = await getMySyncStatus();
+            if (cancelled) return;
             if (!('error' in r)) setSync(r.status);
-        });
+        })();
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
     const refresh = useCallback(async () => {
