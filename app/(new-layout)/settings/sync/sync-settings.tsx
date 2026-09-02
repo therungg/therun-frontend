@@ -16,6 +16,9 @@ function when(iso: string | null): string {
 
 function identityText(s: SrcUserSyncStatus): string {
     if (s.identity) {
+        if (s.lookupResult === 'stale') {
+            return `Linked to speedrun.com user ${s.identity.srcUsername ?? s.identity.srcUserId}, but that account could not be found on speedrun.com at the last sync. We will retry in about a month.`;
+        }
         return `Linked to speedrun.com user ${s.identity.srcUsername ?? s.identity.srcUserId}.`;
     }
     if (s.lookupResult === 'ambiguous') {
