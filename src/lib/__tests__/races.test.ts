@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getRaceCategoryStats } from '../races';
+import { getRaceCategoryStats, getRaceGameStatsByGame } from '../races';
+
+vi.mock('next/cache', () => ({
+    cacheLife: vi.fn(),
+    cacheTag: vi.fn(),
+}));
 
 const mockFetch = (status: number, body: string) => {
     const fn = vi.fn(async () => new Response(body, { status }));
@@ -46,5 +51,45 @@ describe('getRaceCategoryStats', () => {
         await expect(
             getRaceCategoryStats('Super Meat Boy', 'Any%'),
         ).resolves.toBeNull();
+    });
+});
+
+describe('getRaceGameStatsByGame', () => {
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
+    it('returns null when the result has no stats', async () => {
+        mockFetch(200, JSON.stringify({ result: { users: [] } }));
+
+        await expect(
+            getRaceGameStatsByGame('Super Meat Boy'),
+        ).resolves.toBeNull();
+    });
+
+    it('returns null when the response is not JSON', async () => {
+        mockFetch(200, '<!DOCTYPE html><html><body>Bad Request</body></html>');
+
+        await expect(
+            getRaceGameStatsByGame('Super Meat Boy'),
+        ).resolves.toBeNull();
+    });
+
+    it('returns the stats with a normalised categories array', async () => {
+        mockFetch(
+            200,
+            JSON.stringify({
+                result: {
+                    stats: { displayValue: 'Super Meat Boy', totalRaces: 5 },
+                },
+            }),
+        );
+
+        await expect(getRaceGameStatsByGame('Super Meat Boy')).resolves.toEqual(
+            {
+                stats: { displayValue: 'Super Meat Boy', totalRaces: 5 },
+                categories: [],
+            },
+        );
     });
 });

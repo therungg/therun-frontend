@@ -164,7 +164,7 @@ export const getRaceGameStats = async (limit = 3): Promise<GameStats[]> => {
 
 export const getRaceGameStatsByGame = async (
     game: string,
-): Promise<RaceGameStatsByGame> => {
+): Promise<RaceGameStatsByGame | null> => {
     'use cache: remote';
     cacheLife('minutes');
     cacheTag('race-game-stats');
@@ -173,7 +173,28 @@ export const getRaceGameStatsByGame = async (
 
     const stats = await fetch(url);
 
-    return (await stats.json()).result as RaceGameStatsByGame;
+    if (!stats.ok) {
+        return null;
+    }
+
+    const body = await stats.text();
+
+    try {
+        const parsed = JSON.parse(body);
+
+        if (typeof parsed?.result?.stats?.displayValue !== 'string') {
+            return null;
+        }
+
+        return {
+            ...parsed.result,
+            categories: Array.isArray(parsed.result.categories)
+                ? parsed.result.categories
+                : [],
+        } as RaceGameStatsByGame;
+    } catch {
+        return null;
+    }
 };
 
 export const getRaceCategoryStats = async (

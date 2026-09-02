@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import {
     PaginatedRaces,
     RaceGameStatsByGame,
@@ -27,9 +28,13 @@ export default async function RaceGameStatsPage(props: PageProps) {
     ];
 
     const [stats, recentRaces] = (await Promise.all(promises)) as [
-        RaceGameStatsByGame,
+        RaceGameStatsByGame | null,
         PaginatedRaces,
     ];
+
+    if (!stats) {
+        notFound();
+    }
 
     const timesPromises = stats.categories.map((category) => {
         const categoryName = category.displayValue.split('#')[1];
@@ -76,6 +81,8 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
     if (!game) return buildMetadata();
 
     const stats = await getRaceGameStatsByGame(game);
+
+    if (!stats) return buildMetadata();
 
     return buildMetadata({
         title: `${stats.stats.displayValue} Race Statistics`,

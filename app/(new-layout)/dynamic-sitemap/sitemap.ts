@@ -79,8 +79,9 @@ const sitemapForRaceStats = async (): Promise<MetadataRoute.Sitemap> => {
         getRaceGameStatsByGame(stat.displayValue),
     );
 
-    const gameStats: RaceGameStatsByGame[] =
-        await Promise.all(gameStatPromises);
+    const gameStats: RaceGameStatsByGame[] = (
+        await Promise.all(gameStatPromises)
+    ).filter((gameStat): gameStat is RaceGameStatsByGame => gameStat != null);
 
     const gameStatsUrls: MetadataRoute.Sitemap = stats
         .map((stat) => {
