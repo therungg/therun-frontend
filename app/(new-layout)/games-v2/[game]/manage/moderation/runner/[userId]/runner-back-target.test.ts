@@ -54,12 +54,12 @@ describe('resolveRunnerBackTarget', () => {
         });
     });
 
-    it('returns to the Boards pane when from=boards', () => {
+    it('falls back to the console front door for from=boards while the pane is pulled', () => {
         expect(
             resolveRunnerBackTarget('sm64', 'boards', null, CATEGORIES),
         ).toEqual({
-            href: '/games-v2/sm64/manage?pane=boards',
-            label: 'Back to Boards',
+            href: '/games-v2/sm64/manage',
+            label: 'Back to console',
         });
     });
 

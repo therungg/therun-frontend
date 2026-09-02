@@ -7,10 +7,9 @@ export interface RunnerBackTarget {
 }
 
 /**
- * `from` is allowlisted, not reflected: `roster` (Browse runs), `board`
- * (the public leaderboard's row menu) and `boards` (the console's Boards
- * pane — curation row actions and the runner dialog) are the known
- * origins; anything else (missing, garbage, or some other page's slug)
+ * `from` is allowlisted, not reflected: `roster` (Browse runs) and `board`
+ * (the public leaderboard's row menu) are the known origins; anything else
+ * (missing, garbage, a retired origin, or some other page's slug)
  * falls back to the console's front door. `categoryId` is validated
  * against this game's real category list — the same bar the console
  * shell's own `?cat=` reader and the roster page's own `?categoryId=`
@@ -42,12 +41,9 @@ export function resolveRunnerBackTarget(
             label: 'Back to leaderboard',
         };
     }
-    if (from === 'boards') {
-        return {
-            href: `/games-v2/${encodeURIComponent(gameSlug)}/manage?pane=boards`,
-            label: 'Back to Boards',
-        };
-    }
+    // `boards` (the console's Boards pane) is pulled for now, so it falls
+    // through to the front door with the rest. Restore by returning
+    // `?pane=boards` / 'Back to Boards' here once the pane is back in the nav.
     return {
         href: `/games-v2/${encodeURIComponent(gameSlug)}/manage`,
         label: 'Back to console',

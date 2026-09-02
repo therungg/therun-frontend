@@ -130,7 +130,11 @@ function itemVisible(
     if (itemId === 'moderators') return flags.canEditMods;
     if (groupId === 'moderate') return flags.canModerate;
     if (itemId === 'categories') return flags.canConfigure || flags.canModerate;
-    if (itemId === 'boards') return flags.canModerate || flags.canConfigure;
+    // Boards is pulled from the console for now. Hiding it here also drops
+    // the `?pane=boards` deep link (resolveInitialPane only accepts visible
+    // ids) and the board-overview rail card. Restore by returning
+    // `flags.canModerate || flags.canConfigure`.
+    if (itemId === 'boards') return false;
     // Import is pulled from the console for now — server actions in
     // src-import-actions.ts also refuse to run. Restore by returning
     // `flags.canModerate || flags.canConfigure` here (and flipping

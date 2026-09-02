@@ -58,7 +58,6 @@ describe('buildNav', () => {
     it('puts daily curation first in Structure and admin last in Game', () => {
         const byId = new Map(buildNav(ALL).map((g) => [g.id, g.items]));
         expect(byId.get('structure')?.map((i) => i.id)).toEqual([
-            'boards',
             'categories',
             'groups',
             'levels',
@@ -113,12 +112,21 @@ describe('buildNav', () => {
         }
     });
 
-    it('shows boards and categories to moderate-only and configure-only viewers alike', () => {
-        for (const item of ['boards', 'categories']) {
-            expect(ids({ ...NO_FLAGS, canModerate: true })).toContain(item);
-            expect(ids({ ...NO_FLAGS, canConfigure: true })).toContain(item);
-        }
-        expect(ids(NO_FLAGS)).not.toContain('boards');
+    it('shows categories to moderate-only and configure-only viewers alike', () => {
+        expect(ids({ ...NO_FLAGS, canModerate: true })).toContain('categories');
+        expect(ids({ ...NO_FLAGS, canConfigure: true })).toContain(
+            'categories',
+        );
+        expect(ids(NO_FLAGS)).not.toContain('categories');
+    });
+
+    it('keeps boards out for every viewer while the pane is pulled', () => {
+        expect(ids(ALL)).not.toContain('boards');
+        expect(ids({ ...NO_FLAGS, canModerate: true })).not.toContain('boards');
+        expect(ids({ ...NO_FLAGS, canConfigure: true })).not.toContain(
+            'boards',
+        );
+        expect(resolveInitialPane('boards', buildNav(ALL), ALL)).toBeNull();
     });
 
     it('keeps import out for every viewer while the door is pulled', () => {
@@ -175,7 +183,7 @@ describe('showSetupCard', () => {
         const groups = buildNav({ ...NO_FLAGS, canConfigure: true });
         expect(showSetupCard(groups, 'game-details')).toBe(true);
         expect(showSetupCard(groups, 'groups')).toBe(true);
-        expect(showSetupCard(groups, 'boards')).toBe(true);
+        expect(showSetupCard(groups, 'variables')).toBe(true);
     });
 
     it('hides on triage panes and the front door', () => {
