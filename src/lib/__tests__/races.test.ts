@@ -39,4 +39,12 @@ describe('getRaceCategoryStats', () => {
             getRaceCategoryStats('Super Meat Boy', 'Any%'),
         ).resolves.toBeNull();
     });
+
+    it('returns null when the result has no stats', async () => {
+        mockFetch(200, JSON.stringify({ result: { users: [] } }));
+
+        await expect(
+            getRaceCategoryStats('Super Meat Boy', 'Any%'),
+        ).resolves.toBeNull();
+    });
 });

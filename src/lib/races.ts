@@ -193,7 +193,13 @@ export const getRaceCategoryStats = async (
     const body = await stats.text();
 
     try {
-        return JSON.parse(body).result as RaceGameStatsByCategory;
+        const parsed = JSON.parse(body);
+
+        if (typeof parsed?.result?.stats?.displayValue !== 'string') {
+            return null;
+        }
+
+        return parsed.result as RaceGameStatsByCategory;
     } catch {
         return null;
     }
