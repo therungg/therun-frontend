@@ -85,7 +85,11 @@ function Progress({ job }: { job: SrcImportJob }) {
     return (
         <div className={styles.progress}>
             <div
-                className={`${styles.track} ${pct === null ? styles.trackBusy : ''}`}
+                className={
+                    pct === null
+                        ? `${styles.track} ${styles.trackBusy}`
+                        : styles.track
+                }
                 role="progressbar"
                 aria-valuemin={0}
                 aria-valuemax={100}
@@ -120,15 +124,17 @@ function Report({
         );
     }
     return (
-        <dl className={styles.report}>
+        <div>
             <p className={styles.reportTitle}>What changed</p>
-            {rows.map((r) => (
-                <div key={r.label} style={{ display: 'contents' }}>
-                    <dt className={styles.reportLabel}>{r.label}</dt>
-                    <dd className={styles.reportValue}>{r.value}</dd>
-                </div>
-            ))}
-        </dl>
+            <dl className={styles.report}>
+                {rows.map((r) => (
+                    <div key={r.label} className={styles.reportRow}>
+                        <dt className={styles.reportLabel}>{r.label}</dt>
+                        <dd className={styles.reportValue}>{r.value}</dd>
+                    </div>
+                ))}
+            </dl>
+        </div>
     );
 }
 
@@ -175,13 +181,22 @@ export function ImportSection({
 
     const now = Date.now();
     const readyAt = job ? new Date(job.createdAt).getTime() + DAY_MS : 0;
-    const throttled = !bypassCooldown && readyAt > now;
     const running = job !== null && !isSettled(job);
     const failed =
         job !== null &&
         (job.status === 'failed' || job.commitStatus === 'failed');
+    // A failed import doesn't burn the daily allowance — it can be retried now.
+    const throttled = !bypassCooldown && !failed && readyAt > now;
     const disabled = pending || anyRunning || throttled;
     const last = lastImportLabel(job);
+    // At most one line under the button: the other import running wins, since
+    // it blocks this one regardless of the cooldown.
+    const hint =
+        anyRunning && !running
+            ? 'Wait for the other import to finish'
+            : throttled && !running
+              ? `Available again ${untilLabel(readyAt, now)}`
+              : null;
 
     const start = () => {
         setError(null);
@@ -209,7 +224,7 @@ export function ImportSection({
                     </h3>
                     <p className={styles.desc}>{description}</p>
                 </div>
-                <div>
+                <div className={styles.actions}>
                     <button
                         type="button"
                         className={styles.btn}
@@ -218,16 +233,7 @@ export function ImportSection({
                     >
                         {pending ? 'Starting…' : buttonLabel}
                     </button>
-                    {throttled && !running && (
-                        <p className={styles.hint}>
-                            Available again {untilLabel(readyAt, now)}
-                        </p>
-                    )}
-                    {anyRunning && !running && (
-                        <p className={styles.hint}>
-                            Wait for the other import to finish
-                        </p>
-                    )}
+                    {hint && <p className={styles.hint}>{hint}</p>}
                 </div>
             </div>
 
@@ -254,13 +260,19 @@ export function ImportSection({
                     Couldn’t load the import status: {loadError}
                 </p>
             )}
-            {error && <p className={styles.error}>{error}</p>}
-            {job && running && <Progress job={job} />}
-            {job && failed && (
-                <p className={styles.error}>
-                    Import failed: {job.error ?? 'unknown error'}
-                </p>
+            {/* One red line only: what the moderator just did beats the
+                previous job's failure. */}
+            {error ? (
+                <p className={styles.error}>{error}</p>
+            ) : (
+                job &&
+                failed && (
+                    <p className={styles.error}>
+                        Import failed: {job.error ?? 'unknown error'}
+                    </p>
+                )
             )}
+            {job && running && <Progress job={job} />}
             {job && !running && !failed && <Report job={job} kind={kind} />}
 
             {children}

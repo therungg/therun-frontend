@@ -1,9 +1,12 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
-import type { SrcImportCommitFlags } from '../../../../../../types/src-import.types';
+import type {
+    SrcImportCommitFlags,
+    SrcImportJob,
+} from '../../../../../../types/src-import.types';
 import { ImportOptions, resolveCommitFlags } from './import-options';
 import { ImportSection } from './import-section';
 import { LinkCard } from './link-card';
@@ -38,15 +41,22 @@ export function SrcImportPane({
         () => getSrcImportJobAction({ gameId, gameSlug, kind: 'resync' }),
         [gameId, gameSlug],
     );
-    const fetchAny = useCallback(
-        () => getSrcImportJobAction({ gameId, gameSlug }),
-        [gameId, gameSlug],
-    );
     const settings = useSrcImportJob(fetchSettings);
     const runs = useSrcImportJob(fetchRuns);
-    // The latest job of ANY kind: decides whether the board is linked at all
-    // (a legacy manual import counts) and whether something is running.
-    const any = useSrcImportJob(fetchAny);
+
+    // Is this board linked at all? A legacy `manual` job counts, so one read
+    // of "latest job of any kind" answers it. It never changes while the pane
+    // is open — nothing polls it; refreshAll re-reads it after a link.
+    const [anyOnce, setAnyOnce] = useState<SrcImportJob | null>(null);
+    const [anyLoading, setAnyLoading] = useState(true);
+    const readAnyOnce = useCallback(async () => {
+        const res = await getSrcImportJobAction({ gameId, gameSlug });
+        if (!('error' in res)) setAnyOnce(res.result);
+        setAnyLoading(false);
+    }, [gameId, gameSlug]);
+    useEffect(() => {
+        void readAnyOnce();
+    }, [readAnyOnce]);
 
     // Options are per job; the pane keeps a local patch that is sent with the
     // next settings import, seeded from the last settings job's flags.
@@ -58,18 +68,20 @@ export function SrcImportPane({
 
     const anyRunning =
         (settings.job !== null && !isSettled(settings.job)) ||
-        (runs.job !== null && !isSettled(runs.job)) ||
-        (any.job !== null && !isSettled(any.job));
+        (runs.job !== null && !isSettled(runs.job));
 
     const settingsRefresh = settings.refresh;
     const runsRefresh = runs.refresh;
-    const anyRefresh = any.refresh;
     const refreshAll = useCallback(async () => {
-        await Promise.all([settingsRefresh(), runsRefresh(), anyRefresh()]);
-    }, [settingsRefresh, runsRefresh, anyRefresh]);
+        await Promise.all([settingsRefresh(), runsRefresh(), readAnyOnce()]);
+    }, [settingsRefresh, runsRefresh, readAnyOnce]);
 
-    const loaded = !settings.loading && !runs.loading && !any.loading;
-    const unlinked = loaded && any.job === null && !any.error;
+    const loaded = !settings.loading && !runs.loading && !anyLoading;
+    const unlinked =
+        loaded &&
+        settings.job === null &&
+        runs.job === null &&
+        anyOnce === null;
 
     return (
         <div className={consoleStyles.surface}>

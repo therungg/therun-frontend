@@ -248,6 +248,41 @@ describe('SrcImportPane', () => {
         expect((btn as HTMLButtonElement).disabled).toBe(false);
     });
 
+    it('lets a failure be retried at once — the cooldown does not apply', async () => {
+        answer({
+            settings: job({
+                status: 'failed',
+                error: 'source 500',
+                createdAt: new Date().toISOString(),
+            }),
+            resync: null,
+        });
+        render(<SrcImportPane {...props} />);
+        const btn = await screen.findByRole('button', {
+            name: 'Import settings',
+        });
+        expect((btn as HTMLButtonElement).disabled).toBe(false);
+        expect(screen.queryByText(/Available again/)).toBeNull();
+    });
+
+    it('shows only one hint: the other import running beats the cooldown', async () => {
+        answer({
+            settings: job({ createdAt: new Date().toISOString() }),
+            resync: job({
+                id: 9,
+                kind: 'resync',
+                status: 'running',
+                phase: 'runs',
+                commitStatus: null,
+            }),
+        });
+        render(<SrcImportPane {...props} />);
+        expect(
+            await screen.findByText('Wait for the other import to finish'),
+        ).toBeTruthy();
+        expect(screen.queryByText(/Available again/)).toBeNull();
+    });
+
     it('shows the link card when the game has no import at all', async () => {
         answer({ settings: null, resync: null, any: null });
         render(<SrcImportPane {...props} />);

@@ -49,8 +49,18 @@
     @include board.mono-time;
 }
 
-.btn {
+// Button + its one hint line. Fixed to the right of the head row and capped
+// so a hint can never widen the column and squeeze the description.
+.actions {
     flex: none;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: dt.$spacing-xs;
+    max-width: 24ch;
+}
+
+.btn {
     border: 1px solid var(--bs-primary);
     border-radius: dt.$radius-md;
     background: var(--bs-primary);
@@ -140,27 +150,35 @@
     grid-template-columns: max-content 1fr;
     column-gap: dt.$spacing-xl;
     row-gap: dt.$spacing-xs;
-    margin: dt.$spacing-xs 0 0;
+    margin: 0;
     font-size: dt.$font-size-sm;
 }
 
+// Each row is a grid passthrough so dt/dd land in the two columns.
+.reportRow {
+    display: contents;
+}
+
+// Reboot bolds `dt` and gives `dd` a bottom margin — both would break the grid.
 .reportLabel {
     color: var(--bs-secondary-color);
+    font-weight: 400;
+    margin: 0;
 }
 
 .reportValue {
     @include board.mono-time;
     color: var(--bs-body-color);
+    margin: 0;
 }
 
 .reportTitle {
-    grid-column: 1 / -1;
     font-size: dt.$font-size-xs;
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--bs-tertiary-color);
-    margin: 0 0 dt.$spacing-xs;
+    margin: 0 0 dt.$spacing-sm;
 }
 
 .empty {
