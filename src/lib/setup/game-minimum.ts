@@ -25,6 +25,44 @@ export function findCategoryMinPolicy(
     );
 }
 
+/** Subcategory-scoped min_time policy for one exact (categoryId, subcategoryKey) slice. */
+export function findSubcategoryMinPolicy(
+    policies: BoardPolicyRow[],
+    categoryId: number,
+    subcategoryKey: string,
+): BoardPolicyRow | undefined {
+    return policies.find(
+        (p) =>
+            p.policyType === 'min_time' &&
+            p.categoryId === categoryId &&
+            p.subcategoryKey === subcategoryKey,
+    );
+}
+
+/**
+ * The policy that actually governs a board slice, honoring the same
+ * fallback the backend applies at enforcement time: subcategory-scoped,
+ * then category-scoped, then the game-wide floor.
+ */
+export function resolveMinPolicy(
+    policies: BoardPolicyRow[],
+    categoryId: number,
+    subcategoryKey: string | null,
+): BoardPolicyRow | undefined {
+    if (subcategoryKey) {
+        const sub = findSubcategoryMinPolicy(
+            policies,
+            categoryId,
+            subcategoryKey,
+        );
+        if (sub) return sub;
+    }
+    return (
+        findCategoryMinPolicy(policies, categoryId) ??
+        findGameMinPolicy(policies)
+    );
+}
+
 /** Timing-bound value: rt -> { minTimeMs }, gt -> { minGameTimeMs }. Never both. */
 export function minValueForTiming(
     timing: 'rt' | 'gt',
