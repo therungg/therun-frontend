@@ -107,6 +107,11 @@
     @include board.board-dialog-field-error;
 }
 
+.popoverHint {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+}
+
 .popoverActions {
     display: flex;
     justify-content: flex-end;

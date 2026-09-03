@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import {
     ArrowDownUp,
     BookmarkStarFill,
@@ -10,12 +10,15 @@ import {
 } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import { DurationField } from '~src/components/time-input/duration-field';
+import { formatTimeMs } from '~src/lib/run-view/time-format';
 import {
     findCategoryMinPolicy,
-    findGameMinPolicy,
+    findSubcategoryMinPolicy,
     minMsFromPolicy,
     minValueForTiming,
+    resolveMinPolicy,
 } from '~src/lib/setup/game-minimum';
+import { buildSubcategoryKey } from '~src/lib/variables/keys';
 
 import type {
     ResolvedCategory,
@@ -75,6 +78,8 @@ export function BoardControls({
                 category={category}
                 timing={timing}
                 policies={policies}
+                subcatVars={subcatVars}
+                selectedValues={selectedValues}
                 reload={reload}
             />
             <button
@@ -111,30 +116,54 @@ interface MinimumControlProps {
     category: ResolvedCategory;
     timing: 'rt' | 'gt';
     policies: BoardPolicyRow[];
+    subcatVars: VariableRow[];
+    selectedValues: Record<string, string>;
     reload: () => void;
 }
 
+type MinimumScope = 'category' | 'subcategory';
+
 /**
- * One timing-bound input, seeded from the category-scoped policy or (if
- * unset) the inherited game-wide floor. Saving only ever creates/updates/
- * deletes the category-scoped policy — the game-wide one is never touched
- * from here, so clearing this input un-overrides back to the inherited
- * floor rather than deleting it.
+ * One timing-bound input, seeded from the scoped policy or (if unset) the
+ * inherited floor one level up. Saving only ever creates/updates/deletes the
+ * policy at the selected scope — anything broader stays untouched even when
+ * it's what the input was seeded from, so clearing this input un-overrides
+ * back to the inherited floor rather than deleting it.
+ *
+ * A scope toggle (category vs. this exact subcategory slice) appears only
+ * when the current board has subcategory variables with values selected —
+ * a category with no subcategory variables has nothing to scope to.
  */
 function MinimumControl({
     gameSlug,
     category,
     timing,
     policies,
+    subcatVars,
+    selectedValues,
     reload,
 }: MinimumControlProps) {
     const router = useRouter();
     const [open, setOpen] = useState(false);
+    const [scope, setScope] = useState<MinimumScope>('category');
     const [minMs, setMinMs] = useState<number | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isSaving, startSaving] = useTransition();
     const rootRef = useRef<HTMLDivElement>(null);
     const panelRef = useRef<HTMLDivElement>(null);
+
+    // The exact subcategory slice currently on screen, or null when the
+    // category has no subcategory variables to slice by.
+    const subcategoryKey = useMemo(() => {
+        if (subcatVars.length === 0) return null;
+        return buildSubcategoryKey(
+            subcatVars.map((v) => ({
+                name: v.nameNormalized,
+                value:
+                    selectedValues[v.nameNormalized] ?? defaultCanonicalOf(v),
+            })),
+        );
+    }, [subcatVars, selectedValues]);
 
     const close = () => {
         if (isSaving) return;
@@ -154,26 +183,73 @@ function MinimumControl({
     }, [open, isSaving]);
 
     const openPopover = () => {
+        // Default to the narrowest scope that actually has something set;
+        // otherwise default to category (the pre-existing behavior).
+        const initialScope: MinimumScope =
+            subcategoryKey &&
+            findSubcategoryMinPolicy(policies, category.id, subcategoryKey)
+                ? 'subcategory'
+                : 'category';
+        setScope(initialScope);
         const existing =
-            findCategoryMinPolicy(policies, category.id) ??
-            findGameMinPolicy(policies);
+            initialScope === 'subcategory' && subcategoryKey
+                ? findSubcategoryMinPolicy(
+                      policies,
+                      category.id,
+                      subcategoryKey,
+                  )
+                : resolveMinPolicy(policies, category.id, null);
         setMinMs(minMsFromPolicy(existing, timing));
         setError(null);
         setOpen(true);
     };
 
+    // The policy this popover reads/writes/deletes at the currently chosen
+    // scope — never anything broader, even when the input was seeded from
+    // an inherited value.
+    const existingAtScope =
+        scope === 'subcategory' && subcategoryKey
+            ? findSubcategoryMinPolicy(policies, category.id, subcategoryKey)
+            : findCategoryMinPolicy(policies, category.id);
+
+    // What actually governs this board slice right now, for the "currently
+    // governed by" hint — falls back subcategory -> category -> game-wide.
+    const effectivePolicy = resolveMinPolicy(
+        policies,
+        category.id,
+        subcategoryKey,
+    );
+    const effectiveMs = minMsFromPolicy(effectivePolicy, timing);
+    const effectiveScopeLabel =
+        effectivePolicy?.subcategoryKey != null
+            ? 'this subcategory'
+            : effectivePolicy?.categoryId != null
+              ? 'the whole category'
+              : 'the whole game';
+
+    const handleScopeChange = (next: MinimumScope) => {
+        setScope(next);
+        const existing =
+            next === 'subcategory' && subcategoryKey
+                ? findSubcategoryMinPolicy(
+                      policies,
+                      category.id,
+                      subcategoryKey,
+                  )
+                : findCategoryMinPolicy(policies, category.id);
+        setMinMs(minMsFromPolicy(existing, timing));
+        setError(null);
+    };
+
     const handleSave = () => {
         setError(null);
-        // Only a category-scoped policy is ever read/written/deleted here —
-        // a game-wide floor (categoryId null) stays untouched even when it's
-        // what the input was seeded from.
-        const existing = findCategoryMinPolicy(policies, category.id);
+        const existing = existingAtScope;
 
         startSaving(async () => {
             if (minMs === null) {
                 if (!existing) {
-                    // Nothing category-scoped to clear — the input was only
-                    // showing the inherited game-wide floor.
+                    // Nothing set at this scope to clear — the input was
+                    // only showing an inherited value.
                     setOpen(false);
                     return;
                 }
@@ -196,6 +272,9 @@ function MinimumControl({
                       policyType: 'min_time',
                       value,
                       categoryId: category.id,
+                      ...(scope === 'subcategory' && subcategoryKey
+                          ? { subcategoryKey }
+                          : {}),
                   });
             if ('error' in res) {
                 setError(res.error);
@@ -207,6 +286,8 @@ function MinimumControl({
             router.refresh();
         });
     };
+
+    const canScopeToSubcategory = subcatVars.length > 0 && !!subcategoryKey;
 
     return (
         <div className={styles.popoverRoot} ref={rootRef}>
@@ -228,6 +309,34 @@ function MinimumControl({
                     aria-modal="true"
                     aria-label="Minimum time"
                 >
+                    {canScopeToSubcategory && (
+                        <div role="radiogroup" aria-label="Minimum scope">
+                            <label className={styles.popoverCheck}>
+                                <input
+                                    type="radio"
+                                    name="min-scope"
+                                    checked={scope === 'category'}
+                                    onChange={() =>
+                                        handleScopeChange('category')
+                                    }
+                                    disabled={isSaving}
+                                />
+                                Whole category
+                            </label>
+                            <label className={styles.popoverCheck}>
+                                <input
+                                    type="radio"
+                                    name="min-scope"
+                                    checked={scope === 'subcategory'}
+                                    onChange={() =>
+                                        handleScopeChange('subcategory')
+                                    }
+                                    disabled={isSaving}
+                                />
+                                This subcategory
+                            </label>
+                        </div>
+                    )}
                     <label
                         htmlFor="board-min-input"
                         className={styles.popoverFieldLabel}
@@ -242,6 +351,12 @@ function MinimumControl({
                         onChange={setMinMs}
                         disabled={isSaving}
                     />
+                    {effectiveMs !== null && (
+                        <div className={styles.popoverHint}>
+                            Currently governed by {effectiveScopeLabel}:{' '}
+                            {formatTimeMs(effectiveMs)}
+                        </div>
+                    )}
                     {error && (
                         <div className={styles.popoverError}>{error}</div>
                     )}
