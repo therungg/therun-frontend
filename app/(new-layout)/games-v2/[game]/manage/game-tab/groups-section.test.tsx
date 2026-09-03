@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
@@ -26,35 +27,44 @@ vi.mock('react-toastify', () => ({
     toast: { error: mocks.toastError, success: vi.fn() },
 }));
 
+import type { ManageGroup } from '~src/lib/category-mgmt';
 import { GroupsSection } from './groups-section';
 
 const GAME = { id: 1, name: 'example-game', display: 'Example Game' } as never;
 
-function renderSection(hiddenByDefault: boolean) {
-    return render(
+const onGroupsChangeSpy = vi.fn();
+
+// Collapsed is now optimistic through onGroupsChange (like displayMode),
+// not a local set, so the harness needs to actually feed updated groups
+// back in for the checkbox to reflect the new state.
+function StatefulSection({ hiddenByDefault }: { hiddenByDefault: boolean }) {
+    const [groups, setGroups] = useState<ManageGroup[]>([
+        {
+            id: 5,
+            name: 'Main',
+            sortOrder: 1,
+            hiddenByDefault,
+            displayMode: null,
+            kind: 'normal',
+            rules: null,
+        },
+    ]);
+    return (
         <GroupsSection
             game={GAME}
-            groups={[
-                {
-                    id: 5,
-                    name: 'Main',
-                    sortOrder: 1,
-                    hiddenByDefault,
-                    displayMode: null,
-                    kind: 'normal',
-                    rules: null,
-                },
-            ]}
+            groups={groups}
             rows={[]}
-            snapshotGroups={
-                [
-                    { id: 5, name: 'Main', sortOrder: 1, hiddenByDefault },
-                ] as never
-            }
-            onGroupsChange={vi.fn()}
+            onGroupsChange={(next) => {
+                onGroupsChangeSpy(next);
+                setGroups(next);
+            }}
             onRowGroupChange={vi.fn()}
-        />,
+        />
     );
+}
+
+function renderSection(hiddenByDefault: boolean) {
+    return render(<StatefulSection hiddenByDefault={hiddenByDefault} />);
 }
 
 afterEach(() => {
@@ -63,7 +73,7 @@ afterEach(() => {
 });
 
 describe('GroupsSection — collapsed by default', () => {
-    it('reads the flag from the snapshot, which ManageGroup does not carry', () => {
+    it('reads the flag straight off the group', () => {
         renderSection(true);
         const box = screen.getByLabelText(
             'Collapsed by default',
@@ -71,10 +81,13 @@ describe('GroupsSection — collapsed by default', () => {
         expect(box.checked).toBe(true);
     });
 
-    it('writes the flag — the console could not reach it before', () => {
+    it('writes the flag optimistically through onGroupsChange', () => {
         renderSection(false);
         fireEvent.click(screen.getByLabelText('Collapsed by default'));
 
+        expect(onGroupsChangeSpy).toHaveBeenCalledWith([
+            expect.objectContaining({ id: 5, hiddenByDefault: true }),
+        ]);
         expect(mocks.setGroupHiddenAction).toHaveBeenCalledWith({
             gameSlug: 'example-game',
             gameId: 1,

@@ -21,7 +21,6 @@ import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type {
     CategoryDisplayMode,
     ResolvedGame,
-    ResolvedGroup,
 } from '../../../../../../types/leaderboards.types';
 import { ConfirmDialog } from '../../shared/confirm-dialog';
 import styles from './groups-section.module.scss';
@@ -30,9 +29,6 @@ interface Props {
     game: ResolvedGame;
     groups: ManageGroup[];
     rows: ManageCategoryRow[];
-    /** Server snapshot, for the one field ManageGroup doesn't carry:
-     *  `hiddenByDefault`. */
-    snapshotGroups: ResolvedGroup[];
     onGroupsChange: (groups: ManageGroup[]) => void;
     onRowGroupChange: (
         categoryId: number,
@@ -45,7 +41,6 @@ export function GroupsSection({
     game,
     groups,
     rows,
-    snapshotGroups,
     onGroupsChange,
     onRowGroupChange,
 }: Props) {
@@ -59,26 +54,16 @@ export function GroupsSection({
         useState<ManageGroup | null>(null);
     const [deleteError, setDeleteError] = useState<string | null>(null);
 
-    // The flag lives on ResolvedGroup, not on the console's ManageGroup, so
-    // it is tracked here as a set of ids seeded from the snapshot. Optimistic:
-    // the checkbox flips first and reverts if the write fails, because the
-    // only feedback otherwise is the band preview above redrawing a beat late.
-    const [hidden, setHiddenIds] = useState<Set<number>>(
-        () =>
-            new Set(
-                snapshotGroups
-                    .filter((g) => g.hiddenByDefault)
-                    .map((g) => g.id),
-            ),
-    );
-
+    // Optimistic for the same reason displayMode below is: the checkbox
+    // flips first and reverts if the write fails, because the only other
+    // feedback is the band preview above redrawing a beat late.
     const setHidden = (group: ManageGroup, hiddenByDefault: boolean) => {
-        setHiddenIds((prev) => {
-            const next = new Set(prev);
-            if (hiddenByDefault) next.add(group.id);
-            else next.delete(group.id);
-            return next;
-        });
+        const previous = group.hiddenByDefault;
+        onGroupsChange(
+            groups.map((x) =>
+                x.id === group.id ? { ...x, hiddenByDefault } : x,
+            ),
+        );
         startTransition(async () => {
             const res = await setGroupHiddenAction({
                 gameSlug: game.name,
@@ -88,12 +73,13 @@ export function GroupsSection({
             });
             if ('error' in res) {
                 toast.error(res.error);
-                setHiddenIds((prev) => {
-                    const next = new Set(prev);
-                    if (hiddenByDefault) next.delete(group.id);
-                    else next.add(group.id);
-                    return next;
-                });
+                onGroupsChange(
+                    groups.map((x) =>
+                        x.id === group.id
+                            ? { ...x, hiddenByDefault: previous }
+                            : x,
+                    ),
+                );
             }
         });
     };
@@ -125,6 +111,15 @@ export function GroupsSection({
             }
         });
     };
+
+    // Levels are managed in the Levels menu, so keep level groups out of
+    // this list. `groups` itself stays unfiltered — the mutation handlers
+    // above operate on it directly so level groups are never dropped from
+    // the console's group state.
+    const listGroups = useMemo(
+        () => groups.filter((g) => g.kind !== 'level'),
+        [groups],
+    );
 
     const countByGroupId = useMemo(() => {
         const m = new Map<number, number>();
@@ -319,7 +314,7 @@ export function GroupsSection({
                     </button>
                 </div>
 
-                {groups.length === 0 ? (
+                {listGroups.length === 0 ? (
                     <div className={styles.empty}>
                         <Collection
                             size={26}
@@ -334,7 +329,7 @@ export function GroupsSection({
                     </div>
                 ) : (
                     <ul className={styles.list}>
-                        {groups.map((g, i) => {
+                        {listGroups.map((g, i) => {
                             const count = countByGroupId.get(g.id) ?? 0;
                             const isEditing = editingId === g.id;
                             return (
@@ -374,7 +369,7 @@ export function GroupsSection({
                                             onClick={() => moveBy(g.id, 1)}
                                             disabled={
                                                 pending ||
-                                                i === groups.length - 1
+                                                i === listGroups.length - 1
                                             }
                                             aria-label={`Move ${g.name} down`}
                                         >
@@ -437,7 +432,7 @@ export function GroupsSection({
                                             <input
                                                 type="checkbox"
                                                 className="form-check-input mt-0"
-                                                checked={hidden.has(g.id)}
+                                                checked={g.hiddenByDefault}
                                                 disabled={pending}
                                                 // The visible word is short so
                                                 // the control row stays calm;
