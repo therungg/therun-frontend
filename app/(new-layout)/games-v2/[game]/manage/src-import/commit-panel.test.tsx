@@ -187,7 +187,15 @@ describe('CommitPanel', () => {
     });
 
     it('never offers the SRC-only checkbox', () => {
-        render(<CommitPanel job={job()} {...props} />);
+        render(
+            <CommitPanel
+                job={job({
+                    commitStatus: 'applied',
+                    configAppliedAt: '2026-08-19T09:00:00.000Z',
+                })}
+                {...props}
+            />,
+        );
         expect(
             screen.queryByRole('checkbox', {
                 name: /only use the speedrun.com leaderboard/i,
