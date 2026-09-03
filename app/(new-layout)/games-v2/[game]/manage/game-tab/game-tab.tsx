@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import styles from '~src/components/console-chrome/console.module.scss';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import { previewCategories } from '~src/lib/console/preview-categories';
@@ -42,10 +43,23 @@ export function GameTab({
     onGroupsChange,
     onRowGroupChange,
 }: Props) {
-    // Levels are managed in the Levels menu, so keep level groups out of
-    // this pane. `groups` itself stays unfiltered — other consumers (e.g.
-    // CategoriesPane/splitLevelBoards) still need the level groups.
-    const normalGroups = groups.filter((group) => group.kind !== 'level');
+    // The preview must reflect optimistic edits (collapsed/display-mode
+    // toggles), not just the immutable server snapshot in `boardGroups`, so
+    // overlay the live `groups` state onto it.
+    const previewGroups = useMemo(
+        () =>
+            boardGroups.map((bg) => {
+                const m = groups.find((g) => g.id === bg.id);
+                return m
+                    ? {
+                          ...bg,
+                          hiddenByDefault: m.hiddenByDefault,
+                          displayMode: m.displayMode,
+                      }
+                    : bg;
+            }),
+        [boardGroups, groups],
+    );
 
     return (
         <section className={styles.surface}>
@@ -65,13 +79,12 @@ export function GameTab({
                 does too. */}
             <CategoryBandPreview
                 categories={previewCategories(boardCategories, rows)}
-                groups={boardGroups}
+                groups={previewGroups}
             />
             <GroupsSection
                 game={game}
-                groups={normalGroups}
+                groups={groups}
                 rows={rows}
-                snapshotGroups={boardGroups}
                 onGroupsChange={onGroupsChange}
                 onRowGroupChange={onRowGroupChange}
             />
