@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import type {
     SrcCommitPlan,
     SrcImportCommitFlags,
@@ -18,7 +18,6 @@ import {
     reconcileAction,
     reconcileUndoAction,
     setFlagsAction,
-    setSrcOnlyAction,
     undoConfigAction,
     undoRunsAction,
 } from './src-import-actions';
@@ -47,7 +46,6 @@ export interface CommitButtonSpec {
 export interface CommitViewModel {
     primary: CommitButtonSpec | null;
     secondary: CommitButtonSpec[];
-    showCheckbox: boolean;
     /** Set while a backend job step (apply/import/reconcile/undo) is in flight. */
     progressLabel: string | null;
     /** Shown next to a disabled secondary action — the teardown-order rule. */
@@ -86,7 +84,6 @@ export function getCommitViewModel(job: SrcImportJob): CommitViewModel {
                 disabled: false,
             },
             secondary: [],
-            showCheckbox: false,
             progressLabel: null,
             blockedReason: null,
             errorMessage: null,
@@ -103,7 +100,6 @@ export function getCommitViewModel(job: SrcImportJob): CommitViewModel {
         return {
             primary: null,
             secondary: [],
-            showCheckbox: false,
             progressLabel: PROGRESS_LABEL[cs] ?? 'Working…',
             blockedReason: null,
             errorMessage: null,
@@ -125,7 +121,6 @@ export function getCommitViewModel(job: SrcImportJob): CommitViewModel {
                     disabled: false,
                 },
             ],
-            showCheckbox: true,
             progressLabel: null,
             blockedReason: null,
             errorMessage: null,
@@ -141,7 +136,6 @@ export function getCommitViewModel(job: SrcImportJob): CommitViewModel {
                 disabled: false,
             },
             secondary: [],
-            showCheckbox: false,
             progressLabel: null,
             blockedReason: null,
             errorMessage: null,
@@ -161,7 +155,6 @@ export function getCommitViewModel(job: SrcImportJob): CommitViewModel {
             secondary: [
                 { action: 'undo-runs', label: 'Undo runs', disabled: true },
             ],
-            showCheckbox: false,
             progressLabel: null,
             blockedReason: 'Reverse the SRC-only leaderboard first',
             errorMessage: null,
@@ -186,7 +179,6 @@ export function getCommitViewModel(job: SrcImportJob): CommitViewModel {
                 disabled: false,
             },
             secondary: [],
-            showCheckbox: false,
             progressLabel: null,
             blockedReason: null,
             errorMessage: failedError,
@@ -203,7 +195,6 @@ export function getCommitViewModel(job: SrcImportJob): CommitViewModel {
             secondary: [
                 { action: 'undo-runs', label: 'Undo runs', disabled: false },
             ],
-            showCheckbox: false,
             progressLabel: null,
             blockedReason: null,
             errorMessage: failedError,
@@ -224,7 +215,6 @@ export function getCommitViewModel(job: SrcImportJob): CommitViewModel {
                     disabled: false,
                 },
             ],
-            showCheckbox: false,
             progressLabel: null,
             blockedReason: null,
             errorMessage: failedError,
@@ -235,7 +225,6 @@ export function getCommitViewModel(job: SrcImportJob): CommitViewModel {
     return {
         primary: null,
         secondary: [],
-        showCheckbox: false,
         progressLabel: null,
         blockedReason: null,
         errorMessage: failedError,
@@ -265,66 +254,20 @@ const ACTION_FN: Record<
  * commit state machine. Each button fires its Task-2 server action, then
  * `onChanged()` so the pane refreshes the job.
  *
- * Once `commitStatus` reaches `imported` and the SRC-only checkbox was set,
- * this component auto-fires `reconcile` itself (see the effect below) — a
- * ref latch keyed on the job id keeps it from firing twice while the poll
- * re-renders this component with the still-`imported` job.
+ * A legacy job that already has `srcOnlyLeaderboard` set (from before the
+ * SRC-only checkbox was retired) lands on `imported` with reconcile not yet
+ * run — the manual "Run SRC-only reconcile" control below covers that case.
+ * A new job can never reach `imported && srcOnlyLeaderboard` since the
+ * backend now refuses to enable SRC-only mode at all.
  */
 export function CommitPanel({ job, gameId, gameSlug, onChanged }: Props) {
     const vm = getCommitViewModel(job);
     const [pending, startTransition] = useTransition();
     const [actionError, setActionError] = useState<string | null>(null);
-    const [srcOnly, setSrcOnly] = useState(job.srcOnlyLeaderboard);
     const [flags, setFlagsState] = useState(
         resolveCommitFlags(job.commitFlags),
     );
     const [plan, setPlan] = useState<SrcCommitPlan | null>(null);
-    const [reconcileError, setReconcileError] = useState<string | null>(null);
-    // Whether the one-shot AUTO reconcile has fired for the current job this
-    // mount (mirrors the `reconciledJobId` latch as render state), and whether
-    // that POST is still in flight. Together they keep the `imported`+srcOnly
-    // seam honest: pre-fire shows "will start automatically", in-flight shows a
-    // "Starting reconcile…" pending state (not a clickable Undo runs that would
-    // race the reconcile), and post-fire shows the manual reconcile control.
-    const [reconcileFired, setReconcileFired] = useState(false);
-    const [reconcilePosting, setReconcilePosting] = useState(false);
-    const reconciledJobId = useRef<number | null>(null);
-
-    useEffect(() => {
-        if (job.commitStatus !== 'imported' || !job.srcOnlyLeaderboard) {
-            return;
-        }
-        if (reconciledJobId.current === job.id) {
-            // Already fired for this job (poll re-render, or a reverse landed
-            // back on `imported` with the latch still set) — surface the
-            // fired state so the copy stays honest, but don't POST again.
-            setReconcileFired(true);
-            return;
-        }
-        reconciledJobId.current = job.id;
-        setReconcileFired(true);
-        setReconcilePosting(true);
-        (async () => {
-            const res = await reconcileAction({
-                gameId,
-                gameSlug,
-                jobId: job.id,
-            });
-            setReconcilePosting(false);
-            if ('error' in res) {
-                setReconcileError(res.error);
-                return;
-            }
-            await onChanged();
-        })();
-    }, [
-        job.commitStatus,
-        job.srcOnlyLeaderboard,
-        job.id,
-        gameId,
-        gameSlug,
-        onChanged,
-    ]);
 
     const runAction = (action: CommitActionKind) => {
         setActionError(null);
@@ -333,24 +276,6 @@ export function CommitPanel({ job, gameId, gameSlug, onChanged }: Props) {
                 gameId,
                 gameSlug,
                 jobId: job.id,
-            });
-            if ('error' in res) {
-                setActionError(res.error);
-                return;
-            }
-            await onChanged();
-        });
-    };
-
-    const onSrcOnlyChange = (enabled: boolean) => {
-        setSrcOnly(enabled);
-        setActionError(null);
-        startTransition(async () => {
-            const res = await setSrcOnlyAction({
-                gameId,
-                gameSlug,
-                jobId: job.id,
-                enabled,
             });
             if ('error' in res) {
                 setActionError(res.error);
@@ -383,9 +308,8 @@ export function CommitPanel({ job, gameId, gameSlug, onChanged }: Props) {
     const hasConflicts = plan !== null && planHasConflicts(plan);
     const applyBlockedByConflicts =
         vm.primary?.action === 'apply-config' && hasConflicts;
-    // In this state the reconcile drives the UI: the auto-fire, its pending
-    // state, and the manual re-trigger replace the plain "Undo runs" primary
-    // so a mod can't click into a reconcile race.
+    // Legacy jobs only: the manual reconcile control replaces the plain
+    // "Undo runs" primary so a mod can't click into a reconcile race.
     const isImportedSrcOnly =
         job.commitStatus === 'imported' && job.srcOnlyLeaderboard;
 
@@ -419,44 +343,22 @@ export function CommitPanel({ job, gameId, gameSlug, onChanged }: Props) {
                 </div>
             )}
 
-            {isImportedSrcOnly &&
-                (reconcilePosting ? (
-                    <div
-                        className={styles.jobHead}
-                        role="status"
-                        aria-live="polite"
-                    >
-                        <span className={styles.spinner} aria-hidden />
-                        <span className={styles.muted}>
-                            Starting reconcile…
-                        </span>
-                    </div>
-                ) : reconcileFired ? (
-                    <div className={styles.stack}>
-                        <p className={styles.muted}>
-                            “Only use the speedrun.com leaderboard” is on. The
-                            SRC-only reconcile is not running. Start it
-                            manually.
-                        </p>
-                        <button
-                            type="button"
-                            className={kit.saveBtn}
-                            disabled={pending}
-                            onClick={() => runAction('reconcile')}
-                        >
-                            {pending ? 'Working…' : 'Run SRC-only reconcile'}
-                        </button>
-                    </div>
-                ) : (
-                    <p
-                        className={styles.muted}
-                        role="status"
-                        aria-live="polite"
-                    >
-                        “Only use the speedrun.com leaderboard” is on:
-                        reconciling the board will start automatically.
+            {isImportedSrcOnly && (
+                <div className={styles.stack}>
+                    <p className={styles.muted}>
+                        “Only use the speedrun.com leaderboard” is on. The
+                        SRC-only reconcile is not running. Start it manually.
                     </p>
-                ))}
+                    <button
+                        type="button"
+                        className={kit.saveBtn}
+                        disabled={pending}
+                        onClick={() => runAction('reconcile')}
+                    >
+                        {pending ? 'Working…' : 'Run SRC-only reconcile'}
+                    </button>
+                </div>
+            )}
 
             {/* Import options are consumed at apply-config, so they are only
                 offered while the plan is still being reviewed (before the first
@@ -471,31 +373,9 @@ export function CommitPanel({ job, gameId, gameSlug, onChanged }: Props) {
 
             {vm.errorMessage && <InlineError>{vm.errorMessage}</InlineError>}
             {actionError && <InlineError>{actionError}</InlineError>}
-            {reconcileError && <InlineError>{reconcileError}</InlineError>}
 
             {!isImportedSrcOnly && (vm.primary || vm.secondary.length > 0) && (
                 <div className={styles.actionRow}>
-                    {vm.showCheckbox && (
-                        <label className={styles.checkboxRow}>
-                            <input
-                                type="checkbox"
-                                checked={srcOnly}
-                                disabled={pending}
-                                onChange={(e) =>
-                                    onSrcOnlyChange(e.target.checked)
-                                }
-                            />
-                            <span>
-                                Only use the speedrun.com leaderboard
-                                <span className={styles.checkboxHint}>
-                                    Runs not on speedrun.com are hidden unless
-                                    the runner has a therun account; categories
-                                    not on speedrun.com are archived.
-                                    Reversible.
-                                </span>
-                            </span>
-                        </label>
-                    )}
                     {vm.primary && (
                         <button
                             type="button"

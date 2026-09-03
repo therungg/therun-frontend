@@ -19,9 +19,6 @@ vi.mock('./src-import-actions', () => ({
     undoConfigAction: vi.fn(async () => ({ result: { jobId: 7 } })),
     reconcileAction: vi.fn(async () => ({ result: { jobId: 7 } })),
     reconcileUndoAction: vi.fn(async () => ({ result: { jobId: 7 } })),
-    setSrcOnlyAction: vi.fn(async () => ({
-        result: { jobId: 7, srcOnlyLeaderboard: true },
-    })),
     setFlagsAction: vi.fn(async () => ({ result: {} })),
     getSrcImportPlanAction: vi.fn(async () => ({ result: emptyPlan() })),
 }));
@@ -171,7 +168,7 @@ describe('CommitPanel', () => {
         ).not.toBeInTheDocument();
     });
 
-    it('shows Import runs + the SRC-only checkbox when applied', () => {
+    it('shows Import runs when applied', () => {
         render(
             <CommitPanel
                 job={job({
@@ -185,12 +182,32 @@ describe('CommitPanel', () => {
             screen.getByRole('button', { name: /import runs/i }),
         ).toBeEnabled();
         expect(
-            screen.getByRole('checkbox', {
-                name: /only use the speedrun\.com leaderboard/i,
-            }),
-        ).toBeInTheDocument();
-        expect(
             screen.getByRole('button', { name: /undo config/i }),
+        ).toBeEnabled();
+    });
+
+    it('never offers the SRC-only checkbox', () => {
+        render(<CommitPanel job={job()} {...props} />);
+        expect(
+            screen.queryByRole('checkbox', {
+                name: /only use the speedrun.com leaderboard/i,
+            }),
+        ).toBeNull();
+    });
+
+    it('imported + legacy srcOnly shows the manual reconcile control without auto-firing', () => {
+        render(
+            <CommitPanel
+                job={job({
+                    commitStatus: 'imported',
+                    srcOnlyLeaderboard: true,
+                })}
+                {...props}
+            />,
+        );
+        expect(reconcileAction).not.toHaveBeenCalled();
+        expect(
+            screen.getByRole('button', { name: /run src-only reconcile/i }),
         ).toBeEnabled();
     });
 
@@ -409,47 +426,7 @@ describe('CommitPanel', () => {
         ).toBeEnabled();
     });
 
-    it('auto-fires reconcile exactly once for a src-only imported job', async () => {
-        const onChanged = vi.fn();
-        const { rerender } = render(
-            <CommitPanel
-                job={job({
-                    commitStatus: 'imported',
-                    srcOnlyLeaderboard: true,
-                })}
-                gameId={12}
-                gameSlug="sm64"
-                onChanged={onChanged}
-            />,
-        );
-        await waitFor(() =>
-            expect(reconcileAction).toHaveBeenCalledWith({
-                gameId: 12,
-                gameSlug: 'sm64',
-                jobId: 7,
-            }),
-        );
-        await waitFor(() => expect(onChanged).toHaveBeenCalled());
-
-        // A re-render with the same still-'imported' job (as the poll would
-        // produce before commitStatus flips to 'reconciling') must not
-        // re-fire the action.
-        rerender(
-            <CommitPanel
-                job={job({
-                    commitStatus: 'imported',
-                    srcOnlyLeaderboard: true,
-                })}
-                gameId={12}
-                gameSlug="sm64"
-                onChanged={onChanged}
-            />,
-        );
-        await new Promise((r) => setTimeout(r, 0));
-        expect(reconcileAction).toHaveBeenCalledTimes(1);
-    });
-
-    it('imported+srcOnly shows a manual reconcile control after the auto-fire, and clicking it re-triggers reconcile', async () => {
+    it('imported+legacy srcOnly clicking the manual control triggers reconcile', async () => {
         const onChanged = vi.fn();
         render(
             <CommitPanel
@@ -462,16 +439,13 @@ describe('CommitPanel', () => {
                 onChanged={onChanged}
             />,
         );
-        // The one-shot auto-fire runs first.
-        await waitFor(() => expect(reconcileAction).toHaveBeenCalledTimes(1));
-        const manual = await screen.findByRole('button', {
+        const manual = screen.getByRole('button', {
             name: /run src-only reconcile/i,
         });
         // No enabled "Undo runs" that could race the reconcile.
         expect(
             screen.queryByRole('button', { name: /undo runs/i }),
         ).not.toBeInTheDocument();
-        vi.mocked(reconcileAction).mockClear();
         fireEvent.click(manual);
         await waitFor(() =>
             expect(reconcileAction).toHaveBeenCalledWith({
@@ -481,54 +455,6 @@ describe('CommitPanel', () => {
             }),
         );
     });
-
-    it('drops the "will start automatically" copy once the auto-reconcile latch has fired', async () => {
-        const onChanged = vi.fn();
-        const { rerender } = render(
-            <CommitPanel
-                job={job({
-                    commitStatus: 'imported',
-                    srcOnlyLeaderboard: true,
-                })}
-                gameId={12}
-                gameSlug="sm64"
-                onChanged={onChanged}
-            />,
-        );
-        await waitFor(() => expect(reconcileAction).toHaveBeenCalledTimes(1));
-        // A poll re-render with the still-'imported' job (latch already set).
-        rerender(
-            <CommitPanel
-                job={job({
-                    commitStatus: 'imported',
-                    srcOnlyLeaderboard: true,
-                })}
-                gameId={12}
-                gameSlug="sm64"
-                onChanged={onChanged}
-            />,
-        );
-        await screen.findByRole('button', {
-            name: /run src-only reconcile/i,
-        });
-        expect(
-            screen.queryByText(/will start automatically/i),
-        ).not.toBeInTheDocument();
-    });
-
-    it('does not auto-fire reconcile when srcOnlyLeaderboard is false', async () => {
-        render(
-            <CommitPanel
-                job={job({
-                    commitStatus: 'imported',
-                    srcOnlyLeaderboard: false,
-                })}
-                {...props}
-            />,
-        );
-        await new Promise((r) => setTimeout(r, 0));
-        expect(reconcileAction).not.toHaveBeenCalled();
-    });
 });
 
 describe('getCommitViewModel', () => {
@@ -537,9 +463,6 @@ describe('getCommitViewModel', () => {
         expect(
             getCommitViewModel(job({ commitStatus: 'applying' })).progressLabel,
         ).toMatch(/applying/i);
-        expect(
-            getCommitViewModel(job({ commitStatus: 'applied' })).showCheckbox,
-        ).toBe(true);
         expect(
             getCommitViewModel(job({ commitStatus: 'importing' }))
                 .progressLabel,

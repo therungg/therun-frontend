@@ -46,9 +46,6 @@ vi.mock('./src-import-actions', () => ({
     undoConfigAction: vi.fn(async () => ({ result: { jobId: 7 } })),
     reconcileAction: vi.fn(async () => ({ result: { jobId: 7 } })),
     reconcileUndoAction: vi.fn(async () => ({ result: { jobId: 7 } })),
-    setSrcOnlyAction: vi.fn(async () => ({
-        result: { jobId: 7, srcOnlyLeaderboard: true },
-    })),
 }));
 
 import { primaryTime, runPlayerLabel } from './review-tabs';

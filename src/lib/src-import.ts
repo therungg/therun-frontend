@@ -237,18 +237,6 @@ export async function reconcileUndoSrcImport(
     );
 }
 
-export async function setSrcOnlyLeaderboard(
-    sessionId: string,
-    gameId: number,
-    jobId: number,
-    enabled: boolean,
-): Promise<{ jobId: number; srcOnlyLeaderboard: boolean }> {
-    return apiFetch<{ jobId: number; srcOnlyLeaderboard: boolean }>(
-        `${base(gameId)}/${jobId}/src-only`,
-        { method: 'POST', sessionId, body: { enabled } },
-    );
-}
-
 /**
  * Patch-merges the moderator commit flags onto the job (partial body — only the
  * keys sent change; unrelated flags are kept). Returns the resolved flag set

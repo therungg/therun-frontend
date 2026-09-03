@@ -23,7 +23,6 @@ import {
     type SrcResyncKind,
     setSrcImportFlags,
     setSrcImportOverrides,
-    setSrcOnlyLeaderboard,
     startSrcImport,
     startSrcResync,
     undoSrcImportConfig,
@@ -277,23 +276,6 @@ export async function reconcileUndoAction(input: {
     return run(async () => {
         const sessionId = await requireBoardMod(input.gameSlug);
         return reconcileUndoSrcImport(sessionId, input.gameId, input.jobId);
-    });
-}
-
-export async function setSrcOnlyAction(input: {
-    gameId: number;
-    gameSlug: string;
-    jobId: number;
-    enabled: boolean;
-}): Promise<ActionResult<{ jobId: number; srcOnlyLeaderboard: boolean }>> {
-    return run(async () => {
-        const sessionId = await requireBoardMod(input.gameSlug);
-        return setSrcOnlyLeaderboard(
-            sessionId,
-            input.gameId,
-            input.jobId,
-            input.enabled,
-        );
     });
 }
 
