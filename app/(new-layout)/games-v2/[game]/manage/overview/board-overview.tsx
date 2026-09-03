@@ -15,7 +15,6 @@ import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
 import type {
     SrcCommitChangeSummary,
     SrcImportJob,
-    SrcImportJobKind,
 } from '../../../../../../types/src-import.types';
 import { BoardHealthCard } from '../console/board-health-card';
 import type { NavGroup, NavItemId } from '../console/nav-model';
@@ -87,11 +86,6 @@ interface Props {
     setupCompleteness?: BoardCompleteness | null;
     boardHealth?: BoardHealth | null;
     syncJob?: SrcImportJob | null;
-    /** Latest job per kind, when the caller has it — drives each resync
-     * button's own cooldown gate independently. Absent kinds (and an absent
-     * prop entirely) fall back to `syncJob.createdAt`; the backend enforces
-     * the real gate regardless. */
-    latestJobByKind?: Partial<Record<SrcImportJobKind, SrcImportJob>>;
     /** Permission-filtered console nav — decides which cards and tiles show. */
     navGroups: NavGroup[];
     canModerate: boolean;
@@ -118,7 +112,6 @@ export function BoardOverview({
     setupCompleteness,
     boardHealth,
     syncJob,
-    latestJobByKind,
     navGroups,
     canModerate,
     isAdmin,
@@ -591,8 +584,9 @@ export function BoardOverview({
                                         kind="settings"
                                         label="Import settings"
                                         lastJobCreatedAt={
-                                            latestJobByKind?.settings
-                                                ?.createdAt ?? syncJob.createdAt
+                                            syncJob.kind === 'settings'
+                                                ? syncJob.createdAt
+                                                : null
                                         }
                                         running={
                                             syncJob.status === 'queued' ||
@@ -607,8 +601,9 @@ export function BoardOverview({
                                         kind="resync"
                                         label="Import runs of therun runners"
                                         lastJobCreatedAt={
-                                            latestJobByKind?.resync
-                                                ?.createdAt ?? syncJob.createdAt
+                                            syncJob.kind === 'resync'
+                                                ? syncJob.createdAt
+                                                : null
                                         }
                                         running={
                                             syncJob.status === 'queued' ||

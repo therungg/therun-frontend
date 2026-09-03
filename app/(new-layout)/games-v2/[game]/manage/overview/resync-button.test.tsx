@@ -46,7 +46,7 @@ describe('ResyncButton', () => {
                 label="Import runs"
                 lastJobCreatedAt={justNow}
                 running={false}
-                onStarted={() => {}}
+                onStarted={vi.fn()}
             />,
         );
         expect(screen.getByRole('button')).toBeDisabled();
@@ -59,7 +59,7 @@ describe('ResyncButton', () => {
                 lastJobCreatedAt={justNow}
                 running={false}
                 bypassCooldown
-                onStarted={() => {}}
+                onStarted={vi.fn()}
             />,
         );
         expect(screen.getByRole('button')).toBeEnabled();

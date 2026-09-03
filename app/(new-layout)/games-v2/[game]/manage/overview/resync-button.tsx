@@ -24,9 +24,12 @@ interface Props {
     kind: SrcResyncKind;
     /** Button label shown when idle. */
     label: string;
-    /** createdAt of the board's latest job of this kind — drives the 24h gate
-     * client-side (the backend enforces it authoritatively). Null = never
-     * imported, so the button links to a first import instead. */
+    /** createdAt of the board's latest job, when that job is of this same
+     * kind — drives the 24h gate client-side. Null when the board's latest
+     * job is a different kind (or there's never been one): the gate only
+     * applies when the latest job matches this button's kind, otherwise the
+     * button stays enabled and a backend 429 is the real gate (rendered
+     * inline via `res.error`). */
     lastJobCreatedAt: string | null;
     /** Whether an import job is currently running — disables re-sync. */
     running: boolean;

@@ -10,6 +10,7 @@ import type {
     SrcImportCategory,
     SrcImportCommitFlags,
     SrcImportJob,
+    SrcImportJobKind,
     SrcImportLevel,
     SrcImportMatchKind,
     SrcImportPlayer,
@@ -33,7 +34,7 @@ export async function startSrcImport(
     });
 }
 
-export type SrcResyncKind = 'resync' | 'settings';
+export type SrcResyncKind = Exclude<SrcImportJobKind, 'manual'>;
 
 /**
  * One-click re-sync: re-pulls everything from the source and auto-applies
