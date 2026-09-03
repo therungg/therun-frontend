@@ -135,11 +135,7 @@ function itemVisible(
     // ids) and the board-overview rail card. Restore by returning
     // `flags.canModerate || flags.canConfigure`.
     if (itemId === 'boards') return false;
-    // Import is pulled from the console for now — server actions in
-    // src-import-actions.ts also refuse to run. Restore by returning
-    // `flags.canModerate || flags.canConfigure` here (and flipping
-    // IMPORT_DISABLED back to false there).
-    if (itemId === 'import') return false;
+    if (itemId === 'import') return flags.canConfigure || flags.canModerate;
     return flags.canConfigure;
 }
 

@@ -66,6 +66,7 @@ describe('buildNav', () => {
             'game-details',
             'theme',
             'moderators',
+            'import',
         ]);
     });
 
@@ -128,12 +129,10 @@ describe('buildNav', () => {
         expect(resolveInitialPane('boards', buildNav(ALL), ALL)).toBeNull();
     });
 
-    it('keeps import out for every viewer while the door is pulled', () => {
-        expect(ids(ALL)).not.toContain('import');
-        expect(ids({ ...NO_FLAGS, canModerate: true })).not.toContain('import');
-        expect(ids({ ...NO_FLAGS, canConfigure: true })).not.toContain(
-            'import',
-        );
+    it('shows import to moderate-only and configure-only viewers alike', () => {
+        expect(ids({ ...NO_FLAGS, canModerate: true })).toContain('import');
+        expect(ids({ ...NO_FLAGS, canConfigure: true })).toContain('import');
+        expect(ids(NO_FLAGS)).not.toContain('import');
     });
 
     it('keeps structure editing (groups, levels, variables) to configurers', () => {
