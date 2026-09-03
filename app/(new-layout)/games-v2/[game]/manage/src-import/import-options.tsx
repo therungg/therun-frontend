@@ -11,7 +11,6 @@ const DEFAULT_FLAGS: ResolvedCommitFlags = {
     importMiscCategories: true,
     importLevelCategories: true,
     importPending: true,
-    importGuests: true,
     setMinTimeFloor: true,
 };
 
@@ -31,7 +30,6 @@ export function resolveCommitFlags(
         importLevelCategories:
             flags?.importLevelCategories ?? DEFAULT_FLAGS.importLevelCategories,
         importPending: flags?.importPending ?? DEFAULT_FLAGS.importPending,
-        importGuests: flags?.importGuests ?? DEFAULT_FLAGS.importGuests,
         setMinTimeFloor:
             flags?.setMinTimeFloor ?? DEFAULT_FLAGS.setMinTimeFloor,
     };
@@ -61,11 +59,6 @@ const TOGGLES: Array<{ key: ToggleKey; label: string; hint: string }> = [
         hint: 'Runs still pending verification on speedrun.com (imported as pending).',
     },
     {
-        key: 'importGuests',
-        label: 'Import guest runs',
-        hint: 'Runs whose runner has no matched therun account (imported as guests).',
-    },
-    {
         key: 'setMinTimeFloor',
         label: 'Set a minimum-time floor',
         hint: 'Flag impossibly-fast runs (below 90% of the fastest imported time).',
@@ -83,8 +76,8 @@ export function ImportOptions({ flags, disabled, onChange }: Props) {
         <div className={styles.optionsPanel}>
             <p className={styles.optionsTitle}>Import options</p>
             <p className={styles.optionsHint}>
-                What this import writes. Every option defaults on (import
-                everything); set them before applying the configuration.
+                What this import writes. Only runs of therun users are imported;
+                set the options before applying the configuration.
             </p>
             {TOGGLES.map((t) => (
                 <label key={t.key} className={styles.checkboxRow}>

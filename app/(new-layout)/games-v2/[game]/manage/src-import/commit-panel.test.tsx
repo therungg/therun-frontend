@@ -109,23 +109,28 @@ describe('CommitPanel', () => {
         render(<CommitPanel job={job()} {...props} />);
         expect(screen.getByText(/import options/i)).toBeInTheDocument();
         expect(
-            screen.getByRole('checkbox', { name: /import guest runs/i }),
+            screen.getByRole('checkbox', { name: /import unverified runs/i }),
         ).toBeChecked();
     });
 
     it('persists a flag toggle via setFlagsAction with only the changed key', async () => {
         render(<CommitPanel job={job()} {...props} />);
         fireEvent.click(
-            screen.getByRole('checkbox', { name: /import guest runs/i }),
+            screen.getByRole('checkbox', { name: /import unverified runs/i }),
         );
         await waitFor(() => {
             expect(setFlagsAction).toHaveBeenCalledWith({
                 gameId: 12,
                 gameSlug: 'sm64',
                 jobId: 7,
-                flags: { importGuests: false },
+                flags: { importPending: false },
             });
         });
+    });
+
+    it('has no guest-runs toggle', () => {
+        render(<CommitPanel job={job()} {...props} />);
+        expect(screen.queryByRole('checkbox', { name: /guest/i })).toBeNull();
     });
 
     it('hides the Import options panel once config is applied', () => {
