@@ -33,6 +33,7 @@ export function StepVariables({ data, onAdvance }: StepProps) {
                 game={data.game}
                 categories={data.categories}
                 variables={data.variables}
+                groups={data.groups}
             />
 
             <button

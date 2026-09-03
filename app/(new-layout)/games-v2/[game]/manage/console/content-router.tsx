@@ -224,6 +224,7 @@ export function ContentRouter(props: ContentRouterProps) {
                         game={game}
                         categories={props.boardCategories}
                         variables={props.variables}
+                        groups={props.boardGroups}
                     />
                 </div>
             );

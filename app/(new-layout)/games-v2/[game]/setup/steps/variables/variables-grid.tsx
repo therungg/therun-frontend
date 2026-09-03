@@ -34,6 +34,7 @@ import {
 import type {
     ResolvedCategory,
     ResolvedGame,
+    ResolvedGroup,
     VariableRow,
 } from '../../../../../../../types/leaderboards.types';
 import { loadVariableSuggestionsAction } from '../../../manage/variables/actions/load-variable-suggestions.action';
@@ -88,12 +89,16 @@ export interface VariablesGridProps {
     /** Every category on the game; the grid narrows to the featured ones. */
     categories: ResolvedCategory[];
     variables: VariableRow[];
+    /** The game's groups, used to exclude level subcategories/filters — those
+     * are managed in the Levels menu instead. */
+    groups: ResolvedGroup[];
 }
 
 export function VariablesGrid({
     game,
     categories,
     variables,
+    groups,
 }: VariablesGridProps) {
     const router = useRouter();
     const [pending, setPending] = useState<Map<string, PendingToggle[]>>(
@@ -116,21 +121,43 @@ export function VariablesGrid({
                 .sort(compareByBoardOrder),
         [categories],
     );
-    const groups = useMemo(() => groupVariables(variables), [variables]);
+    // Level subcategories/filters are managed in the Levels menu, so this grid
+    // narrows to variables whose category is NOT in a level-kind group.
+    const levelCategoryIds = useMemo(() => {
+        const levelGroupIds = new Set(
+            groups.filter((g) => g.kind === 'level').map((g) => g.id),
+        );
+        return new Set(
+            categories
+                .filter(
+                    (c) => c.groupId != null && levelGroupIds.has(c.groupId),
+                )
+                .map((c) => c.id),
+        );
+    }, [groups, categories]);
+    const fullGameVariables = useMemo(
+        () => variables.filter((v) => !levelCategoryIds.has(v.categoryId)),
+        [variables, levelCategoryIds],
+    );
+
+    const variableGroups = useMemo(
+        () => groupVariables(fullGameVariables),
+        [fullGameVariables],
+    );
     const { splits, details } = useMemo(
-        () => partitionGroups(groups),
-        [groups],
+        () => partitionGroups(variableGroups),
+        [variableGroups],
     );
 
     /** Names already taken, so a new one collides before it is typed. */
     const takenNames = useMemo(
         () =>
             new Set([
-                ...groups.map((g) => g.nameNormalized),
+                ...variableGroups.map((g) => g.nameNormalized),
                 ...BUILT_IN_FILTERS.map(normalizeName),
                 ...RESERVED_NAMES,
             ]),
-        [groups],
+        [variableGroups],
     );
 
     // Suggestions are loaded once here, on entry, rather than inside the
