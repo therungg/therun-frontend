@@ -449,12 +449,14 @@ const MATCH_OPTIONS: Array<{
     { value: 'all', label: 'All' },
     { value: 'src_verified', label: 'Verified' },
     { value: 'twitch', label: 'Twitch match' },
+    { value: 'src_name', label: 'Name match' },
     { value: 'none', label: 'Unmatched' },
 ];
 
 const MATCH_LABEL: Record<SrcImportMatchKind, string> = {
     src_verified: 'verified SRC identity',
     twitch: 'same Twitch login',
+    src_name: 'matching display name',
     none: 'no match',
 };
 

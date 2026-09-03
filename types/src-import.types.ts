@@ -3,14 +3,16 @@
 // API exactly; keep in sync with `therun/src/src-import/types.ts`.
 
 export type SrcImportStatus = 'queued' | 'running' | 'done' | 'failed';
-export type SrcImportPhase = 'meta' | 'runs' | 'matching' | 'done';
+export type SrcImportPhase = 'meta' | 'players' | 'matching' | 'runs' | 'done';
 
-export interface SrcImportCheckpoint {
-    categoryIndex: number;
-    status: 'verified' | 'new';
-    offset: number;
-    dateFrom?: string;
-}
+export type SrcImportCheckpoint =
+    | { stage: 'players'; boardIndex: number }
+    | {
+          stage: 'runs';
+          playerIndex: number;
+          offset: number;
+          direction: 'asc' | 'desc';
+      };
 
 export interface SrcImportJob {
     id: number;
@@ -62,7 +64,8 @@ export interface SrcImportJob {
     commitFlags: SrcImportCommitFlags | null;
 }
 
-export type SrcImportJobKind = 'manual' | 'resync';
+/** 'resync' = one-click re-sync (auto-applied); 'manual' = reviewed import. 'settings' = config-only sync (no runs). */
+export type SrcImportJobKind = 'manual' | 'resync' | 'settings';
 
 /**
  * Moderator toggles honored during the commit (mirror of the backend
@@ -77,7 +80,6 @@ export interface SrcImportCommitFlags {
     importMiscCategories?: boolean;
     importLevelCategories?: boolean;
     importPending?: boolean;
-    importGuests?: boolean;
     setMinTimeFloor?: boolean;
 }
 
@@ -147,7 +149,11 @@ export interface SrcImportVariable {
     skipped: boolean;
 }
 
-export type SrcImportMatchKind = 'src_verified' | 'twitch' | 'none';
+export type SrcImportMatchKind =
+    | 'src_verified'
+    | 'twitch'
+    | 'src_name'
+    | 'none';
 
 export interface SrcImportPlayer {
     id: number;

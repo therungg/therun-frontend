@@ -36,8 +36,9 @@ const BADGE_CLASS: Record<SrcImportJob['status'], string> = {
 
 const PHASE_LABEL: Record<SrcImportJob['phase'], string> = {
     meta: 'reading categories & variables',
-    runs: 'fetching runs',
+    players: 'reading players',
     matching: 'matching players',
+    runs: 'fetching runs',
     done: 'finished',
 };
 
