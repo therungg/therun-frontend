@@ -41,12 +41,12 @@ const TOGGLES: Array<{ key: ToggleKey; label: string; hint: string }> = [
     {
         key: 'importTheme',
         label: 'Import board theme',
-        hint: 'Apply the speedrun.com board colors and background to this game.',
+        hint: 'Apply the source board colors and background to this game.',
     },
     {
         key: 'importMiscCategories',
         label: 'Import miscellaneous categories',
-        hint: 'speedrun.com “misc” categories, grouped under Miscellaneous.',
+        hint: 'Source “misc” categories, grouped under Miscellaneous.',
     },
     {
         key: 'importLevelCategories',
@@ -56,7 +56,7 @@ const TOGGLES: Array<{ key: ToggleKey; label: string; hint: string }> = [
     {
         key: 'importPending',
         label: 'Import unverified runs',
-        hint: 'Runs still pending verification on speedrun.com (imported as pending).',
+        hint: 'Runs still pending verification at the source (imported as pending).',
     },
     {
         key: 'setMinTimeFloor',
@@ -73,50 +73,50 @@ interface Props {
 
 export function ImportOptions({ flags, disabled, onChange }: Props) {
     return (
-        <div className={styles.optionsPanel}>
-            <p className={styles.optionsTitle}>Import options</p>
-            <p className={styles.optionsHint}>
-                What this import writes. Only runs of therun users are imported;
-                set the options before applying the configuration.
-            </p>
-            {TOGGLES.map((t) => (
-                <label key={t.key} className={styles.checkboxRow}>
-                    <input
-                        type="checkbox"
-                        checked={flags[t.key]}
-                        disabled={disabled}
-                        onChange={(e) =>
-                            onChange({ [t.key]: e.target.checked })
-                        }
-                    />
-                    <span>
-                        {t.label}
-                        <span className={styles.checkboxHint}>{t.hint}</span>
-                    </span>
-                </label>
-            ))}
-            {flags.importTheme && (
-                <div className={styles.themeModeRow}>
-                    <span>When a theme already exists:</span>
-                    <select
-                        className={styles.themeModeSelect}
-                        value={flags.themeMode}
-                        disabled={disabled}
-                        onChange={(e) =>
-                            onChange({
-                                themeMode: e.target.value as
-                                    | 'overwrite'
-                                    | 'if-unset',
-                            })
-                        }
-                    >
-                        <option value="overwrite">Overwrite it</option>
-                        <option value="if-unset">
-                            Keep it (only set if unset)
-                        </option>
-                    </select>
-                </div>
-            )}
-        </div>
+        <details className={styles.options}>
+            <summary>Options</summary>
+            <div className={styles.optionsBody}>
+                {TOGGLES.map((t) => (
+                    <label key={t.key} className={styles.checkboxRow}>
+                        <input
+                            type="checkbox"
+                            checked={flags[t.key]}
+                            disabled={disabled}
+                            onChange={(e) =>
+                                onChange({ [t.key]: e.target.checked })
+                            }
+                        />
+                        <span>
+                            {t.label}
+                            <span className={styles.checkboxHint}>
+                                {t.hint}
+                            </span>
+                        </span>
+                    </label>
+                ))}
+                {flags.importTheme && (
+                    <div className={styles.themeModeRow}>
+                        <span>When a theme already exists:</span>
+                        <select
+                            className={styles.themeModeSelect}
+                            value={flags.themeMode}
+                            disabled={disabled}
+                            onChange={(e) =>
+                                onChange({
+                                    themeMode: e.target.value as
+                                        | 'overwrite'
+                                        | 'if-unset',
+                                })
+                            }
+                        >
+                            <option value="overwrite">Overwrite it</option>
+                            <option value="if-unset">
+                                Keep it (only set if unset)
+                            </option>
+                        </select>
+                    </div>
+                )}
+            </div>
+        </details>
     );
 }
