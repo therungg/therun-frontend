@@ -18,7 +18,7 @@ import styles from './user-races.module.scss';
 
 interface UserRaceProfileProps {
     username: string;
-    globalStats: UserStats;
+    globalStats?: UserStats;
     categoryStatsMap: UserStats[][];
     participations: RaceParticipant[];
     initialRaces: Race[];
@@ -36,7 +36,7 @@ export const UserRaceProfile = ({
         { content: 'Race Stats' },
     ];
 
-    if (!participations || participations.length === 0) {
+    if (!participations || participations.length === 0 || !globalStats) {
         return (
             <div className={styles.noRaces}>
                 Unfortunately, this user has not done any races yet.

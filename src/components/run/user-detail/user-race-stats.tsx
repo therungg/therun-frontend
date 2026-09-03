@@ -2,7 +2,21 @@ import { UserStats } from '~app/(new-layout)/races/races.types';
 import styles from '~src/components/css/User.module.scss';
 import { DurationToFormatted } from '~src/components/util/datetime';
 
-export const UserRaceStatsTable = ({ raceStats }: { raceStats: UserStats }) => {
+export const UserRaceStatsTable = ({
+    raceStats,
+}: {
+    raceStats?: UserStats | null;
+}) => {
+    if (!raceStats) return null;
+
+    const finishedPct =
+        raceStats.totalRaces > 0
+            ? (
+                  (raceStats.totalFinishedRaces / raceStats.totalRaces) *
+                  100
+              ).toFixed(0)
+            : '0';
+
     return (
         <div className={styles.statGrid}>
             <div className={styles.statCard}>
@@ -17,13 +31,7 @@ export const UserRaceStatsTable = ({ raceStats }: { raceStats: UserStats }) => {
             </div>
             <div className={styles.statCard}>
                 <div className={styles.statLabel}>Finished %</div>
-                <div className={styles.statValue}>
-                    {(
-                        (raceStats.totalFinishedRaces / raceStats.totalRaces) *
-                        100
-                    ).toFixed(0)}
-                    %
-                </div>
+                <div className={styles.statValue}>{finishedPct}%</div>
             </div>
             <div className={styles.statCard}>
                 <div className={styles.statLabel}>Total Race Time</div>

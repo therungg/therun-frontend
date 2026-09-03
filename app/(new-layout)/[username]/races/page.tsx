@@ -37,14 +37,16 @@ export default async function Page(props: PageProps) {
             .map((participation) => participation.raceId),
     );
 
+    // The stats endpoint can answer without a body for users whose stats
+    // have not been computed yet, even when they have participations.
     const categoryStatsMap = groupCategoryStatsByGame(
-        globalStats.categoryStats,
+        globalStats?.categoryStats ?? [],
     );
 
     return (
         <UserRaceProfile
             username={username}
-            globalStats={globalStats.globalStats}
+            globalStats={globalStats?.globalStats}
             categoryStatsMap={categoryStatsMap}
             participations={participations || []}
             initialRaces={initialRaces}
