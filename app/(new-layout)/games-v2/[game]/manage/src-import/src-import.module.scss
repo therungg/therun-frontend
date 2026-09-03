@@ -1,15 +1,8 @@
 @use '../../../../styles/design-tokens' as dt;
 @use '../../../../styles/board' as board;
 
-// speedrun.com import pane — a staged instrument: fetch controls, one
-// status/stat surface for the job, review tables in board vocabulary,
-// and a clearly fenced commit zone at the bottom.
-
-$rail: 3px;
-
-@mixin focus-ring {
-    box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
-}
+// Import pane — two quiet surfaces (Settings, Runs). Each: title + one
+// button, a line of context, then whatever the job is doing right now.
 
 .stack {
     display: flex;
@@ -17,499 +10,201 @@ $rail: 3px;
     gap: dt.$spacing-xl;
 }
 
-// Quiet dry-run note (the console's noteInfo recipe, local so this module
-// doesn't reach into console-chrome for spacing overrides).
-.note {
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-    border-left: $rail solid var(--bs-primary);
-    border-radius: dt.$radius-md;
-    background: var(--bs-body-bg);
-    padding: dt.$spacing-sm dt.$spacing-lg;
+.section {
+    @include board.board-surface(dt.$spacing-xl dt.$spacing-2xl);
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+}
+
+.head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: dt.$spacing-lg;
+}
+
+.title {
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    margin: 0 0 dt.$spacing-xs;
+}
+
+.desc {
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
     margin: 0;
+    max-width: 52ch;
 }
 
-// ---- Fetch controls: one composed input row ----------------
-.form {
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-xs;
+.meta {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+    margin: 0;
 }
 
-.field {
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-xs;
+.metaTime {
+    @include board.mono-time;
 }
 
-.label {
-    @include board.board-eyebrow;
-}
-
-.input,
-.select {
-    width: 100%;
-    font-size: dt.$font-size-md;
-    padding: 0.5rem dt.$spacing-md;
+.btn {
+    flex: none;
+    border: 1px solid var(--bs-primary);
     border-radius: dt.$radius-md;
-    background: var(--bs-body-bg);
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
-    color: var(--bs-body-color);
-    transition:
-        border-color dt.$transition-fast,
-        box-shadow dt.$transition-fast;
+    background: var(--bs-primary);
+    color: #fff;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    cursor: pointer;
+    transition: opacity 120ms ease;
 
-    &:hover {
-        border-color: rgba(var(--bs-primary-rgb), 0.5);
+    &:hover:not(:disabled) {
+        opacity: 0.9;
     }
 
     &:focus-visible {
-        outline: 0;
-        @include focus-ring;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.25);
+    }
+
+    &:disabled {
+        cursor: default;
+        opacity: 0.45;
     }
 }
 
-// Prefix + slug + primary action reading as one instrument: the static
-// "https://www.speedrun.com/" part, the abbreviation, the Fetch button.
-.urlGroup {
-    display: flex;
-    align-items: stretch;
-    width: 100%;
-    max-width: 44rem;
-}
-
-.urlPrefix {
-    display: inline-flex;
-    align-items: center;
-    padding: 0 dt.$spacing-sm 0 dt.$spacing-md;
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-    background: color-mix(
-        in srgb,
-        var(--bs-body-bg) 88%,
-        var(--bs-secondary-bg) 12%
-    );
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
-    border-right: 0;
-    border-radius: dt.$radius-md 0 0 dt.$radius-md;
-    white-space: nowrap;
-    user-select: none;
-}
-
-.urlInput {
-    border-radius: 0;
-    min-width: 0;
-    flex: 1;
-}
-
-.fetchBtn {
-    @include board.board-btn-primary;
-    border-radius: 0 dt.$radius-md dt.$radius-md 0;
-    flex-shrink: 0;
-    white-space: nowrap;
-}
-
-// Narrow screens: the long prefix becomes a full-width cap above the
-// slug + action row.
-@media (max-width: 640px) {
-    .urlGroup {
-        flex-wrap: wrap;
-    }
-
-    .urlPrefix {
-        width: 100%;
-        border-right: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
-        border-bottom: 0;
-        border-radius: dt.$radius-md dt.$radius-md 0 0;
-        padding-block: dt.$spacing-xs;
-    }
-
-    .urlInput {
-        border-radius: 0 0 0 dt.$radius-md;
-    }
-
-    .fetchBtn {
-        border-radius: 0 0 dt.$radius-md 0;
-    }
-}
-
-.select {
-    width: auto;
-    max-width: 320px;
-    font-size: dt.$font-size-sm;
-    padding: dt.$spacing-xs dt.$spacing-sm;
-}
-
-// ---- Job status surface ------------------------------------
-.jobCard {
-    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-lg;
-}
-
-.jobHead {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: dt.$spacing-sm dt.$spacing-md;
-}
-
-.jobTitle {
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    color: var(--bs-emphasis-color);
-}
-
-.jobLink {
-    @include board.board-quiet-link;
-    display: inline-flex;
-    align-items: center;
-    gap: dt.$spacing-xs;
-    text-decoration: none;
-    white-space: nowrap;
-}
-
-// Quiet timestamps, pushed to the surface's right edge.
-.jobTimes {
-    margin-left: auto;
-    font-size: dt.$font-size-2xs;
+.hint {
+    font-size: dt.$font-size-xs;
     color: var(--bs-tertiary-color);
-    white-space: nowrap;
-}
-
-// Status as a board-pill; the sev variants recolor it.
-.statusBadge {
-    @include board.board-pill;
-    border-color: transparent;
-}
-
-.badgeQueued {
-    background: color-mix(in srgb, #{dt.$accent-amber} 18%, transparent);
-    color: color-mix(in srgb, #{dt.$accent-amber} 82%, var(--bs-body-color));
-}
-
-.badgeRunning,
-.badgeDone {
-    background: rgba(var(--bs-primary-rgb), 0.16);
-    color: var(--bs-primary);
-}
-
-.badgeFailed {
-    background: color-mix(in srgb, #{dt.$accent-red} 16%, transparent);
-    color: dt.$accent-red;
-}
-
-.spinner {
-    width: 1rem;
-    height: 1rem;
-    border: 2px solid rgba(var(--bs-primary-rgb), 0.25);
-    border-top-color: var(--bs-primary);
-    border-radius: 999px;
-    animation: spin 0.7s linear infinite;
-    flex-shrink: 0;
-
-    @media (prefers-reduced-motion: reduce) {
-        animation-duration: 1.6s;
-    }
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-// ---- Stat bands --------------------------------------------
-// One row of eyebrow-labelled mono numerals; a hairline above sets the
-// band apart from the head. Stacked bands share the hairline rhythm.
-.counters {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
-    gap: dt.$spacing-md dt.$spacing-lg;
-    padding-top: dt.$spacing-md;
-    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
-}
-
-.counter {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.counterValue {
-    @include board.mono-time;
-    font-weight: 700;
-    font-size: dt.$font-size-lg;
-    color: var(--bs-emphasis-color);
-}
-
-.counterLabel {
-    @include board.board-eyebrow;
-    letter-spacing: 0.06em;
-    color: var(--bs-tertiary-color);
-}
-
-// "What changed" is a different fact than "what was fetched": it gets a
-// tinted block with a green spine and its own eyebrow heading.
-.changedBand {
-    border-left: $rail solid var(--bs-primary);
-    border-radius: 0 dt.$radius-md dt.$radius-md 0;
-    background: rgba(var(--bs-primary-rgb), 0.05);
-    padding: dt.$spacing-md dt.$spacing-lg;
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-sm;
-
-    .counters {
-        border-top: 0;
-        padding-top: 0;
-    }
-}
-
-.bandLabel {
-    @include board.board-eyebrow;
     margin: 0;
-}
-
-// Labelled stat group (plan preview): the eyebrow heading carries the
-// separation, so the band's own hairline is dropped.
-.band {
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-sm;
-
-    .counters {
-        border-top: 0;
-        padding-top: 0;
-    }
-}
-
-.muted {
-    color: var(--bs-secondary-color);
-    font-size: dt.$font-size-sm;
-}
-
-// ---- Progress ----------------------------------------------
-
-.progressRow {
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-md;
-}
-
-.progressTrack {
-    flex: 1;
-    height: 6px;
-    border-radius: 999px;
-    background: rgba(var(--bs-border-color-rgb), 0.5);
-    overflow: hidden;
-}
-
-.progressFill {
-    height: 100%;
-    border-radius: inherit;
-    background: var(--bs-primary);
-    transition: width 0.6s ease;
-
-    @media (prefers-reduced-motion: reduce) {
-        transition: none;
-    }
-}
-
-.progressPct {
-    @include board.mono-time;
-    font-weight: 700;
-    font-size: dt.$font-size-sm;
-    color: var(--bs-emphasis-color);
-    min-width: 3.5ch;
     text-align: right;
 }
 
-// ---- Callouts ----------------------------------------------
-.callout {
-    display: flex;
-    gap: dt.$spacing-sm;
-    padding: dt.$spacing-md dt.$spacing-lg;
-    border-radius: dt.$radius-md;
-    border-left: $rail solid var(--bs-secondary);
-    background: rgba(var(--bs-secondary-rgb), 0.08);
+.error {
     font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
+    color: var(--bs-danger);
+    margin: 0;
 }
 
-.calloutError {
-    border-left-color: dt.$accent-red;
-    background: color-mix(in srgb, #{dt.$accent-red} 10%, transparent);
-    color: dt.$accent-red;
-}
+// ---- running -------------------------------------------------------------
 
-// ---- Review tables -----------------------------------------
-.tabBody {
-    margin-top: dt.$spacing-md;
+.progress {
     display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-sm;
-}
-
-.toolbar {
-    display: flex;
-    flex-wrap: wrap;
     align-items: center;
     gap: dt.$spacing-md;
-}
-
-.tableWrap {
-    @include board.board-surface(0);
-    overflow-x: auto;
-}
-
-.table {
-    @include board.board-table;
-
-    thead th {
-        padding: dt.$spacing-sm dt.$spacing-md;
-    }
-
-    tbody td {
-        padding: dt.$spacing-sm dt.$spacing-md;
-        vertical-align: top;
-    }
-
-    tbody tr:last-child td {
-        border-bottom: 0;
-    }
-}
-
-.rowSkipped td {
+    font-size: dt.$font-size-xs;
     color: var(--bs-secondary-color);
-    opacity: 0.7;
 }
 
-.cellMono {
+.track {
+    flex: 1;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(var(--bs-border-color-rgb), 0.6);
+    overflow: hidden;
+}
+
+.fill {
+    height: 100%;
+    background: var(--bs-primary);
+    transition: width 600ms ease;
+}
+
+.trackBusy .fill {
+    width: 30%;
+    animation: slide 1.4s ease-in-out infinite;
+}
+
+@keyframes slide {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(340%);
+    }
+}
+
+.pct {
     @include board.mono-time;
-    color: var(--bs-secondary-color);
-    white-space: nowrap;
+    min-width: 3ch;
+    text-align: right;
 }
 
-.pill {
-    @include board.board-pill;
-    border-color: transparent;
-    text-transform: none;
-    letter-spacing: 0;
-}
+// ---- report ---------------------------------------------------------------
 
-.pillPrimary {
-    background: rgba(var(--bs-primary-rgb), 0.16);
-    color: var(--bs-primary);
-}
-
-.pillWarn {
-    background: color-mix(in srgb, #{dt.$accent-amber} 18%, transparent);
-    color: color-mix(in srgb, #{dt.$accent-amber} 82%, var(--bs-body-color));
-}
-
-.pillRow {
-    display: flex;
-    flex-wrap: wrap;
-    gap: dt.$spacing-xs;
-}
-
-.gapLeft {
-    margin-left: dt.$spacing-xs;
-}
-
-.rules {
-    max-width: 48ch;
-    white-space: pre-wrap;
-    font-size: dt.$font-size-xs;
-    color: var(--bs-secondary-color);
-}
-
-.moreLink {
-    @include board.board-quiet-link;
-    font-size: dt.$font-size-xs;
-    text-decoration: underline;
-    vertical-align: baseline;
-}
-
-.pager {
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-md;
+.report {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    column-gap: dt.$spacing-xl;
+    row-gap: dt.$spacing-xs;
+    margin: dt.$spacing-xs 0 0;
     font-size: dt.$font-size-sm;
+}
+
+.reportLabel {
     color: var(--bs-secondary-color);
 }
 
-.pagerBtn {
-    @include board.control-pill;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+.reportValue {
+    @include board.mono-time;
+    color: var(--bs-body-color);
+}
+
+.reportTitle {
+    grid-column: 1 / -1;
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--bs-tertiary-color);
+    margin: 0 0 dt.$spacing-xs;
 }
 
 .empty {
-    @include board.board-empty;
-}
-
-// ---- Commit zone -------------------------------------------
-// The one place on this pane that writes to the live board: its own
-// surface, amber caution spine, a named header. Everything above it is
-// review; everything inside it is consequence.
-.commitCard {
-    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
-    border-left: $rail solid dt.$accent-amber;
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-lg;
-}
-
-.commitHead {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding-bottom: dt.$spacing-sm;
-    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
-}
-
-.commitEyebrow {
-    @include board.board-eyebrow;
-    color: color-mix(in srgb, #{dt.$accent-amber} 80%, var(--bs-body-color));
-}
-
-.commitTitle {
-    font-size: dt.$font-size-md;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    margin: 0;
-}
-
-.commitLede {
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
-    margin: 0;
+    margin: dt.$spacing-xs 0 0;
 }
 
-.actionRow {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: dt.$spacing-md;
-}
+// ---- options disclosure ----------------------------------------------------
 
-// Outline counterpart to the primary tier — "Undo config", "Undo runs",
-// "Reverse SRC-only leaderboard" read as reversals, not the primary path.
-.secondaryBtn {
-    @include board.control-pill;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
-    border-radius: dt.$radius-md;
-    font-weight: 600;
-    padding: dt.$spacing-sm dt.$spacing-lg;
+.options {
+    margin-top: dt.$spacing-xs;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    padding-top: dt.$spacing-md;
 
-    &:hover:not(:disabled) {
-        border-color: var(--bs-primary);
-        color: var(--bs-primary);
-        background: transparent;
+    summary {
+        font-size: dt.$font-size-xs;
+        color: var(--bs-secondary-color);
+        cursor: pointer;
+        list-style: none;
+        user-select: none;
+
+        &::-webkit-details-marker {
+            display: none;
+        }
+
+        &::before {
+            content: '▸';
+            display: inline-block;
+            width: 1.2em;
+            transition: transform 120ms ease;
+        }
     }
+
+    &[open] summary::before {
+        transform: rotate(90deg);
+    }
+}
+
+.optionsBody {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-md 0 0 1.2em;
 }
 
 .checkboxRow {
@@ -517,118 +212,78 @@ $rail: 3px;
     align-items: flex-start;
     gap: dt.$spacing-sm;
     font-size: dt.$font-size-sm;
+    cursor: pointer;
+
+    input {
+        margin-top: 0.2em;
+    }
 }
 
 .checkboxHint {
     display: block;
-    color: var(--bs-secondary-color);
     font-size: dt.$font-size-xs;
-}
-
-.blockedHint {
-    color: var(--bs-secondary-color);
-    font-size: dt.$font-size-xs;
-    margin: 0;
-}
-
-// "Import options" — the moderator commit-flag toggles, shown while the
-// plan is being reviewed (before Apply config).
-.optionsPanel {
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
-    border-radius: dt.$radius-md;
-    padding: dt.$spacing-md dt.$spacing-lg;
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-sm;
-}
-
-.optionsTitle {
-    @include board.board-eyebrow;
-    margin: 0;
-}
-
-.optionsHint {
-    color: var(--bs-secondary-color);
-    font-size: dt.$font-size-xs;
-    margin: 0;
+    color: var(--bs-tertiary-color);
 }
 
 .themeModeRow {
     display: flex;
     align-items: center;
     gap: dt.$spacing-sm;
-    font-size: dt.$font-size-sm;
-    padding-left: dt.$spacing-lg;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    padding-left: 1.6em;
 }
 
 .themeModeSelect {
+    font-size: dt.$font-size-xs;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.8);
+    border-radius: dt.$radius-sm;
     background: var(--bs-body-bg);
     color: var(--bs-body-color);
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
-    border-radius: dt.$radius-md;
-    padding: 0.15rem 0.4rem;
-    font-size: dt.$font-size-xs;
-    transition: border-color dt.$transition-fast;
-
-    &:hover {
-        border-color: rgba(var(--bs-primary-rgb), 0.5);
-    }
-
-    &:focus-visible {
-        outline: 0;
-        border-color: var(--bs-primary);
-        @include focus-ring;
-    }
-}
-
-.conflictList {
-    margin: 0 0 dt.$spacing-sm;
-    padding-left: dt.$spacing-lg;
-
-    li {
-        display: flex;
-        gap: dt.$spacing-md;
-        align-items: baseline;
-        justify-content: space-between;
-
-        & + li {
-            margin-top: dt.$spacing-xs;
-        }
-    }
-}
-
-.conflictSkip {
-    display: inline-flex;
-    align-items: center;
-    gap: dt.$spacing-xs;
-    flex-shrink: 0;
     padding: dt.$spacing-xs dt.$spacing-sm;
-    border-radius: dt.$radius-sm;
-    border: 1px solid currentcolor;
-    background: transparent;
-    color: inherit;
+}
+
+// ---- link card (no source yet) ---------------------------------------------
+
+.form {
+    display: flex;
+    gap: dt.$spacing-sm;
+    align-items: stretch;
+    margin-top: dt.$spacing-sm;
+}
+
+.urlGroup {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.8);
+    border-radius: dt.$radius-md;
+    background: var(--bs-body-bg);
+
+    &:focus-within {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+    }
+}
+
+.urlPrefix {
+    @include board.mono-time;
     font-size: dt.$font-size-xs;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color dt.$transition-fast;
+    color: var(--bs-tertiary-color);
+    padding: 0 0 0 dt.$spacing-md;
+    white-space: nowrap;
+}
 
-    &:hover:not(:disabled) {
-        background: color-mix(in srgb, currentcolor 12%, transparent);
-    }
+.urlInput {
+    flex: 1;
+    border: 0;
+    background: transparent;
+    color: var(--bs-body-color);
+    font-size: dt.$font-size-sm;
+    padding: dt.$spacing-sm dt.$spacing-md dt.$spacing-sm dt.$spacing-xs;
+    min-width: 0;
 
-    &:focus-visible {
-        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
-        outline-offset: 1px;
-    }
-
-    &:disabled {
-        opacity: 0.55;
-        cursor: default;
-    }
-
-    .spinner {
-        width: 0.75rem;
-        height: 0.75rem;
-        border-width: 2px;
+    &:focus {
+        outline: none;
     }
 }
