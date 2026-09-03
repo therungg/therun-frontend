@@ -449,7 +449,7 @@ const MATCH_OPTIONS: Array<{
     { value: 'all', label: 'All' },
     { value: 'src_verified', label: 'Verified' },
     { value: 'twitch', label: 'Twitch match' },
-    { value: 'src_name', label: 'Name match' },
+    { value: 'src_name', label: 'Same name' },
     { value: 'none', label: 'Unmatched' },
 ];
 
