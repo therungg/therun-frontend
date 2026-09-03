@@ -456,7 +456,7 @@ const MATCH_OPTIONS: Array<{
 const MATCH_LABEL: Record<SrcImportMatchKind, string> = {
     src_verified: 'verified SRC identity',
     twitch: 'same Twitch login',
-    src_name: 'matching display name',
+    src_name: 'same name as a therun account',
     none: 'no match',
 };
 
@@ -530,7 +530,7 @@ function PlayerRow({ p }: { p: SrcImportPlayer }) {
     const pill =
         p.matchKind === 'src_verified'
             ? styles.pillPrimary
-            : p.matchKind === 'twitch'
+            : p.matchKind === 'twitch' || p.matchKind === 'src_name'
               ? styles.pillWarn
               : '';
     return (

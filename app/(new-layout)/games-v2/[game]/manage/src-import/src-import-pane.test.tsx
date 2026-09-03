@@ -244,6 +244,32 @@ describe('SrcImportPane', () => {
         expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     });
 
+    it('labels the players and runs phases', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        vi.mocked(getSrcImportJobAction)
+            .mockResolvedValueOnce({
+                result: job({ status: 'running', phase: 'players' }),
+            })
+            .mockResolvedValue({
+                result: job({
+                    status: 'running',
+                    phase: 'runs',
+                    playersMatchedCount: 3,
+                }),
+            });
+        render(<SrcImportPane {...props} />);
+        expect(
+            await screen.findByText(/finding runners on the board/i),
+        ).toBeInTheDocument();
+
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(POLL_MS + 50);
+        });
+        expect(
+            await screen.findByText(/fetching runs of 3 runners/i),
+        ).toBeInTheDocument();
+    });
+
     it('shows the failure reason for a failed job and allows a retry', async () => {
         vi.mocked(getSrcImportJobAction).mockResolvedValue({
             result: job({ status: 'failed', error: 'SRC returned 500' }),

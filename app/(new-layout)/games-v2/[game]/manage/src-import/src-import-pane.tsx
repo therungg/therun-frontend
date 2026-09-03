@@ -34,13 +34,20 @@ const BADGE_CLASS: Record<SrcImportJob['status'], string> = {
     failed: styles.badgeFailed,
 };
 
-const PHASE_LABEL: Record<SrcImportJob['phase'], string> = {
-    meta: 'reading categories & variables',
-    players: 'reading players',
-    matching: 'matching players',
-    runs: 'fetching runs',
-    done: 'finished',
-};
+function phaseLabel(job: SrcImportJob): string {
+    switch (job.phase) {
+        case 'meta':
+            return 'reading categories & variables';
+        case 'players':
+            return 'finding runners on the board';
+        case 'matching':
+            return 'matching runners to therun accounts';
+        case 'runs':
+            return `fetching runs of ${job.playersMatchedCount.toLocaleString()} runners`;
+        default:
+            return 'finished';
+    }
+}
 
 /**
  * Import pane: paste a speedrun.com game URL, watch the background job, then
@@ -227,9 +234,9 @@ function JobCard({ job }: { job: SrcImportJob }) {
                 <>
                     <JobProgress job={job} />
                     <p className={styles.muted}>
-                        Phase: {PHASE_LABEL[job.phase]}. speedrun.com is rate
-                        limited, so large boards take a while. This page updates
-                        on its own.
+                        Phase: {phaseLabel(job)}. speedrun.com is rate limited,
+                        so large boards take a while. This page updates on its
+                        own.
                     </p>
                 </>
             )}
@@ -279,9 +286,10 @@ function JobCard({ job }: { job: SrcImportJob }) {
  * Progress + time remaining while the staging walk runs. The importer is
  * throttled to ~1 request/second and the backend pre-computes how many
  * requests the whole job needs (estimatedRequests), so requests-made over
- * that estimate is a faithful percentage AND the remainder is seconds left.
- * Capped at 99% — only "done" ends the bar. Renders nothing when the
- * estimate is missing (the pre-fetch is best-effort).
+ * that estimate is a faithful percentage AND the remainder is seconds left;
+ * the estimate is raised once matching knows how many runners will be
+ * fetched. Capped at 99% — only "done" ends the bar. Renders nothing when
+ * the estimate is missing (the pre-fetch is best-effort).
  */
 function JobProgress({ job }: { job: SrcImportJob }) {
     if (!job.estimatedRequests || job.estimatedRequests <= 0) return null;
