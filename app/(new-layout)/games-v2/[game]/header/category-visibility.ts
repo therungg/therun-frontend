@@ -161,20 +161,25 @@ export function computeCategoryVisibility(
             byGroup.set(c.groupId, arr);
         }
     }
-    const sections: CategorySection[] = nonLevelGroups.map((g) => {
-        const pills = sortCategoriesForDisplay(byGroup.get(g.id) ?? []);
-        return {
-            id: g.id,
-            name: g.name,
-            pills,
-            collapsedByDefault: g.hiddenByDefault ?? false,
-            displayMode: resolveDisplayMode(
-                g.displayMode,
-                gameDisplayMode,
-                pills.length,
-            ),
-        };
-    });
+    // Sort by sortOrder like the level groups above — pageData arrival order
+    // is not a guarantee, and the header must not shuffle between loads.
+    const sections: CategorySection[] = nonLevelGroups
+        .slice()
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .map((g) => {
+            const pills = sortCategoriesForDisplay(byGroup.get(g.id) ?? []);
+            return {
+                id: g.id,
+                name: g.name,
+                pills,
+                collapsedByDefault: g.hiddenByDefault ?? false,
+                displayMode: resolveDisplayMode(
+                    g.displayMode,
+                    gameDisplayMode,
+                    pills.length,
+                ),
+            };
+        });
     if (ungrouped.length > 0) {
         const pills = sortCategoriesForDisplay(ungrouped);
         sections.push({

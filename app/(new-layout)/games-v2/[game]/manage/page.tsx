@@ -107,6 +107,8 @@ export default async function GameAdminConsolePage({ params }: Props) {
         reportsRes,
         manualTimesRes,
         syncJob,
+        settingsJob,
+        runsJob,
     ] = await Promise.all([
         getGameIdentifiers(game.id).catch(() => ({
             slug: null,
@@ -124,6 +126,10 @@ export default async function GameAdminConsolePage({ params }: Props) {
         // The board's latest import job — feeds the overview's Import & sync
         // card. Best-effort: a failure just renders the "no import" state.
         getSrcImportJob(sessionId, game.id).catch(() => null),
+        // Per-kind latest jobs — the overview's import card shows one "last
+        // import" line for settings and one for runs.
+        getSrcImportJob(sessionId, game.id, 'settings').catch(() => null),
+        getSrcImportJob(sessionId, game.id, 'resync').catch(() => null),
     ]);
     const { rows: rawRows, groups, levelTemplates } = catalog;
     const degradedSources = degradedSourcesOf([
@@ -280,6 +286,8 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 gameDetails={gameDetails}
                 moderators={moderators}
                 syncJob={syncJob}
+                settingsJob={settingsJob}
+                runsJob={runsJob}
             />
         </Suspense>
     );

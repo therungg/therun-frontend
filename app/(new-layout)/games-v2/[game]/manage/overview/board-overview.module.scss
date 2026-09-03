@@ -448,58 +448,7 @@
     font-variant-numeric: tabular-nums;
 }
 
-// ---- Import & sync card ------------------------------------
-.syncStatusRow {
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-sm;
-    margin-bottom: dt.$spacing-sm;
-}
-
-.syncPill {
-    @include board.board-pill;
-    text-transform: capitalize;
-
-    &[data-status='done'] {
-        background: rgba(var(--bs-primary-rgb), 0.12);
-        color: var(--bs-primary);
-        border-color: transparent;
-    }
-    &[data-status='failed'] {
-        background: color-mix(in srgb, #{dt.$accent-red} 16%, transparent);
-        color: dt.$accent-red;
-        border-color: transparent;
-    }
-    &[data-status='running'],
-    &[data-status='queued'] {
-        background: color-mix(in srgb, #{dt.$accent-amber} 18%, transparent);
-        color: color-mix(in srgb, #{dt.$accent-amber} 80%, var(--bs-body-color));
-        border-color: transparent;
-    }
-}
-
-.syncAge {
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-    font-variant-numeric: tabular-nums;
-}
-
-.phaseBar {
-    display: flex;
-    gap: dt.$spacing-xs;
-    margin: dt.$spacing-sm 0;
-
-    span {
-        flex: 1;
-        height: 0.25rem;
-        border-radius: 2px;
-        background: rgba(var(--bs-secondary-rgb), 0.18);
-    }
-    span.on {
-        background: rgba(var(--bs-primary-rgb), 0.7);
-    }
-}
-
+// ---- Import card ------------------------------------
 .syncRow {
     display: flex;
     align-items: baseline;
@@ -517,20 +466,6 @@
     @include board.mono-time;
     font-size: dt.$font-size-sm;
     font-weight: 600;
-}
-
-.changeSummary {
-    margin: dt.$spacing-sm 0 0;
-    font-size: dt.$font-size-sm;
-    color: var(--bs-body-color);
-    font-variant-numeric: tabular-nums;
-}
-
-.changeLabel {
-    @include board.board-eyebrow;
-    display: block;
-    color: var(--bs-tertiary-color);
-    margin-bottom: 2px;
 }
 
 .syncEmpty {
@@ -551,19 +486,6 @@
     width: 100%;
 }
 
-.railHint {
-    margin: dt.$spacing-sm 0 0;
-    font-size: dt.$font-size-2xs;
-    color: var(--bs-tertiary-color);
-    text-align: center;
-}
-
-.railErr {
-    margin: dt.$spacing-sm 0 0;
-    font-size: dt.$font-size-2xs;
-    color: dt.$accent-red;
-    text-align: center;
-}
 
 // ---- Destinations row --------------------------------------
 // One quiet line of doors; the sidebar remains the real navigation.

@@ -76,6 +76,22 @@ describe('computeCategoryVisibility', () => {
         expect(result.sections[1].pills.map((c) => c.id)).toEqual([2]);
     });
 
+    it('orders group sections by sortOrder, not by arrival order', () => {
+        const groups: ResolvedGroup[] = [
+            grp({ id: 20, name: 'DLC', sortOrder: 1 }),
+            grp({ id: 10, name: 'Main Game', sortOrder: 0 }),
+        ];
+        const categories = [
+            cat({ id: 1, groupId: 10 }),
+            cat({ id: 2, groupId: 20 }),
+        ];
+        const result = computeCategoryVisibility(categories, groups);
+        expect(result.sections.map((s) => s.name)).toEqual([
+            'Main Game',
+            'DLC',
+        ]);
+    });
+
     it('appends a trailing ungrouped section after labeled groups', () => {
         const groups: ResolvedGroup[] = [
             grp({ id: 10, name: 'Main Game', sortOrder: 0 }),

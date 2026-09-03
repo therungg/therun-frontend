@@ -81,6 +81,10 @@ export interface ContentRouterProps {
     setupCompleteness?: BoardCompleteness | null;
     boardHealth?: BoardHealth | null;
     syncJob?: SrcImportJob | null;
+    /** Latest settings import, for the overview card's per-kind lines. */
+    settingsJob?: SrcImportJob | null;
+    /** Latest runs import, for the overview card's per-kind lines. */
+    runsJob?: SrcImportJob | null;
     /** Whether this viewer can reach the moderation queue — gates the
      * overview's Needs-attention KPI. */
     canModerate: boolean;
@@ -274,6 +278,7 @@ export function ContentRouter(props: ContentRouterProps) {
                     gameId={game.id}
                     gameSlug={game.name}
                     gameDisplay={game.display}
+                    isAdmin={props.canSiteBan}
                 />
             );
         case null:
@@ -288,9 +293,10 @@ export function ContentRouter(props: ContentRouterProps) {
                     setupCompleteness={props.setupCompleteness}
                     boardHealth={props.boardHealth}
                     syncJob={props.syncJob}
+                    settingsJob={props.settingsJob}
+                    runsJob={props.runsJob}
                     navGroups={props.navGroups}
                     canModerate={props.canModerate}
-                    isAdmin={props.canSiteBan}
                     onNavigate={onNavigate}
                     onEditCategory={props.onEditCategory}
                 />

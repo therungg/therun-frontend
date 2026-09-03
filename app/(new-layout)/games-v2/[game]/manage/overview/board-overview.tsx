@@ -12,20 +12,40 @@ import type { BoardCompleteness } from '~src/lib/setup/completeness';
 import type { BoardHealth } from '~src/lib/setup/health';
 import type { GameModerator } from '../../../../../../types/board-claims.types';
 import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
-import type {
-    SrcCommitChangeSummary,
-    SrcImportJob,
-} from '../../../../../../types/src-import.types';
+import type { SrcImportJob } from '../../../../../../types/src-import.types';
 import { BoardHealthCard } from '../console/board-health-card';
 import type { NavGroup, NavItemId } from '../console/nav-model';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import styles from './board-overview.module.scss';
 import { buildOverviewStats, timeAgo, topFeaturedRows } from './overview-model';
-import { ResyncButton } from './resync-button';
 
-// The staging phases the import worker walks (SrcImportPhase), in order —
-// drives the progress bar's filled-segment count while a job is running.
-const IMPORT_PHASES = ['meta', 'players', 'matching', 'runs', 'done'] as const;
+// Commit states that mean the job has come to rest — anything else on a
+// finished job is still mid-commit, i.e. the import is still working.
+const SETTLED_COMMIT_STATUS = [
+    'applied',
+    'imported',
+    'pruned',
+    'reconciled',
+    'failed',
+];
+
+/** Whether an import is in flight — queued, running, or still committing. */
+function isImportRunning(job: SrcImportJob): boolean {
+    if (job.status === 'queued' || job.status === 'running') return true;
+    return (
+        job.status === 'done' &&
+        job.commitStatus !== null &&
+        !SETTLED_COMMIT_STATUS.includes(job.commitStatus)
+    );
+}
+
+/** "Never" or a short date of the last finished job of one kind. */
+function lastLine(job: SrcImportJob | null): string {
+    if (!job) return 'Never';
+    const d = new Date(job.finishedAt ?? job.createdAt);
+    if (Number.isNaN(d.getTime())) return 'Never';
+    return d.toLocaleDateString(undefined, { dateStyle: 'medium' });
+}
 
 // Concepts the overview already surfaces directly; everything else the viewer
 // can reach becomes a quiet destination link so nothing is unreachable from
@@ -51,29 +71,6 @@ const SOURCE_LABEL = {
     self_claim: 'claim',
 } as const;
 
-/**
- * The delta a re-sync produced, shown under the import status so a moderator
- * sees what changed rather than a bare "done". Lists only non-zero counts; an
- * all-zero summary reads "No changes".
- */
-function ChangeSummaryLine({ summary }: { summary: SrcCommitChangeSummary }) {
-    const parts: string[] = [];
-    if (summary.added > 0) parts.push(`${summary.added} added`);
-    if (summary.updated > 0) parts.push(`${summary.updated} updated`);
-    if (summary.removed > 0) parts.push(`${summary.removed} removed`);
-    if (summary.archived > 0) {
-        parts.push(
-            `${summary.archived} categor${summary.archived === 1 ? 'y' : 'ies'} archived`,
-        );
-    }
-    return (
-        <p className={styles.changeSummary}>
-            <span className={styles.changeLabel}>Last sync changed</span>
-            {parts.length > 0 ? parts.join(' · ') : 'No changes'}
-        </p>
-    );
-}
-
 interface Props {
     game: Pick<ResolvedGame, 'id' | 'name' | 'display'>;
     rows: ManageCategoryRow[];
@@ -86,11 +83,13 @@ interface Props {
     setupCompleteness?: BoardCompleteness | null;
     boardHealth?: BoardHealth | null;
     syncJob?: SrcImportJob | null;
+    /** Latest settings import — the import card's "Settings" line. */
+    settingsJob?: SrcImportJob | null;
+    /** Latest runs import — the import card's "Runs" line. */
+    runsJob?: SrcImportJob | null;
     /** Permission-filtered console nav — decides which cards and tiles show. */
     navGroups: NavGroup[];
     canModerate: boolean;
-    /** Global admin — bypasses the re-sync once-per-day cooldown. */
-    isAdmin: boolean;
     onNavigate: (id: NavItemId) => void;
     onEditCategory: (categoryId: number) => void;
 }
@@ -112,9 +111,10 @@ export function BoardOverview({
     setupCompleteness,
     boardHealth,
     syncJob,
+    settingsJob,
+    runsJob,
     navGroups,
     canModerate,
-    isAdmin,
     onNavigate,
     onEditCategory,
 }: Props) {
@@ -136,6 +136,7 @@ export function BoardOverview({
 
     const navIds = new Set(navGroups.flatMap((g) => g.items.map((i) => i.id)));
     const showImport = navIds.has('import');
+    const importRunning = syncJob != null && isImportRunning(syncJob);
     const showModerators = navIds.has('moderators');
 
     const setupIncomplete =
@@ -491,141 +492,53 @@ export function BoardOverview({
                     {showImport && (
                         <section className={styles.railCard}>
                             <header className={styles.railHead}>
-                                <h3 className={styles.railEyebrow}>
-                                    Import &amp; sync
-                                </h3>
+                                <h3 className={styles.railEyebrow}>Import</h3>
                                 <button
                                     type="button"
                                     className={styles.railLink}
                                     onClick={() => onNavigate('import')}
                                 >
-                                    Details
+                                    Open
                                 </button>
                             </header>
                             {syncJob ? (
                                 <>
-                                    <div className={styles.syncStatusRow}>
-                                        <span
-                                            className={styles.syncPill}
-                                            data-status={syncJob.status}
-                                        >
-                                            {syncJob.status}
-                                        </span>
-                                        {lastSyncAgo && (
-                                            <span className={styles.syncAge}>
-                                                {lastSyncAgo}
-                                            </span>
-                                        )}
-                                    </div>
-                                    {(syncJob.status === 'queued' ||
-                                        syncJob.status === 'running') && (
-                                        <div
-                                            className={styles.phaseBar}
-                                            aria-hidden
-                                        >
-                                            {IMPORT_PHASES.map((phase, i) => {
-                                                const reached =
-                                                    IMPORT_PHASES.indexOf(
-                                                        syncJob.phase,
-                                                    );
-                                                return (
-                                                    <span
-                                                        key={phase}
-                                                        className={
-                                                            i <= reached
-                                                                ? styles.on
-                                                                : ''
-                                                        }
-                                                    />
-                                                );
-                                            })}
-                                        </div>
+                                    {importRunning && (
+                                        <p className={styles.syncEmpty}>
+                                            An import is running.
+                                        </p>
                                     )}
                                     <div className={styles.syncRow}>
                                         <span className={styles.syncK}>
-                                            Players matched
+                                            Settings
                                         </span>
                                         <span className={styles.syncV}>
-                                            {syncJob.playersMatchedCount.toLocaleString()}
-                                            {' / '}
-                                            {syncJob.playersCount.toLocaleString()}
+                                            {lastLine(settingsJob ?? null)}
                                         </span>
                                     </div>
-                                    {syncJob.runsImportedAt && (
-                                        <div className={styles.syncRow}>
-                                            <span className={styles.syncK}>
-                                                Runs matched
-                                            </span>
-                                            <span className={styles.syncV}>
-                                                {syncJob.importedRunsCount.toLocaleString()}
-                                                {syncJob.importSkippedCount > 0
-                                                    ? ` (${syncJob.importSkippedCount.toLocaleString()} skipped)`
-                                                    : ''}
-                                            </span>
-                                        </div>
-                                    )}
-                                    {syncJob.changeSummary && (
-                                        <ChangeSummaryLine
-                                            summary={syncJob.changeSummary}
-                                        />
-                                    )}
+                                    <div className={styles.syncRow}>
+                                        <span className={styles.syncK}>
+                                            Runs
+                                        </span>
+                                        <span className={styles.syncV}>
+                                            {lastLine(runsJob ?? null)}
+                                        </span>
+                                    </div>
                                 </>
                             ) : (
-                                <p className={styles.syncEmpty}>
-                                    No import has been run for this board yet.
-                                </p>
-                            )}
-                            <div className={styles.divider} />
-                            {syncJob ? (
                                 <>
-                                    <ResyncButton
-                                        gameId={game.id}
-                                        gameSlug={game.name}
-                                        kind="settings"
-                                        label="Import settings"
-                                        lastJobCreatedAt={
-                                            syncJob.kind === 'settings'
-                                                ? syncJob.createdAt
-                                                : null
-                                        }
-                                        running={
-                                            syncJob.status === 'queued' ||
-                                            syncJob.status === 'running'
-                                        }
-                                        bypassCooldown={isAdmin}
-                                        onStarted={() => onNavigate('import')}
-                                    />
-                                    <ResyncButton
-                                        gameId={game.id}
-                                        gameSlug={game.name}
-                                        kind="resync"
-                                        label="Import runs of therun runners"
-                                        lastJobCreatedAt={
-                                            syncJob.kind === 'resync'
-                                                ? syncJob.createdAt
-                                                : null
-                                        }
-                                        running={
-                                            syncJob.status === 'queued' ||
-                                            syncJob.status === 'running'
-                                        }
-                                        bypassCooldown={isAdmin}
-                                        onStarted={() => onNavigate('import')}
-                                    />
-                                    <p className={styles.railHint}>
-                                        Settings pulls categories, rules and
-                                        timing. Runs imports and verifies runs
-                                        of runners who have a therun account.
+                                    <p className={styles.syncEmpty}>
+                                        This board isn’t linked to its source
+                                        yet.
                                     </p>
+                                    <button
+                                        type="button"
+                                        className={styles.railBtn}
+                                        onClick={() => onNavigate('import')}
+                                    >
+                                        Link and import
+                                    </button>
                                 </>
-                            ) : (
-                                <button
-                                    type="button"
-                                    className={styles.railBtn}
-                                    onClick={() => onNavigate('import')}
-                                >
-                                    Run import
-                                </button>
                             )}
                         </section>
                     )}

@@ -72,8 +72,12 @@ export interface ConsoleShellProps {
     boardHealth?: BoardHealth | null;
     gameDetails?: GameDetailsData | null;
     moderators?: GameModerator[];
-    /** Latest import job for this board — the overview's Import & sync card. */
+    /** Latest import job of any kind — drives the sidebar's import status dot. */
     syncJob?: SrcImportJob | null;
+    /** Latest settings import, for the overview card's per-kind lines. */
+    settingsJob?: SrcImportJob | null;
+    /** Latest runs import, for the overview card's per-kind lines. */
+    runsJob?: SrcImportJob | null;
 }
 
 export function ConsoleShell({
@@ -96,6 +100,8 @@ export function ConsoleShell({
     gameDetails,
     moderators,
     syncJob,
+    settingsJob,
+    runsJob,
 }: ConsoleShellProps) {
     const groups = useMemo(() => buildNav(flags), [flags]);
     const footerItems = useMemo(() => buildFooterNav(flags), [flags]);
@@ -426,6 +432,8 @@ export function ConsoleShell({
                     setupCompleteness={setupCompleteness}
                     boardHealth={boardHealth}
                     syncJob={syncJob}
+                    settingsJob={settingsJob}
+                    runsJob={runsJob}
                     canModerate={flags.canModerate}
                     onGroupsChange={setManageGroups}
                     onRowChange={applyRowPatch}
