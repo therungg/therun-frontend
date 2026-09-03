@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import type { SrcResyncKind } from '~src/lib/src-import';
 import { resyncAction } from '../src-import/src-import-actions';
 import styles from './board-overview.module.scss';
 
@@ -18,7 +19,12 @@ function untilLabel(readyAt: number, now: number): string {
 interface Props {
     gameId: number;
     gameSlug: string;
-    /** createdAt of the board's latest import job — drives the 24h gate
+    /** Which resync kind this button triggers — 'settings' (config-only) or
+     * 'resync' (runs of therun runners). Each is gated independently. */
+    kind: SrcResyncKind;
+    /** Button label shown when idle. */
+    label: string;
+    /** createdAt of the board's latest job of this kind — drives the 24h gate
      * client-side (the backend enforces it authoritatively). Null = never
      * imported, so the button links to a first import instead. */
     lastJobCreatedAt: string | null;
@@ -33,13 +39,16 @@ interface Props {
 }
 
 /**
- * One-click "Re-sync from source". Re-pulls everything and auto-applies; gated
- * to once per day per game. The gate is shown from the last job's timestamp and
- * enforced by the backend — a rejection still surfaces as an inline error.
+ * One-click resync of a single kind (settings-only or runs). Auto-applies;
+ * gated to once per day per game per kind. The gate is shown from the last
+ * job's timestamp and enforced by the backend — a rejection still surfaces as
+ * an inline error.
  */
 export function ResyncButton({
     gameId,
     gameSlug,
+    kind,
+    label,
     lastJobCreatedAt,
     running,
     bypassCooldown = false,
@@ -59,7 +68,7 @@ export function ResyncButton({
     const onClick = () => {
         setError(null);
         startTransition(async () => {
-            const res = await resyncAction({ gameId, gameSlug });
+            const res = await resyncAction({ gameId, gameSlug, kind });
             if ('error' in res) {
                 setError(res.error);
                 return;
@@ -76,11 +85,7 @@ export function ResyncButton({
                 onClick={onClick}
                 disabled={disabled}
             >
-                {pending
-                    ? 'Starting…'
-                    : running
-                      ? 'Import running…'
-                      : 'Re-sync from source'}
+                {pending ? 'Starting…' : running ? 'Import running…' : label}
             </button>
             {throttled && !error && (
                 <p className={styles.railHint}>

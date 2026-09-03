@@ -15,6 +15,7 @@ import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
 import type {
     SrcCommitChangeSummary,
     SrcImportJob,
+    SrcImportJobKind,
 } from '../../../../../../types/src-import.types';
 import { BoardHealthCard } from '../console/board-health-card';
 import type { NavGroup, NavItemId } from '../console/nav-model';
@@ -23,9 +24,9 @@ import styles from './board-overview.module.scss';
 import { buildOverviewStats, timeAgo, topFeaturedRows } from './overview-model';
 import { ResyncButton } from './resync-button';
 
-// The four staging phases the import worker walks (SrcImportPhase), in order —
+// The staging phases the import worker walks (SrcImportPhase), in order —
 // drives the progress bar's filled-segment count while a job is running.
-const IMPORT_PHASES = ['meta', 'runs', 'matching', 'done'] as const;
+const IMPORT_PHASES = ['meta', 'players', 'matching', 'runs', 'done'] as const;
 
 // Concepts the overview already surfaces directly; everything else the viewer
 // can reach becomes a quiet destination link so nothing is unreachable from
@@ -86,6 +87,11 @@ interface Props {
     setupCompleteness?: BoardCompleteness | null;
     boardHealth?: BoardHealth | null;
     syncJob?: SrcImportJob | null;
+    /** Latest job per kind, when the caller has it — drives each resync
+     * button's own cooldown gate independently. Absent kinds (and an absent
+     * prop entirely) fall back to `syncJob.createdAt`; the backend enforces
+     * the real gate regardless. */
+    latestJobByKind?: Partial<Record<SrcImportJobKind, SrcImportJob>>;
     /** Permission-filtered console nav — decides which cards and tiles show. */
     navGroups: NavGroup[];
     canModerate: boolean;
@@ -112,6 +118,7 @@ export function BoardOverview({
     setupCompleteness,
     boardHealth,
     syncJob,
+    latestJobByKind,
     navGroups,
     canModerate,
     isAdmin,
@@ -577,17 +584,45 @@ export function BoardOverview({
                             )}
                             <div className={styles.divider} />
                             {syncJob ? (
-                                <ResyncButton
-                                    gameId={game.id}
-                                    gameSlug={game.name}
-                                    lastJobCreatedAt={syncJob.createdAt}
-                                    running={
-                                        syncJob.status === 'queued' ||
-                                        syncJob.status === 'running'
-                                    }
-                                    bypassCooldown={isAdmin}
-                                    onStarted={() => onNavigate('import')}
-                                />
+                                <>
+                                    <ResyncButton
+                                        gameId={game.id}
+                                        gameSlug={game.name}
+                                        kind="settings"
+                                        label="Import settings"
+                                        lastJobCreatedAt={
+                                            latestJobByKind?.settings
+                                                ?.createdAt ?? syncJob.createdAt
+                                        }
+                                        running={
+                                            syncJob.status === 'queued' ||
+                                            syncJob.status === 'running'
+                                        }
+                                        bypassCooldown={isAdmin}
+                                        onStarted={() => onNavigate('import')}
+                                    />
+                                    <ResyncButton
+                                        gameId={game.id}
+                                        gameSlug={game.name}
+                                        kind="resync"
+                                        label="Import runs of therun runners"
+                                        lastJobCreatedAt={
+                                            latestJobByKind?.resync
+                                                ?.createdAt ?? syncJob.createdAt
+                                        }
+                                        running={
+                                            syncJob.status === 'queued' ||
+                                            syncJob.status === 'running'
+                                        }
+                                        bypassCooldown={isAdmin}
+                                        onStarted={() => onNavigate('import')}
+                                    />
+                                    <p className={styles.railHint}>
+                                        Settings pulls categories, rules and
+                                        timing. Runs imports and verifies runs
+                                        of runners who have a therun account.
+                                    </p>
+                                </>
                             ) : (
                                 <button
                                     type="button"
