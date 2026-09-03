@@ -36,9 +36,11 @@
     color: var(--bs-secondary-color);
 }
 
-.pillLevelOnly {
-    background: rgba(var(--bs-primary-rgb), 0.12);
-    color: var(--bs-primary);
+.check {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-sm;
 }
 
 .levelRow {
@@ -67,34 +69,200 @@
     @include board.board-input-rules;
 }
 
-.checklist {
-    display: flex;
-    flex-wrap: wrap;
-    gap: dt.$spacing-md;
-    margin-top: dt.$spacing-sm;
+// ---- Level tag ------------------------------------------------
+// A quiet eyebrow badge on the level head so the row reads as a level,
+// not a category — otherwise the name input alone looks interchangeable
+// with a category row.
+.levelMark {
+    @include board.board-eyebrow;
+    flex: none;
+    color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.1);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.28);
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    border-radius: dt.$radius-sm;
 }
 
-.check {
+// ---- Boards on this level --------------------------------------
+// One unified list replaces the old template checklist + separate
+// overridden/level-only pill list, so a customized board appears once.
+.boards {
+    margin-top: dt.$spacing-sm;
+    padding-top: dt.$spacing-xs;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.3);
+}
+
+.boardsLabel {
+    @include board.board-eyebrow;
+    padding: dt.$spacing-sm dt.$spacing-xs dt.$spacing-xs;
+}
+
+.board {
     display: flex;
     align-items: center;
-    gap: dt.$spacing-xs;
-    font-size: dt.$font-size-sm;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-xs dt.$spacing-xs;
+    border-radius: dt.$radius-md;
+
+    & + & {
+        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.15);
+    }
+
+    &:hover {
+        background: rgba(var(--bs-body-color-rgb), 0.03);
+    }
 }
 
-.instanceList {
-    margin: dt.$spacing-sm 0 0;
-    padding: 0;
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-xs;
-    font-size: dt.$font-size-sm;
+.boardOff {
+    .boardName {
+        color: var(--bs-secondary-color);
+    }
 }
 
-.instanceRow {
+.boardToggle {
+    @include board.board-switch;
+}
+
+// Keeps level-only rows (no template, so no toggle) aligned with the
+// toggled rows above/below them.
+.boardToggleSpacer {
+    display: inline-block;
+    width: 32px;
+    flex: none;
+}
+
+.boardName {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: dt.$font-size-sm;
+
+    strong {
+        font-weight: 600;
+    }
+}
+
+.boardActions {
     display: flex;
     align-items: center;
     gap: dt.$spacing-sm;
+    flex: none;
+}
+
+.resyncAction {
+    background: transparent;
+    border: 1px solid
+        color-mix(in srgb, #{dt.$accent-amber} 45%, transparent);
+    color: dt.$accent-amber;
+    font-size: dt.$font-size-2xs;
+    font-weight: 500;
+    padding: 0.2rem dt.$spacing-sm;
+    border-radius: dt.$radius-sm;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color dt.$transition-fast;
+
+    &:hover {
+        background: color-mix(in srgb, #{dt.$accent-amber} 12%, transparent);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
+}
+
+.editAction {
+    @include board.board-quiet-link;
+    color: var(--bs-primary);
+    font-size: dt.$font-size-2xs;
+    font-weight: 500;
+    padding: 0.2rem dt.$spacing-xs;
+
+    &:hover {
+        color: var(--bs-primary);
+        text-decoration: underline;
+    }
+}
+
+// ---- State chips -------------------------------------------------
+// One state colour per board, so the list can be scanned for the odd
+// one out without reading every label.
+.chip {
+    @include board.board-pill;
+    flex: none;
+}
+
+.chipDefault {
+    background: rgba(var(--bs-secondary-rgb), 0.12);
+    color: var(--bs-secondary-color);
+}
+
+.chipCustom {
+    background: color-mix(in srgb, #{dt.$accent-amber} 16%, transparent);
+    color: dt.$accent-amber;
+    border-color: color-mix(in srgb, #{dt.$accent-amber} 45%, transparent);
+}
+
+.chipOnly {
+    background: rgba(var(--bs-primary-rgb), 0.12);
+    color: var(--bs-primary);
+    border-color: rgba(var(--bs-primary-rgb), 0.4);
+}
+
+.chipOff {
+    background: transparent;
+    color: var(--bs-tertiary-color);
+    border-color: rgba(var(--bs-border-color-rgb), 0.6);
+    border-style: dashed;
+}
+
+// ---- Pane legend --------------------------------------------------
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs dt.$spacing-lg;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    background: rgba(var(--bs-body-color-rgb), 0.03);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    border-radius: dt.$radius-md;
+    margin: dt.$spacing-sm 0 dt.$spacing-md;
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+}
+
+.legendDot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex: none;
+}
+
+.legendDotDefault {
+    background: var(--bs-tertiary-color);
+}
+
+.legendDotCustom {
+    background: dt.$accent-amber;
+}
+
+.legendDotOnly {
+    background: var(--bs-primary);
+}
+
+.legendDotOff {
+    background: transparent;
+    border: 1px solid var(--bs-tertiary-color);
 }
 
 .rulesToggle {

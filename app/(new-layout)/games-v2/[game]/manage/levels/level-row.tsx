@@ -23,10 +23,11 @@ interface Props {
 }
 
 /**
- * One level: its name, its rules, and the checklist of level categories that
- * do (or deliberately don't) get a board on it. The checklist is the whole
- * point of the row — a level's boards are materialised from the templates, so
- * the only per-level decision is which templates it opts out of.
+ * One level: its name, its rules, and the boards it carries. A level's
+ * boards are materialised from the shared level templates, so the row's
+ * whole job is showing — per board — whether it's on, whether it matches the
+ * shared template or was customized away from it, and letting the moderator
+ * flip it or restore it.
  */
 export function LevelRow({
     gameId,
@@ -54,8 +55,12 @@ export function LevelRow({
 
     const instanceFor = (templateId: number) =>
         level.instances.find((i) => i.templateId === templateId) ?? null;
+    // Boards with no template of their own — templates.map() below never
+    // reaches these, so they get their own pass.
     const levelOnly = level.instances.filter((i) => i.state === 'level-only');
-    const overridden = level.instances.filter((i) => i.state === 'overridden');
+    const boardCount = level.instances.filter(
+        (i) => i.state !== 'excluded',
+    ).length;
 
     const saveName = () => {
         const trimmed = name.trim();
@@ -109,6 +114,7 @@ export function LevelRow({
     return (
         <div className={styles.levelRow}>
             <div className={styles.levelHead}>
+                <span className={styles.levelMark}>Level</span>
                 <input
                     className={`form-control form-control-sm ${styles.nameInput}`}
                     aria-label={`Name of ${level.name}`}
@@ -118,11 +124,7 @@ export function LevelRow({
                     onBlur={saveName}
                 />
                 <span className={styles.count}>
-                    {
-                        level.instances.filter((i) => i.state !== 'excluded')
-                            .length
-                    }{' '}
-                    boards
+                    {boardCount} board{boardCount === 1 ? '' : 's'}
                 </span>
                 <button
                     type="button"
@@ -157,64 +159,95 @@ export function LevelRow({
                 </div>
             )}
 
-            <div className={styles.checklist}>
+            <div className={styles.boards}>
+                <div className={styles.boardsLabel}>Boards on this level</div>
+
                 {templates.map((t) => {
                     const instance = instanceFor(t.id);
                     const on =
                         instance != null && instance.state !== 'excluded';
-                    return (
-                        <label key={t.id} className={styles.check}>
-                            <input
-                                type="checkbox"
-                                className="form-check-input"
-                                aria-label={`${t.display} on ${level.name}`}
-                                checked={on}
-                                disabled={isPending}
-                                onChange={() => toggleTemplate(t.id, on)}
-                            />
-                            {t.display}
-                        </label>
-                    );
-                })}
-            </div>
+                    const customized = on && instance?.state === 'overridden';
 
-            {(overridden.length > 0 || levelOnly.length > 0) && (
-                <ul className={styles.instanceList}>
-                    {overridden.map((i) => (
-                        <li key={i.categoryId} className={styles.instanceRow}>
-                            <Link href={categoryHref(i.categoryId)}>
-                                {i.display}
-                            </Link>
-                            <span
-                                className={`${styles.pill} ${styles.pillOverridden}`}
-                            >
-                                edited here
-                            </span>
+                    return (
+                        <div
+                            key={t.id}
+                            className={`${styles.board} ${on ? '' : styles.boardOff}`}
+                        >
                             <button
                                 type="button"
-                                className={styles.pillAction}
-                                aria-label={`Resync ${i.display} on ${level.name}`}
+                                role="switch"
+                                aria-checked={on}
+                                aria-label={`${t.display} on ${level.name}`}
                                 disabled={isPending}
-                                onClick={() => resync(i.categoryId)}
-                            >
-                                Resync
-                            </button>
-                        </li>
-                    ))}
-                    {levelOnly.map((i) => (
-                        <li key={i.categoryId} className={styles.instanceRow}>
-                            <Link href={categoryHref(i.categoryId)}>
-                                {i.display}
-                            </Link>
-                            <span
-                                className={`${styles.pill} ${styles.pillLevelOnly}`}
-                            >
-                                only on this level
+                                className={styles.boardToggle}
+                                onClick={() => toggleTemplate(t.id, on)}
+                            />
+                            <span className={styles.boardName}>
+                                <strong>{t.display}</strong> board
                             </span>
-                        </li>
-                    ))}
-                </ul>
-            )}
+                            <span
+                                className={`${styles.chip} ${
+                                    !on
+                                        ? styles.chipOff
+                                        : customized
+                                          ? styles.chipCustom
+                                          : styles.chipDefault
+                                }`}
+                            >
+                                {!on
+                                    ? 'Off'
+                                    : customized
+                                      ? 'Customized'
+                                      : 'Default'}
+                            </span>
+                            <span className={styles.boardActions}>
+                                {customized && instance != null && (
+                                    <button
+                                        type="button"
+                                        className={styles.resyncAction}
+                                        aria-label={`Restore ${t.display} on ${level.name} to the template`}
+                                        disabled={isPending}
+                                        onClick={() =>
+                                            resync(instance.categoryId)
+                                        }
+                                    >
+                                        Restore to template
+                                    </button>
+                                )}
+                                {instance?.categoryId != null && (
+                                    <Link
+                                        className={styles.editAction}
+                                        href={categoryHref(instance.categoryId)}
+                                    >
+                                        Edit
+                                    </Link>
+                                )}
+                            </span>
+                        </div>
+                    );
+                })}
+
+                {levelOnly.map((i) => (
+                    <div key={i.categoryId} className={styles.board}>
+                        <span
+                            className={styles.boardToggleSpacer}
+                            aria-hidden="true"
+                        />
+                        <span className={styles.boardName}>{i.display}</span>
+                        <span className={`${styles.chip} ${styles.chipOnly}`}>
+                            Only on this level
+                        </span>
+                        <span className={styles.boardActions}>
+                            <Link
+                                className={styles.editAction}
+                                href={categoryHref(i.categoryId)}
+                            >
+                                Edit
+                            </Link>
+                        </span>
+                    </div>
+                ))}
+            </div>
 
             <InlineError>{error}</InlineError>
         </div>

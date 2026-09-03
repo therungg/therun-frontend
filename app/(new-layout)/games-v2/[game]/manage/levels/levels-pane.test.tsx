@@ -134,7 +134,9 @@ describe('LevelsPane', () => {
         expect(screen.getByDisplayValue('Marble Zone')).toBeTruthy();
         // The level-only board is called out as belonging to this level only.
         expect(screen.getByText('Bonus stage')).toBeTruthy();
-        expect(screen.getByText(/only on this level/i)).toBeTruthy();
+        expect(
+            screen.getAllByText(/only on this level/i).length,
+        ).toBeGreaterThan(0);
         expect(mocks.levelOverviewAction).toHaveBeenCalledWith(GAME);
     });
 
@@ -142,11 +144,9 @@ describe('LevelsPane', () => {
         mocks.levelOverviewAction.mockResolvedValue({ result: OVERVIEW });
         renderPane();
 
-        const box = (await screen.findByLabelText(
-            'Any% on Green Hill',
-        )) as HTMLInputElement;
-        expect(box.checked).toBe(true);
-        fireEvent.click(box);
+        const toggle = await screen.findByLabelText('Any% on Green Hill');
+        expect(toggle.getAttribute('aria-checked')).toBe('true');
+        fireEvent.click(toggle);
 
         await waitFor(() => {
             expect(mocks.levelOpAction).toHaveBeenCalledWith({
@@ -183,12 +183,12 @@ describe('LevelsPane', () => {
         });
     });
 
-    it('offers Resync on an overridden board', async () => {
+    it('offers to restore an overridden board to its template', async () => {
         mocks.levelOverviewAction.mockResolvedValue({ result: OVERVIEW });
         renderPane();
 
         const resync = await screen.findByRole('button', {
-            name: 'Resync 100% on Green Hill',
+            name: 'Restore 100% on Green Hill to the template',
         });
         fireEvent.click(resync);
 

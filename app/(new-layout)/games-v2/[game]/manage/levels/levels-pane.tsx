@@ -91,9 +91,39 @@ export function LevelsPane({ gameId, gameSlug, templates }: Props) {
                 )}
             </header>
             <p className={consoleStyles.paneLede}>
-                Name each level, set its rules, and choose which level
-                categories it carries.
+                Each row is a level. A level&apos;s boards come from the shared
+                level categories — toggle which boards each level carries, and
+                restore any that were customized.
             </p>
+
+            {levels.length > 0 && (
+                <div className={styles.legend}>
+                    <span className={styles.legendItem}>
+                        <span
+                            className={`${styles.legendDot} ${styles.legendDotDefault}`}
+                        />
+                        On · matches the shared template
+                    </span>
+                    <span className={styles.legendItem}>
+                        <span
+                            className={`${styles.legendDot} ${styles.legendDotCustom}`}
+                        />
+                        Customized · edited on this level only
+                    </span>
+                    <span className={styles.legendItem}>
+                        <span
+                            className={`${styles.legendDot} ${styles.legendDotOnly}`}
+                        />
+                        Only on this level · no template
+                    </span>
+                    <span className={styles.legendItem}>
+                        <span
+                            className={`${styles.legendDot} ${styles.legendDotOff}`}
+                        />
+                        Off · not carried by this level
+                    </span>
+                </div>
+            )}
 
             <InlineError>{error}</InlineError>
 
