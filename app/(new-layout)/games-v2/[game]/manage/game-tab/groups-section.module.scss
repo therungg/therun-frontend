@@ -249,26 +249,3 @@
 .emptyIcon {
     @include board.board-empty-icon;
 }
-
-// The Cache block rides along under Groups — a footnote, not a second pane,
-// so it gets the shared section-head anatomy rather than another h5.
-.subSection {
-    margin-top: dt.$spacing-2xl;
-}
-
-.subHead {
-    @include board.board-section-head;
-}
-
-.subTitle {
-    @include board.board-eyebrow;
-    font-weight: 700;
-    margin: 0;
-}
-
-.lede {
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-    max-width: 62ch;
-    margin: 0 0 dt.$spacing-lg;
-}

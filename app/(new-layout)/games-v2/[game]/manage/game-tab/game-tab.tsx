@@ -10,14 +10,8 @@ import type {
     ResolvedGame,
     ResolvedGroup,
 } from '../../../../../../types/leaderboards.types';
-import { InvalidateCacheButton } from '../../header/invalidate-cache-button';
 import { CategoryBandPreview } from '../../setup/steps/category-band-preview';
 import { GroupsSection } from './groups-section';
-import groupStyles from './groups-section.module.scss';
-
-// Cache has no sidebar item of its own — it rides along under Groups, so it
-// still needs a stable, direct-linkable anchor.
-const CACHE_ANCHOR = 'game-tab-cache';
 
 interface Props {
     game: ResolvedGame;
@@ -88,17 +82,6 @@ export function GameTab({
                 onGroupsChange={onGroupsChange}
                 onRowGroupChange={onRowGroupChange}
             />
-
-            <section id={CACHE_ANCHOR} className={groupStyles.subSection}>
-                <div className={groupStyles.subHead}>
-                    <h3 className={groupStyles.subTitle}>Cache</h3>
-                </div>
-                <p className={groupStyles.lede}>
-                    Clear the cached leaderboards for this game. The next read
-                    of each board re-warms from Postgres.
-                </p>
-                <InvalidateCacheButton gameSlug={game.name} gameId={game.id} />
-            </section>
         </section>
     );
 }
