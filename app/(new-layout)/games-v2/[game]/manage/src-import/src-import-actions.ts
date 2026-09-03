@@ -20,6 +20,7 @@ import {
     reconcileUndoSrcImport,
     type SrcImportPlayersQuery,
     type SrcImportRunsQuery,
+    type SrcResyncKind,
     setSrcImportFlags,
     setSrcImportOverrides,
     setSrcOnlyLeaderboard,
@@ -218,17 +219,20 @@ export async function importRunsAction(input: {
 }
 
 /**
- * One-click re-sync (auto-applied, throttled once/day/game server-side). No URL
- * — the backend derives it from the game's mappings. A 429 rejection surfaces
- * as an ActionResult error. See docs/plans/2026-08-29-src-resync-design.md.
+ * One-click re-sync (auto-applied, throttled once/day/game/kind server-side).
+ * No URL — the backend derives it from the game's mappings. `kind: 'settings'`
+ * = config-only sync; 'resync' (the default) = runs of therun users. A 429
+ * rejection surfaces as an ActionResult error.
+ * See docs/plans/2026-08-29-src-resync-design.md.
  */
 export async function resyncAction(input: {
     gameId: number;
     gameSlug: string;
+    kind?: SrcResyncKind;
 }): Promise<ActionResult<{ jobId: number }>> {
     return run(async () => {
         const sessionId = await requireBoardMod(input.gameSlug);
-        return startSrcResync(sessionId, input.gameId);
+        return startSrcResync(sessionId, input.gameId, input.kind);
     });
 }
 
