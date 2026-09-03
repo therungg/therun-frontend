@@ -30,7 +30,6 @@ import { BackLink } from '../../shared/back-link';
 import type { ReorderChange } from '../game-tab/reorder-changes';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import { HistoryDrawer } from '../moderation/configure/history-drawer';
-import { BoardHealthCard } from './board-health-card';
 import { ContentRouter } from './content-router';
 import type { GameDetailsData } from './game-details-pane';
 import { historyCloseQuery } from './history-close-query';
@@ -41,7 +40,6 @@ import {
     type NavFlags,
     type NavItemId,
     resolveInitialPane,
-    showSetupCard,
 } from './nav-model';
 
 export interface ConsoleShellProps {
@@ -390,14 +388,6 @@ export function ConsoleShell({
                 hrefFor={hrefFor}
                 footerItems={footerItems}
             >
-                {showSetupCard(groups, activeItem) &&
-                    !setupIncomplete &&
-                    boardHealth && (
-                        <BoardHealthCard
-                            gameSlug={game.name}
-                            health={boardHealth}
-                        />
-                    )}
                 <h2
                     ref={paneHeadingRef}
                     tabIndex={-1}

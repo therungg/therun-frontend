@@ -5,7 +5,6 @@ import {
     isLandingPaneId,
     type NavFlags,
     resolveInitialPane,
-    showSetupCard,
     sidebarActiveItem,
 } from './nav-model';
 
@@ -175,23 +174,6 @@ describe('buildFooterNav', () => {
             buildFooterNav({ ...NO_FLAGS, canModerate: true }).map((i) => i.id),
         ).toEqual(['history']);
         expect(buildFooterNav(NO_FLAGS)).toEqual([]);
-    });
-});
-
-describe('showSetupCard', () => {
-    it('shows on Structure and Game panes', () => {
-        const groups = buildNav({ ...NO_FLAGS, canConfigure: true });
-        expect(showSetupCard(groups, 'game-details')).toBe(true);
-        expect(showSetupCard(groups, 'groups')).toBe(true);
-        expect(showSetupCard(groups, 'variables')).toBe(true);
-    });
-
-    it('hides on triage panes and the front door', () => {
-        const groups = buildNav({ ...NO_FLAGS, canModerate: true });
-        expect(showSetupCard(groups, 'attention')).toBe(false);
-        expect(showSetupCard(groups, 'bans')).toBe(false);
-        expect(showSetupCard(groups, null)).toBe(false);
-        expect(showSetupCard([], null)).toBe(false);
     });
 });
 
