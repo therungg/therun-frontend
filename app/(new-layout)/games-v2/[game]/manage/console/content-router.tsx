@@ -23,7 +23,7 @@ import { VariablesGrid } from '../../setup/steps/variables/variables-grid';
 import { BoardCuration } from '../boards/board-curation';
 import { GameTab } from '../game-tab/game-tab';
 import type { ReorderChange } from '../game-tab/reorder-changes';
-import { LevelsSection } from '../levels/levels-section';
+import { LevelsPane } from '../levels/levels-pane';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import { ModApplicationsCard } from '../moderation/attention/mod-applications-card';
 import { NeedsAttention } from '../moderation/attention/needs-attention';
@@ -180,31 +180,11 @@ export function ContentRouter(props: ContentRouterProps) {
                 />
             );
         case 'levels':
-            // Keyed by pane id: ConsoleShell deliberately doesn't remount on
-            // a pane switch (see console-shell.tsx), so without a key change
-            // here React would reconcile 'levels' <-> 'level-categories' as
-            // an update on the same LevelsSection instance and initialTab
-            // would only take effect on the very first mount.
-            return (
-                <LevelsSection
-                    key="levels"
-                    gameId={game.id}
-                    gameSlug={game.name}
-                    templates={props.levelTemplates}
-                />
-            );
         case 'level-categories':
-            // Merged into the Levels pane; the old id survives as a deep link
-            // landing on the templates tab (see hiddenLandingIds in nav-model.ts).
-            return (
-                <LevelsSection
-                    key="level-categories"
-                    gameId={game.id}
-                    gameSlug={game.name}
-                    templates={props.levelTemplates}
-                    initialTab="templates"
-                />
-            );
+            // Level categories are the subcategories table inside the Levels
+            // pane; the old id survives as a deep link to the same pane (see
+            // hiddenLandingIds in nav-model.ts).
+            return <LevelsPane gameId={game.id} gameSlug={game.name} />;
         case 'variables':
             // The wizard's step 4 without the wizard: same grid, same staging
             // rules (subcategories preview, filters write through). It reads
