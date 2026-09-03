@@ -4,24 +4,46 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { SrcImportJob } from '../../../../../../types/src-import.types';
 import type { ActionResult } from './src-import-actions';
 
-const TERMINAL = new Set<SrcImportJob['status']>(['done', 'failed']);
-// Commit-phase statuses where a worker is running async and the UI must keep
-// polling until it settles. The staging `status` is already 'done' throughout
-// the commit phase, so without this the poll would stop and the console would
-// sit on "Applying configuration…" forever even after the worker finished.
+// Commit-phase statuses where a worker is running async.
 const COMMIT_IN_PROGRESS = new Set<NonNullable<SrcImportJob['commitStatus']>>([
     'applying',
     'importing',
+    'pruning',
     'reconciling',
     'undoing',
 ]);
 export const POLL_MS = 5000;
 
 /**
- * Loads the game's latest import job on mount and keeps polling while either
- * the staging job is queued/running OR a commit-phase worker is in progress.
- * `refresh()` forces an immediate read — the pane calls it right after a POST
- * so the new state shows up without waiting a tick.
+ * Whether a job has nothing more to do. A one-click kind auto-chains after
+ * staging (settings: apply-config; resync: apply-config → import-runs →
+ * prune), so "staging done, no commit yet" means the next step is queued —
+ * not finished. A manual job is finished once staging ends and no commit
+ * worker is running.
+ */
+export function isSettled(job: SrcImportJob): boolean {
+    if (job.status === 'failed' || job.commitStatus === 'failed') return true;
+    if (job.status !== 'done') return false;
+    switch (job.kind) {
+        case 'settings':
+            return job.commitStatus === 'applied';
+        case 'resync':
+            return (
+                job.commitStatus === 'pruned' ||
+                job.commitStatus === 'reconciled'
+            );
+        default:
+            return (
+                job.commitStatus === null ||
+                !COMMIT_IN_PROGRESS.has(job.commitStatus)
+            );
+    }
+}
+
+/**
+ * Loads a job on mount and keeps polling until it settles. `refresh()` forces
+ * an immediate read — the pane calls it right after a POST so the new state
+ * shows up without waiting a tick.
  */
 export function useSrcImportJob(
     fetcher: () => Promise<ActionResult<SrcImportJob | null>>,
@@ -58,17 +80,12 @@ export function useSrcImportJob(
         };
     }, [read]);
 
-    // Poll while staging is running, or while a commit-phase worker is. The
-    // key changes identity when the reason to poll changes, so the interval
-    // re-subscribes correctly and stops the moment the job settles.
+    // The key changes identity whenever the reason to poll changes, so the
+    // interval re-subscribes and stops the moment the job settles.
     const pollKey =
-        job === null
+        job === null || isSettled(job)
             ? null
-            : !TERMINAL.has(job.status)
-              ? `status:${job.status}`
-              : job.commitStatus && COMMIT_IN_PROGRESS.has(job.commitStatus)
-                ? `commit:${job.commitStatus}`
-                : null;
+            : `${job.id}:${job.status}:${job.commitStatus ?? ''}`;
 
     useEffect(() => {
         if (pollKey === null) return;

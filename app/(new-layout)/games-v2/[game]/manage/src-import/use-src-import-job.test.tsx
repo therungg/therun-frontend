@@ -1,95 +1,132 @@
 // @vitest-environment jsdom
-import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import type {
-    SrcImportCommitStatus,
-    SrcImportJob,
-} from '../../../../../../types/src-import.types';
-import type { ActionResult } from './src-import-actions';
-import { POLL_MS, useSrcImportJob } from './use-src-import-job';
+import { act, cleanup, renderHook } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { SrcImportJob } from '../../../../../../types/src-import.types';
+import { isSettled, POLL_MS, useSrcImportJob } from './use-src-import-job';
 
-const job = (over: Partial<SrcImportJob> = {}): SrcImportJob =>
-    ({
-        id: 1,
-        gameId: 12,
-        status: 'done',
-        commitStatus: null,
-        ...over,
-    }) as SrcImportJob;
-
-const ok = (j: SrcImportJob | null): ActionResult<SrcImportJob | null> => ({
-    result: j,
+const job = (over: Partial<SrcImportJob>): SrcImportJob => ({
+    id: 7,
+    gameId: 12,
+    srcGameId: 'x',
+    srcGameAbbreviation: 'sm64',
+    srcGameName: 'Super Mario 64',
+    srcUrl: 'https://www.speedrun.com/sm64',
+    requestedBy: 1,
+    status: 'running',
+    phase: 'meta',
+    checkpoint: null,
+    categoriesCount: 0,
+    levelsCount: 0,
+    variablesCount: 0,
+    runsCount: 0,
+    playersCount: 0,
+    playersMatchedCount: 0,
+    requestsMade: 0,
+    estimatedRequests: null,
+    error: null,
+    startedAt: null,
+    finishedAt: null,
+    createdAt: '2026-09-03T10:00:00Z',
+    commitStatus: null,
+    commitPhase: null,
+    importedRunsCount: 0,
+    importSkippedCount: 0,
+    configAppliedAt: null,
+    runsImportedAt: null,
+    srcOnlyLeaderboard: false,
+    kind: 'settings',
+    changeSummary: null,
+    commitFlags: null,
+    ...over,
 });
 
-afterEach(() => {
-    cleanup();
-    vi.useRealTimers();
-    vi.clearAllMocks();
+describe('isSettled', () => {
+    it('settings: done + null commit is still chaining', () => {
+        expect(isSettled(job({ status: 'done', commitStatus: null }))).toBe(
+            false,
+        );
+        expect(
+            isSettled(job({ status: 'done', commitStatus: 'applying' })),
+        ).toBe(false);
+        expect(
+            isSettled(job({ status: 'done', commitStatus: 'applied' })),
+        ).toBe(true);
+        expect(isSettled(job({ status: 'done', commitStatus: 'failed' }))).toBe(
+            true,
+        );
+        expect(isSettled(job({ status: 'failed' }))).toBe(true);
+    });
+
+    it('resync: settles on pruned, not on applied or imported', () => {
+        const r = (commitStatus: SrcImportJob['commitStatus']) =>
+            isSettled(job({ kind: 'resync', status: 'done', commitStatus }));
+        expect(r('applied')).toBe(false);
+        expect(r('imported')).toBe(false);
+        expect(r('pruned')).toBe(true);
+        expect(r('reconciled')).toBe(true);
+    });
+
+    it('manual: settles when staging is done and no worker is running', () => {
+        expect(
+            isSettled(
+                job({ kind: 'manual', status: 'done', commitStatus: null }),
+            ),
+        ).toBe(true);
+        expect(
+            isSettled(
+                job({
+                    kind: 'manual',
+                    status: 'done',
+                    commitStatus: 'applying',
+                }),
+            ),
+        ).toBe(false);
+    });
 });
 
-describe('useSrcImportJob commit-phase polling', () => {
-    it('keeps polling while commitStatus is applying, then stops once applied', async () => {
-        vi.useFakeTimers();
-        // Staging already done; commit worker running, then settles.
+describe('useSrcImportJob', () => {
+    beforeEach(() => vi.useFakeTimers());
+    afterEach(() => {
+        cleanup();
+        vi.useRealTimers();
+    });
+
+    it('polls until the job settles, then stops', async () => {
         const fetcher = vi
-            .fn<() => Promise<ActionResult<SrcImportJob | null>>>()
-            .mockResolvedValueOnce(ok(job({ commitStatus: 'applying' })))
-            .mockResolvedValueOnce(ok(job({ commitStatus: 'applying' })))
-            .mockResolvedValue(ok(job({ commitStatus: 'applied' })));
-
-        renderHook(() => useSrcImportJob(fetcher));
-
-        // Initial mount read.
-        await act(async () => {
-            await Promise.resolve();
-        });
+            .fn()
+            .mockResolvedValueOnce({ result: job({ status: 'running' }) })
+            .mockResolvedValueOnce({
+                result: job({ status: 'done', commitStatus: null }),
+            })
+            .mockResolvedValue({
+                result: job({ status: 'done', commitStatus: 'applied' }),
+            });
+        const { result } = renderHook(() => useSrcImportJob(fetcher));
+        await act(async () => {});
         expect(fetcher).toHaveBeenCalledTimes(1);
 
-        // Interval fires while applying -> second read (still applying).
         await act(async () => {
-            await vi.advanceTimersByTimeAsync(POLL_MS);
+            vi.advanceTimersByTime(POLL_MS);
         });
         expect(fetcher).toHaveBeenCalledTimes(2);
 
-        // Third read returns applied -> poll must stop after this tick.
         await act(async () => {
-            await vi.advanceTimersByTimeAsync(POLL_MS);
+            vi.advanceTimersByTime(POLL_MS);
         });
         expect(fetcher).toHaveBeenCalledTimes(3);
+        expect(result.current.job?.commitStatus).toBe('applied');
 
-        // No further reads once settled.
         await act(async () => {
-            await vi.advanceTimersByTimeAsync(POLL_MS * 3);
+            vi.advanceTimersByTime(POLL_MS * 3);
         });
         expect(fetcher).toHaveBeenCalledTimes(3);
     });
 
-    it('does not poll when the job is fully settled (done + applied)', async () => {
-        vi.useFakeTimers();
-        const fetcher = vi
-            .fn<() => Promise<ActionResult<SrcImportJob | null>>>()
-            .mockResolvedValue(
-                ok(job({ commitStatus: 'applied' as SrcImportCommitStatus })),
-            );
-
-        renderHook(() => useSrcImportJob(fetcher));
-        await act(async () => {
-            await Promise.resolve();
-        });
-        await act(async () => {
-            await vi.advanceTimersByTimeAsync(POLL_MS * 3);
-        });
-        expect(fetcher).toHaveBeenCalledTimes(1);
-    });
-
-    it('polls while staging is still running', async () => {
-        const fetcher = vi
-            .fn<() => Promise<ActionResult<SrcImportJob | null>>>()
-            .mockResolvedValue(ok(job({ status: 'running' })));
+    it('surfaces a fetch error and stops loading', async () => {
+        const fetcher = vi.fn().mockResolvedValue({ error: 'nope' });
         const { result } = renderHook(() => useSrcImportJob(fetcher));
-        await waitFor(() => expect(result.current.job?.status).toBe('running'));
-        // The running staging job schedules an interval (assert via key path:
-        // at least the mount read happened and job is non-terminal).
-        expect(fetcher).toHaveBeenCalled();
+        await act(async () => {});
+        expect(result.current.loading).toBe(false);
+        expect(result.current.error).toBe('nope');
     });
 });
