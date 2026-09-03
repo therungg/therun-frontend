@@ -7,47 +7,24 @@ import {
     canModerateGame,
 } from '~src/lib/moderation/can-moderate';
 import {
-    applySrcImportConfig,
     getSrcImportJob,
-    getSrcImportPlan,
-    importSrcRuns,
-    listSrcImportCategories,
-    listSrcImportLevels,
-    listSrcImportPlayers,
-    listSrcImportRuns,
-    listSrcImportVariables,
-    reconcileSrcImport,
-    reconcileUndoSrcImport,
-    type SrcImportPlayersQuery,
-    type SrcImportRunsQuery,
     type SrcResyncKind,
-    setSrcImportFlags,
-    setSrcImportOverrides,
     startSrcImport,
     startSrcResync,
-    undoSrcImportConfig,
-    undoSrcImportRuns,
 } from '~src/lib/src-import';
 import type {
-    Paged,
-    SrcCommitOverrides,
-    SrcCommitPlan,
-    SrcImportCategory,
     SrcImportCommitFlags,
     SrcImportJob,
-    SrcImportLevel,
-    SrcImportPlayer,
-    SrcImportRun,
-    SrcImportVariable,
+    SrcImportJobKind,
 } from '../../../../../../types/src-import.types';
 
 export type ActionResult<T> = { result: T } | { error: string };
 
 /**
- * The backend owns the real four-step auth chain (therun mod → SRC identity →
- * SRC mod). This only keeps non-moderators from reaching the API at all,
- * mirroring the console door: `import-board` is held by the same people who
- * can moderate or configure the board.
+ * The backend owns the real auth chain (therun mod → source identity → source
+ * mod). This only keeps non-moderators from reaching the API at all,
+ * mirroring the console door: the import pane is held by the same people
+ * who can moderate or configure the board.
  */
 async function requireBoardMod(gameSlug: string): Promise<string> {
     const session = await getSession();
@@ -70,219 +47,47 @@ async function run<T>(fn: () => Promise<T>): Promise<ActionResult<T>> {
     }
 }
 
+export async function getSrcImportJobAction(input: {
+    gameId: number;
+    gameSlug: string;
+    kind?: SrcImportJobKind;
+}): Promise<ActionResult<SrcImportJob | null>> {
+    return run(async () => {
+        const sessionId = await requireBoardMod(input.gameSlug);
+        return getSrcImportJob(sessionId, input.gameId, input.kind);
+    });
+}
+
+export async function resyncAction(input: {
+    gameId: number;
+    gameSlug: string;
+    kind: SrcResyncKind;
+    commitFlags?: SrcImportCommitFlags;
+}): Promise<ActionResult<{ jobId: number }>> {
+    return run(async () => {
+        const sessionId = await requireBoardMod(input.gameSlug);
+        return startSrcResync(
+            sessionId,
+            input.gameId,
+            input.kind,
+            input.commitFlags,
+        );
+    });
+}
+
 export async function startSrcImportAction(input: {
     gameId: number;
     gameSlug: string;
     url: string;
-}): Promise<ActionResult<{ jobId: number }>> {
-    return run(async () => {
-        const sessionId = await requireBoardMod(input.gameSlug);
-        return startSrcImport(sessionId, input.gameId, input.url.trim());
-    });
-}
-
-export async function getSrcImportJobAction(input: {
-    gameId: number;
-    gameSlug: string;
-}): Promise<ActionResult<SrcImportJob | null>> {
-    return run(async () => {
-        const sessionId = await requireBoardMod(input.gameSlug);
-        return getSrcImportJob(sessionId, input.gameId);
-    });
-}
-
-export async function listSrcImportCategoriesAction(input: {
-    gameId: number;
-    gameSlug: string;
-    jobId: number;
-}): Promise<ActionResult<SrcImportCategory[]>> {
-    return run(async () => {
-        const sessionId = await requireBoardMod(input.gameSlug);
-        return listSrcImportCategories(sessionId, input.gameId, input.jobId);
-    });
-}
-
-export async function listSrcImportLevelsAction(input: {
-    gameId: number;
-    gameSlug: string;
-    jobId: number;
-}): Promise<ActionResult<SrcImportLevel[]>> {
-    return run(async () => {
-        const sessionId = await requireBoardMod(input.gameSlug);
-        return listSrcImportLevels(sessionId, input.gameId, input.jobId);
-    });
-}
-
-export async function listSrcImportVariablesAction(input: {
-    gameId: number;
-    gameSlug: string;
-    jobId: number;
-}): Promise<ActionResult<SrcImportVariable[]>> {
-    return run(async () => {
-        const sessionId = await requireBoardMod(input.gameSlug);
-        return listSrcImportVariables(sessionId, input.gameId, input.jobId);
-    });
-}
-
-export async function listSrcImportPlayersAction(input: {
-    gameId: number;
-    gameSlug: string;
-    jobId: number;
-    query?: SrcImportPlayersQuery;
-}): Promise<ActionResult<Paged<SrcImportPlayer>>> {
-    return run(async () => {
-        const sessionId = await requireBoardMod(input.gameSlug);
-        return listSrcImportPlayers(
-            sessionId,
-            input.gameId,
-            input.jobId,
-            input.query,
-        );
-    });
-}
-
-export async function listSrcImportRunsAction(input: {
-    gameId: number;
-    gameSlug: string;
-    jobId: number;
-    query?: SrcImportRunsQuery;
-}): Promise<ActionResult<Paged<SrcImportRun>>> {
-    return run(async () => {
-        const sessionId = await requireBoardMod(input.gameSlug);
-        return listSrcImportRuns(
-            sessionId,
-            input.gameId,
-            input.jobId,
-            input.query,
-        );
-    });
-}
-
-export async function getSrcImportPlanAction(input: {
-    gameId: number;
-    gameSlug: string;
-    jobId: number;
-}): Promise<ActionResult<SrcCommitPlan>> {
-    return run(async () => {
-        const sessionId = await requireBoardMod(input.gameSlug);
-        return getSrcImportPlan(sessionId, input.gameId, input.jobId);
-    });
-}
-
-export async function setSrcImportOverridesAction(input: {
-    gameId: number;
-    gameSlug: string;
-    jobId: number;
-    overrides: SrcCommitOverrides;
-}): Promise<ActionResult<SrcCommitPlan>> {
-    return run(async () => {
-        const sessionId = await requireBoardMod(input.gameSlug);
-        return setSrcImportOverrides(
-            sessionId,
-            input.gameId,
-            input.jobId,
-            input.overrides,
-        );
-    });
-}
-
-export async function applyConfigAction(input: {
-    gameId: number;
-    gameSlug: string;
-    jobId: number;
-}): Promise<ActionResult<{ jobId: number }>> {
-    return run(async () => {
-        const sessionId = await requireBoardMod(input.gameSlug);
-        return applySrcImportConfig(sessionId, input.gameId, input.jobId);
-    });
-}
-
-export async function importRunsAction(input: {
-    gameId: number;
-    gameSlug: string;
-    jobId: number;
-}): Promise<ActionResult<{ jobId: number }>> {
-    return run(async () => {
-        const sessionId = await requireBoardMod(input.gameSlug);
-        return importSrcRuns(sessionId, input.gameId, input.jobId);
-    });
-}
-
-/**
- * One-click re-sync (auto-applied, throttled once/day/game/kind server-side).
- * No URL — the backend derives it from the game's mappings. `kind: 'settings'`
- * = config-only sync; 'resync' (the default) = runs of therun users. A 429
- * rejection surfaces as an ActionResult error.
- * See docs/plans/2026-08-29-src-resync-design.md.
- */
-export async function resyncAction(input: {
-    gameId: number;
-    gameSlug: string;
     kind?: SrcResyncKind;
 }): Promise<ActionResult<{ jobId: number }>> {
     return run(async () => {
         const sessionId = await requireBoardMod(input.gameSlug);
-        return startSrcResync(sessionId, input.gameId, input.kind);
-    });
-}
-
-export async function undoRunsAction(input: {
-    gameId: number;
-    gameSlug: string;
-    jobId: number;
-}): Promise<ActionResult<{ jobId: number }>> {
-    return run(async () => {
-        const sessionId = await requireBoardMod(input.gameSlug);
-        return undoSrcImportRuns(sessionId, input.gameId, input.jobId);
-    });
-}
-
-export async function undoConfigAction(input: {
-    gameId: number;
-    gameSlug: string;
-    jobId: number;
-}): Promise<ActionResult<{ jobId: number }>> {
-    return run(async () => {
-        const sessionId = await requireBoardMod(input.gameSlug);
-        return undoSrcImportConfig(sessionId, input.gameId, input.jobId);
-    });
-}
-
-export async function reconcileAction(input: {
-    gameId: number;
-    gameSlug: string;
-    jobId: number;
-}): Promise<ActionResult<{ jobId: number }>> {
-    return run(async () => {
-        const sessionId = await requireBoardMod(input.gameSlug);
-        return reconcileSrcImport(sessionId, input.gameId, input.jobId);
-    });
-}
-
-export async function reconcileUndoAction(input: {
-    gameId: number;
-    gameSlug: string;
-    jobId: number;
-}): Promise<ActionResult<{ jobId: number }>> {
-    return run(async () => {
-        const sessionId = await requireBoardMod(input.gameSlug);
-        return reconcileUndoSrcImport(sessionId, input.gameId, input.jobId);
-    });
-}
-
-export async function setFlagsAction(input: {
-    gameId: number;
-    gameSlug: string;
-    jobId: number;
-    flags: SrcImportCommitFlags;
-}): Promise<ActionResult<SrcImportCommitFlags>> {
-    return run(async () => {
-        const sessionId = await requireBoardMod(input.gameSlug);
-        return setSrcImportFlags(
+        return startSrcImport(
             sessionId,
             input.gameId,
-            input.jobId,
-            input.flags,
+            input.url.trim(),
+            input.kind,
         );
     });
 }

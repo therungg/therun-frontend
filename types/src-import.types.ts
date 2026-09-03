@@ -83,11 +83,43 @@ export interface SrcImportCommitFlags {
     setMinTimeFloor?: boolean;
 }
 
+/** A game-level field the settings import changed, with the value it replaced. */
+export type SrcConfigFieldValue =
+    | string
+    | number
+    | boolean
+    | string[]
+    | { label: string; url: string }[]
+    | null;
+export interface SrcConfigFieldChange {
+    /** emulatorPolicy | primaryTiming | gameTimeLabel | hideRealTime | hideGameTime | showMilliseconds | platforms | releaseYear | discordUrl | links */
+    field: string;
+    from: SrcConfigFieldValue;
+    to: SrcConfigFieldValue;
+}
+
+/** What apply-config changed, written once per successful settings apply. */
+export interface SrcConfigChangeSummary {
+    categoriesCreated: number;
+    categoriesUpdated: number;
+    categoriesUnfeatured: number;
+    levelsCreated: number;
+    levelsUpdated: number;
+    variablesCreated: number;
+    variablesUpdated: number;
+    themeApplied: boolean;
+    gameFields: SrcConfigFieldChange[];
+    moderatorsAssigned: number;
+    minTimeFloors: number;
+}
+
 export interface SrcCommitChangeSummary {
     added: number;
     updated: number;
     removed: number;
     archived: number;
+    /** Configuration delta; absent on jobs that ran before it existed. */
+    config?: SrcConfigChangeSummary | null;
 }
 
 export type SrcImportCommitStatus =
