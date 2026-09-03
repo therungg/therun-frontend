@@ -42,6 +42,11 @@ export function GameTab({
     onGroupsChange,
     onRowGroupChange,
 }: Props) {
+    // Levels are managed in the Levels menu, so keep level groups out of
+    // this pane. `groups` itself stays unfiltered — other consumers (e.g.
+    // CategoriesPane/splitLevelBoards) still need the level groups.
+    const normalGroups = groups.filter((group) => group.kind !== 'level');
+
     return (
         <section className={styles.surface}>
             <header className={styles.paneHeader}>
@@ -64,7 +69,7 @@ export function GameTab({
             />
             <GroupsSection
                 game={game}
-                groups={groups}
+                groups={normalGroups}
                 rows={rows}
                 snapshotGroups={boardGroups}
                 onGroupsChange={onGroupsChange}
