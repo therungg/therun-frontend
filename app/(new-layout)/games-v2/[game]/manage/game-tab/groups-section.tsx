@@ -258,12 +258,19 @@ export function GroupsSection({
     };
 
     const moveBy = (id: number, delta: -1 | 1) => {
-        const idx = groups.findIndex((g) => g.id === id);
-        const target = idx + delta;
-        if (idx < 0 || target < 0 || target >= groups.length) return;
+        // Move relative to the VISIBLE neighbour (level groups are hidden from
+        // this list), then splice within the full `groups` array so hidden
+        // level groups keep their positions.
+        const visIdx = listGroups.findIndex((g) => g.id === id);
+        const neighbour = listGroups[visIdx + delta];
+        if (visIdx < 0 || !neighbour) return;
+        const from = groups.findIndex((g) => g.id === id);
+        if (from < 0) return;
         const next = groups.slice();
-        const [g] = next.splice(idx, 1);
-        next.splice(target, 0, g);
+        const [g] = next.splice(from, 1);
+        const insertAt = next.findIndex((x) => x.id === neighbour.id);
+        if (insertAt < 0) return;
+        next.splice(delta === 1 ? insertAt + 1 : insertAt, 0, g);
         commitReorder(next);
     };
 
