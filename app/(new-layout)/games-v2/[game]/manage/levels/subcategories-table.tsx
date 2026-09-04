@@ -56,6 +56,8 @@ export function SubcategoriesTable({
                 return;
             }
             await onChanged();
+        } catch {
+            setError('Something went wrong. Try again.');
         } finally {
             setAddPending(false);
         }
@@ -81,6 +83,8 @@ export function SubcategoriesTable({
                 return;
             }
             await onChanged();
+        } catch {
+            setError('Something went wrong. Try again.');
         } finally {
             setPendingIds((prev) => {
                 const next = new Set(prev);

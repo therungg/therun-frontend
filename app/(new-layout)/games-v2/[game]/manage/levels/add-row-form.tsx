@@ -5,7 +5,11 @@ import { Plus } from 'react-bootstrap-icons';
 import styles from './levels.module.scss';
 
 export interface AddRowFormProps {
-    /** Both the visible button label and the accessible name of the whole form. */
+    /**
+     * The submit button's visible label. The text input takes "<label> name"
+     * as its accessible name so a screen reader doesn't announce two
+     * identically-named controls in the same form.
+     */
     label: string;
     placeholder: string;
     pending: boolean;
@@ -39,7 +43,7 @@ export function AddRowForm({
                 type="text"
                 className={styles.addInput}
                 placeholder={placeholder}
-                aria-label={label}
+                aria-label={`${label} name`}
                 value={name}
                 disabled={pending}
                 onChange={(e) => setName(e.target.value)}

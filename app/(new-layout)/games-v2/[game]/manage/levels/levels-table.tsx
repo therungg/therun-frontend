@@ -12,12 +12,20 @@ import styles from './levels.module.scss';
 type Level = LevelOverview['levels'][number];
 type Template = LevelOverview['templates'][number];
 
-/** How many of `templateCount` boards this level actually has. */
+/**
+ * How many of `templates` this level actually has a board for. Only
+ * template-backed instances count: a level-only board carries no
+ * `templateId` and matches no column, so counting raw instances would
+ * report "3 of 2".
+ */
 export function levelBoardSummary(
     level: Level,
-    templateCount: number,
+    templates: Template[],
 ): { have: number; total: number } {
-    return { have: level.instances.length, total: templateCount };
+    const have = level.instances.filter((i) =>
+        templates.some((t) => t.id === i.templateId),
+    ).length;
+    return { have, total: templates.length };
 }
 
 /** True when some level is missing a board for some template. */
@@ -55,14 +63,44 @@ export function LevelsTable({
     );
     const [error, setError] = useState<string | null>(null);
 
-    const withPending = async (id: number, fn: () => Promise<unknown>) => {
+    const closeRules = (levelId: number) => {
+        setOpenRules((prev) => {
+            const next = new Set(prev);
+            next.delete(levelId);
+            return next;
+        });
+        // Drop the draft too, or reopening the editor and hitting Save would
+        // re-submit the text that was just cancelled.
+        setDraftRules((prev) => {
+            const next = new Map(prev);
+            next.delete(levelId);
+            return next;
+        });
+    };
+
+    /**
+     * Runs one row's action. These actions report auth and API failures by
+     * *returning* `{ error }` rather than throwing, so the result has to be
+     * inspected — only a genuine success reloads the overview. Resolves true
+     * when the write went through.
+     */
+    const withPending = async (
+        id: number,
+        fn: () => Promise<{ result: unknown } | { error: string }>,
+    ): Promise<boolean> => {
         setPendingIds((prev) => new Set(prev).add(id));
         setError(null);
         try {
-            await fn();
+            const res = await fn();
+            if ('error' in res) {
+                setError(res.error);
+                return false;
+            }
             await onChanged();
+            return true;
         } catch {
             setError('Something went wrong. Try again.');
+            return false;
         } finally {
             setPendingIds((prev) => {
                 const next = new Set(prev);
@@ -82,14 +120,22 @@ export function LevelsTable({
                 return;
             }
             await onChanged();
+        } catch {
+            setError('Something went wrong. Try again.');
         } finally {
             setAddPending(false);
         }
     };
 
-    const renameLevel = (level: Level, name: string) => {
-        const trimmed = name.trim();
-        if (!trimmed || trimmed === level.name) return;
+    const renameLevel = (level: Level, input: HTMLInputElement) => {
+        const trimmed = input.value.trim();
+        if (!trimmed) {
+            // Nothing to save, and an empty box misrepresents the level —
+            // put the current name back.
+            input.value = level.name;
+            return;
+        }
+        if (trimmed === level.name) return;
         void withPending(level.id, () =>
             updateLevelAction({
                 gameSlug,
@@ -100,17 +146,13 @@ export function LevelsTable({
         );
     };
 
-    const saveRules = (level: Level) => {
+    const saveRules = async (level: Level) => {
         const rules = draftRules.get(level.id) ?? level.rules ?? '';
-        void withPending(level.id, () =>
+        const ok = await withPending(level.id, () =>
             updateLevelAction({ gameSlug, gameId, groupId: level.id, rules }),
-        ).then(() => {
-            setOpenRules((prev) => {
-                const next = new Set(prev);
-                next.delete(level.id);
-                return next;
-            });
-        });
+        );
+        // Keep the editor open on failure so the draft isn't thrown away.
+        if (ok) closeRules(level.id);
     };
 
     const removeLevel = (level: Level) => {
@@ -128,12 +170,18 @@ export function LevelsTable({
         setMaterialisePending(true);
         setError(null);
         try {
-            await levelOpAction({
+            const res = await levelOpAction({
                 gameSlug,
                 gameId,
                 op: { op: 'level-materialise' },
             });
+            if ('error' in res) {
+                setError(res.error);
+                return;
+            }
             await onChanged();
+        } catch {
+            setError('Something went wrong. Try again.');
         } finally {
             setMaterialisePending(false);
         }
@@ -192,7 +240,7 @@ export function LevelsTable({
                                 const pending = pendingIds.has(level.id);
                                 const summary = levelBoardSummary(
                                     level,
-                                    templates.length,
+                                    templates,
                                 );
                                 const rulesOpen = openRules.has(level.id);
                                 return (
@@ -205,10 +253,7 @@ export function LevelsTable({
                                                 defaultValue={level.name}
                                                 disabled={pending}
                                                 onBlur={(e) =>
-                                                    renameLevel(
-                                                        level,
-                                                        e.target.value,
-                                                    )
+                                                    renameLevel(level, e.target)
                                                 }
                                             />
                                         </td>
@@ -252,7 +297,9 @@ export function LevelsTable({
                                                             }
                                                             disabled={pending}
                                                             onClick={() =>
-                                                                saveRules(level)
+                                                                void saveRules(
+                                                                    level,
+                                                                )
                                                             }
                                                         >
                                                             Save rules
@@ -263,17 +310,8 @@ export function LevelsTable({
                                                                 styles.quietAction
                                                             }
                                                             onClick={() =>
-                                                                setOpenRules(
-                                                                    (prev) => {
-                                                                        const next =
-                                                                            new Set(
-                                                                                prev,
-                                                                            );
-                                                                        next.delete(
-                                                                            level.id,
-                                                                        );
-                                                                        return next;
-                                                                    },
+                                                                closeRules(
+                                                                    level.id,
                                                                 )
                                                             }
                                                         >

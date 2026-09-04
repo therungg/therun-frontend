@@ -32,6 +32,7 @@ export function ExclusionMatrix({
     onChanged,
 }: ExclusionMatrixProps) {
     const [pendingCells, setPendingCells] = useState<Set<string>>(new Set());
+    const [error, setError] = useState<string | null>(null);
 
     if (levels.length === 0 || templates.length === 0) return null;
 
@@ -42,8 +43,13 @@ export function ExclusionMatrix({
     ) => {
         const cell = `${level.id}:${templateId}`;
         setPendingCells((prev) => new Set(prev).add(cell));
+        setError(null);
         try {
-            await levelOpAction({
+            // The action reports auth and API failures by *returning*
+            // `{ error }` rather than throwing, so the result has to be
+            // inspected — otherwise a rejected toggle just snaps back with
+            // no explanation.
+            const res = await levelOpAction({
                 gameSlug,
                 gameId,
                 op: {
@@ -53,7 +59,13 @@ export function ExclusionMatrix({
                     excluded: !checked,
                 },
             });
+            if ('error' in res) {
+                setError(res.error);
+                return;
+            }
             await onChanged();
+        } catch {
+            setError('Something went wrong. Try again.');
         } finally {
             setPendingCells((prev) => {
                 const next = new Set(prev);
@@ -64,46 +76,59 @@ export function ExclusionMatrix({
     };
 
     return (
-        <div className={styles.tableScroll}>
-            <table className={styles.table}>
-                <thead>
-                    <tr>
-                        <th>Level</th>
-                        {templates.map((t) => (
-                            <th key={t.id} className={styles.colCenter}>
-                                {t.display}
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {levels.map((level) => (
-                        <tr key={level.id}>
-                            <td>{level.name}</td>
-                            {templates.map((t) => {
-                                const cell = `${level.id}:${t.id}`;
-                                return (
-                                    <td key={t.id} className={styles.colCenter}>
-                                        <input
-                                            type="checkbox"
-                                            aria-label={`${t.display} for ${level.name}`}
-                                            checked={isIncluded(level, t.id)}
-                                            disabled={pendingCells.has(cell)}
-                                            onChange={(e) =>
-                                                void toggle(
+        <div>
+            {error && <p className={styles.error}>{error}</p>}
+            <div className={styles.tableScroll}>
+                <table className={styles.table}>
+                    <thead>
+                        <tr>
+                            <th>Level</th>
+                            {templates.map((t) => (
+                                <th key={t.id} className={styles.colCenter}>
+                                    {t.display}
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {levels.map((level) => (
+                            <tr key={level.id}>
+                                <th scope="row" className={styles.rowHeader}>
+                                    {level.name}
+                                </th>
+                                {templates.map((t) => {
+                                    const cell = `${level.id}:${t.id}`;
+                                    return (
+                                        <td
+                                            key={t.id}
+                                            className={styles.colCenter}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                aria-label={`${t.display} for ${level.name}`}
+                                                checked={isIncluded(
                                                     level,
                                                     t.id,
-                                                    e.target.checked,
-                                                )
-                                            }
-                                        />
-                                    </td>
-                                );
-                            })}
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+                                                )}
+                                                disabled={pendingCells.has(
+                                                    cell,
+                                                )}
+                                                onChange={(e) =>
+                                                    void toggle(
+                                                        level,
+                                                        t.id,
+                                                        e.target.checked,
+                                                    )
+                                                }
+                                            />
+                                        </td>
+                                    );
+                                })}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 }

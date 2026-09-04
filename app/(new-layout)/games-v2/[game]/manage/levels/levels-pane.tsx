@@ -63,13 +63,23 @@ export function LevelsPane({ gameId, gameSlug }: Props) {
                         />
                     </div>
 
-                    <ExclusionMatrix
-                        gameId={gameId}
-                        gameSlug={gameSlug}
-                        levels={overview.levels}
-                        templates={overview.templates}
-                        onChanged={reload}
-                    />
+                    {/* The matrix renders nothing without both axes, so skip
+                        the whole card rather than leave a titled empty one. */}
+                    {overview.levels.length > 0 &&
+                        overview.templates.length > 0 && (
+                            <div className={styles.section}>
+                                <h3 className={styles.sectionTitle}>
+                                    Which levels carry which subcategory
+                                </h3>
+                                <ExclusionMatrix
+                                    gameId={gameId}
+                                    gameSlug={gameSlug}
+                                    levels={overview.levels}
+                                    templates={overview.templates}
+                                    onChanged={reload}
+                                />
+                            </div>
+                        )}
                 </>
             )}
         </div>

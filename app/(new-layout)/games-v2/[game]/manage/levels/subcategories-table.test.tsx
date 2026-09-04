@@ -175,4 +175,56 @@ describe('SubcategoriesTable', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Remove Any%' }));
         expect(updateVisibilityAction).not.toHaveBeenCalled();
     });
+
+    it('surfaces an error returned by the add action', async () => {
+        const onChanged = vi.fn(noop);
+        vi.mocked(createLevelTemplateAction).mockResolvedValueOnce({
+            error: 'Not authorized to manage category groups.',
+        });
+        render(
+            <SubcategoriesTable
+                gameId={1}
+                gameSlug="g"
+                templates={[]}
+                onChanged={onChanged}
+            />,
+        );
+        fireEvent.change(screen.getByPlaceholderText('Any%'), {
+            target: { value: '100%' },
+        });
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Add subcategory' }),
+        );
+
+        expect(
+            await screen.findByText(
+                'Not authorized to manage category groups.',
+            ),
+        ).toBeTruthy();
+        expect(onChanged).not.toHaveBeenCalled();
+    });
+
+    it('reports a thrown failure rather than rejecting silently', async () => {
+        vi.mocked(createLevelTemplateAction).mockRejectedValueOnce(
+            new Error('network down'),
+        );
+        render(
+            <SubcategoriesTable
+                gameId={1}
+                gameSlug="g"
+                templates={[]}
+                onChanged={noop}
+            />,
+        );
+        fireEvent.change(screen.getByPlaceholderText('Any%'), {
+            target: { value: '100%' },
+        });
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Add subcategory' }),
+        );
+
+        expect(
+            await screen.findByText('Something went wrong. Try again.'),
+        ).toBeTruthy();
+    });
 });

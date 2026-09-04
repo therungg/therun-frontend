@@ -155,4 +155,41 @@ describe('ExclusionMatrix', () => {
         );
         await waitFor(() => expect(onChanged).toHaveBeenCalled());
     });
+
+    it('surfaces the action error instead of reloading', async () => {
+        const onChanged = vi.fn(noop);
+        vi.mocked(levelOpAction).mockResolvedValueOnce({
+            error: 'Not authorized to manage category groups.',
+        });
+        render(
+            <ExclusionMatrix
+                gameId={1}
+                gameSlug="g"
+                levels={levels}
+                templates={templates}
+                onChanged={onChanged}
+            />,
+        );
+        fireEvent.click(screen.getByLabelText('Any% for E1M1'));
+
+        expect(
+            await screen.findByText(
+                'Not authorized to manage category groups.',
+            ),
+        ).toBeTruthy();
+        expect(onChanged).not.toHaveBeenCalled();
+    });
+
+    it('names each level row as a row header', () => {
+        render(
+            <ExclusionMatrix
+                gameId={1}
+                gameSlug="g"
+                levels={levels}
+                templates={templates}
+                onChanged={noop}
+            />,
+        );
+        expect(screen.getByRole('rowheader', { name: 'E1M1' })).toBeTruthy();
+    });
 });

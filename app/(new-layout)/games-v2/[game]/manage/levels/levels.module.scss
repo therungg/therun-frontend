@@ -142,9 +142,26 @@
     min-width: 16rem;
 }
 
+// board-input-rules only tunes border-colour and the focus ring — it assumes
+// Bootstrap's .form-control has already supplied the box. This textarea
+// carries no such class, so it states the box itself, matching .addInput.
 .rulesTextarea {
     @include board.board-input-rules;
     width: 100%;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.8);
+    border-radius: dt.$radius-md;
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    font-size: dt.$font-size-sm;
+    padding: dt.$spacing-sm dt.$spacing-md;
+
+    &:focus {
+        outline: none;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
 }
 
 .rulesActions {
@@ -187,4 +204,16 @@
 
 .colCenter {
     text-align: center;
+}
+
+// The matrix's leading cell is a row header for semantics, not a visual
+// heading — board-table only dresses `thead th`, so this restores the
+// `tbody td` box and keeps body weight.
+.rowHeader {
+    padding: dt.$spacing-xs dt.$spacing-md;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+    vertical-align: middle;
+    text-align: left;
+    font-weight: 400;
+    white-space: nowrap;
 }

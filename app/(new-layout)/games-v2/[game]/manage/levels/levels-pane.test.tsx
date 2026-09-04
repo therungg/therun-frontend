@@ -58,6 +58,9 @@ describe('LevelsPane', () => {
         // matrix's column header.
         expect(screen.getAllByText('Any%')).toHaveLength(2);
         expect(screen.getByLabelText('Any% for E1M1')).toBeTruthy();
+        expect(
+            screen.getByText('Which levels carry which subcategory'),
+        ).toBeTruthy();
     });
 
     it('shows the load error inline', async () => {
@@ -75,5 +78,9 @@ describe('LevelsPane', () => {
             expect(screen.getByText(/No levels yet/)).toBeTruthy(),
         );
         expect(screen.queryByRole('table')).toBeNull();
+        // No empty titled card left behind either.
+        expect(
+            screen.queryByText('Which levels carry which subcategory'),
+        ).toBeNull();
     });
 });

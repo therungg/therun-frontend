@@ -101,8 +101,34 @@ function noop() {
 
 describe('levelBoardSummary', () => {
     it('counts how many of the templates this level has', () => {
-        expect(levelBoardSummary(levels[0], 2)).toEqual({ have: 2, total: 2 });
-        expect(levelBoardSummary(levels[1], 2)).toEqual({ have: 1, total: 2 });
+        expect(levelBoardSummary(levels[0], templates)).toEqual({
+            have: 2,
+            total: 2,
+        });
+        expect(levelBoardSummary(levels[1], templates)).toEqual({
+            have: 1,
+            total: 2,
+        });
+    });
+
+    it('ignores boards that belong to no template', () => {
+        const withLevelOnly = {
+            ...levels[0],
+            instances: [
+                ...levels[0].instances,
+                {
+                    categoryId: 103,
+                    templateId: null,
+                    state: 'level-only' as const,
+                    display: 'E1M1 — bonus',
+                },
+            ],
+        };
+        // Not "3 of 2": a level-only board matches no column.
+        expect(levelBoardSummary(withLevelOnly, templates)).toEqual({
+            have: 2,
+            total: 2,
+        });
     });
 });
 
@@ -187,7 +213,7 @@ describe('LevelsTable', () => {
         );
     });
 
-    it('does not save a rename to an empty name', () => {
+    it('does not save a rename to an empty name, and puts the name back', () => {
         render(
             <LevelsTable
                 gameId={1}
@@ -197,10 +223,129 @@ describe('LevelsTable', () => {
                 onChanged={noop}
             />,
         );
-        const input = screen.getByDisplayValue('E1M1');
+        const input = screen.getByDisplayValue('E1M1') as HTMLInputElement;
         fireEvent.change(input, { target: { value: '   ' } });
         fireEvent.blur(input);
         expect(updateLevelAction).not.toHaveBeenCalled();
+        expect(input.value).toBe('E1M1');
+    });
+
+    it('surfaces an action error instead of reloading', async () => {
+        const onChanged = vi.fn(noop);
+        vi.mocked(updateLevelAction).mockResolvedValueOnce({
+            error: 'Not authorized to manage category groups.',
+        });
+        render(
+            <LevelsTable
+                gameId={1}
+                gameSlug="g"
+                levels={levels}
+                templates={templates}
+                onChanged={onChanged}
+            />,
+        );
+        const input = screen.getByDisplayValue('E1M1');
+        fireEvent.change(input, { target: { value: 'E1M1 renamed' } });
+        fireEvent.blur(input);
+
+        expect(
+            await screen.findByText(
+                'Not authorized to manage category groups.',
+            ),
+        ).toBeTruthy();
+        expect(onChanged).not.toHaveBeenCalled();
+    });
+
+    it('surfaces an error from the create-missing-boards action', async () => {
+        const onChanged = vi.fn(noop);
+        vi.mocked(levelOpAction).mockResolvedValueOnce({ error: 'no dice' });
+        render(
+            <LevelsTable
+                gameId={1}
+                gameSlug="g"
+                levels={levels}
+                templates={templates}
+                onChanged={onChanged}
+            />,
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Create missing boards' }),
+        );
+        expect(await screen.findByText('no dice')).toBeTruthy();
+        expect(onChanged).not.toHaveBeenCalled();
+    });
+
+    it('surfaces an error from adding a level', async () => {
+        const onChanged = vi.fn(noop);
+        vi.mocked(createLevelAction).mockResolvedValueOnce({ error: 'nope' });
+        render(
+            <LevelsTable
+                gameId={1}
+                gameSlug="g"
+                levels={[]}
+                templates={[]}
+                onChanged={onChanged}
+            />,
+        );
+        fireEvent.change(screen.getByPlaceholderText('E1M1'), {
+            target: { value: 'E1M3' },
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'Add level' }));
+        expect(await screen.findByText('nope')).toBeTruthy();
+        expect(onChanged).not.toHaveBeenCalled();
+    });
+
+    it('keeps the rules editor open when the save fails', async () => {
+        vi.mocked(updateLevelAction).mockResolvedValueOnce({ error: 'nope' });
+        render(
+            <LevelsTable
+                gameId={1}
+                gameSlug="g"
+                levels={levels}
+                templates={templates}
+                onChanged={noop}
+            />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Add rules' }));
+        fireEvent.change(screen.getByLabelText('Rules for E1M1'), {
+            target: { value: 'No skips.' },
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'Save rules' }));
+
+        expect(await screen.findByText('nope')).toBeTruthy();
+        // Still open, so the draft the user typed isn't lost.
+        expect(screen.getByLabelText('Rules for E1M1')).toBeTruthy();
+    });
+
+    it('discards the draft when the rules editor is cancelled', async () => {
+        render(
+            <LevelsTable
+                gameId={1}
+                gameSlug="g"
+                levels={levels}
+                templates={templates}
+                onChanged={noop}
+            />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Add rules' }));
+        fireEvent.change(screen.getByLabelText('Rules for E1M1'), {
+            target: { value: 'Typed then abandoned.' },
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+        // Reopen and save without retyping: the abandoned draft must not
+        // come back, so this saves the level's stored rules (null -> '').
+        fireEvent.click(screen.getByRole('button', { name: 'Add rules' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Save rules' }));
+
+        await waitFor(() =>
+            expect(updateLevelAction).toHaveBeenCalledWith({
+                gameSlug: 'g',
+                gameId: 1,
+                groupId: 10,
+                rules: '',
+            }),
+        );
     });
 
     it('opens, edits and saves rules for a level', async () => {
