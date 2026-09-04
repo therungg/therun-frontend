@@ -258,7 +258,7 @@ export function ConsoleShell({
     }, [searchParams]);
 
     const applyRowPatch = useCallback(
-        (categoryId: number, patch: { isMain?: boolean; active?: boolean }) => {
+        (categoryId: number, patch: { isMain?: boolean }) => {
             setRows((rs) =>
                 rs.map((r) => (r.id === categoryId ? { ...r, ...patch } : r)),
             );

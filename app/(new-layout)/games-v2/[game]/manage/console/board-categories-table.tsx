@@ -5,9 +5,7 @@ import {
     CaretDownFill,
     CaretUpFill,
     Check2,
-    ChevronDown,
     ChevronRight,
-    ChevronUp,
     CircleFill,
     Dash,
     GripVertical,
@@ -34,11 +32,9 @@ import { fireUndoToast } from '../moderation/shared/undo-toast';
 import { updateVisibilityAction } from '../visibility/actions/update-visibility.action';
 import styles from './board-categories.module.scss';
 
-/** Past-tense label for a Featured/Archived toggle's undo-toast message. */
-function toggleLabel(field: 'isMain' | 'active', value: boolean): string {
-    if (field === 'isMain')
-        return value ? 'featured' : 'removed from the board';
-    return value ? 'restored' : 'archived';
+/** Past-tense label for the Featured toggle's undo-toast message. */
+function toggleLabel(value: boolean): string {
+    return value ? 'featured' : 'removed from the board';
 }
 
 interface Props {
@@ -50,10 +46,7 @@ interface Props {
     /** Per-category configuration, keyed by id — the matrix columns. */
     config: CategoryConfigRow[];
     groups: ManageGroup[];
-    onRowChange: (
-        categoryId: number,
-        patch: { isMain?: boolean; active?: boolean },
-    ) => void;
+    onRowChange: (categoryId: number, patch: { isMain?: boolean }) => void;
     onRowGroupChange: (
         categoryId: number,
         groupId: number | null,
@@ -101,7 +94,6 @@ export function BoardCategoriesTable({
     );
     const [dragId, setDragId] = useState<number | null>(null);
     const [reorderPending, setReorderPending] = useState(false);
-    const [showArchived, setShowArchived] = useState(false);
 
     const configById = useMemo(
         () => new Map(config.map((c) => [c.id, c])),
@@ -176,11 +168,6 @@ export function BoardCategoriesTable({
         return out;
     }, [boardRows]);
 
-    const archivedRows = useMemo(
-        () => fullGameRows.filter((r) => !r.active),
-        [fullGameRows],
-    );
-
     // Groups a full-game category may be moved into. Level groups are not
     // among them: membership of a level is what makes a board a level board,
     // and that is granted by pushing a level category, never by hand.
@@ -232,48 +219,35 @@ export function BoardCategoriesTable({
         });
     };
 
-    // Applies a single Featured/Archived change via updateVisibilityAction —
-    // shared by the row actions below and their Undo (which just calls this
-    // again with the field flipped back to its previous value).
-    const applyVisibility = async (
-        categoryId: number,
-        field: 'isMain' | 'active',
-        value: boolean,
-    ) =>
+    // Applies a single Featured change via updateVisibilityAction — shared by
+    // the row action below and its Undo (which just calls this again with
+    // the value flipped back to its previous value).
+    const applyVisibility = async (categoryId: number, value: boolean) =>
         updateVisibilityAction({
             gameSlug: game.name,
             gameId: game.id,
             categoryId,
-            ...(field === 'isMain' ? { isMain: value } : {}),
-            ...(field === 'active' ? { active: value } : {}),
+            isMain: value,
         });
 
-    const setVisibility = (
-        row: ManageCategoryRow,
-        field: 'isMain' | 'active',
-        value: boolean,
-    ) => {
-        const prevValue = row[field];
+    const setVisibility = (row: ManageCategoryRow, value: boolean) => {
+        const prevValue = row.isMain;
         setPending(row.id, true);
-        onRowChange(row.id, { [field]: value });
+        onRowChange(row.id, { isMain: value });
         startTransition(async () => {
-            const res = await applyVisibility(row.id, field, value);
+            const res = await applyVisibility(row.id, value);
             setPending(row.id, false);
             if ('error' in res) {
                 toast.error(res.error);
-                onRowChange(row.id, { [field]: prevValue });
+                onRowChange(row.id, { isMain: prevValue });
                 return;
             }
             fireUndoToast(
-                `${row.display}: ${toggleLabel(field, value)}.`,
+                `${row.display}: ${toggleLabel(value)}.`,
                 async () => {
-                    const undoRes = await applyVisibility(
-                        row.id,
-                        field,
-                        prevValue,
-                    );
+                    const undoRes = await applyVisibility(row.id, prevValue);
                     if ('error' in undoRes) return { error: undoRes.error };
-                    onRowChange(row.id, { [field]: prevValue });
+                    onRowChange(row.id, { isMain: prevValue });
                     return { ok: true };
                 },
                 // No extra resync needed on undo — the undo callback above
@@ -473,11 +447,7 @@ export function BoardCategoriesTable({
                                         disabled={pendingIds.size > 0}
                                         onClick={() => {
                                             for (const r of suggested)
-                                                setVisibility(
-                                                    r,
-                                                    'isMain',
-                                                    true,
-                                                );
+                                                setVisibility(r, true);
                                         }}
                                     >
                                         Add{' '}
@@ -770,32 +740,12 @@ export function BoardCategoriesTable({
                                                                 onClick={() =>
                                                                     setVisibility(
                                                                         row,
-                                                                        'isMain',
                                                                         false,
                                                                     )
                                                                 }
                                                                 title="Takes this category off the public board. Runs are kept."
                                                             >
                                                                 Remove
-                                                            </button>
-                                                            <button
-                                                                type="button"
-                                                                className={
-                                                                    styles.quietAction
-                                                                }
-                                                                disabled={
-                                                                    isPending
-                                                                }
-                                                                onClick={() =>
-                                                                    setVisibility(
-                                                                        row,
-                                                                        'active',
-                                                                        false,
-                                                                    )
-                                                                }
-                                                                title="Hides the category and its boards everywhere. Runs are kept."
-                                                            >
-                                                                Archive
                                                             </button>
                                                             <button
                                                                 type="button"
@@ -856,54 +806,8 @@ export function BoardCategoriesTable({
                 <p className={styles.note}>
                     Only these categories appear on the public game page, in
                     this order. Remove takes one off the board but keeps its
-                    runs. Archive hides the category and its boards everywhere.
+                    runs.
                 </p>
-                {archivedRows.length > 0 && (
-                    <div>
-                        <button
-                            type="button"
-                            className={styles.archivedToggle}
-                            aria-expanded={showArchived}
-                            onClick={() => setShowArchived((v) => !v)}
-                        >
-                            {archivedRows.length} archived categor
-                            {archivedRows.length === 1 ? 'y' : 'ies'}
-                            {showArchived ? (
-                                <ChevronUp size={10} aria-hidden="true" />
-                            ) : (
-                                <ChevronDown size={10} aria-hidden="true" />
-                            )}
-                        </button>
-                        {showArchived && (
-                            <ul className={styles.archivedList}>
-                                {archivedRows.map((row) => (
-                                    <li
-                                        key={row.id}
-                                        className={styles.archivedItem}
-                                    >
-                                        <span className={styles.archivedName}>
-                                            {row.display}
-                                        </span>
-                                        <button
-                                            type="button"
-                                            className={`${styles.quietAction} ${styles.restoreAction}`}
-                                            disabled={pendingIds.has(row.id)}
-                                            onClick={() =>
-                                                setVisibility(
-                                                    row,
-                                                    'active',
-                                                    true,
-                                                )
-                                            }
-                                        >
-                                            Restore
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </div>
-                )}
             </div>
 
             <PromptDialog
