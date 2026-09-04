@@ -1,9 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
 import consoleStyles from '~src/components/console-chrome/console.module.scss';
-import type { ExistingLevels } from '../../setup/steps/level-plan';
-import { LevelsEditor } from '../../setup/steps/levels-editor';
+import { InlineError } from '../shared/form-kit';
+import { ExclusionMatrix } from './exclusion-matrix';
+import styles from './levels.module.scss';
+import { LevelsTable } from './levels-table';
+import { SubcategoriesTable } from './subcategories-table';
 import { useLevelOverview } from './use-level-overview';
 
 interface Props {
@@ -12,58 +14,17 @@ interface Props {
 }
 
 /**
- * The wizard's Levels step without the wizard: the same editor, fed by the
- * level overview (the server's reading of which boards exist and how they
- * drifted) and reloaded after every save.
+ * A board's individual levels: the levels themselves, the subcategories every
+ * level shares, and which level carries which. Every add, rename and remove
+ * writes immediately — there is no separate save step, unlike the wizard's
+ * first-setup flow (levels-editor.tsx), which this pane does not share code
+ * with.
  */
 export function LevelsPane({ gameId, gameSlug }: Props) {
     const { overview, loading, error, reload } = useLevelOverview(
         gameSlug,
         gameId,
     );
-    // The editor seeds its drafts from `existing` once; a reload remounts it.
-    const [version, setVersion] = useState(0);
-
-    const existing: ExistingLevels | null = useMemo(() => {
-        if (!overview) return null;
-        return {
-            levelGroups: overview.levels.map((l) => ({
-                id: l.id,
-                name: l.name,
-                rules: l.rules,
-                hasLevelOnlyBoard: l.instances.some(
-                    (i) => i.state === 'level-only',
-                ),
-            })),
-            templates: overview.templates.map((t) => ({
-                id: t.id,
-                display: t.display,
-            })),
-            // No full-game category adoption here; that is a first-setup
-            // convenience the wizard offers.
-            categories: [],
-            exclusions: overview.levels.flatMap((l) =>
-                l.instances
-                    .filter(
-                        (i) => i.state === 'excluded' && i.templateId != null,
-                    )
-                    .map((i) => ({
-                        groupId: l.id,
-                        templateId: i.templateId as number,
-                    })),
-            ),
-            overriddenCategoryIds: overview.levels.flatMap((l) =>
-                l.instances
-                    .filter((i) => i.state === 'overridden')
-                    .map((i) => i.categoryId),
-            ),
-            needsMaterialise: overview.levels.some((l) =>
-                overview.templates.some(
-                    (t) => !l.instances.some((i) => i.templateId === t.id),
-                ),
-            ),
-        };
-    }, [overview]);
 
     return (
         <div className={consoleStyles.surface}>
@@ -73,22 +34,43 @@ export function LevelsPane({ gameId, gameSlug }: Props) {
                     <h2 className={consoleStyles.paneTitle}>Levels</h2>
                 </div>
             </div>
-            {error && <div className="alert alert-danger">{error}</div>}
-            {loading && !existing && (
-                <p className="text-muted small">Loading levels…</p>
+
+            {loading && !overview && (
+                <p className={styles.empty}>Loading levels…</p>
             )}
-            {existing && (
-                <LevelsEditor
-                    key={version}
-                    mode="manage"
-                    gameSlug={gameSlug}
-                    gameId={gameId}
-                    existing={existing}
-                    onSaved={async () => {
-                        await reload();
-                        setVersion((v) => v + 1);
-                    }}
-                />
+            <InlineError>{error}</InlineError>
+
+            {overview && (
+                <>
+                    <div className={styles.section}>
+                        <h3 className={styles.sectionTitle}>Levels</h3>
+                        <LevelsTable
+                            gameId={gameId}
+                            gameSlug={gameSlug}
+                            levels={overview.levels}
+                            templates={overview.templates}
+                            onChanged={reload}
+                        />
+                    </div>
+
+                    <div className={styles.section}>
+                        <h3 className={styles.sectionTitle}>Subcategories</h3>
+                        <SubcategoriesTable
+                            gameId={gameId}
+                            gameSlug={gameSlug}
+                            templates={overview.templates}
+                            onChanged={reload}
+                        />
+                    </div>
+
+                    <ExclusionMatrix
+                        gameId={gameId}
+                        gameSlug={gameSlug}
+                        levels={overview.levels}
+                        templates={overview.templates}
+                        onChanged={reload}
+                    />
+                </>
             )}
         </div>
     );
