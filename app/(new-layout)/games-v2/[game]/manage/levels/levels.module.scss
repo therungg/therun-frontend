@@ -1,0 +1,44 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/board' as board;
+
+// Levels pane — two tables (levels, subcategories) plus the exclusion
+// matrix, each with a one-name add form instead of a bulk paste.
+
+.addRow {
+    display: flex;
+    gap: dt.$spacing-sm;
+    margin-bottom: dt.$spacing-md;
+}
+
+.addInput {
+    flex: 1;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.8);
+    border-radius: dt.$radius-md;
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    font-size: dt.$font-size-sm;
+    padding: dt.$spacing-sm dt.$spacing-md;
+
+    &:focus {
+        outline: none;
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
+
+.addBtn {
+    @include board.control-pill;
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    white-space: nowrap;
+
+    &:disabled {
+        cursor: default;
+        opacity: 0.5;
+    }
+}
