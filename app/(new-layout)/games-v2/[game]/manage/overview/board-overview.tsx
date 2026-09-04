@@ -16,28 +16,9 @@ import type { SrcImportJob } from '../../../../../../types/src-import.types';
 import { BoardHealthCard } from '../console/board-health-card';
 import type { NavGroup, NavItemId } from '../console/nav-model';
 import type { AttentionItem } from '../moderation/attention/attention-model';
+import { isSettled } from '../src-import/use-src-import-job';
 import styles from './board-overview.module.scss';
 import { buildOverviewStats, timeAgo, topFeaturedRows } from './overview-model';
-
-// Commit states that mean the job has come to rest — anything else on a
-// finished job is still mid-commit, i.e. the import is still working.
-const SETTLED_COMMIT_STATUS = [
-    'applied',
-    'imported',
-    'pruned',
-    'reconciled',
-    'failed',
-];
-
-/** Whether an import is in flight — queued, running, or still committing. */
-function isImportRunning(job: SrcImportJob): boolean {
-    if (job.status === 'queued' || job.status === 'running') return true;
-    return (
-        job.status === 'done' &&
-        job.commitStatus !== null &&
-        !SETTLED_COMMIT_STATUS.includes(job.commitStatus)
-    );
-}
 
 /** "Never" or a short date of the last finished job of one kind. */
 function lastLine(job: SrcImportJob | null): string {
@@ -136,7 +117,9 @@ export function BoardOverview({
 
     const navIds = new Set(navGroups.flatMap((g) => g.items.map((i) => i.id)));
     const showImport = navIds.has('import');
-    const importRunning = syncJob != null && isImportRunning(syncJob);
+    // Same settle rule the import pane polls on — a resync is not done at
+    // 'applied'/'imported', it still has import-runs and prune ahead of it.
+    const importRunning = syncJob != null && !isSettled(syncJob);
     const showModerators = navIds.has('moderators');
 
     const setupIncomplete =
