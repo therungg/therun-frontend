@@ -108,32 +108,22 @@ describe('BoardCategoriesTable — the board only', () => {
         expect(screen.queryByText('Junk split')).toBeNull();
     });
 
-    it('hides archived categories behind a disclosure, not a filter', () => {
+    it('keeps an archived category off the board with no way to unarchive it here', () => {
+        // Archiving happens elsewhere now — this table only ever writes
+        // isMain, so an archived category can't surface a Restore control.
         renderTable([
             row({ id: 1, display: 'Any%', isMain: true }),
             row({ id: 2, display: 'Old route', isMain: true, active: false }),
         ]);
 
         expect(screen.queryByText('Old route')).toBeNull();
-        fireEvent.click(screen.getByRole('button', { name: /1 archived/ }));
-        expect(screen.getByText('Old route')).toBeTruthy();
+        expect(
+            screen.queryByRole('button', { name: /archived categor/ }),
+        ).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Restore' })).toBeNull();
     });
 
-    it('restores an archived category in place', () => {
-        renderTable([
-            row({ id: 2, display: 'Old route', isMain: true, active: false }),
-        ]);
-        fireEvent.click(screen.getByRole('button', { name: /1 archived/ }));
-        fireEvent.click(screen.getByRole('button', { name: 'Restore' }));
-
-        expect(mocks.updateVisibilityAction).toHaveBeenCalledWith(
-            expect.objectContaining({ categoryId: 2, active: true }),
-        );
-    });
-
-    it('removes a category from the board without archiving it', () => {
-        // Remove and Archive are different acts: one takes a category off the
-        // public board, the other hides it everywhere.
+    it('removes a category from the board by writing isMain only', () => {
         renderTable([row({ id: 1, display: 'Any%', isMain: true })]);
         fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
 
