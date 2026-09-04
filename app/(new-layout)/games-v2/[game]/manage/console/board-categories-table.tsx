@@ -25,7 +25,6 @@ import { splitLevelBoards } from '~src/lib/levels/display';
 import { activityShare, suggestFeaturedIds } from '~src/lib/setup/suggestions';
 import { formatCount, formatHours } from '~src/utils/format-stats';
 import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
-import type { LevelTemplate } from '../../../../../../types/levels.types';
 import { effectiveSortKey } from '../../category-sort';
 import { PromptDialog } from '../../shared/prompt-dialog';
 import { reorderCategoriesAction } from '../game-tab/actions/reorder-categories.action';
@@ -34,7 +33,6 @@ import { computeReorderChanges } from '../game-tab/reorder-changes';
 import { fireUndoToast } from '../moderation/shared/undo-toast';
 import { updateVisibilityAction } from '../visibility/actions/update-visibility.action';
 import styles from './board-categories.module.scss';
-import { LevelBoardsBand } from './level-boards-band';
 
 /** Past-tense label for a Featured/Archived toggle's undo-toast message. */
 function toggleLabel(field: 'isMain' | 'active', value: boolean): string {
@@ -52,9 +50,6 @@ interface Props {
     /** Per-category configuration, keyed by id — the matrix columns. */
     config: CategoryConfigRow[];
     groups: ManageGroup[];
-    /** Level categories, for labelling level boards by the category they
-     *  instantiate. Absent on games that have no levels. */
-    levelTemplates?: LevelTemplate[];
     onRowChange: (
         categoryId: number,
         patch: { isMain?: boolean; active?: boolean },
@@ -90,7 +85,6 @@ export function BoardCategoriesTable({
     rows,
     config,
     groups,
-    levelTemplates = [],
     onRowChange,
     onRowGroupChange,
     onRowsReorder,
@@ -124,12 +118,12 @@ export function BoardCategoriesTable({
         return m;
     }, [groups]);
 
-    // Level boards never enter the table: one per level per level category,
+    // Level boards never enter this table: one per level per level category,
     // they follow their template — order, grouping and featuring are all
-    // decided there — so they collapse into a band of their own below.
+    // decided there — and are managed entirely from the Levels sidebar.
     // Splitting first keeps every memo below full-game only, including the
     // reorder scope, the disagreement scan and the suggestions.
-    const { fullGame: fullGameRows, levelBoards: levelRows } = useMemo(
+    const { fullGame: fullGameRows } = useMemo(
         () => splitLevelBoards(rows, groups),
         [rows, groups],
     );
@@ -438,7 +432,7 @@ export function BoardCategoriesTable({
 
     return (
         <section>
-            {boardRows.length === 0 && levelRows.length === 0 && (
+            {boardRows.length === 0 && (
                 <div className={styles.panel}>
                     {/* A board with nothing on it renders an empty public band
                         — the one state where this screen should say something
@@ -856,18 +850,6 @@ export function BoardCategoriesTable({
                         </span>
                     </div>
                 </div>
-            )}
-
-            {levelRows.length > 0 && (
-                <LevelBoardsBand
-                    gameId={game.id}
-                    rows={levelRows}
-                    groups={groups}
-                    levelTemplates={levelTemplates}
-                    pendingIds={pendingIds}
-                    onEdit={onEdit}
-                    onRestore={(row) => setVisibility(row, 'active', true)}
-                />
             )}
 
             <div className={styles.footRow}>

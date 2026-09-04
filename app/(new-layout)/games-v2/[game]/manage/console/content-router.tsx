@@ -16,7 +16,6 @@ import type {
     ResolvedGroup,
     VariableRow,
 } from '../../../../../../types/leaderboards.types';
-import type { LevelTemplate } from '../../../../../../types/levels.types';
 import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
 import type { SrcImportJob } from '../../../../../../types/src-import.types';
 import { VariablesGrid } from '../../setup/steps/variables/variables-grid';
@@ -66,10 +65,6 @@ export interface ContentRouterProps {
     gameDetails?: GameDetailsData | null;
     rows: ManageCategoryRow[];
     groups: ManageGroup[];
-    /** Level categories (templates) loaded server-side — the Levels pane
-     * only needs them for its empty state; the live picture comes from the
-     * overview it loads itself. */
-    levelTemplates: LevelTemplate[];
     /** Permission-filtered console nav, for the tile grid. Distinct from
      * `groups`, which is the category-grouping model. */
     navGroups: NavGroup[];
@@ -156,7 +151,6 @@ export function ContentRouter(props: ContentRouterProps) {
                     rows={props.rows}
                     config={props.categoryConfig}
                     groups={props.groups}
-                    levelTemplates={props.levelTemplates}
                     boardCategories={props.boardCategories}
                     boardGroups={props.boardGroups}
                     metadata={props.gameDetails?.metadata}

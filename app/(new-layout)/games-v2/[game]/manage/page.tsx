@@ -125,7 +125,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
         // card. Best-effort: a failure just renders the "no import" state.
         getSrcImportJob(sessionId, game.id).catch(() => null),
     ]);
-    const { rows: rawRows, groups, levelTemplates } = catalog;
+    const { rows: rawRows, groups } = catalog;
     const degradedSources = degradedSourcesOf([
         queueRes,
         reportsRes,
@@ -271,7 +271,6 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 initialRows={rows}
                 categoryConfig={categoryConfig}
                 initialGroups={groups}
-                levelTemplates={levelTemplates}
                 boardGroups={boardGroups}
                 variables={variables}
                 policies={policies}

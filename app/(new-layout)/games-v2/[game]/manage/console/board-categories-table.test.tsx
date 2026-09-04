@@ -29,7 +29,6 @@ vi.mock('react-toastify', () => ({
 }));
 
 import { BoardCategoriesTable } from './board-categories-table';
-import { LevelBoardsBand } from './level-boards-band';
 
 const GAME = { id: 1, name: 'example-game', display: 'Example Game' } as never;
 
@@ -52,18 +51,13 @@ function row(patch: Partial<ManageCategoryRow>): ManageCategoryRow {
     } as ManageCategoryRow;
 }
 
-function renderTable(
-    rows: ManageCategoryRow[],
-    groups: ManageGroup[] = [],
-    levelTemplates: LevelTemplate[] = [],
-) {
+function renderTable(rows: ManageCategoryRow[], groups: ManageGroup[] = []) {
     return render(
         <BoardCategoriesTable
             game={GAME}
             rows={rows}
             config={[]}
             groups={groups}
-            levelTemplates={levelTemplates}
             onRowChange={vi.fn()}
             onRowGroupChange={vi.fn()}
             onRowsReorder={vi.fn()}
@@ -263,52 +257,22 @@ const WITH_LEVELS: ManageCategoryRow[] = [
 ];
 
 describe('BoardCategoriesTable — level boards', () => {
-    it('keeps level boards out of the full-game table, behind one collapsed band', () => {
-        // A game with 30 levels × 4 level categories is 120 boards the
-        // moderator never curates by hand — they follow their template. The
-        // index must still read as the board, so they collapse into one band.
-        renderTable(WITH_LEVELS, LEVEL_GROUPS, LEVEL_TEMPLATES);
+    it('leaves level boards out of this table entirely — the Levels sidebar owns them', () => {
+        // Level boards follow their template, not this table, and are edited
+        // from the Levels sidebar now — this table shows nothing about them
+        // at all, not even a collapsed summary.
+        renderTable(WITH_LEVELS, LEVEL_GROUPS);
 
         expect(screen.getByText('120 Star')).toBeTruthy();
         expect(screen.queryByText('E1M1 — Any%')).toBeNull();
         expect(screen.queryByText('E1M1')).toBeNull();
-        expect(screen.getByText('Level boards (4)')).toBeTruthy();
+        expect(screen.queryByText(/Level boards/)).toBeNull();
         expect(
-            screen.getByRole('button', { name: /Show level boards/ }),
-        ).toBeTruthy();
+            screen.queryByRole('button', { name: /level boards/i }),
+        ).toBeNull();
     });
 
-    it('lists them grouped by level, labelled by their level category', () => {
-        renderTable(WITH_LEVELS, LEVEL_GROUPS, LEVEL_TEMPLATES);
-        fireEvent.click(
-            screen.getByRole('button', { name: /Show level boards/ }),
-        );
-
-        expect(screen.getByText('E1M1')).toBeTruthy();
-        expect(screen.getByText('E1M2')).toBeTruthy();
-        // The board's own display is "E1M1 — Any%"; inside its level the
-        // level's name is the band, so the row is just the category.
-        expect(screen.getAllByText('Any%')).toHaveLength(2);
-        expect(screen.getAllByText('UV-Max')).toHaveLength(2);
-    });
-
-    it('remembers the disclosure per game', () => {
-        window.localStorage.setItem('console:levelBoards:1', 'open');
-        renderTable(WITH_LEVELS, LEVEL_GROUPS, LEVEL_TEMPLATES);
-
-        expect(screen.getByText('E1M1')).toBeTruthy();
-        fireEvent.click(
-            screen.getByRole('button', { name: /Hide level boards/ }),
-        );
-        expect(window.localStorage.getItem('console:levelBoards:1')).toBe(
-            'closed',
-        );
-    });
-
-    it('is the way back for an archived level board', () => {
-        // The full-game archived disclosure is full-game only and the add
-        // dialog refuses level boards, so if the band skipped these the board
-        // would be unreachable from the console entirely.
+    it('keeps an archived or unfeatured level board out of the full-game archived list too', () => {
         renderTable(
             [
                 row({ id: 1, display: '120 Star', isMain: true }),
@@ -331,30 +295,18 @@ describe('BoardCategoriesTable — level boards', () => {
                 }),
             ],
             LEVEL_GROUPS,
-            LEVEL_TEMPLATES,
         );
 
-        // Neither one is in the full-game archived list.
         expect(
             screen.queryByRole('button', { name: /archived categor/ }),
         ).toBeNull();
-        expect(screen.getByText('Level boards (2)')).toBeTruthy();
-        fireEvent.click(
-            screen.getByRole('button', { name: /Show level boards/ }),
-        );
-        expect(screen.getByText('archived')).toBeTruthy();
-        expect(screen.getByText('not featured')).toBeTruthy();
-
-        fireEvent.click(screen.getByRole('button', { name: 'Restore' }));
-        expect(mocks.updateVisibilityAction).toHaveBeenCalledWith(
-            expect.objectContaining({ categoryId: 21, active: true }),
-        );
+        expect(screen.queryByText(/Level boards/)).toBeNull();
     });
 
     it('leaves level boards out of the full-game reorder scope', () => {
         // Level board order follows the template, not this table — a
         // full-game row's move must not renumber across them.
-        renderTable(WITH_LEVELS, LEVEL_GROUPS, LEVEL_TEMPLATES);
+        renderTable(WITH_LEVELS, LEVEL_GROUPS);
 
         expect(
             screen.queryByRole('button', { name: /Move E1M1 — Any% up/ }),
@@ -366,47 +318,5 @@ describe('BoardCategoriesTable — level boards', () => {
                 }) as HTMLButtonElement
             ).disabled,
         ).toBe(true);
-    });
-});
-
-describe('LevelBoardsBand — nothing falls out of the band', () => {
-    it('counts what it renders and buckets boards whose level is missing', () => {
-        // The band iterates levels; a board whose level isn't in `groups`
-        // would otherwise vanish while the header still promised it.
-        render(
-            <LevelBoardsBand
-                gameId={1}
-                rows={[
-                    row({
-                        id: 21,
-                        display: 'E1M1 — Any%',
-                        isMain: true,
-                        groupId: 10,
-                        groupName: 'E1M1',
-                        levelTemplateId: 100,
-                    }),
-                    row({
-                        id: 22,
-                        display: 'Ghost level — Any%',
-                        isMain: true,
-                        groupId: 999,
-                        groupName: 'Ghost level',
-                        levelTemplateId: 100,
-                    }),
-                ]}
-                groups={[levelGroup(10, 'E1M1')]}
-                levelTemplates={LEVEL_TEMPLATES}
-                pendingIds={new Set()}
-                onEdit={vi.fn()}
-                onRestore={vi.fn()}
-            />,
-        );
-
-        expect(screen.getByText('Level boards (2)')).toBeTruthy();
-        fireEvent.click(
-            screen.getByRole('button', { name: /Show level boards/ }),
-        );
-        expect(screen.getByText('Other levels')).toBeTruthy();
-        expect(screen.getAllByText('Any%')).toHaveLength(2);
     });
 });
