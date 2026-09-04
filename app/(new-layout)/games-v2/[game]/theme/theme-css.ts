@@ -1,6 +1,14 @@
 import type { GameTheme } from '~src/lib/game-theme';
+import { ensureAccentContrast, toSurfaceTint } from './theme-normalize';
 
 type Scheme = 'dark' | 'light';
+
+/**
+ * Lightness caps (HSL) for the tinted surfaces. Measured off speedrun.com's
+ * dark-mode rendering of a `#00bfff` panel, which lands around l = 0.14–0.24.
+ */
+const PANEL_MAX_L = 0.22;
+const CANVAS_MAX_L = 0.14;
 
 interface Rgb {
     r: number;
@@ -91,7 +99,8 @@ function readableText(surface: Rgb): TextSet {
 }
 
 /**
- * Every themed custom property, derived from the three picked colors. Text is
+ * Every themed custom property, derived from the three picked colors (panel
+ * and background first reduced to dark tints, see below). Text is
  * chosen PER SURFACE: the canvas set (global --bs-* text vars) contrasts with
  * backgroundColor so the masthead/nav read against the page; the panel set
  * (--board-ink*) contrasts with panelColor and is re-asserted onto --bs-* by
@@ -104,10 +113,19 @@ export function deriveThemeVars(
     theme: GameTheme,
     _scheme: Scheme,
 ): Record<string, string> {
-    const panel = hexToRgb(theme.panelColor);
-    const accent = hexToRgb(theme.accentColor);
+    // Picked colors are TINTS of a dark board, not literal fills — the same
+    // model speedrun.com uses, so an imported theme looks the same here as
+    // there. A bright pick becomes a deep tint of its hue; dark picks pass
+    // through unchanged. The canvas sits a step darker than the panel so the
+    // panel still lifts off the page. The accent is re-checked against the
+    // tinted panel, since the stored accent was normalized against the pick.
+    const panelHex = toSurfaceTint(theme.panelColor, PANEL_MAX_L);
+    const canvasHex = toSurfaceTint(theme.backgroundColor, CANVAS_MAX_L);
+    const accentHex = ensureAccentContrast(theme.accentColor, panelHex);
+    const panel = hexToRgb(panelHex);
+    const accent = hexToRgb(accentHex);
     const panelText = readableText(panel);
-    const canvasText = readableText(hexToRgb(theme.backgroundColor));
+    const canvasText = readableText(hexToRgb(canvasHex));
     // Text that sits ON an accent-filled surface (active pill, primary button).
     // Luminance-aware so a light accent (e.g. a white primaryColor imported
     // from speedrun.com) gets dark text instead of hardcoded white-on-white.
@@ -125,7 +143,7 @@ export function deriveThemeVars(
         theme.backgroundUrl && theme.panelOpacity < 1
             ? `linear-gradient(0deg, ${panelTint}, ${panelTint}),` +
               ` linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5))`
-            : theme.panelColor;
+            : panelHex;
 
     const vars: Record<string, string> = {
         '--board-surface-bg': surfaceBg,
@@ -134,12 +152,12 @@ export function deriveThemeVars(
             : 'rgba(0, 0, 0, 0.1)',
         '--board-recess-bg': toHex(mix(panel, BLACK, 0.18)),
         '--board-recess-strong-bg': toHex(mix(panel, BLACK, 0.3)),
-        '--board-accent': theme.accentColor,
+        '--board-accent': accentHex,
         '--board-accent-soft': `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.08)`,
         '--board-on-accent': accentText.emphasis,
-        '--site-canvas-bg': theme.backgroundColor,
-        '--site-canvas-primary': theme.accentColor,
-        '--bs-primary': theme.accentColor,
+        '--site-canvas-bg': canvasHex,
+        '--site-canvas-primary': accentHex,
+        '--bs-primary': accentHex,
         '--bs-primary-rgb': `${accent.r}, ${accent.g}, ${accent.b}`,
         // Canvas text: global --bs-* vars, contrast against backgroundColor.
         '--bs-body-color': canvasText.body,
@@ -157,8 +175,7 @@ export function deriveThemeVars(
     // with readable text derived from it. 'default' leaves the topbar alone
     // (no vars emitted → the Topbar's own fallback background stands).
     if (theme.topbar === 'accent' || theme.topbar === 'panel') {
-        const barHex =
-            theme.topbar === 'accent' ? theme.accentColor : theme.panelColor;
+        const barHex = theme.topbar === 'accent' ? accentHex : panelHex;
         const barText = readableText(hexToRgb(barHex));
         vars['--site-topbar-bg'] = barHex;
         vars['--site-topbar-color'] = barText.body;

@@ -3,7 +3,9 @@
  * backend `src/types/theme-normalize.ts`. The board renders the STORED theme,
  * which the backend already normalized on save; this mirror exists so the theme
  * pane's live PREVIEW shows the same adjusted colors the backend will store
- * (what the mod sees == what gets saved). Keep the two in lockstep.
+ * (what the mod sees == what gets saved). Keep the two in lockstep; the only
+ * frontend-only additions are the render-time helpers at the bottom
+ * (`toSurfaceTint`, `ensureAccentContrast`), used by theme-css.
  *
  * Themes never fail a contrast check — the three picked colors are nudged (hue
  * and saturation preserved, lightness moved minimally) until they clear:
@@ -199,6 +201,27 @@ function ensurePanelBgMargin(panel: Rgb, bg: Rgb): { panel: Rgb; bg: Rgb } {
     );
     nextPanel = adjustSurface(nextPanel);
     return { panel: nextPanel, bg: nextBg };
+}
+
+/**
+ * The board is a dark surface tinted by the picked color, the way speedrun.com
+ * renders its themes: a bright pick (e.g. `#00bfff`) becomes a deep tint of
+ * that hue, never a bright slab. Hue and saturation are kept; lightness is
+ * capped at `maxL`. Picks already at or below the cap come back unchanged, so
+ * hand-picked dark themes render exactly as picked.
+ */
+export function toSurfaceTint(hex: string, maxL: number): string {
+    const hsl = rgbToHsl(hexToRgb(hex));
+    if (hsl.l <= maxL) return hex;
+    return rgbToHex(roundRgb(hslToRgb({ ...hsl, l: maxL })));
+}
+
+/** The accent nudged in lightness until it clears 3:1 against `panelHex`. */
+export function ensureAccentContrast(
+    accentHex: string,
+    panelHex: string,
+): string {
+    return rgbToHex(adjustAccent(hexToRgb(accentHex), hexToRgb(panelHex)));
 }
 
 export interface ThemeColors {
