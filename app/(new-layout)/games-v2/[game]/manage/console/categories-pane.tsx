@@ -14,7 +14,6 @@ import type {
     ResolvedGame,
     ResolvedGroup,
 } from '../../../../../../types/leaderboards.types';
-import type { LevelTemplate } from '../../../../../../types/levels.types';
 import { CategoryBandPreview } from '../../setup/steps/category-band-preview';
 import { buildCategorySeed } from '../../setup/steps/category-seed';
 import type { ReorderChange } from '../game-tab/reorder-changes';
@@ -27,8 +26,6 @@ interface Props {
     rows: ManageCategoryRow[];
     config: CategoryConfigRow[];
     groups: ManageGroup[];
-    /** Level categories — the table labels level boards by them. */
-    levelTemplates?: LevelTemplate[];
     /** The server snapshot the band preview renders from — `rows` supplies
      *  the live flags on top of it. */
     boardCategories: ResolvedCategory[];
@@ -65,7 +62,6 @@ export function CategoriesPane({
     rows,
     config,
     groups,
-    levelTemplates,
     boardCategories,
     boardGroups,
     metadata,
@@ -131,7 +127,6 @@ export function CategoriesPane({
                 rows={rows}
                 config={config}
                 groups={groups}
-                levelTemplates={levelTemplates}
                 onRowChange={onRowChange}
                 onRowGroupChange={onRowGroupChange}
                 onRowsReorder={onRowsReorder}

@@ -19,45 +19,42 @@ describe('deriveThemeVars', () => {
         expect(v['--bs-primary']).toBe('#4aa06a');
         expect(v['--bs-primary-rgb']).toBe('74, 160, 106');
     });
-    it('sets panel text (--board-ink) from the panel color', () => {
-        // dark panel → light ink
-        const dark = deriveThemeVars(base, 'dark');
-        expect(dark['--board-ink']).toBe('#e8eaed');
-        expect(dark['--board-ink-emphasis']).toBe('#ffffff');
-        // light panel → dark ink
-        const lightPanel = deriveThemeVars(
-            { ...base, panelColor: '#f2f2f2' },
+    it('renders a bright panel pick as a dark tint of its hue (speedrun.com model)', () => {
+        // The Super Mario Galaxy import: SRC's cyan panel must not become a
+        // bright cyan slab. Hue kept, lightness capped, ink goes light.
+        const v = deriveThemeVars(
+            {
+                ...base,
+                panelColor: '#00bfff',
+                backgroundColor: '#00ace5',
+                accentColor: '#006385',
+            },
             'dark',
         );
-        expect(lightPanel['--board-ink']).toBe('#1a1d1a');
-        expect(lightPanel['--board-ink-emphasis']).toBe('#000000');
+        expect(v['--board-surface-bg']).toBe('#005470');
+        expect(v['--site-canvas-bg']).toBe('#003647');
+        expect(v['--board-ink']).toBe('#e8eaed');
+        expect(v['--board-ink-emphasis']).toBe('#ffffff');
+        expect(v['--bs-body-color']).toBe('#e8eaed');
+        // The stored accent cleared 3:1 against the bright pick, not the tint;
+        // it is lifted so it still reads on the darkened panel.
+        expect(v['--board-accent']).toBe('#00a7e1');
+        expect(v['--bs-primary']).toBe('#00a7e1');
     });
-    it('sets canvas text (global --bs-*) from the background, not the panel', () => {
-        // dark background → light canvas text
-        expect(deriveThemeVars(base, 'dark')['--bs-body-color']).toBe(
-            '#e8eaed',
-        );
-        // light background + dark panel (the masthead bug): canvas text must go
-        // dark to contrast the page, while panel ink stays light for the panels.
-        const lightBg = deriveThemeVars(
-            { ...base, backgroundColor: '#4aa72e' },
+    it('leaves dark picks untouched', () => {
+        const v = deriveThemeVars(base, 'dark');
+        expect(v['--board-surface-bg']).toBe('#161c18');
+        expect(v['--site-canvas-bg']).toBe('#0d0f0d');
+        expect(v['--board-ink']).toBe('#e8eaed');
+        expect(v['--bs-body-color']).toBe('#e8eaed');
+    });
+    it('keeps the canvas a step darker than the panel when both picks are bright', () => {
+        const v = deriveThemeVars(
+            { ...base, panelColor: '#a0a0a0', backgroundColor: '#a0a0a0' },
             'dark',
         );
-        expect(lightBg['--bs-body-color']).toBe('#1a1d1a');
-        expect(lightBg['--bs-emphasis-color']).toBe('#000000');
-        expect(lightBg['--board-ink']).toBe('#e8eaed'); // panel #161c18 still light
-    });
-    it('picks the higher-contrast text on a mid-gray surface (best-of-two)', () => {
-        expect(
-            deriveThemeVars({ ...base, panelColor: '#a0a0a0' }, 'dark')[
-                '--board-ink'
-            ],
-        ).toBe('#1a1d1a');
-        expect(
-            deriveThemeVars({ ...base, backgroundColor: '#a0a0a0' }, 'dark')[
-                '--bs-body-color'
-            ],
-        ).toBe('#1a1d1a');
+        expect(v['--board-surface-bg']).toBe('#383838');
+        expect(v['--site-canvas-bg']).toBe('#242424');
     });
     it('derives recesses darker than the panel', () => {
         const v = deriveThemeVars(base, 'dark');

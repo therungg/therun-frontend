@@ -23,7 +23,6 @@ import type {
     ResolvedGroup,
     VariableRow,
 } from '../../../../../../types/leaderboards.types';
-import type { LevelTemplate } from '../../../../../../types/levels.types';
 import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
 import type { SrcImportJob } from '../../../../../../types/src-import.types';
 import { BackLink } from '../../shared/back-link';
@@ -56,9 +55,6 @@ export interface ConsoleShellProps {
     /** Per-category configuration for the index matrix. */
     categoryConfig: CategoryConfigRow[];
     initialGroups: ManageGroup[];
-    /** Level categories for the Levels pane's empty state — see
-     * ContentRouterProps.levelTemplates. */
-    levelTemplates?: LevelTemplate[];
     /** Board-order groups for the Boards pane (category-grouping sections) —
      * distinct from `initialGroups`, the ManageGroup shape the index/GameTab
      * use. Comes free from the same `resolveCategory` call as `categories`. */
@@ -91,7 +87,6 @@ export function ConsoleShell({
     initialRows,
     categoryConfig,
     initialGroups,
-    levelTemplates = [],
     boardGroups,
     variables,
     policies,
@@ -425,7 +420,6 @@ export function ConsoleShell({
                     moderators={moderators}
                     rows={rows}
                     groups={manageGroups}
-                    levelTemplates={levelTemplates}
                     navGroups={groups}
                     onNavigate={handleNavigate}
                     attentionCount={attentionItems.length}

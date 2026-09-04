@@ -131,7 +131,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
         getSrcImportJob(sessionId, game.id, 'settings').catch(() => null),
         getSrcImportJob(sessionId, game.id, 'resync').catch(() => null),
     ]);
-    const { rows: rawRows, groups, levelTemplates } = catalog;
+    const { rows: rawRows, groups } = catalog;
     const degradedSources = degradedSourcesOf([
         queueRes,
         reportsRes,
@@ -277,7 +277,6 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 initialRows={rows}
                 categoryConfig={categoryConfig}
                 initialGroups={groups}
-                levelTemplates={levelTemplates}
                 boardGroups={boardGroups}
                 variables={variables}
                 policies={policies}
