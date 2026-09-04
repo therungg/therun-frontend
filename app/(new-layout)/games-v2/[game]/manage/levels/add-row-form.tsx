@@ -29,6 +29,10 @@ export function AddRowForm({
 }: AddRowFormProps) {
     const [name, setName] = useState('');
 
+    // Only the button is disabled while a add is in flight. Disabling the
+    // input too would blur it to <body> on every successful add, which is
+    // exactly the flow this control exists to support — typing one name
+    // after another. The `pending` guard below stops a double submit.
     const submit = (e: FormEvent) => {
         e.preventDefault();
         const trimmed = name.trim();
@@ -45,7 +49,6 @@ export function AddRowForm({
                 placeholder={placeholder}
                 aria-label={`${label} name`}
                 value={name}
-                disabled={pending}
                 onChange={(e) => setName(e.target.value)}
             />
             <button type="submit" className={styles.addBtn} disabled={pending}>

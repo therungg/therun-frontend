@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { createLevelTemplateAction } from '~src/actions/levels/create-level-template.action';
 import type { LevelOverview } from '../../../../../../types/levels.types';
+import { InlineError } from '../shared/form-kit';
 import { updateVisibilityAction } from '../visibility/actions/update-visibility.action';
 import { AddRowForm } from './add-row-form';
 import styles from './levels.module.scss';
@@ -96,7 +97,7 @@ export function SubcategoriesTable({
 
     return (
         <div>
-            {error && <p className={styles.error}>{error}</p>}
+            <InlineError>{error}</InlineError>
 
             <AddRowForm
                 label="Add subcategory"

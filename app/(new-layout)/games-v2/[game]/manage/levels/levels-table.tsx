@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { deleteGroupAction } from '~src/actions/category-group/delete-group.action';
 import { createLevelAction } from '~src/actions/levels/create-level.action';
 import { levelOpAction } from '~src/actions/levels/level-op.action';
 import { updateLevelAction } from '~src/actions/levels/update-level.action';
 import type { LevelOverview } from '../../../../../../types/levels.types';
+import { InlineError } from '../shared/form-kit';
 import { AddRowForm } from './add-row-form';
 import styles from './levels.module.scss';
 
@@ -63,12 +64,39 @@ export function LevelsTable({
     );
     const [error, setError] = useState<string | null>(null);
 
+    // Opening and closing the rules editor swaps one control for another, so
+    // focus has to be carried across by hand or a keyboard user is dropped to
+    // <body>. Each side registers its element, and a one-shot state flag says
+    // which one to focus after the next commit.
+    const rulesTextareas = useRef(new Map<number, HTMLTextAreaElement>());
+    const rulesTriggers = useRef(new Map<number, HTMLButtonElement>());
+    const [focusTextareaId, setFocusTextareaId] = useState<number | null>(null);
+    const [focusTriggerId, setFocusTriggerId] = useState<number | null>(null);
+
+    useEffect(() => {
+        if (focusTextareaId === null) return;
+        rulesTextareas.current.get(focusTextareaId)?.focus();
+        setFocusTextareaId(null);
+    }, [focusTextareaId]);
+
+    useEffect(() => {
+        if (focusTriggerId === null) return;
+        rulesTriggers.current.get(focusTriggerId)?.focus();
+        setFocusTriggerId(null);
+    }, [focusTriggerId]);
+
+    const openRulesEditor = (levelId: number) => {
+        setOpenRules((prev) => new Set(prev).add(levelId));
+        setFocusTextareaId(levelId);
+    };
+
     const closeRules = (levelId: number) => {
         setOpenRules((prev) => {
             const next = new Set(prev);
             next.delete(levelId);
             return next;
         });
+        setFocusTriggerId(levelId);
         // Drop the draft too, or reopening the editor and hitting Save would
         // re-submit the text that was just cancelled.
         setDraftRules((prev) => {
@@ -127,7 +155,7 @@ export function LevelsTable({
         }
     };
 
-    const renameLevel = (level: Level, input: HTMLInputElement) => {
+    const renameLevel = async (level: Level, input: HTMLInputElement) => {
         const trimmed = input.value.trim();
         if (!trimmed) {
             // Nothing to save, and an empty box misrepresents the level —
@@ -136,7 +164,7 @@ export function LevelsTable({
             return;
         }
         if (trimmed === level.name) return;
-        void withPending(level.id, () =>
+        const ok = await withPending(level.id, () =>
             updateLevelAction({
                 gameSlug,
                 gameId,
@@ -144,6 +172,9 @@ export function LevelsTable({
                 name: trimmed,
             }),
         );
+        // The box is uncontrolled, so a rejected rename would otherwise sit
+        // there looking saved. Put the real name back.
+        if (!ok) input.value = level.name;
     };
 
     const saveRules = async (level: Level) => {
@@ -207,7 +238,7 @@ export function LevelsTable({
                 </div>
             )}
 
-            {error && <p className={styles.error}>{error}</p>}
+            <InlineError>{error}</InlineError>
 
             <AddRowForm
                 label="Add level"
@@ -253,7 +284,10 @@ export function LevelsTable({
                                                 defaultValue={level.name}
                                                 disabled={pending}
                                                 onBlur={(e) =>
-                                                    renameLevel(level, e.target)
+                                                    void renameLevel(
+                                                        level,
+                                                        e.target,
+                                                    )
                                                 }
                                             />
                                         </td>
@@ -263,6 +297,18 @@ export function LevelsTable({
                                                     className={styles.rulesEdit}
                                                 >
                                                     <textarea
+                                                        ref={(el) => {
+                                                            if (el) {
+                                                                rulesTextareas.current.set(
+                                                                    level.id,
+                                                                    el,
+                                                                );
+                                                            } else {
+                                                                rulesTextareas.current.delete(
+                                                                    level.id,
+                                                                );
+                                                            }
+                                                        }}
                                                         className={
                                                             styles.rulesTextarea
                                                         }
@@ -322,14 +368,24 @@ export function LevelsTable({
                                             ) : (
                                                 <button
                                                     type="button"
+                                                    ref={(el) => {
+                                                        if (el) {
+                                                            rulesTriggers.current.set(
+                                                                level.id,
+                                                                el,
+                                                            );
+                                                        } else {
+                                                            rulesTriggers.current.delete(
+                                                                level.id,
+                                                            );
+                                                        }
+                                                    }}
                                                     className={
                                                         styles.quietAction
                                                     }
                                                     onClick={() =>
-                                                        setOpenRules((prev) =>
-                                                            new Set(prev).add(
-                                                                level.id,
-                                                            ),
+                                                        openRulesEditor(
+                                                            level.id,
                                                         )
                                                     }
                                                 >

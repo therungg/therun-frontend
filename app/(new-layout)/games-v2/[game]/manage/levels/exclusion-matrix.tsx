@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { levelOpAction } from '~src/actions/levels/level-op.action';
 import type { LevelOverview } from '../../../../../../types/levels.types';
+import { InlineError } from '../shared/form-kit';
 import styles from './levels.module.scss';
 
 type Level = LevelOverview['levels'][number];
@@ -77,7 +78,7 @@ export function ExclusionMatrix({
 
     return (
         <div>
-            {error && <p className={styles.error}>{error}</p>}
+            <InlineError>{error}</InlineError>
             <div className={styles.tableScroll}>
                 <table className={styles.table}>
                     <thead>

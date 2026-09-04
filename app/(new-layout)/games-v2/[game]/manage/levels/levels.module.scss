@@ -90,6 +90,9 @@
     &:focus {
         outline: none;
         border-color: var(--bs-primary);
+        // Same ring as .addInput/.rulesTextarea — a 1px border-colour change
+        // alone is too quiet to track by keyboard.
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
     }
 
     &:disabled {
@@ -114,6 +117,11 @@
 
     &:hover {
         text-decoration: underline;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: default;
     }
 }
 
@@ -175,24 +183,25 @@
     margin: 0;
 }
 
-.error {
-    font-size: dt.$font-size-sm;
-    color: var(--bs-danger);
-    margin: 0 0 dt.$spacing-sm;
-}
+// Errors are rendered by form-kit's <InlineError>, which brings its own
+// styling — this module deliberately has no .error of its own.
 
+// A warning callout sitting *inside* a .section card. It follows the
+// console's existing callout pattern (reassignments' .calloutWarn): a
+// transparent accent tint rather than a flat --bs-body-bg, so it reads as a
+// tinted patch on whatever the card's surface is instead of punching a
+// page-coloured hole through it.
 .banner {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: dt.$spacing-md;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
     border-left: 3px solid dt.$accent-amber;
     border-radius: dt.$radius-md;
-    background: var(--bs-body-bg);
+    background: color-mix(in srgb, #{dt.$accent-amber} 10%, transparent);
     padding: dt.$spacing-sm dt.$spacing-lg;
     font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
+    color: color-mix(in srgb, #{dt.$accent-amber} 75%, var(--bs-body-color));
     margin-bottom: dt.$spacing-md;
 }
 

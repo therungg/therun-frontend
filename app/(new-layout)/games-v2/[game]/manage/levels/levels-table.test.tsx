@@ -256,6 +256,85 @@ describe('LevelsTable', () => {
         expect(onChanged).not.toHaveBeenCalled();
     });
 
+    it('puts the old name back when the rename is rejected', async () => {
+        vi.mocked(updateLevelAction).mockResolvedValueOnce({ error: 'nope' });
+        render(
+            <LevelsTable
+                gameId={1}
+                gameSlug="g"
+                levels={levels}
+                templates={templates}
+                onChanged={noop}
+            />,
+        );
+        const input = screen.getByDisplayValue('E1M1') as HTMLInputElement;
+        fireEvent.change(input, { target: { value: 'E1M1 renamed' } });
+        fireEvent.blur(input);
+
+        await waitFor(() => expect(input.value).toBe('E1M1'));
+    });
+
+    it('moves focus into the rules textarea when the editor opens', async () => {
+        render(
+            <LevelsTable
+                gameId={1}
+                gameSlug="g"
+                levels={levels}
+                templates={templates}
+                onChanged={noop}
+            />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Add rules' }));
+        await waitFor(() =>
+            expect(document.activeElement).toBe(
+                screen.getByLabelText('Rules for E1M1'),
+            ),
+        );
+    });
+
+    it('returns focus to the trigger when the editor is cancelled', async () => {
+        render(
+            <LevelsTable
+                gameId={1}
+                gameSlug="g"
+                levels={levels}
+                templates={templates}
+                onChanged={noop}
+            />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Add rules' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+        await waitFor(() =>
+            expect(document.activeElement).toBe(
+                screen.getByRole('button', { name: 'Add rules' }),
+            ),
+        );
+    });
+
+    it('returns focus to the trigger after a successful rules save', async () => {
+        render(
+            <LevelsTable
+                gameId={1}
+                gameSlug="g"
+                levels={levels}
+                templates={templates}
+                onChanged={noop}
+            />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Add rules' }));
+        fireEvent.change(screen.getByLabelText('Rules for E1M1'), {
+            target: { value: 'No skips.' },
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'Save rules' }));
+
+        await waitFor(() =>
+            expect(document.activeElement).toBe(
+                screen.getByRole('button', { name: 'Add rules' }),
+            ),
+        );
+    });
+
     it('surfaces an error from the create-missing-boards action', async () => {
         const onChanged = vi.fn(noop);
         vi.mocked(levelOpAction).mockResolvedValueOnce({ error: 'no dice' });
