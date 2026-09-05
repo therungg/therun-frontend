@@ -12,10 +12,6 @@ import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 import type { GameMetadata } from '~src/lib/game-mgmt';
 import { splitLevelBoards } from '~src/lib/levels/display';
 import {
-    type BoardDefaults,
-    boardDefaults,
-} from '~src/lib/setup/board-defaults';
-import {
     findGameMinPolicy,
     minMsFromPolicy,
 } from '~src/lib/setup/game-minimum';
@@ -202,25 +198,6 @@ export function CategoriesPane({
         );
         return fullGameRows.filter((r) => ids.has(r.id));
     }, [fullGameRows, boardRows]);
-
-    /**
-     * The values every matrix cell renders a deviation from. Game details are
-     * a separate load, and a viewer whose console never got them still has a
-     * board to configure — so with no metadata the board simply states no
-     * defaults, and every cell draws its own plain value instead of a dot. The
-     * board minimum survives either way: it is a policy, not a game column.
-     */
-    const defaults: BoardDefaults = metadata
-        ? boardDefaults(metadata, policies)
-        : {
-              primaryTiming: null,
-              gameTimeLabel: null,
-              showOtherTime: true,
-              sortAscending: null,
-              showMilliseconds: null,
-              rulesTemplate: null,
-              minMs: minMsFromPolicy(findGameMinPolicy(policies), 'rt'),
-          };
 
     const seed = metadata ? buildCategorySeed(metadata) : null;
 
@@ -505,7 +482,6 @@ export function CategoriesPane({
                         categories={matrixCategories}
                         groups={matrixGroups}
                         policies={policies}
-                        defaults={defaults}
                         variables={variables}
                         structure={{
                             groupOptions,

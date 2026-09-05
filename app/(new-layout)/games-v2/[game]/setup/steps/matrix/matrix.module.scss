@@ -35,46 +35,10 @@
 // they used to be read-only with a link back to step 1, which meant spotting a
 // wrong default here cost a round trip and your place in the list.
 
-.defaultsRow {
-    td {
-        border-bottom: 2px solid rgba(var(--bs-border-color-rgb), 0.5);
-        padding-bottom: dt.$spacing-sm;
-        background: rgba(var(--bs-secondary-bg-rgb), 0.35);
-    }
-}
 
-.defaultsName {
-    @include board.board-eyebrow;
-    white-space: nowrap;
-}
 
 // Deliberately drawn like the cells below rather than like a form: this is the
 // same kind of control doing the same kind of job, one scope up.
-.defaultsControl {
-    font: inherit;
-    font-size: dt.$font-size-sm;
-    font-weight: 600;
-    color: var(--bs-emphasis-color);
-    background: transparent;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.45);
-    border-radius: dt.$radius-sm;
-    padding: 0.15rem dt.$spacing-xs;
-    max-width: 11rem;
-    transition: border-color dt.$transition-fast;
-
-    &:hover:not(:disabled) {
-        border-color: rgba(var(--bs-border-color-rgb), 0.8);
-    }
-
-    &:focus-visible {
-        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
-        outline-offset: 1px;
-    }
-
-    &:disabled {
-        opacity: 0.6;
-    }
-}
 
 // ---- Follow-up offer ----------------------------------------
 // Raised after a default is written, not before: declining leaves the board
@@ -172,14 +136,11 @@
 }
 
 // ---- Cells --------------------------------------------------
-// .cellQuiet holds the board default; .cellDeviates differs and is the only
-// thing in its column drawn at full strength.
-//
-// A quiet cell does not render its value at all — it renders a dot. The value
-// is the board default, which row zero already states in the same column, so
-// repeating it eight times down the column was the noise this grid exists to
-// remove. The control is still the control: hover or focus and the word comes
-// back in place, and opening it shows real labels.
+// Every cell draws its own value at full strength (.cellNoDefault). The quiet
+// dot below belonged to the board-defaults row: a cell sitting on the default
+// drew a dot instead of repeating it. With no defaults there is nothing to
+// inherit, so nothing takes .cellQuiet any more — the rules are kept only
+// until the dot machinery in category-matrix.tsx is swept out with them.
 
 .quietWrap {
     position: relative;

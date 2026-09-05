@@ -6,7 +6,6 @@ import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import { previewCategories } from '~src/lib/console/preview-categories';
 import type { GameMetadata } from '~src/lib/game-mgmt';
 import { splitLevelBoards } from '~src/lib/levels/display';
-import { boardDefaults } from '~src/lib/setup/board-defaults';
 import type {
     ResolvedCategory,
     ResolvedGame,
@@ -138,19 +137,6 @@ export function LevelsPane({
                     categories={levelCategories}
                     groups={[] as ResolvedGroup[]}
                     policies={policies ?? []}
-                    defaults={
-                        metadata && policies
-                            ? boardDefaults(metadata, policies)
-                            : {
-                                  primaryTiming: null,
-                                  gameTimeLabel: null,
-                                  showOtherTime: true,
-                                  sortAscending: null,
-                                  showMilliseconds: null,
-                                  rulesTemplate: null,
-                                  minMs: null,
-                              }
-                    }
                     variables={variables}
                     structure={
                         onEditCategory

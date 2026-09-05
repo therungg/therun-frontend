@@ -16,15 +16,11 @@ import { subBoardCount } from '~src/lib/console/category-rows';
 import { sectionsFor } from '~src/lib/console/category-sections';
 import { formatDuration } from '~src/lib/duration';
 import {
-    type BoardDefaults,
     categoryMinMs,
-    deviates,
-    hasDefault,
     type MatrixColumn,
     otherTimeField,
     otherTiming,
     type RulesState,
-    rendersAsDot,
     rulesState,
     showsOtherTime,
     type TimingChoice,
@@ -32,6 +28,10 @@ import {
     timingChoiceOf,
     timingLabel,
 } from '~src/lib/setup/board-defaults';
+import {
+    findGameMinPolicy,
+    minMsFromPolicy,
+} from '~src/lib/setup/game-minimum';
 import type {
     ResolvedCategory,
     ResolvedGame,
@@ -42,7 +42,6 @@ import type { BoardPolicyRow } from '../../../../../../../types/moderation.types
 import boardStyles from '../../../manage/console/board-categories.module.scss';
 import { bulkUpdateCategoriesAction } from '../../actions/bulk-update-categories.action';
 import { setCategoryMinimumAction } from '../../actions/set-category-minimum.action';
-import { DefaultsRow } from './defaults-row';
 import { IconCell } from './icon-cell';
 import styles from './matrix.module.scss';
 import { RulesDialog } from './rules-dialog';
@@ -79,7 +78,6 @@ interface Props {
     categories: ResolvedCategory[];
     groups: ResolvedGroup[];
     policies: BoardPolicyRow[];
-    defaults: BoardDefaults;
     /** Category whose rules open on mount, from a `?cat=<id>` deep link. */
     initialOpenCategoryId?: number | null;
     /** Omitted (the wizard) = no structure columns at all. */
@@ -91,13 +89,10 @@ interface Props {
 }
 
 /**
- * Zone 1 of step 4: the board's featured categories against the board
- * defaults.
+ * Zone 1 of step 4: the board's featured categories.
  *
- * Every cell renders a DEVIATION, not a value — a category sitting on the
- * board default is drawn quiet, so a healthy board reads as an almost-empty
- * grid and the eye lands on the exceptions. That is what makes this legible
- * at 30 categories where a wall of raw values would not be.
+ * Every cell renders its own value. There are no board defaults to deviate
+ * from — each category is set on its own, as many times as that takes.
  *
  * Writes land immediately (scalar edits are trivially reversible), with one
  * exception: a bulk apply first shows what it would change, because select-all
@@ -152,7 +147,6 @@ export function CategoryMatrix({
     categories,
     groups,
     policies,
-    defaults,
     initialOpenCategoryId,
     structure,
     variables,
@@ -190,8 +184,13 @@ export function CategoryMatrix({
      * column of em dashes nobody can ever fill.
      */
     const gameTimeCategories = mains.filter((c) => c.primaryTiming === 'gt');
-    const showsRtaColumns =
-        gameTimeCategories.length > 0 || defaults.primaryTiming === 'gt';
+    const showsRtaColumns = gameTimeCategories.length > 0;
+
+    // Not a board default — the game's own minimum policy, which a category
+    // with no minimum of its own really does inherit backend-side. It is the
+    // placeholder in an empty minimum cell so the cell does not imply "no
+    // minimum applies" when one does.
+    const gameMinMs = minMsFromPolicy(findGameMinPolicy(policies), 'rt');
     /**
      * Only an all-game-time board can name the columns after RTA. On a mixed
      * board the other clock is IGT above the RTA rows, so the headers stay
@@ -248,33 +247,22 @@ export function CategoryMatrix({
         structure?.onDropRow(dragged, overId);
     };
 
-    const cellState = (
-        c: ResolvedCategory,
-        column: MatrixColumn,
-    ): CellState => {
-        if (!hasDefault(defaults, column)) return 'noDefault';
-        return deviates(c, column, defaults, policies) ? 'deviates' : 'quiet';
-    };
+    // There is no board default to deviate from any more, so every cell
+    // renders its own value at full strength. The quiet/deviates distinction
+    // (and the dot that stood in for "inherited") went with the defaults row.
+    const cellClass = (_c: ResolvedCategory, _column: MatrixColumn) =>
+        `${styles.cellControl} ${styles.cellNoDefault}`;
 
-    const cellClass = (c: ResolvedCategory, column: MatrixColumn) =>
-        `${styles.cellControl} ${CELL_CLASS[cellState(c, column)]}`;
-
-    /**
-     * Inherited cells draw muted in every column; only some of them go all the
-     * way to a dot. See DOTTED_COLUMNS — timing and the minimum keep their
-     * values because they are a unit and a number, not preferences.
-     */
-    const dotted = (c: ResolvedCategory, column: MatrixColumn) =>
-        rendersAsDot(column) && cellState(c, column) === 'quiet';
+    const dotted = (_c: ResolvedCategory, _column: MatrixColumn) => false;
 
     // name (icon included), timing, [other time, RTA fallback,] minimum,
-    // rules, ms — plus the three structure columns (order, group and the row
-    // actions) when the console asks for them. This is what row zero and every
+    // rules, ms — plus the two structure columns (group and the row actions)
+    // when the console asks for them. This is what row zero and every
     // group band row span, so it has to count what is actually drawn: a band
     // that stops short of the last column reads as a broken table, not as a
     // heading.
     const columnCount =
-        (showsRtaColumns ? 7 : 5) + (structure ? 3 : 0) + (variables ? 1 : 0);
+        (showsRtaColumns ? 7 : 5) + (structure ? 2 : 0) + (variables ? 1 : 0);
 
     return (
         <div className={styles.panel}>
@@ -288,9 +276,6 @@ export function CategoryMatrix({
                 <table className={styles.grid}>
                     <thead>
                         <tr>
-                            {structure && (
-                                <th style={{ width: '4.5rem' }}>Order</th>
-                            )}
                             <th>Category</th>
                             {structure && <th>Group</th>}
                             <th>Timing</th>
@@ -325,23 +310,6 @@ export function CategoryMatrix({
                         </tr>
                     </thead>
                     <tbody>
-                        {/* Row zero: the values every cell below is a
-                            deviation from, in the same columns, editable
-                            where their consequences are visible. */}
-                        <DefaultsRow
-                            gameSlug={game.name}
-                            gameId={game.id}
-                            defaults={defaults}
-                            policies={policies}
-                            columnCount={columnCount}
-                            showsRtaColumns={showsRtaColumns}
-                            leadingCells={structure ? 1 : 0}
-                            afterNameCells={structure ? 1 : 0}
-                            beforeMinimumCells={variables ? 1 : 0}
-                            trailingCells={structure ? 1 : 0}
-                            categories={mains}
-                            onApplyToCategories={applyToCategories}
-                        />
                         {sections.map((section, sectionIdx) => (
                             <MatrixSection
                                 key={section.id ?? `ungrouped-${sectionIdx}`}
@@ -367,33 +335,42 @@ export function CategoryMatrix({
                                                     : undefined
                                             }
                                         >
-                                            {structure && (
-                                                <OrderCell
-                                                    category={c}
-                                                    index={rowIdx}
-                                                    lastIndex={
-                                                        section.items.length - 1
-                                                    }
-                                                    dragging={dragId === c.id}
-                                                    structure={structure}
-                                                    onDragStart={() =>
-                                                        setDragId(c.id)
-                                                    }
-                                                    onDragEnd={() =>
-                                                        setDragId(null)
-                                                    }
-                                                />
-                                            )}
-
                                             {/* The icon sits with the name it
                                                 belongs to. As a column of its
                                                 own it was eight empty boxes
                                                 holding the second-best
-                                                position on the screen. */}
+                                                position on the screen. The
+                                                reorder controls sit here for
+                                                the same reason: rank is not a
+                                                fact worth a column, it is what
+                                                the row's position already
+                                                says. */}
                                             <td className={styles.nameCell}>
                                                 <span
                                                     className={styles.nameInner}
                                                 >
+                                                    {structure && (
+                                                        <ReorderHandle
+                                                            category={c}
+                                                            index={rowIdx}
+                                                            lastIndex={
+                                                                section.items
+                                                                    .length - 1
+                                                            }
+                                                            dragging={
+                                                                dragId === c.id
+                                                            }
+                                                            structure={
+                                                                structure
+                                                            }
+                                                            onDragStart={() =>
+                                                                setDragId(c.id)
+                                                            }
+                                                            onDragEnd={() =>
+                                                                setDragId(null)
+                                                            }
+                                                        />
+                                                    )}
                                                     <IconCell
                                                         gameSlug={game.name}
                                                         gameId={game.id}
@@ -604,9 +581,7 @@ export function CategoryMatrix({
                                                         // the cell draws a dot,
                                                         // like every other
                                                         // inherited cell.
-                                                        inherited={
-                                                            defaults.minMs
-                                                        }
+                                                        inherited={gameMinMs}
                                                         className={`${cellClass(
                                                             c,
                                                             'minimum',
@@ -766,20 +741,24 @@ export function CategoryMatrix({
 }
 
 /**
- * The row's rank and the two ways to change it: drag the grip, or nudge with
- * the arrows.
+ * The two ways to change a row's position: drag the grip, or nudge with the
+ * arrows.
  *
  * Both exist on purpose — drag is the fast gesture and the arrows are the one
- * that works from the keyboard and on touch. The arrows are invisible until the
- * row is hovered or focused (see .orderBtn), so at rest the column reads as a
- * list of ranks rather than as two buttons per row.
+ * that works from the keyboard and on touch. Neither shows a rank number: the
+ * row's place in the table already says it, and a column repeating it cost a
+ * column.
+ *
+ * The controls live inside the name cell, ahead of the icon, and stay quiet
+ * until the row is hovered or focused (see .orderBtn), so at rest the column
+ * reads as a list of names rather than as two buttons per row.
  *
  * The index is the row's position within its own SECTION, which is also the
  * scope a move renumbers: order is per group on the public board, so a move
  * that could cross a group boundary would be describing something the board
  * cannot render.
  */
-function OrderCell({
+function ReorderHandle({
     category,
     index,
     lastIndex,
@@ -797,45 +776,40 @@ function OrderCell({
     onDragEnd: () => void;
 }) {
     return (
-        <td>
-            <div className={boardStyles.orderCell}>
-                <span
-                    aria-hidden="true"
-                    title="Drag to reorder"
-                    draggable={!structure.reorderPending}
-                    onDragStart={onDragStart}
-                    onDragEnd={onDragEnd}
-                    className={`${boardStyles.grip} ${
-                        dragging ? boardStyles.gripDragging : ''
-                    }`}
+        <span className={boardStyles.orderCell}>
+            <span
+                aria-hidden="true"
+                title="Drag to reorder"
+                draggable={!structure.reorderPending}
+                onDragStart={onDragStart}
+                onDragEnd={onDragEnd}
+                className={`${boardStyles.grip} ${
+                    dragging ? boardStyles.gripDragging : ''
+                }`}
+            >
+                <GripVertical size={14} />
+            </span>
+            <span className={boardStyles.orderArrows}>
+                <button
+                    type="button"
+                    className={boardStyles.orderBtn}
+                    onClick={() => structure.onMove(category.id, -1)}
+                    disabled={structure.reorderPending || index === 0}
+                    aria-label={`Move ${category.display} up`}
                 >
-                    <GripVertical size={14} />
-                </span>
-                <span className={boardStyles.rank}>{index + 1}</span>
-                <span className={boardStyles.orderArrows}>
-                    <button
-                        type="button"
-                        className={boardStyles.orderBtn}
-                        onClick={() => structure.onMove(category.id, -1)}
-                        disabled={structure.reorderPending || index === 0}
-                        aria-label={`Move ${category.display} up`}
-                    >
-                        <CaretUpFill size={9} />
-                    </button>
-                    <button
-                        type="button"
-                        className={boardStyles.orderBtn}
-                        onClick={() => structure.onMove(category.id, 1)}
-                        disabled={
-                            structure.reorderPending || index === lastIndex
-                        }
-                        aria-label={`Move ${category.display} down`}
-                    >
-                        <CaretDownFill size={9} />
-                    </button>
-                </span>
-            </div>
-        </td>
+                    <CaretUpFill size={9} />
+                </button>
+                <button
+                    type="button"
+                    className={boardStyles.orderBtn}
+                    onClick={() => structure.onMove(category.id, 1)}
+                    disabled={structure.reorderPending || index === lastIndex}
+                    aria-label={`Move ${category.display} down`}
+                >
+                    <CaretDownFill size={9} />
+                </button>
+            </span>
+        </span>
     );
 }
 
@@ -901,14 +875,6 @@ function MatrixSection({
         </>
     );
 }
-
-type CellState = 'quiet' | 'deviates' | 'noDefault';
-
-const CELL_CLASS: Record<CellState, string> = {
-    quiet: styles.cellQuiet,
-    deviates: styles.cellDeviates,
-    noDefault: styles.cellNoDefault,
-};
 
 /**
  * A cell that holds the board default, in a column where the value is not

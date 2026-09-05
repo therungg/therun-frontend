@@ -1,7 +1,6 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { boardDefaults } from '~src/lib/setup/board-defaults';
 import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
 import { CategoryMatrix } from './matrix/category-matrix';
@@ -37,8 +36,6 @@ export function StepCategorySetup({ data, onAdvance }: StepProps) {
         (c) => !c.archived && (c.isMain ?? false),
     );
 
-    const defaults = boardDefaults(data.metadata, data.policies);
-
     return (
         <section>
             <StepHeader step="category-setup" title="Category settings" />
@@ -55,7 +52,6 @@ export function StepCategorySetup({ data, onAdvance }: StepProps) {
                     categories={data.categories}
                     groups={data.groups}
                     policies={data.policies}
-                    defaults={defaults}
                     initialOpenCategoryId={catId}
                 />
             )}

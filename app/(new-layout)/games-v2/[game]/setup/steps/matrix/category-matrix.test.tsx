@@ -9,7 +9,6 @@ import {
 } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { GameMetadata } from '~src/lib/game-mgmt';
-import { boardDefaults } from '~src/lib/setup/board-defaults';
 import type { WizardData } from '../../types';
 
 vi.mock('../../actions/bulk-update-categories.action', () => ({
@@ -111,7 +110,6 @@ function renderMatrix() {
             categories={data.categories}
             groups={data.groups}
             policies={data.policies}
-            defaults={boardDefaults(data.metadata, data.policies)}
         />,
     );
 }
@@ -182,7 +180,6 @@ describe('CategoryMatrix', () => {
                 categories={data.categories}
                 groups={data.groups}
                 policies={data.policies}
-                defaults={boardDefaults(data.metadata, data.policies)}
             />,
         );
         const min = screen.getByLabelText(
@@ -265,46 +262,5 @@ describe('CategoryMatrix', () => {
                 }),
             ),
         );
-    });
-
-    it('puts the board defaults in the same columns the cells are measured against', () => {
-        renderMatrix();
-        // Row zero, not a caption: the default sits in the Timing column, so
-        // the comparison with the cells below is vertical.
-        const boardTiming = screen.getByLabelText(
-            'Board default timing',
-        ) as HTMLSelectElement;
-        expect(boardTiming.value).toBe('rt');
-        expect(
-            screen.getByLabelText('Board default milliseconds'),
-        ).toBeTruthy();
-        expect(
-            screen.getByLabelText('Board default minimum time'),
-        ).toBeTruthy();
-    });
-
-    it('offers to bring the categories along when a board default changes', async () => {
-        renderMatrix();
-        fireEvent.change(screen.getByLabelText('Board default timing'), {
-            target: { value: 'gt' },
-        });
-        // Any% is still on RTA; 16 Star is already IGT, so exactly one
-        // category is behind and the question counts only it.
-        expect(
-            await screen.findByRole('button', { name: 'Apply to all 1' }),
-        ).toBeTruthy();
-        expect(
-            screen.getByRole('button', { name: 'Don’t change' }),
-        ).toBeTruthy();
-    });
-
-    it('does not ask when every category already matches the new default', () => {
-        renderMatrix();
-        // Milliseconds never asks — it is cosmetic, and sweeping it across a
-        // board is not what changing the default means.
-        fireEvent.change(screen.getByLabelText('Board default milliseconds'), {
-            target: { value: 'off' },
-        });
-        expect(screen.queryByText(/Apply to all/)).toBeNull();
     });
 });
