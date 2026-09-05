@@ -37,12 +37,36 @@ interface Props {
      * sits under.
      */
     showsRtaColumns: boolean;
+    /**
+     * Blank cells row zero carries so it stays aligned with the header when the
+     * matrix draws structure columns it has nothing to say about. A board-wide
+     * rank, a board-wide group and a board-wide Remove are all meaningless, but
+     * the row still has to occupy their columns or every cell after them slides
+     * one to the left.
+     */
+    leadingCells?: number;
+    afterNameCells?: number;
+    /** Columns drawn between the timing block and Min. time (subcategories). */
+    beforeMinimumCells?: number;
+    trailingCells?: number;
     /** Featured categories, for the "apply to the rest?" offer. */
     categories: ResolvedCategory[];
     onApplyToCategories: (
         categoryIds: number[],
         fields: BulkCategoryFields,
     ) => void;
+}
+
+/** Empty cells holding a structure column's place in row zero. */
+function Spacers({ count }: { count: number }) {
+    if (count <= 0) return null;
+    return (
+        <>
+            {Array.from({ length: count }, (_, i) => (
+                <td key={`spacer-${i}`} />
+            ))}
+        </>
+    );
 }
 
 /** A default that just changed, and the categories it has not reached. */
@@ -77,6 +101,10 @@ export function DefaultsRow({
     policies,
     columnCount,
     showsRtaColumns,
+    leadingCells = 0,
+    afterNameCells = 0,
+    beforeMinimumCells = 0,
+    trailingCells = 0,
     categories,
     onApplyToCategories,
 }: Props) {
@@ -96,10 +124,11 @@ export function DefaultsRow({
      * board in a coherent state rather than half-applied. Asked only when at
      * least one category is not already on the new value.
      *
-     * Only timing, minimum and ranking ask. Milliseconds is cosmetic and the
-     * rules template is a starting point rather than a value a category is
-     * "on" — sweeping either across a board is not what a moderator means by
-     * changing the default.
+     * Only timing and the minimum ask. Milliseconds is cosmetic and the rules
+     * template is a starting point rather than a value a category is "on" —
+     * sweeping either across a board is not what a moderator means by changing
+     * the default. (Ranking direction used to ask too; it is no longer editable
+     * from the frontend at all.)
      */
     const offerFollowUp = <T,>(
         label: string,
@@ -201,10 +230,12 @@ export function DefaultsRow({
     return (
         <>
             <tr className={styles.defaultsRow}>
+                <Spacers count={leadingCells} />
                 {/* No icon here: a board-wide one would be the game cover,
                     which already exists. The per-category slot lives in the
                     name cell below. */}
                 <td className={styles.defaultsName}>Board default</td>
+                <Spacers count={afterNameCells} />
 
                 <td>
                     <select
@@ -289,6 +320,10 @@ export function DefaultsRow({
                     </>
                 )}
 
+                {/* Subcategories are a structure, not a scalar — there is
+                    nothing board-wide to default them to. */}
+                <Spacers count={beforeMinimumCells} />
+
                 <td>
                     <DurationField
                         size="sm"
@@ -306,40 +341,10 @@ export function DefaultsRow({
 
                 <td />
 
-                <td>
-                    <select
-                        className={styles.defaultsControl}
-                        value={
-                            defaults.sortAscending === null
-                                ? ''
-                                : defaults.sortAscending
-                                  ? 'asc'
-                                  : 'desc'
-                        }
-                        disabled={isSaving}
-                        aria-label="Board default ranking direction"
-                        onChange={(e) => {
-                            const next =
-                                e.target.value === ''
-                                    ? null
-                                    : e.target.value === 'asc';
-                            save({ sortAscending: next });
-                            // "Not set" states nothing to follow, so there
-                            // is nothing to offer.
-                            if (next === null) return;
-                            offerFollowUp(
-                                next ? 'lowest first' : 'highest first',
-                                next,
-                                (c) => c.sortAscending ?? true,
-                                applyFields({ sortAscending: next }),
-                            );
-                        }}
-                    >
-                        <option value="">Not set</option>
-                        <option value="asc">Lowest</option>
-                        <option value="desc">Highest</option>
-                    </select>
-                </td>
+                {/* No ranking-direction cell: the column is gone from the
+                    matrix entirely (see category-matrix.tsx), and row zero has
+                    to hold exactly the columns the header draws. The stored
+                    default is untouched — nothing here writes it any more. */}
 
                 <td>
                     <select
@@ -366,6 +371,7 @@ export function DefaultsRow({
                         <option value="off">Off</option>
                     </select>
                 </td>
+                <Spacers count={trailingCells} />
             </tr>
 
             {offer && (

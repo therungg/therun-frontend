@@ -161,6 +161,16 @@
     gap: dt.$spacing-sm;
 }
 
+// Subcategory count: a fact about the category, not a control, so it is the
+// one cell here with nothing to click. Muted and right-aligned, because what
+// the eye wants from this column is the row that says something other than 1.
+.subBoardsCell {
+    text-align: right;
+    color: var(--bs-secondary-color);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
 // ---- Cells --------------------------------------------------
 // .cellQuiet holds the board default; .cellDeviates differs and is the only
 // thing in its column drawn at full strength.

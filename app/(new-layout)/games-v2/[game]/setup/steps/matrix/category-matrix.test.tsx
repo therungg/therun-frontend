@@ -107,7 +107,10 @@ function renderMatrix() {
     const data = makeData();
     return render(
         <CategoryMatrix
-            data={data}
+            game={data.game}
+            categories={data.categories}
+            groups={data.groups}
+            policies={data.policies}
             defaults={boardDefaults(data.metadata, data.policies)}
         />,
     );
@@ -121,10 +124,10 @@ afterEach(() => {
 describe('CategoryMatrix', () => {
     it('draws an inherited preference as a dot instead of its value', () => {
         renderMatrix();
-        // Ranking is Lowest on essentially every board. Row zero says so once;
-        // repeating the word down every row is the noise a deviation matrix
-        // exists to remove.
-        const quiet = screen.getByLabelText('Ranking direction for Any%');
+        // Milliseconds are shown on essentially every board. Row zero says so
+        // once; repeating the word down every row is the noise a deviation
+        // matrix exists to remove.
+        const quiet = screen.getByLabelText('Show milliseconds for Any%');
         expect(quiet.parentElement?.className).toMatch(/quietWrap/);
         expect(quiet.parentElement?.textContent).toContain('·');
     });
@@ -175,7 +178,10 @@ describe('CategoryMatrix', () => {
         ] as WizardData['policies'];
         render(
             <CategoryMatrix
-                data={data}
+                game={data.game}
+                categories={data.categories}
+                groups={data.groups}
+                policies={data.policies}
                 defaults={boardDefaults(data.metadata, data.policies)}
             />,
         );
@@ -201,8 +207,8 @@ describe('CategoryMatrix', () => {
 
     it('writes a single cell edit straight through', async () => {
         renderMatrix();
-        fireEvent.change(screen.getByLabelText('Ranking direction for Any%'), {
-            target: { value: 'desc' },
+        fireEvent.change(screen.getByLabelText('Show milliseconds for Any%'), {
+            target: { value: 'off' },
         });
         await waitFor(() =>
             expect(bulkUpdateCategoriesAction).toHaveBeenCalledTimes(1),
@@ -210,7 +216,7 @@ describe('CategoryMatrix', () => {
         expect(bulkUpdateCategoriesAction).toHaveBeenCalledWith(
             expect.objectContaining({
                 categoryIds: [10],
-                fields: { sortAscending: false },
+                fields: { showMilliseconds: false },
             }),
         );
     });
@@ -270,7 +276,7 @@ describe('CategoryMatrix', () => {
         ) as HTMLSelectElement;
         expect(boardTiming.value).toBe('rt');
         expect(
-            screen.getByLabelText('Board default ranking direction'),
+            screen.getByLabelText('Board default milliseconds'),
         ).toBeTruthy();
         expect(
             screen.getByLabelText('Board default minimum time'),

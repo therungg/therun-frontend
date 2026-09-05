@@ -9,7 +9,7 @@ import { StepHeader } from './step-header';
 
 /**
  * Category settings: the per-category scalars for every featured category on
- * one screen — timing, minimum, rules, ranking direction, milliseconds —
+ * one screen — timing, minimum, rules, milliseconds —
  * rendered as DEVIATIONS from the board defaults set in step 1. A cell holding
  * the default renders as a dot rather than its value, so the grid is near-empty
  * on a healthy board and only the exceptions catch the eye.
@@ -51,7 +51,10 @@ export function StepCategorySetup({ data, onAdvance }: StepProps) {
                 </div>
             ) : (
                 <CategoryMatrix
-                    data={data}
+                    game={data.game}
+                    categories={data.categories}
+                    groups={data.groups}
+                    policies={data.policies}
                     defaults={defaults}
                     initialOpenCategoryId={catId}
                 />

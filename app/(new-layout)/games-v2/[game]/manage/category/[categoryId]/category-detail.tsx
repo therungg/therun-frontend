@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight } from 'react-bootstrap-icons';
 import { levelOpAction } from '~src/actions/levels/level-op.action';
 import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 import { levelBoardLabel } from '~src/lib/levels/display';
+import { formatCount, formatHours } from '~src/utils/format-stats';
 import type {
     ResolvedCategory,
     ResolvedGame,
@@ -57,6 +58,7 @@ export function CategoryDetail({
                     {CONCEPT_LABEL.categories}
                 </Link>
                 <h1 className={styles.title}>{category.display}</h1>
+                <CategoryStats category={category} />
                 <nav className={styles.step} aria-label="Adjacent categories">
                     {prev && (
                         <Link href={`${base}/category/${prev.id}`}>
@@ -91,6 +93,23 @@ export function CategoryDetail({
                 context="console"
             />
         </div>
+    );
+}
+
+/**
+ * Runners/runs/playtime — dropped from the console table (it's eight rows of
+ * board configuration, not a leaderboard), surfaced here instead. Level
+ * templates carry no stats of their own, so they render nothing.
+ */
+function CategoryStats({ category }: { category: ResolvedCategory }) {
+    if (category.uniqueRunners == null) return null;
+    return (
+        <p className={styles.stats}>
+            {formatCount(category.uniqueRunners)} runner
+            {category.uniqueRunners === 1 ? '' : 's'} ·{' '}
+            {formatCount(category.totalFinishedAttemptCount ?? 0)} runs ·{' '}
+            {formatHours(category.totalRunTime ?? 0)}h playtime
+        </p>
     );
 }
 

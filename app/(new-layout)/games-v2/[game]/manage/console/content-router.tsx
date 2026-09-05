@@ -153,10 +153,10 @@ export function ContentRouter(props: ContentRouterProps) {
                 <CategoriesPane
                     game={game}
                     rows={props.rows}
-                    config={props.categoryConfig}
                     groups={props.groups}
                     boardCategories={props.boardCategories}
-                    boardGroups={props.boardGroups}
+                    policies={props.policies}
+                    variables={props.variables}
                     metadata={props.gameDetails?.metadata}
                     onRowChange={props.onRowChange}
                     onRowGroupChange={props.onRowGroupChange}

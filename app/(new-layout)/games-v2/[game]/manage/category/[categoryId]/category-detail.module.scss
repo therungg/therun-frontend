@@ -40,6 +40,13 @@
     min-width: 0;
 }
 
+.stats {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: 0;
+    white-space: nowrap;
+}
+
 .step {
     display: flex;
     gap: dt.$spacing-lg;

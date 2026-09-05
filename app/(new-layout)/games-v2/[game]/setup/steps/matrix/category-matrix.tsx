@@ -2,9 +2,17 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
+import {
+    CaretDownFill,
+    CaretUpFill,
+    ChevronRight,
+    GripVertical,
+} from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import { DurationField } from '~src/components/time-input/duration-field';
+import type { ManageGroup } from '~src/lib/category-mgmt';
 import { compareByBoardOrder } from '~src/lib/console/category-order';
+import { subBoardCount } from '~src/lib/console/category-rows';
 import { sectionsFor } from '~src/lib/console/category-sections';
 import { formatDuration } from '~src/lib/duration';
 import {
@@ -24,20 +32,62 @@ import {
     timingChoiceOf,
     timingLabel,
 } from '~src/lib/setup/board-defaults';
-import type { ResolvedCategory } from '../../../../../../../types/leaderboards.types';
+import type {
+    ResolvedCategory,
+    ResolvedGame,
+    ResolvedGroup,
+    VariableRow,
+} from '../../../../../../../types/leaderboards.types';
+import type { BoardPolicyRow } from '../../../../../../../types/moderation.types';
+import boardStyles from '../../../manage/console/board-categories.module.scss';
 import { bulkUpdateCategoriesAction } from '../../actions/bulk-update-categories.action';
 import { setCategoryMinimumAction } from '../../actions/set-category-minimum.action';
-import type { WizardData } from '../../types';
 import { DefaultsRow } from './defaults-row';
 import { IconCell } from './icon-cell';
 import styles from './matrix.module.scss';
 import { RulesDialog } from './rules-dialog';
 
+/**
+ * The structure edits — order, grouping, membership — that only the console
+ * offers.
+ *
+ * The wizard reaches this matrix having just decided all three in earlier
+ * steps, so handing it these controls would ask the same question twice on the
+ * same screen. The console has no earlier step: it IS the board's front door,
+ * so the row has to carry its own rank, its group and its way off the board.
+ * The matrix owns none of that state — every one of these is a callback,
+ * because the console's optimistic rows are the source of truth for what the
+ * table is currently showing, not the server snapshot this component reads.
+ */
+export interface MatrixStructure {
+    /** Assignable groups; the caller drops `kind === 'level'` ones. */
+    groupOptions: ManageGroup[];
+    /** Raw select value: '' = ungrouped, '__create__' = open the create prompt. */
+    onGroupChange: (categoryId: number, raw: string) => void;
+    onRemove: (categoryId: number) => void;
+    onMove: (categoryId: number, delta: -1 | 1) => void;
+    onDropRow: (draggedId: number, overId: number) => void;
+    onEdit: (categoryId: number) => void;
+    /** Rows with a structure write in flight — their controls go inert. */
+    busyIds: Set<number>;
+    reorderPending: boolean;
+}
+
 interface Props {
-    data: WizardData;
+    game: ResolvedGame;
+    /** Any category list; the matrix renders the featured, unarchived slice. */
+    categories: ResolvedCategory[];
+    groups: ResolvedGroup[];
+    policies: BoardPolicyRow[];
     defaults: BoardDefaults;
     /** Category whose rules open on mount, from a `?cat=<id>` deep link. */
     initialOpenCategoryId?: number | null;
+    /** Omitted (the wizard) = no structure columns at all. */
+    structure?: MatrixStructure;
+    /** Published subcategory variables. Given them, the grid counts how many
+     *  boards each category actually splits into and says so in its own
+     *  column; without them that column is not drawn. */
+    variables?: VariableRow[];
 }
 
 /**
@@ -98,9 +148,14 @@ function MinimumCell({
 }
 
 export function CategoryMatrix({
-    data,
+    game,
+    categories,
+    groups,
+    policies,
     defaults,
     initialOpenCategoryId,
+    structure,
+    variables,
 }: Props) {
     const router = useRouter();
     // Rules are the one thing here that needs room, so they are the one thing
@@ -109,11 +164,21 @@ export function CategoryMatrix({
         initialOpenCategoryId ?? null,
     );
     const [isSaving, startSave] = useTransition();
+    // Which row is being dragged. Local because it is a gesture, not a fact
+    // about the board — the drop is what the caller hears about.
+    const [dragId, setDragId] = useState<number | null>(null);
 
-    const mains = data.categories
+    const mains = categories
         .filter((c) => !c.archived && (c.isMain ?? false))
         .sort(compareByBoardOrder);
-    const sections = sectionsFor(mains, data.groups);
+    // `sectionsFor` emits a section per group, empty ones included — it is
+    // written for the public rail, where a group with nothing in it still has
+    // to hold its place. A settings grid has no such contract: an empty band
+    // is a heading over no rows, so the group only appears once something is
+    // actually in it.
+    const sections = sectionsFor(mains, groups).filter(
+        (s) => s.items.length > 0,
+    );
     const rulesCategory = mains.find((c) => c.id === rulesFor) ?? null;
     const grouped = sections.length > 1;
 
@@ -141,8 +206,8 @@ export function CategoryMatrix({
     ) => {
         startSave(async () => {
             const res = await bulkUpdateCategoriesAction({
-                gameSlug: data.game.name,
-                gameId: data.game.id,
+                gameSlug: game.name,
+                gameId: game.id,
                 categoryIds,
                 fields,
             });
@@ -157,7 +222,7 @@ export function CategoryMatrix({
     const saveMinimum = (category: ResolvedCategory, ms: number | null) => {
         startSave(async () => {
             const res = await setCategoryMinimumAction({
-                gameSlug: data.game.name,
+                gameSlug: game.name,
                 categoryId: category.id,
                 timing: category.primaryTiming,
                 minMs: ms ?? null,
@@ -170,14 +235,25 @@ export function CategoryMatrix({
         });
     };
 
+    /**
+     * A row was dropped on `overId`. The drag itself is local state; what the
+     * caller hears is only the pair, because deciding whether the move is legal
+     * (same group) and what it renumbers is the console's job — it holds the
+     * live rows, this component holds a server snapshot.
+     */
+    const dropOn = (overId: number) => {
+        const dragged = dragId;
+        setDragId(null);
+        if (dragged === null || dragged === overId) return;
+        structure?.onDropRow(dragged, overId);
+    };
+
     const cellState = (
         c: ResolvedCategory,
         column: MatrixColumn,
     ): CellState => {
         if (!hasDefault(defaults, column)) return 'noDefault';
-        return deviates(c, column, defaults, data.policies)
-            ? 'deviates'
-            : 'quiet';
+        return deviates(c, column, defaults, policies) ? 'deviates' : 'quiet';
     };
 
     const cellClass = (c: ResolvedCategory, column: MatrixColumn) =>
@@ -192,8 +268,13 @@ export function CategoryMatrix({
         rendersAsDot(column) && cellState(c, column) === 'quiet';
 
     // name (icon included), timing, [other time, RTA fallback,] minimum,
-    // rules, ranking, ms
-    const columnCount = showsRtaColumns ? 8 : 6;
+    // rules, ms — plus the three structure columns (order, group and the row
+    // actions) when the console asks for them. This is what row zero and every
+    // group band row span, so it has to count what is actually drawn: a band
+    // that stops short of the last column reads as a broken table, not as a
+    // heading.
+    const columnCount =
+        (showsRtaColumns ? 7 : 5) + (structure ? 3 : 0) + (variables ? 1 : 0);
 
     return (
         <div className={styles.panel}>
@@ -207,7 +288,11 @@ export function CategoryMatrix({
                 <table className={styles.grid}>
                     <thead>
                         <tr>
+                            {structure && (
+                                <th style={{ width: '4.5rem' }}>Order</th>
+                            )}
                             <th>Category</th>
+                            {structure && <th>Group</th>}
                             <th>Timing</th>
                             {showsRtaColumns && (
                                 <>
@@ -223,10 +308,20 @@ export function CategoryMatrix({
                                     </th>
                                 </>
                             )}
+                            {variables && (
+                                <th title="Boards this category splits into, across its published subcategories">
+                                    Subcategories
+                                </th>
+                            )}
                             <th>Min. time</th>
                             <th>Rules</th>
-                            <th>Ranking</th>
+                            {/* Ranking direction has no column anywhere in the
+                                frontend. `sortAscending` is still stored and
+                                honoured — the board reads it, the API writes
+                                it — it is simply not something a moderator is
+                                asked here. */}
                             <th>Milliseconds</th>
+                            {structure && <th />}
                         </tr>
                     </thead>
                     <tbody>
@@ -234,12 +329,16 @@ export function CategoryMatrix({
                             deviation from, in the same columns, editable
                             where their consequences are visible. */}
                         <DefaultsRow
-                            gameSlug={data.game.name}
-                            gameId={data.game.id}
+                            gameSlug={game.name}
+                            gameId={game.id}
                             defaults={defaults}
-                            policies={data.policies}
+                            policies={policies}
                             columnCount={columnCount}
                             showsRtaColumns={showsRtaColumns}
+                            leadingCells={structure ? 1 : 0}
+                            afterNameCells={structure ? 1 : 0}
+                            beforeMinimumCells={variables ? 1 : 0}
+                            trailingCells={structure ? 1 : 0}
                             categories={mains}
                             onApplyToCategories={applyToCategories}
                         />
@@ -249,11 +348,43 @@ export function CategoryMatrix({
                                 name={grouped ? section.name : null}
                                 columnCount={columnCount}
                             >
-                                {section.items.map((c) => {
-                                    const min = categoryMinMs(c, data.policies);
+                                {section.items.map((c, rowIdx) => {
+                                    const min = categoryMinMs(c, policies);
                                     const rules = rulesState(c);
+                                    const busy =
+                                        structure?.busyIds.has(c.id) ?? false;
                                     return (
-                                        <tr key={c.id}>
+                                        <tr
+                                            key={c.id}
+                                            onDragOver={
+                                                structure
+                                                    ? (e) => e.preventDefault()
+                                                    : undefined
+                                            }
+                                            onDrop={
+                                                structure
+                                                    ? () => dropOn(c.id)
+                                                    : undefined
+                                            }
+                                        >
+                                            {structure && (
+                                                <OrderCell
+                                                    category={c}
+                                                    index={rowIdx}
+                                                    lastIndex={
+                                                        section.items.length - 1
+                                                    }
+                                                    dragging={dragId === c.id}
+                                                    structure={structure}
+                                                    onDragStart={() =>
+                                                        setDragId(c.id)
+                                                    }
+                                                    onDragEnd={() =>
+                                                        setDragId(null)
+                                                    }
+                                                />
+                                            )}
+
                                             {/* The icon sits with the name it
                                                 belongs to. As a column of its
                                                 own it was eight empty boxes
@@ -264,15 +395,21 @@ export function CategoryMatrix({
                                                     className={styles.nameInner}
                                                 >
                                                     <IconCell
-                                                        gameSlug={
-                                                            data.game.name
-                                                        }
-                                                        gameId={data.game.id}
+                                                        gameSlug={game.name}
+                                                        gameId={game.id}
                                                         category={c}
                                                     />
                                                     {c.display}
                                                 </span>
                                             </td>
+
+                                            {structure && (
+                                                <GroupCell
+                                                    category={c}
+                                                    busy={busy}
+                                                    structure={structure}
+                                                />
+                                            )}
 
                                             <td>
                                                 <Cell dot={dotted(c, 'timing')}>
@@ -438,6 +575,19 @@ export function CategoryMatrix({
                                                 </>
                                             )}
 
+                                            {variables && (
+                                                <td
+                                                    className={
+                                                        styles.subBoardsCell
+                                                    }
+                                                >
+                                                    {subBoardCount(
+                                                        variables,
+                                                        c.id,
+                                                    )}
+                                                </td>
+                                            )}
+
                                             <td>
                                                 <Cell
                                                     dot={dotted(c, 'minimum')}
@@ -492,45 +642,6 @@ export function CategoryMatrix({
 
                                             <td>
                                                 <Cell
-                                                    dot={dotted(c, 'ranking')}
-                                                >
-                                                    <select
-                                                        className={cellClass(
-                                                            c,
-                                                            'ranking',
-                                                        )}
-                                                        value={
-                                                            (c.sortAscending ??
-                                                            true)
-                                                                ? 'asc'
-                                                                : 'desc'
-                                                        }
-                                                        disabled={isSaving}
-                                                        aria-label={`Ranking direction for ${c.display}`}
-                                                        onChange={(e) =>
-                                                            applyToCategories(
-                                                                [c.id],
-                                                                {
-                                                                    sortAscending:
-                                                                        e.target
-                                                                            .value ===
-                                                                        'asc',
-                                                                },
-                                                            )
-                                                        }
-                                                    >
-                                                        <option value="asc">
-                                                            Lowest
-                                                        </option>
-                                                        <option value="desc">
-                                                            Highest
-                                                        </option>
-                                                    </select>
-                                                </Cell>
-                                            </td>
-
-                                            <td>
-                                                <Cell
                                                     dot={dotted(
                                                         c,
                                                         'milliseconds',
@@ -570,6 +681,58 @@ export function CategoryMatrix({
                                                     </select>
                                                 </Cell>
                                             </td>
+
+                                            {structure && (
+                                                <td>
+                                                    <div
+                                                        className={
+                                                            boardStyles.actions
+                                                        }
+                                                    >
+                                                        <button
+                                                            type="button"
+                                                            className={`${boardStyles.quietAction} ${boardStyles.removeAction}`}
+                                                            disabled={busy}
+                                                            onClick={() =>
+                                                                structure.onRemove(
+                                                                    c.id,
+                                                                )
+                                                            }
+                                                            title="Takes this category off the public board. Runs are kept."
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                        {/* The detail route is
+                                                            no longer where a
+                                                            category is
+                                                            configured — the
+                                                            columns are — but it
+                                                            still holds
+                                                            copy-from, the level
+                                                            template banner and
+                                                            the run stats, so it
+                                                            stays as a second
+                                                            way in. */}
+                                                        <button
+                                                            type="button"
+                                                            className={
+                                                                boardStyles.editLink
+                                                            }
+                                                            onClick={() =>
+                                                                structure.onEdit(
+                                                                    c.id,
+                                                                )
+                                                            }
+                                                        >
+                                                            Edit
+                                                            <ChevronRight
+                                                                size={11}
+                                                                aria-hidden="true"
+                                                            />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            )}
                                         </tr>
                                     );
                                 })}
@@ -599,6 +762,117 @@ export function CategoryMatrix({
                 />
             )}
         </div>
+    );
+}
+
+/**
+ * The row's rank and the two ways to change it: drag the grip, or nudge with
+ * the arrows.
+ *
+ * Both exist on purpose — drag is the fast gesture and the arrows are the one
+ * that works from the keyboard and on touch. The arrows are invisible until the
+ * row is hovered or focused (see .orderBtn), so at rest the column reads as a
+ * list of ranks rather than as two buttons per row.
+ *
+ * The index is the row's position within its own SECTION, which is also the
+ * scope a move renumbers: order is per group on the public board, so a move
+ * that could cross a group boundary would be describing something the board
+ * cannot render.
+ */
+function OrderCell({
+    category,
+    index,
+    lastIndex,
+    dragging,
+    structure,
+    onDragStart,
+    onDragEnd,
+}: {
+    category: ResolvedCategory;
+    index: number;
+    lastIndex: number;
+    dragging: boolean;
+    structure: MatrixStructure;
+    onDragStart: () => void;
+    onDragEnd: () => void;
+}) {
+    return (
+        <td>
+            <div className={boardStyles.orderCell}>
+                <span
+                    aria-hidden="true"
+                    title="Drag to reorder"
+                    draggable={!structure.reorderPending}
+                    onDragStart={onDragStart}
+                    onDragEnd={onDragEnd}
+                    className={`${boardStyles.grip} ${
+                        dragging ? boardStyles.gripDragging : ''
+                    }`}
+                >
+                    <GripVertical size={14} />
+                </span>
+                <span className={boardStyles.rank}>{index + 1}</span>
+                <span className={boardStyles.orderArrows}>
+                    <button
+                        type="button"
+                        className={boardStyles.orderBtn}
+                        onClick={() => structure.onMove(category.id, -1)}
+                        disabled={structure.reorderPending || index === 0}
+                        aria-label={`Move ${category.display} up`}
+                    >
+                        <CaretUpFill size={9} />
+                    </button>
+                    <button
+                        type="button"
+                        className={boardStyles.orderBtn}
+                        onClick={() => structure.onMove(category.id, 1)}
+                        disabled={
+                            structure.reorderPending || index === lastIndex
+                        }
+                        aria-label={`Move ${category.display} down`}
+                    >
+                        <CaretDownFill size={9} />
+                    </button>
+                </span>
+            </div>
+        </td>
+    );
+}
+
+/**
+ * Which group the row belongs to. Ghost until reached for: the band row above
+ * already names the group, so the select only has to exist for the moment
+ * somebody wants to move a row out of it.
+ */
+function GroupCell({
+    category,
+    busy,
+    structure,
+}: {
+    category: ResolvedCategory;
+    busy: boolean;
+    structure: MatrixStructure;
+}) {
+    return (
+        <td>
+            <select
+                className={boardStyles.groupSelect}
+                value={category.groupId == null ? '' : String(category.groupId)}
+                disabled={busy}
+                onChange={(e) =>
+                    structure.onGroupChange(category.id, e.target.value)
+                }
+                aria-label={`Group: ${category.display}`}
+            >
+                <option value="">Ungrouped</option>
+                {structure.groupOptions.map((g) => (
+                    <option key={g.id} value={String(g.id)}>
+                        {g.name}
+                    </option>
+                ))}
+                <option value="__create__">+ Create group…</option>
+            </select>
+        </td>
     );
 }
 

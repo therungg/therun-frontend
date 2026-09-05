@@ -155,36 +155,6 @@ tbody tr:focus-within .orderBtn {
     white-space: nowrap;
 }
 
-.numMuted {
-    @include board.mono-time;
-    text-align: right;
-    white-space: nowrap;
-    color: var(--bs-secondary-color);
-}
-
-// Runners carries its own bar underneath, so the audience zone is two columns
-// instead of three and the bar sits against the number it scales.
-.runnersCell {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.2rem;
-}
-
-.bar {
-    width: 3.5rem;
-    height: 0.2rem;
-    border-radius: dt.$radius-sm;
-    background: rgba(var(--bs-body-color-rgb), 0.12);
-    overflow: hidden;
-}
-
-.barFill {
-    display: block;
-    height: 100%;
-    background: rgba(var(--bs-primary-rgb), 0.55);
-}
-
 .timing {
     @include board.board-eyebrow;
     font-weight: 700;
