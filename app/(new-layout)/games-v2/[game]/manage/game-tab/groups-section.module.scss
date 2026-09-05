@@ -249,3 +249,77 @@
 .emptyIcon {
     @include board.board-empty-icon;
 }
+
+// ---- Categories with no group ----------------------------------
+// A holding area, not a peer of the group list: same recess so it reads as
+// part of the rail being arranged, but flatter — these rows have one
+// control and no order of their own.
+.ungrouped {
+    margin-top: dt.$spacing-lg;
+}
+
+.ungroupedTitle {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin: 0 0 dt.$spacing-sm;
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+}
+
+.ungroupedList {
+    list-style: none;
+    margin: 0;
+    padding: dt.$spacing-xs;
+    border: 1px dashed
+        var(--board-recess-border, rgba(var(--bs-border-color-rgb), 0.5));
+    border-radius: dt.$radius-lg;
+}
+
+.ungroupedItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    border-radius: dt.$radius-sm;
+
+    & + & {
+        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    }
+}
+
+// Reads as an offer on the group it belongs to, not a primary action —
+// it only appears while something is loose.
+.sweepBtn {
+    @include board.board-quiet-link;
+    font-size: dt.$font-size-xs;
+    white-space: nowrap;
+}
+
+// The counterpart to .ungrouped — quiet confirmation, not a banner.
+.allAssigned {
+    margin: dt.$spacing-lg 0 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+// The category count doubles as the door into the group's contents. Quiet
+// link, not a button — it sits inside the name line and must not compete
+// with it.
+.countLink {
+    @include board.board-quiet-link;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 2px;
+
+    &:disabled {
+        text-decoration: none;
+        cursor: default;
+    }
+}

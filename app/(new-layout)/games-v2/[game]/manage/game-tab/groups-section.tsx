@@ -11,6 +11,7 @@ import {
     Trash,
 } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
+import { assignCategoryGroupAction } from '~src/actions/category-group/assign-category-group.action';
 import { createGroupAction } from '~src/actions/category-group/create-group.action';
 import { deleteGroupAction } from '~src/actions/category-group/delete-group.action';
 import { renameGroupAction } from '~src/actions/category-group/rename-group.action';
@@ -22,6 +23,7 @@ import type {
     CategoryDisplayMode,
     ResolvedGame,
 } from '../../../../../../types/leaderboards.types';
+import { BoardDialog } from '../../shared/board-dialog';
 import { ConfirmDialog } from '../../shared/confirm-dialog';
 import styles from './groups-section.module.scss';
 
@@ -53,6 +55,10 @@ export function GroupsSection({
     const [confirmDeleteGroup, setConfirmDeleteGroup] =
         useState<ManageGroup | null>(null);
     const [deleteError, setDeleteError] = useState<string | null>(null);
+    // Which group's contents are open in the modal, if any.
+    const [contentsGroup, setContentsGroup] = useState<ManageGroup | null>(
+        null,
+    );
 
     // Optimistic for the same reason displayMode below is: the checkbox
     // flips first and reverts if the write fails, because the only other
@@ -120,6 +126,50 @@ export function GroupsSection({
         () => groups.filter((g) => g.kind !== 'level'),
         [groups],
     );
+
+    // Categories with nowhere to sit. Two exclusions: level categories,
+    // because the Levels menu owns them and filing one here would be a
+    // second contradictory home; and categories off the board, because
+    // grouping only decides how the rail draws what it shows.
+    const ungrouped = useMemo(
+        () =>
+            rows.filter(
+                (r) =>
+                    r.groupId == null && r.levelTemplateId == null && r.isMain,
+            ),
+        [rows],
+    );
+
+    // Optimistic like every other write on this pane: the row leaves the
+    // ungrouped list at once and comes back if the write fails.
+    const assignToGroup = (row: ManageCategoryRow, group: ManageGroup) => {
+        const previousId = row.groupId ?? null;
+        const previousName = row.groupName ?? null;
+        onRowGroupChange(row.id, group.id, group.name);
+        startTransition(async () => {
+            const res = await assignCategoryGroupAction({
+                gameSlug: game.name,
+                gameId: game.id,
+                categoryId: row.id,
+                groupId: group.id,
+            });
+            if ('error' in res) {
+                toast.error(res.error);
+                onRowGroupChange(row.id, previousId, previousName);
+            }
+        });
+    };
+
+    const addAllUngrouped = (group: ManageGroup) => {
+        const moving = ungrouped;
+        if (moving.length === 0) return;
+        for (const r of moving) assignToGroup(r, group);
+        toast.success(
+            `Moved ${moving.length} ${
+                moving.length === 1 ? 'category' : 'categories'
+            } into "${group.name}"`,
+        );
+    };
 
     const countByGroupId = useMemo(() => {
         const m = new Map<number, number>();
@@ -409,7 +459,19 @@ export function GroupsSection({
                                                 <span className={styles.name}>
                                                     {g.name}
                                                 </span>
-                                                <span className={styles.count}>
+                                                {/* The count is the door into
+                                                    the group's contents, so it
+                                                    has to look like one — a
+                                                    plain figure reads as
+                                                    decoration. */}
+                                                <button
+                                                    type="button"
+                                                    className={styles.countLink}
+                                                    onClick={() =>
+                                                        setContentsGroup(g)
+                                                    }
+                                                    disabled={count === 0}
+                                                >
                                                     <span
                                                         className={
                                                             styles.countNum
@@ -420,7 +482,7 @@ export function GroupsSection({
                                                     {count === 1
                                                         ? 'category'
                                                         : 'categories'}
-                                                </span>
+                                                </button>
                                             </>
                                         )}
                                     </span>
@@ -456,14 +518,18 @@ export function GroupsSection({
                                             Collapsed
                                         </label>
 
-                                        {/* Pills is the default and the normal
-                                            answer: a per-group override earns
+                                        {/* Auto is where every group already
+                                            sits, so an unset group reads as
+                                            Auto — a per-group override earns
                                             its place only where one group
-                                            genuinely differs. An unset group
-                                            draws pills, so it reads as Pills. */}
+                                            genuinely differs. (Unset actually
+                                            inherits the game's mode before
+                                            falling back to count; Auto is the
+                                            honest answer for the common case
+                                            where no game mode is set.) */}
                                         <select
                                             className={styles.modeSelect}
-                                            value={g.displayMode ?? 'pills'}
+                                            value={g.displayMode ?? 'auto'}
                                             disabled={pending}
                                             aria-label={`Display for ${g.name}`}
                                             onChange={(e) =>
@@ -482,6 +548,21 @@ export function GroupsSection({
                                                 Dropdown
                                             </option>
                                         </select>
+
+                                        {/* Only worth offering while there is
+                                            something loose to sweep up. */}
+                                        {ungrouped.length > 0 && (
+                                            <button
+                                                type="button"
+                                                className={styles.sweepBtn}
+                                                onClick={() =>
+                                                    addAllUngrouped(g)
+                                                }
+                                                disabled={pending}
+                                            >
+                                                Add all ungrouped categories
+                                            </button>
+                                        )}
 
                                         {!isEditing && (
                                             <button
@@ -509,7 +590,131 @@ export function GroupsSection({
                         })}
                     </ul>
                 )}
+
+                {/* The done state earns its line only once groups exist and
+                    something could have been left behind — a game that never
+                    had a loose category doesn't need telling. */}
+                {listGroups.length > 0 && ungrouped.length === 0 && (
+                    <p className={styles.allAssigned}>
+                        All categories visible on the board have been assigned
+                        to a group.
+                    </p>
+                )}
+
+                {/* Loose categories, with the one control that resolves them.
+                    Nothing to offer before a group exists — the empty state
+                    above already says to make one. */}
+                {listGroups.length > 0 && ungrouped.length > 0 && (
+                    <div className={styles.ungrouped}>
+                        <h4 className={styles.ungroupedTitle}>
+                            Not in a group
+                            <span className={styles.count}>
+                                <span className={styles.countNum}>
+                                    {ungrouped.length}
+                                </span>
+                            </span>
+                        </h4>
+                        <ul className={styles.ungroupedList}>
+                            {ungrouped.map((r) => (
+                                <li key={r.id} className={styles.ungroupedItem}>
+                                    <span className={styles.name}>
+                                        {r.display}
+                                    </span>
+                                    <select
+                                        className={styles.modeSelect}
+                                        value=""
+                                        disabled={pending}
+                                        aria-label={`Group for ${r.display}`}
+                                        onChange={(e) => {
+                                            const g = listGroups.find(
+                                                (x) =>
+                                                    x.id ===
+                                                    Number.parseInt(
+                                                        e.target.value,
+                                                        10,
+                                                    ),
+                                            );
+                                            if (g) assignToGroup(r, g);
+                                        }}
+                                    >
+                                        <option value="">Pick a group…</option>
+                                        {listGroups.map((g) => (
+                                            <option key={g.id} value={g.id}>
+                                                {g.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
             </div>
+
+            {/* What is actually in a group, and the one edit that belongs
+                here: sending a category somewhere else. Reordering and
+                featuring live on the Categories tab, so this stays a
+                single-purpose list. */}
+            <BoardDialog
+                open={contentsGroup != null}
+                onClose={() => setContentsGroup(null)}
+                title={contentsGroup ? contentsGroup.name : ''}
+                size="md"
+            >
+                {contentsGroup && (
+                    <ul className={styles.ungroupedList}>
+                        {rows
+                            .filter((r) => r.groupId === contentsGroup.id)
+                            .map((r) => {
+                                const others = listGroups.filter(
+                                    (g) => g.id !== contentsGroup.id,
+                                );
+                                return (
+                                    <li
+                                        key={r.id}
+                                        className={styles.ungroupedItem}
+                                    >
+                                        <span className={styles.name}>
+                                            {r.display}
+                                        </span>
+                                        {others.length > 0 ? (
+                                            <select
+                                                className={styles.modeSelect}
+                                                value=""
+                                                disabled={pending}
+                                                aria-label={`Move ${r.display} to another group`}
+                                                onChange={(e) => {
+                                                    const g = others.find(
+                                                        (x) =>
+                                                            x.id ===
+                                                            Number.parseInt(
+                                                                e.target.value,
+                                                                10,
+                                                            ),
+                                                    );
+                                                    if (g) assignToGroup(r, g);
+                                                }}
+                                            >
+                                                <option value="">
+                                                    Move to…
+                                                </option>
+                                                {others.map((g) => (
+                                                    <option
+                                                        key={g.id}
+                                                        value={g.id}
+                                                    >
+                                                        {g.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        ) : null}
+                                    </li>
+                                );
+                            })}
+                    </ul>
+                )}
+            </BoardDialog>
+
             <ConfirmDialog
                 open={confirmDeleteGroup != null}
                 onClose={closeConfirmDeleteGroup}
