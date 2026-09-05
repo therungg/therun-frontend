@@ -47,9 +47,12 @@ export function ReassignPane({
     return (
         <div className={consoleStyles.surface}>
             <div className={consoleStyles.paneHeader}>
-                <h2 className={consoleStyles.paneTitle}>
-                    {CONCEPT_LABEL.reassign}
-                </h2>
+                <div>
+                    <div className={consoleStyles.paneEyebrow}>Game</div>
+                    <h2 className={consoleStyles.paneTitle}>
+                        {CONCEPT_LABEL.reassign}
+                    </h2>
+                </div>
             </div>
             <div className={styles.wizard}>
                 <div className={styles.modeToggle}>

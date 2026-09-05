@@ -1,23 +1,21 @@
 'use client';
 
-import { useMemo } from 'react';
 import styles from '~src/components/console-chrome/console.module.scss';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
-import { previewCategories } from '~src/lib/console/preview-categories';
 import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 import type {
     ResolvedCategory,
     ResolvedGame,
     ResolvedGroup,
 } from '../../../../../../types/leaderboards.types';
-import { CategoryBandPreview } from '../../setup/steps/category-band-preview';
 import { GroupsSection } from './groups-section';
 
 interface Props {
     game: ResolvedGame;
     rows: ManageCategoryRow[];
     groups: ManageGroup[];
-    /** Server snapshot for the band preview; `rows` carries the live flags. */
+    /** Server snapshot the band preview reads; the preview is hidden for now,
+     * so these are accepted but unused. */
     boardCategories: ResolvedCategory[];
     boardGroups: ResolvedGroup[];
     onGroupsChange: (groups: ManageGroup[]) => void;
@@ -32,29 +30,9 @@ export function GameTab({
     game,
     rows,
     groups,
-    boardCategories,
-    boardGroups,
     onGroupsChange,
     onRowGroupChange,
 }: Props) {
-    // The preview must reflect optimistic edits (collapsed/display-mode
-    // toggles), not just the immutable server snapshot in `boardGroups`, so
-    // overlay the live `groups` state onto it.
-    const previewGroups = useMemo(
-        () =>
-            boardGroups.map((bg) => {
-                const m = groups.find((g) => g.id === bg.id);
-                return m
-                    ? {
-                          ...bg,
-                          hiddenByDefault: m.hiddenByDefault,
-                          displayMode: m.displayMode,
-                      }
-                    : bg;
-            }),
-        [boardGroups, groups],
-    );
-
     return (
         <section className={styles.surface}>
             <header className={styles.paneHeader}>
@@ -63,18 +41,15 @@ export function GameTab({
                     <h2 className={styles.paneTitle}>{CONCEPT_LABEL.groups}</h2>
                 </div>
             </header>
+            {/* Groups are the one concept on this console that does need
+                saying: a moderator knows what a category is without being
+                told, but "group" is our word for a section of the rail, and
+                the examples are what make it land. */}
             <p className={styles.paneLede}>
-                Organize categories on the public game page. With more than one
-                group, the category rail splits into labeled sections in this
-                order.
+                Category groups allow you to organize categories into their own
+                sections. Examples usually include Main Categories,
+                Miscellaneous, Category Extensions, etc.
             </p>
-            {/* Grouping is the one edit whose whole point is what the band
-                looks like afterwards — the wizard's step 3 shows it, so this
-                does too. */}
-            <CategoryBandPreview
-                categories={previewCategories(boardCategories, rows)}
-                groups={previewGroups}
-            />
             <GroupsSection
                 game={game}
                 groups={groups}

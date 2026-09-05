@@ -435,22 +435,29 @@ export function RunnerView({
     return (
         <div>
             <div className={consoleStyles.paneHeader}>
-                <h1 className={consoleStyles.paneTitle}>
-                    {runnerName}{' '}
-                    <span className="text-muted fs-6">in {gameDisplay}</span>{' '}
-                    {banState.gameRule && (
-                        <span className="badge text-bg-danger align-middle">
-                            Banned from game
-                        </span>
-                    )}
-                    {!banState.gameRule &&
-                        banState.categoryRules.length > 0 && (
-                            <span className="badge text-bg-warning align-middle">
-                                {banState.categoryRules.length} board ban
-                                {banState.categoryRules.length === 1 ? '' : 's'}
+                <div>
+                    <div className={consoleStyles.paneEyebrow}>Queue</div>
+                    <h1 className={consoleStyles.paneTitle}>
+                        {runnerName}{' '}
+                        <span className="text-muted fs-6">
+                            in {gameDisplay}
+                        </span>{' '}
+                        {banState.gameRule && (
+                            <span className="badge text-bg-danger align-middle">
+                                Banned from game
                             </span>
                         )}
-                </h1>
+                        {!banState.gameRule &&
+                            banState.categoryRules.length > 0 && (
+                                <span className="badge text-bg-warning align-middle">
+                                    {banState.categoryRules.length} board ban
+                                    {banState.categoryRules.length === 1
+                                        ? ''
+                                        : 's'}
+                                </span>
+                            )}
+                    </h1>
+                </div>
                 <div className={`${consoleStyles.paneActions} flex-wrap`}>
                     <BackLink href={backHref} label={backLabel} />
                 </div>

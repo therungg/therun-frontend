@@ -636,7 +636,8 @@ $rail: 3px; // severity spine / active accent width
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
     margin: calc(#{dt.$spacing-xl} * -1 + #{dt.$spacing-sm}) 0 dt.$spacing-xl;
-    max-width: 60ch;
+    // A page's text runs in full, at full width — no measure clamp, no
+    // truncation. Anything worth saying is worth showing all of.
 }
 
 .paneTitle {
