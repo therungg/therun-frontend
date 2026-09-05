@@ -182,7 +182,20 @@ export function ContentRouter(props: ContentRouterProps) {
             // Level categories are the subcategories table inside the Levels
             // pane; the old id survives as a deep link to the same pane (see
             // hiddenLandingIds in nav-model.ts).
-            return <LevelsPane gameId={game.id} gameSlug={game.name} />;
+            return (
+                <LevelsPane
+                    gameId={game.id}
+                    gameSlug={game.name}
+                    game={game}
+                    rows={props.rows}
+                    groups={props.groups}
+                    boardCategories={props.boardCategories}
+                    policies={props.policies}
+                    variables={props.variables}
+                    metadata={props.gameDetails?.metadata}
+                    onEditCategory={props.onEditCategory}
+                />
+            );
         case 'variables':
             // The wizard's step 4 without the wizard: same grid, same staging
             // rules (subcategories preview, filters write through). It reads
