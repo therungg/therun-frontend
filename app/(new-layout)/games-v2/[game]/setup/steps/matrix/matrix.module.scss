@@ -439,3 +439,54 @@
     @include board.board-dialog-textarea;
     min-height: 8rem;
 }
+
+// ---- Subcategory settings ------------------------------------------
+// The count in the Subcategories column is a way in, not just a number: it
+// reads as the figure it is until you can act on it, and only then as a
+// control.
+.subBoardsLink {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+    text-decoration: underline dotted;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+        color: var(--bs-body-color);
+        text-decoration-style: solid;
+    }
+}
+
+.sliceSettings {
+    margin-top: dt.$spacing-md;
+    padding-top: dt.$spacing-sm;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+}
+
+.sliceHead {
+    margin: 0 0 dt.$spacing-sm;
+    font-weight: 600;
+}
+
+.sliceRow {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-xs 0;
+}
+
+.sliceLabel {
+    flex: 0 0 7rem;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.sliceNote {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}

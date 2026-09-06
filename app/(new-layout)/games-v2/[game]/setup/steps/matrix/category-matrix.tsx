@@ -39,12 +39,14 @@ import type {
     VariableRow,
 } from '../../../../../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../../../../../types/moderation.types';
+import { subcategoryVariablesFor } from '../../../manage/boards/subcategory-bands';
 import boardStyles from '../../../manage/console/board-categories.module.scss';
 import { bulkUpdateCategoriesAction } from '../../actions/bulk-update-categories.action';
 import { setCategoryMinimumAction } from '../../actions/set-category-minimum.action';
 import { IconCell } from './icon-cell';
 import styles from './matrix.module.scss';
 import { RulesDialog } from './rules-dialog';
+import { SubcategoryDialog } from './subcategory-dialog';
 
 /**
  * The structure edits — order, grouping, membership — that only the console
@@ -158,6 +160,10 @@ export function CategoryMatrix({
         initialOpenCategoryId ?? null,
     );
     const [isSaving, startSave] = useTransition();
+    // Which category's boards are open. Its own state, not `rulesFor`: the
+    // subcategory dialog can hand off to the rules dialog, so the two have to
+    // be able to swap without one closing the other by accident.
+    const [subcatsFor, setSubcatsFor] = useState<number | null>(null);
     // Which row is being dragged. Local because it is a gesture, not a fact
     // about the board — the drop is what the caller hears about.
     const [dragId, setDragId] = useState<number | null>(null);
@@ -174,6 +180,7 @@ export function CategoryMatrix({
         (s) => s.items.length > 0,
     );
     const rulesCategory = mains.find((c) => c.id === rulesFor) ?? null;
+    const subcatsCategory = mains.find((c) => c.id === subcatsFor) ?? null;
     const grouped = sections.length > 1;
 
     /**
@@ -558,9 +565,41 @@ export function CategoryMatrix({
                                                         styles.subBoardsCell
                                                     }
                                                 >
-                                                    {subBoardCount(
-                                                        variables,
+                                                    {/* The count is the way
+                                                        in: a category that
+                                                        splits has settings the
+                                                        grid has no row for, so
+                                                        the number opens them.
+                                                        One board is one board
+                                                        — nothing to pick, so
+                                                        nothing to click. */}
+                                                    {subcategoryVariablesFor(
                                                         c.id,
+                                                        variables,
+                                                    ).length > 0 ? (
+                                                        <button
+                                                            type="button"
+                                                            className={
+                                                                styles.subBoardsLink
+                                                            }
+                                                            aria-haspopup="dialog"
+                                                            aria-label={`Subcategories of ${c.display}`}
+                                                            onClick={() =>
+                                                                setSubcatsFor(
+                                                                    c.id,
+                                                                )
+                                                            }
+                                                        >
+                                                            {subBoardCount(
+                                                                variables,
+                                                                c.id,
+                                                            )}
+                                                        </button>
+                                                    ) : (
+                                                        subBoardCount(
+                                                            variables,
+                                                            c.id,
+                                                        )
                                                     )}
                                                 </td>
                                             )}
@@ -734,6 +773,20 @@ export function CategoryMatrix({
                         });
                         setRulesFor(null);
                     }}
+                />
+            )}
+
+            {subcatsCategory && variables && (
+                <SubcategoryDialog
+                    gameSlug={game.name}
+                    category={subcatsCategory}
+                    variables={variables}
+                    policies={policies}
+                    onEditRules={() => {
+                        setSubcatsFor(null);
+                        setRulesFor(subcatsCategory.id);
+                    }}
+                    onClose={() => setSubcatsFor(null)}
                 />
             )}
         </div>
