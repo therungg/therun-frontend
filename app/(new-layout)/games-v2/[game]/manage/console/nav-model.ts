@@ -18,7 +18,8 @@ export type NavItemId =
     | 'groups'
     | 'levels'
     | 'level-categories'
-    | 'variables'
+    | 'subcategories'
+    | 'filters'
     | 'boards'
     | 'moderators'
     | 'reassign'
@@ -85,7 +86,8 @@ const ALL_GROUPS: NavGroup[] = [
             // One item now: the level categories (templates) are a tab inside
             // the Levels pane. ?pane=level-categories still deep-links there.
             { id: 'levels', label: CONCEPT_LABEL.levels },
-            { id: 'variables', label: CONCEPT_LABEL.variables },
+            { id: 'subcategories', label: CONCEPT_LABEL.subcategories },
+            { id: 'filters', label: CONCEPT_LABEL.filters },
         ],
     },
     {

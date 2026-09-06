@@ -6,11 +6,10 @@
 // name a destination, so it lands on the index.
 
 // `?pane=variables&cat=12` is a legacy category-scoped deep link that lands
-// on the category detail's variables section. The bare `?pane=variables`
-// (no `cat`) is NOT retired: the game-level Variables pane exists again as
-// its own sidebar item, so a bare link is a normal landing, not a legacy
-// redirect. `variables` therefore only appears in the `cat`-required set
-// below, never in RETIRED_CATEGORY_PANES.
+// on the category detail's variables section. The bare `?pane=variables` (no
+// `cat`) is a legacy link too now: the one game-level pane was split into
+// Subcategories and Filters, so a bare link lands on Subcategories — the half
+// that holds what most such links were pointing at.
 const RETIRED_CATEGORY_PANES: ReadonlySet<string> = new Set([
     'standards',
     'timing',
@@ -40,9 +39,11 @@ export function legacyPaneRedirect(
     const hasCategory = Number.isFinite(categoryId);
 
     if (CATEGORY_SCOPED_ONLY_PANES.has(pane)) {
-        // Bare `?pane=variables` isn't legacy — it's a real landing pane —
-        // so only redirect when a category is present.
-        return hasCategory ? { kind: 'detail', categoryId, hash: pane } : null;
+        // With a category it is the category detail's own section; without
+        // one it is the tab that replaced the pane.
+        return hasCategory
+            ? { kind: 'detail', categoryId, hash: pane }
+            : { kind: 'pane', pane: 'subcategories' };
     }
 
     if (!RETIRED_CATEGORY_PANES.has(pane)) return null;

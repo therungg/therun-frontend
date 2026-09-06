@@ -78,7 +78,7 @@ describe('CONCEPT_TILE', () => {
     });
 
     it('tiles structure then curation after groups, in wizard order', () => {
-        // Wizard order, all the way down: groups (3) → subcategories &
+        // Wizard order, all the way down: groups (3) → subcategories (4) →
         // filters (4) → boards (5). Levels and level categories slot between
         // groups and the structure grid — a level IS a group, so they read as
         // the grouping section's second half.
@@ -88,11 +88,14 @@ describe('CONCEPT_TILE', () => {
         expect(TILE_CONCEPT_IDS.indexOf('level-categories')).toBe(
             TILE_CONCEPT_IDS.indexOf('levels') + 1,
         );
-        expect(TILE_CONCEPT_IDS.indexOf('variables')).toBe(
+        expect(TILE_CONCEPT_IDS.indexOf('subcategories')).toBe(
             TILE_CONCEPT_IDS.indexOf('level-categories') + 1,
         );
+        expect(TILE_CONCEPT_IDS.indexOf('filters')).toBe(
+            TILE_CONCEPT_IDS.indexOf('subcategories') + 1,
+        );
         expect(TILE_CONCEPT_IDS.indexOf('boards')).toBe(
-            TILE_CONCEPT_IDS.indexOf('variables') + 1,
+            TILE_CONCEPT_IDS.indexOf('filters') + 1,
         );
     });
 

@@ -38,11 +38,13 @@ import type {
     VariableRow,
 } from '../../../../../../../types/leaderboards.types';
 import { loadVariableSuggestionsAction } from '../../../manage/variables/actions/load-variable-suggestions.action';
+import { ConfirmDialog } from '../../../shared/confirm-dialog';
 import {
     applyVariableChangesAction,
     previewVariableChangesAction,
 } from '../../actions/apply-variable-changes.action';
 import { AddVariableForm } from './add-variable-form';
+import { AddVariableWizard } from './add-variable-wizard';
 import { ConsequenceDialog } from './consequence-dialog';
 import { TriCheckbox } from './tri-checkbox';
 import { normalizeName, RESERVED_NAMES } from './variable-keys';
@@ -92,6 +94,13 @@ export interface VariablesGridProps {
     /** The game's groups, used to exclude level subcategories/filters — those
      * are managed in the Levels menu instead. */
     groups: ResolvedGroup[];
+    /**
+     * Render ONE section, table-first: the console's Subcategories and
+     * Filters tabs are separate pages managed independently, so each shows a
+     * list of what exists and opens one at a time. Omitted (the wizard's step
+     * 4) keeps both sections stacked and expanded.
+     */
+    only?: VariableRoleId;
 }
 
 export function VariablesGrid({
@@ -99,6 +108,7 @@ export function VariablesGrid({
     categories,
     variables,
     groups,
+    only,
 }: VariablesGridProps) {
     const router = useRouter();
     const [pending, setPending] = useState<Map<string, PendingToggle[]>>(
@@ -1075,6 +1085,34 @@ export function VariablesGrid({
         suggestedNames,
     });
 
+    // One tab = one section, table-first. The suggestions table is not on
+    // this page at all: it belongs to the add flow, which is now its own
+    // screen (see AddVariableWizard).
+    if (only) {
+        return (
+            <>
+                <VariableSection
+                    {...sectionProps(only)}
+                    groups={only === 'subcategory' ? splits : details}
+                    tableFirst
+                    suggestions={suggestions}
+                    suggestionsLoading={suggestionsLoading}
+                    suggestionsError={suggestionsError}
+                    allVariables={variables}
+                />
+                {preview && (
+                    <ConsequenceDialog
+                        name={preview.name}
+                        preview={preview.preview}
+                        busy={isBusy}
+                        onCancel={() => setPreview(null)}
+                        onConfirm={confirmApply}
+                    />
+                )}
+            </>
+        );
+    }
+
     return (
         <>
             {/* Suggested variables lead the step: what runners actually submit,
@@ -1202,6 +1240,15 @@ interface SectionProps {
     onShowValue: (group: VariableGroup, show: boolean) => void;
     /** Normalized names of suggested variables, for the off-list add warning. */
     suggestedNames: Set<string>;
+    /** Console tab: list what exists, open one at a time, add on its own
+     *  screen. The wizard's step 4 leaves this off and stays expanded. */
+    tableFirst?: boolean;
+    suggestions?: CategoryVariableSuggestion[];
+    suggestionsLoading?: boolean;
+    suggestionsError?: string | null;
+    /** Every configured variable — the add screen's suggestions table says
+     *  which suggestions are already in use, across every category. */
+    allVariables?: VariableRow[];
 }
 
 function VariableSection({
@@ -1233,8 +1280,18 @@ function VariableSection({
     onCreate,
     onShowValue,
     suggestedNames,
+    tableFirst = false,
+    suggestions = [],
+    suggestionsLoading = false,
+    suggestionsError = null,
+    allVariables = [],
 }: SectionProps) {
     const [adding, setAdding] = useState(false);
+    // Which one is open, when the section is a list. Null is the list itself.
+    const [openKey, setOpenKey] = useState<string | null>(null);
+    const [confirmDelete, setConfirmDelete] = useState<VariableGroup | null>(
+        null,
+    );
     const copy = SECTION[role];
 
     // Total boards across the featured categories — the number this section
@@ -1243,6 +1300,228 @@ function VariableSection({
         (total, c) => total + subBoardCount(c.id, variables),
         0,
     );
+
+    /** One group's editor. The same element whether it is one of a stack (the
+     *  wizard) or the only thing on screen (a console tab). */
+    const renderPalette = (group: VariableGroup) => (
+        <VariablePalette
+            key={group.nameNormalized}
+            group={group}
+            role={role}
+            categories={categories}
+            busy={busy}
+            isTarget={busyGroup === group.nameNormalized}
+            pendingCount={pendingCount(group)}
+            cellOn={(categoryId, bucketKey) =>
+                cellOn(group, categoryId, bucketKey)
+            }
+            onToggle={(categoryId, bucketKey, on) =>
+                onToggle(group, categoryId, bucketKey, on)
+            }
+            onRemoveCategory={(categoryId) =>
+                onRemoveCategory(group, categoryId)
+            }
+            onToggleColumn={(bucketKey, on) =>
+                onToggleColumn(group, bucketKey, on)
+            }
+            onToggleAll={(on) => onToggleAll(group, on)}
+            onApply={() => onStage(group)}
+            onDiscard={() => onDiscard(group)}
+            onConvert={(to) => onConvert(group, to)}
+            onBuckets={(next) => onBuckets(group, next)}
+            onDefault={(categoryId, bucketKey) =>
+                onDefault(group, categoryId, bucketKey)
+            }
+            onDefaultAll={(bucketKey) => onDefaultAll(group, bucketKey)}
+            onMove={(delta) => onMoveGroup(groups, group, delta)}
+            position={groups.indexOf(group)}
+            total={groups.length}
+            onAddOption={(bucket) => onAddOption(group, bucket)}
+            onRename={(next) => onRename(group, next)}
+            onNote={(next) => onNote(group, next)}
+            onDelete={() => onDelete(group)}
+            showValueOnBoard={group.showValueOnBoard}
+            onShowValue={(show) => onShowValue(group, show)}
+            takenNames={takenNames}
+        />
+    );
+
+    const addScreen = (
+        <AddVariableWizard
+            role={role}
+            busy={busy}
+            takenNames={takenNames}
+            categories={categories}
+            suggestedNames={suggestedNames}
+            suggestions={suggestions}
+            suggestionsLoading={suggestionsLoading}
+            suggestionsError={suggestionsError}
+            existingVariables={allVariables}
+            onCancel={() => setAdding(false)}
+            onCreate={(
+                name,
+                key,
+                options,
+                defaultIndex,
+                showValue,
+                categoryIds,
+            ) => {
+                setAdding(false);
+                onCreate(
+                    name,
+                    key,
+                    options,
+                    defaultIndex,
+                    showValue,
+                    categoryIds,
+                );
+            }}
+        />
+    );
+
+    if (tableFirst) {
+        const openGroup =
+            groups.find((g) => g.nameNormalized === openKey) ?? null;
+
+        // Adding and editing are screens, not things that unfold under the
+        // table: the table is a list of what exists, and you are either
+        // reading it or working on one thing.
+        if (adding || openGroup) {
+            return (
+                <section className={styles.zone}>
+                    <button
+                        type="button"
+                        className={styles.backAction}
+                        onClick={() => {
+                            setAdding(false);
+                            setOpenKey(null);
+                        }}
+                    >
+                        ← All {copy.title.toLowerCase()}
+                    </button>
+                    {adding ? addScreen : openGroup && renderPalette(openGroup)}
+                </section>
+            );
+        }
+
+        return (
+            <section className={styles.zone}>
+                <p className={styles.zoneBlurb}>{copy.blurb}</p>
+
+                {role === 'filter' && (
+                    <div className={styles.builtIns}>
+                        <span className={styles.builtInsLabel}>
+                            Always available
+                        </span>
+                        {BUILT_IN_FILTERS.map((name) => (
+                            <span key={name} className={styles.builtInChip}>
+                                {name}
+                            </span>
+                        ))}
+                        <span className={styles.builtInsNote}>
+                            built in (nothing to configure)
+                        </span>
+                    </div>
+                )}
+
+                {groups.length === 0 ? (
+                    <div className={styles.empty}>
+                        <p className={styles.emptyTitle}>
+                            {role === 'subcategory'
+                                ? 'No subcategories'
+                                : 'Only the built-in filters'}
+                        </p>
+                    </div>
+                ) : (
+                    <table className={styles.listTable}>
+                        <thead>
+                            <tr>
+                                <th>
+                                    {role === 'subcategory'
+                                        ? 'Subcategory'
+                                        : 'Filter'}
+                                </th>
+                                <th>Values</th>
+                                <th>On categories</th>
+                                <th className={styles.listActionsHead}>
+                                    <span className="visually-hidden">
+                                        Actions
+                                    </span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {groups.map((group) => (
+                                <tr key={group.nameNormalized}>
+                                    <td>
+                                        <button
+                                            type="button"
+                                            className={styles.listName}
+                                            onClick={() =>
+                                                setOpenKey(group.nameNormalized)
+                                            }
+                                        >
+                                            {group.name}
+                                        </button>
+                                    </td>
+                                    <td className={styles.listNum}>
+                                        {group.buckets.length}
+                                    </td>
+                                    <td className={styles.listNum}>
+                                        {
+                                            categories.filter((c) =>
+                                                group.byCategory.has(c.id),
+                                            ).length
+                                        }
+                                    </td>
+                                    <td className={styles.listActions}>
+                                        <button
+                                            type="button"
+                                            className={styles.headDelete}
+                                            disabled={busy}
+                                            onClick={() =>
+                                                setConfirmDelete(group)
+                                            }
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
+
+                <button
+                    type="button"
+                    className={styles.addAction}
+                    disabled={busy}
+                    onClick={() => setAdding(true)}
+                >
+                    <Plus size={16} aria-hidden />
+                    {copy.add}
+                </button>
+
+                <ConfirmDialog
+                    open={confirmDelete != null}
+                    onClose={() => setConfirmDelete(null)}
+                    onConfirm={() => {
+                        if (confirmDelete) onDelete(confirmDelete);
+                        setConfirmDelete(null);
+                    }}
+                    labelledBy="delete-variable-title"
+                    title={`Delete ${confirmDelete?.name ?? ''}?`}
+                    message={
+                        role === 'subcategory'
+                            ? 'Every leaderboard this splits into is merged back into one, and the runs on them move with it.'
+                            : 'Runners can no longer narrow the board by this. No run is deleted.'
+                    }
+                    confirmLabel="Delete"
+                    pending={busy}
+                />
+            </section>
+        );
+    }
 
     return (
         <section className={styles.zone}>
