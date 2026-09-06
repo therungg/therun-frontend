@@ -115,7 +115,6 @@ export function LevelsEditor({
         return cells;
     });
     const [nextKey, setNextKey] = useState(1);
-    const [addLevelsRaw, setAddLevelsRaw] = useState('');
     const [addSubsRaw, setAddSubsRaw] = useState('');
     const [openRules, setOpenRules] = useState<Set<string>>(new Set());
     const [confirming, setConfirming] = useState<LevelPlanOp[] | null>(null);
@@ -126,7 +125,17 @@ export function LevelsEditor({
     const state = useMemo(
         () => ({
             hasLevels,
-            levels,
+            // A row with no name yet is not a level — it is somewhere to
+            // type. It stays in the table and out of the plan, as does a
+            // second row repeating a name already in it: the old bulk box
+            // skipped duplicates on the way in, and typing them one at a
+            // time can't mean something different.
+            levels: levels.filter(
+                (l, i) =>
+                    l.name.trim().length > 0 &&
+                    levels.findIndex((x) => slug(x.name) === slug(l.name)) ===
+                        i,
+            ),
             hasSubcategories,
             subcategories,
             excluded: [...excluded].map((cell) => {
@@ -142,24 +151,17 @@ export function LevelsEditor({
     );
     const destructive = useMemo(() => destructiveOps(plan), [plan]);
 
-    const takenLevelSlugs = new Set(levels.map((l) => slug(l.name)));
     const takenSubSlugs = new Set(subcategories.map((s) => slug(s.name)));
 
-    const addLevels = () => {
-        const names = parseNameList(addLevelsRaw, takenLevelSlugs);
-        if (names.length === 0) return;
-        let k = nextKey;
+    // One button, one row. Levels are named in the table like everything else
+    // about them, so adding one is making the row to type in — not filling a
+    // second field somewhere else first.
+    const addLevel = () => {
         setLevels((prev) => [
             ...prev,
-            ...names.map((name) => ({
-                key: `new:${k++}`,
-                id: null,
-                name,
-                rules: '',
-            })),
+            { key: `new:${nextKey}`, id: null, name: '', rules: '' },
         ]);
-        setNextKey(k);
-        setAddLevelsRaw('');
+        setNextKey((k) => k + 1);
     };
 
     const addSubcategories = () => {
@@ -437,7 +439,12 @@ export function LevelsEditor({
                                                 <input
                                                     type="text"
                                                     className="form-control form-control-sm"
-                                                    aria-label={`Level name: ${l.name}`}
+                                                    aria-label={
+                                                        l.name
+                                                            ? `Level name: ${l.name}`
+                                                            : 'Level name'
+                                                    }
+                                                    placeholder="Level name"
                                                     value={l.name}
                                                     onChange={(e) =>
                                                         setLevels((prev) =>
@@ -522,28 +529,15 @@ export function LevelsEditor({
                             </table>
                         </div>
                     )}
-                    <label className={styles.fieldLabel} htmlFor="add-levels">
-                        {levels.length > 0 ? 'Add levels' : 'Your levels'}
-                    </label>
-                    <textarea
-                        id="add-levels"
-                        className="form-control"
-                        rows={4}
-                        placeholder={'E1M1\nE1M2\nE1M3'}
-                        value={addLevelsRaw}
-                        onChange={(e) => setAddLevelsRaw(e.target.value)}
-                    />
-                    <p className="text-muted small mt-1 mb-2">
-                        One level per line. Names already in the table are
-                        skipped.
-                    </p>
                     <button
                         type="button"
                         className={styles.secondaryAction}
-                        disabled={!addLevelsRaw.trim()}
-                        onClick={addLevels}
+                        // A second blank row before the first one is named
+                        // would just be two rows saying nothing.
+                        disabled={levels.some((l) => !l.name.trim())}
+                        onClick={addLevel}
                     >
-                        Add to table
+                        + Add level
                     </button>
                 </div>
             )}
