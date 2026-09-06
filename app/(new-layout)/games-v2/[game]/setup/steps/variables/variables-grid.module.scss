@@ -1114,3 +1114,176 @@ details[open] > .noteSummary::before {
         cursor: default;
     }
 }
+
+// ---- Console tab: the list, and the screens it opens ---------
+// Subcategories and Filters are separate pages now, each a list of what
+// exists. Opening one, or adding one, replaces the list rather than
+// unfolding under it — one thing on screen at a time.
+
+.backAction {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: dt.$spacing-md;
+    padding: 0;
+    font: inherit;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    background: none;
+    border: 0;
+    cursor: pointer;
+
+    &:hover {
+        color: var(--bs-body-color);
+    }
+}
+
+.listTable {
+    width: 100%;
+    margin-bottom: dt.$spacing-md;
+    border-collapse: collapse;
+
+    th {
+        padding: dt.$spacing-xs dt.$spacing-sm;
+        font-size: dt.$font-size-sm;
+        font-weight: 600;
+        color: var(--bs-secondary-color);
+        text-align: left;
+        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    }
+
+    td {
+        padding: dt.$spacing-sm;
+        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+        vertical-align: middle;
+    }
+}
+
+.listName {
+    padding: 0;
+    font: inherit;
+    font-weight: 600;
+    color: inherit;
+    background: none;
+    border: 0;
+    text-decoration: underline dotted;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+
+    &:hover {
+        text-decoration-style: solid;
+    }
+}
+
+.listNum {
+    font-variant-numeric: tabular-nums;
+    color: var(--bs-secondary-color);
+}
+
+.listActions,
+.listActionsHead {
+    text-align: right;
+    width: 1%;
+    white-space: nowrap;
+}
+
+// ---- Add wizard ---------------------------------------------
+
+.wizard {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+}
+
+.wizardHead {
+    padding-bottom: dt.$spacing-sm;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+}
+
+.wizardStep {
+    @include board.board-eyebrow;
+}
+
+.wizardTitle {
+    margin: 0.15rem 0 0;
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+}
+
+.wizardBody {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    max-width: 40rem;
+}
+
+.wizardLabel {
+    margin-top: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+}
+
+.wizardNote {
+    margin: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.wizardError {
+    margin: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-danger);
+}
+
+.wizardChoices {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    margin-top: dt.$spacing-xs;
+}
+
+.wizardChoice {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: pointer;
+}
+
+.wizardAliases {
+    margin-left: dt.$spacing-xs;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.wizardFoot {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    padding-top: dt.$spacing-md;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+}
+
+.wizardGhost {
+    padding: 0.35rem 0.75rem;
+    font: inherit;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    background: transparent;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.7);
+    border-radius: dt.$radius-sm;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+        color: var(--bs-body-color);
+    }
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: default;
+    }
+}
+
+.wizardNext {
+    @include board.board-btn-primary;
+    margin-left: auto;
+}

@@ -23,6 +23,8 @@ export type ConceptId =
     | 'reassign'
     | 'import'
     | 'variables'
+    | 'subcategories'
+    | 'filters'
     | 'combinations'
     | 'timing'
     | 'standards'
@@ -48,6 +50,8 @@ export const CONCEPT_LABEL: Record<ConceptId, string> = {
     reassign: 'Merge games & categories',
     import: 'Import from speedrun.com',
     variables: 'Subcategories & filters',
+    subcategories: 'Subcategories',
+    filters: 'Filters',
     combinations: 'Sub-boards',
     timing: 'Timing',
     standards: 'Minimum time',
@@ -83,7 +87,8 @@ export const TILE_CONCEPT_IDS = [
     'groups',
     'levels',
     'level-categories',
-    'variables',
+    'subcategories',
+    'filters',
     'boards',
     'moderators',
     'reassign',
@@ -149,9 +154,13 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
         action: 'Define the level categories',
         blurb: 'The categories and subcategories every level gets — edit once, applied everywhere.',
     },
-    variables: {
-        action: 'Structure the boards',
-        blurb: 'Split a category into subcategories, add filters, and decide which values runners pick from.',
+    subcategories: {
+        action: 'Split the boards',
+        blurb: 'Turn a category into several leaderboards — Platform, Region, Glitches — each with its own record.',
+    },
+    filters: {
+        action: 'Narrow the boards',
+        blurb: 'Let runners narrow a leaderboard by something a run carries, without splitting it into more boards.',
     },
     boards: {
         action: 'Curate the boards',
@@ -184,7 +193,7 @@ export const STEP_CONCEPTS: Record<SetupStepId, ConceptId[]> = {
     levels: ['levels'],
     groups: ['groups'],
     'category-setup': ['categories'],
-    variables: ['variables'],
+    variables: ['subcategories', 'filters'],
     boards: ['boards'],
 };
 

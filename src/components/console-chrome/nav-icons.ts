@@ -10,6 +10,7 @@ import {
     Diagram3,
     ExclamationTriangle,
     Flag,
+    Funnel,
     Grid3x3,
     type Icon as IconType,
     Layers,
@@ -41,7 +42,8 @@ export const NAV_ICON: Record<NavItemId, IconType> = {
     'level-categories': Diagram3,
     // A grid, because that is literally the surface: categories down, options
     // across.
-    variables: Grid3x3,
+    subcategories: Grid3x3,
+    filters: Funnel,
     boards: Trophy,
     moderators: ShieldLock,
     reassign: ArrowLeftRight,

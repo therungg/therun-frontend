@@ -196,18 +196,23 @@ export function ContentRouter(props: ContentRouterProps) {
                     onEditCategory={props.onEditCategory}
                 />
             );
-        case 'variables':
-            // The wizard's step 4 without the wizard: same grid, same staging
-            // rules (subcategories preview, filters write through). It reads
-            // the game's own categories, not the {id, display} pairs — a
-            // category's featured flag decides whether it is a row.
+        case 'subcategories':
+        case 'filters': {
+            // Two tabs over one grid: a board's splits and its filters are
+            // managed independently, so each is its own page. The grid still
+            // owns the writes — `only` picks which of its two sections is on
+            // screen.
+            const role =
+                activeItem === 'subcategories' ? 'subcategory' : 'filter';
             return (
                 <div className={styles.surface}>
                     <div className={styles.paneHeader}>
                         <div>
                             <div className={styles.paneEyebrow}>Structure</div>
                             <h2 className={styles.paneTitle}>
-                                Subcategories &amp; filters
+                                {activeItem === 'subcategories'
+                                    ? 'Subcategories'
+                                    : 'Filters'}
                             </h2>
                         </div>
                     </div>
@@ -216,9 +221,11 @@ export function ContentRouter(props: ContentRouterProps) {
                         categories={props.boardCategories}
                         variables={props.variables}
                         groups={props.boardGroups}
+                        only={role}
                     />
                 </div>
             );
+        }
         case 'boards':
             return (
                 <BoardCuration
