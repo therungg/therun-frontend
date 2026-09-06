@@ -654,6 +654,16 @@ $rail: 3px; // severity spine / active accent width
     color: var(--bs-secondary-color);
 }
 
+// A pane whose whole content depends on one answer asks it first, in the
+// pane's own voice — above the tables that answer turns on.
+.paneToggle {
+    display: flex;
+    align-items: center;
+    margin-bottom: dt.$spacing-lg;
+    font-weight: 500;
+    cursor: pointer;
+}
+
 // ---- Content wrapper: gently align mounted config forms ----
 // The restyled surfaces (queue, bans, dialog) use their own module classes,
 // so these scoped overrides only reach the not-yet-restyled CONFIGURE forms

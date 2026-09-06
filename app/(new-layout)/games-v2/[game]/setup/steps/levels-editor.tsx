@@ -57,10 +57,15 @@ interface Props {
     onSaved: () => void;
     /** Wizard only: leave the step without saving. */
     onSkip?: () => void;
-    /** Reports the levels toggle, so a surrounding pane can hide everything
-     *  else on the tab while the game is not marked as having levels — the
-     *  toggle is the whole page until it is on. */
-    onHasLevelsChange?: (hasLevels: boolean) => void;
+    /**
+     * The levels question, asked by the surrounding pane instead of here.
+     *
+     * The console asks it above the levels table (the doc's order: ask first,
+     * then show the table), and the table is not this component's to draw —
+     * so when the pane owns the question it owns the state too, and the
+     * editor renders everything below it.
+     */
+    toggle?: { value: boolean; onChange: (hasLevels: boolean) => void };
 }
 
 /**
@@ -77,12 +82,13 @@ export function LevelsEditor({
     existing,
     onSaved,
     onSkip,
-    onHasLevelsChange,
+    toggle,
 }: Props) {
-    const [hasLevels, setHasLevels] = useState(existing.levelGroups.length > 0);
-    useEffect(() => {
-        onHasLevelsChange?.(hasLevels);
-    }, [hasLevels, onHasLevelsChange]);
+    const [ownHasLevels, setOwnHasLevels] = useState(
+        existing.levelGroups.length > 0,
+    );
+    const hasLevels = toggle ? toggle.value : ownHasLevels;
+    const setHasLevels = toggle ? toggle.onChange : setOwnHasLevels;
     const [levels, setLevels] = useState<LevelDraft[]>(() =>
         existing.levelGroups.map((g) => ({
             key: `id:${g.id}`,
@@ -362,7 +368,8 @@ export function LevelsEditor({
           : 'Save changes';
     const nothingToSave = mode === 'manage' && plan.length === 0;
 
-    const hasLevelsToggle = (
+    // Nothing to draw when the pane asked the question itself.
+    const hasLevelsToggle = toggle ? null : (
         <label className={styles.section}>
             <input
                 type="checkbox"

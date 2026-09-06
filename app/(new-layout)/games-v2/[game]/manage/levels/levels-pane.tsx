@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import { previewCategories } from '~src/lib/console/preview-categories';
@@ -59,9 +59,11 @@ export function LevelsPane({
     );
     // The editor seeds its drafts from `existing` once; a reload remounts it.
     const [version, setVersion] = useState(0);
-    // The tab is one question until the answer is yes: with levels off, the
-    // levels table has nothing to say, so the toggle is the whole page.
-    const [hasLevels, setHasLevels] = useState(true);
+    // The tab's first question, asked here rather than inside the editor
+    // because the levels table sits between the two: ask, then show the
+    // table, then everything the editor offers. Null until the overview
+    // lands — the answer is a fact about the board, not a default.
+    const [hasLevels, setHasLevels] = useState<boolean | null>(null);
 
     // A level's structure is decided by its template, not by this table:
     // it cannot be regrouped (its group is what makes it a level), removed,
@@ -123,6 +125,12 @@ export function LevelsPane({
         };
     }, [overview]);
 
+    // The saved answer, once known. Re-seeds after every save, since a save
+    // is what makes the toggle true or false for real.
+    useEffect(() => {
+        if (existing) setHasLevels(existing.levelGroups.length > 0);
+    }, [existing]);
+
     return (
         <div className={consoleStyles.surface}>
             <div className={consoleStyles.paneHeader}>
@@ -131,6 +139,18 @@ export function LevelsPane({
                     <h2 className={consoleStyles.paneTitle}>Levels</h2>
                 </div>
             </div>
+            {existing && (
+                <label className={consoleStyles.paneToggle}>
+                    <input
+                        type="checkbox"
+                        className="form-check-input me-2"
+                        checked={hasLevels ?? false}
+                        onChange={(e) => setHasLevels(e.target.checked)}
+                    />
+                    This game has individual levels
+                </label>
+            )}
+
             {/* The levels table: the same grid the Categories tab draws, over
                 the level slice. No group column — a level's group is what
                 makes it a level, so it is never a choice. */}
@@ -171,7 +191,10 @@ export function LevelsPane({
                     gameSlug={gameSlug}
                     gameId={gameId}
                     existing={existing}
-                    onHasLevelsChange={setHasLevels}
+                    toggle={{
+                        value: hasLevels ?? false,
+                        onChange: setHasLevels,
+                    }}
                     onSaved={async () => {
                         await reload();
                         setVersion((v) => v + 1);
