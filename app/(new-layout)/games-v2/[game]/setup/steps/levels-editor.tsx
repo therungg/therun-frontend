@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 import { deleteGroupAction } from '~src/actions/category-group/delete-group.action';
 import { createLevelAction } from '~src/actions/levels/create-level.action';
 import { createLevelBoardAction } from '~src/actions/levels/create-level-board.action';
@@ -15,7 +15,6 @@ import type {
 import { updateVisibilityAction } from '../../manage/visibility/actions/update-visibility.action';
 import { curateCategoryAction } from '../actions/curate-category.action';
 import styles from '../setup.module.scss';
-import { CategoryBandPreview } from './category-band-preview';
 import type { CategorySeed } from './category-seed';
 import {
     buildLevelSetupPlan,
@@ -58,6 +57,10 @@ interface Props {
     onSaved: () => void;
     /** Wizard only: leave the step without saving. */
     onSkip?: () => void;
+    /** Reports the levels toggle, so a surrounding pane can hide everything
+     *  else on the tab while the game is not marked as having levels — the
+     *  toggle is the whole page until it is on. */
+    onHasLevelsChange?: (hasLevels: boolean) => void;
 }
 
 /**
@@ -74,8 +77,12 @@ export function LevelsEditor({
     existing,
     onSaved,
     onSkip,
+    onHasLevelsChange,
 }: Props) {
     const [hasLevels, setHasLevels] = useState(existing.levelGroups.length > 0);
+    useEffect(() => {
+        onHasLevelsChange?.(hasLevels);
+    }, [hasLevels, onHasLevelsChange]);
     const [levels, setLevels] = useState<LevelDraft[]>(() =>
         existing.levelGroups.map((g) => ({
             key: `id:${g.id}`,
@@ -174,36 +181,6 @@ export function LevelsEditor({
             else next.add(cell);
             return next;
         });
-
-    // Preview-only synthetic groups/boards for the wizard's band preview.
-    // Negative ids keep them out of the way of any real id.
-    const previewLevelGroups: ResolvedGroup[] = useMemo(
-        () =>
-            levels.map((l, i) => ({
-                id: -(i + 1),
-                name: l.name,
-                sortOrder: i,
-                hiddenByDefault: false,
-                kind: 'level' as const,
-                rules: null,
-            })),
-        [levels],
-    );
-    const previewLevelBoards: ResolvedCategory[] = useMemo(
-        () =>
-            previewLevelGroups.map((g, i) => ({
-                id: -(i + 1001),
-                name: `preview-level-${slug(g.name)}`,
-                display: g.name,
-                primaryTiming: 'rt' as const,
-                archived: false,
-                isMain: true,
-                sortOrder: 1,
-                groupId: g.id,
-                totalRunTime: 0,
-            })),
-        [previewLevelGroups],
-    );
 
     /** Runs the plan in order; returns the name of the first failed op. */
     const runPlan = async (ops: LevelPlanOp[]): Promise<string | null> => {
@@ -562,13 +539,6 @@ export function LevelsEditor({
                         Add to table
                     </button>
                 </div>
-            )}
-
-            {hasLevels && mode === 'setup' && (
-                <CategoryBandPreview
-                    categories={previewLevelBoards}
-                    groups={previewLevelGroups}
-                />
             )}
 
             {hasLevels && (

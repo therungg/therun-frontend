@@ -10,7 +10,6 @@ import type {
 import { curateCategoryAction } from '../actions/curate-category.action';
 import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
-import { CategoryBandPreview } from './category-band-preview';
 import { GroupBuilder } from './group-builder';
 import { computeGroupSaveChanges, moveWithinScope } from './group-order';
 import { StepHeader } from './step-header';
@@ -64,30 +63,9 @@ export function StepGroups({ data, onAdvance }: StepProps) {
     const [layout, setLayout] = useState<Layout>(
         nonLevelGroups.length > 0 ? 'grouped' : 'flat',
     );
-    // Levels aren't edited on this step, but the band preview still shows them
-    // (as their own dropdown) so it matches the public board. Fed in untouched
-    // alongside the drafted category tier.
-    const levelGroups = useMemo(
-        () => data.groups.filter((g) => g.kind === 'level'),
-        [data.groups],
-    );
-    const levelBoards = useMemo(
-        () =>
-            data.categories.filter(
-                (c) =>
-                    !c.archived &&
-                    (c.isMain ?? false) &&
-                    c.groupId != null &&
-                    levelGroupIds.has(c.groupId),
-            ),
-        [data.categories, levelGroupIds],
-    );
     const [rowErrors, setRowErrors] = useState<Map<number, string>>(new Map());
     const [progress, setProgress] = useState<string | null>(null);
     const [isSaving, startSaving] = useTransition();
-
-    const groupIdOf = (id: number): number | null =>
-        layout === 'grouped' ? (assignments.get(id) ?? null) : null;
 
     const assign = (categoryId: number, groupId: number | null) =>
         setAssignments((prev) => {
@@ -132,33 +110,6 @@ export function StepGroups({ data, onAdvance }: StepProps) {
         });
         return buckets;
     }, [groups, byId, orderedIds, assignments]);
-
-    // The preview must render the DRAFT order, so each category gets its
-    // draft column position as sortOrder (1..N per column) — the same
-    // numbers the save pass would write.
-    const previewCategories = useMemo<ResolvedCategory[]>(() => {
-        const draftSort = new Map<number, number>();
-        if (layout === 'grouped') {
-            for (const col of columns) {
-                col.categories.forEach((c, i) => draftSort.set(c.id, i + 1));
-            }
-        } else {
-            // Flat layout is one scope: number by global draft position.
-            orderedIds.forEach((id, i) => draftSort.set(id, i + 1));
-        }
-        const drafted = orderedIds
-            .map((id) => byId.get(id))
-            .filter((c): c is ResolvedCategory => c != null)
-            .map((c) => ({
-                ...c,
-                groupId: groupIdOf(c.id),
-                sortOrder: draftSort.get(c.id) ?? 0,
-            }));
-        // Level boards ride along untouched so the preview's Levels dropdown
-        // renders; they're not part of the drafted category tier.
-        return [...drafted, ...levelBoards];
-        // groupIdOf closes over assignments+layout, and both drive the result.
-    }, [columns, orderedIds, byId, assignments, layout, levelBoards]);
 
     const ungroupedCount = columns[columns.length - 1].categories.length;
     const groupingOk =
@@ -271,14 +222,6 @@ export function StepGroups({ data, onAdvance }: StepProps) {
                     Grouped
                 </button>
             </div>
-
-            <CategoryBandPreview
-                categories={previewCategories}
-                groups={[
-                    ...(layout === 'grouped' ? groups : []),
-                    ...levelGroups,
-                ]}
-            />
 
             {layout === 'grouped' && (
                 <>

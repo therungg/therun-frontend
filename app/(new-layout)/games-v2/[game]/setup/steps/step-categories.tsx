@@ -9,7 +9,6 @@ import type { ResolvedCategory } from '../../../../../../types/leaderboards.type
 import { curateCategoryAction } from '../actions/curate-category.action';
 import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
-import { CategoryBandPreview } from './category-band-preview';
 import { buildCategorySeed, computeCategoryChanges } from './category-seed';
 import { StepHeader } from './step-header';
 
@@ -99,34 +98,6 @@ export function StepCategories({ data, onAdvance }: StepProps) {
     }, [matches, query, showAll]);
 
     const hiddenCount = matches.length - visibleRows.length;
-
-    // Saved group assignment per category. This step doesn't edit it — that's
-    // step 3 — but a board that already has groups should preview as it
-    // actually looks, not as a flat band it hasn't been in for months.
-    // Categories ticked here but not yet filed show up ungrouped, which is
-    // the truth until step 3 files them.
-    const savedGroupIdById = useMemo(() => {
-        const m = new Map<number, number | null>();
-        for (const c of data.categories) m.set(c.id, c.groupId ?? null);
-        return m;
-    }, [data.categories]);
-
-    // The band preview runs the public renderer, which wants ResolvedCategory.
-    const previewCategories = useMemo<ResolvedCategory[]>(
-        () =>
-            shown.map((r) => ({
-                id: r.id,
-                name: String(r.id),
-                display: r.display,
-                primaryTiming: 'rt',
-                archived: false,
-                isMain: true,
-                sortOrder: r.sortOrder,
-                groupId: savedGroupIdById.get(r.id) ?? null,
-                totalRunTime: r.totalRunTime,
-            })),
-        [shown, savedGroupIdById],
-    );
 
     if (data.categories.length === 0) {
         return (
@@ -254,11 +225,6 @@ export function StepCategories({ data, onAdvance }: StepProps) {
             <StepHeader
                 step="categories"
                 title="Which categories belong on the board?"
-            />
-
-            <CategoryBandPreview
-                categories={previewCategories}
-                groups={data.groups}
             />
 
             {leavingBoardCount > 0 && (

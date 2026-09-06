@@ -59,6 +59,9 @@ export function LevelsPane({
     );
     // The editor seeds its drafts from `existing` once; a reload remounts it.
     const [version, setVersion] = useState(0);
+    // The tab is one question until the answer is yes: with levels off, the
+    // levels table has nothing to say, so the toggle is the whole page.
+    const [hasLevels, setHasLevels] = useState(true);
 
     // A level's structure is decided by its template, not by this table:
     // it cannot be regrouped (its group is what makes it a level), removed,
@@ -131,29 +134,32 @@ export function LevelsPane({
             {/* The levels table: the same grid the Categories tab draws, over
                 the level slice. No group column — a level's group is what
                 makes it a level, so it is never a choice. */}
-            {game && levelCategories && levelCategories.length > 0 && (
-                <CategoryMatrix
-                    game={game}
-                    categories={levelCategories}
-                    groups={[] as ResolvedGroup[]}
-                    policies={policies ?? []}
-                    variables={variables}
-                    structure={
-                        onEditCategory
-                            ? {
-                                  groupOptions: [],
-                                  onGroupChange: notHere,
-                                  onRemove: notHere,
-                                  onMove: notHere,
-                                  onDropRow: notHere,
-                                  onEdit: onEditCategory,
-                                  busyIds: new Set<number>(),
-                                  reorderPending: false,
-                              }
-                            : undefined
-                    }
-                />
-            )}
+            {hasLevels &&
+                game &&
+                levelCategories &&
+                levelCategories.length > 0 && (
+                    <CategoryMatrix
+                        game={game}
+                        categories={levelCategories}
+                        groups={[] as ResolvedGroup[]}
+                        policies={policies ?? []}
+                        variables={variables}
+                        structure={
+                            onEditCategory
+                                ? {
+                                      groupOptions: [],
+                                      onGroupChange: notHere,
+                                      onRemove: notHere,
+                                      onMove: notHere,
+                                      onDropRow: notHere,
+                                      onEdit: onEditCategory,
+                                      busyIds: new Set<number>(),
+                                      reorderPending: false,
+                                  }
+                                : undefined
+                        }
+                    />
+                )}
             {error && <div className="alert alert-danger">{error}</div>}
             {loading && !existing && (
                 <p className="text-muted small">Loading levels…</p>
@@ -165,6 +171,7 @@ export function LevelsPane({
                     gameSlug={gameSlug}
                     gameId={gameId}
                     existing={existing}
+                    onHasLevelsChange={setHasLevels}
                     onSaved={async () => {
                         await reload();
                         setVersion((v) => v + 1);
