@@ -27,22 +27,6 @@ import {
 
 const slug = (s: string) => normalizeSlug(s.trim());
 
-/** Splits a textarea into trimmed names, de-duplicated by slug against each
- *  other and against `taken`, preserving first-seen order. */
-function parseNameList(raw: string, taken: Set<string>): string[] {
-    const seen = new Set(taken);
-    const names: string[] = [];
-    for (const line of raw.split('\n')) {
-        const trimmed = line.trim();
-        if (!trimmed) continue;
-        const key = slug(trimmed);
-        if (seen.has(key)) continue;
-        seen.add(key);
-        names.push(trimmed);
-    }
-    return names;
-}
-
 interface Props {
     /** setup: the wizard step (band preview, "Continue" when there are no
      * levels). manage: the console pane (always saves, never advances). */
@@ -115,7 +99,6 @@ export function LevelsEditor({
         return cells;
     });
     const [nextKey, setNextKey] = useState(1);
-    const [addSubsRaw, setAddSubsRaw] = useState('');
     const [openRules, setOpenRules] = useState<Set<string>>(new Set());
     const [confirming, setConfirming] = useState<LevelPlanOp[] | null>(null);
     const [progress, setProgress] = useState<string | null>(null);
@@ -137,7 +120,13 @@ export function LevelsEditor({
                         i,
             ),
             hasSubcategories,
-            subcategories,
+            subcategories: subcategories.filter(
+                (sub, i) =>
+                    sub.name.trim().length > 0 &&
+                    subcategories.findIndex(
+                        (x) => slug(x.name) === slug(sub.name),
+                    ) === i,
+            ),
             excluded: [...excluded].map((cell) => {
                 const [levelKey, subcategoryKey] = cell.split('|');
                 return { levelKey, subcategoryKey };
@@ -151,8 +140,6 @@ export function LevelsEditor({
     );
     const destructive = useMemo(() => destructiveOps(plan), [plan]);
 
-    const takenSubSlugs = new Set(subcategories.map((s) => slug(s.name)));
-
     // One button, one row. Levels are named in the table like everything else
     // about them, so adding one is making the row to type in — not filling a
     // second field somewhere else first.
@@ -164,16 +151,14 @@ export function LevelsEditor({
         setNextKey((k) => k + 1);
     };
 
-    const addSubcategories = () => {
-        const names = parseNameList(addSubsRaw, takenSubSlugs);
-        if (names.length === 0) return;
-        let k = nextKey;
+    // Same as levels: the row is where a subcategory is named, so the button
+    // makes the row rather than asking for names somewhere else first.
+    const addSubcategory = () => {
         setSubcategories((prev) => [
             ...prev,
-            ...names.map((name) => ({ key: `new:${k++}`, id: null, name })),
+            { key: `new:${nextKey}`, id: null, name: '' },
         ]);
-        setNextKey(k);
-        setAddSubsRaw('');
+        setNextKey((k) => k + 1);
     };
 
     const removeLevel = (key: string) =>
@@ -587,7 +572,12 @@ export function LevelsEditor({
                                                     <input
                                                         type="text"
                                                         className="form-control form-control-sm"
-                                                        aria-label={`Subcategory name: ${s.name}`}
+                                                        aria-label={
+                                                            s.name
+                                                                ? `Subcategory name: ${s.name}`
+                                                                : 'Subcategory name'
+                                                        }
+                                                        placeholder="Subcategory name"
                                                         value={s.name}
                                                         onChange={(e) =>
                                                             setSubcategories(
@@ -631,33 +621,13 @@ export function LevelsEditor({
                             </table>
                         </div>
                     )}
-                    <label
-                        className={styles.fieldLabel}
-                        htmlFor="add-subcategories"
-                    >
-                        {subcategories.length > 0
-                            ? 'Add subcategories'
-                            : 'Your subcategories'}
-                    </label>
-                    <textarea
-                        id="add-subcategories"
-                        className="form-control"
-                        rows={3}
-                        placeholder={'Any%\n100%'}
-                        value={addSubsRaw}
-                        onChange={(e) => setAddSubsRaw(e.target.value)}
-                    />
-                    <p className="text-muted small mt-1 mb-2">
-                        One subcategory per line — applies to every level unless
-                        unchecked below.
-                    </p>
                     <button
                         type="button"
                         className={styles.secondaryAction}
-                        disabled={!addSubsRaw.trim()}
-                        onClick={addSubcategories}
+                        disabled={subcategories.some((x) => !x.name.trim())}
+                        onClick={addSubcategory}
                     >
-                        Add to table
+                        + Add subcategory
                     </button>
 
                     {levels.length > 0 && subcategories.length > 0 && (
