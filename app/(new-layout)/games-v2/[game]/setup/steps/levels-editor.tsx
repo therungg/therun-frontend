@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState, useTransition } from 'react';
+import { Plus } from 'react-bootstrap-icons';
 import { deleteGroupAction } from '~src/actions/category-group/delete-group.action';
 import { createLevelAction } from '~src/actions/levels/create-level.action';
 import { createLevelBoardAction } from '~src/actions/levels/create-level-board.action';
@@ -531,13 +532,14 @@ export function LevelsEditor({
                     )}
                     <button
                         type="button"
-                        className={styles.secondaryAction}
+                        className={styles.addRow}
                         // A second blank row before the first one is named
                         // would just be two rows saying nothing.
                         disabled={levels.some((l) => !l.name.trim())}
                         onClick={addLevel}
                     >
-                        + Add level
+                        <Plus size={16} aria-hidden />
+                        Add level
                     </button>
                 </div>
             )}
@@ -638,11 +640,12 @@ export function LevelsEditor({
                     )}
                     <button
                         type="button"
-                        className={styles.secondaryAction}
+                        className={styles.addRow}
                         disabled={subcategories.some((x) => !x.name.trim())}
                         onClick={addSubcategory}
                     >
-                        + Add subcategory
+                        <Plus size={16} aria-hidden />
+                        Add subcategory
                     </button>
 
                     {levels.length > 0 && subcategories.length > 0 && (

@@ -703,6 +703,48 @@ $rail-collapse: 900px;
     @include board.board-quiet-link;
 }
 
+// The one "add a row" affordance across the console: a full-width dashed
+// slot sitting where the new row will appear, so the button reads as the
+// empty row it makes rather than as a toolbar action. Same element as the
+// Subcategories and Filters tabs' add button (variables-grid.module.scss).
+.addRow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    width: 100%;
+    margin-top: dt.$spacing-sm;
+    padding: dt.$spacing-md;
+    font: inherit;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    background: transparent;
+    border: 1px dashed rgba(var(--bs-border-color-rgb), 0.7);
+    border-radius: dt.$radius-lg;
+    cursor: pointer;
+    transition:
+        border-color dt.$transition-fast,
+        color dt.$transition-fast,
+        background dt.$transition-fast;
+
+    &:hover:not(:disabled) {
+        border-color: rgba(var(--bs-primary-rgb), 0.7);
+        color: var(--bs-emphasis-color);
+        background: rgba(var(--bs-primary-rgb), 0.04);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 2px;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: default;
+    }
+}
+
 .secondaryAction {
     @include board.control-pill;
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
