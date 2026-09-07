@@ -42,15 +42,6 @@ interface Props {
     onSaved: () => void;
     /** Wizard only: leave the step without saving. */
     onSkip?: () => void;
-    /**
-     * The levels question, asked by the surrounding pane instead of here.
-     *
-     * The console asks it above the levels table (the doc's order: ask first,
-     * then show the table), and the table is not this component's to draw —
-     * so when the pane owns the question it owns the state too, and the
-     * editor renders everything below it.
-     */
-    toggle?: { value: boolean; onChange: (hasLevels: boolean) => void };
 }
 
 /**
@@ -67,13 +58,15 @@ export function LevelsEditor({
     existing,
     onSaved,
     onSkip,
-    toggle,
 }: Props) {
     const [ownHasLevels, setOwnHasLevels] = useState(
         existing.levelGroups.length > 0,
     );
-    const hasLevels = toggle ? toggle.value : ownHasLevels;
-    const setHasLevels = toggle ? toggle.onChange : setOwnHasLevels;
+    // The console doesn't ask whether the game has levels: the tab is the
+    // levels, and an empty table with an add slot says "none yet" without a
+    // checkbox to tick first. The wizard still asks — there it is a step.
+    const hasLevels = mode === 'manage' ? true : ownHasLevels;
+    const setHasLevels = setOwnHasLevels;
     const [levels, setLevels] = useState<LevelDraft[]>(() =>
         existing.levelGroups.map((g) => ({
             key: `id:${g.id}`,
@@ -82,7 +75,7 @@ export function LevelsEditor({
             rules: g.rules ?? '',
         })),
     );
-    const [hasSubcategories, setHasSubcategories] = useState(
+    const [ownHasSubcategories, setHasSubcategories] = useState(
         existing.templates.length > 0,
     );
     const [subcategories, setSubcategories] = useState<SubcategoryDraft[]>(() =>
@@ -92,6 +85,10 @@ export function LevelsEditor({
             name: t.display,
         })),
     );
+    // Adding one is the answer; removing the last one is the other answer.
+    const hasSubcategories =
+        mode === 'manage' ? subcategories.length > 0 : ownHasSubcategories;
+
     const [excluded, setExcluded] = useState<Set<string>>(() => {
         const cells = new Set<string>();
         for (const e of existing.exclusions) {
@@ -392,18 +389,19 @@ export function LevelsEditor({
           : 'Save changes';
     const nothingToSave = mode === 'manage' && plan.length === 0;
 
-    // Nothing to draw when the pane asked the question itself.
-    const hasLevelsToggle = toggle ? null : (
-        <label className={styles.section}>
-            <input
-                type="checkbox"
-                className="form-check-input me-2"
-                checked={hasLevels}
-                onChange={(e) => setHasLevels(e.target.checked)}
-            />
-            This game has individual levels
-        </label>
-    );
+    // The console has no levels question at all — see hasLevels above.
+    const hasLevelsToggle =
+        mode === 'manage' ? null : (
+            <label className={styles.section}>
+                <input
+                    type="checkbox"
+                    className="form-check-input me-2"
+                    checked={hasLevels}
+                    onChange={(e) => setHasLevels(e.target.checked)}
+                />
+                This game has individual levels
+            </label>
+        );
 
     if (!hasLevels && existing.levelGroups.length === 0) {
         return (
@@ -592,17 +590,19 @@ export function LevelsEditor({
                 <div className={styles.section}>
                     <div className={styles.cardHead}>
                         <span className={styles.cardTitle}>Subcategories</span>
-                        <label className={styles.cardSwitch}>
-                            <input
-                                type="checkbox"
-                                className="form-check-input"
-                                checked={hasSubcategories}
-                                onChange={(e) =>
-                                    setHasSubcategories(e.target.checked)
-                                }
-                            />
-                            These levels have subcategories
-                        </label>
+                        {mode === 'setup' && (
+                            <label className={styles.cardSwitch}>
+                                <input
+                                    type="checkbox"
+                                    className="form-check-input"
+                                    checked={hasSubcategories}
+                                    onChange={(e) =>
+                                        setHasSubcategories(e.target.checked)
+                                    }
+                                />
+                                These levels have subcategories
+                            </label>
+                        )}
                     </div>
                     {hasSubcategories && (
                         <p className={styles.cardNote}>
@@ -611,7 +611,7 @@ export function LevelsEditor({
                         </p>
                     )}
 
-                    {hasSubcategories && (
+                    {(hasSubcategories || mode === 'manage') && (
                         <>
                             {subcategories.length > 0 && (
                                 <ul className={styles.nameList}>
