@@ -1206,12 +1206,17 @@ $rail-collapse: 900px;
 // table, and it sits flush under it.
 .attachedSlot {
     display: block;
-    margin-top: -#{dt.$spacing-lg};
-    margin-bottom: dt.$spacing-lg;
+    // Sits on the table above it: that panel's bottom margin is cancelled so
+    // the slot butts against its last row and reads as part of the card.
+    margin-top: calc(-1 * #{dt.$spacing-lg} - 1px);
+    margin-bottom: dt.$spacing-xl;
 
-    // Flush against the table above it: the slot is that table's last row.
     .addRow {
         margin-top: 0;
+        padding: dt.$spacing-sm;
+        background: var(--board-surface-bg, var(--bs-body-bg));
+        border-color: rgba(var(--bs-border-color-rgb), 1);
+        border-top-color: transparent;
         border-top-left-radius: 0;
         border-top-right-radius: 0;
     }
@@ -1251,10 +1256,14 @@ $rail-collapse: 900px;
 // A list of names is a list, not a table: one column of text does not need
 // three quarters of the screen between it and its Remove.
 .nameList {
-    max-width: 34rem;
+    max-width: 30rem;
     margin: 0;
     padding: 0;
     list-style: none;
+}
+
+.nameListSlot {
+    max-width: 30rem;
 }
 
 .nameRow {
@@ -1277,14 +1286,32 @@ $rail-collapse: 900px;
 // The assignment grid: the level column stays put while the subcategories
 // scroll, and each row and column can be filled or cleared in one click.
 .gridTable {
+    width: auto;
+    min-width: 24rem;
+
     th,
     td {
         vertical-align: middle;
     }
+
+    // Every value column is the same narrow, centred column, so the header,
+    // the all/none and the checkbox under them share one axis.
+    .colCenter {
+        width: 9rem;
+        text-align: center;
+    }
+}
+
+.gridColHead {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
 }
 
 .gridCorner,
 .gridRowHead {
+    min-width: 14rem;
     position: sticky;
     left: 0;
     z-index: 1;
@@ -1294,8 +1321,16 @@ $rail-collapse: 900px;
     white-space: nowrap;
 }
 
+.gridRowHead {
+    // Name left, its all/none pinned right, so the two never read as one
+    // string ("Sunny Flight none").
+    .allNone {
+        float: right;
+    }
+}
+
 .allNone {
-    margin-left: dt.$spacing-xs;
+    margin-left: dt.$spacing-md;
     padding: 0;
     font: inherit;
     font-size: dt.$font-size-sm;

@@ -347,7 +347,10 @@ export function CategoryMatrix({
                                 </>
                             )}
                             {variables && (
-                                <th title="Boards this category splits into, across its published subcategories">
+                                <th
+                                    className={styles.subBoardsCell}
+                                    title="Boards this category splits into, across its published subcategories"
+                                >
                                     Subcategories
                                 </th>
                             )}

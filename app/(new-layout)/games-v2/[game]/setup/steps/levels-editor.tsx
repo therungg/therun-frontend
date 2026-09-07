@@ -197,6 +197,12 @@ export function LevelsEditor({
     const columnAllOn = (subKey: string) =>
         levels.every((l) => !excluded.has(`${l.key}|${subKey}`));
 
+    // The console's levels table sorts by name; a grid under it that lists
+    // the same five levels in overview order reads as a different set.
+    const orderedLevels = [...levels].sort((a, b) =>
+        a.name.localeCompare(b.name),
+    );
+
     const setCell = (levelKey: string, subKey: string, included: boolean) =>
         setExcluded((prev) => {
             const next = new Set(prev);
@@ -665,7 +671,7 @@ export function LevelsEditor({
                             )}
                             <button
                                 type="button"
-                                className={styles.addRow}
+                                className={`${styles.addRow} ${styles.nameListSlot}`}
                                 disabled={subcategories.some(
                                     (x) => !x.name.trim(),
                                 )}
@@ -706,29 +712,37 @@ export function LevelsEditor({
                                                 key={sub.key}
                                                 className={styles.colCenter}
                                             >
-                                                {sub.name || 'Unnamed'}
-                                                <button
-                                                    type="button"
-                                                    className={styles.allNone}
-                                                    onClick={() =>
-                                                        setColumn(
-                                                            sub.key,
-                                                            !columnAllOn(
-                                                                sub.key,
-                                                            ),
-                                                        )
+                                                <span
+                                                    className={
+                                                        styles.gridColHead
                                                     }
                                                 >
-                                                    {columnAllOn(sub.key)
-                                                        ? 'none'
-                                                        : 'all'}
-                                                </button>
+                                                    {sub.name || 'Unnamed'}
+                                                    <button
+                                                        type="button"
+                                                        className={
+                                                            styles.allNone
+                                                        }
+                                                        onClick={() =>
+                                                            setColumn(
+                                                                sub.key,
+                                                                !columnAllOn(
+                                                                    sub.key,
+                                                                ),
+                                                            )
+                                                        }
+                                                    >
+                                                        {columnAllOn(sub.key)
+                                                            ? 'none'
+                                                            : 'all'}
+                                                    </button>
+                                                </span>
                                             </th>
                                         ))}
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {levels.map((l) => (
+                                    {orderedLevels.map((l) => (
                                         <tr key={l.key}>
                                             <th
                                                 scope="row"
