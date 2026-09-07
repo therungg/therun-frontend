@@ -59,11 +59,6 @@ export function LevelsPane({
     );
     // The editor seeds its drafts from `existing` once; a reload remounts it.
     const [version, setVersion] = useState(0);
-    // The tab's first question, asked here rather than inside the editor
-    // because the levels table sits between the two: ask, then show the
-    // table, then everything the editor offers. Null until the overview
-    // lands — the answer is a fact about the board, not a default.
-    const [hasLevels, setHasLevels] = useState<boolean | null>(null);
 
     // A level's structure is decided by its template, not by this table:
     // it cannot be regrouped (its group is what makes it a level), removed,
@@ -125,12 +120,6 @@ export function LevelsPane({
         };
     }, [overview]);
 
-    // The saved answer, once known. Re-seeds after every save, since a save
-    // is what makes the toggle true or false for real.
-    useEffect(() => {
-        if (existing) setHasLevels(existing.levelGroups.length > 0);
-    }, [existing]);
-
     return (
         <div className={consoleStyles.surface}>
             <div className={consoleStyles.paneHeader}>
@@ -139,54 +128,33 @@ export function LevelsPane({
                     <h2 className={consoleStyles.paneTitle}>Levels</h2>
                 </div>
             </div>
-            {existing && (
-                <div className={consoleStyles.settingRow}>
-                    <label className={consoleStyles.settingLabel}>
-                        <input
-                            type="checkbox"
-                            className="form-check-input"
-                            checked={hasLevels ?? false}
-                            onChange={(e) => setHasLevels(e.target.checked)}
-                        />
-                        This game has individual levels
-                    </label>
-                    <p className={consoleStyles.settingNote}>
-                        Levels are categories in their own group, shown on the
-                        board as a dropdown. Everything below is about them.
-                    </p>
-                </div>
-            )}
-
             {/* The levels table: the same grid the Categories tab draws, over
                 the level slice. No group column — a level's group is what
                 makes it a level, so it is never a choice. */}
-            {hasLevels &&
-                game &&
-                levelCategories &&
-                levelCategories.length > 0 && (
-                    <CategoryMatrix
-                        game={game}
-                        categories={levelCategories}
-                        groups={[] as ResolvedGroup[]}
-                        policies={policies ?? []}
-                        variables={variables}
-                        subject="levels"
-                        structure={
-                            onEditCategory
-                                ? {
-                                      groupOptions: [],
-                                      onGroupChange: notHere,
-                                      onRemove: notHere,
-                                      onMove: notHere,
-                                      onDropRow: notHere,
-                                      onEdit: onEditCategory,
-                                      busyIds: new Set<number>(),
-                                      reorderPending: false,
-                                  }
-                                : undefined
-                        }
-                    />
-                )}
+            {game && levelCategories && levelCategories.length > 0 && (
+                <CategoryMatrix
+                    game={game}
+                    categories={levelCategories}
+                    groups={[] as ResolvedGroup[]}
+                    policies={policies ?? []}
+                    variables={variables}
+                    subject="levels"
+                    structure={
+                        onEditCategory
+                            ? {
+                                  groupOptions: [],
+                                  onGroupChange: notHere,
+                                  onRemove: notHere,
+                                  onMove: notHere,
+                                  onDropRow: notHere,
+                                  onEdit: onEditCategory,
+                                  busyIds: new Set<number>(),
+                                  reorderPending: false,
+                              }
+                            : undefined
+                    }
+                />
+            )}
             {error && <div className="alert alert-danger">{error}</div>}
             {loading && !existing && (
                 <p className="text-muted small">Loading levels…</p>
@@ -198,10 +166,6 @@ export function LevelsPane({
                     gameSlug={gameSlug}
                     gameId={gameId}
                     existing={existing}
-                    toggle={{
-                        value: hasLevels ?? false,
-                        onChange: setHasLevels,
-                    }}
                     onSaved={async () => {
                         await reload();
                         setVersion((v) => v + 1);
