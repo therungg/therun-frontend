@@ -172,6 +172,31 @@ export function LevelsEditor({
     const removeSubcategory = (key: string) =>
         setSubcategories((prev) => prev.filter((s) => s.key !== key));
 
+    /** Every cell in one level's row, or one subcategory's column, at once. */
+    const setMany = (cells: string[], included: boolean) =>
+        setExcluded((prev) => {
+            const next = new Set(prev);
+            for (const cell of cells) {
+                if (included) next.delete(cell);
+                else next.add(cell);
+            }
+            return next;
+        });
+    const setRow = (levelKey: string, included: boolean) =>
+        setMany(
+            subcategories.map((sub) => `${levelKey}|${sub.key}`),
+            included,
+        );
+    const setColumn = (subKey: string, included: boolean) =>
+        setMany(
+            levels.map((l) => `${l.key}|${subKey}`),
+            included,
+        );
+    const rowAllOn = (levelKey: string) =>
+        subcategories.every((sub) => !excluded.has(`${levelKey}|${sub.key}`));
+    const columnAllOn = (subKey: string) =>
+        levels.every((l) => !excluded.has(`${l.key}|${subKey}`));
+
     const setCell = (levelKey: string, subKey: string, included: boolean) =>
         setExcluded((prev) => {
             const next = new Set(prev);
@@ -407,7 +432,11 @@ export function LevelsEditor({
             )}
 
             {hasLevels && (
-                <div className={styles.section}>
+                <div
+                    className={
+                        mode === 'setup' ? styles.section : styles.attachedSlot
+                    }
+                >
                     {/* The console already draws the levels — the tab's top
                         table IS this list, as the categories table. So here it
                         shows only levels that don't exist yet: the row a + Add
@@ -544,18 +573,6 @@ export function LevelsEditor({
                 </div>
             )}
 
-            {hasLevels && (
-                <label className={styles.section}>
-                    <input
-                        type="checkbox"
-                        className="form-check-input me-2"
-                        checked={hasSubcategories}
-                        onChange={(e) => setHasSubcategories(e.target.checked)}
-                    />
-                    These levels have subcategories
-                </label>
-            )}
-
             {hasLevels &&
                 !hasSubcategories &&
                 existing.templates.length > 0 && (
@@ -565,127 +582,192 @@ export function LevelsEditor({
                     </div>
                 )}
 
-            {hasLevels && hasSubcategories && (
+            {hasLevels && (
                 <div className={styles.section}>
-                    <div className={styles.fieldLabel}>Subcategories</div>
-                    {subcategories.length > 0 && (
-                        <div className={styles.tableScroll}>
-                            <table className={styles.table}>
-                                <thead>
-                                    <tr>
-                                        <th>Subcategory</th>
-                                        <th className={styles.colActions}>
-                                            <span className="visually-hidden">
-                                                Actions
-                                            </span>
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {subcategories.map((s) => (
-                                        <tr key={s.key}>
-                                            <td>
-                                                {s.id == null ? (
-                                                    <input
-                                                        type="text"
-                                                        className="form-control form-control-sm"
-                                                        aria-label={
-                                                            s.name
-                                                                ? `Subcategory name: ${s.name}`
-                                                                : 'Subcategory name'
-                                                        }
-                                                        placeholder="Subcategory name"
-                                                        value={s.name}
-                                                        onChange={(e) =>
-                                                            setSubcategories(
-                                                                (prev) =>
-                                                                    prev.map(
-                                                                        (x) =>
-                                                                            x.key ===
-                                                                            s.key
-                                                                                ? {
-                                                                                      ...x,
-                                                                                      name: e
-                                                                                          .target
-                                                                                          .value,
-                                                                                  }
-                                                                                : x,
-                                                                    ),
-                                                            )
-                                                        }
-                                                    />
-                                                ) : (
-                                                    s.name
-                                                )}
-                                            </td>
-                                            <td className={styles.colActions}>
-                                                <button
-                                                    type="button"
-                                                    className={
-                                                        styles.dangerAction
-                                                    }
-                                                    aria-label={`Remove ${s.name}`}
-                                                    onClick={() =>
-                                                        removeSubcategory(s.key)
-                                                    }
-                                                >
-                                                    Remove
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                    <div className={styles.cardHead}>
+                        <span className={styles.cardTitle}>Subcategories</span>
+                        <label className={styles.cardSwitch}>
+                            <input
+                                type="checkbox"
+                                className="form-check-input"
+                                checked={hasSubcategories}
+                                onChange={(e) =>
+                                    setHasSubcategories(e.target.checked)
+                                }
+                            />
+                            These levels have subcategories
+                        </label>
+                    </div>
+                    {hasSubcategories && (
+                        <p className={styles.cardNote}>
+                            Every level carries each of these unless you untick
+                            it in the grid below.
+                        </p>
                     )}
-                    <button
-                        type="button"
-                        className={styles.addRow}
-                        disabled={subcategories.some((x) => !x.name.trim())}
-                        onClick={addSubcategory}
-                    >
-                        <Plus size={16} aria-hidden />
-                        Add subcategory
-                    </button>
 
-                    {levels.length > 0 && subcategories.length > 0 && (
-                        <div className={`${styles.tableScroll} mt-3`}>
-                            <table className={styles.table}>
+                    {hasSubcategories && (
+                        <>
+                            {subcategories.length > 0 && (
+                                <ul className={styles.nameList}>
+                                    {subcategories.map((sub) => (
+                                        <li
+                                            key={sub.key}
+                                            className={styles.nameRow}
+                                        >
+                                            {sub.id == null ? (
+                                                <input
+                                                    type="text"
+                                                    className="form-control form-control-sm"
+                                                    aria-label={
+                                                        sub.name
+                                                            ? `Subcategory name: ${sub.name}`
+                                                            : 'Subcategory name'
+                                                    }
+                                                    placeholder="Subcategory name"
+                                                    value={sub.name}
+                                                    onChange={(e) =>
+                                                        setSubcategories(
+                                                            (prev) =>
+                                                                prev.map((x) =>
+                                                                    x.key ===
+                                                                    sub.key
+                                                                        ? {
+                                                                              ...x,
+                                                                              name: e
+                                                                                  .target
+                                                                                  .value,
+                                                                          }
+                                                                        : x,
+                                                                ),
+                                                        )
+                                                    }
+                                                />
+                                            ) : (
+                                                <span
+                                                    className={styles.nameText}
+                                                >
+                                                    {sub.name}
+                                                </span>
+                                            )}
+                                            <button
+                                                type="button"
+                                                className={styles.dangerAction}
+                                                aria-label={`Remove ${sub.name}`}
+                                                onClick={() =>
+                                                    removeSubcategory(sub.key)
+                                                }
+                                            >
+                                                Remove
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                            <button
+                                type="button"
+                                className={styles.addRow}
+                                disabled={subcategories.some(
+                                    (x) => !x.name.trim(),
+                                )}
+                                onClick={addSubcategory}
+                            >
+                                <Plus size={16} aria-hidden />
+                                Add subcategory
+                            </button>
+                        </>
+                    )}
+                </div>
+            )}
+
+            {/* Which level has which. Its own card with its own question as the
+                title, because it is a different decision from naming them —
+                and it only exists once there is something on both axes. */}
+            {hasLevels &&
+                hasSubcategories &&
+                levels.length > 0 &&
+                subcategories.length > 0 && (
+                    <div className={styles.section}>
+                        <div className={styles.cardHead}>
+                            <span className={styles.cardTitle}>
+                                Which levels have which subcategories
+                            </span>
+                        </div>
+                        <div className={styles.tableScroll}>
+                            <table
+                                className={`${styles.table} ${styles.gridTable}`}
+                            >
                                 <thead>
                                     <tr>
-                                        <th>Level</th>
-                                        {subcategories.map((s) => (
+                                        <th className={styles.gridCorner}>
+                                            Level
+                                        </th>
+                                        {subcategories.map((sub) => (
                                             <th
-                                                key={s.key}
+                                                key={sub.key}
                                                 className={styles.colCenter}
                                             >
-                                                {s.name}
+                                                {sub.name || 'Unnamed'}
+                                                <button
+                                                    type="button"
+                                                    className={styles.allNone}
+                                                    onClick={() =>
+                                                        setColumn(
+                                                            sub.key,
+                                                            !columnAllOn(
+                                                                sub.key,
+                                                            ),
+                                                        )
+                                                    }
+                                                >
+                                                    {columnAllOn(sub.key)
+                                                        ? 'none'
+                                                        : 'all'}
+                                                </button>
                                             </th>
                                         ))}
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {shownLevels.map((l) => (
+                                    {levels.map((l) => (
                                         <tr key={l.key}>
-                                            <td>{l.name}</td>
-                                            {subcategories.map((s) => (
+                                            <th
+                                                scope="row"
+                                                className={styles.gridRowHead}
+                                            >
+                                                {l.name || 'Unnamed level'}
+                                                <button
+                                                    type="button"
+                                                    className={styles.allNone}
+                                                    onClick={() =>
+                                                        setRow(
+                                                            l.key,
+                                                            !rowAllOn(l.key),
+                                                        )
+                                                    }
+                                                >
+                                                    {rowAllOn(l.key)
+                                                        ? 'none'
+                                                        : 'all'}
+                                                </button>
+                                            </th>
+                                            {subcategories.map((sub) => (
                                                 <td
-                                                    key={s.key}
+                                                    key={sub.key}
                                                     className={styles.colCenter}
                                                 >
                                                     <input
                                                         type="checkbox"
                                                         className="form-check-input mt-0"
-                                                        aria-label={`${s.name} for ${l.name}`}
+                                                        aria-label={`${sub.name} for ${l.name}`}
                                                         checked={
                                                             !excluded.has(
-                                                                `${l.key}|${s.key}`,
+                                                                `${l.key}|${sub.key}`,
                                                             )
                                                         }
                                                         onChange={(e) =>
                                                             setCell(
                                                                 l.key,
-                                                                s.key,
+                                                                sub.key,
                                                                 e.target
                                                                     .checked,
                                                             )
@@ -698,9 +780,8 @@ export function LevelsEditor({
                                 </tbody>
                             </table>
                         </div>
-                    )}
-                </div>
-            )}
+                    </div>
+                )}
 
             {confirming && (
                 <div

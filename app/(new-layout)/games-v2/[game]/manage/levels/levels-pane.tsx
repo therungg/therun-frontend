@@ -140,15 +140,21 @@ export function LevelsPane({
                 </div>
             </div>
             {existing && (
-                <label className={consoleStyles.paneToggle}>
-                    <input
-                        type="checkbox"
-                        className="form-check-input me-2"
-                        checked={hasLevels ?? false}
-                        onChange={(e) => setHasLevels(e.target.checked)}
-                    />
-                    This game has individual levels
-                </label>
+                <div className={consoleStyles.settingRow}>
+                    <label className={consoleStyles.settingLabel}>
+                        <input
+                            type="checkbox"
+                            className="form-check-input"
+                            checked={hasLevels ?? false}
+                            onChange={(e) => setHasLevels(e.target.checked)}
+                        />
+                        This game has individual levels
+                    </label>
+                    <p className={consoleStyles.settingNote}>
+                        Levels are categories in their own group, shown on the
+                        board as a dropdown. Everything below is about them.
+                    </p>
+                </div>
             )}
 
             {/* The levels table: the same grid the Categories tab draws, over
@@ -164,6 +170,7 @@ export function LevelsPane({
                         groups={[] as ResolvedGroup[]}
                         policies={policies ?? []}
                         variables={variables}
+                        subject="levels"
                         structure={
                             onEditCategory
                                 ? {
