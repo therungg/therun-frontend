@@ -604,13 +604,6 @@ export function LevelsEditor({
                             </label>
                         )}
                     </div>
-                    {hasSubcategories && (
-                        <p className={styles.cardNote}>
-                            Every level carries each of these unless you untick
-                            it in the grid below.
-                        </p>
-                    )}
-
                     {(hasSubcategories || mode === 'manage') && (
                         <>
                             {subcategories.length > 0 && (

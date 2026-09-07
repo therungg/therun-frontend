@@ -1246,13 +1246,6 @@ $rail-collapse: 900px;
     cursor: pointer;
 }
 
-.cardNote {
-    margin: -#{dt.$spacing-xs} 0 dt.$spacing-md;
-    max-width: 46rem;
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-}
-
 // A list of names is a list, not a table: one column of text does not need
 // three quarters of the screen between it and its Remove.
 .nameList {
