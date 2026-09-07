@@ -161,6 +161,11 @@ export function LevelsEditor({
         setNextKey((k) => k + 1);
     };
 
+    // Manage draws its saved levels in the console's own table above this
+    // editor; setup has no table above it.
+    const shownLevels =
+        mode === 'setup' ? levels : levels.filter((l) => l.id == null);
+
     const removeLevel = (key: string) =>
         setLevels((prev) => prev.filter((l) => l.key !== key));
     const removeSubcategory = (key: string) =>
@@ -402,8 +407,18 @@ export function LevelsEditor({
 
             {hasLevels && (
                 <div className={styles.section}>
-                    <div className={styles.fieldLabel}>Levels</div>
-                    {levels.length > 0 && (
+                    {/* The console already draws the levels — the tab's top
+                        table IS this list, as the categories table. So here it
+                        shows only levels that don't exist yet: the row a + Add
+                        level click just made, waiting for a name and a save.
+                        The wizard has no table above it and shows them all. */}
+                    {mode === 'setup' && (
+                        <div className={styles.fieldLabel}>Levels</div>
+                    )}
+                    {mode === 'manage' && shownLevels.length > 0 && (
+                        <div className={styles.fieldLabel}>New levels</div>
+                    )}
+                    {shownLevels.length > 0 && (
                         <div className={styles.tableScroll}>
                             <table className={styles.table}>
                                 <thead>
@@ -418,7 +433,7 @@ export function LevelsEditor({
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {levels.map((l) => (
+                                    {shownLevels.map((l) => (
                                         <tr key={l.key}>
                                             <td>
                                                 <input
@@ -647,7 +662,7 @@ export function LevelsEditor({
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {levels.map((l) => (
+                                    {shownLevels.map((l) => (
                                         <tr key={l.key}>
                                             <td>{l.name}</td>
                                             {subcategories.map((s) => (
