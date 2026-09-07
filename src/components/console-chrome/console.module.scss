@@ -655,13 +655,26 @@ $rail: 3px; // severity spine / active accent width
 }
 
 // A pane whose whole content depends on one answer asks it first, in the
-// pane's own voice — above the tables that answer turns on.
-.paneToggle {
+// pane's own voice — above the tables that answer turns on. It is a setting,
+// so it looks like one: the switch and its label on one line, the sentence
+// that explains it under them, both on the pane's own left edge.
+.settingRow {
+    margin-bottom: dt.$spacing-xl;
+}
+
+.settingLabel {
     display: flex;
     align-items: center;
-    margin-bottom: dt.$spacing-lg;
-    font-weight: 500;
+    gap: dt.$spacing-sm;
+    font-weight: 600;
     cursor: pointer;
+}
+
+.settingNote {
+    margin: dt.$spacing-xs 0 0;
+    max-width: 46rem;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
 }
 
 // ---- Content wrapper: gently align mounted config forms ----

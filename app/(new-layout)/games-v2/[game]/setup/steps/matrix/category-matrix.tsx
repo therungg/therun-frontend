@@ -84,6 +84,15 @@ interface Props {
     initialOpenCategoryId?: number | null;
     /** Omitted (the wizard) = no structure columns at all. */
     structure?: MatrixStructure;
+    /**
+     * What the rows are. 'levels' draws the same grid over a level slice: the
+     * group column goes (a level's group is what makes it a level, so it is
+     * never a choice), the reorder handle goes with it, and the shared
+     * subcategory suffix every level board carries is dropped from the name —
+     * five rows reading "… — Flight" say "Flight" five times and the level
+     * name once.
+     */
+    subject?: 'categories' | 'levels';
     /** Published subcategory variables. Given them, the grid counts how many
      *  boards each category actually splits into and says so in its own
      *  column; without them that column is not drawn. */
@@ -100,6 +109,29 @@ interface Props {
  * exception: a bulk apply first shows what it would change, because select-all
  * is the natural gesture here and there is no undo.
  */
+
+/**
+ * The trailing "— Something" every name shares, if they all share one.
+ *
+ * Level boards are named `<level> — <subcategory>` by the level machinery, so
+ * a board with one level subcategory prints it on every row. Returned without
+ * the dash so a heading can say it once.
+ */
+function sharedNameTail(names: string[]): string | null {
+    if (names.length < 2) return null;
+    const tailOf = (n: string) => {
+        const at = n.lastIndexOf(' — ');
+        return at < 0 ? null : n.slice(at + 3).trim();
+    };
+    const first = tailOf(names[0]);
+    if (!first) return null;
+    return names.every((n) => tailOf(n) === first) ? first : null;
+}
+
+function stripTail(name: string, tail: string): string {
+    const suffix = ` — ${tail}`;
+    return name.endsWith(suffix) ? name.slice(0, -suffix.length) : name;
+}
 
 /**
  * One category's minimum. Its own component because each cell holds the value
@@ -152,6 +184,7 @@ export function CategoryMatrix({
     initialOpenCategoryId,
     structure,
     variables,
+    subject = 'categories',
 }: Props) {
     const router = useRouter();
     // Rules are the one thing here that needs room, so they are the one thing
@@ -168,9 +201,17 @@ export function CategoryMatrix({
     // about the board — the drop is what the caller hears about.
     const [dragId, setDragId] = useState<number | null>(null);
 
+    const isLevels = subject === 'levels';
+
     const mains = categories
         .filter((c) => !c.archived && (c.isMain ?? false))
         .sort(compareByBoardOrder);
+    // The tail every row repeats — "Crystal Flight — Flight", "Icy Flight —
+    // Flight" — is the subcategory these boards belong to, not part of any
+    // level's name. Printed once in the heading, never in the rows.
+    const sharedTail = sharedNameTail(mains.map((c) => c.display));
+    const rowName = (c: ResolvedCategory) =>
+        sharedTail ? stripTail(c.display, sharedTail) : c.display;
     // `sectionsFor` emits a section per group, empty ones included — it is
     // written for the public rail, where a group with nothing in it still has
     // to hold its place. A settings grid has no such contract: an empty band
@@ -269,13 +310,18 @@ export function CategoryMatrix({
     // that stops short of the last column reads as a broken table, not as a
     // heading.
     const columnCount =
-        (showsRtaColumns ? 7 : 5) + (structure ? 2 : 0) + (variables ? 1 : 0);
+        (showsRtaColumns ? 7 : 5) +
+        (structure ? (isLevels ? 1 : 2) : 0) +
+        (variables ? 1 : 0);
 
     return (
         <div className={styles.panel}>
             <div className={styles.head}>
-                <span className={styles.headTitle}>Featured categories</span>
+                <span className={styles.headTitle}>
+                    {isLevels ? 'Levels' : 'Featured categories'}
+                </span>
                 <span className={styles.headCount}>
+                    {isLevels && sharedTail ? `${sharedTail} · ` : ''}
                     {mains.length} on the board
                 </span>
             </div>
@@ -283,8 +329,8 @@ export function CategoryMatrix({
                 <table className={styles.grid}>
                     <thead>
                         <tr>
-                            <th>Category</th>
-                            {structure && <th>Group</th>}
+                            <th>{isLevels ? 'Level' : 'Category'}</th>
+                            {structure && !isLevels && <th>Group</th>}
                             <th>Timing</th>
                             {showsRtaColumns && (
                                 <>
@@ -356,7 +402,7 @@ export function CategoryMatrix({
                                                 <span
                                                     className={styles.nameInner}
                                                 >
-                                                    {structure && (
+                                                    {structure && !isLevels && (
                                                         <ReorderHandle
                                                             category={c}
                                                             index={rowIdx}
@@ -378,16 +424,25 @@ export function CategoryMatrix({
                                                             }
                                                         />
                                                     )}
-                                                    <IconCell
-                                                        gameSlug={game.name}
-                                                        gameId={game.id}
-                                                        category={c}
-                                                    />
-                                                    {c.display}
+                                                    {/* A level's icon slot is
+                                                        five empty squares on
+                                                        a board that sets
+                                                        none, so it shows only
+                                                        once there is an icon
+                                                        to show. */}
+                                                    {(!isLevels ||
+                                                        c.imageUrl) && (
+                                                        <IconCell
+                                                            gameSlug={game.name}
+                                                            gameId={game.id}
+                                                            category={c}
+                                                        />
+                                                    )}
+                                                    {rowName(c)}
                                                 </span>
                                             </td>
 
-                                            {structure && (
+                                            {structure && !isLevels && (
                                                 <GroupCell
                                                     category={c}
                                                     busy={busy}
@@ -703,19 +758,21 @@ export function CategoryMatrix({
                                                             boardStyles.actions
                                                         }
                                                     >
-                                                        <button
-                                                            type="button"
-                                                            className={`${boardStyles.quietAction} ${boardStyles.removeAction}`}
-                                                            disabled={busy}
-                                                            onClick={() =>
-                                                                structure.onRemove(
-                                                                    c.id,
-                                                                )
-                                                            }
-                                                            title="Takes this category off the public board. Runs are kept."
-                                                        >
-                                                            Remove
-                                                        </button>
+                                                        {!isLevels && (
+                                                            <button
+                                                                type="button"
+                                                                className={`${boardStyles.quietAction} ${boardStyles.removeAction}`}
+                                                                disabled={busy}
+                                                                onClick={() =>
+                                                                    structure.onRemove(
+                                                                        c.id,
+                                                                    )
+                                                                }
+                                                                title="Takes this category off the public board. Runs are kept."
+                                                            >
+                                                                Remove
+                                                            </button>
+                                                        )}
                                                         {/* The detail route is
                                                             no longer where a
                                                             category is
