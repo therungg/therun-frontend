@@ -1,10 +1,9 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import { previewCategories } from '~src/lib/console/preview-categories';
-import type { GameMetadata } from '~src/lib/game-mgmt';
 import { splitLevelBoards } from '~src/lib/levels/display';
 import type {
     ResolvedCategory,
@@ -13,7 +12,6 @@ import type {
     VariableRow,
 } from '../../../../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
-import type { ExistingLevels } from '../../setup/steps/level-plan';
 import { LevelsEditor } from '../../setup/steps/levels-editor';
 import { CategoryMatrix } from '../../setup/steps/matrix/category-matrix';
 import { useLevelOverview } from './use-level-overview';
@@ -32,14 +30,17 @@ interface Props {
     boardCategories?: ResolvedCategory[];
     policies?: BoardPolicyRow[];
     variables?: VariableRow[];
-    metadata?: GameMetadata | null;
     onEditCategory?: (categoryId: number) => void;
 }
 
 /**
- * The wizard's Levels step without the wizard: the same editor, fed by the
- * level overview (the server's reading of which boards exist and how they
- * drifted) and reloaded after every save.
+ * The Levels tab: the Categories tab over the level group.
+ *
+ * A level is a category, so this is the same grid, the same settings and the
+ * same Subcategories link to the per-subcategory dialog — one row per level,
+ * never one per variant. What a level splits into lives behind that link,
+ * because a variant is a value of the level's subcategory variable and not a
+ * board of its own.
  */
 export function LevelsPane({
     gameId,
@@ -50,20 +51,15 @@ export function LevelsPane({
     boardCategories,
     policies,
     variables,
-    metadata,
     onEditCategory,
 }: Props) {
     const { overview, loading, error, reload } = useLevelOverview(
         gameSlug,
         gameId,
     );
-    // The editor seeds its drafts from `existing` once; a reload remounts it.
-    const [version, setVersion] = useState(0);
-
-    // A level's structure is decided by its template, not by this table:
-    // it cannot be regrouped (its group is what makes it a level), removed,
-    // or reordered here. The matrix still wants the handlers, so they are
-    // explicit no-ops rather than absent.
+    // A level's structure is decided by which group it is in: it cannot be
+    // regrouped (its group is what makes it a level), removed, or reordered
+    // here. The matrix still wants the handlers, so they are explicit no-ops.
     const notHere = () => {
         // Intentionally nothing — see above.
     };
@@ -79,47 +75,6 @@ export function LevelsPane({
         );
     }, [rows, groups, boardCategories]);
 
-    const existing: ExistingLevels | null = useMemo(() => {
-        if (!overview) return null;
-        return {
-            levelGroups: overview.levels.map((l) => ({
-                id: l.id,
-                name: l.name,
-                rules: l.rules,
-                hasLevelOnlyBoard: l.instances.some(
-                    (i) => i.state === 'level-only',
-                ),
-            })),
-            templates: overview.templates.map((t) => ({
-                id: t.id,
-                display: t.display,
-            })),
-            // No full-game category adoption here; that is a first-setup
-            // convenience the wizard offers.
-            categories: [],
-            exclusions: overview.levels.flatMap((l) =>
-                l.instances
-                    .filter(
-                        (i) => i.state === 'excluded' && i.templateId != null,
-                    )
-                    .map((i) => ({
-                        groupId: l.id,
-                        templateId: i.templateId as number,
-                    })),
-            ),
-            overriddenCategoryIds: overview.levels.flatMap((l) =>
-                l.instances
-                    .filter((i) => i.state === 'overridden')
-                    .map((i) => i.categoryId),
-            ),
-            needsMaterialise: overview.levels.some((l) =>
-                overview.templates.some(
-                    (t) => !l.instances.some((i) => i.templateId === t.id),
-                ),
-            ),
-        };
-    }, [overview]);
-
     return (
         <div className={consoleStyles.surface}>
             <div className={consoleStyles.paneHeader}>
@@ -128,6 +83,7 @@ export function LevelsPane({
                     <h2 className={consoleStyles.paneTitle}>Levels</h2>
                 </div>
             </div>
+
             {/* The levels table: the same grid the Categories tab draws, over
                 the level slice. No group column — a level's group is what
                 makes it a level, so it is never a choice. */}
@@ -155,21 +111,19 @@ export function LevelsPane({
                     }
                 />
             )}
+
             {error && <div className="alert alert-danger">{error}</div>}
-            {loading && !existing && (
+            {loading && !overview && (
                 <p className="text-muted small">Loading levels…</p>
             )}
-            {existing && (
+
+            {overview && (
                 <LevelsEditor
-                    key={version}
                     mode="manage"
                     gameSlug={gameSlug}
                     gameId={gameId}
-                    existing={existing}
-                    onSaved={async () => {
-                        await reload();
-                        setVersion((v) => v + 1);
-                    }}
+                    overview={overview}
+                    onSaved={reload}
                 />
             )}
         </div>

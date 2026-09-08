@@ -192,7 +192,6 @@ export function ContentRouter(props: ContentRouterProps) {
                     boardCategories={props.boardCategories}
                     policies={props.policies}
                     variables={props.variables}
-                    metadata={props.gameDetails?.metadata}
                     onEditCategory={props.onEditCategory}
                 />
             );

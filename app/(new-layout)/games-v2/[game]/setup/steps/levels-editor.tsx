@@ -1,847 +1,180 @@
 'use client';
 
-import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { Plus } from 'react-bootstrap-icons';
-import { deleteGroupAction } from '~src/actions/category-group/delete-group.action';
+import { toast } from 'react-toastify';
 import { createLevelAction } from '~src/actions/levels/create-level.action';
-import { createLevelBoardAction } from '~src/actions/levels/create-level-board.action';
 import { createLevelTemplateAction } from '~src/actions/levels/create-level-template.action';
-import { levelOpAction } from '~src/actions/levels/level-op.action';
-import { updateLevelAction } from '~src/actions/levels/update-level.action';
-import { normalizeSlug } from '~src/lib/normalize-slug';
-import type {
-    ResolvedCategory,
-    ResolvedGroup,
-} from '../../../../../../types/leaderboards.types';
-import { updateVisibilityAction } from '../../manage/visibility/actions/update-visibility.action';
-import { curateCategoryAction } from '../actions/curate-category.action';
+import type { LevelOverview } from '../../../../../../types/levels.types';
 import styles from '../setup.module.scss';
-import type { CategorySeed } from './category-seed';
-import {
-    buildLevelSetupPlan,
-    destructiveOps,
-    type ExistingLevels,
-    type LevelDraft,
-    type LevelPlanOp,
-    type SubcategoryDraft,
-} from './level-plan';
-
-const slug = (s: string) => normalizeSlug(s.trim());
 
 interface Props {
-    /** setup: the wizard step (band preview, "Continue" when there are no
-     * levels). manage: the console pane (always saves, never advances). */
     mode: 'setup' | 'manage';
     gameSlug: string;
     gameId: number;
-    /** Timing seed for a full-game category adopted as a level board
-     * (wizard only; the pane never adopts). */
-    seed?: CategorySeed;
-    existing: ExistingLevels;
-    /** After a successful save. The wizard advances; the pane reloads. */
-    onSaved: () => void;
-    /** Wizard only: leave the step without saving. */
+    /** The server's reading of the game's levels; null while it loads. */
+    overview: LevelOverview | null;
+    /** Re-read after a write — the server decides what exists. */
+    onSaved: () => void | Promise<void>;
+    /** Setup only: leave the step without adding levels. */
     onSkip?: () => void;
 }
 
 /**
- * Levels as two small tables and a matrix: the levels (name + rules), the
- * subcategories every level carries, and which level has which. Both the
- * wizard step and the console pane render this; the plan builder turns the
- * drafted tables into ordered writes against what already exists.
+ * Add a level, add a variant.
+ *
+ * A level is a category and a variant is a value on it, so everything else a
+ * level has — its rules, minimum, timing, which runs it takes — is edited in
+ * the levels table above, exactly as for any other category. This is only the
+ * two structural writes that table has no row for yet.
  */
 export function LevelsEditor({
     mode,
     gameSlug,
     gameId,
-    seed,
-    existing,
+    overview,
     onSaved,
     onSkip,
 }: Props) {
-    const [ownHasLevels, setOwnHasLevels] = useState(
-        existing.levelGroups.length > 0,
-    );
-    // The console doesn't ask whether the game has levels: the tab is the
-    // levels, and an empty table with an add slot says "none yet" without a
-    // checkbox to tick first. The wizard still asks — there it is a step.
-    const hasLevels = mode === 'manage' ? true : ownHasLevels;
-    const setHasLevels = setOwnHasLevels;
-    const [levels, setLevels] = useState<LevelDraft[]>(() =>
-        existing.levelGroups.map((g) => ({
-            key: `id:${g.id}`,
-            id: g.id,
-            name: g.name,
-            rules: g.rules ?? '',
-        })),
-    );
-    const [ownHasSubcategories, setHasSubcategories] = useState(
-        existing.templates.length > 0,
-    );
-    const [subcategories, setSubcategories] = useState<SubcategoryDraft[]>(() =>
-        existing.templates.map((t) => ({
-            key: `id:${t.id}`,
-            id: t.id,
-            name: t.display,
-        })),
-    );
-    // Adding one is the answer; removing the last one is the other answer.
-    const hasSubcategories =
-        mode === 'manage' ? subcategories.length > 0 : ownHasSubcategories;
+    const [levelName, setLevelName] = useState('');
+    const [variantName, setVariantName] = useState('');
+    const [pending, startTransition] = useTransition();
 
-    const [excluded, setExcluded] = useState<Set<string>>(() => {
-        const cells = new Set<string>();
-        for (const e of existing.exclusions) {
-            cells.add(`id:${e.groupId}|id:${e.templateId}`);
-        }
-        return cells;
-    });
-    const [nextKey, setNextKey] = useState(1);
-    const [openRules, setOpenRules] = useState<Set<string>>(new Set());
-    const [confirming, setConfirming] = useState<LevelPlanOp[] | null>(null);
-    const [progress, setProgress] = useState<string | null>(null);
-    const [error, setError] = useState<string | null>(null);
-    const [isSaving, startSaving] = useTransition();
+    const levels = overview?.levels ?? [];
+    const variants = overview?.templates ?? [];
 
-    const state = useMemo(
-        () => ({
-            hasLevels,
-            // A row with no name yet is not a level — it is somewhere to
-            // type. It stays in the table and out of the plan, as does a
-            // second row repeating a name already in it: the old bulk box
-            // skipped duplicates on the way in, and typing them one at a
-            // time can't mean something different.
-            levels: levels.filter(
-                (l, i) =>
-                    l.name.trim().length > 0 &&
-                    levels.findIndex((x) => slug(x.name) === slug(l.name)) ===
-                        i,
-            ),
-            hasSubcategories,
-            subcategories: subcategories.filter(
-                (sub, i) =>
-                    sub.name.trim().length > 0 &&
-                    subcategories.findIndex(
-                        (x) => slug(x.name) === slug(sub.name),
-                    ) === i,
-            ),
-            excluded: [...excluded].map((cell) => {
-                const [levelKey, subcategoryKey] = cell.split('|');
-                return { levelKey, subcategoryKey };
-            }),
-        }),
-        [hasLevels, levels, hasSubcategories, subcategories, excluded],
-    );
-    const plan = useMemo(
-        () => buildLevelSetupPlan(state, existing),
-        [state, existing],
-    );
-    const destructive = useMemo(() => destructiveOps(plan), [plan]);
-
-    // One button, one row. Levels are named in the table like everything else
-    // about them, so adding one is making the row to type in — not filling a
-    // second field somewhere else first.
-    const addLevel = () => {
-        setLevels((prev) => [
-            ...prev,
-            { key: `new:${nextKey}`, id: null, name: '', rules: '' },
-        ]);
-        setNextKey((k) => k + 1);
-    };
-
-    // Same as levels: the row is where a subcategory is named, so the button
-    // makes the row rather than asking for names somewhere else first.
-    const addSubcategory = () => {
-        setSubcategories((prev) => [
-            ...prev,
-            { key: `new:${nextKey}`, id: null, name: '' },
-        ]);
-        setNextKey((k) => k + 1);
-    };
-
-    // Manage draws its saved levels in the console's own table above this
-    // editor; setup has no table above it.
-    const shownLevels =
-        mode === 'setup' ? levels : levels.filter((l) => l.id == null);
-
-    const removeLevel = (key: string) =>
-        setLevels((prev) => prev.filter((l) => l.key !== key));
-    const removeSubcategory = (key: string) =>
-        setSubcategories((prev) => prev.filter((s) => s.key !== key));
-
-    /** Every cell in one level's row, or one subcategory's column, at once. */
-    const setMany = (cells: string[], included: boolean) =>
-        setExcluded((prev) => {
-            const next = new Set(prev);
-            for (const cell of cells) {
-                if (included) next.delete(cell);
-                else next.add(cell);
-            }
-            return next;
-        });
-    const setRow = (levelKey: string, included: boolean) =>
-        setMany(
-            subcategories.map((sub) => `${levelKey}|${sub.key}`),
-            included,
-        );
-    const setColumn = (subKey: string, included: boolean) =>
-        setMany(
-            levels.map((l) => `${l.key}|${subKey}`),
-            included,
-        );
-    const rowAllOn = (levelKey: string) =>
-        subcategories.every((sub) => !excluded.has(`${levelKey}|${sub.key}`));
-    const columnAllOn = (subKey: string) =>
-        levels.every((l) => !excluded.has(`${l.key}|${subKey}`));
-
-    // The console's levels table sorts by name; a grid under it that lists
-    // the same five levels in overview order reads as a different set.
-    const orderedLevels = [...levels].sort((a, b) =>
-        a.name.localeCompare(b.name),
-    );
-
-    const setCell = (levelKey: string, subKey: string, included: boolean) =>
-        setExcluded((prev) => {
-            const next = new Set(prev);
-            const cell = `${levelKey}|${subKey}`;
-            if (included) next.delete(cell);
-            else next.add(cell);
-            return next;
-        });
-
-    /** Runs the plan in order; returns the name of the first failed op. */
-    const runPlan = async (ops: LevelPlanOp[]): Promise<string | null> => {
-        const groupIdByKey = new Map<string, number>(
-            levels.flatMap((l) =>
-                l.id == null ? [] : [[l.key, l.id] as const],
-            ),
-        );
-        const templateIdByKey = new Map<string, number>(
-            subcategories.flatMap((s) =>
-                s.id == null ? [] : [[s.key, s.id] as const],
-            ),
-        );
-        for (let i = 0; i < ops.length; i++) {
-            const op = ops[i];
-            setProgress(`Saving ${i + 1} / ${ops.length}…`);
-            switch (op.kind) {
-                case 'delete-level': {
-                    const res = await deleteGroupAction({
-                        gameSlug,
-                        gameId,
-                        groupId: op.groupId,
-                    });
-                    if ('error' in res) return op.levelName;
-                    break;
-                }
-                case 'archive-subcategory': {
-                    const res = await updateVisibilityAction({
-                        gameSlug,
-                        gameId,
-                        categoryId: op.templateId,
-                        active: false,
-                    });
-                    if ('error' in res) return op.display;
-                    break;
-                }
-                case 'create-level': {
-                    const res = await createLevelAction({
-                        gameSlug,
-                        gameId,
-                        name: op.levelName,
-                    });
-                    if ('error' in res) return op.levelName;
-                    groupIdByKey.set(op.levelKey, res.result.id);
-                    break;
-                }
-                case 'rename-level': {
-                    const res = await updateLevelAction({
-                        gameSlug,
-                        gameId,
-                        groupId: op.groupId,
-                        name: op.levelName,
-                    });
-                    if ('error' in res) return op.levelName;
-                    break;
-                }
-                case 'set-rules': {
-                    const groupId = groupIdByKey.get(op.levelKey);
-                    if (groupId === undefined) return op.levelName;
-                    const res = await updateLevelAction({
-                        gameSlug,
-                        gameId,
-                        groupId,
-                        rules: op.rules,
-                    });
-                    if ('error' in res) return op.levelName;
-                    break;
-                }
-                case 'create-subcategory': {
-                    const res = await createLevelTemplateAction({
-                        gameSlug,
-                        gameId,
-                        display: op.display,
-                    });
-                    if ('error' in res) return op.display;
-                    templateIdByKey.set(op.subcategoryKey, res.result.id);
-                    break;
-                }
-                case 'move-category': {
-                    const groupId = groupIdByKey.get(op.levelKey);
-                    if (groupId === undefined) return op.levelName;
-                    const res = await curateCategoryAction({
-                        gameSlug,
-                        gameId,
-                        categoryId: op.categoryId,
-                        groupId,
-                        isMain: true,
-                        seed,
-                    });
-                    if ('error' in res) return op.levelName;
-                    break;
-                }
-                case 'create-level-only-board': {
-                    const groupId = groupIdByKey.get(op.levelKey);
-                    if (groupId === undefined) return op.display;
-                    const res = await createLevelBoardAction({
-                        gameSlug,
-                        gameId,
-                        display: op.display,
-                        groupId,
-                        // Fresh level-only boards must appear on the public
-                        // board immediately (createCategory defaults false).
-                        isMain: true,
-                    });
-                    if ('error' in res) return op.display;
-                    break;
-                }
-                case 'materialise': {
-                    const res = await levelOpAction({
-                        gameSlug,
-                        gameId,
-                        op: { op: 'level-materialise' },
-                    });
-                    if ('error' in res) return 'missing boards';
-                    break;
-                }
-                case 'set-exclusion': {
-                    const groupId = groupIdByKey.get(op.levelKey);
-                    if (groupId === undefined) return op.levelName;
-                    const templateId = templateIdByKey.get(op.subcategoryKey);
-                    if (templateId === undefined) return op.subcategoryName;
-                    const res = await levelOpAction({
-                        gameSlug,
-                        gameId,
-                        op: {
-                            op: 'level-exclusion',
-                            groupId,
-                            templateId,
-                            excluded: op.excluded,
-                        },
-                    });
-                    if ('error' in res) return op.subcategoryName;
-                    break;
-                }
-                case 'resync-instance': {
-                    const res = await levelOpAction({
-                        gameSlug,
-                        gameId,
-                        op: { op: 'level-resync', categoryId: op.categoryId },
-                    });
-                    if ('error' in res) return 'a level board';
-                    break;
-                }
-            }
-        }
-        return null;
-    };
-
-    const execute = (ops: LevelPlanOp[]) => {
-        setConfirming(null);
-        startSaving(async () => {
-            setError(null);
-            const failedName = await runPlan(ops);
-            setProgress(null);
-            if (failedName) {
-                setError(`Failed to save "${failedName}".`);
+    const submit = (
+        label: string,
+        run: () => Promise<{ error?: string } | { result: unknown }>,
+        clear: () => void,
+    ) => {
+        startTransition(async () => {
+            const res = await run();
+            if ('error' in res && res.error) {
+                toast.error(res.error);
                 return;
             }
-            onSaved();
+            clear();
+            toast.success(label);
+            await onSaved();
         });
     };
 
-    const save = () => {
-        if (mode === 'setup' && plan.length === 0) {
-            onSaved();
-            return;
-        }
-        if (destructive.length > 0) {
-            setConfirming(plan);
-            return;
-        }
-        execute(plan);
+    const addLevel = () => {
+        const display = levelName.trim();
+        if (!display) return;
+        submit(
+            `Added ${display}`,
+            () => createLevelAction({ gameSlug, gameId, display }),
+            () => setLevelName(''),
+        );
     };
 
-    const saveLabel = isSaving
-        ? 'Saving…'
-        : mode === 'setup'
-          ? 'Save & continue'
-          : 'Save changes';
-    const nothingToSave = mode === 'manage' && plan.length === 0;
-
-    // The console has no levels question at all — see hasLevels above.
-    const hasLevelsToggle =
-        mode === 'manage' ? null : (
-            <label className={styles.section}>
-                <input
-                    type="checkbox"
-                    className="form-check-input me-2"
-                    checked={hasLevels}
-                    onChange={(e) => setHasLevels(e.target.checked)}
-                />
-                This game has individual levels
-            </label>
+    const addVariant = () => {
+        const display = variantName.trim();
+        if (!display) return;
+        submit(
+            `Added ${display} to every level`,
+            () => createLevelTemplateAction({ gameSlug, gameId, display }),
+            () => setVariantName(''),
         );
+    };
 
-    if (!hasLevels && existing.levelGroups.length === 0) {
-        return (
-            <div>
-                {hasLevelsToggle}
-                <p className="text-muted small">
-                    Most games don&apos;t need this — skip it unless runners
-                    race individual levels or stages separately from the full
-                    game.
-                </p>
-                {mode === 'setup' && (
+    return (
+        <>
+            <div className={styles.section}>
+                <div className={styles.fieldLabel}>Levels</div>
+                {levels.length === 0 ? (
+                    <p className="text-muted small">
+                        No levels yet. A level is a board like any other — it
+                        just lives in this section.
+                    </p>
+                ) : (
+                    <ul className="list-unstyled mb-2">
+                        {levels.map((l) => (
+                            <li key={l.categoryId}>
+                                {l.display}
+                                {l.variants.length > 0 && (
+                                    <span className="text-muted small">
+                                        {' — '}
+                                        {l.variants.join(', ')}
+                                    </span>
+                                )}
+                            </li>
+                        ))}
+                    </ul>
+                )}
+                <div className={styles.addRow}>
+                    <input
+                        className="form-control"
+                        placeholder="Level name (E1M1)"
+                        value={levelName}
+                        onChange={(e) => setLevelName(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                addLevel();
+                            }
+                        }}
+                    />
                     <button
                         type="button"
                         className={styles.primaryAction}
-                        onClick={onSkip ?? onSaved}
-                    >
-                        Continue
-                    </button>
-                )}
-            </div>
-        );
-    }
-
-    return (
-        <div>
-            {hasLevelsToggle}
-
-            {!hasLevels && (
-                <div className={`${styles.warnNote} mb-3`}>
-                    Saving removes every level and archives its boards.
-                </div>
-            )}
-
-            {hasLevels && (
-                <div
-                    className={
-                        mode === 'setup' ? styles.section : styles.attachedSlot
-                    }
-                >
-                    {/* The console already draws the levels — the tab's top
-                        table IS this list, as the categories table. So here it
-                        shows only levels that don't exist yet: the row a + Add
-                        level click just made, waiting for a name and a save.
-                        The wizard has no table above it and shows them all. */}
-                    {mode === 'setup' && (
-                        <div className={styles.fieldLabel}>Levels</div>
-                    )}
-                    {mode === 'manage' && shownLevels.length > 0 && (
-                        <div className={styles.fieldLabel}>New levels</div>
-                    )}
-                    {shownLevels.length > 0 && (
-                        <div className={styles.tableScroll}>
-                            <table className={styles.table}>
-                                <thead>
-                                    <tr>
-                                        <th>Level</th>
-                                        <th>Rules</th>
-                                        <th className={styles.colActions}>
-                                            <span className="visually-hidden">
-                                                Actions
-                                            </span>
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {shownLevels.map((l) => (
-                                        <tr key={l.key}>
-                                            <td>
-                                                <input
-                                                    type="text"
-                                                    className="form-control form-control-sm"
-                                                    aria-label={
-                                                        l.name
-                                                            ? `Level name: ${l.name}`
-                                                            : 'Level name'
-                                                    }
-                                                    placeholder="Level name"
-                                                    value={l.name}
-                                                    onChange={(e) =>
-                                                        setLevels((prev) =>
-                                                            prev.map((x) =>
-                                                                x.key === l.key
-                                                                    ? {
-                                                                          ...x,
-                                                                          name: e
-                                                                              .target
-                                                                              .value,
-                                                                      }
-                                                                    : x,
-                                                            ),
-                                                        )
-                                                    }
-                                                />
-                                            </td>
-                                            <td>
-                                                {openRules.has(l.key) ? (
-                                                    <textarea
-                                                        className="form-control form-control-sm"
-                                                        rows={3}
-                                                        aria-label={`Rules for ${l.name}`}
-                                                        placeholder="Level-specific rules, shown above the category rules."
-                                                        value={l.rules}
-                                                        onChange={(e) =>
-                                                            setLevels((prev) =>
-                                                                prev.map((x) =>
-                                                                    x.key ===
-                                                                    l.key
-                                                                        ? {
-                                                                              ...x,
-                                                                              rules: e
-                                                                                  .target
-                                                                                  .value,
-                                                                          }
-                                                                        : x,
-                                                                ),
-                                                            )
-                                                        }
-                                                    />
-                                                ) : (
-                                                    <button
-                                                        type="button"
-                                                        className={
-                                                            styles.skipAction
-                                                        }
-                                                        onClick={() =>
-                                                            setOpenRules(
-                                                                (prev) =>
-                                                                    new Set(
-                                                                        prev,
-                                                                    ).add(
-                                                                        l.key,
-                                                                    ),
-                                                            )
-                                                        }
-                                                    >
-                                                        {l.rules.trim()
-                                                            ? 'Edit rules'
-                                                            : 'Add rules'}
-                                                    </button>
-                                                )}
-                                            </td>
-                                            <td className={styles.colActions}>
-                                                <button
-                                                    type="button"
-                                                    className={
-                                                        styles.dangerAction
-                                                    }
-                                                    aria-label={`Remove ${l.name}`}
-                                                    onClick={() =>
-                                                        removeLevel(l.key)
-                                                    }
-                                                >
-                                                    Remove
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                    <button
-                        type="button"
-                        className={styles.addRow}
-                        // A second blank row before the first one is named
-                        // would just be two rows saying nothing.
-                        disabled={levels.some((l) => !l.name.trim())}
                         onClick={addLevel}
+                        disabled={pending || !levelName.trim()}
                     >
-                        <Plus size={16} aria-hidden />
-                        Add level
+                        <Plus /> Add level
                     </button>
                 </div>
-            )}
+            </div>
 
-            {hasLevels &&
-                !hasSubcategories &&
-                existing.templates.length > 0 && (
-                    <div className={`${styles.warnNote} mb-3`}>
-                        Saving archives every level subcategory and its boards;
-                        each level gets a single board instead.
-                    </div>
-                )}
-
-            {hasLevels && (
-                <div className={styles.section}>
-                    <div className={styles.cardHead}>
-                        <span className={styles.cardTitle}>Subcategories</span>
-                        {mode === 'setup' && (
-                            <label className={styles.cardSwitch}>
-                                <input
-                                    type="checkbox"
-                                    className="form-check-input"
-                                    checked={hasSubcategories}
-                                    onChange={(e) =>
-                                        setHasSubcategories(e.target.checked)
-                                    }
-                                />
-                                These levels have subcategories
-                            </label>
-                        )}
-                    </div>
-                    {(hasSubcategories || mode === 'manage') && (
-                        <>
-                            {subcategories.length > 0 && (
-                                <ul className={styles.nameList}>
-                                    {subcategories.map((sub) => (
-                                        <li
-                                            key={sub.key}
-                                            className={styles.nameRow}
-                                        >
-                                            {sub.id == null ? (
-                                                <input
-                                                    type="text"
-                                                    className="form-control form-control-sm"
-                                                    aria-label={
-                                                        sub.name
-                                                            ? `Subcategory name: ${sub.name}`
-                                                            : 'Subcategory name'
-                                                    }
-                                                    placeholder="Subcategory name"
-                                                    value={sub.name}
-                                                    onChange={(e) =>
-                                                        setSubcategories(
-                                                            (prev) =>
-                                                                prev.map((x) =>
-                                                                    x.key ===
-                                                                    sub.key
-                                                                        ? {
-                                                                              ...x,
-                                                                              name: e
-                                                                                  .target
-                                                                                  .value,
-                                                                          }
-                                                                        : x,
-                                                                ),
-                                                        )
-                                                    }
-                                                />
-                                            ) : (
-                                                <span
-                                                    className={styles.nameText}
-                                                >
-                                                    {sub.name}
-                                                </span>
-                                            )}
-                                            <button
-                                                type="button"
-                                                className={styles.dangerAction}
-                                                aria-label={`Remove ${sub.name}`}
-                                                onClick={() =>
-                                                    removeSubcategory(sub.key)
-                                                }
-                                            >
-                                                Remove
-                                            </button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                            <button
-                                type="button"
-                                className={`${styles.addRow} ${styles.nameListSlot}`}
-                                disabled={subcategories.some(
-                                    (x) => !x.name.trim(),
-                                )}
-                                onClick={addSubcategory}
-                            >
-                                <Plus size={16} aria-hidden />
-                                Add subcategory
-                            </button>
-                        </>
-                    )}
-                </div>
-            )}
-
-            {/* Which level has which. Its own card with its own question as the
-                title, because it is a different decision from naming them —
-                and it only exists once there is something on both axes. */}
-            {hasLevels &&
-                hasSubcategories &&
-                levels.length > 0 &&
-                subcategories.length > 0 && (
-                    <div className={styles.section}>
-                        <div className={styles.cardHead}>
-                            <span className={styles.cardTitle}>
-                                Which levels have which subcategories
-                            </span>
-                        </div>
-                        <div className={styles.tableScroll}>
-                            <table
-                                className={`${styles.table} ${styles.gridTable}`}
-                            >
-                                <thead>
-                                    <tr>
-                                        <th className={styles.gridCorner}>
-                                            Level
-                                        </th>
-                                        {subcategories.map((sub) => (
-                                            <th
-                                                key={sub.key}
-                                                className={styles.colCenter}
-                                            >
-                                                <span
-                                                    className={
-                                                        styles.gridColHead
-                                                    }
-                                                >
-                                                    {sub.name || 'Unnamed'}
-                                                    <button
-                                                        type="button"
-                                                        className={
-                                                            styles.allNone
-                                                        }
-                                                        onClick={() =>
-                                                            setColumn(
-                                                                sub.key,
-                                                                !columnAllOn(
-                                                                    sub.key,
-                                                                ),
-                                                            )
-                                                        }
-                                                    >
-                                                        {columnAllOn(sub.key)
-                                                            ? 'none'
-                                                            : 'all'}
-                                                    </button>
-                                                </span>
-                                            </th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {orderedLevels.map((l) => (
-                                        <tr key={l.key}>
-                                            <th
-                                                scope="row"
-                                                className={styles.gridRowHead}
-                                            >
-                                                {l.name || 'Unnamed level'}
-                                                <button
-                                                    type="button"
-                                                    className={styles.allNone}
-                                                    onClick={() =>
-                                                        setRow(
-                                                            l.key,
-                                                            !rowAllOn(l.key),
-                                                        )
-                                                    }
-                                                >
-                                                    {rowAllOn(l.key)
-                                                        ? 'none'
-                                                        : 'all'}
-                                                </button>
-                                            </th>
-                                            {subcategories.map((sub) => (
-                                                <td
-                                                    key={sub.key}
-                                                    className={styles.colCenter}
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        className="form-check-input mt-0"
-                                                        aria-label={`${sub.name} for ${l.name}`}
-                                                        checked={
-                                                            !excluded.has(
-                                                                `${l.key}|${sub.key}`,
-                                                            )
-                                                        }
-                                                        onChange={(e) =>
-                                                            setCell(
-                                                                l.key,
-                                                                sub.key,
-                                                                e.target
-                                                                    .checked,
-                                                            )
-                                                        }
-                                                    />
-                                                </td>
-                                            ))}
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                )}
-
-            {confirming && (
-                <div
-                    className={`${styles.warnNote} mb-3`}
-                    role="alertdialog"
-                    aria-label="Confirm removals"
-                >
-                    <p className="mb-2">
-                        This save archives boards. Runs stay on the archived
-                        boards but leave the public page:
-                    </p>
-                    <ul className="mb-2">
-                        {destructiveOps(confirming).map((op) =>
-                            op.kind === 'delete-level' ? (
-                                <li key={`l${op.groupId}`}>
-                                    Delete level <strong>{op.levelName}</strong>{' '}
-                                    and archive its boards
-                                </li>
-                            ) : op.kind === 'archive-subcategory' ? (
-                                <li key={`t${op.templateId}`}>
-                                    Archive subcategory{' '}
-                                    <strong>{op.display}</strong> on every level
-                                </li>
-                            ) : null,
-                        )}
+            <div className={styles.section}>
+                <div className={styles.fieldLabel}>Subcategories</div>
+                <p className="text-muted small">
+                    What every level splits into. Adding one adds a value to
+                    each level, not a new level.
+                </p>
+                {variants.length > 0 && (
+                    <ul className="list-unstyled mb-2">
+                        {variants.map((t) => (
+                            <li key={t.id}>{t.display}</li>
+                        ))}
                     </ul>
+                )}
+                <div className={styles.addRow}>
+                    <input
+                        className="form-control"
+                        placeholder="Subcategory name (Any%)"
+                        value={variantName}
+                        onChange={(e) => setVariantName(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                addVariant();
+                            }
+                        }}
+                    />
                     <button
                         type="button"
-                        className={`${styles.primaryAction} me-2`}
-                        onClick={() => execute(confirming)}
+                        className={styles.primaryAction}
+                        onClick={addVariant}
+                        disabled={pending || !variantName.trim()}
                     >
-                        Archive and save
-                    </button>
-                    <button
-                        type="button"
-                        className={styles.secondaryAction}
-                        onClick={() => setConfirming(null)}
-                    >
-                        Cancel
+                        <Plus /> Add subcategory
                     </button>
                 </div>
-            )}
+            </div>
 
-            {error && <div className={`${styles.errorNote} mt-2`}>{error}</div>}
-            {progress && <div className="text-muted small">{progress}</div>}
-            <button
-                type="button"
-                className={`${styles.primaryAction} mt-2`}
-                disabled={isSaving || nothingToSave || confirming !== null}
-                onClick={save}
-            >
-                {saveLabel}
-            </button>
-        </div>
+            {mode === 'setup' && onSkip && (
+                <button
+                    type="button"
+                    className={styles.primaryAction}
+                    onClick={onSkip}
+                    disabled={pending}
+                >
+                    {levels.length > 0 ? 'Continue' : 'This game has no levels'}
+                </button>
+            )}
+        </>
     );
 }

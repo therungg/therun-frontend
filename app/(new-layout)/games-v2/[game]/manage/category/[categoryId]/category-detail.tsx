@@ -1,12 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
 import { ChevronLeft, ChevronRight } from 'react-bootstrap-icons';
-import { levelOpAction } from '~src/actions/levels/level-op.action';
 import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
-import { levelBoardLabel } from '~src/lib/levels/display';
 import { formatCount, formatHours } from '~src/utils/format-stats';
 import type {
     ResolvedCategory,
@@ -30,7 +26,6 @@ interface Props {
     levelTemplates?: LevelTemplate[];
     /** How many level boards this category templates. Only meaningful when
      *  this category IS a level category. */
-    levelBoardCount?: number;
     prev: ResolvedCategory | null;
     next: ResolvedCategory | null;
 }
@@ -44,7 +39,6 @@ export function CategoryDetail({
     copySources,
     gameTimingDefaults,
     levelTemplates = [],
-    levelBoardCount = 0,
     prev,
     next,
 }: Props) {
@@ -75,12 +69,7 @@ export function CategoryDetail({
                 </nav>
             </header>
 
-            <LevelBanner
-                game={game}
-                category={category}
-                levelTemplates={levelTemplates}
-                levelBoardCount={levelBoardCount}
-            />
+            <LevelBanner category={category} levelTemplates={levelTemplates} />
 
             <CategoryEditor
                 game={game}
@@ -119,80 +108,31 @@ function CategoryStats({ category }: { category: ResolvedCategory }) {
  *
  * The two cases it does speak for are the two ways an edit here is not just
  * an edit here: a level category is copied onto every level's board, and a
- * level board is a copy that the backend detaches from its template the
- * moment a field on it is saved. Detach/Resync makes that deliberate rather
- * than a surprise.
+ * level category is not a board: it is the definition of a subcategory every
+ * level carries, so saving it rewrites that value on each level rather than
+ * pushing settings to boards of its own.
  */
 function LevelBanner({
-    game,
     category,
     levelTemplates,
-    levelBoardCount,
 }: {
-    game: ResolvedGame;
     category: ResolvedCategory;
     levelTemplates: LevelTemplate[];
-    levelBoardCount: number;
 }) {
-    const router = useRouter();
-    const [error, setError] = useState<string | null>(null);
-    const [isPending, startTransition] = useTransition();
-
     const isTemplate = levelTemplates.some((t) => t.id === category.id);
-    const templateId = category.levelTemplateId ?? null;
 
-    const run = (op: 'level-detach' | 'level-resync') => {
-        setError(null);
-        startTransition(async () => {
-            const res = await levelOpAction({
-                gameSlug: game.name,
-                gameId: game.id,
-                op: { op, categoryId: category.id },
-            });
-            if ('error' in res) {
-                setError(res.error);
-                return;
-            }
-            router.refresh();
-        });
-    };
-
+    // A level category is the definition of a subcategory every level has —
+    // it is not a board, and saving it rewrites that value on each level.
     if (isTemplate) {
         return (
             <div className={styles.levelBanner}>
                 <p className={styles.levelBannerText}>
-                    Level category — saved changes apply to {levelBoardCount}{' '}
-                    level board{levelBoardCount === 1 ? '' : 's'}
+                    Level subcategory — saved changes apply to every level that
+                    carries it
                 </p>
             </div>
         );
     }
 
-    if (templateId == null) return null;
-
-    const detached = category.levelOverride ?? false;
-    const templateName = levelBoardLabel(category, levelTemplates);
-
-    return (
-        <div className={styles.levelBanner}>
-            <p className={styles.levelBannerText}>
-                Level board of {templateName} —{' '}
-                {detached ? 'detached' : 'synced'}
-            </p>
-            <button
-                type="button"
-                className="btn btn-sm btn-outline-secondary"
-                disabled={isPending}
-                onClick={() => run(detached ? 'level-resync' : 'level-detach')}
-            >
-                {detached ? 'Resync' : 'Detach'}
-            </button>
-            <p className={styles.levelNote}>
-                {detached
-                    ? 'This board keeps its own settings — a push to the level category skips it. Resync takes the level category’s settings back.'
-                    : 'Editing any field here detaches this board from its template.'}
-            </p>
-            {error && <p className={styles.levelError}>{error}</p>}
-        </div>
-    );
+    return null;
 }

@@ -64,9 +64,6 @@ export default async function CategoryDetailPage({ params }: Props) {
         categories.find((c) => c.id === categoryId) ??
         (template ? templateAsCategory(template) : undefined);
     if (!category) notFound();
-    const levelBoardCount = template
-        ? categories.filter((c) => c.levelTemplateId === template.id).length
-        : 0;
 
     const chrome = await loadConsoleChrome(session, game);
 
@@ -110,7 +107,6 @@ export default async function CategoryDetailPage({ params }: Props) {
                 canEditStandards={chrome.flags.canEditStandards}
                 copySources={copySources}
                 levelTemplates={levelTemplates}
-                levelBoardCount={levelBoardCount}
                 gameTimingDefaults={{
                     primaryTiming: metadata.primaryTiming,
                     gameTimeLabel: metadata.gameTimeLabel,

@@ -1,29 +1,19 @@
 // Individual levels — see docs/frontend-guide-levels.md (backend copy is
-// authoritative). A level is a category group with kind: 'level'; a level
-// category (template) is served only under pageData.levelTemplates, never
-// in groups[].categories/ungroupedCategories; a level board (instance) is a
-// category inside a level group with levelTemplateId set.
-
-export type LevelInstanceState =
-    | 'synced'
-    | 'overridden'
-    | 'excluded'
-    | 'level-only';
+// authoritative). A level is a CATEGORY in the game's one level group
+// (kind: 'level'); what it splits into are subcategory values on that
+// category. A level category (`isLevelTemplate`) is the definition that says
+// every level has that variant — served only under pageData.levelTemplates,
+// never in groups[].categories/ungroupedCategories, and never a board.
 
 export interface LevelTemplate {
     id: number;
     display: string;
-    rules: string | null;
     isMain: boolean;
     sortOrder: number;
-    imageUrl: string | null;
-    /** Board settings the template pushes to its boards — pageData carries
-     * them on every category entry, `levelTemplates` included, since
-     * 2026-08-19. Optional twice over: a consumer that only needs a label
-     * (the console's level-board band) never looks at them, and pageData
-     * baked before that date lacks the keys, in which case the column
-     * defaults (false/false/false/true/null) apply until the game is
-     * rebuilt. */
+    /** pageData serves level categories as ordinary category entries, so a
+     * consumer that only wants a label can ignore the rest. */
+    rules?: string | null;
+    imageUrl?: string | null;
     primaryTiming?: 'rt' | 'gt';
     gameTimeLabel?: 'igt' | 'lrt';
     sortAscending?: boolean;
@@ -37,24 +27,13 @@ export interface LevelTemplate {
 
 export interface LevelOverview {
     levels: Array<{
-        id: number;
+        categoryId: number;
         name: string;
+        display: string;
         rules: string | null;
         sortOrder: number;
-        instances: Array<{
-            categoryId: number;
-            templateId: number | null;
-            state: LevelInstanceState;
-            display: string;
-        }>;
+        /** The variant labels this level currently carries. */
+        variants: string[];
     }>;
-    templates: Array<{
-        id: number;
-        display: string;
-        isMain: boolean;
-        synced: number;
-        overridden: number;
-        excluded: number;
-        total: number;
-    }>;
+    templates: LevelTemplate[];
 }

@@ -2,65 +2,63 @@
 
 import type { LevelOverview } from '../../types/levels.types';
 import { apiFetch } from './api-client';
-import type { PrimaryTiming } from './category-mgmt';
 
-export interface CreateLevelBody {
-    name: string;
-    rules?: string | null;
-    sortOrder?: number;
+/**
+ * A level is a category in the game's level group, and what it splits into is
+ * a subcategory variable on it — see docs/frontend-guide-levels.md. So most of
+ * "levels" is the ordinary category and variable API; only the section itself,
+ * the variant definitions and the overview need their own calls.
+ */
+
+/** The game's levels section, created on first use. Idempotent. */
+export async function ensureLevelGroup(
+    sessionId: string,
+    gameId: number,
+): Promise<{ id: number }> {
+    return apiFetch<{ id: number }>(`/v1/games/${gameId}/groups`, {
+        method: 'POST',
+        sessionId,
+        body: { kind: 'level' },
+    });
 }
 
+export interface CreateLevelBody {
+    display: string;
+    groupId: number;
+    rules?: string | null;
+    sortOrder?: number;
+    isMain?: boolean;
+}
+
+/** A level is created like any other category — in the levels section. */
 export async function createLevel(
     sessionId: string,
     gameId: number,
     body: CreateLevelBody,
-): Promise<{ id: number; created: number }> {
-    return apiFetch<{ id: number; created: number }>(
-        `/v1/games/${gameId}/groups`,
-        {
-            method: 'POST',
-            sessionId,
-            body: { ...body, kind: 'level' },
-        },
-    );
-}
-
-export interface UpdateLevelBody {
-    name?: string;
-    rules?: string | null;
-}
-
-export async function updateLevel(
-    sessionId: string,
-    gameId: number,
-    groupId: number,
-    body: UpdateLevelBody,
-): Promise<void> {
-    await apiFetch<unknown>(`/v1/games/${gameId}/groups/${groupId}`, {
-        method: 'PUT',
+): Promise<{ id: number }> {
+    return apiFetch<{ id: number }>(`/v1/games/${gameId}/categories`, {
+        method: 'POST',
         sessionId,
-        body,
+        body: { isMain: true, ...body },
     });
 }
 
 export interface CreateLevelTemplateBody {
     display: string;
-    // The same two values every other category write uses — the Postgres
-    // CHECK on categories.primary_timing accepts nothing else.
-    primaryTiming?: PrimaryTiming;
-    gameTimeLabel?: string;
-    rules?: string;
-    requireVideo?: boolean;
-    showMilliseconds?: boolean;
     isMain?: boolean;
+    sortOrder?: number;
 }
 
+/**
+ * A variant every level has. The definition row is not a board: creating it
+ * writes its display as a value of every level's subcategory variable.
+ */
 export async function createLevelTemplate(
     sessionId: string,
     gameId: number,
     body: CreateLevelTemplateBody,
-): Promise<{ id: number; created: number }> {
-    return apiFetch<{ id: number; created: number }>(
+): Promise<{ id: number; levels: number }> {
+    return apiFetch<{ id: number; levels: number }>(
         `/v1/games/${gameId}/categories`,
         {
             method: 'POST',
@@ -70,45 +68,19 @@ export async function createLevelTemplate(
     );
 }
 
-export type LevelOp =
-    | {
-          op: 'level-exclusion';
-          groupId: number;
-          templateId: number;
-          excluded: boolean;
-      }
-    | { op: 'level-detach'; categoryId: number }
-    | { op: 'level-resync'; categoryId: number }
-    | { op: 'level-push'; templateId: number }
-    | { op: 'level-materialise' };
-
-export async function levelOp(
+/**
+ * Re-derive every level's variant list from the game's level categories.
+ * Idempotent — the repair for a level that missed a write.
+ */
+export async function syncLevelVariants(
     sessionId: string,
     gameId: number,
-    op: LevelOp,
 ): Promise<unknown> {
     return apiFetch<unknown>(`/v1/games/${gameId}/categories`, {
         method: 'POST',
         sessionId,
-        body: op,
+        body: { op: 'level-sync' },
     });
-}
-
-export interface CreateLevelOnlyBoardBody {
-    display: string;
-    groupId: number;
-    isMain?: boolean;
-}
-
-export async function createLevelOnlyBoard(
-    sessionId: string,
-    gameId: number,
-    body: CreateLevelOnlyBoardBody,
-): Promise<{ id: number; created: number }> {
-    return apiFetch<{ id: number; created: number }>(
-        `/v1/games/${gameId}/categories`,
-        { method: 'POST', body, sessionId },
-    );
 }
 
 export async function fetchLevelOverview(

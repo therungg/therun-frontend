@@ -3,20 +3,27 @@
 import { updateTag } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
 import { ApiError } from '~src/lib/api-client';
-import { createLevel } from '~src/lib/levels';
+import { createLevel, ensureLevelGroup } from '~src/lib/levels';
 import { confirmPermission } from '~src/rbac/confirm-permission';
 
 interface Input {
     gameSlug: string;
     gameId: number;
-    name: string;
+    display: string;
+    /** The levels section. Omit to create it on first use. */
+    groupId?: number;
     rules?: string | null;
     sortOrder?: number;
 }
 
+/**
+ * A level is a category in the game's levels section. It carries the game's
+ * variants from the moment it exists — the backend seeds them — so there is
+ * nothing to materialise here.
+ */
 export async function createLevelAction(
     input: Input,
-): Promise<{ result: { id: number; created: number } } | { error: string }> {
+): Promise<{ result: { id: number } } | { error: string }> {
     const user = await getSession();
     try {
         confirmPermission(user, 'edit', 'category-settings', {
@@ -26,10 +33,14 @@ export async function createLevelAction(
         return { error: 'Not authorized to manage category groups.' };
     }
 
-    const { gameSlug: _gameSlug, gameId, ...body } = input;
+    const { gameSlug: _gameSlug, gameId, groupId, ...body } = input;
 
     try {
-        const result = await createLevel(user.id, gameId, body);
+        const section = groupId ?? (await ensureLevelGroup(user.id, gameId)).id;
+        const result = await createLevel(user.id, gameId, {
+            ...body,
+            groupId: section,
+        });
         updateTag(`game-cats:${gameId}`);
         return { result };
     } catch (e) {
