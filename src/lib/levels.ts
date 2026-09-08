@@ -93,3 +93,20 @@ export async function fetchLevelOverview(
         body: { op: 'level-overview' },
     });
 }
+
+/**
+ * Which variants one level carries. A level holding a subset is how "this
+ * variant is not on this level" is said — the assignment matrix's write.
+ */
+export async function setLevelVariants(
+    sessionId: string,
+    gameId: number,
+    categoryId: number,
+    variants: string[],
+): Promise<unknown> {
+    return apiFetch<unknown>(`/v1/games/${gameId}/categories`, {
+        method: 'POST',
+        sessionId,
+        body: { op: 'level-variants', categoryId, variants },
+    });
+}

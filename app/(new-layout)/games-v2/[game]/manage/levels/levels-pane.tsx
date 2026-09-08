@@ -14,6 +14,7 @@ import type {
 import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
 import { LevelsEditor } from '../../setup/steps/levels-editor';
 import { CategoryMatrix } from '../../setup/steps/matrix/category-matrix';
+import { LevelSubcategoryMatrix } from './level-subcategory-matrix';
 import { useLevelOverview } from './use-level-overview';
 
 interface Props {
@@ -115,6 +116,15 @@ export function LevelsPane({
             {error && <div className="alert alert-danger">{error}</div>}
             {loading && !overview && (
                 <p className="text-muted small">Loading levels…</p>
+            )}
+
+            {overview && (
+                <LevelSubcategoryMatrix
+                    gameSlug={gameSlug}
+                    gameId={gameId}
+                    overview={overview}
+                    onSaved={reload}
+                />
             )}
 
             {overview && (
