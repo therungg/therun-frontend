@@ -18,7 +18,7 @@ describe('buildSubmitHref', () => {
             subcategoryKey: 'platform=vc|region=jp',
         });
         expect(href).toBe(
-            '/games-v2/sm64?category=16-star&platform=vc&region=jp&submit=1',
+            '/games-v2/sm64?platform=vc&region=jp&category=16-star&submit=1',
         );
     });
 
@@ -42,7 +42,7 @@ describe('buildSubmitHref', () => {
                 categorySlug: 'any',
                 subcategoryKey: 'submit=weird',
             }),
-        ).toBe('/games-v2/sm64?category=any&submit=1');
+        ).toBe('/games-v2/sm64?submit=1&category=any');
     });
 });
 
@@ -54,7 +54,7 @@ describe('buildCurationHref', () => {
                 subcategoryKey: 'platform=n64',
             }),
         ).toBe(
-            '/games-v2/sm64/manage?category=120-star&platform=n64&pane=boards',
+            '/games-v2/sm64/manage?platform=n64&category=120-star&pane=boards',
         );
     });
 
@@ -80,7 +80,7 @@ describe('buildCurationHref', () => {
                 categorySlug: 'any',
                 subcategoryKey: 'pane=weird',
             }),
-        ).toBe('/games-v2/sm64/manage?category=any&pane=boards');
+        ).toBe('/games-v2/sm64/manage?pane=boards&category=any');
     });
 
     it('bare context still lands on the Boards pane', () => {

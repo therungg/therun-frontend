@@ -47,10 +47,15 @@ export function buildBoardQuery({
     view,
 }: BoardLinkContext): URLSearchParams {
     const sp = new URLSearchParams();
-    if (categorySlug) sp.set('category', categorySlug);
     for (const { name, value } of parseSubcategoryKey(subcategoryKey ?? '')) {
         if (name && value) sp.set(name, value);
     }
+    // The board selector is written last and wins. A subcategory variable
+    // named "Category" normalizes to `category` — the selector's own key — so
+    // writing the parts afterwards replaced the board with a subcategory
+    // value, and a game holding a board of that name (Final Fantasy X has an
+    // `any%`) sent the link to a different board entirely.
+    if (categorySlug) sp.set('category', categorySlug);
     if (page && page > 1) sp.set('page', String(page));
     if (view && view !== 'board') sp.set('view', view);
     return sp;
