@@ -96,6 +96,7 @@ export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
                             )}
                         <RaceParticipantOverview race={raceState} />
                         <RaceActions race={raceState} user={user} />
+                        <RaceAdminActions race={raceState} user={user} />
                         <RaceChat
                             user={user}
                             raceMessages={messagesState}
