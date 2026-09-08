@@ -223,6 +223,7 @@ export async function loadGamePageData(
         loadCategoryBoardCounts(
             game.name,
             countableCategories(categories, resolved.groups, activeLevel),
+            resolved.categoryEntryCounts,
         ),
     ]);
 
@@ -423,15 +424,33 @@ export function planCategoryCountProbes<
 async function loadCategoryBoardCounts(
     gameSlug: string,
     categories: {
+        id: number;
         name: string;
         primaryTiming: 'rt' | 'gt';
         totalFinishedAttemptCount?: number;
         totalRunTime?: number;
     }[],
+    backendCounts: Record<number, number>,
 ): Promise<Record<string, number>> {
     if (categories.length === 0) return {};
-    const { empty, toProbe } = planCategoryCountProbes(categories);
-    if (toProbe.length === 0) return empty;
+
+    // The backend counts the rows, so nothing here has to infer a board's size
+    // from how much it has been played. That inference is what put a 0 on every
+    // fully-imported board: no LiveSplit attempts and no playtime read as empty,
+    // however many entries the board actually held.
+    const fromBackend: Record<string, number> = {};
+    const missing: typeof categories = [];
+    for (const c of categories) {
+        const n = backendCounts[c.id];
+        if (n === undefined) missing.push(c);
+        else fromBackend[c.name] = n;
+    }
+    if (missing.length === 0) return fromBackend;
+
+    // Only reached against a backend that does not send the counts yet. Probing
+    // is bounded the same way it always was.
+    const { empty, toProbe } = planCategoryCountProbes(missing);
+    if (toProbe.length === 0) return { ...fromBackend, ...empty };
 
     const results = await Promise.all(
         toProbe.map(async (c) => {
@@ -452,6 +471,7 @@ async function loadCategoryBoardCounts(
     );
 
     return {
+        ...fromBackend,
         ...empty,
         ...Object.fromEntries(
             results.filter((r): r is readonly [string, number] => r !== null),

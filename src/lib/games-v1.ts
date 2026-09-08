@@ -166,6 +166,12 @@ interface PageDataForCats {
     groups?: PageDataGroup[];
     game?: { categoryDisplayMode?: string | null };
     levelTemplates?: PageDataCategoryFlags[];
+    /**
+     * Entries per board, keyed by category id — computed live by the backend
+     * alongside the baked blob, so it is current rather than as-of the last
+     * pageData rebuild. Absent when talking to a backend that predates it.
+     */
+    categoryEntryCounts?: Record<string, number>;
 }
 
 /**
@@ -278,6 +284,8 @@ export async function resolveCategory(
     /** Board-wide selector default; the flat case has nowhere else to get one. */
     categoryDisplayMode: CategoryDisplayMode | null;
     levelTemplates: LevelTemplate[];
+    /** Entries per board, keyed by category id. Empty on an older backend. */
+    categoryEntryCounts: Record<number, number>;
 }> {
     'use cache';
     cacheLife('minutes');
@@ -464,9 +472,17 @@ export async function resolveCategory(
         };
     });
 
+    const categoryEntryCounts: Record<number, number> = {};
+    for (const [id, n] of Object.entries(
+        pageDataResp.result?.categoryEntryCounts ?? {},
+    )) {
+        categoryEntryCounts[Number(id)] = n;
+    }
+
     return {
         categories,
         selected,
+        categoryEntryCounts,
         groups,
         categoryDisplayMode: asCategoryDisplayMode(
             pageDataResp.result?.game?.categoryDisplayMode,
