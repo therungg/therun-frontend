@@ -1,5 +1,9 @@
 import type { GameTheme } from '~src/lib/game-theme';
-import { ensureAccentContrast, toSurfaceTint } from './theme-normalize';
+import {
+    ensureAccentContrast,
+    toSurfaceTint,
+    withLightness,
+} from './theme-normalize';
 
 type Scheme = 'dark' | 'light';
 
@@ -232,4 +236,107 @@ export function buildThemeCss(theme: GameTheme): string {
         block("[data-bs-theme='light']", global),
         block('.main-container', scoped),
     ].join('\n');
+}
+
+// ============================================================
+// Console (manage) theme — a deliberately quieter derivation
+// ============================================================
+
+/**
+ * The console's own un-themed surfaces, per color mode (the values in
+ * `_overrides.scss`). The console keeps its chrome: these are the bases the
+ * board's colors TINT, never colors the board replaces.
+ */
+const CONSOLE_CHROME = {
+    dark: {
+        surface: '#161c18',
+        recess: '#0d0f0d',
+        recessStrong: '#080a08',
+        /** Share of the picked color mixed into each surface. */
+        tint: 0.14,
+        /** The pick is taken at this lightness before mixing (hue and
+         * saturation kept), so every theme tints by the same amount: a bright
+         * pick can't lift the surface into a gray slab, and a near-black one
+         * still shows its hue. */
+        pickL: 0.45,
+    },
+    light: {
+        surface: '#ffffff',
+        recess: '#e6e9e6',
+        recessStrong: '#dbdfdb',
+        tint: 0.07,
+        pickL: 0.4,
+    },
+} as const;
+
+/**
+ * The console reads the board's theme without wearing it. The board page
+ * repaints canvas, panels and text from the three picked colors; the console is
+ * a control room that has to stay readable at a glance for hours, so it takes
+ * only two things:
+ *
+ *   - the accent, re-contrasted against the console's own surface, so nav
+ *     rails, buttons, meters and focus rings are the board's color;
+ *   - a hint of the panel color mixed into the console's panels and recesses,
+ *     so the whole console reads as this board's console.
+ *
+ * Everything with a readability cost is deliberately left out: no canvas
+ * repaint, no background art, no topbar tint, and above all no text colors —
+ * the console keeps the site's own ink, which is guaranteed legible on the
+ * console's own (barely tinted) surfaces.
+ */
+export function deriveConsoleThemeVars(
+    theme: GameTheme,
+    scheme: Scheme,
+): Record<string, string> {
+    const chrome = CONSOLE_CHROME[scheme];
+    const pick = hexToRgb(withLightness(theme.panelColor, chrome.pickL));
+    // An achromatic pick has no hue to lend, so mixing it would only shift the
+    // console's surfaces in lightness and flatten their own green undertone —
+    // a gray theme leaves the console's chrome exactly as it is.
+    const amount = pick.r === pick.g && pick.g === pick.b ? 0 : chrome.tint;
+    const tint = (baseHex: string) =>
+        toHex(mix(hexToRgb(baseHex), pick, amount));
+
+    const surfaceHex = tint(chrome.surface);
+    const accentHex = ensureAccentContrast(theme.accentColor, surfaceHex);
+    const accent = hexToRgb(accentHex);
+
+    return {
+        '--board-surface-bg': surfaceHex,
+        '--board-recess-bg': tint(chrome.recess),
+        '--board-recess-strong-bg': tint(chrome.recessStrong),
+        '--board-accent': accentHex,
+        '--board-accent-soft': `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.08)`,
+        '--board-on-accent': readableText(accent).emphasis,
+        '--bs-primary': accentHex,
+        '--bs-primary-rgb': `${accent.r}, ${accent.g}, ${accent.b}`,
+    };
+}
+
+/**
+ * The stylesheet injected by the manage console. Same safety and scoping story
+ * as `buildThemeCss`: only hex/rgba built from validated colors is
+ * interpolated, and the vars are scoped to `.main-container` so the site topbar
+ * (which lives outside it) stays neutral.
+ *
+ * Unlike the board's, this one is emitted PER color mode — the accent is
+ * re-contrasted against the console's surface, which differs between modes —
+ * and the only var that leaves the container is the page gradient's accent, so
+ * the canvas keeps its own color and only picks up the board's hue in the
+ * gradient that fades out below the header.
+ */
+export function buildConsoleThemeCss(theme: GameTheme): string {
+    return (['dark', 'light'] as const)
+        .flatMap((scheme) => {
+            const vars = deriveConsoleThemeVars(theme, scheme);
+            const mode = `[data-bs-theme='${scheme}']`;
+            return [
+                block(mode, {
+                    '--site-canvas-primary': vars['--board-accent'],
+                }),
+                block(`${mode} .main-container`, vars),
+            ];
+        })
+        .join('\n');
 }

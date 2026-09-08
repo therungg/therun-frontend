@@ -246,3 +246,17 @@ export function normalizeThemeColors(colors: ThemeColors): ThemeColors {
         backgroundColor: rgbToHex(bg),
     };
 }
+
+/**
+ * The pick's hue and saturation at a fixed lightness — the tint source used by
+ * the console derivation. A cap alone is not enough there: the console mixes
+ * only a little of the pick into its own dark surface, so an already-dark pick
+ * (a deep navy, say) would leave no visible hue at all. Normalizing to one
+ * lightness makes every pick tint by the same amount, dark picks included.
+ * Achromatic picks (grays) stay gray, so a gray theme tints nothing.
+ */
+export function withLightness(hex: string, l: number): string {
+    const hsl = rgbToHsl(hexToRgb(hex));
+    if (hsl.s === 0) return hex;
+    return rgbToHex(roundRgb(hslToRgb({ ...hsl, l })));
+}
