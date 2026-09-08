@@ -88,8 +88,9 @@
 }
 
 .raceListCustomName {
-    font-size: $font-size-sm;
-    color: var(--bs-body-color);
+    font-size: $font-size-xs;
+    color: var(--bs-secondary-color);
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

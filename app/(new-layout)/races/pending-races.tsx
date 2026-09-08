@@ -66,21 +66,25 @@ export const PendingRace = ({ race }: { race: Race }) => {
                             <PencilIcon />
                         </span>
                     </div>
-                    {race.customName?.trim() && (
-                        <div className={styles.raceListCustomName}>
-                            {race.customName}
-                        </div>
-                    )}
-                    {race.startMethod === 'datetime' && (
-                        <div className="d-flex justify-content-between">
-                            <div></div>
-                            <div className={styles.raceListMeta}>
-                                Starts{' '}
-                                <FromNow
-                                    time={new Date(race.willStartAt as string)}
-                                />
-                                <ClockIcon color="var(--bs-link-color)" />
+                    {(race.customName?.trim() ||
+                        race.startMethod === 'datetime') && (
+                        <div className="d-flex justify-content-between gap-2">
+                            <div className={styles.raceListCustomName}>
+                                {race.customName?.trim()}
                             </div>
+                            {race.startMethod === 'datetime' && (
+                                <div
+                                    className={`${styles.raceListMeta} flex-shrink-0 text-nowrap`}
+                                >
+                                    Starts{' '}
+                                    <FromNow
+                                        time={
+                                            new Date(race.willStartAt as string)
+                                        }
+                                    />
+                                    <ClockIcon color="var(--bs-link-color)" />
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
