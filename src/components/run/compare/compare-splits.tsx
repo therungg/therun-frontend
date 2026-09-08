@@ -40,6 +40,7 @@ export const CompareSplits = ({
     const [currentUser, setCurrentUser] = useState(NO_SELECTION);
     const [userData, setUserData] = useState(new Map());
     const [loaded, setLoaded] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
 
     const stats =
         gameTime && statsData.statsGameTime
@@ -65,9 +66,9 @@ export const CompareSplits = ({
 
     const currentUserData =
         currentUser != NO_SELECTION && loaded
-            ? userData.get(currentUser)[
+            ? (userData.get(currentUser)?.[
                   !gameTime ? 'currentRuns' : 'runsGameTime'
-              ]
+              ] ?? null)
             : null;
 
     // This is really old, should be improved
@@ -97,8 +98,12 @@ export const CompareSplits = ({
                     const fullUser = catLeaderboard.pbLeaderboard.find(
                         (l) => l.username == selectedUser,
                     );
-                    const correctUrl = fullUser?.url || '';
+                    // Leaderboard urls of runs with platform/variable
+                    // qualifiers carry a `$platform:...$variables:...` suffix
+                    // the run endpoint does not understand - drop it.
+                    const correctUrl = (fullUser?.url || '').split(/\$|%24/)[0];
                     setCurrentUser(selectedUser);
+                    setLoadError(null);
 
                     try {
                         if (!userData.has(selectedUser)) {
@@ -113,6 +118,11 @@ export const CompareSplits = ({
                                     },
                                 })
                             ).json();
+
+                            if (!gamesData?.meta?.historyFilename) {
+                                setLoadError(selectedUser);
+                                return;
+                            }
 
                             const currentRuns = await (
                                 await fetch(
@@ -150,6 +160,8 @@ export const CompareSplits = ({
                             });
                             setUserData(prevMap);
                         }
+                    } catch {
+                        setLoadError(selectedUser);
                     } finally {
                         setLoaded(true);
                     }
@@ -176,6 +188,7 @@ export const CompareSplits = ({
             {currentUser !== NO_SELECTION && !loaded && (
                 <>Loading data for {currentUser}...</>
             )}
+            {loaded && loadError && <>Could not load splits for {loadError}.</>}
             {currentUserData && (
                 <ShowComparison
                     one={splits}
