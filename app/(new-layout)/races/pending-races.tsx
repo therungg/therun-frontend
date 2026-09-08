@@ -66,6 +66,11 @@ export const PendingRace = ({ race }: { race: Race }) => {
                             <PencilIcon />
                         </span>
                     </div>
+                    {race.customName?.trim() && (
+                        <div className={styles.raceListCustomName}>
+                            {race.customName}
+                        </div>
+                    )}
                     {race.startMethod === 'datetime' && (
                         <div className="d-flex justify-content-between">
                             <div></div>

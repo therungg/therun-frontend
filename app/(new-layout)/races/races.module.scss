@@ -87,6 +87,14 @@
     color: var(--bs-secondary-color);
 }
 
+.raceListCustomName {
+    font-size: $font-size-sm;
+    color: var(--bs-body-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .participantCount {
     white-space: nowrap;
     font-size: $font-size-sm;

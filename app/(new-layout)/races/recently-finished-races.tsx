@@ -58,6 +58,11 @@ export const RecentlyFinishedRace = ({ race }: { race: Race }) => {
                             <FromNow time={race.endTime as string} />
                         </span>
                     </div>
+                    {race.customName?.trim() && (
+                        <div className={styles.raceListCustomName}>
+                            {race.customName}
+                        </div>
+                    )}
                     <RacePlacings race={race} />
                 </div>
             </div>

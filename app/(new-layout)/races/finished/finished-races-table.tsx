@@ -205,6 +205,15 @@ export const FinishedRaceWithGameCategory = ({ races }: { races: Race[] }) => {
                                                 />
                                             </span>
                                         </div>
+                                        {race.customName?.trim() && (
+                                            <div
+                                                className={
+                                                    raceStyles.raceListCustomName
+                                                }
+                                            >
+                                                {race.customName}
+                                            </div>
+                                        )}
                                         <hr
                                             className={
                                                 raceStyles.finishedDivider
