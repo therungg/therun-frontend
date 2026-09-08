@@ -48,13 +48,13 @@ export function CategoryBandHeader({ data }: Props) {
     // the wrong runner.
     const wr = data.leaderboard.entries.find((e) => e.rank === 1) ?? null;
 
-    // "Runners" — board population for this category (matches the active
-    // chip's count), with the category-stat fallback when the probe was
-    // skipped.
+    // Entries on this category's boards (matches the active chip's count).
+    // The fallback counts runners instead, so the label follows the source —
+    // one runner can hold an entry on several of the category's boards, and
+    // calling either number by the other's name misreads it.
+    const entryCount = data.categoryBoardCounts[category.name] ?? null;
     const runnersCount =
-        data.categoryBoardCounts[category.name] ??
-        category.uniqueRunners ??
-        null;
+        entryCount == null ? (category.uniqueRunners ?? null) : null;
 
     const attempts = category.totalAttemptCount ?? 0;
     const finished = category.totalFinishedAttemptCount ?? 0;
@@ -64,6 +64,9 @@ export function CategoryBandHeader({ data }: Props) {
 
     // One quiet facts line, omit-if-zero — not a row of stat tiles.
     const facts = [
+        entryCount != null && entryCount > 0
+            ? `${formatCount(entryCount)} ${entryCount === 1 ? 'entry' : 'entries'}`
+            : null,
         runnersCount != null && runnersCount > 0
             ? `${formatCount(runnersCount)} runners`
             : null,

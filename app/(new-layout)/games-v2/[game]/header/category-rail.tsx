@@ -202,7 +202,7 @@ export function CategoryRail({
                                             </option>
                                         )}
                                         {section.pills.map((c) => {
-                                            const runners =
+                                            const entries =
                                                 boardCounts?.[c.name] ?? null;
                                             return (
                                                 <option
@@ -210,9 +210,9 @@ export function CategoryRail({
                                                     value={c.name}
                                                 >
                                                     {c.display}
-                                                    {runners == null
+                                                    {entries == null
                                                         ? ''
-                                                        : ` · ${runners.toLocaleString()} runners`}
+                                                        : ` · ${entries.toLocaleString()} ${entries === 1 ? 'entry' : 'entries'}`}
                                                 </option>
                                             );
                                         })}
@@ -221,12 +221,14 @@ export function CategoryRail({
                                     section.pills.map((c) => {
                                         const active =
                                             c.name === optimisticSelectedName;
-                                        // Board rows, not the category stats
+                                        // Entries, not the category stats
                                         // row's uniqueRunners: the number
                                         // above the subcategory values has to
-                                        // be the total those values add up
-                                        // to. See categoryBoardCounts.
-                                        const runners =
+                                        // be the total those values add up to,
+                                        // and one runner can hold an entry on
+                                        // several of them. See
+                                        // categoryBoardCounts.
+                                        const entries =
                                             boardCounts?.[c.name] ?? null;
                                         return (
                                             <button
@@ -235,17 +237,17 @@ export function CategoryRail({
                                                 onClick={() => onSelect(c.name)}
                                                 aria-pressed={active}
                                                 aria-label={
-                                                    runners == null
+                                                    entries == null
                                                         ? undefined
-                                                        : `${c.display}, ${runners} runners`
+                                                        : `${c.display}, ${entries} ${entries === 1 ? 'entry' : 'entries'}`
                                                 }
                                                 // The count's unit differs
                                                 // from the plate's run
                                                 // count — name it on hover.
                                                 title={
-                                                    runners == null
+                                                    entries == null
                                                         ? undefined
-                                                        : `${runners.toLocaleString()} runners`
+                                                        : `${entries.toLocaleString()} ${entries === 1 ? 'entry' : 'entries'}`
                                                 }
                                                 className={`${styles.chip} ${styles.chipCategory} ${active ? styles.chipActive : ''}`}
                                             >
@@ -264,14 +266,14 @@ export function CategoryRail({
                                                     />
                                                 )}
                                                 {c.display}
-                                                {runners != null && (
+                                                {entries != null && (
                                                     <span
                                                         aria-hidden
                                                         className={
                                                             styles.chipCount
                                                         }
                                                     >
-                                                        {runners.toLocaleString()}
+                                                        {entries.toLocaleString()}
                                                     </span>
                                                 )}
                                             </button>

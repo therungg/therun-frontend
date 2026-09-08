@@ -14,7 +14,7 @@ interface Props {
     activeLevelId: number | null;
     activeCategoryName: string;
     templates: LevelTemplate[];
-    /** Board population per category slug; see GamePageData.categoryBoardCounts. */
+    /** Entries per category slug; see GamePageData.categoryBoardCounts. */
     boardCounts?: Record<string, number>;
     /** Same contract as CategoryRail's onSelect: writes `?category=`. */
     onSelect: (name: string) => void;
@@ -98,7 +98,7 @@ export function LevelPicker({
                 <div className={railStyles.chips}>
                     {chosen.boards.map((c) => {
                         const active = c.name === activeCategoryName;
-                        const runners = boardCounts?.[c.name] ?? null;
+                        const entries = boardCounts?.[c.name] ?? null;
                         const label = levelBoardLabel(c, templates);
                         return (
                             <button
@@ -107,26 +107,26 @@ export function LevelPicker({
                                 onClick={() => onSelect(c.name)}
                                 aria-pressed={active}
                                 aria-label={
-                                    runners == null
+                                    entries == null
                                         ? undefined
-                                        : `${label}, ${runners} runners`
+                                        : `${label}, ${entries} ${entries === 1 ? 'entry' : 'entries'}`
                                 }
                                 title={
-                                    runners == null
+                                    entries == null
                                         ? undefined
-                                        : `${runners.toLocaleString()} runners`
+                                        : `${entries.toLocaleString()} ${entries === 1 ? 'entry' : 'entries'}`
                                 }
                                 className={`${railStyles.chip} ${railStyles.chipCategory} ${
                                     active ? railStyles.chipActive : ''
                                 }`}
                             >
                                 {label}
-                                {runners != null && (
+                                {entries != null && (
                                     <span
                                         aria-hidden
                                         className={railStyles.chipCount}
                                     >
-                                        {runners.toLocaleString()}
+                                        {entries.toLocaleString()}
                                     </span>
                                 )}
                             </button>
