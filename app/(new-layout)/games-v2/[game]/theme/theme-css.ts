@@ -252,8 +252,12 @@ const CONSOLE_CHROME = {
         surface: '#161c18',
         recess: '#0d0f0d',
         recessStrong: '#080a08',
+        canvas: '#0d0f0d',
         /** Share of the picked color mixed into each surface. */
-        tint: 0.14,
+        tint: 0.28,
+        /** The canvas takes a smaller share than the panels: it is the biggest
+         * area on screen, and the panels have to keep lifting off it. */
+        canvasTint: 0.12,
         /** The pick is taken at this lightness before mixing (hue and
          * saturation kept), so every theme tints by the same amount: a bright
          * pick can't lift the surface into a gray slab, and a near-black one
@@ -264,26 +268,29 @@ const CONSOLE_CHROME = {
         surface: '#ffffff',
         recess: '#e6e9e6',
         recessStrong: '#dbdfdb',
-        tint: 0.07,
+        canvas: '#fbfbfb',
+        tint: 0.14,
+        canvasTint: 0.06,
         pickL: 0.4,
     },
 } as const;
 
 /**
- * The console reads the board's theme without wearing it. The board page
- * repaints canvas, panels and text from the three picked colors; the console is
- * a control room that has to stay readable at a glance for hours, so it takes
- * only two things:
+ * The console wears the board's theme, but on its own terms. It is a control
+ * room that has to stay readable at a glance for hours, so it takes the colors
+ * and leaves the parts that would cost legibility:
  *
  *   - the accent, re-contrasted against the console's own surface, so nav
  *     rails, buttons, meters and focus rings are the board's color;
- *   - a hint of the panel color mixed into the console's panels and recesses,
- *     so the whole console reads as this board's console.
+ *   - the panel color tinted into the console's panels, recesses AND canvas, so
+ *     the whole console reads as this board's console;
+ *   - the background art, but only as a band behind the masthead — see
+ *     console-theme.module.scss for why the console can't take it whole.
  *
- * Everything with a readability cost is deliberately left out: no canvas
- * repaint, no background art, no topbar tint, and above all no text colors —
- * the console keeps the site's own ink, which is guaranteed legible on the
- * console's own (barely tinted) surfaces.
+ * What it never takes is TEXT color. The console keeps the site's own ink, which
+ * stays above 6:1 on every surface these tints can produce, however bright or
+ * dark the pick. The topbar tint is left out too: the topbar is site chrome that
+ * spans every page, and it sits outside the container these vars are scoped to.
  */
 export function deriveConsoleThemeVars(
     theme: GameTheme,
@@ -299,6 +306,13 @@ export function deriveConsoleThemeVars(
         toHex(mix(hexToRgb(baseHex), pick, amount));
 
     const surfaceHex = tint(chrome.surface);
+    const canvasHex = toHex(
+        mix(
+            hexToRgb(chrome.canvas),
+            pick,
+            amount === 0 ? 0 : chrome.canvasTint,
+        ),
+    );
     const accentHex = ensureAccentContrast(theme.accentColor, surfaceHex);
     const accent = hexToRgb(accentHex);
 
@@ -306,6 +320,10 @@ export function deriveConsoleThemeVars(
         '--board-surface-bg': surfaceHex,
         '--board-recess-bg': tint(chrome.recess),
         '--board-recess-strong-bg': tint(chrome.recessStrong),
+        '--site-canvas-bg': canvasHex,
+        // The art scrim's end stop, so the background art fades into exactly
+        // the canvas it sits on (see console-theme.module.scss).
+        '--console-canvas': canvasHex,
         '--board-accent': accentHex,
         '--board-accent-soft': `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.08)`,
         '--board-on-accent': readableText(accent).emphasis,
@@ -332,7 +350,10 @@ export function buildConsoleThemeCss(theme: GameTheme): string {
             const vars = deriveConsoleThemeVars(theme, scheme);
             const mode = `[data-bs-theme='${scheme}']`;
             return [
+                // The root `.background` gradient is an ancestor of
+                // .main-container, so its two vars can't be scoped down.
                 block(mode, {
+                    '--site-canvas-bg': vars['--site-canvas-bg'],
                     '--site-canvas-primary': vars['--board-accent'],
                 }),
                 block(`${mode} .main-container`, vars),

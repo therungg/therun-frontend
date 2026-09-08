@@ -1,0 +1,55 @@
+// The board's background art, in the console's terms.
+//
+// On the public board the art is a fixed full-viewport backdrop: it sits under
+// everything, and the panels stay readable because they are opaque. The console
+// can't do that — its content sits DIRECTLY on the canvas (the cockpit's
+// content column has no surface of its own), so a fixed backdrop would run
+// table rows over picture detail for the whole page.
+//
+// So the art becomes a band at the top of the console instead: it scrolls away
+// with the masthead it sits behind, and it is gone before the first table. You
+// can see whose console you are in; you never read over the picture.
+
+.anchor {
+    position: relative;
+    height: 0;
+}
+
+.art {
+    position: absolute;
+    top: -1.5rem;
+    left: 0;
+    right: 0;
+    height: 26rem;
+    z-index: -1;
+    background-size: cover;
+    background-position: center top;
+    pointer-events: none;
+
+    // The scrim never drops below 60% canvas: the console masthead and the top
+    // of the nav sit ON this band, and their text is plain site ink — it has to
+    // read over a bright patch of somebody's screenshot.
+    //
+    // Fades into exactly the canvas it sits on: --console-canvas is the same
+    // tinted canvas color the page gradient ends at (see theme-css.ts), so the
+    // band has no visible bottom edge.
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--console-canvas, #0d0f0d) 60%, transparent)
+                0%,
+            color-mix(in srgb, var(--console-canvas, #0d0f0d) 86%, transparent)
+                45%,
+            var(--console-canvas, #0d0f0d) 100%
+        );
+    }
+}
+
+@media (max-width: 768px) {
+    .art {
+        height: 18rem;
+    }
+}
