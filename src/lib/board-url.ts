@@ -50,12 +50,12 @@ export function buildBoardQuery({
     for (const { name, value } of parseSubcategoryKey(subcategoryKey ?? '')) {
         if (name && value) sp.set(name, value);
     }
-    // The board selector is written last and wins. A subcategory variable
-    // named "Category" normalizes to `category` — the selector's own key — so
-    // writing the parts afterwards replaced the board with a subcategory
-    // value, and a game holding a board of that name (Final Fantasy X has an
-    // `any%`) sent the link to a different board entirely.
-    if (categorySlug) sp.set('category', categorySlug);
+    // The board selector has its own key and is written last, the convention
+    // `pane` and `submit` already follow. It used to share `category` with any
+    // subcategory variable of that name, which cost Final Fantasy X both its
+    // subcategory links and, when the parts were written over the selector,
+    // the board itself.
+    if (categorySlug) sp.set('board', categorySlug);
     if (page && page > 1) sp.set('page', String(page));
     if (view && view !== 'board') sp.set('view', view);
     return sp;

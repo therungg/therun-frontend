@@ -14,7 +14,7 @@ export type RootViewDecision =
 /**
  * The game root's render decision. Site policy: only Featured
  * (isMain && !archived) categories are publicly viewable — anything else
- * requested via ?category redirects to the game root (never 404s, so old
+ * requested via ?board redirects to the game root (never 404s, so old
  * shared links degrade gracefully). Without a param: 0 Featured -> empty
  * state, 1 -> straight to that board (an overview of one card is noise),
  * 2+ -> overview.
@@ -29,6 +29,7 @@ export type RootViewDecision =
  */
 export function decideGameRootView(
     categories: ResolvedCategory[],
+    /** The `?board=` value; `?category=` is a subcategory variable now. */
     categoryParam: string | undefined,
     groups: ResolvedGroup[] = [],
 ): RootViewDecision {

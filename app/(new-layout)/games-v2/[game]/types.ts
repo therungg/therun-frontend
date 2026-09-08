@@ -16,6 +16,13 @@ import type { LevelTemplate } from '../../../../types/levels.types';
 import type { BuiltinFilterState } from './filters/builtin-params';
 
 export interface GamePageSearchParams {
+    /**
+     * The board being viewed. `category` used to hold this, but it is also
+     * what a subcategory variable named "Category" normalizes to, so the two
+     * fought over one key — see the legacy redirect in page.tsx.
+     */
+    board?: string;
+    /** A subcategory/filter value now, not the board selector. */
     category?: string;
     combined?: string;
     verified?: string;

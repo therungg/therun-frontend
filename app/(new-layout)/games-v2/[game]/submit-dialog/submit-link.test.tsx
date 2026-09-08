@@ -74,7 +74,7 @@ describe('SubmitLink inside a provider', () => {
         renderWithProvider();
         const link = screen.getByRole('link', { name: 'Submit a run' });
         expect(link.getAttribute('href')).toBe(
-            '/games-v2/mario64?category=any&submit=1',
+            '/games-v2/mario64?board=any&submit=1',
         );
     });
 

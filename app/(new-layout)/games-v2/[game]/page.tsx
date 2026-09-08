@@ -8,6 +8,7 @@ import { listGameModerators } from '~src/lib/game-moderators';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { getPublicModLog } from '~src/lib/moderation/public-mod-log';
 import { selfAnonymizeState } from '~src/lib/moderation/self-service';
+import { normalizeSlug } from '~src/lib/normalize-slug';
 import {
     getAllActiveRacesByGame,
     getRaceGameStatsByGame,
@@ -69,7 +70,34 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
         ),
     ).toString();
 
-    const decision = decideGameRootView(categories, sp.category, groups);
+    // Links minted before the board moved to `?board=` carry it in `?category=`.
+    // Move them across when the value names a real board; when it doesn't, leave
+    // it be — on a game with a "Category" variable that is a subcategory value,
+    // and rewriting it would send a legitimate link to the wall.
+    if (!sp.board && sp.category) {
+        const legacy = sp.category;
+        const norm = normalizeSlug(legacy);
+        const namesABoard = categories.some(
+            (c) =>
+                !c.archived &&
+                c.isMain &&
+                (c.name === legacy || normalizeSlug(c.name) === norm),
+        );
+        if (namesABoard) {
+            const q = new URLSearchParams(
+                Object.entries(sp).filter(
+                    (e): e is [string, string] => typeof e[1] === 'string',
+                ),
+            );
+            q.delete('category');
+            q.set('board', legacy);
+            redirect(
+                `/games-v2/${encodeURIComponent(resolvedGame.name)}?${q.toString()}`,
+            );
+        }
+    }
+
+    const decision = decideGameRootView(categories, sp.board, groups);
     if (decision.view === 'redirect') {
         redirect(`/games-v2/${encodeURIComponent(resolvedGame.name)}`);
     }
@@ -202,8 +230,9 @@ export async function generateMetadata({
     const display = resolved?.display ?? safeDecodeURI(game);
 
     let categoryDisplay: string | undefined;
-    if (resolved && sp.category) {
-        const { selected } = await resolveCategory(resolved.id, sp.category);
+    const boardParam = sp.board ?? sp.category;
+    if (resolved && boardParam) {
+        const { selected } = await resolveCategory(resolved.id, boardParam);
         categoryDisplay = selected?.display;
     }
 

@@ -42,7 +42,11 @@ const MAX_VALUE_COUNT_PROBES = 16;
  */
 const MAX_CATEGORY_COUNT_PROBES = 24;
 const RESERVED_LOWER = new Set([
-    'category',
+    // `board` selects the board. `category` is deliberately absent: it is a
+    // perfectly ordinary variable name (Final Fantasy X splits its boards by a
+    // variable called "Category"), and reserving it meant that subcategory
+    // could never be expressed in a URL at all.
+    'board',
     'combined',
     'verified',
     'country',
@@ -64,7 +68,7 @@ export async function loadGamePageData(
     const game = await resolveGame(slug);
     if (!game) return null;
 
-    const resolved = await resolveCategory(game.id, sp.category);
+    const resolved = await resolveCategory(game.id, sp.board);
     // resolveGame reads the lookup endpoint, which has no board config on it;
     // the selector default rides the same pageData call the groups come from.
     const gameWithConfig = {

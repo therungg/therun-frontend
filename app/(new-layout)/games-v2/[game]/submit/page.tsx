@@ -32,7 +32,7 @@ export default async function SubmitRunRedirect({
 
     redirect(
         buildSubmitHref(slug, {
-            categorySlug: sp.category,
+            categorySlug: sp.board ?? sp.category,
             subcategoryKey:
                 Object.keys(values).length > 0
                     ? buildSubcategoryKey(values)

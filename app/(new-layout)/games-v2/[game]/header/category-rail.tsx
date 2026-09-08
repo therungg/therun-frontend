@@ -64,11 +64,8 @@ export function CategoryRail({
         sp.delete('page');
         sp.delete('combined');
         for (const k of variableKeys) sp.delete(k);
-        // Set LAST, after the variable keys are cleared: a game whose
-        // subcategory variable is named "Category" normalizes to `category`,
-        // the same key this selector uses, so clearing variables would drop
-        // the board we are navigating to and land on the category overview.
-        sp.set('category', name);
+        // Set last, the convention every reserved param here follows.
+        sp.set('board', name);
         navigate(`${pathname}?${sp.toString()}`, `${PENDING_PREFIX}${name}`);
     };
 
