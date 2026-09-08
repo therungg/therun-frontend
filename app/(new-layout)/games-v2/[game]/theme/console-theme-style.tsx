@@ -27,12 +27,17 @@ export function ConsoleThemeStyle({ theme }: { theme: GameTheme | null }) {
                 <div className={styles.anchor} aria-hidden>
                     <div
                         className={styles.art}
-                        style={{
-                            // Keep the JSON quotes: url("...") is a quoted CSS
-                            // string, so JSON-escaped backslashes/quotes in the
-                            // URL can't break out of it.
-                            backgroundImage: `url(${JSON.stringify(theme.backgroundUrl)})`,
-                        }}
+                        style={
+                            {
+                                // Handed to the stylesheet as a variable because
+                                // the image is painted by a pseudo-element (it is
+                                // the blurred layer, under the scrim). Keep the
+                                // JSON quotes: url("...") is a quoted CSS string,
+                                // so JSON-escaped backslashes/quotes in the URL
+                                // can't break out of it.
+                                '--console-art': `url(${JSON.stringify(theme.backgroundUrl)})`,
+                            } as React.CSSProperties
+                        }
                     />
                 </div>
             ) : null}
