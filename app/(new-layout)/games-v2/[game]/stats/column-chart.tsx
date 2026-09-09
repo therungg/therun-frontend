@@ -6,7 +6,8 @@ import styles from './stats.module.scss';
 
 interface Props {
     columns: Column[];
-    /** Label every nth column; the rest keep their column but lose the tick. */
+    /** Label every nth column; the rest keep their column but lose the
+     *  tick. Defaults to whatever leaves about seven ticks on the axis. */
     tickEvery?: number;
     /** What one unit is, for the peak caption and the hover card. */
     unit: string;
@@ -26,7 +27,7 @@ interface Props {
  */
 export function ColumnChart({
     columns,
-    tickEvery = 3,
+    tickEvery,
     unit,
     axisLabel,
     empty = 'Not enough data yet.',
@@ -39,6 +40,9 @@ export function ColumnChart({
     }
 
     const tracks = `repeat(${columns.length}, minmax(0, 1fr))`;
+    // Buckets get finer as a board's spread widens, so the tick interval
+    // follows the column count instead of being fixed per chart.
+    const every = tickEvery ?? Math.max(1, Math.ceil(columns.length / 7));
     const active = hovered !== null ? columns[hovered] : null;
     const activeIndex = hovered ?? 0;
 
@@ -120,7 +124,7 @@ export function ColumnChart({
                         }
                         aria-hidden
                     >
-                        {i % tickEvery === 0 || i === columns.length - 1
+                        {i % every === 0 || i === columns.length - 1
                             ? c.label
                             : ''}
                     </span>

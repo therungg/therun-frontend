@@ -118,7 +118,10 @@ export function newRunnerColumns(
 }
 
 /**
- * Bucket widths a runner would actually name. A histogram cut into
+ * Bucket widths a runner would actually name. Nothing between 30s and a
+ * minute: a 45-second bucket is arithmetically round and still cuts a
+ * 16-minute game at 14:15 / 15:00 / 15:45, which reads as noise. Above
+ * half a minute every step divides into minutes. A histogram cut into
  * fourteenths of a range lands on boundaries like 16:51 — arithmetically
  * correct, unreadable as a scale — so the width is snapped to the next
  * step up this ladder instead.
@@ -135,6 +138,7 @@ const STEP_LADDER_MS = [
     30_000,
     60_000,
     2 * 60_000,
+    3 * 60_000,
     5 * 60_000,
     10 * 60_000,
     15 * 60_000,
@@ -147,7 +151,7 @@ const STEP_LADDER_MS = [
 ];
 
 /** Widest bucket count worth drawing before the next ladder step is picked. */
-const MAX_BUCKETS = 18;
+const MAX_BUCKETS = 30;
 
 function niceStep(span: number, target: number): number {
     const raw = span / target;
@@ -168,7 +172,9 @@ function niceStep(span: number, target: number): number {
 export function timeHistogram(
     entries: LeaderboardExportEntry[],
     format: (ms: number) => string,
-    target = 12,
+    // Fine enough that a 16 Star bucket is a minute, not two: at a dozen
+    // buckets the shape of the pack disappears into its own width.
+    target = 24,
 ): Column[] {
     const times = entries
         .map((e) => e.time)

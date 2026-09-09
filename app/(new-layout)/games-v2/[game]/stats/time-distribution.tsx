@@ -62,7 +62,6 @@ export function TimeDistribution({ boards }: { boards: DistributionBoard[] }) {
             </div>
             <ColumnChart
                 columns={active.columns}
-                tickEvery={2}
                 unit="runs"
                 axisLabel="PB time — each column is one bucket, faster on the left"
             />
