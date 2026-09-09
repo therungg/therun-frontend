@@ -162,26 +162,26 @@ export default async function GameRacesPage({ params }: PageProps) {
         {
             label: 'Races',
             value: s.totalRaces.toLocaleString(),
-            meta: `across ${raceStats.categories.length} raced ${
+            meta: `in ${raceStats.categories.length} ${
                 raceStats.categories.length === 1 ? 'category' : 'categories'
             }`,
         },
         {
             label: 'Finish rate',
             value: `${Math.round(s.finishPercentage * 100)}%`,
-            meta: 'of everyone who entered reached the end',
+            meta: 'of entrants finished',
         },
         {
             label: 'Hours raced',
             value: formatHours(s.totalRaceTime),
-            meta: 'summed over every racer in every race',
+            meta: 'across every racer',
         },
         {
             label: 'Average race',
             value: (
                 <DurationToFormatted duration={Math.round(s.averageRaceTime)} />
             ),
-            meta: 'mean over the races that finished',
+            meta: 'mean, finished races',
         },
     ];
     const visibleActive = (activeRaces ?? []).filter(
@@ -263,67 +263,110 @@ export default async function GameRacesPage({ params }: PageProps) {
                 </section>
             )}
             {shownCategories.length > 0 && (
-                <section className={styles.section}>
+                <section className={styles.panel}>
                     <div className={styles.sectionHead}>
                         <span className={styles.sectionLabel}>By category</span>
-                        {raceStats.categories.length >
-                            shownCategories.length && (
-                            <span className={styles.sectionNote}>
-                                showing {shownCategories.length} of{' '}
-                                {raceStats.categories.length}
-                            </span>
-                        )}
+                        <span className={styles.sectionNote}>
+                            {raceStats.categories.length}{' '}
+                            {raceStats.categories.length === 1
+                                ? 'category'
+                                : 'categories'}{' '}
+                            raced
+                        </span>
                     </div>
-                    <div className={styles.categoryGrid}>
-                        {shownCategories.map((c, i) => (
-                            <div
-                                key={c.displayValue}
-                                className={styles.categoryCard}
-                            >
-                                <div className={styles.categoryHead}>
-                                    <h3 className={styles.categoryTitle}>
+                    <div className={styles.catTable}>
+                        <div
+                            className={`${styles.catRow} ${styles.catHeadRow}`}
+                            aria-hidden
+                        >
+                            <span>Category</span>
+                            <span className={styles.catNum}>Races</span>
+                            <span className={styles.catNum}>Finish</span>
+                            <span className={styles.catNum}>Avg</span>
+                            <span>Best time</span>
+                            <span>Top rating</span>
+                        </div>
+                        {shownCategories.map((c, i) => {
+                            const fastest =
+                                categoryBoards[i].timeLeaderboards[0] ?? null;
+                            const rated =
+                                categoryBoards[i].mmrLeaderboards[0] ?? null;
+                            return (
+                                <div
+                                    key={c.displayValue}
+                                    className={styles.catRow}
+                                >
+                                    <span className={styles.catName}>
                                         {categoryName(c)}
-                                    </h3>
-                                    <span className={styles.categoryCount}>
-                                        {c.totalRaces.toLocaleString()} races
+                                    </span>
+                                    <span className={styles.catNum}>
+                                        {c.totalRaces.toLocaleString()}
+                                    </span>
+                                    <span className={styles.catNum}>
+                                        {Math.round(c.finishPercentage * 100)}%
+                                    </span>
+                                    <span className={styles.catNum}>
+                                        <DurationToFormatted
+                                            duration={Math.round(
+                                                c.averageRaceTime,
+                                            )}
+                                        />
+                                    </span>
+                                    <span className={styles.catLeader}>
+                                        {fastest ? (
+                                            <>
+                                                <span
+                                                    className={
+                                                        styles.catLeaderName
+                                                    }
+                                                >
+                                                    {fastest.user}
+                                                </span>
+                                                <span
+                                                    className={
+                                                        styles.catLeaderValue
+                                                    }
+                                                >
+                                                    <DurationToFormatted
+                                                        duration={fastest.time}
+                                                    />
+                                                </span>
+                                            </>
+                                        ) : (
+                                            <span className={styles.catEmpty}>
+                                                —
+                                            </span>
+                                        )}
+                                    </span>
+                                    <span className={styles.catLeader}>
+                                        {rated ? (
+                                            <>
+                                                <span
+                                                    className={
+                                                        styles.catLeaderName
+                                                    }
+                                                >
+                                                    {rated.user}
+                                                </span>
+                                                <span
+                                                    className={
+                                                        styles.catLeaderValue
+                                                    }
+                                                >
+                                                    {Math.round(
+                                                        rated.mmr,
+                                                    ).toLocaleString()}
+                                                </span>
+                                            </>
+                                        ) : (
+                                            <span className={styles.catEmpty}>
+                                                —
+                                            </span>
+                                        )}
                                     </span>
                                 </div>
-                                <p className={styles.categoryStats}>
-                                    {Math.round(c.finishPercentage * 100)}%
-                                    finish ·{' '}
-                                    <DurationToFormatted
-                                        duration={Math.round(c.averageRaceTime)}
-                                    />{' '}
-                                    avg
-                                </p>
-                                <div className={styles.podia}>
-                                    <RacePodium
-                                        title="Best times"
-                                        rows={categoryBoards[
-                                            i
-                                        ].timeLeaderboards.map((t) => ({
-                                            user: t.user,
-                                            value: (
-                                                <DurationToFormatted
-                                                    duration={t.time}
-                                                />
-                                            ),
-                                        }))}
-                                    />
-                                    <RacePodium
-                                        title="Best rating"
-                                        rows={categoryBoards[
-                                            i
-                                        ].mmrLeaderboards.map((m) => ({
-                                            user: m.user,
-                                            value: Math.round(
-                                                m.mmr,
-                                            ).toLocaleString(),
-                                        }))}
-                                    />
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </section>
             )}
@@ -342,11 +385,23 @@ export default async function GameRacesPage({ params }: PageProps) {
                         No finished races recorded.
                     </p>
                 ) : (
-                    <ul className={`${styles.raceList} ${styles.listWrap}`}>
+                    <div className={styles.catTable}>
+                        <div
+                            className={`${styles.recentRow} ${styles.recentHeadRow}`}
+                            aria-hidden
+                        >
+                            <span>Race</span>
+                            <span className={styles.recentDate}>Date</span>
+                            <span className={styles.recentCount}>Racers</span>
+                            <span>Won by</span>
+                        </div>
                         {finishedRaces.map((r) => {
                             const winner = winnerOf(r);
                             return (
-                                <li key={r.raceId} className={styles.raceRow}>
+                                <div
+                                    key={r.raceId}
+                                    className={styles.recentRow}
+                                >
                                     <Link
                                         href={`/races/${r.raceId}`}
                                         className={styles.raceName}
@@ -355,75 +410,56 @@ export default async function GameRacesPage({ params }: PageProps) {
                                             r.displayCategory ||
                                             r.category}
                                     </Link>
-                                    <span className={styles.raceMeta}>
-                                        {r.endTime && (
+                                    <span className={styles.recentDate}>
+                                        {r.endTime
+                                            ? new Date(
+                                                  r.endTime,
+                                              ).toLocaleDateString('en-US', {
+                                                  month: 'short',
+                                                  day: 'numeric',
+                                                  timeZone: 'UTC',
+                                              })
+                                            : '—'}
+                                    </span>
+                                    <span className={styles.recentCount}>
+                                        {r.participantCount}
+                                    </span>
+                                    <span className={styles.recentWinner}>
+                                        {winner ? (
                                             <>
-                                                {new Date(
-                                                    r.endTime,
-                                                ).toLocaleDateString('en-US', {
-                                                    month: 'short',
-                                                    day: 'numeric',
-                                                    timeZone: 'UTC',
-                                                })}{' '}
-                                                ·{' '}
-                                            </>
-                                        )}
-                                        {r.participantCount}{' '}
-                                        {r.participantCount === 1
-                                            ? 'racer'
-                                            : 'racers'}
-                                        {winner && (
-                                            <>
-                                                {' · won by '}
                                                 <span
                                                     className={
-                                                        styles.raceWinner
+                                                        styles.recentWinnerName
                                                     }
                                                 >
                                                     {winner}
                                                 </span>
                                                 {r.firstFinishedParticipantTime && (
-                                                    <>
-                                                        {' in '}
+                                                    <span
+                                                        className={
+                                                            styles.recentTime
+                                                        }
+                                                    >
                                                         <DurationToFormatted
                                                             duration={
                                                                 r.firstFinishedParticipantTime
                                                             }
                                                         />
-                                                    </>
+                                                    </span>
                                                 )}
                                             </>
+                                        ) : (
+                                            <span className={styles.catEmpty}>
+                                                nobody finished
+                                            </span>
                                         )}
                                     </span>
-                                </li>
+                                </div>
                             );
                         })}
-                    </ul>
+                    </div>
                 )}
             </section>
-        </div>
-    );
-}
-
-function RacePodium({
-    title,
-    rows,
-}: {
-    title: string;
-    rows: { user: string; value: ReactNode }[];
-}) {
-    if (rows.length === 0) return null;
-    return (
-        <div className={styles.podium}>
-            <span className={styles.podiumTitle}>{title}</span>
-            <ol className={styles.podiumList}>
-                {rows.map((r) => (
-                    <li key={r.user} className={styles.podiumRow}>
-                        <span className={styles.podiumUser}>{r.user}</span>
-                        <span className={styles.podiumValue}>{r.value}</span>
-                    </li>
-                ))}
-            </ol>
         </div>
     );
 }

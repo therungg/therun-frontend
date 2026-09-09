@@ -35,21 +35,23 @@
 
 // ---- At-a-glance figures -------------------------------------
 .statStrip {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr));
-    gap: dt.$spacing-lg dt.$spacing-2xl;
+    display: flex;
+    flex-wrap: wrap;
+    // Figures sit next to each other and stop: spread over auto-fit tracks
+    // they drifted a screen apart and stopped reading as one band.
+    gap: dt.$spacing-lg dt.$spacing-3xl;
     margin: 0;
 }
 
 .stat {
     display: flex;
     flex-direction: column;
-    gap: dt.$spacing-xs;
+    gap: 2px;
     min-width: 0;
 
     // A rule between figures, not a box around each — the panel is the box.
     & + & {
-        padding-left: dt.$spacing-2xl;
+        padding-left: dt.$spacing-3xl;
         border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.3);
     }
 
@@ -138,123 +140,177 @@
     font-weight: 600;
 }
 
-// ---- Category cards ------------------------------------------
-.categoryGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(20rem, 100%), 1fr));
-    gap: dt.$spacing-lg;
-}
-
-.categoryCard {
-    @include board.board-surface(dt.$spacing-md dt.$spacing-lg);
-    transition: border-color dt.$transition-fast;
-
-    &:hover {
-        border-color: var(--bs-border-color);
-    }
-}
-
-// Title and race count share a baseline: the count is the card's scale
-// and belongs next to its name, not buried in the meta line.
-.categoryHead {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: dt.$spacing-sm;
-}
-
-.categoryCount {
-    @include board.mono-time;
-    font-size: dt.$font-size-2xs;
-    color: var(--bs-tertiary-color);
-    flex-shrink: 0;
-}
-
-.categoryTitle {
-    font-size: dt.$font-size-md;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    margin: 0 0 2px;
-}
-
-.categoryStats {
-    color: var(--bs-tertiary-color);
-    font-size: dt.$font-size-xs;
-    margin: 0 0 dt.$spacing-md;
-}
-
-.podia {
-    display: flex;
-    // 2xl between two ten-rem columns pushed the second podium onto its
-    // own line inside a card that had room for both.
-    gap: dt.$spacing-lg;
-    flex-wrap: wrap;
-}
-
-.podium {
-    min-width: 10rem;
-    flex: 1;
-}
-
-.podiumTitle {
-    @include board.board-eyebrow;
-    display: block;
-    margin-bottom: dt.$spacing-xs;
-}
-
-.podiumList {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+// ---- Category table ------------------------------------------
+// Nine cards of two stacked mini-tables was a wall of small type with a
+// hole where the ninth card left the grid. One table: a row per category,
+// columns that line up, the leaders read down instead of across.
+.catTable {
     display: grid;
     gap: 2px;
-    counter-reset: podium;
 }
 
-.podiumRow {
-    display: flex;
-    justify-content: space-between;
+.catRow {
+    display: grid;
+    grid-template-columns:
+        minmax(7rem, 1.3fr) 4rem 4rem 5rem
+        minmax(9rem, 1.2fr) minmax(9rem, 1.2fr);
     align-items: baseline;
-    gap: dt.$spacing-sm;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-sm;
+    margin-inline: -#{dt.$spacing-sm};
+    border-radius: dt.$radius-sm;
     font-size: dt.$font-size-sm;
-    counter-increment: podium;
+    transition: background-color dt.$transition-fast;
 
-    &::before {
-        content: counter(podium);
-        @include board.mono-time;
-        font-size: dt.$font-size-2xs;
-        font-weight: 600;
-        color: var(--bs-tertiary-color);
-        width: 1ch;
-        flex-shrink: 0;
+    & + & {
+        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
     }
 
-    // Board signature rank accents, same as the overview podium.
-    &:nth-child(1)::before {
-        color: dt.$accent-gold;
-        font-weight: 700;
+    &:hover {
+        background: rgba(var(--bs-border-color-rgb), 0.18);
     }
 
-    &:nth-child(2)::before {
-        color: dt.$accent-silver;
+    @media (max-width: 991.98px) {
+        // The two leader cells drop under the figures rather than crushing
+        // every column to an ellipsis.
+        grid-template-columns: minmax(6rem, 1fr) 4rem 4rem 5rem;
+
+        .catLeader {
+            grid-column: span 2;
+        }
     }
 
-    &:nth-child(3)::before {
-        color: dt.$accent-bronze;
+    @media (max-width: 575.98px) {
+        grid-template-columns: 1fr auto;
+
+        .catLeader {
+            grid-column: span 2;
+        }
     }
 }
 
-.podiumUser {
+.catHeadRow {
+    @include board.board-eyebrow;
+    border-top: none;
+    padding-bottom: dt.$spacing-xs;
+
+    &:hover {
+        background: none;
+    }
+}
+
+.catName {
+    font-weight: 600;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    flex: 1;
 }
 
-.podiumValue {
+.catNum {
     @include board.mono-time;
     font-size: dt.$font-size-xs;
+    text-align: right;
     color: var(--bs-secondary-color);
+}
+
+// Leader cell: who holds it, then the figure — the name carries the row,
+// the number closes it.
+.catLeader {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: dt.$spacing-sm;
+    min-width: 0;
+}
+
+.catLeaderName {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--bs-body-color);
+}
+
+.catLeaderValue {
+    @include board.mono-time;
+    font-size: dt.$font-size-xs;
+    color: var(--board-accent, var(--bs-primary));
+    flex-shrink: 0;
+}
+
+.catEmpty {
+    color: var(--bs-tertiary-color);
+}
+
+// ---- Recent races --------------------------------------------
+// Columns, not a prose tail floating at the far right of the panel.
+.recentRow {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) 4.5rem 5rem minmax(0, 1.1fr);
+    align-items: baseline;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-sm;
+    margin-inline: -#{dt.$spacing-sm};
+    border-radius: dt.$radius-sm;
+    font-size: dt.$font-size-sm;
+    transition: background-color dt.$transition-fast;
+
+    & + & {
+        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+    }
+
+    &:hover {
+        background: rgba(var(--bs-border-color-rgb), 0.18);
+    }
+
+    @media (max-width: 767.98px) {
+        grid-template-columns: minmax(0, 1fr) auto;
+
+        .recentWinner {
+            grid-column: span 2;
+        }
+    }
+}
+
+.recentHeadRow {
+    @include board.board-eyebrow;
+    border-top: none;
+    padding-bottom: dt.$spacing-xs;
+
+    &:hover {
+        background: none;
+    }
+}
+
+.recentDate,
+.recentCount {
+    @include board.mono-time;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+    text-align: right;
+}
+
+.recentWinner {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: dt.$spacing-sm;
+    min-width: 0;
+}
+
+.recentWinnerName {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+}
+
+.recentTime {
+    @include board.mono-time;
+    font-size: dt.$font-size-xs;
+    color: var(--board-accent, var(--bs-primary));
     flex-shrink: 0;
 }
