@@ -14,7 +14,12 @@ import { RacesSection } from './sections/races-section';
 import { TrendingSection } from './sections/trending-section';
 import { YourStatsSection } from './sections/your-stats-section';
 
-export default async function FrontPage({ statsUser }: { statsUser?: string }) {
+export default async function FrontPage({
+    searchParams,
+}: {
+    searchParams: Promise<{ statsUser?: string }>;
+}) {
+    const { statsUser } = await searchParams;
     const session = await getSession();
     const isLoggedIn = !!session?.user;
 
