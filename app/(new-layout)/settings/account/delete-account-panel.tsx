@@ -22,14 +22,20 @@ export function DeleteAccountPanel({ username }: { username: string }) {
                 setError(result.error);
                 return;
             }
-            // The backend already dropped the session. Clear the cookie and
-            // the client session state the same way the logout flow in
-            // UserMenu does, then leave the settings area — it requires an
-            // active session to render.
-            await fetch('/api/logout', { method: 'POST' });
-            clearSession();
-            router.push('/');
-            router.refresh();
+            // The backend already dropped the session, so the account is
+            // gone regardless of what happens next. Always finish clearing
+            // the client session and navigating away, even if this request
+            // fails (offline, DNS, an aborted navigation) — leaving the
+            // dialog open on a deleted account would just make a retry
+            // report "already gone" with no way forward. Do not make the
+            // steps below conditional on this call succeeding.
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+            } finally {
+                clearSession();
+                router.push('/');
+                router.refresh();
+            }
         });
     };
 
@@ -66,8 +72,8 @@ export function DeleteAccountPanel({ username }: { username: string }) {
                 title="Delete your account"
                 blurb={`Type ${username} to confirm. This cannot be undone.`}
                 fieldLabel="Your username"
-                placeholder={username}
-                minLength={username.length}
+                placeholder="Type it here"
+                minLength={1}
                 isValid={(value) =>
                     value.toLowerCase() === username.toLowerCase()
                 }
