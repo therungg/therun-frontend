@@ -124,15 +124,9 @@ export function VariablesGrid({
     const [busyGroup, setBusyGroup] = useState<string | null>(null);
     const [isBusy, startBusy] = useTransition();
 
-    const mains = useMemo(
-        () =>
-            categories
-                .filter((c) => !c.archived && (c.isMain ?? false))
-                .sort(compareByBoardOrder),
-        [categories],
-    );
-    // Level subcategories/filters are managed in the Levels menu, so this grid
-    // narrows to variables whose category is NOT in a level-kind group.
+    // A level is a category, and its subcategories are managed in the Levels
+    // menu — so this grid excludes level categories entirely, both as the
+    // columns you assign options to and as the subcategory rows themselves.
     const levelCategoryIds = useMemo(() => {
         const levelGroupIds = new Set(
             groups.filter((g) => g.kind === 'level').map((g) => g.id),
@@ -145,6 +139,18 @@ export function VariablesGrid({
                 .map((c) => c.id),
         );
     }, [groups, categories]);
+    const mains = useMemo(
+        () =>
+            categories
+                .filter(
+                    (c) =>
+                        !c.archived &&
+                        (c.isMain ?? false) &&
+                        !levelCategoryIds.has(c.id),
+                )
+                .sort(compareByBoardOrder),
+        [categories, levelCategoryIds],
+    );
     const fullGameVariables = useMemo(
         () => variables.filter((v) => !levelCategoryIds.has(v.categoryId)),
         [variables, levelCategoryIds],
