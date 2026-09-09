@@ -16,6 +16,7 @@ import type { ModVerb, RunActionTarget } from '../shared/action-model';
 import { RunActionDialog } from '../shared/run-action-dialog';
 import { loadModQueueAction } from './actions/load-mod-queue.action';
 import styles from './mod-queue-pane.module.scss';
+import { QueueVodReviewDialog } from './vod-review-dialog';
 
 interface Props {
     gameSlug: string;
@@ -73,6 +74,7 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
     const [dialog, setDialog] = useState<
         | { kind: 'action'; verb: ModVerb; target: RunActionTarget }
         | { kind: 'hide'; row: ModQueueItem }
+        | { kind: 'vod'; row: ModQueueItem; vodUrl: string }
         | null
     >(null);
     const [isLoading, startLoad] = useTransition();
@@ -508,16 +510,21 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
                                         <td>
                                             <div className={styles.meta}>
                                                 {row.vodUrl ? (
-                                                    <a
-                                                        href={row.vodUrl}
-                                                        target="_blank"
-                                                        rel="noreferrer"
+                                                    <button
+                                                        type="button"
                                                         className={
                                                             styles.vodPill
                                                         }
+                                                        onClick={() =>
+                                                            setDialog({
+                                                                kind: 'vod',
+                                                                row,
+                                                                vodUrl: row.vodUrl as string,
+                                                            })
+                                                        }
                                                     >
-                                                        Watch VOD
-                                                    </a>
+                                                        Review VOD
+                                                    </button>
                                                 ) : (
                                                     <span
                                                         className={
@@ -731,6 +738,18 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
                         dialog.verb === 'ban' ? 'category' : undefined
                     }
                     onDone={afterMutation}
+                    onClose={() => setDialog(null)}
+                />
+            )}
+            {dialog?.kind === 'vod' && (
+                <QueueVodReviewDialog
+                    gameSlug={gameSlug}
+                    row={dialog.row}
+                    vodUrl={dialog.vodUrl}
+                    // A saved retime changes the row's time, so the table
+                    // behind reloads — the dialog stays open on the run the
+                    // mod is still watching.
+                    onSaved={load}
                     onClose={() => setDialog(null)}
                 />
             )}

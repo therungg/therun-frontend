@@ -1,0 +1,60 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/board' as board;
+
+.head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: dt.$spacing-lg;
+    padding: dt.$spacing-lg dt.$spacing-xl;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+}
+
+.headText {
+    min-width: 0;
+}
+
+.eyebrow {
+    @include board.board-eyebrow;
+    display: block;
+}
+
+.title {
+    font-size: dt.$font-size-lg;
+    font-weight: 600;
+    margin: 2px 0 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.meta {
+    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-xs;
+    margin: 2px 0 0;
+}
+
+.headActions {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    flex-shrink: 0;
+}
+
+.openLink {
+    @include board.control-pill;
+    font-size: dt.$font-size-2xs;
+    text-decoration: none;
+    gap: 0.35rem;
+}
+
+.close {
+    @include board.control-pill;
+    font-size: dt.$font-size-2xs;
+}
+
+// The workbench brings its own layout; the dialog only gives it room and
+// keeps the scroll inside the panel.
+.body {
+    padding: dt.$spacing-lg dt.$spacing-xl dt.$spacing-xl;
+}
