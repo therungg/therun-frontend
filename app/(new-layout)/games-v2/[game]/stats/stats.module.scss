@@ -101,27 +101,59 @@
     margin-bottom: dt.$spacing-md;
 }
 
+// A segmented control, not three loose words: one recessed track, the
+// chosen segment raised onto the panel surface. Used by every graph
+// switch on the page so they read as the same control.
 .pillGroup {
-    display: flex;
-    gap: dt.$spacing-xs;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    border-radius: dt.$radius-md;
+    background: rgba(var(--bs-border-color-rgb), 0.22);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
     flex-wrap: wrap;
 }
 
 .pill {
     @include board.control-pill;
     font-size: dt.$font-size-2xs;
+    padding: 0.3rem 0.7rem;
+    border-radius: dt.$radius-sm;
+    white-space: nowrap;
+
+    &:hover {
+        background: rgba(var(--bs-border-color-rgb), 0.3);
+        color: var(--bs-emphasis-color);
+    }
+
+    @media (pointer: coarse) {
+        padding-block: dt.$spacing-md;
+    }
 }
 
 .pillActive {
-    @include board.control-pill-active;
+    @include board.control-pill;
     font-size: dt.$font-size-2xs;
-    // Themed boards drive the active pill off the board accent, so the
-    // control band matches the series it switches.
-    background: var(--board-accent-soft, rgba(var(--bs-primary-rgb), 0.1));
+    padding: 0.3rem 0.7rem;
+    border-radius: dt.$radius-sm;
+    white-space: nowrap;
+    font-weight: 600;
+    // The chosen segment sits on the panel's own surface with a hairline
+    // of the board accent under it — lit, not just tinted.
+    background: var(--board-surface-bg, var(--bs-body-bg));
     color: var(--board-accent, var(--bs-primary));
+    box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.25),
+        inset 0 -2px 0 var(--board-accent, var(--bs-primary));
 
     &:hover {
+        background: var(--board-surface-bg, var(--bs-body-bg));
         color: var(--board-accent, var(--bs-primary));
+    }
+
+    @media (pointer: coarse) {
+        padding-block: dt.$spacing-md;
     }
 }
 
@@ -190,6 +222,28 @@
     margin: 0;
 }
 
+.columnPlotWrap {
+    position: relative;
+}
+
+// Hover card: anchored to the hovered column, never to the cursor, so it
+// doesn't chase the pointer along a 170px column.
+.columnCard {
+    position: absolute;
+    bottom: calc(100% + #{dt.$spacing-xs});
+    transform: translateX(-50%);
+    z-index: 2;
+    pointer-events: none;
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-xs;
+    @include board.board-surface(dt.$spacing-xs dt.$spacing-md);
+    background: var(--board-surface-bg, var(--bs-body-bg));
+    box-shadow: dt.$shadow-md;
+    font-size: dt.$font-size-xs;
+    white-space: nowrap;
+}
+
 .columnPlot {
     list-style: none;
     margin: 0;
@@ -208,6 +262,7 @@
     align-items: flex-end;
     height: 100%;
     width: 100%;
+    transition: opacity dt.$transition-fast;
     // Twelve months across a wide panel turned into a wall of slabs;
     // capping the column keeps it a chart at any panel width.
     max-width: 2.75rem;
@@ -226,6 +281,30 @@
     }
 }
 
+// The pointer target is the full column height; a two-run month is 8px
+// of bar and nobody can point at that.
+.columnHit {
+    display: flex;
+    align-items: flex-end;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: default;
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 2px;
+    }
+}
+
+// Everything but the hovered column steps back, so the card and its
+// column are the only things being read.
+.columnDimmed {
+    opacity: 0.45;
+}
+
 .columnFill {
     display: block;
     width: 100%;
@@ -238,6 +317,19 @@
     .column:hover & {
         opacity: 1;
     }
+}
+
+.columnTickActive {
+    color: var(--bs-emphasis-color);
+}
+
+// Names the x axis once, under the ticks — the peak caption does the same
+// job for y.
+.columnAxis {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    text-align: center;
+    margin: dt.$spacing-xs 0 0;
 }
 
 .columnTicks {
@@ -287,6 +379,17 @@
 
 .barRow {
     display: grid;
+    border-radius: dt.$radius-sm;
+    // Pulled out to the cell edge so the hover band frames the whole row
+    // instead of a box drawn inside it.
+    padding: 2px dt.$spacing-xs;
+    margin-inline: -#{dt.$spacing-xs};
+    transition: background-color dt.$transition-fast;
+
+    &:hover {
+        background: rgba(var(--bs-border-color-rgb), 0.18);
+    }
+
     grid-template-columns: minmax(4.5rem, 8rem) minmax(0, 1fr) 3.25rem;
     align-items: center;
     gap: dt.$spacing-sm;

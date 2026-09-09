@@ -50,14 +50,22 @@ export function categoryRows(boards: BoardEntries[]): BreakdownRow[] {
 export interface Column {
     key: string;
     value: number;
+    /** Axis tick — short enough to sit under a column. */
     label: string;
-    tip: string;
+    /** What the column covers, spelled out for the hover card. */
+    range: string;
     /** A catch-all bucket whose width isn't to scale — drawn set apart. */
     overflow?: boolean;
 }
 
 const MONTH_LABEL = new Intl.DateTimeFormat([], {
     month: 'short',
+    timeZone: 'UTC',
+});
+
+const MONTH_FULL = new Intl.DateTimeFormat([], {
+    month: 'long',
+    year: 'numeric',
     timeZone: 'UTC',
 });
 
@@ -95,11 +103,15 @@ export function newRunnerColumns(
         );
         const key = d.toISOString().slice(0, 7);
         const value = counts.get(key) ?? 0;
+        // January carries the year, so a twelve-month axis says which one.
+        const isYearMark = d.getUTCMonth() === 0 || i === months - 1;
         out.push({
             key,
             value,
-            label: MONTH_LABEL.format(d),
-            tip: `${value} first ranked ${value === 1 ? 'run' : 'runs'} in ${key}`,
+            label: isYearMark
+                ? `${MONTH_LABEL.format(d)} '${String(d.getUTCFullYear()).slice(2)}`
+                : MONTH_LABEL.format(d),
+            range: MONTH_FULL.format(d),
         });
     }
     return out;
@@ -198,9 +210,9 @@ export function timeHistogram(
             value,
             overflow,
             label: overflow ? 'slower' : format(from),
-            tip: overflow
-                ? `${value} runs slower than ${format(last)}`
-                : `${value} runs from ${format(from)} to ${format(from + step)}`,
+            range: overflow
+                ? `slower than ${format(last)}`
+                : `${format(from)} – ${format(from + step)}`,
         };
     });
 }

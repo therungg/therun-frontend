@@ -361,13 +361,16 @@ export default async function GameStatsPage({ params }: PageProps) {
                     <div className={styles.sectionHead}>
                         <span className={styles.sectionLabel}>New runners</span>
                         <span className={styles.sectionNote}>
-                            first ranked run, by month
+                            last 12 months
                         </span>
                     </div>
                     <ColumnChart
                         columns={newRunners}
-                        tickEvery={2}
+                        // Every third month, so the January that carries
+                        // the year change actually gets a tick.
+                        tickEvery={3}
                         unit="runners"
+                        axisLabel="month of a runner's first ranked run"
                         empty="No first runs dated in the last year."
                     />
                 </section>

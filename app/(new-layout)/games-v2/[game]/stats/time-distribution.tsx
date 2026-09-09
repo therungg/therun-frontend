@@ -56,11 +56,16 @@ export function TimeDistribution({ boards }: { boards: DistributionBoard[] }) {
                     ))}
                 </div>
                 <span className={styles.chartMeta}>
-                    {active.runs.toLocaleString()} runs
+                    {active.runs.toLocaleString()} ranked runs
                     {active.median ? ` · median ${active.median}` : ''}
                 </span>
             </div>
-            <ColumnChart columns={active.columns} tickEvery={3} unit="runs" />
+            <ColumnChart
+                columns={active.columns}
+                tickEvery={2}
+                unit="runs"
+                axisLabel="PB time — each column is one bucket, faster on the left"
+            />
         </div>
     );
 }
