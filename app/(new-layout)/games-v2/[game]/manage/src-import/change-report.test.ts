@@ -30,6 +30,7 @@ const base: SrcImportJob = {
     importedRunsCount: 0,
     importSkippedCount: 0,
     configAppliedAt: '2026-09-03T10:01:00Z',
+    configThemeAppliedAt: null,
     runsImportedAt: null,
     srcOnlyLeaderboard: false,
     kind: 'settings',

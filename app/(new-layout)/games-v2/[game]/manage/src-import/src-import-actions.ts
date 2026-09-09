@@ -1,5 +1,6 @@
 'use server';
 
+import { updateTag } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
 import { ApiError } from '~src/lib/api-client';
 import {
@@ -101,5 +102,22 @@ export async function startSrcImportAction(input: {
             input.url.trim(),
             input.kind,
         );
+    });
+}
+
+/**
+ * Drops the cached game metadata so the next render reads the theme the import
+ * just wrote. `updateTag`, not `revalidateTag`: the caller refreshes straight
+ * after and has to see the new value, not the stale one a background
+ * revalidation would still be serving.
+ */
+export async function refreshGameThemeAction(input: {
+    gameId: number;
+    gameSlug: string;
+}): Promise<ActionResult<null>> {
+    return run(async () => {
+        await requireBoardMod(input.gameSlug);
+        updateTag(`game-meta:${input.gameId}`);
+        return null;
     });
 }

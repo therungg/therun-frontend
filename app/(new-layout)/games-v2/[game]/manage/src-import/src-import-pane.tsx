@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 import type {
@@ -11,7 +12,10 @@ import { ImportOptions, resolveCommitFlags } from './import-options';
 import { ImportSection } from './import-section';
 import { LinkCard } from './link-card';
 import styles from './src-import.module.scss';
-import { getSrcImportJobAction } from './src-import-actions';
+import {
+    getSrcImportJobAction,
+    refreshGameThemeAction,
+} from './src-import-actions';
 import { isSettled, useSrcImportJob } from './use-src-import-job';
 
 interface Props {
@@ -96,6 +100,35 @@ export function ImportSections({ gameId, gameSlug, isAdmin }: Props) {
     const refreshAll = useCallback(async () => {
         await Promise.all([settingsRefresh(), runsRefresh(), readAnyOnce()]);
     }, [settingsRefresh, runsRefresh, readAnyOnce]);
+
+    // apply-config writes the theme before anything else and stamps the job,
+    // so this flips minutes before the import finishes. Repaint the page the
+    // moment it does: drop the cached game metadata, then re-render the server
+    // tree, which is what puts the board's colors on the console chrome.
+    //
+    // Only a stamp that appears while the pane is open counts. The first
+    // loaded job seeds the ref instead of firing — otherwise opening the pane
+    // on a board imported last week would refresh for a theme already on
+    // screen.
+    const router = useRouter();
+    const themeStamp = settings.job?.configThemeAppliedAt ?? null;
+    const seenThemeStamp = useRef<string | null | undefined>(undefined);
+    const settingsLoading = settings.loading;
+    useEffect(() => {
+        if (settingsLoading) return;
+        if (seenThemeStamp.current === undefined) {
+            seenThemeStamp.current = themeStamp;
+            return;
+        }
+        if (themeStamp === null || themeStamp === seenThemeStamp.current) {
+            return;
+        }
+        seenThemeStamp.current = themeStamp;
+        void (async () => {
+            await refreshGameThemeAction({ gameId, gameSlug });
+            router.refresh();
+        })();
+    }, [themeStamp, settingsLoading, gameId, gameSlug, router]);
 
     const loaded = !settings.loading && !runs.loading && !anyLoading;
     const unlinked =

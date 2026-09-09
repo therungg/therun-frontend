@@ -32,6 +32,7 @@ const job = (over: Partial<SrcImportJob>): SrcImportJob => ({
     importedRunsCount: 0,
     importSkippedCount: 0,
     configAppliedAt: null,
+    configThemeAppliedAt: null,
     runsImportedAt: null,
     srcOnlyLeaderboard: false,
     kind: 'settings',

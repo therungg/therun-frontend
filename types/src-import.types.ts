@@ -49,6 +49,12 @@ export interface SrcImportJob {
     importedRunsCount: number;
     importSkippedCount: number;
     configAppliedAt: string | null;
+    /**
+     * When this job wrote the board theme — stamped while the job is still
+     * applying, well before `configAppliedAt`, because apply-config does the
+     * theme first. Null when the job applied no theme.
+     */
+    configThemeAppliedAt: string | null;
     runsImportedAt: string | null;
     /** "Only use the speedrun.com leaderboard" — set via POST .../src-only, before import-runs runs. */
     srcOnlyLeaderboard: boolean;
