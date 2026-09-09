@@ -106,14 +106,57 @@ export function newRunnerColumns(
 }
 
 /**
- * PB spread for one board. The slowest 5% set their own bucket instead of
+ * Bucket widths a runner would actually name. A histogram cut into
+ * fourteenths of a range lands on boundaries like 16:51 — arithmetically
+ * correct, unreadable as a scale — so the width is snapped to the next
+ * step up this ladder instead.
+ */
+const STEP_LADDER_MS = [
+    100,
+    250,
+    500,
+    1_000,
+    2_000,
+    5_000,
+    10_000,
+    15_000,
+    30_000,
+    60_000,
+    2 * 60_000,
+    5 * 60_000,
+    10 * 60_000,
+    15 * 60_000,
+    30 * 60_000,
+    60 * 60_000,
+    2 * 60 * 60_000,
+    6 * 60 * 60_000,
+    12 * 60 * 60_000,
+    24 * 60 * 60_000,
+];
+
+/** Widest bucket count worth drawing before the next ladder step is picked. */
+const MAX_BUCKETS = 18;
+
+function niceStep(span: number, target: number): number {
+    const raw = span / target;
+    return (
+        STEP_LADDER_MS.find((s) => s >= raw) ??
+        STEP_LADDER_MS[STEP_LADDER_MS.length - 1]
+    );
+}
+
+/**
+ * PB spread for one board, cut on round boundaries: the bucket width comes
+ * off the ladder above and the first bucket starts on a multiple of it, so
+ * the axis reads 15:00 / 16:00 / 17:00 rather than wherever the fastest run
+ * happened to land. The slowest 5% share one catch-all bucket instead of
  * their own axis — one 40-hour meme run otherwise flattens every real
  * column to a hairline.
  */
 export function timeHistogram(
     entries: LeaderboardExportEntry[],
     format: (ms: number) => string,
-    buckets = 14,
+    target = 12,
 ): Column[] {
     const times = entries
         .map((e) => e.time)
@@ -122,28 +165,42 @@ export function timeHistogram(
     if (times.length < 5) return [];
 
     const min = times[0];
-    const cap = times[Math.floor(times.length * 0.95)] ?? times.at(-1) ?? min;
+    const cap =
+        times[Math.floor(times.length * 0.95)] ?? times[times.length - 1];
     if (cap <= min) return [];
-    const step = (cap - min) / buckets;
 
-    const counts = new Array<number>(buckets + 1).fill(0);
+    let step = niceStep(cap - min, target);
+    let start = Math.floor(min / step) * step;
+    let count = Math.ceil((cap - start) / step);
+    // Snapping the start outward can push the count past what fits; take
+    // the next width up until it does.
+    while (count > MAX_BUCKETS) {
+        const next = STEP_LADDER_MS.find((s) => s > step);
+        if (!next) break;
+        step = next;
+        start = Math.floor(min / step) * step;
+        count = Math.ceil((cap - start) / step);
+    }
+    count = Math.max(1, Math.min(count, MAX_BUCKETS));
+
+    const last = start + count * step;
+    const counts = new Array<number>(count + 1).fill(0);
     for (const t of times) {
-        const i = t >= cap ? buckets : Math.floor((t - min) / step);
-        counts[Math.min(i, buckets)]++;
+        const i = t >= last ? count : Math.floor((t - start) / step);
+        counts[Math.max(0, Math.min(i, count))]++;
     }
 
     return counts.map((value, i) => {
-        const from = min + step * i;
-        const to = from + step;
-        const overflow = i === buckets;
+        const from = start + step * i;
+        const overflow = i === count;
         return {
             key: String(i),
             value,
             overflow,
             label: overflow ? 'slower' : format(from),
             tip: overflow
-                ? `${value} runs slower than ${format(cap)}`
-                : `${value} runs between ${format(from)} and ${format(to)}`,
+                ? `${value} runs slower than ${format(last)}`
+                : `${value} runs from ${format(from)} to ${format(from + step)}`,
         };
     });
 }
