@@ -8,6 +8,7 @@ import {
     Key,
     Palette,
     PersonCircle,
+    ShieldExclamation,
 } from 'react-bootstrap-icons';
 import type { NavGroup } from '~src/components/console-chrome/nav-types';
 
@@ -15,6 +16,7 @@ export type SettingsItemId =
     | 'profile'
     | 'preferences'
     | 'sync'
+    | 'account'
     | 'patreon'
     | 'appearance'
     | 'livesplit'
@@ -28,6 +30,7 @@ export const SETTINGS_GROUPS: NavGroup[] = [
             { id: 'profile', label: 'Profile' },
             { id: 'preferences', label: 'General preferences' },
             { id: 'sync', label: 'Run sync' },
+            { id: 'account', label: 'Account' },
         ],
     },
     {
@@ -52,6 +55,7 @@ export const SETTINGS_ICONS: Record<SettingsItemId, IconType> = {
     profile: PersonCircle,
     preferences: Gear,
     sync: ArrowRepeat,
+    account: ShieldExclamation,
     patreon: Heart,
     appearance: Palette,
     livesplit: Key,
