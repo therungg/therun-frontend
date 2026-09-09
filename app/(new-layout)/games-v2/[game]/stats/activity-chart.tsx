@@ -1,14 +1,14 @@
 'use client';
 
 import { ResponsiveLine } from '@nivo/line';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { GameActivityPoint } from '~src/lib/game-activity';
 import styles from './stats.module.scss';
 
-// Same series hue the frontpage's live-count chart uses — the site's one
-// chart color. Identity is carried by the metric toggle, not a legend
+// The site's one chart hue, used only until the board's own accent is
+// read off the DOM. Identity is carried by the metric toggle, not a legend
 // (single series; the section title names it).
-const SERIES_COLOR = '#608C59';
+const SERIES_FALLBACK = '#608C59';
 
 const METRICS = [
     {
@@ -100,6 +100,19 @@ function zeroFill(
 export function ActivityChart({ d30, d90, y1 }: Props) {
     const [metricKey, setMetricKey] = useState<MetricKey>('playtime');
     const [periodKey, setPeriodKey] = useState<PeriodKey>('d90');
+    // nivo writes the color into SVG presentation attributes, where a
+    // `var()` never resolves — so the themed accent is read off the
+    // rendered node instead of handed to nivo as a custom property.
+    const wrapRef = useRef<HTMLDivElement>(null);
+    const [seriesColor, setSeriesColor] = useState(SERIES_FALLBACK);
+    useEffect(() => {
+        const el = wrapRef.current;
+        if (!el) return;
+        const accent = getComputedStyle(el)
+            .getPropertyValue('--board-accent')
+            .trim();
+        if (accent) setSeriesColor(accent);
+    }, []);
 
     const metric = METRICS.find((m) => m.key === metricKey) ?? METRICS[0];
     const period = PERIODS.find((p) => p.key === periodKey) ?? PERIODS[1];
@@ -127,7 +140,7 @@ export function ActivityChart({ d30, d90, y1 }: Props) {
         .map((p) => p.date);
 
     return (
-        <div>
+        <div ref={wrapRef}>
             <div className={styles.chartControls}>
                 <div
                     className={styles.pillGroup}
@@ -187,7 +200,7 @@ export function ActivityChart({ d30, d90, y1 }: Props) {
                         enableArea
                         areaOpacity={0.12}
                         lineWidth={2}
-                        colors={[SERIES_COLOR]}
+                        colors={[seriesColor]}
                         enablePoints={false}
                         enableGridX={false}
                         enableGridY
@@ -217,7 +230,7 @@ export function ActivityChart({ d30, d90, y1 }: Props) {
                             },
                             crosshair: {
                                 line: {
-                                    stroke: SERIES_COLOR,
+                                    stroke: seriesColor,
                                     strokeWidth: 1,
                                     strokeOpacity: 0.5,
                                 },

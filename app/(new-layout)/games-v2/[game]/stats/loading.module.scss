@@ -4,8 +4,24 @@
 .page {
     display: flex;
     flex-direction: column;
-    gap: dt.$spacing-lg;
+    gap: dt.$spacing-2xl;
     padding-top: dt.$spacing-xl;
+}
+
+.panel {
+    @include board.board-surface(dt.$spacing-2xl);
+}
+
+.strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr));
+    gap: dt.$spacing-2xl;
+}
+
+.figure {
+    @include board.board-skeleton;
+    height: 3.5rem;
+    border-radius: dt.$radius-sm;
 }
 
 .chart,

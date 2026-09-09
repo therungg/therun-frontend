@@ -22,6 +22,9 @@ const METRICS = [
 type PeriodKey = (typeof PERIODS)[number]['key'];
 type MetricKey = (typeof METRICS)[number]['key'];
 
+/** Rows shown before the expander; the pool behind it is 25 deep. */
+const COLLAPSED_ROWS = 10;
+
 interface Props {
     allTime: TopRunnerRow[];
     d90: TopRunnerRow[];
@@ -29,18 +32,28 @@ interface Props {
 }
 
 /**
- * The overview's Top-runners section at full width: deeper (25 rows) and
- * re-rankable by metric, not just by period. Sorting happens within the
- * fetched pool (the backend ranks that pool by playtime), so a runner
- * outside the playtime top-100 can't appear under Attempts — acceptable
- * skew for a leaderboard this shape.
+ * The overview's Top-runners section at full width: re-rankable by metric,
+ * not just by period, and ten deep until asked for more — a 25-row wall was
+ * the tallest thing on the page and the tail is never the point. Sorting
+ * happens within the fetched pool (the backend ranks that pool by playtime),
+ * so a runner outside the playtime top-100 can't appear under Attempts —
+ * acceptable skew for a leaderboard this shape.
  */
 export function TopRunnersTable({ allTime, d90, d30 }: Props) {
     const [period, setPeriod] = useState<PeriodKey>('all');
     const [metric, setMetric] = useState<MetricKey>('playtime');
+    const [expanded, setExpanded] = useState(false);
 
     const pool = period === 'all' ? allTime : period === 'd90' ? d90 : d30;
-    const rows = [...pool].sort((a, b) => b[metric] - a[metric]);
+    const sorted = [...pool].sort((a, b) => b[metric] - a[metric]);
+    const rows = expanded ? sorted : sorted.slice(0, COLLAPSED_ROWS);
+    const hidden = sorted.length - rows.length;
+
+    // The column you ranked by is the one to read; the other two are context.
+    const numClass = (key: MetricKey) =>
+        key === metric
+            ? `${overviewStyles.runnersNum} ${styles.runnersNumActive}`
+            : overviewStyles.runnersNum;
 
     return (
         <div>
@@ -93,55 +106,69 @@ export function TopRunnersTable({ allTime, d90, d30 }: Props) {
                     No recorded activity in this period.
                 </p>
             ) : (
-                <div className={overviewStyles.runnersTable}>
-                    <div
-                        className={`${overviewStyles.runnersRow} ${overviewStyles.runnersHeadRow}`}
-                        aria-hidden
-                    >
-                        <span />
-                        <span>Runner</span>
-                        <span className={overviewStyles.runnersNum}>Hours</span>
-                        <span className={overviewStyles.runnersNum}>
-                            Attempts
-                        </span>
-                        <span className={overviewStyles.runnersNum}>PBs</span>
-                    </div>
-                    {rows.map((r, i) => (
+                <>
+                    <div className={overviewStyles.runnersTable}>
                         <div
-                            key={r.username}
-                            className={overviewStyles.runnersRow}
+                            className={`${overviewStyles.runnersRow} ${overviewStyles.runnersHeadRow}`}
+                            aria-hidden
                         >
-                            <span
-                                className={`${overviewStyles.runnersRank} ${
-                                    i === 0
-                                        ? overviewStyles.rankGoldNum
-                                        : i === 1
-                                          ? overviewStyles.rankSilver
-                                          : i === 2
-                                            ? overviewStyles.rankBronze
-                                            : ''
-                                }`}
-                            >
-                                {i + 1}
+                            <span />
+                            <span>Runner</span>
+                            <span className={numClass('playtime')}>Hours</span>
+                            <span className={numClass('attempts')}>
+                                Attempts
                             </span>
-                            <span className={overviewStyles.runnersName}>
-                                <UserLink
-                                    username={r.username}
-                                    url={undefined}
-                                />
-                            </span>
-                            <span className={overviewStyles.runnersNum}>
-                                {formatHours(r.playtime)}
-                            </span>
-                            <span className={overviewStyles.runnersNum}>
-                                {formatCount(r.attempts)}
-                            </span>
-                            <span className={overviewStyles.runnersNum}>
-                                {r.pbs > 0 ? formatCount(r.pbs) : '—'}
-                            </span>
+                            <span className={numClass('pbs')}>PBs</span>
                         </div>
-                    ))}
-                </div>
+                        {rows.map((r, i) => (
+                            <div
+                                key={r.username}
+                                className={overviewStyles.runnersRow}
+                            >
+                                <span
+                                    className={`${overviewStyles.runnersRank} ${
+                                        i === 0
+                                            ? overviewStyles.rankGoldNum
+                                            : i === 1
+                                              ? overviewStyles.rankSilver
+                                              : i === 2
+                                                ? overviewStyles.rankBronze
+                                                : ''
+                                    }`}
+                                >
+                                    {i + 1}
+                                </span>
+                                <span className={overviewStyles.runnersName}>
+                                    <UserLink
+                                        username={r.username}
+                                        url={undefined}
+                                    />
+                                </span>
+                                <span className={numClass('playtime')}>
+                                    {formatHours(r.playtime)}
+                                </span>
+                                <span className={numClass('attempts')}>
+                                    {formatCount(r.attempts)}
+                                </span>
+                                <span className={numClass('pbs')}>
+                                    {r.pbs > 0 ? formatCount(r.pbs) : '—'}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                    {(hidden > 0 || expanded) && (
+                        <button
+                            type="button"
+                            className={styles.moreButton}
+                            aria-expanded={expanded}
+                            onClick={() => setExpanded((v) => !v)}
+                        >
+                            {expanded
+                                ? 'Show fewer'
+                                : `Show all ${sorted.length}`}
+                        </button>
+                    )}
+                </>
             )}
         </div>
     );

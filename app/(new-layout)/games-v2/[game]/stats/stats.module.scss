@@ -1,16 +1,31 @@
 @use '../../../styles/design-tokens' as dt;
 @use '../../../styles/board' as board;
 
-.section {
+// Every figure on this page sits on a panel — the same surface the overview
+// plaques and the sidebar use. Sections floating straight on the canvas were
+// what made this tab read as a different site.
+.panel {
+    @include board.board-surface(dt.$spacing-2xl);
     margin-bottom: dt.$spacing-2xl;
+
+    @media (max-width: 575.98px) {
+        padding: dt.$spacing-lg;
+    }
 }
 
 .sectionHead {
     @include board.board-section-head;
+    margin-top: 0;
 }
 
 .sectionLabel {
     @include board.board-eyebrow;
+}
+
+// Quiet right-hand rider on a section head: the denominator, never a control.
+.sectionNote {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
 }
 
 .sectionEmpty {
@@ -19,12 +34,59 @@
     margin: 0;
 }
 
-// Two-column band for the smaller breakdowns (platforms/emulator |
-// countries); collapses on narrow viewports.
-.breakdownGrid {
+// ---- Layout bands --------------------------------------------
+// Two panels side by side once there's room for both to stay readable.
+.pairGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(26rem, 100%), 1fr));
     gap: dt.$spacing-2xl;
+}
+
+// ---- At-a-glance figures -------------------------------------
+.statStrip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr));
+    gap: dt.$spacing-lg dt.$spacing-2xl;
+    margin: 0;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    min-width: 0;
+
+    // A rule between figures, not a box around each — the panel is the box.
+    & + & {
+        padding-left: dt.$spacing-2xl;
+        border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.3);
+    }
+
+    @media (max-width: 767.98px) {
+        & + & {
+            padding-left: 0;
+            border-left: none;
+        }
+    }
+}
+
+.statLabel {
+    @include board.board-eyebrow;
+}
+
+.statValue {
+    @include board.mono-time;
+    font-size: dt.$font-size-2xl;
+    font-weight: 600;
+    line-height: 1.1;
+    margin: 0;
+}
+
+.statMeta {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    margin: 0;
+    text-wrap: balance;
 }
 
 // ---- Chart / table controls ----------------------------------
@@ -53,6 +115,20 @@
 .pillActive {
     @include board.control-pill-active;
     font-size: dt.$font-size-2xs;
+    // Themed boards drive the active pill off the board accent, so the
+    // control band matches the series it switches.
+    background: var(--board-accent-soft, rgba(var(--bs-primary-rgb), 0.1));
+    color: var(--board-accent, var(--bs-primary));
+
+    &:hover {
+        color: var(--board-accent, var(--bs-primary));
+    }
+}
+
+.chartMeta {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    font-variant-numeric: tabular-nums;
 }
 
 .chartFrame {
@@ -71,7 +147,101 @@
     color: var(--bs-secondary-color);
 }
 
+// ---- Top runners ---------------------------------------------
+// The column you ranked by reads as the figure; the others stay context.
+.runnersNumActive {
+    color: var(--bs-emphasis-color);
+    font-weight: 600;
+}
+
+// Expander under a capped table: a quiet full-width affordance, not a button
+// that competes with the pills above it.
+.moreButton {
+    @include board.control-pill;
+    width: 100%;
+    justify-content: center;
+    margin-top: dt.$spacing-sm;
+    font-size: dt.$font-size-2xs;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+    border-radius: 0 0 dt.$radius-sm dt.$radius-sm;
+}
+
+// ---- Column chart (ordered series) ---------------------------
+.columnChart {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: flex-end;
+    gap: dt.$spacing-xs;
+    height: 180px;
+}
+
+.column {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    gap: dt.$spacing-xs;
+}
+
+.columnTrack {
+    display: flex;
+    align-items: flex-end;
+    height: 100%;
+    background: linear-gradient(
+        to top,
+        rgba(var(--bs-border-color-rgb), 0.18),
+        transparent 60%
+    );
+    border-radius: dt.$radius-sm dt.$radius-sm 0 0;
+}
+
+.columnFill {
+    display: block;
+    width: 100%;
+    min-height: 1px;
+    border-radius: dt.$radius-sm dt.$radius-sm 0 0;
+    background: var(--board-accent, var(--bs-primary));
+    opacity: 0.85;
+    transition: opacity dt.$transition-fast;
+
+    .column:hover & {
+        opacity: 1;
+    }
+}
+
+.columnTick {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    min-height: 1em;
+}
+
 // ---- Breakdown bars ------------------------------------------
+// Four small multiples in one panel; each keeps a label, none gets a head.
+.breakdownGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(17rem, 100%), 1fr));
+    gap: dt.$spacing-2xl;
+}
+
+.breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    min-width: 0;
+}
+
+.breakdownLabel {
+    font-size: dt.$font-size-2xs;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+}
+
 .barList {
     list-style: none;
     margin: 0;
@@ -82,7 +252,7 @@
 
 .barRow {
     display: grid;
-    grid-template-columns: minmax(6rem, 11rem) minmax(0, 1fr) 4.5rem;
+    grid-template-columns: minmax(5rem, 9rem) minmax(0, 1fr) 4rem;
     align-items: center;
     gap: dt.$spacing-md;
     font-size: dt.$font-size-sm;
@@ -114,7 +284,7 @@
     // 4px-radius data end on the value side only — the bar grows from the
     // track's left baseline.
     border-radius: 0 dt.$radius-sm dt.$radius-sm 0;
-    background: var(--bs-primary);
+    background: var(--board-accent, var(--bs-primary));
 }
 
 .barCount {
@@ -124,9 +294,56 @@
     color: var(--bs-secondary-color);
 }
 
-// Site-share footnote under the last section.
-.footnote {
-    color: var(--bs-tertiary-color);
+// ---- Two-way split -------------------------------------------
+.split {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+.splitTrack {
+    display: block;
+    height: 10px;
+    border-radius: dt.$radius-sm;
+    background: rgba(var(--bs-border-color-rgb), 0.35);
+    overflow: hidden;
+}
+
+.splitFill {
+    display: block;
+    height: 100%;
+    background: var(--board-accent, var(--bs-primary));
+}
+
+.splitLegend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-md;
+    font-size: dt.$font-size-sm;
+}
+
+.splitItem {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    color: var(--bs-secondary-color);
+}
+
+.splitSwatch {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+}
+
+.splitSwatchA {
+    background: var(--board-accent, var(--bs-primary));
+}
+
+.splitSwatchB {
+    background: rgba(var(--bs-border-color-rgb), 0.55);
+}
+
+.splitValue {
+    @include board.mono-time;
     font-size: dt.$font-size-xs;
-    margin: dt.$spacing-2xl 0 0;
 }

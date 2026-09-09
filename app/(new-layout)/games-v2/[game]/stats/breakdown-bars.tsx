@@ -10,7 +10,7 @@ export interface BreakdownRow {
 
 /**
  * Magnitude as bar length, one hue, direct labels — the small-multiple
- * breakdown form (platforms, emulator split, countries). Server-rendered:
+ * breakdown form (platforms, categories, countries). Server-rendered:
  * nothing here is interactive.
  */
 export function BreakdownBars({ rows }: { rows: BreakdownRow[] }) {
@@ -40,5 +40,55 @@ export function BreakdownBars({ rows }: { rows: BreakdownRow[] }) {
                 </li>
             ))}
         </ul>
+    );
+}
+
+/**
+ * A two-way split is one bar, not a two-row ranking: the whole is the
+ * track, the accent is the first share, and both shares are labelled
+ * under it with their percentage.
+ */
+export function StackedSplit({
+    a,
+    b,
+}: {
+    a: { label: string; count: number };
+    b: { label: string; count: number };
+}) {
+    const total = a.count + b.count;
+    if (total === 0) {
+        return <p className={styles.sectionEmpty}>No data recorded.</p>;
+    }
+    const pct = (n: number) => (n / total) * 100;
+    const fmt = (n: number) =>
+        `${pct(n) >= 1 ? Math.round(pct(n)) : pct(n).toFixed(1)}%`;
+
+    return (
+        <div className={styles.split}>
+            <span className={styles.splitTrack} aria-hidden>
+                <span
+                    className={styles.splitFill}
+                    style={{ width: `${pct(a.count)}%` }}
+                />
+            </span>
+            <div className={styles.splitLegend}>
+                <span className={styles.splitItem}>
+                    <span
+                        className={`${styles.splitSwatch} ${styles.splitSwatchA}`}
+                        aria-hidden
+                    />
+                    {a.label}
+                    <span className={styles.splitValue}>{fmt(a.count)}</span>
+                </span>
+                <span className={styles.splitItem}>
+                    <span
+                        className={`${styles.splitSwatch} ${styles.splitSwatchB}`}
+                        aria-hidden
+                    />
+                    {b.label}
+                    <span className={styles.splitValue}>{fmt(b.count)}</span>
+                </span>
+            </div>
+        </div>
     );
 }
