@@ -1,6 +1,20 @@
 @use '../../../styles/design-tokens' as dt;
 @use '../../../styles/board' as board;
 
+// Same rule as the Stats tab: a figure on this page sits on a panel, the
+// surface the rest of the board uses. Sections floating on the canvas are
+// what made these tabs read as a different site.
+.panel {
+    @include board.board-surface(dt.$spacing-2xl);
+    margin-bottom: dt.$spacing-2xl;
+
+    @media (max-width: 575.98px) {
+        padding: dt.$spacing-lg;
+    }
+}
+
+// The category wall is its own surface — cards on the canvas, never a
+// panel inside a panel.
 .section {
     margin-bottom: dt.$spacing-2xl;
 }
@@ -19,16 +33,60 @@
     margin: 0;
 }
 
-// Race-scale strip: the hero band's cell vocabulary, one row under the tabs.
-.raceBand {
+// ---- At-a-glance figures -------------------------------------
+.statStrip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr));
+    gap: dt.$spacing-lg dt.$spacing-2xl;
+    margin: 0;
+}
+
+.stat {
     display: flex;
-    align-items: stretch;
-    flex-wrap: wrap;
-    gap: dt.$spacing-sm dt.$spacing-xl;
-    margin-bottom: dt.$spacing-2xl;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    min-width: 0;
+
+    // A rule between figures, not a box around each — the panel is the box.
+    & + & {
+        padding-left: dt.$spacing-2xl;
+        border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.3);
+    }
+
+    @media (max-width: 767.98px) {
+        & + & {
+            padding-left: 0;
+            border-left: none;
+        }
+    }
+}
+
+.statLabel {
+    @include board.board-eyebrow;
+}
+
+.statValue {
+    @include board.mono-time;
+    font-size: dt.$font-size-2xl;
+    font-weight: 600;
+    line-height: 1.1;
+    margin: 0;
+}
+
+.statMeta {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    margin: 0;
+    text-wrap: balance;
 }
 
 // ---- Race rows (happening now / recent) ----------------------
+// A full-width panel is not a full-width list: stretched to 1600px the
+// race name and its outcome sat a screen apart.
+.listWrap {
+    max-width: 60rem;
+}
+
 .raceList {
     list-style: none;
     margin: 0;
@@ -40,8 +98,15 @@
     align-items: baseline;
     justify-content: space-between;
     gap: dt.$spacing-md;
-    padding-block: dt.$spacing-sm;
+    padding: dt.$spacing-sm;
+    margin-inline: -#{dt.$spacing-sm};
+    border-radius: dt.$radius-sm;
     font-size: dt.$font-size-sm;
+    transition: background-color dt.$transition-fast;
+
+    &:hover {
+        background: rgba(var(--bs-border-color-rgb), 0.18);
+    }
 
     & + & {
         border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
@@ -82,6 +147,27 @@
 
 .categoryCard {
     @include board.board-surface(dt.$spacing-md dt.$spacing-lg);
+    transition: border-color dt.$transition-fast;
+
+    &:hover {
+        border-color: var(--bs-border-color);
+    }
+}
+
+// Title and race count share a baseline: the count is the card's scale
+// and belongs next to its name, not buried in the meta line.
+.categoryHead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: dt.$spacing-sm;
+}
+
+.categoryCount {
+    @include board.mono-time;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    flex-shrink: 0;
 }
 
 .categoryTitle {
@@ -99,7 +185,9 @@
 
 .podia {
     display: flex;
-    gap: dt.$spacing-2xl;
+    // 2xl between two ten-rem columns pushed the second podium onto its
+    // own line inside a card that had room for both.
+    gap: dt.$spacing-lg;
     flex-wrap: wrap;
 }
 

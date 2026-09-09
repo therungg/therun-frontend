@@ -40,8 +40,10 @@ interface PageProps {
 }
 
 // Per-category leaderboard fan-out cap, same spirit as the Stats tab's
-// export cap.
-const MAX_CATEGORY_BOARDS = 8;
+// export cap. Twelve rather than eight: at eight, a game with nine raced
+// categories showed "showing 8 of 9" and hid one for no saving worth
+// having.
+const MAX_CATEGORY_BOARDS = 12;
 
 /** The race API keys on the game's display name, percent-encoded. */
 function raceGameKey(display: string): string {
@@ -155,15 +157,38 @@ export default async function GameRacesPage({ params }: PageProps) {
     ]);
 
     const s = raceStats.stats;
-    const bandCells = [
-        { label: 'Races', value: s.totalRaces.toLocaleString() },
+    const bandCells: { label: string; value: ReactNode; meta: string }[] = [
+        {
+            label: 'Races',
+            value: s.totalRaces.toLocaleString(),
+            meta: `across ${raceStats.categories.length} raced ${
+                raceStats.categories.length === 1 ? 'category' : 'categories'
+            }`,
+        },
         {
             label: 'Finish rate',
             value: `${Math.round(s.finishPercentage * 100)}%`,
+            meta: 'of everyone who entered reached the end',
         },
-        { label: 'Hours raced', value: formatHours(s.totalRaceTime) },
+        {
+            label: 'Hours raced',
+            value: formatHours(s.totalRaceTime),
+            meta: 'summed over every racer in every race',
+        },
+        {
+            label: 'Average race',
+            value: (
+                <DurationToFormatted duration={Math.round(s.averageRaceTime)} />
+            ),
+            meta: 'mean over the races that finished',
+        },
     ];
     const visibleActive = (activeRaces ?? []).filter(
+        (r) => !r.isTestRace && r.visible !== false,
+    );
+    // The finished list was showing test races — the live list has always
+    // filtered them, this one never did.
+    const finishedRaces = (recentRaces?.items ?? []).filter(
         (r) => !r.isTestRace && r.visible !== false,
     );
 
@@ -181,38 +206,30 @@ export default async function GameRacesPage({ params }: PageProps) {
                 activity={toSparklineSeries(activity90, 90)}
             />
             <ViewTabs gameSlug={resolvedGame.name} showRaces />
-            {/* Race-scale strip in the hero band's own vocabulary — the page's
-                subject stated in numbers before any list. */}
-            <div className={styles.raceBand}>
-                {bandCells.map((c) => (
-                    <div key={c.label} className={gamePageStyles.statCell}>
-                        <span className={gamePageStyles.statBandValue}>
-                            {c.value}
-                        </span>
-                        <span className={gamePageStyles.statBandLabel}>
-                            {c.label}
-                        </span>
-                    </div>
-                ))}
-                <div className={gamePageStyles.statCell}>
-                    <span className={gamePageStyles.statBandValue}>
-                        <DurationToFormatted
-                            duration={Math.round(s.averageRaceTime)}
-                        />
-                    </span>
-                    <span className={gamePageStyles.statBandLabel}>
-                        Avg race
-                    </span>
+            {/* The page's subject stated in numbers before any list —
+                rates and means, which only read next to what they are of. */}
+            <section className={styles.panel}>
+                <div className={styles.sectionHead}>
+                    <span className={styles.sectionLabel}>At a glance</span>
                 </div>
-            </div>
+                <dl className={styles.statStrip}>
+                    {bandCells.map((c) => (
+                        <div key={c.label} className={styles.stat}>
+                            <dt className={styles.statLabel}>{c.label}</dt>
+                            <dd className={styles.statValue}>{c.value}</dd>
+                            <p className={styles.statMeta}>{c.meta}</p>
+                        </div>
+                    ))}
+                </dl>
+            </section>
             {visibleActive.length > 0 && (
-                <section className={styles.section}>
+                <section className={styles.panel}>
                     <div className={styles.sectionHead}>
                         <span className={styles.sectionLabel}>
                             Happening now
                         </span>
                     </div>
-                    <ul className={styles.raceList}>
+                    <ul className={`${styles.raceList} ${styles.listWrap}`}>
                         {visibleActive.map((r) => (
                             <li key={r.raceId} className={styles.raceRow}>
                                 <Link
@@ -258,11 +275,15 @@ export default async function GameRacesPage({ params }: PageProps) {
                                 key={c.displayValue}
                                 className={styles.categoryCard}
                             >
-                                <h3 className={styles.categoryTitle}>
-                                    {categoryName(c)}
-                                </h3>
+                                <div className={styles.categoryHead}>
+                                    <h3 className={styles.categoryTitle}>
+                                        {categoryName(c)}
+                                    </h3>
+                                    <span className={styles.categoryCount}>
+                                        {c.totalRaces.toLocaleString()} races
+                                    </span>
+                                </div>
                                 <p className={styles.categoryStats}>
-                                    {c.totalRaces.toLocaleString()} races ·{' '}
                                     {Math.round(c.finishPercentage * 100)}%
                                     finish ·{' '}
                                     <DurationToFormatted
@@ -301,7 +322,7 @@ export default async function GameRacesPage({ params }: PageProps) {
                     </div>
                 </section>
             )}
-            <section className={styles.section}>
+            <section className={styles.panel}>
                 <div className={styles.sectionHead}>
                     <span className={styles.sectionLabel}>Recent races</span>
                     <Link
@@ -311,13 +332,13 @@ export default async function GameRacesPage({ params }: PageProps) {
                         Full race stats
                     </Link>
                 </div>
-                {!recentRaces || recentRaces.items.length === 0 ? (
+                {finishedRaces.length === 0 ? (
                     <p className={styles.sectionNote}>
                         No finished races recorded.
                     </p>
                 ) : (
-                    <ul className={styles.raceList}>
-                        {recentRaces.items.map((r) => {
+                    <ul className={`${styles.raceList} ${styles.listWrap}`}>
+                        {finishedRaces.map((r) => {
                             const winner = winnerOf(r);
                             return (
                                 <li key={r.raceId} className={styles.raceRow}>
