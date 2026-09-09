@@ -264,3 +264,10 @@
     gap: dt.$spacing-sm;
     margin-left: auto;
 }
+
+// Rows still belonging to the tab you just left, while its replacement
+// loads. Dimmed rather than blanked: the queue keeps its shape.
+.stale {
+    opacity: 0.45;
+    transition: opacity dt.$transition-fast;
+}

@@ -76,6 +76,15 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
         | null
     >(null);
     const [isLoading, startLoad] = useTransition();
+    // Which slice the rows on screen actually came from. Tracked separately
+    // from `status` (the picked tab) so the table and its totals can never be
+    // labelled as something they are not while a load is in flight.
+    const [loadedStatus, setLoadedStatus] = useState<ModQueueStatus>('pending');
+    // Every load takes a ticket; only the newest one is allowed to write
+    // state. Without this, clicking through the tabs races: a slow response
+    // for the tab you just left lands last and paints its rows under the new
+    // tab's heading.
+    const requestId = useRef(0);
 
     // Read once per render pass, not per row: every age in the table is
     // measured against the same instant, and it only lives in the client.
@@ -94,6 +103,7 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
         const nextPage = overrides?.page ?? page;
         setError(null);
         setSelected(new Set());
+        const ticket = ++requestId.current;
         startLoad(async () => {
             const res = await loadModQueueAction(gameSlug, {
                 status: nextStatus,
@@ -101,6 +111,7 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
                 page: nextPage,
                 pageSize: PAGE_SIZE,
             });
+            if (ticket !== requestId.current) return;
             if ('error' in res) {
                 setError(res.error);
                 setRows(null);
@@ -109,6 +120,7 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
             }
             setRows(res.page.items);
             setTotalItems(res.page.totalItems);
+            setLoadedStatus(nextStatus);
         });
     };
 
@@ -324,7 +336,7 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
                     <div className={styles.stat}>
                         <span className={styles.statValue}>{totalItems}</span>
                         <span className={styles.statLabel}>
-                            {status === 'pending' ? 'waiting' : 'runs'}
+                            {loadedStatus === 'pending' ? 'waiting' : 'runs'}
                         </span>
                     </div>
                     <div className={styles.stat}>
@@ -362,9 +374,7 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
                 </div>
             )}
 
-            {isLoading && rows == null && (
-                <p className={styles.loading}>Loading the queue…</p>
-            )}
+            {isLoading && <p className={styles.loading}>Loading the queue…</p>}
 
             {rows != null && rows.length === 0 && (
                 <div className={styles.empty}>
@@ -375,7 +385,7 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
                     />
                     <p className={styles.emptyTitle}>Nothing is waiting</p>
                     <p className="mb-0">
-                        {status === 'pending'
+                        {loadedStatus === 'pending'
                             ? 'Every run on a visible board has a verdict.'
                             : 'No runs match this view.'}
                     </p>
@@ -383,7 +393,13 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
             )}
 
             {rows != null && rows.length > 0 && (
-                <div className="table-responsive">
+                <div
+                    className={
+                        status === loadedStatus
+                            ? 'table-responsive'
+                            : `table-responsive ${styles.stale}`
+                    }
+                >
                     <table className={styles.table}>
                         <thead>
                             <tr>
