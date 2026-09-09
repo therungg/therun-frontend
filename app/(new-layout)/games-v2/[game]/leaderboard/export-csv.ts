@@ -45,14 +45,20 @@ const escapeCell = (value: unknown): string => {
     return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
 
+type TimeFormatter = (ms: number | null) => string;
+
+const makeFormatter =
+    (showMilliseconds: boolean): TimeFormatter =>
+    (ms) =>
+        ms === null
+            ? ''
+            : getFormattedString(String(ms), showMilliseconds, false, false);
+
 export function buildLeaderboardCsv(
     res: LeaderboardExportResponse,
     showMilliseconds: boolean,
 ): string {
-    const fmt = (ms: number | null): string =>
-        ms === null
-            ? ''
-            : getFormattedString(String(ms), showMilliseconds, false, false);
+    const fmt = makeFormatter(showMilliseconds);
 
     const variableKeys = [
         ...new Set(res.entries.flatMap((e) => Object.keys(e.variables ?? {}))),
@@ -66,5 +72,61 @@ export function buildLeaderboardCsv(
         ...BASE_COLUMNS.map((c) => escapeCell(c.value(e, fmt))),
         ...variableKeys.map((k) => escapeCell(e.variables?.[k])),
     ]);
+    return [header.map(escapeCell), ...rows].map((r) => r.join(',')).join('\n');
+}
+
+/** One board's export, tagged with the board it came from. */
+export interface ExportedBoard {
+    categoryDisplay: string;
+    categorySlug: string;
+    group: string | null;
+    isLevel: boolean;
+    res: LeaderboardExportResponse;
+}
+
+// Which board a row belongs to, ahead of the row's own columns — a whole-game
+// file is one sheet holding every board, so the board has to be a column.
+const BOARD_COLUMNS: {
+    header: string;
+    value: (b: ExportedBoard) => unknown;
+}[] = [
+    { header: 'category', value: (b) => b.categoryDisplay },
+    { header: 'category_slug', value: (b) => b.categorySlug },
+    { header: 'group', value: (b) => b.group },
+    { header: 'is_level', value: (b) => b.isLevel },
+];
+
+/**
+ * Every board of a game as one CSV. Variable columns are the union across all
+ * boards, so a variable only one category has still gets a column (empty
+ * elsewhere) rather than shifting the row shape halfway down the file.
+ *
+ * Milliseconds are always written: a board's showMilliseconds is a display
+ * choice per category, and a single file cannot honour several at once
+ * without silently rounding some boards' times.
+ */
+export function buildGameCsv(boards: ExportedBoard[]): string {
+    const fmt = makeFormatter(true);
+
+    const variableKeys = [
+        ...new Set(
+            boards.flatMap((b) =>
+                b.res.entries.flatMap((e) => Object.keys(e.variables ?? {})),
+            ),
+        ),
+    ].sort();
+
+    const header = [
+        ...BOARD_COLUMNS.map((c) => c.header),
+        ...BASE_COLUMNS.map((c) => c.header),
+        ...variableKeys.map((k) => `variable:${k}`),
+    ];
+    const rows = boards.flatMap((board) =>
+        board.res.entries.map((e) => [
+            ...BOARD_COLUMNS.map((c) => escapeCell(c.value(board))),
+            ...BASE_COLUMNS.map((c) => escapeCell(c.value(e, fmt))),
+            ...variableKeys.map((k) => escapeCell(e.variables?.[k])),
+        ]),
+    );
     return [header.map(escapeCell), ...rows].map((r) => r.join(',')).join('\n');
 }

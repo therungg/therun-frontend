@@ -12,6 +12,7 @@ import { SubmitDialogProvider } from '../submit-dialog/submit-dialog-context';
 import { CategoryCard } from './category-card';
 import { CollapsibleSection } from './collapsible-section';
 import type { GameOverviewData } from './data';
+import { ExportAllButton } from './export-all-button';
 import styles from './overview.module.scss';
 
 interface Props {
@@ -138,12 +139,19 @@ export function GameOverviewPage({
                     <div className={gamePageStyles.colMain}>
                         {/* Standings across a single category is just that board,
                         so the tabs only exist once there are two. */}
-                        {data.cards.length > 1 && (
-                            <ViewTabs
-                                gameSlug={data.game.name}
-                                showRaces={showRaces}
-                            />
-                        )}
+                        <div className={styles.viewRow}>
+                            <div className={styles.viewRowTabs}>
+                                {data.cards.length > 1 && (
+                                    <ViewTabs
+                                        gameSlug={data.game.name}
+                                        showRaces={showRaces}
+                                    />
+                                )}
+                            </div>
+                            <div className={styles.viewRowAction}>
+                                <ExportAllButton gameSlug={data.game.name} />
+                            </div>
+                        </div>
                         {data.cards.length === 0 ? (
                             <div className={styles.emptyState}>
                                 <p className={styles.emptyTitle}>

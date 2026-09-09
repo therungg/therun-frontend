@@ -406,3 +406,22 @@
     margin: 0;
     max-width: 34rem;
 }
+
+// The view tabs and the whole-game export share one row. The tabs keep their
+// full-width rail (the wrapper is the flex item, the nav inside still spans
+// it), and the chip sits at the right end level with the rail's line.
+.viewRow {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: dt.$spacing-lg;
+}
+
+.viewRowTabs {
+    flex: 1;
+    min-width: 0;
+}
+
+.viewRowAction {
+    margin-bottom: dt.$spacing-xl;
+}
