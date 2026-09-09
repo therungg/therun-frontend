@@ -33,6 +33,31 @@ const TOPBAR_LABELS: Record<TopbarStyle, string> = {
     panel: 'Panel',
 };
 
+// Backgrounds paint as a wide, short, blurred band (background-size: cover), so
+// a small or portrait image is cropped to a center sliver and upscaled into a
+// blur. Require a landscape image at least this large.
+const MIN_BG_WIDTH = 1280;
+const MIN_BG_HEIGHT = 720;
+
+/** Natural pixel size of an image file, or null if it can't be decoded. */
+function readImageSize(
+    file: File,
+): Promise<{ width: number; height: number } | null> {
+    return new Promise((resolve) => {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            resolve({ width: img.naturalWidth, height: img.naturalHeight });
+        };
+        img.onerror = () => {
+            URL.revokeObjectURL(url);
+            resolve(null);
+        };
+        img.src = url;
+    });
+}
+
 interface Props {
     identifiers: GameIdentifiers;
     metadata: GameMetadata;
@@ -65,6 +90,20 @@ export function ThemePane({ metadata, game }: Props) {
     };
 
     const uploadBackground = async (file: File) => {
+        // Reject too-small / portrait uploads before spending an upload: the
+        // background renders as a wide, short, blurred band, so anything under a
+        // landscape 1280×720 comes out cropped to a sliver and blurry. A file we
+        // can't decode is allowed through rather than blocked on a false read.
+        const size = await readImageSize(file);
+        if (
+            size &&
+            (size.width < MIN_BG_WIDTH || size.height < MIN_BG_HEIGHT)
+        ) {
+            toast.error(
+                `Background needs to be at least ${MIN_BG_WIDTH}×${MIN_BG_HEIGHT}px and landscape — this one is ${size.width}×${size.height}, which would be cropped and blurred in the board's background band.`,
+            );
+            return;
+        }
         setBusy(true);
         const urlRes = await getBackgroundUploadUrlAction({
             gameSlug: game.name,
@@ -274,7 +313,9 @@ export function ThemePane({ metadata, game }: Props) {
                                     Upload image
                                 </button>
                                 <div className={paneStyles.uploadHint}>
-                                    PNG, JPEG, or WEBP, up to 6 MB.
+                                    PNG, JPEG, or WEBP, up to 6 MB. Landscape,
+                                    at least {MIN_BG_WIDTH}×{MIN_BG_HEIGHT}px —
+                                    it fills a wide background band.
                                 </div>
                             </>
                         )}
