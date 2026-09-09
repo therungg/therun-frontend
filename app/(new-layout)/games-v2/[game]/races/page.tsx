@@ -31,6 +31,7 @@ import gamePageStyles from '../game-page.module.scss';
 import { GameHero } from '../header/game-hero';
 import { isoDaysAgo, toSparklineSeries } from '../header/sparkline-data';
 import { ViewTabs } from '../header/view-tabs';
+import { GameThemeStyle } from '../theme/game-theme-style';
 import styles from './races.module.scss';
 
 export const maxDuration = 60;
@@ -194,6 +195,10 @@ export default async function GameRacesPage({ params }: PageProps) {
 
     return (
         <div>
+            {/* The tabs are the board's own pages, so they carry the board's
+                theme; without this they fell back to site green while the
+                root route next door was themed. */}
+            <GameThemeStyle theme={gameMeta?.theme ?? null} />
             <GameHero
                 game={resolvedGame}
                 stats={quickStats}
