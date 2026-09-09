@@ -22,10 +22,15 @@
 
 .art {
     position: absolute;
-    top: -1.5rem;
+    // The band starts at the very top of the viewport, not at the top of the
+    // console: the topbar paints no surface on a themed page, so the art runs
+    // up behind it instead of stopping at its lower edge. --topbar-h mirrors
+    // Topbar.module.scss; 1.5rem is the container's own top margin (`my-4`).
+    --topbar-h: 48px;
+    top: calc(-1 * (var(--topbar-h) + 1.5rem));
     left: 0;
     right: 0;
-    height: 20rem;
+    height: calc(20rem + var(--topbar-h));
     z-index: -1;
     overflow: hidden;
     pointer-events: none;
@@ -74,8 +79,14 @@
     );
 }
 
+@media (min-width: 992px) {
+    .art {
+        --topbar-h: 56px;
+    }
+}
+
 @media (max-width: 768px) {
     .art {
-        height: 14rem;
+        height: calc(14rem + var(--topbar-h));
     }
 }

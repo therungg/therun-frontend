@@ -100,9 +100,14 @@ describe('deriveThemeVars', () => {
             deriveThemeVars(base, 'light'),
         );
     });
-    it('emits no topbar vars when topbar is default', () => {
+    it('clears the topbar surface when topbar is default', () => {
         const v = deriveThemeVars(base, 'dark');
-        expect(v['--site-topbar-bg']).toBeUndefined();
+        // No bar color picked: the bar stops painting a surface so the canvas
+        // and the background art run up under it. Its TEXT colors stay unset —
+        // the bar keeps the site's own ink.
+        expect(v['--site-topbar-bg']).toBe('transparent');
+        expect(v['--site-topbar-border']).toBe('transparent');
+        expect(v['--site-topbar-shadow']).toBe('none');
         expect(v['--site-topbar-color']).toBeUndefined();
     });
     it('paints the topbar the accent color with readable text', () => {

@@ -12,8 +12,10 @@
     background: var(--site-topbar-bg, rgba(255, 255, 255, 0.72));
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    // A themed page sets these to transparent/none: the bar stops being its
+    // own band and the page background runs up through it.
+    border-bottom: 1px solid var(--site-topbar-border, rgba(0, 0, 0, 0.06));
+    box-shadow: var(--site-topbar-shadow, 0 1px 3px rgba(0, 0, 0, 0.03));
 
     // On a themed board the game layout emits --site-topbar-* (opaque bg +
     // readable text). Re-point the topbar's text vars to that set; unthemed
@@ -35,7 +37,10 @@
 
     :global([data-bs-theme='dark']) & {
         background: var(--site-topbar-bg, rgba(18, 26, 17, 0.8));
-        border-bottom-color: rgba(255, 255, 255, 0.06);
+        border-bottom-color: var(
+            --site-topbar-border,
+            rgba(255, 255, 255, 0.06)
+        );
     }
 }
 

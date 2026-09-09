@@ -175,6 +175,16 @@ export function deriveThemeVars(
         '--board-ink-tertiary': panelText.tertiary,
     };
 
+    // Without an explicit bar color the topbar stops painting a surface of its
+    // own: the canvas gradient — and, where the board has one, the background
+    // art behind it — runs up under the bar instead of stopping at a seam. The
+    // bar keeps its blur, so what shows through is frosted, not raw picture.
+    if (theme.topbar !== 'accent' && theme.topbar !== 'panel') {
+        vars['--site-topbar-bg'] = 'transparent';
+        vars['--site-topbar-border'] = 'transparent';
+        vars['--site-topbar-shadow'] = 'none';
+    }
+
     // Optional topbar tint: paint the site topbar the accent or panel color
     // with readable text derived from it. 'default' leaves the topbar alone
     // (no vars emitted → the Topbar's own fallback background stands).
@@ -208,6 +218,8 @@ const GLOBAL_KEYS = new Set([
     '--site-canvas-primary',
     // The topbar lives outside .main-container, so its vars must stay global.
     '--site-topbar-bg',
+    '--site-topbar-border',
+    '--site-topbar-shadow',
     '--site-topbar-color',
     '--site-topbar-emphasis',
     '--site-topbar-muted',
@@ -355,6 +367,12 @@ export function buildConsoleThemeCss(theme: GameTheme): string {
                 block(mode, {
                     '--site-canvas-bg': vars['--site-canvas-bg'],
                     '--site-canvas-primary': vars['--board-accent'],
+                    // The console's canvas and its art band run up under the
+                    // topbar rather than stopping at it — the bar keeps its
+                    // blur but paints no surface of its own.
+                    '--site-topbar-bg': 'transparent',
+                    '--site-topbar-border': 'transparent',
+                    '--site-topbar-shadow': 'none',
                 }),
                 block(`${mode} .main-container`, vars),
             ];
