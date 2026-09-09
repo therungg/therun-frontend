@@ -3,6 +3,7 @@
 // a second copy of the map.
 import {
     ArrowLeftRight,
+    CheckCircle,
     ClockHistory,
     CloudDownload,
     Collection,
@@ -27,6 +28,7 @@ import type { NavItemId } from '~app/(new-layout)/games-v2/[game]/manage/console
 
 export const NAV_ICON: Record<NavItemId, IconType> = {
     overview: Speedometer2,
+    'mod-queue': CheckCircle,
     attention: ExclamationTriangle,
     roster: ListOl,
     reports: Flag,

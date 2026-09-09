@@ -852,3 +852,55 @@ export interface PublicModLogPage {
     offset: number;
     hasMore: boolean;
 }
+
+/* ------------------------------------------------------------------ *
+ * Mod queue — GET /v1/leaderboards/mod-queue/{gameId}
+ * ------------------------------------------------------------------ */
+
+/** Which slice of the queue to read. `pending` (the default) also hides runs
+ *  outside their category's verification window (`verify_queue_hidden`). */
+export type ModQueueStatus = 'pending' | 'verified' | 'rejected' | 'all';
+
+/** One run awaiting a verdict. Richer than `LeaderboardRosterRow`: the queue
+ *  spans every visible board, so each row names its own category, and it
+ *  carries the submission metadata a verdict is actually made on (platform,
+ *  emulator, variables, why it is ineligible). */
+export interface ModQueueItem {
+    id: number;
+    runnerName: string;
+    userId: number | null;
+    time: number | null;
+    gameTime: number | null;
+    categoryId: number;
+    categoryDisplay: string;
+    subcategoryKey: string;
+    verificationStatus: string;
+    vodUrl: string | null;
+    platform: string | null;
+    emulator: boolean;
+    variables: Record<string, string> | null;
+    excluded: boolean;
+    exclusionReason: string | null;
+    isGuest: boolean;
+    /** The run's end date (ISO), despite the name — the backend maps
+     *  `ended_at` onto this field. */
+    createdAt: string;
+    ineligibleReason: string | null;
+    leaderboardEligible: boolean;
+}
+
+export interface ModQueuePage {
+    items: ModQueueItem[];
+    totalItems: number;
+    page: number;
+    pageSize: number;
+}
+
+export interface ModQueueFilter {
+    /** Omit for every visible board of the game. */
+    categoryId?: number;
+    status?: ModQueueStatus;
+    page?: number;
+    /** Backend caps this at 100. */
+    pageSize?: number;
+}

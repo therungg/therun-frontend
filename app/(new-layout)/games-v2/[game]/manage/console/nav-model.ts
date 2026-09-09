@@ -6,6 +6,7 @@ import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 
 export type NavItemId =
     | 'overview'
+    | 'mod-queue'
     | 'attention'
     | 'roster'
     | 'reports'
@@ -72,6 +73,7 @@ const ALL_GROUPS: NavGroup[] = [
         id: 'moderate',
         label: 'Queue',
         items: [
+            { id: 'mod-queue', label: CONCEPT_LABEL['mod-queue'] },
             { id: 'attention', label: CONCEPT_LABEL.attention },
             { id: 'bans', label: CONCEPT_LABEL.bans },
         ],

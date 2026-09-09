@@ -27,6 +27,7 @@ import type { AttentionItem } from '../moderation/attention/attention-model';
 import { ModApplicationsCard } from '../moderation/attention/mod-applications-card';
 import { NeedsAttention } from '../moderation/attention/needs-attention';
 import { ActiveBans } from '../moderation/configure/active-bans';
+import { ModQueuePane } from '../moderation/queue/mod-queue-pane';
 import { BoardOverview } from '../overview/board-overview';
 import { ReassignPane } from '../reassignments/reassign-pane';
 import { SrcImportPane } from '../src-import/src-import-pane';
@@ -127,6 +128,14 @@ export function ContentRouter(props: ContentRouterProps) {
     } = props;
 
     switch (activeItem) {
+        case 'mod-queue':
+            return (
+                <ModQueuePane
+                    gameSlug={game.name}
+                    gameDisplay={game.display}
+                    categories={categories}
+                />
+            );
         case 'attention':
             return (
                 <>

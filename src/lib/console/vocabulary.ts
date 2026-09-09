@@ -8,6 +8,7 @@ import type { SetupStepId } from '../setup/completeness';
 export type ConceptId =
     | 'overview'
     | 'attention'
+    | 'mod-queue'
     | 'roster'
     | 'reports'
     | 'bans'
@@ -35,6 +36,7 @@ export type ConceptId =
 export const CONCEPT_LABEL: Record<ConceptId, string> = {
     overview: 'Overview',
     attention: 'Needs attention',
+    'mod-queue': 'Mod queue',
     roster: 'Browse runs',
     reports: 'Reports',
     bans: 'Bans',
@@ -76,6 +78,7 @@ export function conceptLabel(id: ConceptId): string {
  * vocabulary test pins the two lists together.
  */
 export const TILE_CONCEPT_IDS = [
+    'mod-queue',
     'attention',
     'roster',
     'bans',
@@ -110,6 +113,10 @@ export interface ConceptTile {
  * moderator who has not learned the console yet.
  */
 export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
+    'mod-queue': {
+        action: 'Verify what came in',
+        blurb: 'Every run still waiting on a verdict, oldest first — approve, decline, or act on the runner behind it.',
+    },
     attention: {
         action: 'Review what’s waiting',
         blurb: 'Runs flagged for review, reports from runners, and people asking to moderate this board.',

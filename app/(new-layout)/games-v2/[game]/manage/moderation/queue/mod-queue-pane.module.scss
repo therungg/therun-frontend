@@ -1,0 +1,266 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/board' as board;
+
+// The Mod queue. Every other console table ranks by time; this one ranks by
+// how long a run has been ignored, so age is the only thing in it that
+// carries colour — the table reads as a single quiet surface until something
+// has gone stale.
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    margin-bottom: dt.$spacing-lg;
+}
+
+.tabs {
+    @include board.board-segmented;
+}
+
+.tab {
+    @include board.board-segment;
+}
+
+.tabActive {
+    @include board.board-segment-active;
+}
+
+.boardPicker {
+    min-width: 14rem;
+}
+
+.filterLabel {
+    @include board.board-eyebrow;
+    display: block;
+    margin-bottom: dt.$spacing-xs;
+}
+
+.input {
+    @include board.board-input-rules;
+}
+
+// The overview line: what is in the queue, stated in numbers before the
+// table states it in rows.
+.summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xl;
+    padding: dt.$spacing-md dt.$spacing-lg;
+    margin-bottom: dt.$spacing-lg;
+    border-radius: dt.$radius-md;
+    background: rgba(var(--bs-body-color-rgb), 0.04);
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.statValue {
+    @include board.mono-time;
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+}
+
+.statLabel {
+    @include board.board-eyebrow;
+}
+
+.errorAlert {
+    @include board.board-error-alert;
+    margin-bottom: dt.$spacing-lg;
+}
+
+.loading {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.table {
+    @include board.board-table;
+
+    thead tr {
+        background: rgba(var(--bs-body-color-rgb), 0.04);
+    }
+
+    :global(.form-check-input) {
+        @include board.board-input-rules;
+    }
+}
+
+// A left spine per row, keyed to age. Fresh rows get none at all: only the
+// rows that have been waiting earn ink.
+.row_fresh td:first-child {
+    box-shadow: inset 2px 0 0 transparent;
+}
+
+.row_aging td:first-child {
+    box-shadow: inset 2px 0 0 dt.$accent-amber;
+}
+
+.row_stale td:first-child {
+    box-shadow: inset 2px 0 0 dt.$accent-red;
+}
+
+.age_fresh,
+.age_aging,
+.age_stale {
+    @include board.mono-time;
+    white-space: nowrap;
+}
+
+.age_aging {
+    color: dt.$accent-amber;
+}
+
+.age_stale {
+    color: dt.$accent-red-light;
+    font-weight: 700;
+}
+
+.board {
+    display: block;
+}
+
+.sub {
+    display: block;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.time {
+    @include board.mono-time;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.dash {
+    color: var(--bs-tertiary-color, var(--bs-secondary-color));
+    opacity: 0.6;
+}
+
+.meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs;
+    align-items: center;
+}
+
+.pill {
+    @include board.board-pill;
+}
+
+.guestTag {
+    @include board.board-pill;
+    margin-left: dt.$spacing-xs;
+}
+
+.warnPill {
+    @include board.board-pill(dt.$accent-red);
+}
+
+.vodPill {
+    @include board.board-pill(var(--bs-primary));
+    text-decoration: none;
+}
+
+.noVodPill {
+    @include board.board-pill;
+    opacity: 0.7;
+}
+
+.rowActions {
+    display: flex;
+    gap: dt.$spacing-sm;
+    justify-content: flex-end;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.rowAction {
+    @include board.control-pill;
+    font-size: dt.$font-size-xs;
+    text-decoration: none;
+}
+
+.quietAction {
+    @include board.control-pill;
+    font-size: dt.$font-size-xs;
+}
+
+.approveAction {
+    @include board.control-pill;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-primary);
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.12);
+        color: var(--bs-primary);
+    }
+}
+
+.removeAction {
+    @include board.control-pill;
+    font-size: dt.$font-size-xs;
+    color: dt.$accent-red;
+
+    &:hover {
+        background: color-mix(in srgb, #{dt.$accent-red} 14%, transparent);
+        color: dt.$accent-red-light;
+    }
+}
+
+.pager {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: dt.$spacing-md;
+    margin-top: dt.$spacing-md;
+}
+
+.pagerLabel {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.empty {
+    @include board.board-empty;
+}
+
+.emptyTitle {
+    @include board.board-empty-title;
+}
+
+.emptyIcon {
+    @include board.board-empty-icon;
+}
+
+// The one glass surface this view is allowed: a sticky bar over scrolled rows.
+.bulkBar {
+    @include board.board-glass;
+    position: sticky;
+    bottom: 0;
+    z-index: dt.$z-sticky;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    margin-top: dt.$spacing-md;
+    border-radius: dt.$radius-md;
+}
+
+.bulkCount {
+    @include board.mono-time;
+    font-weight: 700;
+    margin-right: dt.$spacing-sm;
+}
+
+.bulkGroup {
+    display: flex;
+    gap: dt.$spacing-sm;
+    margin-left: auto;
+}
