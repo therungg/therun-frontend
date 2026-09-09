@@ -41,7 +41,7 @@ const TOGGLES: Array<{ key: ToggleKey; label: string; hint: string }> = [
     {
         key: 'importTheme',
         label: 'Import board theme',
-        hint: 'Apply the source board colors and background to this game.',
+        hint: 'Apply the speedrun.com board colors and background to this game.',
     },
     {
         key: 'importMiscCategories',
@@ -56,7 +56,7 @@ const TOGGLES: Array<{ key: ToggleKey; label: string; hint: string }> = [
     {
         key: 'importPending',
         label: 'Import unverified runs',
-        hint: 'Runs still pending verification at the source (imported as pending).',
+        hint: 'Runs still pending verification on speedrun.com (imported as pending).',
     },
     {
         key: 'setMinTimeFloor',

@@ -17,7 +17,6 @@ import { isSettled, useSrcImportJob } from './use-src-import-job';
 interface Props {
     gameId: number;
     gameSlug: string;
-    gameDisplay: string;
     /** Global admins bypass the once-per-day cooldown (the backend enforces the same rule). */
     isAdmin: boolean;
 }
@@ -25,12 +24,7 @@ interface Props {
 /**
  * Import pane: the console's chrome around the shared sections.
  */
-export function SrcImportPane({
-    gameId,
-    gameSlug,
-    gameDisplay,
-    isAdmin,
-}: Props) {
+export function SrcImportPane({ gameId, gameSlug, isAdmin }: Props) {
     return (
         <div className={consoleStyles.surface}>
             <div className={consoleStyles.paneHeader}>
@@ -41,10 +35,6 @@ export function SrcImportPane({
                     </h2>
                 </div>
             </div>
-            <p className={consoleStyles.paneLede}>
-                Keep the {gameDisplay} board in step with its source. Each
-                import runs on its own and shows what it changed.
-            </p>
             <ImportSections
                 gameId={gameId}
                 gameSlug={gameSlug}
@@ -55,19 +45,15 @@ export function SrcImportPane({
 }
 
 /**
- * Two independent sections. Settings pulls the board's configuration from the
- * source; Runs pulls the runs of runners who have a therun account. Both run
- * immediately and report what changed. An unlinked board gets the link card
+ * Two independent sections. Settings pulls the board's configuration from
+ * speedrun.com; Runs pulls the runs of runners who have a therun account. Both
+ * run immediately and report what changed. An unlinked board gets the link card
  * instead — linking is the first import.
  *
  * Shared by the console pane and the setup wizard's first step, which wrap it
  * in their own headings; nothing here draws chrome of its own.
  */
-export function ImportSections({
-    gameId,
-    gameSlug,
-    isAdmin,
-}: Omit<Props, 'gameDisplay'>) {
+export function ImportSections({ gameId, gameSlug, isAdmin }: Props) {
     const fetchSettings = useCallback(
         () => getSrcImportJobAction({ gameId, gameSlug, kind: 'settings' }),
         [gameId, gameSlug],
@@ -131,7 +117,6 @@ export function ImportSections({
                     <ImportSection
                         kind="settings"
                         title="Settings"
-                        description="Categories, levels, subcategories and filters, rules, timing and theme."
                         buttonLabel="Import settings"
                         gameId={gameId}
                         gameSlug={gameSlug}
@@ -157,7 +142,6 @@ export function ImportSections({
                     <ImportSection
                         kind="resync"
                         title="Runs"
-                        description="Runs of runners who have a therun account. Verified on import; runs that left the source are removed."
                         buttonLabel="Import runs"
                         gameId={gameId}
                         gameSlug={gameSlug}

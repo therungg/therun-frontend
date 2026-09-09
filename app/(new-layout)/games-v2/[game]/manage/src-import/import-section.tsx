@@ -64,7 +64,7 @@ function phaseText(job: SrcImportJob): string {
         case 'importing':
             return 'Importing runs';
         case 'pruning':
-            return 'Removing runs that left the source';
+            return 'Removing runs that left speedrun.com';
         default:
             return 'Finishing';
     }
@@ -119,7 +119,7 @@ function Report({
     if (rows.length === 0) {
         return (
             <p className={styles.empty}>
-                Everything already matched the source.
+                Everything already matched speedrun.com.
             </p>
         );
     }
@@ -141,7 +141,8 @@ function Report({
 export interface ImportSectionProps {
     kind: 'settings' | 'resync';
     title: string;
-    description: string;
+    /** Optional line under the title; most sections say it in the title alone. */
+    description?: string;
     buttonLabel: string;
     gameId: number;
     gameSlug: string;
@@ -222,7 +223,9 @@ export function ImportSection({
                     <h3 id={`import-${kind}`} className={styles.title}>
                         {title}
                     </h3>
-                    <p className={styles.desc}>{description}</p>
+                    {description && (
+                        <p className={styles.desc}>{description}</p>
+                    )}
                 </div>
                 <div className={styles.actions}>
                     <button

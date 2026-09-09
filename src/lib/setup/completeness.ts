@@ -143,7 +143,7 @@ export function computeCompleteness(
             status: 'todo',
             summary: src?.linked
                 ? 'Linked — settings not imported yet'
-                : 'Not linked to a source',
+                : 'Not linked to speedrun.com',
         });
     }
 
