@@ -38,6 +38,11 @@ interface PromptDialogProps {
      * Checked against the trimmed value. Omit for the plain length check.
      */
     isValid?: (trimmed: string) => boolean;
+    /**
+     * Message shown instead of the length-based "is required" hint when the
+     * value is long enough but fails `isValid`. Ignored without `isValid`.
+     */
+    invalidHint?: string;
     submitLabel: string;
     submitVariant?: SubmitVariant;
     pending: boolean;
@@ -63,6 +68,7 @@ export function PromptDialog({
     multiline = false,
     minLength = 0,
     isValid,
+    invalidHint,
     submitLabel,
     submitVariant = 'primary',
     pending,
@@ -138,10 +144,13 @@ export function PromptDialog({
                         disabled={pending}
                     />
                 )}
-                {minLength > 0 && !valid && value.length > 0 && (
+                {minLength > 0 && !meetsLength && value.length > 0 && (
                     <div className={styles.fieldError}>
                         {fieldLabel} is required.
                     </div>
+                )}
+                {meetsLength && !valid && invalidHint && value.length > 0 && (
+                    <div className={styles.fieldError}>{invalidHint}</div>
                 )}
                 {error && (
                     <div className={styles.errorAlert} role="alert">

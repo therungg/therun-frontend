@@ -29,6 +29,7 @@ export function DeleteAccountPanel({ username }: { username: string }) {
             await fetch('/api/logout', { method: 'POST' });
             clearSession();
             router.push('/');
+            router.refresh();
         });
     };
 
@@ -70,6 +71,7 @@ export function DeleteAccountPanel({ username }: { username: string }) {
                 isValid={(value) =>
                     value.toLowerCase() === username.toLowerCase()
                 }
+                invalidHint="That doesn't match your username."
                 submitLabel="Delete my account"
                 submitVariant="danger"
                 pending={pending}
