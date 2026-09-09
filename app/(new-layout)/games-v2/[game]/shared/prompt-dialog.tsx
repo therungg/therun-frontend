@@ -31,6 +31,13 @@ interface PromptDialogProps {
      * for call sites where the API accepts an empty/omitted value.
      */
     minLength?: number;
+    /**
+     * Extra gate beyond `minLength` — e.g. requiring the typed value to
+     * match some other string exactly (case-insensitively) before the
+     * submit button enables, rather than just meeting a length floor.
+     * Checked against the trimmed value. Omit for the plain length check.
+     */
+    isValid?: (trimmed: string) => boolean;
     submitLabel: string;
     submitVariant?: SubmitVariant;
     pending: boolean;
@@ -55,6 +62,7 @@ export function PromptDialog({
     initialValue = '',
     multiline = false,
     minLength = 0,
+    isValid,
     submitLabel,
     submitVariant = 'primary',
     pending,
@@ -73,7 +81,8 @@ export function PromptDialog({
     }, [open, initialValue]);
 
     const trimmed = value.trim();
-    const valid = minLength <= 0 || trimmed.length >= minLength;
+    const meetsLength = minLength <= 0 || trimmed.length >= minLength;
+    const valid = meetsLength && (!isValid || isValid(trimmed));
 
     const requestClose = () => {
         if (!pending) onClose();
