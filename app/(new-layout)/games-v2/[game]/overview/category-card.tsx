@@ -49,7 +49,12 @@ const PODIUM_RANK_CLASS: Record<number, string> = {
 };
 
 export function CategoryCard({ gameSlug, card, index }: Props) {
-    const { category, entries } = card;
+    // The count is the board's own row count, not the category's attempt-sync
+    // stats: a board whose runs were all imported has a full leaderboard and
+    // no attempt data at all, and used to read "0 runners · 0 attempts" under
+    // three visible runners. Attempts are gone from the card with it — they
+    // describe timer uploads, which is not what this page is about.
+    const { category, entries, boardRunners } = card;
     const { wr, podium } = splitCardEntries(entries);
     const boardHref = buildBoardHref(gameSlug, {
         categorySlug: category.name,
@@ -72,10 +77,12 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
                     </div>
                     {/* Full plate width, not tucked beside the emblem — the
                         spec line needs the run to stay on one line. */}
-                    <span className={styles.plaqueStats}>
-                        {formatCount(category.uniqueRunners ?? 0)} runners ·{' '}
-                        {formatCount(category.totalAttemptCount ?? 0)} attempts
-                    </span>
+                    {boardRunners != null && (
+                        <span className={styles.plaqueStats}>
+                            {formatCount(boardRunners)} runner
+                            {boardRunners === 1 ? '' : 's'}
+                        </span>
+                    )}
                 </div>
                 {wr ? (
                     <div className={styles.record}>

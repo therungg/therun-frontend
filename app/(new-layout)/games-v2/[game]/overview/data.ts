@@ -27,6 +27,14 @@ export interface OverviewCardData {
     category: ResolvedCategory;
     /** Top-3 of the category's default board (page 1); [] = fetch failed or empty. */
     entries: LeaderboardEntry[];
+    /**
+     * How many runners are on that same board — the row count behind the card,
+     * NOT `category_stats.unique_runners` (which counts everyone whose timer
+     * ever synced the category and is therefore 0 for an imported board with a
+     * full leaderboard on it). `null` = the board fetch failed, so the card
+     * says nothing rather than claiming zero.
+     */
+    boardRunners: number | null;
 }
 
 export interface GameOverviewData {
@@ -49,7 +57,7 @@ export interface GameOverviewData {
 async function fetchCardEntries(
     gameSlug: string,
     category: ResolvedCategory,
-): Promise<LeaderboardEntry[]> {
+): Promise<{ entries: LeaderboardEntry[]; boardRunners: number | null }> {
     try {
         const res = await getLeaderboard({
             gameSlug,
@@ -62,10 +70,16 @@ async function fetchCardEntries(
             varFilters: {},
             timing: category.primaryTiming,
         });
-        if (!res.ok) return [];
-        return res.result.entries;
+        if (!res.ok) return { entries: [], boardRunners: null };
+        // totalItems is the whole board, not this page of 3 — the count is
+        // already in the response the podium came from, so an accurate
+        // "N runners" costs no extra request.
+        return {
+            entries: res.result.entries,
+            boardRunners: res.result.totalItems,
+        };
     } catch {
-        return [];
+        return { entries: [], boardRunners: null };
     }
 }
 
@@ -130,7 +144,8 @@ export async function loadGameOverviewData(
         groups,
         cards: cardCategories.map((category, i) => ({
             category,
-            entries: cardEntries[i],
+            entries: cardEntries[i].entries,
+            boardRunners: cardEntries[i].boardRunners,
         })),
         // The sidebar must not surface PBs from boards the wall can't link to.
         recentPbs: filterPbsToFeatured(recentPbs, cardCategories),
