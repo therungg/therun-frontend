@@ -162,12 +162,12 @@ function niceStep(span: number, target: number): number {
 }
 
 /**
- * PB spread for one board, cut on round boundaries: the bucket width comes
- * off the ladder above and the first bucket starts on a multiple of it, so
- * the axis reads 15:00 / 16:00 / 17:00 rather than wherever the fastest run
- * happened to land. The slowest 5% share one catch-all bucket instead of
- * their own axis — one 40-hour meme run otherwise flattens every real
- * column to a hairline.
+ * PB spread for one board. The axis opens on the board record — a scale
+ * that starts at 14:00 when nobody has ever run 14:5x reads as dead space
+ * where the achievement is — and every boundary after that is round, so
+ * the buckets stay a minute (or three, or ten) apart. The slowest 5% share
+ * one catch-all bucket instead of their own axis: one 40-hour meme run
+ * otherwise flattens every real column to a hairline.
  */
 export function timeHistogram(
     entries: LeaderboardExportEntry[],
@@ -188,37 +188,52 @@ export function timeHistogram(
     if (cap <= min) return [];
 
     let step = niceStep(cap - min, target);
-    let start = Math.floor(min / step) * step;
-    let count = Math.ceil((cap - start) / step);
-    // Snapping the start outward can push the count past what fits; take
-    // the next width up until it does.
-    while (count > MAX_BUCKETS) {
-        const next = STEP_LADDER_MS.find((s) => s > step);
+    // The record itself is the first edge; the boundaries after it are
+    // multiples of the step, so only the opening bucket is a short one.
+    const edgesFor = (width: number): number[] => {
+        const edges = [min];
+        let next = Math.ceil(min / width) * width;
+        if (next === min) next += width;
+        while (next < cap) {
+            edges.push(next);
+            next += width;
+        }
+        edges.push(next);
+        return edges;
+    };
+
+    let edges = edgesFor(step);
+    while (edges.length - 1 > MAX_BUCKETS) {
+        const next = STEP_LADDER_MS.find((w) => w > step);
         if (!next) break;
         step = next;
-        start = Math.floor(min / step) * step;
-        count = Math.ceil((cap - start) / step);
+        edges = edgesFor(step);
     }
-    count = Math.max(1, Math.min(count, MAX_BUCKETS));
 
-    const last = start + count * step;
+    const count = edges.length - 1;
+    const last = edges[count];
     const counts = new Array<number>(count + 1).fill(0);
     for (const t of times) {
-        const i = t >= last ? count : Math.floor((t - start) / step);
+        if (t >= last) {
+            counts[count]++;
+            continue;
+        }
+        // Uniform from the second edge on, so the bucket is arithmetic
+        // rather than a scan: everything below it is the opening bucket.
+        const i = t < edges[1] ? 0 : Math.floor((t - edges[1]) / step) + 1;
         counts[Math.max(0, Math.min(i, count))]++;
     }
 
     return counts.map((value, i) => {
-        const from = start + step * i;
         const overflow = i === count;
         return {
             key: String(i),
             value,
             overflow,
-            label: overflow ? 'slower' : format(from),
+            label: overflow ? 'slower' : format(edges[i]),
             range: overflow
                 ? `slower than ${format(last)}`
-                : `${format(from)} – ${format(from + step)}`,
+                : `${format(edges[i])} – ${format(edges[i + 1])}`,
         };
     });
 }

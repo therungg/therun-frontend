@@ -63,7 +63,7 @@ export function TimeDistribution({ boards }: { boards: DistributionBoard[] }) {
             <ColumnChart
                 columns={active.columns}
                 unit="runs"
-                axisLabel="PB time — each column is one bucket, faster on the left"
+                axisLabel="PB time — the axis opens on the board record"
             />
         </div>
     );
