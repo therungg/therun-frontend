@@ -195,6 +195,9 @@ export interface LeaderboardEntry {
     gameTime: number | null;
     runDate: string | null;
     vodUrl?: string | null;
+    /** Every video the run has when it has more than one; `vodUrl` is the
+     *  first of them. Absent/null means the single `vodUrl` (or none). */
+    vodUrls?: string[] | null;
     verificationStatus: 'pending' | 'verified' | 'rejected';
     // Keyed by nameNormalized; values are canonical bucket values.
     variables?: Record<string, string> | null;
@@ -288,6 +291,9 @@ export interface UserRanking {
     gameTimeLabel?: GameTimeLabel;
     verificationStatus: 'pending' | 'verified' | 'rejected';
     vodUrl: string | null;
+    /** Every video the run has when it has more than one; `vodUrl` is the
+     *  first of them. Absent/null means the single `vodUrl` (or none). */
+    vodUrls?: string[] | null;
     runDate: string;
     rank: number | null;
     totalRunners: number;

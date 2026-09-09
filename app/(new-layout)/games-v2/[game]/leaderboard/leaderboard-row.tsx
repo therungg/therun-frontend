@@ -499,18 +499,35 @@ export function LeaderboardRow({
                         <BoxArrowUpRight size={13} />
                     </a>
                 )}
-                {entry.vodUrl && (
+                {/* A run can carry more than one video; show a link per
+                    video (vodUrl is the first of vodUrls). One video renders
+                    exactly as before. */}
+                {(entry.vodUrls?.length
+                    ? entry.vodUrls
+                    : entry.vodUrl
+                      ? [entry.vodUrl]
+                      : []
+                ).map((url, i, all) => (
                     <a
-                        href={entry.vodUrl}
+                        key={url}
+                        href={url}
                         target="_blank"
                         rel="noreferrer"
                         className={styles.iconLink}
-                        aria-label="Watch VOD"
-                        title="Watch VOD"
+                        aria-label={
+                            all.length > 1
+                                ? `Watch VOD ${i + 1} of ${all.length}`
+                                : 'Watch VOD'
+                        }
+                        title={
+                            all.length > 1
+                                ? `Watch VOD ${i + 1} of ${all.length}`
+                                : 'Watch VOD'
+                        }
                     >
                         <PlayBtn size={16} />
                     </a>
-                )}
+                ))}
                 {/* The owner's way into their own run — reduced self-service
                     (report, correct, hide/restore, appeal) — now lives on the
                     run detail page itself (run-view/run-actions.tsx), which
