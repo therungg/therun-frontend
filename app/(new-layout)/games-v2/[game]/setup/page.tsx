@@ -14,6 +14,7 @@ import {
     variableFactsFromRows,
 } from '~src/lib/setup/completeness';
 import { resolveSetupStep } from '~src/lib/setup/steps';
+import { getSrcImportJob } from '~src/lib/src-import';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
@@ -58,15 +59,26 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
     // gates its Minimum time section on it, and the wizard mounts that editor.
     const canEditStandards = ability.can('edit', 'moderators');
 
-    const [stats, catData, policies, moderators, identifiers, metadata] =
-        await Promise.all([
-            getQuickStats(game.id),
-            resolveCategory(game.id),
-            listPolicies(session.id, game.id),
-            listGameModerators(game.id),
-            getGameIdentifiers(game.id),
-            getGameMetadata(game.id),
-        ]);
+    const [
+        stats,
+        catData,
+        policies,
+        moderators,
+        identifiers,
+        metadata,
+        settingsJob,
+    ] = await Promise.all([
+        getQuickStats(game.id),
+        resolveCategory(game.id),
+        listPolicies(session.id, game.id),
+        listGameModerators(game.id),
+        getGameIdentifiers(game.id),
+        getGameMetadata(game.id),
+        // The import step's status. A board nobody may import for still shows
+        // the step (it is skippable); the read itself is moderator-gated, so a
+        // failure means "no import to report", not a broken page.
+        getSrcImportJob(session.id, game.id, 'settings').catch(() => null),
+    ]);
 
     // Variables are category-scoped only — one list call per category. The
     // hub rows, band previews and BoardCuration all filter this by category.
@@ -95,6 +107,11 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
             (c) => !c.archived && (c.isMain ?? false) && c.groupId == null,
         ).length,
         ...variableFactsFromRows(variables),
+        srcImport: {
+            linked: settingsJob !== null,
+            configAppliedAt: settingsJob?.configAppliedAt ?? null,
+            srcGameName: settingsJob?.srcGameName ?? null,
+        },
     });
 
     const data: WizardData = {
@@ -111,6 +128,7 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         completeness,
         canEditStandards,
         canRematch: ability.can('edit', 'game'),
+        canBypassImportCooldown: ability.can('moderate', 'admins'),
         renderedAt: Date.now(),
     };
 
@@ -118,7 +136,7 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
     // an old bookmark server-renders the right step instead of flashing
     // firstIncomplete before the client shell corrects it.
     const initialStep: SetupStepId =
-        resolveSetupStep(step) ?? completeness.firstIncomplete ?? 'details';
+        resolveSetupStep(step) ?? completeness.firstIncomplete ?? 'import';
 
     return <WizardShell data={data} initialStep={initialStep} />;
 }

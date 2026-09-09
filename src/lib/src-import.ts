@@ -4,6 +4,7 @@
 // cached: every call is authenticated and the job row changes while the
 // worker runs; the pane polls `getSrcImportJob` itself.
 import type {
+    SrcGameCandidate,
     SrcImportCommitFlags,
     SrcImportJob,
     SrcImportJobKind,
@@ -15,6 +16,22 @@ const base = (gameId: number) => `/src-import/games/${gameId}`;
 
 /** The two one-click kinds. 'settings' = configuration only; 'resync' = runs of therun runners. */
 export type SrcResyncKind = Exclude<SrcImportJobKind, 'manual'>;
+
+/**
+ * Source games this board could be linked to, best first. Costs one source
+ * API request server-side (the client spaces requests at 1/s), so call it
+ * once when the link card mounts — never per keystroke.
+ */
+export async function listSrcGameCandidates(
+    sessionId: string,
+    gameId: number,
+): Promise<SrcGameCandidate[]> {
+    const res = await apiFetch<{ candidates: SrcGameCandidate[] }>(
+        `${base(gameId)}/candidates`,
+        { sessionId },
+    );
+    return res.candidates;
+}
 
 /**
  * First import of a game that has no source link yet. With `kind` the job

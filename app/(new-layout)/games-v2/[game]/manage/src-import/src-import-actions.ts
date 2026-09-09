@@ -8,11 +8,13 @@ import {
 } from '~src/lib/moderation/can-moderate';
 import {
     getSrcImportJob,
+    listSrcGameCandidates,
     type SrcResyncKind,
     startSrcImport,
     startSrcResync,
 } from '~src/lib/src-import';
 import type {
+    SrcGameCandidate,
     SrcImportCommitFlags,
     SrcImportJob,
     SrcImportJobKind,
@@ -55,6 +57,16 @@ export async function getSrcImportJobAction(input: {
     return run(async () => {
         const sessionId = await requireBoardMod(input.gameSlug);
         return getSrcImportJob(sessionId, input.gameId, input.kind);
+    });
+}
+
+export async function getSrcGameCandidatesAction(input: {
+    gameId: number;
+    gameSlug: string;
+}): Promise<ActionResult<SrcGameCandidate[]>> {
+    return run(async () => {
+        const sessionId = await requireBoardMod(input.gameSlug);
+        return listSrcGameCandidates(sessionId, input.gameId);
     });
 }
 

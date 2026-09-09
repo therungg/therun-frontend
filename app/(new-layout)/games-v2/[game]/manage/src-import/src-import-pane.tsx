@@ -23,9 +23,7 @@ interface Props {
 }
 
 /**
- * Import pane: two independent sections. Settings pulls the board's
- * configuration from the source; Runs pulls the runs of runners who have a
- * therun account. Both run immediately and report what changed.
+ * Import pane: the console's chrome around the shared sections.
  */
 export function SrcImportPane({
     gameId,
@@ -33,6 +31,43 @@ export function SrcImportPane({
     gameDisplay,
     isAdmin,
 }: Props) {
+    return (
+        <div className={consoleStyles.surface}>
+            <div className={consoleStyles.paneHeader}>
+                <div>
+                    <div className={consoleStyles.paneEyebrow}>Game</div>
+                    <h2 className={consoleStyles.paneTitle}>
+                        {CONCEPT_LABEL.import}
+                    </h2>
+                </div>
+            </div>
+            <p className={consoleStyles.paneLede}>
+                Keep the {gameDisplay} board in step with its source. Each
+                import runs on its own and shows what it changed.
+            </p>
+            <ImportSections
+                gameId={gameId}
+                gameSlug={gameSlug}
+                isAdmin={isAdmin}
+            />
+        </div>
+    );
+}
+
+/**
+ * Two independent sections. Settings pulls the board's configuration from the
+ * source; Runs pulls the runs of runners who have a therun account. Both run
+ * immediately and report what changed. An unlinked board gets the link card
+ * instead — linking is the first import.
+ *
+ * Shared by the console pane and the setup wizard's first step, which wrap it
+ * in their own headings; nothing here draws chrome of its own.
+ */
+export function ImportSections({
+    gameId,
+    gameSlug,
+    isAdmin,
+}: Omit<Props, 'gameDisplay'>) {
     const fetchSettings = useCallback(
         () => getSrcImportJobAction({ gameId, gameSlug, kind: 'settings' }),
         [gameId, gameSlug],
@@ -84,72 +119,57 @@ export function SrcImportPane({
         anyOnce === null;
 
     return (
-        <div className={consoleStyles.surface}>
-            <div className={consoleStyles.paneHeader}>
-                <div>
-                    <div className={consoleStyles.paneEyebrow}>Game</div>
-                    <h2 className={consoleStyles.paneTitle}>
-                        {CONCEPT_LABEL.import}
-                    </h2>
-                </div>
-            </div>
-            <p className={consoleStyles.paneLede}>
-                Keep the {gameDisplay} board in step with its source. Each
-                import runs on its own and shows what it changed.
-            </p>
-
-            <div className={styles.stack}>
-                {unlinked ? (
-                    <LinkCard
+        <div className={styles.stack}>
+            {unlinked ? (
+                <LinkCard
+                    gameId={gameId}
+                    gameSlug={gameSlug}
+                    onLinked={refreshAll}
+                />
+            ) : (
+                <>
+                    <ImportSection
+                        kind="settings"
+                        title="Settings"
+                        description="Categories, levels, subcategories and filters, rules, timing and theme."
+                        buttonLabel="Import settings"
                         gameId={gameId}
                         gameSlug={gameSlug}
-                        onLinked={refreshAll}
-                    />
-                ) : (
-                    <>
-                        <ImportSection
-                            kind="settings"
-                            title="Settings"
-                            description="Categories, levels, subcategories and filters, rules, timing and theme."
-                            buttonLabel="Import settings"
-                            gameId={gameId}
-                            gameSlug={gameSlug}
-                            job={settings.job}
-                            loading={settings.loading}
-                            loadError={settings.error}
-                            anyRunning={anyRunning}
-                            bypassCooldown={isAdmin}
-                            onStarted={refreshAll}
-                            commitFlags={flagPatch}
-                        >
-                            <ImportOptions
-                                flags={flags}
-                                disabled={anyRunning}
-                                onChange={(patch) =>
-                                    setFlagPatch((prev) => ({
-                                        ...prev,
-                                        ...patch,
-                                    }))
-                                }
-                            />
-                        </ImportSection>
-                        <ImportSection
-                            kind="resync"
-                            title="Runs"
-                            description="Runs of runners who have a therun account. Verified on import; runs that left the source are removed."
-                            buttonLabel="Import runs"
-                            gameId={gameId}
-                            gameSlug={gameSlug}
-                            job={runs.job}
-                            loading={runs.loading}
-                            loadError={runs.error}
-                            anyRunning={anyRunning}
-                            bypassCooldown={isAdmin}
-                            onStarted={refreshAll}
+                        job={settings.job}
+                        loading={settings.loading}
+                        loadError={settings.error}
+                        anyRunning={anyRunning}
+                        bypassCooldown={isAdmin}
+                        onStarted={refreshAll}
+                        commitFlags={flagPatch}
+                    >
+                        <ImportOptions
+                            flags={flags}
+                            disabled={anyRunning}
+                            onChange={(patch) =>
+                                setFlagPatch((prev) => ({
+                                    ...prev,
+                                    ...patch,
+                                }))
+                            }
                         />
-                    </>
-                )}
-            </div>
+                    </ImportSection>
+                    <ImportSection
+                        kind="resync"
+                        title="Runs"
+                        description="Runs of runners who have a therun account. Verified on import; runs that left the source are removed."
+                        buttonLabel="Import runs"
+                        gameId={gameId}
+                        gameSlug={gameSlug}
+                        job={runs.job}
+                        loading={runs.loading}
+                        loadError={runs.error}
+                        anyRunning={anyRunning}
+                        bypassCooldown={isAdmin}
+                        onStarted={refreshAll}
+                    />
+                </>
+            )}
         </div>
     );
 }

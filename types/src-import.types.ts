@@ -64,6 +64,27 @@ export interface SrcImportJob {
     commitFlags: SrcImportCommitFlags | null;
 }
 
+/**
+ * A source game the board could be linked to — GET
+ * /src-import/games/{gameId}/candidates. Mirror of the backend's response
+ * (docs/frontend-guide-src-import.md "Suggesting a source game").
+ */
+export interface SrcGameCandidate {
+    srcGameId: string;
+    /** The part after https://www.speedrun.com/ — what the link field takes. */
+    abbreviation: string;
+    name: string;
+    weblink: string;
+    /**
+     * Passes the same acceptance test the unattended settings sync uses: the
+     * normalised name or the abbreviation IS this game's therun name. Exactly
+     * one exact, untaken candidate is safe to preselect.
+     */
+    exact: boolean;
+    /** Another therun game already holds this source game. */
+    takenByGameId: number | null;
+}
+
 /** 'resync' = one-click re-sync (auto-applied); 'manual' = reviewed import. 'settings' = config-only sync (no runs). */
 export type SrcImportJobKind = 'manual' | 'resync' | 'settings';
 

@@ -27,6 +27,8 @@ export interface WizardData {
     canEditStandards: boolean;
     /** ability.can('edit','game') — shows the IGDB re-match controls. */
     canRematch: boolean;
+    /** Global admins skip the import step's once-per-day gate (so does the backend). */
+    canBypassImportCooldown: boolean;
     /** Server-render stamp used to remount steps when fresh data lands. */
     renderedAt: number;
 }

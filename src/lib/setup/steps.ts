@@ -2,7 +2,7 @@ import { SETUP_STEP_ORDER, type SetupStepId } from './completeness';
 
 export interface SetupStepMeta {
     id: SetupStepId;
-    /** 1-7, matches the ghost numeral in the wizard's step header. */
+    /** 1-8, matches the ghost numeral in the wizard's step header. */
     num: number;
     label: string;
     skippable: boolean;
@@ -22,25 +22,31 @@ export interface SetupStepMeta {
  * Order must match SETUP_STEP_ORDER — asserted in steps.test.ts.
  */
 export const SETUP_STEPS: SetupStepMeta[] = [
-    { id: 'details', num: 1, label: 'Game details', skippable: true },
-    { id: 'categories', num: 2, label: 'Categories', skippable: true },
-    { id: 'levels', num: 3, label: 'Levels', skippable: true },
-    { id: 'groups', num: 4, label: 'Category groups', skippable: true },
+    {
+        id: 'import',
+        num: 1,
+        label: 'Import from speedrun.com',
+        skippable: true,
+    },
+    { id: 'details', num: 2, label: 'Game details', skippable: true },
+    { id: 'categories', num: 3, label: 'Categories', skippable: true },
+    { id: 'levels', num: 4, label: 'Levels', skippable: true },
+    { id: 'groups', num: 5, label: 'Category groups', skippable: true },
     {
         id: 'category-setup',
-        num: 5,
+        num: 6,
         label: 'Category settings',
         skippable: true,
         wide: true,
     },
     {
         id: 'variables',
-        num: 6,
+        num: 7,
         label: 'Subcategories & filters',
         skippable: true,
         wide: true,
     },
-    { id: 'boards', num: 7, label: 'Boards', skippable: false, wide: true },
+    { id: 'boards', num: 8, label: 'Boards', skippable: false, wide: true },
 ];
 
 export const SETUP_STEP_LABELS: Record<SetupStepId, string> =

@@ -18,8 +18,9 @@ describe('SETUP_STEPS', () => {
         expect(SETUP_STEPS.map((s) => s.id)).toEqual(SETUP_STEP_ORDER);
     });
 
-    it('is the seven-step category-centric wizard', () => {
+    it('opens on the source import, then runs the category-centric steps', () => {
         expect(SETUP_STEPS.map((s) => s.id)).toEqual([
+            'import',
             'details',
             'categories',
             'levels',
@@ -29,6 +30,7 @@ describe('SETUP_STEPS', () => {
             'boards',
         ]);
         expect(SETUP_STEPS.map((s) => s.label)).toEqual([
+            'Import from speedrun.com',
             'Game details',
             'Categories',
             'Levels',
@@ -59,7 +61,7 @@ describe('SETUP_STEPS', () => {
 
     it('derives labels and indexes from the same list', () => {
         expect(SETUP_STEP_LABELS.boards).toBe('Boards');
-        expect(setupStepIndex('category-setup')).toBe(4);
+        expect(setupStepIndex('category-setup')).toBe(5);
         // Unknown ids are impossible via SetupStepId, but the lookup must not
         // silently report position 0 for one.
         expect(setupStepIndex('nope' as never)).toBe(-1);

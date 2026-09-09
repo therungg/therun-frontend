@@ -19,6 +19,7 @@ import { StepCategories } from './steps/step-categories';
 import { StepCategorySetup } from './steps/step-category-setup';
 import { StepDetails } from './steps/step-details';
 import { StepGroups } from './steps/step-groups';
+import { StepImport } from './steps/step-import';
 import { StepLevels } from './steps/step-levels';
 import { StepVariables } from './steps/step-variables';
 import type { WizardData } from './types';
@@ -135,9 +136,10 @@ export function WizardShell({ data, initialStep }: Props) {
                 // lands (e.g. after a save), so stale local state can't hide
                 // behind fresher server data.
                 //
-                // 'category-setup', 'variables' and 'boards' key on `step`
-                // alone, with no renderedAt: they own long-lived interactive
-                // state (an open variable form, staged subcategory toggles,
+                // 'import', 'category-setup', 'variables' and 'boards' key on
+                // `step` alone, with no renderedAt: they own long-lived
+                // interactive state (the import sections' job polling, an open
+                // variable form, staged subcategory toggles,
                 // BoardCuration's
                 // pendingRemovals/selectedRunIds/reorder mode, the
                 // per-category hub editor's open panel) that flows in via
@@ -149,6 +151,7 @@ export function WizardShell({ data, initialStep }: Props) {
                 // that state on every single mutation inside them, which is
                 // most of what they do.
                 key={
+                    step === 'import' ||
                     step === 'category-setup' ||
                     step === 'variables' ||
                     step === 'boards'
@@ -203,6 +206,10 @@ function CurrentStep({
     onBack: () => void;
 }) {
     switch (step) {
+        case 'import':
+            return (
+                <StepImport data={data} onAdvance={onAdvance} onBack={onBack} />
+            );
         case 'details':
             return (
                 <StepDetails

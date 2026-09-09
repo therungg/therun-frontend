@@ -194,6 +194,7 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
  * screen. The console reaches the per-category ones from the category index.
  */
 export const STEP_CONCEPTS: Record<SetupStepId, ConceptId[]> = {
+    import: ['import'],
     // The URL slug lives inside the Game details pane, not beside it.
     details: ['game-details', 'timing', 'rules'],
     categories: ['categories'],

@@ -1,8 +1,18 @@
 'use client';
 
-import { type FormEvent, useId, useState, useTransition } from 'react';
+import {
+    type FormEvent,
+    useEffect,
+    useId,
+    useState,
+    useTransition,
+} from 'react';
+import type { SrcGameCandidate } from '../../../../../../types/src-import.types';
 import styles from './src-import.module.scss';
-import { startSrcImportAction } from './src-import-actions';
+import {
+    getSrcGameCandidatesAction,
+    startSrcImportAction,
+} from './src-import-actions';
 
 export const SRC_PREFIX = 'https://www.speedrun.com/';
 
@@ -21,6 +31,18 @@ export function srcUrlFromInput(raw: string): string {
     return path ? `${SRC_PREFIX}${path}` : '';
 }
 
+/**
+ * The one candidate safe to fill in by itself: it passed the backend's exact
+ * test and no other therun game holds it. Anything else is a list to pick
+ * from — a near-miss filled in silently would link the wrong board.
+ */
+export function autoPick(
+    candidates: SrcGameCandidate[],
+): SrcGameCandidate | null {
+    const exact = candidates.filter((c) => c.exact && c.takenByGameId === null);
+    return exact.length === 1 ? exact[0] : null;
+}
+
 interface Props {
     gameId: number;
     gameSlug: string;
@@ -34,6 +56,39 @@ export function LinkCard({ gameId, gameSlug, onLinked }: Props) {
     const [error, setError] = useState<string | null>(null);
     const [pending, startTransition] = useTransition();
     const url = srcUrlFromInput(slug);
+
+    // What the board looks like it should be linked to. One source request,
+    // once, when the card mounts — the search is a fuzzy title match on the
+    // game's display name, so it does not change while the card is open.
+    // A failure is silent: the manual field is how a board gets linked either
+    // way, and a suggestion that didn't arrive is not an error the moderator
+    // can do anything about.
+    const [candidates, setCandidates] = useState<SrcGameCandidate[] | null>(
+        null,
+    );
+    useEffect(() => {
+        let live = true;
+        void (async () => {
+            const res = await getSrcGameCandidatesAction({ gameId, gameSlug });
+            if (!live || 'error' in res) {
+                if (live) setCandidates([]);
+                return;
+            }
+            setCandidates(res.result);
+            // Fill the field, never submit it: linking writes the board's
+            // whole configuration, so the moderator confirms the match.
+            const pick = autoPick(res.result);
+            if (pick) setSlug((current) => current || pick.abbreviation);
+        })();
+        return () => {
+            live = false;
+        };
+    }, [gameId, gameSlug]);
+
+    const picked = candidates ? autoPick(candidates) : null;
+    const others = (candidates ?? []).filter(
+        (c) => c.srcGameId !== picked?.srcGameId,
+    );
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
@@ -66,6 +121,48 @@ export function LinkCard({ gameId, gameSlug, onLinked }: Props) {
                     imported right away; runs can be imported after that.
                 </p>
             </div>
+
+            {candidates === null && (
+                <p className={styles.suggestNote}>Looking for a match…</p>
+            )}
+            {picked && (
+                <p className={styles.suggestNote}>
+                    Looks like <strong>{picked.name}</strong> — filled in below.
+                    Check it before linking.
+                </p>
+            )}
+            {candidates !== null && !picked && others.length > 0 && (
+                <p className={styles.suggestNote}>
+                    No certain match. These have similar names:
+                </p>
+            )}
+            {others.length > 0 && (
+                <ul className={styles.suggestList}>
+                    {others.map((c) => (
+                        <li key={c.srcGameId}>
+                            <button
+                                type="button"
+                                className={styles.suggestItem}
+                                onClick={() => setSlug(c.abbreviation)}
+                                disabled={pending || c.takenByGameId !== null}
+                            >
+                                <span className={styles.suggestName}>
+                                    {c.name}
+                                </span>
+                                <span className={styles.suggestSlug}>
+                                    /{c.abbreviation}
+                                </span>
+                                {c.takenByGameId !== null && (
+                                    <span className={styles.suggestTaken}>
+                                        already linked to another game
+                                    </span>
+                                )}
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            )}
+
             <form className={styles.form} onSubmit={submit}>
                 <label htmlFor={inputId} className="visually-hidden">
                     speedrun.com game URL
