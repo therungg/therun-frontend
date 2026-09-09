@@ -49,22 +49,23 @@ export function BreakdownBars({ rows }: { rows: BreakdownRow[] }) {
  * under it with their percentage.
  */
 export function StackedSplit({
+    label,
     a,
     b,
 }: {
+    label: string;
     a: { label: string; count: number };
     b: { label: string; count: number };
 }) {
     const total = a.count + b.count;
-    if (total === 0) {
-        return <p className={styles.sectionEmpty}>No data recorded.</p>;
-    }
+    if (total === 0) return null;
     const pct = (n: number) => (n / total) * 100;
     const fmt = (n: number) =>
         `${pct(n) >= 1 ? Math.round(pct(n)) : pct(n).toFixed(1)}%`;
 
     return (
         <div className={styles.split}>
+            <span className={styles.splitLabel}>{label}</span>
             <span className={styles.splitTrack} aria-hidden>
                 <span
                     className={styles.splitFill}

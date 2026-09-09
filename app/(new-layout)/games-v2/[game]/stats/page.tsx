@@ -367,13 +367,14 @@ export default async function GameStatsPage({ params }: PageProps) {
                     <ColumnChart
                         columns={newRunners}
                         tickEvery={2}
+                        unit="runners"
                         empty="No first runs dated in the last year."
                     />
                 </section>
             </div>
 
-            {/* One panel, four small multiples: none of these is a topic on
-                its own, and four section heads made them look like four. */}
+            {/* One panel, three small multiples: none of these is a topic on
+                its own, and a head each made them look like three pages. */}
             <section className={styles.panel}>
                 <div className={styles.sectionHead}>
                     <span className={styles.sectionLabel}>Breakdowns</span>
@@ -391,25 +392,17 @@ export default async function GameStatsPage({ params }: PageProps) {
                     <div className={styles.breakdown}>
                         <span className={styles.breakdownLabel}>Platforms</span>
                         <BreakdownBars rows={platforms} />
+                        {split && (
+                            <StackedSplit
+                                label="Hardware vs emulator"
+                                a={{ label: 'Hardware', count: split.hardware }}
+                                b={{ label: 'Emulator', count: split.emulator }}
+                            />
+                        )}
                     </div>
                     <div className={styles.breakdown}>
                         <span className={styles.breakdownLabel}>Countries</span>
                         <BreakdownBars rows={countryRows} />
-                    </div>
-                    <div className={styles.breakdown}>
-                        <span className={styles.breakdownLabel}>
-                            Hardware vs emulator
-                        </span>
-                        {split ? (
-                            <StackedSplit
-                                a={{ label: 'Hardware', count: split.hardware }}
-                                b={{ label: 'Emulator', count: split.emulator }}
-                            />
-                        ) : (
-                            <p className={styles.sectionEmpty}>
-                                No data recorded.
-                            </p>
-                        )}
                     </div>
                 </div>
             </section>

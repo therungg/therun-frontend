@@ -52,6 +52,8 @@ export interface Column {
     value: number;
     label: string;
     tip: string;
+    /** A catch-all bucket whose width isn't to scale — drawn set apart. */
+    overflow?: boolean;
 }
 
 const MONTH_LABEL = new Intl.DateTimeFormat([], {
@@ -137,6 +139,7 @@ export function timeHistogram(
         return {
             key: String(i),
             value,
+            overflow,
             label: overflow ? 'slower' : format(from),
             tip: overflow
                 ? `${value} runs slower than ${format(cap)}`

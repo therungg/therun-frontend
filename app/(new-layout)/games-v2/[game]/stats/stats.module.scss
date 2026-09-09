@@ -148,6 +148,13 @@
 }
 
 // ---- Top runners ---------------------------------------------
+// A full-width panel is not a full-width table: stretched to 1600px the
+// names and their numbers sat a screen apart with nothing between them.
+// The rows keep a reading measure and the panel keeps the slack.
+.tableWrap {
+    max-width: 60rem;
+}
+
 // The column you ranked by reads as the figure; the others stay context.
 .runnersNumActive {
     color: var(--bs-emphasis-color);
@@ -168,40 +175,61 @@
 
 // ---- Column chart (ordered series) ---------------------------
 .columnChart {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+}
+
+// The peak caption is the y axis; it rides above the plot, right-aligned
+// off the tallest column.
+.columnPeak {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    margin: 0;
+}
+
+.columnPlot {
     list-style: none;
     margin: 0;
     padding: 0;
-    display: flex;
-    align-items: flex-end;
+    display: grid;
+    align-items: end;
     gap: dt.$spacing-xs;
-    height: 180px;
+    height: 170px;
+    // One baseline under the whole series, not a rule per column — the
+    // columns stand on the axis instead of floating over the panel.
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.45);
 }
 
 .column {
-    flex: 1;
-    min-width: 0;
-    height: 100%;
-    display: grid;
-    grid-template-rows: 1fr auto;
-    gap: dt.$spacing-xs;
-}
-
-.columnTrack {
     display: flex;
     align-items: flex-end;
     height: 100%;
-    background: linear-gradient(
-        to top,
-        rgba(var(--bs-border-color-rgb), 0.18),
-        transparent 60%
-    );
-    border-radius: dt.$radius-sm dt.$radius-sm 0 0;
+    width: 100%;
+    // Twelve months across a wide panel turned into a wall of slabs;
+    // capping the column keeps it a chart at any panel width.
+    max-width: 2.75rem;
+    justify-self: center;
+}
+
+// The catch-all bucket isn't to scale, so it stands apart from the series
+// and drops to an outline weight rather than claiming the same solidity.
+.columnOverflow {
+    border-left: 1px dashed rgba(var(--bs-border-color-rgb), 0.5);
+    padding-left: dt.$spacing-sm;
+    margin-left: dt.$spacing-sm;
+
+    .columnFill {
+        opacity: 0.45;
+    }
 }
 
 .columnFill {
     display: block;
     width: 100%;
-    min-height: 1px;
+    min-height: 2px;
     border-radius: dt.$radius-sm dt.$radius-sm 0 0;
     background: var(--board-accent, var(--bs-primary));
     opacity: 0.85;
@@ -210,6 +238,11 @@
     .column:hover & {
         opacity: 1;
     }
+}
+
+.columnTicks {
+    display: grid;
+    gap: dt.$spacing-xs;
 }
 
 .columnTick {
@@ -222,10 +255,12 @@
 }
 
 // ---- Breakdown bars ------------------------------------------
-// Four small multiples in one panel; each keeps a label, none gets a head.
+// Three cells in one panel; each keeps a label, none gets a head. The
+// two-way split rides under Platforms rather than taking a fourth cell of
+// its own, where one bar sat in an otherwise empty column.
 .breakdownGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(17rem, 100%), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(19rem, 100%), 1fr));
     gap: dt.$spacing-2xl;
 }
 
@@ -252,9 +287,9 @@
 
 .barRow {
     display: grid;
-    grid-template-columns: minmax(5rem, 9rem) minmax(0, 1fr) 4rem;
+    grid-template-columns: minmax(4.5rem, 8rem) minmax(0, 1fr) 3.25rem;
     align-items: center;
-    gap: dt.$spacing-md;
+    gap: dt.$spacing-sm;
     font-size: dt.$font-size-sm;
 }
 
@@ -271,16 +306,20 @@
     white-space: nowrap;
 }
 
+// The rail is the denominator: at 0.25 alpha on a dark panel it was
+// invisible, so a 40-run platform read as a stray dot with no context.
 .barTrack {
     height: 8px;
     border-radius: dt.$radius-sm;
-    background: rgba(var(--bs-border-color-rgb), 0.25);
+    background: rgba(var(--bs-border-color-rgb), 0.45);
     overflow: hidden;
 }
 
 .barFill {
     display: block;
     height: 100%;
+    // A share too small to draw still gets a stub, or the row reads as zero.
+    min-width: 3px;
     // 4px-radius data end on the value side only — the bar grows from the
     // track's left baseline.
     border-radius: 0 dt.$radius-sm dt.$radius-sm 0;
@@ -299,6 +338,15 @@
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-sm;
+    margin-top: dt.$spacing-lg;
+    padding-top: dt.$spacing-lg;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.25);
+}
+
+.splitLabel {
+    font-size: dt.$font-size-2xs;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
 }
 
 .splitTrack {

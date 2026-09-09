@@ -60,7 +60,7 @@ export function TimeDistribution({ boards }: { boards: DistributionBoard[] }) {
                     {active.median ? ` · median ${active.median}` : ''}
                 </span>
             </div>
-            <ColumnChart columns={active.columns} tickEvery={3} />
+            <ColumnChart columns={active.columns} tickEvery={3} unit="runs" />
         </div>
     );
 }

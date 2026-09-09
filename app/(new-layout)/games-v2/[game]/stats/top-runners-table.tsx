@@ -106,7 +106,7 @@ export function TopRunnersTable({ allTime, d90, d30 }: Props) {
                     No recorded activity in this period.
                 </p>
             ) : (
-                <>
+                <div className={styles.tableWrap}>
                     <div className={overviewStyles.runnersTable}>
                         <div
                             className={`${overviewStyles.runnersRow} ${overviewStyles.runnersHeadRow}`}
@@ -168,7 +168,7 @@ export function TopRunnersTable({ allTime, d90, d30 }: Props) {
                                 : `Show all ${sorted.length}`}
                         </button>
                     )}
-                </>
+                </div>
             )}
         </div>
     );
