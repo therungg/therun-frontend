@@ -21,9 +21,13 @@ const compareBySplitProgress = (
 export const sortRaceParticipants = (
     race: Race,
 ): RaceParticipantWithLiveData[] => {
-    const participants = race.participants?.map((participant) =>
+    // `race?.` guards the race itself, not just its participants: this is the
+    // first thing every race card reads, and a race arriving null (a bad row
+    // in a list, a not-yet-loaded detail) otherwise throws "reading
+    // 'participants'" here. A race with no participants sorts to nothing.
+    const participants = race?.participants?.map((participant) =>
         substitutePercentageWithLiveData(participant),
-    ) as RaceParticipantWithLiveData[];
+    ) as RaceParticipantWithLiveData[] | undefined;
 
     if (!participants) return [];
 
