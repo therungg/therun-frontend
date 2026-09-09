@@ -306,7 +306,7 @@
     }
 }
 
-// ---- link card: suggested source games ------------------------------------
+// ---- link card: the matched source game ------------------------------------
 
 .suggestNote {
     font-size: dt.$font-size-sm;
@@ -314,53 +314,4 @@
     margin: dt.$spacing-sm 0 0;
 }
 
-.suggestList {
-    list-style: none;
-    margin: dt.$spacing-xs 0 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: dt.$spacing-xs;
-}
 
-.suggestItem {
-    display: inline-flex;
-    align-items: baseline;
-    gap: dt.$spacing-xs;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.8);
-    border-radius: dt.$radius-md;
-    background: var(--bs-body-bg);
-    color: var(--bs-body-color);
-    font-size: dt.$font-size-sm;
-    padding: dt.$spacing-xs dt.$spacing-sm;
-    cursor: pointer;
-
-    &:hover:not(:disabled) {
-        border-color: var(--bs-primary);
-    }
-
-    &:focus-visible {
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.25);
-    }
-
-    &:disabled {
-        cursor: default;
-        opacity: 0.55;
-    }
-}
-
-.suggestName {
-    font-weight: 600;
-}
-
-.suggestSlug {
-    @include board.mono-time;
-    font-size: dt.$font-size-xs;
-    color: var(--bs-tertiary-color);
-}
-
-.suggestTaken {
-    font-size: dt.$font-size-xs;
-    color: var(--bs-tertiary-color);
-}

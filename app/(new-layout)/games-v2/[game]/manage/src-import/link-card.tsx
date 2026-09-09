@@ -32,9 +32,10 @@ export function srcUrlFromInput(raw: string): string {
 }
 
 /**
- * The one candidate safe to fill in by itself: it passed the backend's exact
- * test and no other therun game holds it. Anything else is a list to pick
- * from — a near-miss filled in silently would link the wrong board.
+ * The match, or nothing. A candidate counts only when it passed the backend's
+ * exact test and no other therun game holds it; a near-miss is not a weaker
+ * answer, it is no answer, and offering one to pick from only invites linking
+ * the wrong board.
  */
 export function autoPick(
     candidates: SrcGameCandidate[],
@@ -86,9 +87,6 @@ export function LinkCard({ gameId, gameSlug, onLinked }: Props) {
     }, [gameId, gameSlug]);
 
     const picked = candidates ? autoPick(candidates) : null;
-    const others = (candidates ?? []).filter(
-        (c) => c.srcGameId !== picked?.srcGameId,
-    );
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
@@ -130,37 +128,6 @@ export function LinkCard({ gameId, gameSlug, onLinked }: Props) {
                     Looks like <strong>{picked.name}</strong> — filled in below.
                     Check it before linking.
                 </p>
-            )}
-            {candidates !== null && !picked && others.length > 0 && (
-                <p className={styles.suggestNote}>
-                    No certain match. These have similar names:
-                </p>
-            )}
-            {others.length > 0 && (
-                <ul className={styles.suggestList}>
-                    {others.map((c) => (
-                        <li key={c.srcGameId}>
-                            <button
-                                type="button"
-                                className={styles.suggestItem}
-                                onClick={() => setSlug(c.abbreviation)}
-                                disabled={pending || c.takenByGameId !== null}
-                            >
-                                <span className={styles.suggestName}>
-                                    {c.name}
-                                </span>
-                                <span className={styles.suggestSlug}>
-                                    /{c.abbreviation}
-                                </span>
-                                {c.takenByGameId !== null && (
-                                    <span className={styles.suggestTaken}>
-                                        already linked to another game
-                                    </span>
-                                )}
-                            </button>
-                        </li>
-                    ))}
-                </ul>
             )}
 
             <form className={styles.form} onSubmit={submit}>
