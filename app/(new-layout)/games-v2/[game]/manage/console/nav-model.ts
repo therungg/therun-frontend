@@ -65,30 +65,33 @@ export interface NavFlags {
 const ALL_GROUPS: NavGroup[] = [
     {
         id: 'overview',
-        // No caption — a one-item "group" for the front door.
-        label: '',
-        items: [{ id: 'overview', label: CONCEPT_LABEL.overview }],
-    },
-    {
-        id: 'moderate',
-        label: 'Queue',
+        // No caption: the daily loop. Overview is the front door and the
+        // mod queue is the one place a moderator goes every day, so the two
+        // sit together at the top with the queue's pending count beside it.
         // Needs attention and Bans are off the nav for now; both stay
         // deep-linkable (see hiddenLandingIds) because the overview's KPI,
         // the moderators pane and the old /moderation routes all land there.
-        items: [{ id: 'mod-queue', label: CONCEPT_LABEL['mod-queue'] }],
+        label: '',
+        items: [
+            { id: 'overview', label: CONCEPT_LABEL.overview },
+            { id: 'mod-queue', label: CONCEPT_LABEL['mod-queue'] },
+        ],
     },
     {
         id: 'structure',
         label: 'Structure',
+        // In the order a board is built: what the boards are (categories,
+        // and levels — which are categories), how each splits, what filters
+        // it, and only then how the rail arranges them into groups.
         items: [
             { id: 'boards', label: CONCEPT_LABEL.boards },
             { id: 'categories', label: CONCEPT_LABEL.categories },
-            { id: 'groups', label: CONCEPT_LABEL.groups },
             // One item now: the level categories (templates) are a tab inside
             // the Levels pane. ?pane=level-categories still deep-links there.
             { id: 'levels', label: CONCEPT_LABEL.levels },
             { id: 'subcategories', label: CONCEPT_LABEL.subcategories },
             { id: 'filters', label: CONCEPT_LABEL.filters },
+            { id: 'groups', label: CONCEPT_LABEL.groups },
         ],
     },
     {
@@ -131,7 +134,8 @@ function itemVisible(
     // `flags.canReassign`.
     if (itemId === 'reassign') return false;
     if (itemId === 'moderators') return flags.canEditMods;
-    if (groupId === 'moderate') return flags.canModerate;
+    if (groupId === 'moderate' || itemId === 'mod-queue')
+        return flags.canModerate;
     if (itemId === 'categories') return flags.canConfigure || flags.canModerate;
     // Boards is pulled from the console for now. Hiding it here also drops
     // the `?pane=boards` deep link (resolveInitialPane only accepts visible

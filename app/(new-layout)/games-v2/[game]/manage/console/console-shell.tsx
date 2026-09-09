@@ -74,6 +74,9 @@ export interface ConsoleShellProps {
     settingsJob?: SrcImportJob | null;
     /** Latest runs import, for the overview card's per-kind lines. */
     runsJob?: SrcImportJob | null;
+    /** Runs awaiting a verdict — the count beside Mod queue in the sidebar.
+     * Null when the viewer can't moderate or the count failed to load. */
+    queuePendingCount?: number | null;
 }
 
 export function ConsoleShell({
@@ -97,6 +100,7 @@ export function ConsoleShell({
     syncJob,
     settingsJob,
     runsJob,
+    queuePendingCount = null,
 }: ConsoleShellProps) {
     const groups = useMemo(() => buildNav(flags), [flags]);
     const footerItems = useMemo(() => buildFooterNav(flags), [flags]);
@@ -138,6 +142,10 @@ export function ConsoleShell({
                 degraded: degradedSources.length > 0,
             },
         };
+        // The one number a moderator checks daily: runs waiting on them.
+        if (queuePendingCount != null && queuePendingCount > 0) {
+            map['mod-queue'] = { count: queuePendingCount };
+        }
         const pending = modApplications?.length ?? 0;
         if (pending > 0) map.moderators = { count: pending };
         if (syncJob?.status === 'queued' || syncJob?.status === 'running') {
@@ -157,6 +165,7 @@ export function ConsoleShell({
     }, [
         attentionItems.length,
         degradedSources.length,
+        queuePendingCount,
         modApplications,
         syncJob,
         boardHealth,

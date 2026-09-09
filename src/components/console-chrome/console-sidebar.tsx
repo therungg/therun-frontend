@@ -26,6 +26,18 @@ interface Props {
     ariaLabel?: string;
 }
 
+/**
+ * The console's spine is the leaderboard's category rail stood on end.
+ *
+ * On the public board a group of categories is a recessed well with its name
+ * engraved into an endcap; the board you are on is the one lit chip. Here
+ * each nav group is that same well — its caption engraved across the top,
+ * its panes stacked inside, the current pane lit in the board's accent — so
+ * a moderator reads the console as the board seen from behind, not as a
+ * different product. Doors that are not panes (the wizard, the history
+ * drawer) sit under the wells as dashed ghosts, the board's own mark for
+ * "a thing you can open, not a place you can be".
+ */
 export function ConsoleSidebar({
     groups,
     icons,
@@ -37,13 +49,14 @@ export function ConsoleSidebar({
     footerItems,
     ariaLabel,
 }: Props) {
-    const renderItem = (item: NavItem) => {
+    const renderItem = (item: NavItem, door = false) => {
         const Icon = icons[item.id];
         const isActive = activeItem === item.id;
         const badge = badges?.[item.id];
         const href = hrefFor?.(item.id);
         const className = clsx(
             styles.navItem,
+            door && styles.door,
             href && styles.navLink,
             isActive && styles.active,
             item.reserved && styles.reserved,
@@ -52,20 +65,13 @@ export function ConsoleSidebar({
             <>
                 {Icon && (
                     <Icon
-                        size={16}
+                        size={15}
                         className={styles.navIcon}
                         aria-hidden="true"
                     />
                 )}
                 <span className={styles.navLabel}>{item.label}</span>
                 {item.reserved && <span className={styles.soon}>soon</span>}
-                {/* TODO(boards mark-for-later badge): a whole-game "marked
-                 * for later" count needs a backend endpoint — the roster
-                 * endpoint only supports markedForLater=true scoped to one
-                 * category, and summing it across every category here would
-                 * mean N roster calls per render. Skipped rather than faked;
-                 * wire this up once that count endpoint exists (see
-                 * task-13-report.md). */}
                 {badge?.count != null && (
                     <AttentionBadge
                         count={badge.count}
@@ -119,16 +125,27 @@ export function ConsoleSidebar({
     return (
         <nav aria-label={ariaLabel ?? 'Console navigation'}>
             {groups.map((group) => (
-                <div key={group.id} className={styles.navGroup}>
-                    {group.label && (
-                        <div className={styles.groupLabel}>{group.label}</div>
+                <section
+                    key={group.id}
+                    className={clsx(
+                        styles.well,
+                        !group.label && styles.wellSolo,
                     )}
-                    {group.items.map(renderItem)}
-                </div>
+                    aria-label={group.label || undefined}
+                >
+                    {group.label && (
+                        <div className={styles.wellCap} aria-hidden="true">
+                            {group.label}
+                        </div>
+                    )}
+                    <div className={styles.wellBody}>
+                        {group.items.map((item) => renderItem(item))}
+                    </div>
+                </section>
             ))}
             {footerItems && footerItems.length > 0 && (
                 <div className={styles.navFooter}>
-                    {footerItems.map(renderItem)}
+                    {footerItems.map((item) => renderItem(item, true))}
                 </div>
             )}
         </nav>

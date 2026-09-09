@@ -20,6 +20,7 @@ import {
     canModerateGame,
 } from '~src/lib/moderation/can-moderate';
 import { listManualTimes } from '~src/lib/moderation/manual-times';
+import { listModQueue } from '~src/lib/moderation/mod-queue';
 import { listPolicies } from '~src/lib/moderation/policies';
 import { listGameReports } from '~src/lib/moderation/reports';
 import { listQueue } from '~src/lib/moderation/triage';
@@ -109,6 +110,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
         syncJob,
         settingsJob,
         runsJob,
+        queuePendingCount,
     ] = await Promise.all([
         getGameIdentifiers(game.id).catch(() => ({
             slug: null,
@@ -130,6 +132,16 @@ export default async function GameAdminConsolePage({ params }: Props) {
         // import" line for settings and one for runs.
         getSrcImportJob(sessionId, game.id, 'settings').catch(() => null),
         getSrcImportJob(sessionId, game.id, 'resync').catch(() => null),
+        // Runs awaiting a verdict — the sidebar's count beside Mod queue.
+        // One page of one row is enough: the total is what's wanted.
+        canModerate
+            ? listModQueue(sessionId, game.id, {
+                  status: 'pending',
+                  pageSize: 1,
+              })
+                  .then((p) => p.totalItems)
+                  .catch(() => null)
+            : Promise.resolve(null),
     ]);
     const { rows: rawRows, groups } = catalog;
     const degradedSources = degradedSourcesOf([
@@ -287,6 +299,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 syncJob={syncJob}
                 settingsJob={settingsJob}
                 runsJob={runsJob}
+                queuePendingCount={queuePendingCount}
             />
         </Suspense>
     );

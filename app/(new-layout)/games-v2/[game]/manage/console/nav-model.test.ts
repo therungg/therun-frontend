@@ -77,11 +77,14 @@ describe('buildNav', () => {
         );
     });
 
-    it('keeps the Queue group to the mod queue for moderators', () => {
-        const queue = buildNav({ ...NO_FLAGS, canModerate: true }).find(
-            (g) => g.id === 'moderate',
+    it('puts the mod queue beside Overview for moderators', () => {
+        const front = buildNav({ ...NO_FLAGS, canModerate: true }).find(
+            (g) => g.id === 'overview',
         );
-        expect(queue?.items.map((i) => i.id)).toEqual(['mod-queue']);
+        expect(front?.items.map((i) => i.id)).toEqual([
+            'overview',
+            'mod-queue',
+        ]);
     });
 
     it('gives Overview to every console viewer and drops it for no-flag viewers', () => {

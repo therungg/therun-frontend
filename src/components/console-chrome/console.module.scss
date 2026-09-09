@@ -80,15 +80,17 @@ $rail: 3px; // severity spine / active accent width
     overflow: hidden;
 }
 
-// Exit doors (back to leaderboard, all your games) — quiet links,
-// visually apart from the nav below a hairline.
+// Exit doors (back to leaderboard, all your games) — directly under the
+// identity they leave from, before the nav: the way back is the first thing
+// under the game's name on every page, never at the bottom of a scroll.
 .mastExits {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: dt.$spacing-sm;
-    padding-top: dt.$spacing-lg;
-    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-xs dt.$spacing-lg;
+    margin-top: calc(#{dt.$spacing-lg} * -1 + #{dt.$spacing-md});
+    padding-bottom: dt.$spacing-xs;
+    font-size: dt.$font-size-xs;
 }
 
 .topbar {
@@ -409,54 +411,79 @@ $rail: 3px; // severity spine / active accent width
     gap: dt.$spacing-2xl;
 }
 
-.navGroup {
+// ---- Nav wells --------------------------------------------------------
+// The leaderboard's category rail, stood on end. Each group is one recessed
+// well (same recess tokens the public masthead uses) with its name engraved
+// across the top; the panes stack inside as chips and the current one is
+// lit in the board's accent — the same lit chip that marks the board you
+// are on out front. One well follows the next with a breath of canvas
+// between, so the groups read as objects, not as a list with captions.
+.well {
+    border: 1px solid var(--board-recess-border);
+    border-radius: dt.$radius-lg;
+    background: var(--board-recess-bg);
+    box-shadow: inset 0 2px 5px var(--board-recess-shadow);
+    overflow: hidden;
+
+    & + & {
+        margin-top: dt.$spacing-md;
+    }
+}
+
+// The uncaptioned front well (Overview, the queue) has no cap: its top edge
+// is the top of the nav, and the two lines in it need no name.
+.wellSolo .wellBody {
+    padding-top: dt.$spacing-sm;
+}
+
+// Engraved endcap, horizontal: the darker band welded to the well's top
+// edge, its label pressed into it. Same register as the public rail's caps,
+// so "Structure" out back is set exactly like "Main categories" out front.
+.wellCap {
+    padding: 0.4rem dt.$spacing-md 0.35rem;
+    background: var(--board-recess-strong-bg);
+    border-bottom: 1px solid var(--board-recess-border);
+    box-shadow: inset 0 -1px 0 var(--board-recess-highlight);
+    font-size: dt.$font-size-2xs;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    line-height: 1.25;
+    color: var(--bs-secondary-color);
+    text-shadow: 0 1px 0 var(--board-engrave-shadow);
+}
+
+.wellBody {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
+    padding: dt.$spacing-sm dt.$spacing-sm;
 }
 
-.groupLabel {
-    font-size: dt.$font-size-2xs;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-weight: 600;
-    color: var(--bs-tertiary-color);
-    padding: 0 dt.$spacing-sm dt.$spacing-xs;
-}
-
+// A pane is a chip in the well. At rest it is quiet — text on the recess —
+// so the well reads as one object with names in it, not six buttons. Hover
+// raises it the way a resting board chip raises; active is the lit key.
 .navItem {
     display: flex;
     align-items: center;
-    gap: dt.$spacing-md;
+    gap: 0.6rem;
     width: 100%;
     text-align: left;
-    padding: 0.5rem dt.$spacing-md;
-    border: 0;
+    padding: 0.45rem dt.$spacing-sm 0.45rem dt.$spacing-md;
+    border: 1px solid transparent;
     border-radius: dt.$radius-md;
     background: transparent;
     color: var(--bs-body-color);
     font-size: dt.$font-size-sm;
     font-weight: 500;
+    line-height: 1.2;
     cursor: pointer;
-    position: relative;
-    transition: background-color dt.$transition-fast, color dt.$transition-fast;
-
-    // quiet left accent rail, revealed on active
-    &::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 50%;
-        transform: translateY(-50%) scaleY(0);
-        width: $rail;
-        height: 60%;
-        border-radius: 0 $rail $rail 0;
-        background: var(--bs-primary);
-        transition: transform dt.$transition-base;
-    }
+    transition: background-color dt.$transition-fast,
+        border-color dt.$transition-fast, color dt.$transition-fast;
 
     &:hover {
-        background: rgba(var(--bs-primary-rgb), 0.06);
+        background: rgba(var(--bs-body-color-rgb), 0.09);
+        border-color: rgba(var(--bs-border-color-rgb), 0.6);
         color: var(--bs-emphasis-color);
     }
 
@@ -468,7 +495,12 @@ $rail: 3px; // severity spine / active accent width
 
 .navIcon {
     flex-shrink: 0;
-    opacity: 0.8;
+    color: var(--bs-secondary-color);
+    transition: color dt.$transition-fast;
+}
+
+.navItem:hover .navIcon {
+    color: var(--bs-emphasis-color);
 }
 
 .navLabel {
@@ -478,30 +510,38 @@ $rail: 3px; // severity spine / active accent width
     text-overflow: ellipsis;
 }
 
+// The pane you are on: the board's solid lit chip, not a tint. One signal,
+// unmistakable, and the same one the public board uses for "you are here".
 .active {
-    background: rgba(var(--bs-primary-rgb), 0.1);
-    color: var(--bs-primary);
+    @include board.board-chip-active;
     font-weight: 600;
 
-    &::before {
-        transform: translateY(-50%) scaleY(1);
+    .navIcon {
+        color: inherit;
     }
 
-    .navIcon {
-        opacity: 1;
+    // A count on the lit chip is set in the chip's own ink.
+    .count {
+        background: rgba(0, 0, 0, 0.22);
+        color: inherit;
+        border-color: transparent;
     }
 }
 
+// Pending count: a figure, not an alarm. Mono tabular digits in a small
+// capsule on the well; red is kept for a source that failed (degraded), so
+// the ordinary daily number never reads as an emergency.
 .count {
     @include board.mono-time;
     font-size: dt.$font-size-2xs;
     font-weight: 700;
-    min-width: 1.5rem;
+    min-width: 1.6rem;
     text-align: center;
-    padding: dt.$spacing-xs dt.$spacing-sm;
+    padding: 0.1rem 0.45rem;
     border-radius: 999px;
-    background: dt.$accent-red;
-    color: #fff;
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.45);
+    background: rgba(var(--bs-primary-rgb), 0.14);
+    color: var(--bs-emphasis-color);
 }
 
 // Anchor variant of .navItem — same box, link semantics.
@@ -531,19 +571,28 @@ $rail: 3px; // severity spine / active accent width
     }
 }
 
-// Utility doors under the nav — not panes, so visually apart: a hairline
-// above, quieter text.
+// Doors, not places: the wizard leaves the console, History opens a drawer.
+// They sit under the wells on the bare canvas as dashed ghosts — the
+// board's own mark for a collapsed group: present, openable, not where you
+// are — so nobody mistakes them for a seventh pane.
 .navFooter {
-    margin-top: dt.$spacing-xl;
-    padding-top: dt.$spacing-lg;
-    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    margin-top: dt.$spacing-lg;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
+}
 
-    .navItem {
-        color: var(--bs-secondary-color);
-        font-weight: 500;
+.door {
+    border-style: dashed;
+    border-color: rgba(var(--bs-border-color-rgb), 0.5);
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
+
+    &:hover {
+        border-style: solid;
+        background: rgba(var(--bs-body-color-rgb), 0.07);
+        color: var(--bs-emphasis-color);
     }
 }
 

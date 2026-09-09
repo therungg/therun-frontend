@@ -126,6 +126,12 @@ export function ConsoleChrome({
                         </h1>
                     </div>
                 </div>
+                {/* The exits sit with the identity they leave from — the
+                    way back to the leaderboard is the first thing under the
+                    game's name, on every page, never a scroll away. */}
+                {header.actions && (
+                    <div className={styles.mastExits}>{header.actions}</div>
+                )}
                 <ConsoleSidebar
                     groups={groups}
                     icons={icons}
@@ -137,9 +143,6 @@ export function ConsoleChrome({
                     footerItems={footerItems}
                     ariaLabel={navAriaLabel}
                 />
-                {header.actions && (
-                    <div className={styles.mastExits}>{header.actions}</div>
-                )}
             </>
         );
         return (

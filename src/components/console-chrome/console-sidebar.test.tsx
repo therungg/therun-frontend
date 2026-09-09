@@ -52,10 +52,10 @@ describe('ConsoleSidebar', () => {
             />,
         );
         expect(screen.getByText('Structure')).toBeTruthy();
-        // Only one caption div — the empty label renders nothing.
-        expect(
-            container.querySelectorAll('[class*="groupLabel"]'),
-        ).toHaveLength(1);
+        // Only one engraved cap — the empty label renders a capless well.
+        expect(container.querySelectorAll('[class*="wellCap"]')).toHaveLength(
+            1,
+        );
     });
 
     it('renders count badges and status dots from the badges map', () => {
