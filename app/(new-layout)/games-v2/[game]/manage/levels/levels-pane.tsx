@@ -195,10 +195,6 @@ export function LevelsPane({
                             aria-hidden="true"
                         />
                         <p className={styles.emptyTitle}>No levels yet</p>
-                        <p className={styles.emptyText}>
-                            The first level opens a Levels section on the board,
-                            shown as a dropdown.
-                        </p>
                         {addLevelButton}
                     </div>
                 </section>

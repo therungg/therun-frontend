@@ -92,10 +92,6 @@ export function LevelSubcategoriesTable({
                         aria-hidden="true"
                     />
                     <p className={styles.emptyTitle}>No subcategories yet</p>
-                    <p className={styles.emptyText}>
-                        Every level shows one board until it has something to
-                        split into.
-                    </p>
                     <button
                         type="button"
                         className={styles.addAction}
