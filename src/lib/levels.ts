@@ -110,3 +110,25 @@ export async function setLevelVariants(
         body: { op: 'level-variants', categoryId, variants },
     });
 }
+
+export interface UpdateLevelTemplateBody {
+    display?: string;
+    /** false archives the subcategory: it leaves every level's list. */
+    active?: boolean;
+}
+
+/**
+ * Rename or archive a subcategory every level has. The backend rewrites the
+ * value on every level's variable, so the one write lands everywhere.
+ */
+export async function updateLevelTemplate(
+    sessionId: string,
+    gameId: number,
+    templateId: number,
+    body: UpdateLevelTemplateBody,
+): Promise<{ updated: boolean }> {
+    return apiFetch<{ updated: boolean }>(
+        `/v1/games/${gameId}/categories/${templateId}`,
+        { method: 'PUT', sessionId, body },
+    );
+}

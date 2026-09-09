@@ -1,0 +1,371 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/board' as board;
+
+// The Levels tab is three stacked answers: which levels exist, which
+// subcategories exist, and which of the second each of the first carries.
+// Every section is one board surface with the same head, the same table
+// register and its one action under the table — so the tab reads as one
+// thing read top to bottom, not three widgets.
+
+.section {
+    @include board.board-surface(dt.$spacing-lg);
+    margin-bottom: dt.$spacing-lg;
+}
+
+.sectionHead {
+    @include board.board-section-head;
+}
+
+.sectionTitle {
+    @include board.board-eyebrow;
+}
+
+.sectionCount {
+    @include board.board-section-count;
+}
+
+// The one action a section has sits under its table, on the left, where the
+// eye lands after reading the last row. A note may keep it company on the
+// right.
+.sectionFoot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    flex-wrap: wrap;
+    margin-top: dt.$spacing-md;
+}
+
+.addAction {
+    @include board.board-btn-primary;
+}
+
+.footNote {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+    margin: 0;
+}
+
+// The levels table is the Categories matrix, which brings its own surface.
+// This wrapper only strips the double margin so the Add button sits under the
+// table rather than a gap below it.
+.levelsTable {
+    margin-bottom: dt.$spacing-lg;
+
+    > :first-child {
+        margin-bottom: 0;
+    }
+}
+
+// ---- Empty states -----------------------------------------------------
+.empty {
+    @include board.board-empty;
+}
+
+.emptyIcon {
+    @include board.board-empty-icon;
+}
+
+.emptyTitle {
+    @include board.board-empty-title;
+}
+
+.emptyText {
+    margin: 0 0 dt.$spacing-md;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.error {
+    @include board.board-error-alert;
+}
+
+.loading {
+    @include board.board-skeleton;
+    height: 7rem;
+    border-radius: dt.$radius-md;
+}
+
+// ---- Subcategories table ---------------------------------------------
+.table {
+    @include board.board-table;
+
+    thead tr {
+        background: rgba(var(--bs-body-color-rgb), 0.04);
+    }
+
+    tbody td {
+        padding-top: dt.$spacing-sm;
+        padding-bottom: dt.$spacing-sm;
+    }
+}
+
+.name {
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.busyRow {
+    opacity: 0.55;
+}
+
+// "On levels": the count is the fact, the bar is how quickly the eye finds
+// the row that is not on every level.
+.reach {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    white-space: nowrap;
+}
+
+.reachCount {
+    @include board.mono-time;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-body-color);
+    min-width: 4.5rem;
+}
+
+.reachMeter {
+    width: 6rem;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(var(--bs-border-color-rgb), 0.45);
+    overflow: hidden;
+}
+
+.reachFill {
+    height: 100%;
+    border-radius: inherit;
+    background: var(--bs-primary);
+    transition: width dt.$transition-base;
+}
+
+.reachPartial .reachFill {
+    background: dt.$accent-amber;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: dt.$spacing-md;
+    white-space: nowrap;
+}
+
+.quietAction {
+    @include board.board-quiet-link;
+    opacity: 0;
+    transition: opacity dt.$transition-fast, color dt.$transition-fast;
+
+    &:focus-visible {
+        opacity: 1;
+    }
+}
+
+tbody tr:hover .quietAction,
+tbody tr:focus-within .quietAction {
+    opacity: 1;
+}
+
+.removeAction:hover:not(:disabled) {
+    color: dt.$accent-red;
+}
+
+// ---- Assignment grid ---------------------------------------------------
+// Levels down, subcategories across. A cell is a switch drawn as a tick in a
+// box: on is solid accent, off is a faint dashed box, so a column reads as a
+// pattern of presence rather than a stack of checkboxes.
+.gridScroller {
+    overflow-x: auto;
+}
+
+.grid {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: dt.$font-size-sm;
+
+    th,
+    td {
+        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+    }
+
+    thead th {
+        vertical-align: bottom;
+        padding: dt.$spacing-sm dt.$spacing-sm;
+        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+        background: rgba(var(--bs-body-color-rgb), 0.04);
+    }
+
+    tbody tr {
+        transition: background-color dt.$transition-fast;
+
+        &:hover {
+            background: var(--bs-tertiary-bg);
+        }
+    }
+
+    tbody td {
+        padding: dt.$spacing-xs dt.$spacing-sm;
+        vertical-align: middle;
+    }
+}
+
+// The first column names the row and stays put while the columns scroll.
+.gridCorner,
+.gridRowHead {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    text-align: left;
+    // The same paint as the surface it sits on, so the frozen column hides
+    // what scrolls under it without drawing a different shade.
+    background: var(
+        --board-surface-bg,
+        color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-secondary-bg) 8%)
+    );
+    border-right: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+}
+
+.gridCorner {
+    @include board.board-eyebrow;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding-left: dt.$spacing-md !important;
+}
+
+.gridRowHead {
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    white-space: nowrap;
+    padding-left: dt.$spacing-md !important;
+    min-width: 11rem;
+}
+
+.grid tbody tr:hover .gridRowHead {
+    background: var(--bs-tertiary-bg);
+}
+
+// A column head is the subcategory's name over its reach, and a button:
+// clicking it fills or clears the whole column.
+.gridColHead {
+    text-align: center;
+    min-width: 6.5rem;
+}
+
+.colToggle {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    width: 100%;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    border: 1px solid transparent;
+    border-radius: dt.$radius-sm;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    transition: border-color dt.$transition-fast,
+        background-color dt.$transition-fast;
+
+    &:hover:not(:disabled) {
+        border-color: rgba(var(--bs-border-color-rgb), 0.6);
+        background: rgba(var(--bs-body-color-rgb), 0.03);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+
+    &:disabled {
+        cursor: default;
+    }
+}
+
+.colName {
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    white-space: nowrap;
+}
+
+.colCount {
+    @include board.board-section-count;
+}
+
+.gridCell {
+    text-align: center;
+}
+
+.toggle {
+    display: inline-grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: dt.$radius-sm;
+    border: 1px dashed rgba(var(--bs-border-color-rgb), 0.55);
+    background: transparent;
+    color: transparent;
+    padding: 0;
+    cursor: pointer;
+    transition: background-color dt.$transition-fast,
+        border-color dt.$transition-fast, color dt.$transition-fast,
+        transform dt.$transition-fast;
+
+    &:hover:not(:disabled) {
+        border-color: rgba(var(--bs-primary-rgb), 0.6);
+        color: rgba(var(--bs-primary-rgb), 0.6);
+    }
+
+    &:active:not(:disabled) {
+        transform: scale(0.92);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+
+    &:disabled {
+        cursor: default;
+        opacity: 0.6;
+    }
+
+    @media (pointer: coarse) {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+.toggleOn {
+    border-style: solid;
+    border-color: var(--bs-primary);
+    background: var(--bs-primary);
+    color: var(--board-on-accent, #fff);
+
+    &:hover:not(:disabled) {
+        color: var(--board-on-accent, #fff);
+        background: color-mix(in srgb, var(--bs-primary) 85%, white);
+        border-color: color-mix(in srgb, var(--bs-primary) 85%, white);
+    }
+}
+
+// The row's tail: how many of the columns this level carries, and the
+// row-wide switch.
+.gridRowTail {
+    text-align: right;
+    white-space: nowrap;
+    padding-right: dt.$spacing-md !important;
+}
+
+.rowToggle {
+    @include board.board-quiet-link;
+    @include board.mono-time;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.gridColTail {
+    text-align: right;
+}

@@ -20,6 +20,9 @@ interface PromptDialogProps {
     blurb?: ReactNode;
     fieldLabel: string;
     placeholder?: string;
+    /** What the field holds when the dialog opens — a rename starts from the
+     *  current name, a create from nothing. Default empty. */
+    initialValue?: string;
     /** Textarea instead of a single-line input. Default false. */
     multiline?: boolean;
     /**
@@ -49,6 +52,7 @@ export function PromptDialog({
     blurb,
     fieldLabel,
     placeholder,
+    initialValue = '',
     multiline = false,
     minLength = 0,
     submitLabel,
@@ -62,11 +66,11 @@ export function PromptDialog({
     const initialFocusRef = multiline ? textareaRef : inputRef;
     const fieldId = `${labelledBy}-field`;
 
-    // Every open starts from a blank field — mirrors the native prompt, and
-    // this component instance can be reused across multiple opens.
+    // Every open starts from the initial value — mirrors the native prompt,
+    // and this component instance can be reused across multiple opens.
     useEffect(() => {
-        if (open) setValue('');
-    }, [open]);
+        if (open) setValue(initialValue);
+    }, [open, initialValue]);
 
     const trimmed = value.trim();
     const valid = minLength <= 0 || trimmed.length >= minLength;
