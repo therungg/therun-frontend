@@ -72,11 +72,10 @@ const ALL_GROUPS: NavGroup[] = [
     {
         id: 'moderate',
         label: 'Queue',
-        items: [
-            { id: 'mod-queue', label: CONCEPT_LABEL['mod-queue'] },
-            { id: 'attention', label: CONCEPT_LABEL.attention },
-            { id: 'bans', label: CONCEPT_LABEL.bans },
-        ],
+        // Needs attention and Bans are off the nav for now; both stay
+        // deep-linkable (see hiddenLandingIds) because the overview's KPI,
+        // the moderators pane and the old /moderation routes all land there.
+        items: [{ id: 'mod-queue', label: CONCEPT_LABEL['mod-queue'] }],
     },
     {
         id: 'structure',
@@ -217,13 +216,16 @@ export function isLandingPaneId(
 
 /**
  * Panes that stay out of the sidebar nav but remain valid deep-link
- * landings. Needs attention is back in the nav (see ALL_GROUPS), so it no
- * longer needs to be listed here. `level-categories` merged into the Levels
- * pane but stays deep-linkable — it lands on the Levels pane's templates tab
- * (see content-router.tsx).
+ * landings. Needs attention and Bans are hidden from the Queue group for
+ * now but every `?pane=attention` / `?pane=bans` link still opens them.
+ * `level-categories` merged into the Levels pane but stays deep-linkable —
+ * it lands on the Levels pane's templates tab (see content-router.tsx).
  */
 function hiddenLandingIds(flags: NavFlags): NavItemId[] {
-    return flags.canConfigure ? ['level-categories'] : [];
+    return [
+        ...(flags.canModerate ? (['attention', 'bans'] as NavItemId[]) : []),
+        ...(flags.canConfigure ? (['level-categories'] as NavItemId[]) : []),
+    ];
 }
 
 /**

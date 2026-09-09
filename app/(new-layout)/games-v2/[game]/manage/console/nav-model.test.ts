@@ -77,11 +77,11 @@ describe('buildNav', () => {
         );
     });
 
-    it('restores Needs attention to the Queue group for moderators', () => {
+    it('keeps the Queue group to the mod queue for moderators', () => {
         const queue = buildNav({ ...NO_FLAGS, canModerate: true }).find(
             (g) => g.id === 'moderate',
         );
-        expect(queue?.items.map((i) => i.id)).toEqual(['attention', 'bans']);
+        expect(queue?.items.map((i) => i.id)).toEqual(['mod-queue']);
     });
 
     it('gives Overview to every console viewer and drops it for no-flag viewers', () => {
@@ -182,7 +182,7 @@ describe('isLandingPaneId', () => {
         .map((it) => it.id);
 
     it('accepts a visible pane id', () => {
-        expect(isLandingPaneId('bans', visible)).toBe(true);
+        expect(isLandingPaneId('mod-queue', visible)).toBe(true);
     });
 
     it('rejects overview — the front door is null, not a pane', () => {
