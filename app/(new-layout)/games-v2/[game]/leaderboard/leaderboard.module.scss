@@ -658,7 +658,8 @@ tr:focus-within .reveal {
     gap: dt.$spacing-sm;
     // The panel's header row now (count + export/filters), so it carries the
     // top padding and a hairline under, flush with the table below.
-    padding: dt.$spacing-md dt.$spacing-lg;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    min-height: 48px;
     border-bottom: 1px solid var(--board-surface-border, var(--bs-border-color));
 }
 
@@ -692,16 +693,18 @@ tr:focus-within .reveal {
             rgba(var(--bs-border-color-rgb), 0.5)
         );
     }
+
+    > button,
+    > div > button {
+        min-height: 2rem;
+        padding-block: 0;
+    }
 }
 
 .rangeIndicator {
+    @include board.mono-time;
     font-size: dt.$font-size-xs;
     color: var(--bs-tertiary-color);
-
-    span {
-        @include board.mono-time;
-        color: var(--bs-tertiary-color);
-    }
 }
 
 .findMeBtn {
