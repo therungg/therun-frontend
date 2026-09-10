@@ -26,6 +26,7 @@
     }
 
     tbody td {
+        height: 44px;
         padding: dt.$spacing-sm dt.$spacing-lg;
 
         // Mobile: horizontal padding is the other thing eating the time
@@ -33,14 +34,6 @@
         @media (max-width: 575.98px) {
             padding-inline: dt.$spacing-sm;
         }
-    }
-
-    // Zebra: a whisper of rhythm so long boards read in rows, not a field
-    // of hairlines. `:where()` zeroes the pseudo-class's specificity so the
-    // podium / you-row / selected washes (declared later, same class+element
-    // weight) win on their rows.
-    :where(tbody tr:nth-child(even)) td {
-        background: rgba(var(--bs-body-color-rgb), 0.022);
     }
 
     tbody tr:last-child td {
@@ -322,12 +315,6 @@ tr:focus-within .reveal {
 // .secondaryHeader itself is declared inside `.table` above (see note there)
 // so it wins specificity over board-table's `thead th` color rule.
 
-// WR row: faint gold wash under the gold spine — the crown's new home.
-// Declared before .youRow so your-own-row identity wins if you hold the WR.
-.rank1Row td {
-    background: rgba(dt.$accent-gold, 0.05);
-}
-
 .meta {
     font-size: dt.$font-size-xs;
     color: var(--bs-tertiary-color);
@@ -375,7 +362,7 @@ tr:focus-within .reveal {
     animation: youRowFlash 1.6s ease-out;
 }
 
-// podium rows: medal spine + heavier rank numeral
+// podium rows: the spine is the podium's only ambient mark
 // declared after .youRow so a podium+you row keeps the medal spine
 // (same specificity, later source order wins)
 .rank1Row td:first-child {
@@ -391,7 +378,6 @@ tr:focus-within .reveal {
 .rank1Row .rank,
 .rank2Row .rank,
 .rank3Row .rank {
-    font-size: dt.$font-size-md;
     font-weight: 700;
 }
 

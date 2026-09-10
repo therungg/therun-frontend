@@ -397,7 +397,7 @@ export function LeaderboardRow({
                     <RunnerAvatar
                         name={entry.runnerName}
                         picture={entry.picture}
-                        size={entry.rank <= 3 ? 'md' : 'sm'}
+                        size="sm"
                         anonymous={isAnonymous}
                     />
                     {isAnonymous ? (
