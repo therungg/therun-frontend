@@ -27,7 +27,7 @@ export interface CardPlacement {
 }
 
 export const CARD_WIDTH = 320;
-export const CARD_MAX_HEIGHT = 340;
+export const CARD_MAX_HEIGHT = 440;
 const GAP = 8;
 const EDGE = 8;
 

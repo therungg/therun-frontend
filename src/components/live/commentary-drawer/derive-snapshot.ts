@@ -21,7 +21,7 @@ const resetRateAt = (liveRun: LiveRun, index: number): number | null => {
     return Math.max(0, Math.min(1, 1 - finished / started));
 };
 
-const deltaAtPast = (liveRun: LiveRun, index: number): number | null => {
+export const deltaAtPast = (liveRun: LiveRun, index: number): number | null => {
     const s = liveRun.splits?.[index];
     if (!s || s.splitTime == null || s.pbSplitTime == null) return null;
     return s.splitTime - s.pbSplitTime;
