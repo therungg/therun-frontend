@@ -87,9 +87,12 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
                 {wr ? (
                     <div className={styles.record}>
                         <span className={styles.recordTime}>
+                            {/* Same rule as the board: a whole-second record
+                                (common on speedrun.com imports) drops ".000". */}
                             {formatRecord(
                                 wr.time as number,
-                                category.showMilliseconds ?? true,
+                                (category.showMilliseconds ?? true) &&
+                                    Math.round(Number(wr.time)) % 1000 !== 0,
                             )}
                         </span>
                         <span className={styles.recordHolder}>
