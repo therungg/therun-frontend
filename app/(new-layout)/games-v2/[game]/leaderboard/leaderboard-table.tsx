@@ -12,6 +12,7 @@ import { SubmitLink } from '../submit-dialog/submit-link';
 import { computeDisplayRanks } from './display-rank';
 import styles from './leaderboard.module.scss';
 import { LeaderboardRow, type RowSlots } from './leaderboard-row';
+import { computeRunStandings } from './run-standing';
 import { type BoardSelectionKey, entrySelectionKey } from './selection';
 import {
     type TimingKey,
@@ -177,6 +178,13 @@ export function LeaderboardTable({
         leaderboard.entries,
         primaryTiming,
     );
+    const standings = computeRunStandings(
+        leaderboard.entries,
+        displayRanks,
+        leaderboard.entries.findIndex((e) =>
+            isSameRunner(e.runnerName, sessionUsername),
+        ),
+    );
     // Row-level hide flags need the all-null override folded into the same
     // key the secondary column actually is (rt or gt — depends on
     // primaryTiming), not blanket-applied to gameTime.
@@ -271,6 +279,7 @@ export function LeaderboardTable({
                             showMilliseconds={boardShowMilliseconds}
                             gameTimeLabel={gameTimeLabel}
                             rtaFallback={rtaFallback}
+                            standing={standings[i]}
                             selected={(() => {
                                 const key = entrySelectionKey(entry);
                                 return (

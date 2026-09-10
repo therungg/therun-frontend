@@ -35,13 +35,50 @@ export interface HoverAnchorProps {
 }
 
 /**
+ * A game's theme is scoped to `.main-container` (theme-css.ts), but the card
+ * is portaled to `document.body`, outside it — so it would always paint in
+ * the site's default colors. Custom properties inherit, so the anchor's
+ * computed style already holds the theme it sits in; the layer re-declares
+ * those values and the card wears the same board as the row it came from.
+ */
+const BOARD_THEME_VARS = [
+    '--board-surface-bg',
+    '--board-surface-border',
+    '--board-recess-bg',
+    '--board-recess-strong-bg',
+    '--board-accent',
+    '--board-accent-soft',
+    '--board-on-accent',
+    '--board-ink',
+    '--board-ink-emphasis',
+    '--board-ink-secondary',
+    '--board-ink-tertiary',
+    '--bs-primary',
+    '--bs-primary-rgb',
+] as const;
+
+function readBoardTheme(node: HTMLElement): Record<string, string> {
+    const computed = getComputedStyle(node);
+    const vars: Record<string, string> = {};
+    for (const name of BOARD_THEME_VARS) {
+        const value = computed.getPropertyValue(name).trim();
+        if (value) vars[name] = value;
+    }
+    return vars;
+}
+
+/**
  * Owns one card at a time. Nothing is mounted, positioned or fetched until the
  * hover intent fires, so a page with fifty of these carries fifty sets of
  * event handlers and no more.
  */
 export function HoverAnchor({ children, card, cardWidth }: HoverAnchorProps) {
     const [placement, setPlacement] = useState<
-        (CardPlacement & { maxHeight: number }) | null
+        | (CardPlacement & {
+              maxHeight: number;
+              themeVars: Record<string, string>;
+          })
+        | null
     >(null);
     const anchorRef = useRef<HTMLElement | null>(null);
 
@@ -62,6 +99,7 @@ export function HoverAnchor({ children, card, cardWidth }: HoverAnchorProps) {
         setPlacement({
             ...next,
             maxHeight: availableHeight(rect, viewport, next.flipped),
+            themeVars: readBoardTheme(node),
         });
     }, []);
 
@@ -114,6 +152,7 @@ export function HoverAnchor({ children, card, cardWidth }: HoverAnchorProps) {
                       <div
                           className={styles.layer}
                           style={{
+                              ...placement.themeVars,
                               left: placement.left,
                               top: placement.top,
                               bottom: placement.bottom,
