@@ -1,9 +1,13 @@
-import type { RunOriginRef } from '../../../../types/leaderboards.types';
+import type {
+    RunOriginRef,
+    RunTimerStats,
+} from '../../../../types/leaderboards.types';
 
 /** What the run hover card fetches on open — see /api/runs/[runId]/card. */
 export interface RunCardDetail {
     verifiedBy: RunOriginRef | null;
     verifiedAt: string | null;
+    timerStats: RunTimerStats | null;
 }
 
 /**

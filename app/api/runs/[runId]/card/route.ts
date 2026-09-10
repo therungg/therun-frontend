@@ -25,6 +25,7 @@ export async function GET(
         ? {
               verifiedBy: run.verifiedBy ?? null,
               verifiedAt: run.verifiedAt ?? null,
+              timerStats: run.timerStats ?? null,
           }
         : null;
 

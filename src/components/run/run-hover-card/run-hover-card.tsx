@@ -72,8 +72,9 @@ function gameTimeText(gameTimeLabel: GameTimeLabel | undefined): string {
 
 /**
  * Built from the `LeaderboardEntry` on the row plus what the table already
- * knows about its neighbours, so it paints at once. The one exception is the
- * verifier line, fetched on open (run-card-store) and added when it lands.
+ * knows about its neighbours, so it paints at once. The exceptions are the
+ * timer stats and the verifier line, fetched on open (run-card-store) and
+ * added when they land.
  */
 export function RunHoverCard({
     entry,
@@ -91,28 +92,23 @@ export function RunHoverCard({
     const isRejected = entry.verificationStatus === 'rejected';
     const time = entry.time;
 
-    // Who verified it isn't on the board row — fetched on open, and only
-    // for runs that have a verifier to name. Everything else paints from
-    // the row immediately; this line joins when it lands.
-    const verifiedRunId =
-        entry.runId != null &&
-        !isManual &&
-        entry.verificationStatus === 'verified'
-            ? entry.runId
-            : null;
+    // Who verified it and the runner's timer stats aren't on the board row —
+    // fetched on open (set times have neither). Everything else paints from
+    // the row immediately; these join when they land.
+    const detailRunId = entry.runId != null && !isManual ? entry.runId : null;
     const [detail, setDetail] = useState<RunCardDetail | null | undefined>(
-        () => (verifiedRunId != null ? peekRunCard(verifiedRunId) : null),
+        () => (detailRunId != null ? peekRunCard(detailRunId) : null),
     );
     useEffect(() => {
-        if (verifiedRunId == null || detail !== undefined) return;
+        if (detailRunId == null || detail !== undefined) return;
         let live = true;
-        loadRunCard(verifiedRunId).then((result) => {
+        loadRunCard(detailRunId).then((result) => {
             if (live) setDetail(result);
         });
         return () => {
             live = false;
         };
-    }, [verifiedRunId, detail]);
+    }, [detailRunId, detail]);
 
     const isFallback =
         rtaFallback &&
@@ -178,6 +174,18 @@ export function RunHoverCard({
             : null;
 
     const parts = time != null ? clockParts(time, showMilliseconds) : null;
+
+    // Sum of best on the clock the board ranks by; the backend only sends it
+    // while this run is still the runner's PB on that clock.
+    const timer = detail?.timerStats ?? null;
+    const sob = timer
+        ? rankedKey === 'gt'
+            ? timer.gameTimeSob
+            : timer.sumOfBests
+        : null;
+    const sobClockTime = rankedKey === 'gt' ? entry.gameTime : entry.realTime;
+    const timesave =
+        sob != null && sobClockTime != null ? sobClockTime - sob : null;
 
     return (
         <div className={styles.card}>
@@ -322,6 +330,37 @@ export function RunHoverCard({
                             </b>
                         </div>
                     ))}
+                </div>
+            ) : null}
+
+            {timer && (sob != null || timer.attemptCount != null) ? (
+                <div className={styles.timerStats}>
+                    {sob != null ? (
+                        <div className={styles.timerStat}>
+                            <span>Sum of best</span>
+                            <b>{clockText(sob, showMilliseconds)}</b>
+                            {timesave != null && timesave > 0 ? (
+                                <small>
+                                    {gapText(timesave, showMilliseconds)}{' '}
+                                    possible timesave
+                                </small>
+                            ) : null}
+                        </div>
+                    ) : null}
+                    {timer.attemptCount != null ? (
+                        <div className={styles.timerStat}>
+                            <span>Attempts</span>
+                            <b>{timer.attemptCount.toLocaleString('en-US')}</b>
+                            {timer.finishedAttemptCount != null ? (
+                                <small>
+                                    {timer.finishedAttemptCount.toLocaleString(
+                                        'en-US',
+                                    )}{' '}
+                                    finished
+                                </small>
+                            ) : null}
+                        </div>
+                    ) : null}
                 </div>
             ) : null}
 

@@ -337,6 +337,18 @@ export interface RunDetail {
     rejectionReason?: string | null;
     description?: string | null;
     descriptionRestriction?: DescriptionRestriction | null;
+    /** The runner's timer stats for this category; null for imported runs,
+     * set times, guest runs and redacted runs. Absent on older deploys. */
+    timerStats?: RunTimerStats | null;
+}
+
+export interface RunTimerStats {
+    attemptCount: number | null;
+    finishedAttemptCount: number | null;
+    /** Only while this run is still the timer's real-time PB. */
+    sumOfBests: number | null;
+    /** Only while this run is still the timer's game-time PB. */
+    gameTimeSob: number | null;
 }
 
 export interface RunOriginRef {
