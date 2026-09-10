@@ -26,7 +26,7 @@ export interface CardPlacement {
     flipped: boolean;
 }
 
-export const CARD_WIDTH = 300;
+export const CARD_WIDTH = 320;
 export const CARD_MAX_HEIGHT = 440;
 const GAP = 8;
 const EDGE = 8;
