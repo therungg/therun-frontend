@@ -1,7 +1,7 @@
 import { PlayBtn } from 'react-bootstrap-icons';
 import { VerificationBadge } from '~app/(new-layout)/games-v2/[game]/run-view/run-badges';
 import { DurationToFormatted } from '~src/components/util/datetime';
-import { formatRunDate } from '~src/lib/format-run-date';
+import { formatBoardDate } from '~src/lib/format-run-date';
 import type {
     GameTimeLabel,
     LeaderboardEntry,
@@ -81,7 +81,7 @@ export function RunHoverCard({
             <div className={styles.meta}>
                 {entry.runDate ? (
                     <span className={styles.runDate}>
-                        {formatRunDate(entry.runDate)}
+                        {formatBoardDate(entry.runDate)}
                     </span>
                 ) : null}
                 {entry.vodUrl ? (

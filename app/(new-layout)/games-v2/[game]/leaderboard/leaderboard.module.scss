@@ -89,7 +89,6 @@
 }
 
 .when {
-    @include board.mono-time;
     color: var(--bs-tertiary-color);
     font-size: dt.$font-size-xs;
     text-align: right;
@@ -103,6 +102,13 @@
     @media (max-width: 575.98px) {
         display: none;
     }
+}
+
+// Mono only on the cell, not the header — board.mono-time also sets an
+// emphasis color, so re-state tertiary to keep the shared `.when` tone.
+td.when {
+    @include board.mono-time;
+    color: var(--bs-tertiary-color);
 }
 
 // Filter values a moderator opted onto the board (setup step 5's "Show this
@@ -166,7 +172,14 @@
     }
 }
 
-.youRow .reveal,
+.youRow .reveal {
+    background: color-mix(
+        in srgb,
+        var(--board-surface-bg, var(--bs-body-bg)) 94%,
+        var(--bs-primary) 6%
+    );
+}
+
 .rowSelected .reveal {
     background: color-mix(
         in srgb,
@@ -180,11 +193,18 @@ tr:focus-within .reveal {
     opacity: 1;
 }
 
-// Coarse pointers (touch) have no hover, so the trigger must be visible
-// at rest instead of hidden — the row-actions kebab is always reachable.
+// Coarse pointers have no hover, and an always-on overlay would sit on the
+// runner's name. Phones get no row verbs at all — that work lives in the
+// manage console; wider touch screens keep them visible at rest.
 @media (pointer: coarse) {
     .reveal {
         opacity: 1;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .reveal {
+        display: none;
     }
 }
 
@@ -705,10 +725,12 @@ tr:focus-within .reveal {
         );
     }
 
-    > button,
-    > div > button {
-        min-height: 2rem;
-        padding-block: 0;
+    @media (pointer: fine) {
+        > button,
+        > div > button {
+            min-height: 2rem;
+            padding-block: 0;
+        }
     }
 }
 
