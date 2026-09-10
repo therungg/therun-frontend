@@ -15,6 +15,11 @@ $z-hover-card: 1060;
     // to the card rather than stretch from the max-height it was given.
     display: flex;
     overflow: auto;
+    // A themed board over background art has translucent panels. On the
+    // board they sit over the art; a floating card would sit over whatever
+    // row is underneath, so it gets the page canvas as a solid backing.
+    border-radius: dt.$radius-lg;
+    background: var(--site-canvas-bg, transparent);
 }
 
 .layer > * {

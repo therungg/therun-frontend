@@ -19,6 +19,7 @@ import styles from './leaderboard.module.scss';
 import { QuickUnverifyButton } from './quick-unverify-button';
 import { QuickVerifyButton } from './quick-verify-button';
 import { relativeDate } from './relative-date';
+import type { RunStanding } from './run-standing';
 import { RunnerAvatar } from './runner-avatar';
 import { type BoardSelectionKey, entrySelectionKey } from './selection';
 import {
@@ -58,6 +59,8 @@ interface Props {
     /** category.rtaFallback — an entry with no game time on a GT board is
      * ranked by its real time; the ranked cell shows it with an RTA marker. */
     rtaFallback?: boolean;
+    /** Gap to #1 and to the next rank up, for the run hover card. */
+    standing?: RunStanding;
     /** Checkbox column — only rendered when `canManage`, for rows with a
      * run or a manual set time (see selection.ts for the key scheme). */
     selected?: boolean;
@@ -106,6 +109,7 @@ export function LeaderboardRow({
     showMilliseconds,
     gameTimeLabel,
     rtaFallback = false,
+    standing,
     selected = false,
     onToggleSelect,
     onQuickModerate,
@@ -228,6 +232,25 @@ export function LeaderboardRow({
     // z-index — see leaderboard.module.scss. The row is a link for
     // everyone, moderators included: the full mod surface lives on the run
     // detail page it links to, not in a drawer over the board.
+    // The board's value columns, reduced to what the runner actually set
+    // (same rule as the cells below). The card carries them because the
+    // columns themselves drop off on narrow screens.
+    const cardValues = valueColumns.flatMap((col) => {
+        const value = entry.variables?.[col.key];
+        const raw = entry.rawVariables;
+        const runnerSetIt =
+            raw != null &&
+            (raw[col.key] !== undefined || raw[col.altKey] !== undefined);
+        return value != null && runnerSetIt
+            ? [
+                  {
+                      label: col.label,
+                      value: col.display[value.trim().toLowerCase()] ?? value,
+                  },
+              ]
+            : [];
+    });
+
     const time = (
         value: number | null,
         dimmed: boolean,
@@ -240,6 +263,13 @@ export function LeaderboardRow({
             entry={entry}
             gameTimeLabel={gameTimeLabel}
             showMilliseconds={showMilliseconds}
+            primaryTiming={primaryTiming}
+            hideRealTime={hideRealTime}
+            hideGameTime={hideGameTime}
+            rtaFallback={rtaFallback}
+            displayRank={displayRank}
+            standing={standing}
+            values={cardValues}
         >
             {(handlers) => (
                 <td

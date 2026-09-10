@@ -1,12 +1,11 @@
 @use '../../../../app/(new-layout)/styles/design-tokens' as dt;
 @use '../../../../app/(new-layout)/styles/board' as board;
 
+// Inner sections carry their own inset, so the surface itself is flush.
 .card {
-    @include board.board-surface(dt.$spacing-md);
+    @include board.board-surface(0);
     box-shadow: dt.$shadow-md;
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-sm;
+    overflow: hidden;
     font-size: dt.$font-size-sm;
     animation: card-in 160ms cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -24,73 +23,268 @@
     }
 }
 
-// ---- Primary time -----------------------------------------------
-.header {
-    display: flex;
-    align-items: baseline;
-    gap: dt.$spacing-sm;
+$inset: 0.875rem;
+// Board-theme neutrals (defaults in _overrides.scss; a themed game's values
+// reach the portaled card through HoverAnchor).
+$hairline: 1px solid
+    var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.35));
+
+// ---- Head: rank ball, ranked time, status ------------------------
+.head {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.625rem;
+    padding: dt.$spacing-md $inset 0.625rem;
 }
 
-.rank {
-    @include board.mono-time;
+// Same ball the row's rank cell uses for the podium; a quiet outlined pill
+// past #3 so a four-digit rank still fits.
+.medal {
+    min-width: 26px;
+    height: 26px;
+    padding: 0 6px;
+    border-radius: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
     font-weight: 700;
+    font-size: dt.$font-size-xs;
+    color: #fff;
+}
+
+.medalGold {
+    background: dt.$accent-gold;
+}
+
+.medalSilver {
+    background: dt.$accent-silver;
+}
+
+.medalBronze {
+    background: dt.$accent-bronze;
+}
+
+.medalPlain {
     color: var(--bs-secondary-color);
+    border: $hairline;
+}
+
+.timeBlock {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.15;
 }
 
 .time {
     @include board.mono-time;
-    font-size: dt.$font-size-md;
+    font-size: dt.$font-size-lg;
     font-weight: 700;
-    color: var(--bs-emphasis-color);
-}
+    letter-spacing: -0.02em;
 
-// ---- Fallback / secondary clock -----------------------------------
-.secondary {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: dt.$spacing-sm;
-    padding-top: dt.$spacing-xs;
-    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
-    font-size: dt.$font-size-2xs;
-    color: var(--bs-secondary-color);
-}
-
-.secondaryLabel {
-    color: var(--bs-secondary-color);
-}
-
-.secondaryTime {
-    @include board.mono-time;
-    font-size: dt.$font-size-xs;
-}
-
-// ---- Date / video meta ----------------------------------------------
-.meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: dt.$spacing-sm;
-    font-size: dt.$font-size-2xs;
-    color: var(--bs-secondary-color);
-}
-
-.runDate {
-    white-space: nowrap;
-}
-
-.videoIndicator {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    white-space: nowrap;
-
-    svg {
+    small {
+        font-size: dt.$font-size-xs;
+        font-weight: 600;
+        letter-spacing: 0;
         color: var(--bs-secondary-color);
     }
 }
 
-// ---- Verification status ---------------------------------------------
-.status {
+.clockLabel {
+    @include board.board-eyebrow;
+    font-size: 0.68rem;
+    color: var(--bs-tertiary-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.setTime {
+    font-size: dt.$font-size-2xs;
+    font-weight: 600;
+    padding: 1px 8px;
+    border-radius: 999px;
+    border: $hairline;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+
+// ---- Gap block: the one tinted panel -----------------------------
+.gap {
+    margin: 0 $inset;
+    padding: dt.$spacing-sm 0.625rem;
+    border-radius: dt.$radius-md;
+    background: var(--board-recess-bg, rgba(var(--bs-body-color-rgb), 0.045));
     display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.gapLine {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+
+    b {
+        @include board.mono-time;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+}
+
+.gapAside {
+    font-weight: 400;
+    color: var(--bs-tertiary-color);
+}
+
+.lead {
+    color: dt.$accent-gold;
+    font-weight: 600;
+}
+
+.track {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--board-recess-strong-bg, rgba(var(--bs-border-color-rgb), 0.6));
+    overflow: hidden;
+
+    i {
+        display: block;
+        height: 100%;
+        border-radius: 2px;
+        background: var(--board-accent, var(--bs-primary));
+    }
+}
+
+// ---- Both clocks ------------------------------------------------
+.clocks {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin: 0.625rem $inset 0;
+    border: $hairline;
+    border-radius: dt.$radius-md;
+    overflow: hidden;
+}
+
+.clock {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 6px 0.625rem;
+    min-width: 0;
+
+    & + & {
+        border-left: $hairline;
+    }
+
+    span {
+        @include board.board-eyebrow;
+        font-size: 0.66rem;
+        color: var(--bs-tertiary-color);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap;
+    }
+
+    b {
+        @include board.mono-time;
+        font-weight: 600;
+        font-size: dt.$font-size-xs;
+        color: var(--bs-secondary-color);
+    }
+}
+
+.clockRanked {
+    b {
+        color: var(--bs-emphasis-color);
+    }
+
+    span::after {
+        content: '';
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--board-accent, var(--bs-primary));
+    }
+}
+
+.clock b.none {
+    font-family: inherit;
+    font-weight: 400;
+    color: var(--bs-tertiary-color);
+}
+
+// ---- Values ------------------------------------------------------
+.values {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs;
+    padding: 0.625rem $inset 0;
+}
+
+.value {
+    font-size: 0.72rem;
+    padding: 1px 7px;
+    border-radius: 5px;
+    border: $hairline;
+    color: var(--bs-secondary-color);
+
+    b {
+        font-weight: 600;
+        color: var(--bs-emphasis-color);
+    }
+}
+
+// ---- Footer: date, source, video --------------------------------
+.foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin-top: dt.$spacing-md;
+    padding: dt.$spacing-sm $inset;
+    border-top: $hairline;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+}
+
+.date {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+    white-space: nowrap;
+
+    small {
+        font-size: 0.7rem;
+        color: var(--bs-tertiary-color);
+    }
+}
+
+.footRight {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    white-space: nowrap;
+}
+
+.video {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--bs-body-color);
+
+    svg {
+        color: var(--board-accent, var(--bs-primary));
+    }
+}
+
+.quiet {
+    color: var(--bs-tertiary-color);
 }
