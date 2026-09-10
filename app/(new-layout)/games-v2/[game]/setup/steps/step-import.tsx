@@ -26,6 +26,7 @@ export function StepImport({ data }: StepProps) {
                 <ImportSections
                     gameId={data.game.id}
                     gameSlug={data.game.name}
+                    gameDisplay={data.game.display}
                     isAdmin={data.canBypassImportCooldown}
                 />
             </div>

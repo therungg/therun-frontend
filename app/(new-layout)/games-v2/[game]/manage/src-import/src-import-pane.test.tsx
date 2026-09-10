@@ -113,6 +113,7 @@ function answer(by: {
 const props = {
     gameId: 12,
     gameSlug: 'sm64',
+    gameDisplay: 'Super Mario 64',
     isAdmin: false,
 };
 

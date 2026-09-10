@@ -11,6 +11,7 @@ import type {
 import { ImportOptions, resolveCommitFlags } from './import-options';
 import { ImportSection } from './import-section';
 import { LinkCard } from './link-card';
+import { PurgeSection } from './purge-section';
 import styles from './src-import.module.scss';
 import {
     getSrcImportJobAction,
@@ -21,6 +22,8 @@ import { isSettled, useSrcImportJob } from './use-src-import-job';
 interface Props {
     gameId: number;
     gameSlug: string;
+    /** The board's display name — the purge section's confirm field needs the exact string. */
+    gameDisplay: string;
     /** Global admins bypass the once-per-day cooldown (the backend enforces the same rule). */
     isAdmin: boolean;
 }
@@ -28,7 +31,12 @@ interface Props {
 /**
  * Import pane: the console's chrome around the shared sections.
  */
-export function SrcImportPane({ gameId, gameSlug, isAdmin }: Props) {
+export function SrcImportPane({
+    gameId,
+    gameSlug,
+    gameDisplay,
+    isAdmin,
+}: Props) {
     return (
         <div className={consoleStyles.surface}>
             <div className={consoleStyles.paneHeader}>
@@ -42,6 +50,7 @@ export function SrcImportPane({ gameId, gameSlug, isAdmin }: Props) {
             <ImportSections
                 gameId={gameId}
                 gameSlug={gameSlug}
+                gameDisplay={gameDisplay}
                 isAdmin={isAdmin}
             />
         </div>
@@ -57,7 +66,12 @@ export function SrcImportPane({ gameId, gameSlug, isAdmin }: Props) {
  * Shared by the console pane and the setup wizard's first step, which wrap it
  * in their own headings; nothing here draws chrome of its own.
  */
-export function ImportSections({ gameId, gameSlug, isAdmin }: Props) {
+export function ImportSections({
+    gameId,
+    gameSlug,
+    gameDisplay,
+    isAdmin,
+}: Props) {
     const fetchSettings = useCallback(
         () => getSrcImportJobAction({ gameId, gameSlug, kind: 'settings' }),
         [gameId, gameSlug],
@@ -186,6 +200,13 @@ export function ImportSections({ gameId, gameSlug, isAdmin }: Props) {
                         onStarted={refreshAll}
                     />
                 </>
+            )}
+            {isAdmin && (
+                <PurgeSection
+                    gameId={gameId}
+                    gameDisplay={gameDisplay}
+                    disabled={anyRunning}
+                />
             )}
         </div>
     );

@@ -314,4 +314,58 @@
     margin: dt.$spacing-sm 0 0;
 }
 
+// ---- purge (danger register) -----------------------------------------------
+// Same section shell as Settings/Runs — only color and copy change.
+
+.dangerSection {
+    border: 1px solid rgba(var(--bs-danger-rgb), 0.35);
+}
+
+.dangerTitle {
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    color: var(--bs-danger);
+    margin: 0 0 dt.$spacing-xs;
+}
+
+.btnDanger {
+    border-color: var(--bs-danger);
+    background: var(--bs-danger);
+
+    &:focus-visible {
+        box-shadow: 0 0 0 3px rgba(var(--bs-danger-rgb), 0.25);
+    }
+}
+
+.confirmRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+
+    label {
+        white-space: nowrap;
+    }
+
+    input {
+        flex: 1;
+        min-width: 12ch;
+        border: 1px solid rgba(var(--bs-border-color-rgb), 0.8);
+        border-radius: dt.$radius-md;
+        background: var(--bs-body-bg);
+        color: var(--bs-body-color);
+        font-size: dt.$font-size-sm;
+        padding: dt.$spacing-sm dt.$spacing-md;
+
+        &:focus {
+            outline: none;
+            border-color: var(--bs-danger);
+            box-shadow: 0 0 0 3px rgba(var(--bs-danger-rgb), 0.15);
+        }
+    }
+}
 

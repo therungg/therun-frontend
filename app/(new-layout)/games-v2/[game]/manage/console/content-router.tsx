@@ -299,6 +299,7 @@ export function ContentRouter(props: ContentRouterProps) {
                 <SrcImportPane
                     gameId={game.id}
                     gameSlug={game.name}
+                    gameDisplay={game.display}
                     isAdmin={props.canSiteBan}
                 />
             );
