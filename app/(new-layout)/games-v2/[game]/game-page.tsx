@@ -211,7 +211,10 @@ export function GamePage({
                                         its record in gold mono — a separate
                                         band directly above the board, under
                                         the game/selector topbar. */}
-                                    <CategoryBandHeader data={data} />
+                                    <CategoryBandHeader
+                                        data={data}
+                                        showMilliseconds={showMilliseconds}
+                                    />
                                     {data.invalidCombination ? (
                                         <InvalidCombinationNotice
                                             gameSlug={data.game.name}

@@ -9,7 +9,7 @@ import { RunnerAvatar } from '~app/(new-layout)/games-v2/[game]/leaderboard/runn
 import type { TimingKey } from '~app/(new-layout)/games-v2/[game]/leaderboard/timing-columns';
 import { VerificationBadge } from '~app/(new-layout)/games-v2/[game]/run-view/run-badges';
 import { CountryFlag } from '~src/components/user/hover-card/country-flag';
-import { formatRunDate } from '~src/lib/format-run-date';
+import { formatBoardDate } from '~src/lib/format-run-date';
 import type {
     GameTimeLabel,
     LeaderboardEntry,
@@ -378,7 +378,7 @@ export function RunHoverCard({
                 <div className={styles.verifiedBy}>
                     Verified by <b>{detail.verifiedBy.name}</b>
                     {detail.verifiedAt
-                        ? ` · ${formatRunDate(detail.verifiedAt)}`
+                        ? ` · ${formatBoardDate(detail.verifiedAt)}`
                         : null}
                 </div>
             ) : null}
@@ -387,7 +387,7 @@ export function RunHoverCard({
                 <span className={styles.date}>
                     {entry.runDate ? (
                         <>
-                            <span>{formatRunDate(entry.runDate)}</span>
+                            <span>{formatBoardDate(entry.runDate)}</span>
                             {relativeShown ? (
                                 <small>{relativeShown}</small>
                             ) : null}

@@ -26,6 +26,7 @@
     }
 
     tbody td {
+        height: 44px;
         padding: dt.$spacing-sm dt.$spacing-lg;
 
         // Mobile: horizontal padding is the other thing eating the time
@@ -33,14 +34,6 @@
         @media (max-width: 575.98px) {
             padding-inline: dt.$spacing-sm;
         }
-    }
-
-    // Zebra: a whisper of rhythm so long boards read in rows, not a field
-    // of hairlines. `:where()` zeroes the pseudo-class's specificity so the
-    // podium / you-row / selected washes (declared later, same class+element
-    // weight) win on their rows.
-    :where(tbody tr:nth-child(even)) td {
-        background: rgba(var(--bs-body-color-rgb), 0.022);
     }
 
     tbody tr:last-child td {
@@ -69,14 +62,13 @@
 }
 
 .runnerCell {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: dt.$spacing-sm;
     position: relative;
     z-index: 2;
 
     @media (max-width: 575.98px) {
-        display: flex;
         min-width: 0;
 
         // Only the name shrinks — avatar, flag and WR chip hold their size.
@@ -88,7 +80,18 @@
     }
 }
 
+// Mobile column priority: rank, runner and the ranked time always fit; the
+// second clock yields, like the date.
+.secondaryTimeHeader {
+    @media (max-width: 575.98px) {
+        display: none;
+    }
+}
+
 .when {
+    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-xs;
+    text-align: right;
     white-space: nowrap;
     width: 1%;
 
@@ -99,6 +102,13 @@
     @media (max-width: 575.98px) {
         display: none;
     }
+}
+
+// Mono only on the cell, not the header — board.mono-time also sets an
+// emphasis color, so re-state tertiary to keep the shared `.when` tone.
+td.when {
+    @include board.mono-time;
+    color: var(--bs-tertiary-color);
 }
 
 // Filter values a moderator opted onto the board (setup step 5's "Show this
@@ -137,30 +147,45 @@
     }
 }
 
-// actions are invisible at rest; revealed on hover / keyboard focus
+// Mod verbs overlay the runner cell's slack instead of reserving a column:
+// anchored to the cell's right edge, vertically centred by flex (never by a
+// transform — that would make this the containing block for the
+// row-actions dropdown's position: fixed). Painted on the surface so it
+// reads cleanly over a long name.
 .reveal {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: dt.$spacing-lg;
     display: inline-flex;
+    align-items: center;
     gap: dt.$spacing-xs;
+    padding-left: dt.$spacing-md;
+    background: var(--board-surface-bg, var(--bs-body-bg));
     opacity: 0;
-    position: relative;
     z-index: 2;
     transition: opacity dt.$transition-fast;
 
-    // The z-index above makes this a stacking context, so the row-actions
-    // dropdown is painted *inside* it — its own z-index (and `position:
-    // fixed`) rank it only among its siblings here, leaving the whole menu
-    // at level 2 against the rest of the table. Every later row's cells sit
-    // at 2 as well and win on tree order, so they'd paint over the open menu
-    // and (being opacity-0, not hidden) swallow its clicks. Lift the context
-    // itself for as long as the menu is open.
     &:has(:global(.dropdown.show)) {
         z-index: dt.$z-popover;
-        // An open menu must not depend on the row still matching
-        // `tr:hover` / `tr:focus-within` to stay visible — the pointer sits
-        // on the menu, and focus can leave the row entirely (Safari doesn't
-        // focus buttons on click).
         opacity: 1;
     }
+}
+
+.youRow .reveal {
+    background: color-mix(
+        in srgb,
+        var(--board-surface-bg, var(--bs-body-bg)) 94%,
+        var(--bs-primary) 6%
+    );
+}
+
+.rowSelected .reveal {
+    background: color-mix(
+        in srgb,
+        var(--board-surface-bg, var(--bs-body-bg)) 92%,
+        var(--bs-primary) 8%
+    );
 }
 
 tr:hover .reveal,
@@ -168,11 +193,18 @@ tr:focus-within .reveal {
     opacity: 1;
 }
 
-// Coarse pointers (touch) have no hover, so the trigger must be visible
-// at rest instead of hidden — the row-actions kebab is always reachable.
+// Coarse pointers have no hover, and an always-on overlay would sit on the
+// runner's name. Phones get no row verbs at all — that work lives in the
+// manage console; wider touch screens keep them visible at rest.
 @media (pointer: coarse) {
     .reveal {
         opacity: 1;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .reveal {
+        display: none;
     }
 }
 
@@ -235,8 +267,21 @@ tr:focus-within .reveal {
 }
 
 .runner {
-    font-weight: 600;
-    color: var(--bs-emphasis-color);
+    position: relative;
+    font-weight: 500;
+    color: var(--bs-body-color);
+
+    // UserLink paints usernames brand-green site-wide; on the board that
+    // second accent outranks the time. Body ink at rest, green on hover —
+    // the same rule the band's record holder already follows.
+    a {
+        color: var(--bs-emphasis-color);
+        text-decoration: none;
+
+        &:hover {
+            color: var(--bs-primary);
+        }
+    }
 
     // Mobile: this cell absorbs all slack (max-width: 0 + width: 100% is
     // the table-cell shrink trick) so the time cell keeps its intrinsic
@@ -250,6 +295,8 @@ tr:focus-within .reveal {
 
 .time {
     @include board.mono-time;
+    font-size: dt.$font-size-base;
+    font-weight: 600;
     white-space: nowrap;
     // Numbers pack right: runner absorbs all slack, so rank/name sit left
     // and time/when/actions cluster into one right-hand scan column instead
@@ -271,7 +318,13 @@ tr:focus-within .reveal {
 // so the eye lands on the ranked column first.
 .timeSecondary {
     @extend .time;
+    font-size: dt.$font-size-sm;
+    font-weight: 500;
     color: var(--bs-tertiary-color);
+
+    @media (max-width: 575.98px) {
+        display: none;
+    }
 }
 
 // Ranked column header: carries the "ranked" marker pill next to the label.
@@ -296,12 +349,6 @@ tr:focus-within .reveal {
 
 // .secondaryHeader itself is declared inside `.table` above (see note there)
 // so it wins specificity over board-table's `thead th` color rule.
-
-// WR row: faint gold wash under the gold spine — the crown's new home.
-// Declared before .youRow so your-own-row identity wins if you hold the WR.
-.rank1Row td {
-    background: rgba(dt.$accent-gold, 0.05);
-}
 
 .meta {
     font-size: dt.$font-size-xs;
@@ -350,7 +397,7 @@ tr:focus-within .reveal {
     animation: youRowFlash 1.6s ease-out;
 }
 
-// podium rows: medal spine + heavier rank numeral
+// podium rows: the spine is the podium's only ambient mark
 // declared after .youRow so a podium+you row keeps the medal spine
 // (same specificity, later source order wins)
 .rank1Row td:first-child {
@@ -366,7 +413,6 @@ tr:focus-within .reveal {
 .rank1Row .rank,
 .rank2Row .rank,
 .rank3Row .rank {
-    font-size: dt.$font-size-md;
     font-weight: 700;
 }
 
@@ -643,7 +689,8 @@ tr:focus-within .reveal {
     gap: dt.$spacing-sm;
     // The panel's header row now (count + export/filters), so it carries the
     // top padding and a hairline under, flush with the table below.
-    padding: dt.$spacing-md dt.$spacing-lg;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    min-height: 48px;
     border-bottom: 1px solid var(--board-surface-border, var(--bs-border-color));
 }
 
@@ -677,16 +724,20 @@ tr:focus-within .reveal {
             rgba(var(--bs-border-color-rgb), 0.5)
         );
     }
+
+    @media (pointer: fine) {
+        > button,
+        > div > button {
+            min-height: 2rem;
+            padding-block: 0;
+        }
+    }
 }
 
 .rangeIndicator {
+    @include board.mono-time;
     font-size: dt.$font-size-xs;
     color: var(--bs-tertiary-color);
-
-    span {
-        @include board.mono-time;
-        color: var(--bs-tertiary-color);
-    }
 }
 
 .findMeBtn {

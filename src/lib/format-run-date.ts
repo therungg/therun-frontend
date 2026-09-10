@@ -25,3 +25,21 @@ export function formatRunDate(iso: string): string {
         ? date.toLocaleDateString(undefined, { timeZone: 'UTC' })
         : date.toLocaleDateString();
 }
+
+/**
+ * The board's date column: one fixed shape on every row — `14 Aug 2025` —
+ * so the column aligns. Same timezone rule as formatRunDate: a date-only
+ * value renders the calendar date the runner typed.
+ */
+export function formatBoardDate(iso: string): string {
+    const isDateOnly = DATE_ONLY.test(iso) || UTC_MIDNIGHT.test(iso);
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return '';
+
+    return date.toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        ...(isDateOnly ? { timeZone: 'UTC' } : {}),
+    });
+}

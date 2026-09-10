@@ -575,13 +575,9 @@ export function LeaderboardPager({
                         <span className={styles.metaLead}>
                             {range && (
                                 <span className={styles.rangeIndicator}>
-                                    Showing{' '}
-                                    <span>
-                                        {range.first.toLocaleString()}–
-                                        {range.last.toLocaleString()}
-                                    </span>{' '}
-                                    of{' '}
-                                    <span>{range.total.toLocaleString()}</span>
+                                    Showing {range.first.toLocaleString()}–
+                                    {range.last.toLocaleString()} of{' '}
+                                    {range.total.toLocaleString()}
                                 </span>
                             )}
                             {hasPendingLoaded && (

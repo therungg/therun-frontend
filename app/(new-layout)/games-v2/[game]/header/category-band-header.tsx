@@ -3,7 +3,6 @@
 import { PlayBtn, TrophyFill } from 'react-bootstrap-icons';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
-import { formatCount } from '~src/utils/format-stats';
 import type {
     LeaderboardEntry,
     ResolvedCategory,
@@ -17,18 +16,20 @@ import styles from './category-band-header.module.scss';
 
 interface Props {
     data: GamePageData;
+    /** The same value the table receives — the record and the #1 row must agree. */
+    showMilliseconds: boolean;
 }
 
 /**
  * The board's own header: the selected category named as the subject, its
- * stats beside it, and its record holder in gold mono — the masthead
+ * entry count beside it, and its record holder in gold mono — the masthead
  * vocabulary's "category as the headline with its record in gold mono beside
  * it." A contained surface that sits directly above the leaderboard, under
  * the game/selector topbar. No wash, no gradient, no filled card — presence
  * from scale, type, spacing and containment (see .interface-design/system.md
  * signature #4).
  */
-export function CategoryBandHeader({ data }: Props) {
+export function CategoryBandHeader({ data, showMilliseconds }: Props) {
     const category = data.selectedCategory;
 
     // A level board's category.display is the full "<Level> — <Template>".
@@ -56,35 +57,29 @@ export function CategoryBandHeader({ data }: Props) {
     const runnersCount =
         entryCount == null ? (category.uniqueRunners ?? null) : null;
 
-    const attempts = category.totalAttemptCount ?? 0;
-    const finished = category.totalFinishedAttemptCount ?? 0;
-    const pbs = category.totalPbs ?? 0;
-    const finishRate =
-        attempts > 0 ? Math.round((finished / attempts) * 100) : null;
-
-    // One quiet facts line, omit-if-zero — not a row of stat tiles.
-    const facts = [
-        entryCount != null && entryCount > 0
-            ? `${formatCount(entryCount)} ${entryCount === 1 ? 'entry' : 'entries'}`
-            : null,
-        runnersCount != null && runnersCount > 0
-            ? `${formatCount(runnersCount)} runners`
-            : null,
-        attempts > 0 ? `${formatCount(attempts)} attempts` : null,
-        finishRate != null ? `${finishRate}% finish` : null,
-        pbs > 0 ? `${formatCount(pbs)} PBs` : null,
-    ].filter((f): f is string => f != null);
-
     return (
         <div className={styles.band}>
             <div className={styles.subject}>
                 <h2 className={styles.title}>{title}</h2>
-                {facts.length > 0 && (
-                    <p className={styles.facts}>{facts.join(' · ')}</p>
-                )}
+                {entryCount != null && entryCount > 0 ? (
+                    <span className={styles.count}>
+                        {entryCount.toLocaleString()}{' '}
+                        {entryCount === 1 ? 'entry' : 'entries'}
+                    </span>
+                ) : runnersCount != null && runnersCount > 0 ? (
+                    <span className={styles.count}>
+                        {runnersCount.toLocaleString()} runners
+                    </span>
+                ) : null}
             </div>
 
-            {wr && <Record category={category} wr={wr} />}
+            {wr && (
+                <Record
+                    category={category}
+                    wr={wr}
+                    showMilliseconds={showMilliseconds}
+                />
+            )}
         </div>
     );
 }
@@ -92,12 +87,13 @@ export function CategoryBandHeader({ data }: Props) {
 function Record({
     category,
     wr,
+    showMilliseconds,
 }: {
     category: ResolvedCategory;
     wr: LeaderboardEntry;
+    showMilliseconds: boolean;
 }) {
     const isAnonymous = wr.anonymized === true;
-    const showMilliseconds = category.showMilliseconds ?? true;
 
     // The ranked time — derived identically to the row's leading time cell
     // (timing-columns.ts + the rtaFallback rule) so the record and the #1 row
@@ -118,7 +114,7 @@ function Record({
     return (
         <div className={styles.record}>
             <span className={styles.recordLabel}>
-                <TrophyFill size={11} aria-hidden />
+                <TrophyFill size={14} aria-hidden />
                 Record
             </span>
             <div className={styles.recordHolder}>
@@ -161,7 +157,7 @@ function Record({
                                 : 'Watch VOD'
                         }
                     >
-                        <PlayBtn size={12} aria-hidden />
+                        <PlayBtn size={14} aria-hidden />
                     </a>
                 )}
             </div>

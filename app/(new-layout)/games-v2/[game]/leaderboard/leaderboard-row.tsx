@@ -6,7 +6,7 @@ import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { RunHoverCardAnchor } from '~src/components/run/run-hover-card/run-hover-card-anchor';
 import { DurationToFormatted } from '~src/components/util/datetime';
-import { formatRunDate } from '~src/lib/format-run-date';
+import { formatBoardDate } from '~src/lib/format-run-date';
 import { srcRunUrl } from '~src/lib/src-links';
 import type {
     GameTimeLabel,
@@ -427,7 +427,7 @@ export function LeaderboardRow({
                     <RunnerAvatar
                         name={entry.runnerName}
                         picture={entry.picture}
-                        size={entry.rank <= 3 ? 'md' : 'sm'}
+                        size="sm"
                         anonymous={isAnonymous}
                     />
                     {isAnonymous ? (
@@ -465,99 +465,6 @@ export function LeaderboardRow({
                         we only know the board's best submitted time. */}
                     {slots?.runnerBadges?.(entry)}
                 </span>
-            </td>
-            {primaryVisible &&
-                time(
-                    isRtaFallbackEntry
-                        ? entry.realTime
-                        : timingValue(primary.key),
-                    false,
-                    true,
-                    isRtaFallbackEntry,
-                    true,
-                )}
-            {secondaryVisible &&
-                time(
-                    // The fallback entry's real time already occupies the
-                    // ranked cell — repeating it under "Real time" would read
-                    // as two distinct clocks agreeing by coincidence.
-                    isRtaFallbackEntry ? null : timingValue(secondary.key),
-                    true,
-                    !primaryVisible,
-                )}
-            {valueColumns.map((col) => {
-                const value = entry.variables?.[col.key];
-                // Only show a value the runner actually submitted. A defaulted
-                // subcategory appears in `variables` but not in `rawVariables`
-                // (which holds the pre-default submission, keyed by either the
-                // variable's key or its display name) — those cells stay
-                // blank rather than claiming the runner said the default.
-                const raw = entry.rawVariables;
-                const runnerSetIt =
-                    raw != null &&
-                    (raw[col.key] !== undefined ||
-                        raw[col.altKey] !== undefined);
-                return (
-                    <td key={col.key} className={styles.value}>
-                        {value != null && runnerSetIt
-                            ? // Stored values are normalized; show the
-                              // bucket's canonical label when we know it.
-                              (col.display[value.trim().toLowerCase()] ?? value)
-                            : '—'}
-                    </td>
-                );
-            })}
-            <td
-                className={`${styles.meta} ${styles.when}`}
-                title={entry.runDate ? formatRunDate(entry.runDate) : undefined}
-            >
-                {entry.runDate ? relativeDate(entry.runDate) : '—'}
-            </td>
-            <td className={styles.trailing}>
-                {slots?.actions?.(entry)}
-                {/* Attribution: speedrun.com's data is CC BY-NC, so an
-                    imported row credits the source with a link back. */}
-                {entry.srcRunId && (
-                    <a
-                        href={srcRunUrl(entry.srcRunId)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className={styles.iconLink}
-                        aria-label="via speedrun.com"
-                        title="via speedrun.com"
-                    >
-                        <BoxArrowUpRight size={13} />
-                    </a>
-                )}
-                {/* A run can carry more than one video; show a link per
-                    video (vodUrl is the first of vodUrls). One video renders
-                    exactly as before. */}
-                {(entry.vodUrls?.length
-                    ? entry.vodUrls
-                    : entry.vodUrl
-                      ? [entry.vodUrl]
-                      : []
-                ).map((url, i, all) => (
-                    <a
-                        key={url}
-                        href={url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className={styles.iconLink}
-                        aria-label={
-                            all.length > 1
-                                ? `Watch VOD ${i + 1} of ${all.length}`
-                                : 'Watch VOD'
-                        }
-                        title={
-                            all.length > 1
-                                ? `Watch VOD ${i + 1} of ${all.length}`
-                                : 'Watch VOD'
-                        }
-                    >
-                        <PlayBtn size={16} />
-                    </a>
-                ))}
                 {/* The owner's way into their own run — reduced self-service
                     (report, correct, hide/restore, appeal) — now lives on the
                     run detail page itself (run-view/run-actions.tsx), which
@@ -612,6 +519,99 @@ export function LeaderboardRow({
                         cost every row a control that opened a menu to say
                         "go to the run page". */}
                 </span>
+            </td>
+            {primaryVisible &&
+                time(
+                    isRtaFallbackEntry
+                        ? entry.realTime
+                        : timingValue(primary.key),
+                    false,
+                    true,
+                    isRtaFallbackEntry,
+                    true,
+                )}
+            {secondaryVisible &&
+                time(
+                    // The fallback entry's real time already occupies the
+                    // ranked cell — repeating it under "Real time" would read
+                    // as two distinct clocks agreeing by coincidence.
+                    isRtaFallbackEntry ? null : timingValue(secondary.key),
+                    true,
+                    !primaryVisible,
+                )}
+            {valueColumns.map((col) => {
+                const value = entry.variables?.[col.key];
+                // Only show a value the runner actually submitted. A defaulted
+                // subcategory appears in `variables` but not in `rawVariables`
+                // (which holds the pre-default submission, keyed by either the
+                // variable's key or its display name) — those cells stay
+                // blank rather than claiming the runner said the default.
+                const raw = entry.rawVariables;
+                const runnerSetIt =
+                    raw != null &&
+                    (raw[col.key] !== undefined ||
+                        raw[col.altKey] !== undefined);
+                return (
+                    <td key={col.key} className={styles.value}>
+                        {value != null && runnerSetIt
+                            ? // Stored values are normalized; show the
+                              // bucket's canonical label when we know it.
+                              (col.display[value.trim().toLowerCase()] ?? value)
+                            : '—'}
+                    </td>
+                );
+            })}
+            <td
+                className={`${styles.meta} ${styles.when}`}
+                title={entry.runDate ? relativeDate(entry.runDate) : undefined}
+            >
+                {entry.runDate ? formatBoardDate(entry.runDate) : '—'}
+            </td>
+            <td className={styles.trailing}>
+                {slots?.actions?.(entry)}
+                {/* Attribution: speedrun.com's data is CC BY-NC, so an
+                    imported row credits the source with a link back. */}
+                {entry.srcRunId && (
+                    <a
+                        href={srcRunUrl(entry.srcRunId)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={styles.iconLink}
+                        aria-label="via speedrun.com"
+                        title="via speedrun.com"
+                    >
+                        <BoxArrowUpRight size={14} />
+                    </a>
+                )}
+                {/* A run can carry more than one video; show a link per
+                    video (vodUrl is the first of vodUrls). One video renders
+                    exactly as before. */}
+                {(entry.vodUrls?.length
+                    ? entry.vodUrls
+                    : entry.vodUrl
+                      ? [entry.vodUrl]
+                      : []
+                ).map((url, i, all) => (
+                    <a
+                        key={url}
+                        href={url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={styles.iconLink}
+                        aria-label={
+                            all.length > 1
+                                ? `Watch VOD ${i + 1} of ${all.length}`
+                                : 'Watch VOD'
+                        }
+                        title={
+                            all.length > 1
+                                ? `Watch VOD ${i + 1} of ${all.length}`
+                                : 'Watch VOD'
+                        }
+                    >
+                        <PlayBtn size={14} />
+                    </a>
+                ))}
             </td>
         </tr>
     );
