@@ -199,13 +199,32 @@ function Standing({ card }: { card: UserCardStats }) {
             {races ? (
                 <div className={styles.standingCell}>
                     <span>Races</span>
-                    {/* A rating reads as a number, never as "1.5K". */}
-                    <b>{Math.round(races.rating).toLocaleString()}</b>
-                    <small>
-                        {Math.round(races.finishPercentage)}% finished ·{' '}
-                        {formatCount(races.totalRaces)}{' '}
-                        {races.totalRaces === 1 ? 'race' : 'races'}
-                    </small>
+                    {/* The runner-level race-stats row carries no rating —
+                        ratings live per game and category — so the backend's
+                        value is 0 there. Lead with the race count; a rating
+                        only shows if one is ever actually sent. A rating
+                        reads as a number, never as "1.5K". */}
+                    {races.rating > 0 ? (
+                        <>
+                            <b>{Math.round(races.rating).toLocaleString()}</b>
+                            <small>
+                                {Math.round(races.finishPercentage)}% finished ·{' '}
+                                {formatCount(races.totalRaces)}{' '}
+                                {races.totalRaces === 1 ? 'race' : 'races'}
+                            </small>
+                        </>
+                    ) : (
+                        <>
+                            <b>
+                                {formatCount(races.totalRaces)}{' '}
+                                {races.totalRaces === 1 ? 'race' : 'races'}
+                            </b>
+                            <small>
+                                {formatCount(races.totalFinishedRaces)} finished
+                                ({Math.round(races.finishPercentage)}%)
+                            </small>
+                        </>
+                    )}
                 </div>
             ) : null}
         </div>
