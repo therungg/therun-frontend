@@ -82,6 +82,10 @@
 }
 
 .when {
+    @include board.mono-time;
+    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-xs;
+    text-align: right;
     white-space: nowrap;
     width: 1%;
 

@@ -6,7 +6,7 @@ import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { RunHoverCardAnchor } from '~src/components/run/run-hover-card/run-hover-card-anchor';
 import { DurationToFormatted } from '~src/components/util/datetime';
-import { formatRunDate } from '~src/lib/format-run-date';
+import { formatBoardDate } from '~src/lib/format-run-date';
 import { srcRunUrl } from '~src/lib/src-links';
 import type {
     GameTimeLabel,
@@ -533,9 +533,9 @@ export function LeaderboardRow({
             })}
             <td
                 className={`${styles.meta} ${styles.when}`}
-                title={entry.runDate ? formatRunDate(entry.runDate) : undefined}
+                title={entry.runDate ? relativeDate(entry.runDate) : undefined}
             >
-                {entry.runDate ? relativeDate(entry.runDate) : '—'}
+                {entry.runDate ? formatBoardDate(entry.runDate) : '—'}
             </td>
             <td className={styles.trailing}>
                 {slots?.actions?.(entry)}

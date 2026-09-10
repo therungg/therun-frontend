@@ -245,7 +245,11 @@ export function LeaderboardTable({
                                 {col.label}
                             </th>
                         ))}
-                        <th className={styles.when}>When</th>
+                        <th
+                            className={`${styles.when} ${styles.secondaryHeader}`}
+                        >
+                            Date
+                        </th>
                         <th aria-label="Video, status and actions" />
                     </tr>
                 </thead>
