@@ -184,6 +184,17 @@ export function LeaderboardTable({
         hideRealTime || (secondary.key === 'rt' && secondaryAllNull);
     const rowHideGameTime =
         hideGameTime || (secondary.key === 'gt' && secondaryAllNull);
+    // Boards imported from speedrun.com often hold only whole-second times;
+    // printing ".000" on every row is noise, so milliseconds show only when
+    // at least one loaded time actually has them. Recomputed per page, same
+    // as the secondary column.
+    const boardShowMilliseconds =
+        showMilliseconds &&
+        leaderboard.entries.some((e) =>
+            [e.realTime, e.gameTime].some(
+                (t) => t != null && Math.round(t) % 1000 !== 0,
+            ),
+        );
 
     return (
         <div className={styles.wrapper}>
@@ -257,7 +268,7 @@ export function LeaderboardTable({
                             hideGameTime={rowHideGameTime}
                             primaryTiming={primaryTiming}
                             valueColumns={visibleValueColumns}
-                            showMilliseconds={showMilliseconds}
+                            showMilliseconds={boardShowMilliseconds}
                             gameTimeLabel={gameTimeLabel}
                             rtaFallback={rtaFallback}
                             selected={(() => {
