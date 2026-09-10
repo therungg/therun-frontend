@@ -235,8 +235,20 @@ tr:focus-within .reveal {
 }
 
 .runner {
-    font-weight: 600;
-    color: var(--bs-emphasis-color);
+    font-weight: 500;
+    color: var(--bs-body-color);
+
+    // UserLink paints usernames brand-green site-wide; on the board that
+    // second accent outranks the time. Body ink at rest, green on hover —
+    // the same rule the band's record holder already follows.
+    a {
+        color: var(--bs-emphasis-color);
+        text-decoration: none;
+
+        &:hover {
+            color: var(--bs-primary);
+        }
+    }
 
     // Mobile: this cell absorbs all slack (max-width: 0 + width: 100% is
     // the table-cell shrink trick) so the time cell keeps its intrinsic
@@ -250,6 +262,8 @@ tr:focus-within .reveal {
 
 .time {
     @include board.mono-time;
+    font-size: dt.$font-size-base;
+    font-weight: 600;
     white-space: nowrap;
     // Numbers pack right: runner absorbs all slack, so rank/name sit left
     // and time/when/actions cluster into one right-hand scan column instead
@@ -271,6 +285,8 @@ tr:focus-within .reveal {
 // so the eye lands on the ranked column first.
 .timeSecondary {
     @extend .time;
+    font-size: dt.$font-size-sm;
+    font-weight: 500;
     color: var(--bs-tertiary-color);
 }
 
