@@ -9,16 +9,23 @@ import {
 } from '~src/lib/moderation/can-moderate';
 import {
     getSrcImportJob,
+    getSrcPurgeJob,
+    getSrcPurgePreview,
     listSrcGameCandidates,
     type SrcResyncKind,
     startSrcImport,
+    startSrcPurge,
     startSrcResync,
+    unblockSrcPurge,
 } from '~src/lib/src-import';
+import { confirmPermission } from '~src/rbac/confirm-permission';
 import type {
     SrcGameCandidate,
     SrcImportCommitFlags,
     SrcImportJob,
     SrcImportJobKind,
+    SrcPurgeJob,
+    SrcPurgePreview,
 } from '../../../../../../types/src-import.types';
 
 export type ActionResult<T> = { result: T } | { error: string };
@@ -38,6 +45,14 @@ async function requireBoardMod(gameSlug: string): Promise<string> {
     ) {
         throw new Error('You are not a moderator of this game on therun.gg');
     }
+    return session.id;
+}
+
+/** The purge is site-admin only; the backend enforces the same gate. */
+async function requireSiteAdmin(): Promise<string> {
+    const session = await getSession();
+    if (!session?.id || !session.username) throw new Error('Not signed in');
+    confirmPermission(session, 'moderate', 'admins');
     return session.id;
 }
 
@@ -119,5 +134,48 @@ export async function refreshGameThemeAction(input: {
         await requireBoardMod(input.gameSlug);
         updateTag(`game-meta:${input.gameId}`);
         return null;
+    });
+}
+
+// ---------------------------------------------------------------------------
+// Removing a board's speedrun.com data — site-admin only, no board-mod
+// fallback. The console only offers these when `isAdmin`, but the gate here
+// is what actually stops a non-admin from reaching the API.
+// ---------------------------------------------------------------------------
+
+export async function getPurgePreviewAction(input: {
+    gameId: number;
+}): Promise<ActionResult<SrcPurgePreview>> {
+    return run(async () => {
+        const sessionId = await requireSiteAdmin();
+        return getSrcPurgePreview(sessionId, input.gameId);
+    });
+}
+
+export async function getPurgeJobAction(input: {
+    gameId: number;
+}): Promise<ActionResult<SrcPurgeJob | null>> {
+    return run(async () => {
+        const sessionId = await requireSiteAdmin();
+        return getSrcPurgeJob(sessionId, input.gameId);
+    });
+}
+
+export async function startPurgeAction(input: {
+    gameId: number;
+    confirmName: string;
+}): Promise<ActionResult<{ purgeJobId: number }>> {
+    return run(async () => {
+        const sessionId = await requireSiteAdmin();
+        return startSrcPurge(sessionId, input.gameId, input.confirmName);
+    });
+}
+
+export async function unblockPurgeAction(input: {
+    gameId: number;
+}): Promise<ActionResult<{ unblocked: boolean }>> {
+    return run(async () => {
+        const sessionId = await requireSiteAdmin();
+        return unblockSrcPurge(sessionId, input.gameId);
     });
 }

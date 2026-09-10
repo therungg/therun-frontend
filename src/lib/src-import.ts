@@ -8,6 +8,8 @@ import type {
     SrcImportCommitFlags,
     SrcImportJob,
     SrcImportJobKind,
+    SrcPurgeJob,
+    SrcPurgePreview,
 } from '../../types/src-import.types';
 import { apiFetch } from './api-client';
 
@@ -89,4 +91,58 @@ export async function getSrcImportJob(
         sessionId,
     });
     return job ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// Removing a board's speedrun.com data — site-admin only, all four routes.
+// docs/frontend-guide-src-import.md "Removing a board's speedrun.com data".
+// ---------------------------------------------------------------------------
+
+/** Counting-only preview of what a purge would remove. No writes. */
+export async function getSrcPurgePreview(
+    sessionId: string,
+    gameId: number,
+): Promise<SrcPurgePreview> {
+    return apiFetch<SrcPurgePreview>(`${base(gameId)}/purge/preview`, {
+        sessionId,
+    });
+}
+
+/** The game's purge job, for polling. Null when none has ever run. */
+export async function getSrcPurgeJob(
+    sessionId: string,
+    gameId: number,
+): Promise<SrcPurgeJob | null> {
+    const job = await apiFetch<SrcPurgeJob | null | undefined>(
+        `${base(gameId)}/purge`,
+        { method: 'GET', sessionId },
+    );
+    return job ?? null;
+}
+
+/**
+ * Starts the purge. `confirmName` must match the game's display name exactly
+ * (after trimming) — the backend's second pair of hands.
+ */
+export async function startSrcPurge(
+    sessionId: string,
+    gameId: number,
+    confirmName: string,
+): Promise<{ purgeJobId: number }> {
+    return apiFetch<{ purgeJobId: number }>(`${base(gameId)}/purge`, {
+        method: 'POST',
+        sessionId,
+        body: { confirmName },
+    });
+}
+
+/** Lifts the post-purge tombstone so the board can be imported again. */
+export async function unblockSrcPurge(
+    sessionId: string,
+    gameId: number,
+): Promise<{ unblocked: boolean }> {
+    return apiFetch<{ unblocked: boolean }>(`${base(gameId)}/purge/unblock`, {
+        method: 'POST',
+        sessionId,
+    });
 }

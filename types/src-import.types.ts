@@ -459,3 +459,75 @@ export interface SrcUserSyncStatus {
         summary: SrcUserSyncSummary | null;
     } | null;
 }
+
+// ---------------------------------------------------------------------------
+// Removing a board's speedrun.com data (purge) — site-admin only. Backend:
+// docs/frontend-guide-src-import.md ("Removing a board's speedrun.com data"),
+// design: therun docs/plans/2026-09-09-src-data-purge-design.md. Hand-mirrored;
+// field names match the API exactly.
+// ---------------------------------------------------------------------------
+
+export interface SrcPurgePreview {
+    importedRuns: number;
+    /** Native runs the importer merely linked. They stay; only the link goes. */
+    nativeRunsLinked: number;
+    orphanRunFlags: number;
+    createdCategories: number;
+    createdLevels: number;
+    createdTemplates: number;
+    createdVariables: number;
+    boardRecords: number;
+    minTimeFloors: number;
+    runLinks: number;
+    jobs: number;
+    reconciledJobIds: number[];
+    /** Objects a pre-2026-08 import created but cannot prove it created. Left in place. */
+    unprovableMappings: number;
+    /** The stored theme is still the one an import wrote, so the purge will clear it. */
+    themeMatchesImport: boolean;
+    revertableGameFields: string[];
+}
+
+export type SrcPurgeStatus = 'queued' | 'running' | 'done' | 'failed';
+export type SrcPurgePhase =
+    | 'export'
+    | 'reconcile-undo'
+    | 'runs'
+    | 'config'
+    | 'settings'
+    | 'records'
+    | 'rebuild'
+    | 'done';
+
+export interface SrcPurgeCounts {
+    importedRuns: number;
+    nativeRunsUnlinked: number;
+    runFlags: number;
+    categoriesDeleted: number;
+    categoriesArchived: number;
+    levelsDeleted: number;
+    variablesDeleted: number;
+    boardRecords: number;
+    minTimeFloors: number;
+    runLinks: number;
+    jobs: number;
+    themeCleared: boolean;
+    themeKept: boolean;
+    gameFieldsReverted: string[];
+    gameFieldsKept: string[];
+    mappingsUnprovable: number;
+}
+
+export interface SrcPurgeJob {
+    id: number;
+    gameId: number;
+    requestedBy: number;
+    status: SrcPurgeStatus;
+    phase: SrcPurgePhase;
+    counts: SrcPurgeCounts | null;
+    /** S3 key of the JSON export written before the first delete. */
+    exportKey: string | null;
+    error: string | null;
+    createdAt: string;
+    finishedAt: string | null;
+}
