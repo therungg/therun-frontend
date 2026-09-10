@@ -44,6 +44,66 @@ export interface UserCardStats {
      * a profile link. Absent on older backend deploys.
      */
     srcUsername?: string | null;
+    /** Race record. Null when they have never raced. */
+    races?: UserCardRaces | null;
+    /** Board placings across every board they rank on. */
+    boards?: UserCardBoards | null;
+    /** Only when the card was asked for with a game. */
+    game?: UserCardGame | null;
+}
+
+export interface UserCardRaces {
+    rating: number;
+    totalRaces: number;
+    totalFinishedRaces: number;
+    /** 0-100. */
+    finishPercentage: number;
+}
+
+export interface UserCardBoards {
+    first: number;
+    /** Includes the #1s. */
+    topTen: number;
+    total: number;
+}
+
+export interface UserCardGameCategory {
+    category: string;
+    categorySlug: string;
+    personalBest: number | null;
+    gameTimePb: number | null;
+    attemptCount: number;
+    playtime: number;
+}
+
+export interface UserCardGame {
+    gameSlug: string;
+    gameDisplay: string;
+    attemptCount: number;
+    finishedAttemptCount: number;
+    /** ms */
+    playtime: number;
+    lastRunAt: string | null;
+    /** At most four. */
+    categories: UserCardGameCategory[];
+    first: number;
+    topTen: number;
+}
+
+/**
+ * The slice of a live run the card needs, served by /api/users/{user}/live.
+ * The full LiveRun carries every split's history and is far too heavy for a
+ * hover.
+ */
+export interface UserCardLive {
+    game: string;
+    category: string;
+    currentSplitIndex: number;
+    splitCount: number;
+    currentSplitName: string | null;
+    startedAt: number | string | null;
+    /** ms vs PB at the last completed split; negative is ahead. */
+    delta: number | null;
 }
 
 export type UserCardProfile = UserData & {
@@ -66,4 +126,6 @@ export interface UserCardContext {
     label?: string;
     picture?: string | null;
     country?: string | null;
+    /** The game the hovered surface is about; the card adds that game's block. */
+    gameSlug?: string;
 }

@@ -455,6 +455,7 @@ export function LeaderboardRow({
                                         timingValue(primary.key) ?? undefined,
                                     picture: entry.picture,
                                     country: entry.country,
+                                    gameSlug,
                                 }}
                             />
                             <CountryFlag country={entry.country} />
