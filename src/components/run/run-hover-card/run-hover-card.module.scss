@@ -29,13 +29,43 @@ $inset: 0.875rem;
 $hairline: 1px solid
     var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.35));
 
+// ---- Identity: who ran it -----------------------------------------
+.identity {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    min-width: 0;
+    padding: dt.$spacing-md $inset 0;
+
+    // The shared flag twin's own sizing lives in user-hover-card.module.scss.
+    img:last-child {
+        flex: 0 0 auto;
+    }
+}
+
+.name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--bs-emphasis-color);
+}
+
+// Muted, never greyed out or italicised — same rule as the row.
+.nameAnon {
+    font-weight: 500;
+    color: var(--bs-secondary-color);
+}
+
 // ---- Head: rank ball, ranked time, status ------------------------
 .head {
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
     gap: 0.625rem;
-    padding: dt.$spacing-md $inset 0.625rem;
+    padding: 0.625rem $inset;
 }
 
 // Same ball the row's rank cell uses for the podium; a quiet outlined pill
@@ -201,18 +231,9 @@ $hairline: 1px solid
     }
 }
 
-.clockRanked {
-    b {
-        color: var(--bs-emphasis-color);
-    }
-
-    span::after {
-        content: '';
-        width: 5px;
-        height: 5px;
-        border-radius: 50%;
-        background: var(--board-accent, var(--bs-primary));
-    }
+// The clock the board sorts by reads at full ink; the other stays dimmed.
+.clockRanked b {
+    color: var(--bs-emphasis-color);
 }
 
 .clock b.none {

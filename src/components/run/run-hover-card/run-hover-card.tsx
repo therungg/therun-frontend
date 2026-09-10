@@ -2,8 +2,10 @@ import { PlayBtn } from 'react-bootstrap-icons';
 import type { DisplayRank } from '~app/(new-layout)/games-v2/[game]/leaderboard/display-rank';
 import { relativeDate } from '~app/(new-layout)/games-v2/[game]/leaderboard/relative-date';
 import type { RunStanding } from '~app/(new-layout)/games-v2/[game]/leaderboard/run-standing';
+import { RunnerAvatar } from '~app/(new-layout)/games-v2/[game]/leaderboard/runner-avatar';
 import type { TimingKey } from '~app/(new-layout)/games-v2/[game]/leaderboard/timing-columns';
 import { VerificationBadge } from '~app/(new-layout)/games-v2/[game]/run-view/run-badges';
+import { CountryFlag } from '~src/components/user/hover-card/country-flag';
 import { formatRunDate } from '~src/lib/format-run-date';
 import type {
     GameTimeLabel,
@@ -151,6 +153,25 @@ export function RunHoverCard({
 
     return (
         <div className={styles.card}>
+            {/* Anonymized rows arrive redacted (placeholder name, no picture
+                or country) — key the treatment off the flag, never the name. */}
+            <div className={styles.identity}>
+                <RunnerAvatar
+                    name={entry.runnerName}
+                    picture={entry.picture}
+                    size="md"
+                    anonymous={entry.anonymized === true}
+                />
+                <span
+                    className={`${styles.name} ${entry.anonymized ? styles.nameAnon : ''}`}
+                >
+                    {entry.runnerName}
+                </span>
+                {entry.anonymized ? null : (
+                    <CountryFlag country={entry.country} />
+                )}
+            </div>
+
             <div className={styles.head}>
                 <span className={`${styles.medal} ${medalClass}`}>
                     {isRejected ? '—' : rankLabel}
@@ -168,11 +189,7 @@ export function RunHoverCard({
                     </span>
                     <span className={styles.clockLabel}>
                         {rankedLabel}
-                        {isRejected
-                            ? ''
-                            : isFallback
-                              ? ' · no game time'
-                              : ' · ranked'}
+                        {isFallback && !isRejected ? ' · no game time' : ''}
                     </span>
                 </div>
                 {isManual ? (
