@@ -137,30 +137,38 @@
     }
 }
 
-// actions are invisible at rest; revealed on hover / keyboard focus
+// Mod verbs overlay the runner cell's slack instead of reserving a column:
+// anchored to the cell's right edge, vertically centred by flex (never by a
+// transform — that would make this the containing block for the
+// row-actions dropdown's position: fixed). Painted on the surface so it
+// reads cleanly over a long name.
 .reveal {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: dt.$spacing-lg;
     display: inline-flex;
+    align-items: center;
     gap: dt.$spacing-xs;
+    padding-left: dt.$spacing-md;
+    background: var(--board-surface-bg, var(--bs-body-bg));
     opacity: 0;
-    position: relative;
     z-index: 2;
     transition: opacity dt.$transition-fast;
 
-    // The z-index above makes this a stacking context, so the row-actions
-    // dropdown is painted *inside* it — its own z-index (and `position:
-    // fixed`) rank it only among its siblings here, leaving the whole menu
-    // at level 2 against the rest of the table. Every later row's cells sit
-    // at 2 as well and win on tree order, so they'd paint over the open menu
-    // and (being opacity-0, not hidden) swallow its clicks. Lift the context
-    // itself for as long as the menu is open.
     &:has(:global(.dropdown.show)) {
         z-index: dt.$z-popover;
-        // An open menu must not depend on the row still matching
-        // `tr:hover` / `tr:focus-within` to stay visible — the pointer sits
-        // on the menu, and focus can leave the row entirely (Safari doesn't
-        // focus buttons on click).
         opacity: 1;
     }
+}
+
+.youRow .reveal,
+.rowSelected .reveal {
+    background: color-mix(
+        in srgb,
+        var(--board-surface-bg, var(--bs-body-bg)) 92%,
+        var(--bs-primary) 8%
+    );
 }
 
 tr:hover .reveal,
@@ -235,6 +243,7 @@ tr:focus-within .reveal {
 }
 
 .runner {
+    position: relative;
     font-weight: 500;
     color: var(--bs-body-color);
 

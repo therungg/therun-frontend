@@ -435,6 +435,60 @@ export function LeaderboardRow({
                         we only know the board's best submitted time. */}
                     {slots?.runnerBadges?.(entry)}
                 </span>
+                {/* The owner's way into their own run — reduced self-service
+                    (report, correct, hide/restore, appeal) — now lives on the
+                    run detail page itself (run-view/run-actions.tsx), which
+                    the row's time already links to. No separate row control
+                    is needed for it any more. */}
+                <span className={styles.reveal}>
+                    {showQuickVerify && (
+                        <QuickVerifyButton
+                            ref={verifyRef}
+                            gameSlug={gameSlug}
+                            runId={entry.runId as number}
+                            runnerName={entry.runnerName}
+                            onMutated={onBoardRefresh as () => void}
+                        />
+                    )}
+                    {showQuickUnverify && (
+                        <QuickUnverifyButton
+                            ref={verifyRef}
+                            gameSlug={gameSlug}
+                            runId={entry.runId as number}
+                            runnerName={entry.runnerName}
+                            onMutated={onBoardRefresh as () => void}
+                        />
+                    )}
+                    {/* The other half of the same judgement, in the same
+                        cluster and the same pill — Verify green, Remove
+                        red. Fires the remove verb through
+                        `onQuickModerate`, which the host answers with an
+                        inline `RunActionDialog` rather than a drawer: the
+                        board stays visible behind the judgement (the
+                        cutoff and custom-time questions are answered by
+                        looking at it). */}
+                    {showQuickRemove && onQuickModerate && (
+                        <button
+                            ref={removeRef}
+                            type="button"
+                            className={styles.quickRemove}
+                            aria-label={`Remove ${entry.runnerName}'s ${entry.manualTimeId != null ? 'set time' : 'run'}`}
+                            title={`Remove ${entry.runnerName}'s ${entry.manualTimeId != null ? 'set time' : 'run'} (x)`}
+                            onClick={() => onQuickModerate(entry, 'remove')}
+                        >
+                            <XLg size={14} aria-hidden />
+                            Remove
+                            <kbd className={styles.shortcutKey}>x</kbd>
+                        </button>
+                    )}
+                    {/* The per-row kebab is gone. Everything it held — run
+                        history, Report run, Correct this time, Hide/Restore my
+                        run, Appeal rejection — lives on the run page
+                        (run-view/run-actions.tsx), which this row's time
+                        already links to. A second surface for the same verbs
+                        cost every row a control that opened a menu to say
+                        "go to the run page". */}
+                </span>
             </td>
             {primaryVisible &&
                 time(
@@ -496,7 +550,7 @@ export function LeaderboardRow({
                         aria-label="via speedrun.com"
                         title="via speedrun.com"
                     >
-                        <BoxArrowUpRight size={13} />
+                        <BoxArrowUpRight size={14} />
                     </a>
                 )}
                 {/* A run can carry more than one video; show a link per
@@ -525,63 +579,9 @@ export function LeaderboardRow({
                                 : 'Watch VOD'
                         }
                     >
-                        <PlayBtn size={16} />
+                        <PlayBtn size={14} />
                     </a>
                 ))}
-                {/* The owner's way into their own run — reduced self-service
-                    (report, correct, hide/restore, appeal) — now lives on the
-                    run detail page itself (run-view/run-actions.tsx), which
-                    the row's time already links to. No separate row control
-                    is needed for it any more. */}
-                <span className={styles.reveal}>
-                    {showQuickVerify && (
-                        <QuickVerifyButton
-                            ref={verifyRef}
-                            gameSlug={gameSlug}
-                            runId={entry.runId as number}
-                            runnerName={entry.runnerName}
-                            onMutated={onBoardRefresh as () => void}
-                        />
-                    )}
-                    {showQuickUnverify && (
-                        <QuickUnverifyButton
-                            ref={verifyRef}
-                            gameSlug={gameSlug}
-                            runId={entry.runId as number}
-                            runnerName={entry.runnerName}
-                            onMutated={onBoardRefresh as () => void}
-                        />
-                    )}
-                    {/* The other half of the same judgement, in the same
-                        cluster and the same pill — Verify green, Remove
-                        red. Fires the remove verb through
-                        `onQuickModerate`, which the host answers with an
-                        inline `RunActionDialog` rather than a drawer: the
-                        board stays visible behind the judgement (the
-                        cutoff and custom-time questions are answered by
-                        looking at it). */}
-                    {showQuickRemove && onQuickModerate && (
-                        <button
-                            ref={removeRef}
-                            type="button"
-                            className={styles.quickRemove}
-                            aria-label={`Remove ${entry.runnerName}'s ${entry.manualTimeId != null ? 'set time' : 'run'}`}
-                            title={`Remove ${entry.runnerName}'s ${entry.manualTimeId != null ? 'set time' : 'run'} (x)`}
-                            onClick={() => onQuickModerate(entry, 'remove')}
-                        >
-                            <XLg size={14} aria-hidden />
-                            Remove
-                            <kbd className={styles.shortcutKey}>x</kbd>
-                        </button>
-                    )}
-                    {/* The per-row kebab is gone. Everything it held — run
-                        history, Report run, Correct this time, Hide/Restore my
-                        run, Appeal rejection — lives on the run page
-                        (run-view/run-actions.tsx), which this row's time
-                        already links to. A second surface for the same verbs
-                        cost every row a control that opened a menu to say
-                        "go to the run page". */}
-                </span>
             </td>
         </tr>
     );
