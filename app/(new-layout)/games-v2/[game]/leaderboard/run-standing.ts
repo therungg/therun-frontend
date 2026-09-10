@@ -15,6 +15,9 @@ export interface RunStanding {
     ahead: { rankLabel: string; time: number } | null;
     /** For the leader: the nearest strictly slower run — the lead's size. */
     behind: { rankLabel: string; time: number } | null;
+    /** The signed-in viewer's own ranked time, when their row is loaded and
+     * this is someone else's run. */
+    yours: number | null;
 }
 
 interface StandingEntry {
@@ -26,15 +29,24 @@ const bareLabel = (rank: DisplayRank) => rank.label.replace(/^=/, '');
 export function computeRunStandings(
     entries: StandingEntry[],
     displayRanks: DisplayRank[],
+    /** Index of the viewer's own row in `entries`, or -1. */
+    viewerIndex = -1,
 ): RunStanding[] {
     const leaderLoaded = entries.length > 0 && displayRanks[0]?.rank === 1;
     const leaderTime = leaderLoaded ? entries[0].time : null;
+    const viewerTime = viewerIndex >= 0 ? entries[viewerIndex].time : null;
 
     return entries.map((entry, i) => {
         const t = entry.time;
         const isLeader = displayRanks[i]?.rank === 1;
         if (t == null) {
-            return { isLeader, leaderTime: null, ahead: null, behind: null };
+            return {
+                isLeader,
+                leaderTime: null,
+                ahead: null,
+                behind: null,
+                yours: null,
+            };
         }
 
         let ahead: RunStanding['ahead'] = null;
@@ -65,6 +77,7 @@ export function computeRunStandings(
             leaderTime: isLeader ? null : leaderTime,
             ahead,
             behind,
+            yours: i === viewerIndex ? null : viewerTime,
         };
     });
 }

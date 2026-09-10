@@ -173,6 +173,11 @@ $hairline: 1px solid
     color: var(--bs-tertiary-color);
 }
 
+.you {
+    color: var(--board-accent, var(--bs-primary));
+    font-weight: 600;
+}
+
 .lead {
     color: dt.$accent-gold;
     font-weight: 600;

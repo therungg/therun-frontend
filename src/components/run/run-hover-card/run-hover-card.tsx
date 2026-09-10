@@ -202,7 +202,8 @@ export function RunHoverCard({
             {showStanding &&
             (standing.isLeader ||
                 leaderGap != null ||
-                standing.ahead != null) ? (
+                standing.ahead != null ||
+                standing.yours != null) ? (
                 <div className={styles.gap}>
                     {standing.isLeader ? (
                         <div className={styles.gapLine}>
@@ -257,6 +258,21 @@ export function RunHoverCard({
                                     time - standing.ahead.time,
                                     showMilliseconds,
                                 )}
+                            </b>
+                        </div>
+                    ) : null}
+                    {/* Read from the viewer's side: how this run compares
+                        to the time they'd have to beat or defend. */}
+                    {standing.yours != null ? (
+                        <div className={styles.gapLine}>
+                            <span className={styles.you}>Your PB</span>
+                            <b>
+                                {standing.yours === time
+                                    ? 'Same time'
+                                    : `${gapText(
+                                          time - standing.yours,
+                                          showMilliseconds,
+                                      )} ${time < standing.yours ? 'faster' : 'slower'}`}
                             </b>
                         </div>
                     ) : null}

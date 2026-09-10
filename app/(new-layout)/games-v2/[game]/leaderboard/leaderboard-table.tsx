@@ -178,7 +178,13 @@ export function LeaderboardTable({
         leaderboard.entries,
         primaryTiming,
     );
-    const standings = computeRunStandings(leaderboard.entries, displayRanks);
+    const standings = computeRunStandings(
+        leaderboard.entries,
+        displayRanks,
+        leaderboard.entries.findIndex((e) =>
+            isSameRunner(e.runnerName, sessionUsername),
+        ),
+    );
     // Row-level hide flags need the all-null override folded into the same
     // key the secondary column actually is (rt or gt — depends on
     // primaryTiming), not blanket-applied to gameTime.
