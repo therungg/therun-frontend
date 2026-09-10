@@ -8,13 +8,14 @@ import {
 } from './nav-model';
 
 describe('settings nav model', () => {
-    it('lists the seven phase-1 sections in order', () => {
+    it('lists the sections in order', () => {
         expect(
             SETTINGS_GROUPS.flatMap((g) => g.items.map((i) => i.id)),
         ).toEqual([
             'profile',
             'preferences',
             'sync',
+            'account',
             'patreon',
             'appearance',
             'livesplit',
