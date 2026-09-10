@@ -62,14 +62,13 @@
 }
 
 .runnerCell {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: dt.$spacing-sm;
     position: relative;
     z-index: 2;
 
     @media (max-width: 575.98px) {
-        display: flex;
         min-width: 0;
 
         // Only the name shrinks — avatar, flag and WR chip hold their size.
@@ -78,6 +77,14 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
+    }
+}
+
+// Mobile column priority: rank, runner and the ranked time always fit; the
+// second clock yields, like the date.
+.secondaryTimeHeader {
+    @media (max-width: 575.98px) {
+        display: none;
     }
 }
 
@@ -294,6 +301,10 @@ tr:focus-within .reveal {
     font-size: dt.$font-size-sm;
     font-weight: 500;
     color: var(--bs-tertiary-color);
+
+    @media (max-width: 575.98px) {
+        display: none;
+    }
 }
 
 // Ranked column header: carries the "ranked" marker pill next to the label.

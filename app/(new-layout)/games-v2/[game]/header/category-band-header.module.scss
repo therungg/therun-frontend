@@ -60,6 +60,8 @@
         padding-top: dt.$spacing-md;
         border-left: 0;
         border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+        flex-wrap: wrap;
+        row-gap: dt.$spacing-xs;
     }
 }
 
@@ -128,4 +130,8 @@
     letter-spacing: -0.01em;
     line-height: 1;
     white-space: nowrap;
+
+    @media (max-width: 575.98px) {
+        margin-left: auto;
+    }
 }

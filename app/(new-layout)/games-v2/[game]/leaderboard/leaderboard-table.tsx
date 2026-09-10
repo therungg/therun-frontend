@@ -236,7 +236,9 @@ export function LeaderboardTable({
                             </th>
                         )}
                         {!hidden(secondary.key) && (
-                            <th className={styles.secondaryHeader}>
+                            <th
+                                className={`${styles.secondaryHeader} ${styles.secondaryTimeHeader}`}
+                            >
                                 {secondary.label}
                             </th>
                         )}
