@@ -268,6 +268,21 @@ $hairline: 1px solid
     }
 }
 
+// ---- Verifier (fetched on open) ---------------------------------
+.verifiedBy {
+    padding: 0.625rem $inset 0;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    b {
+        font-weight: 600;
+        color: var(--bs-emphasis-color);
+    }
+}
+
 // ---- Footer: date, source, video --------------------------------
 .foot {
     display: flex;

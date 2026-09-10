@@ -1,3 +1,6 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { PlayBtn } from 'react-bootstrap-icons';
 import type { DisplayRank } from '~app/(new-layout)/games-v2/[game]/leaderboard/display-rank';
 import { relativeDate } from '~app/(new-layout)/games-v2/[game]/leaderboard/relative-date';
@@ -11,6 +14,7 @@ import type {
     GameTimeLabel,
     LeaderboardEntry,
 } from '../../../../types/leaderboards.types';
+import { loadRunCard, peekRunCard, type RunCardDetail } from './run-card-store';
 import styles from './run-hover-card.module.scss';
 
 export interface RunHoverCardProps {
@@ -85,6 +89,29 @@ export function RunHoverCard({
     const isManual = entry.source === 'manual';
     const isRejected = entry.verificationStatus === 'rejected';
     const time = entry.time;
+
+    // Who verified it isn't on the board row — fetched on open, and only
+    // for runs that have a verifier to name. Everything else paints from
+    // the row immediately; this line joins when it lands.
+    const verifiedRunId =
+        entry.runId != null &&
+        !isManual &&
+        entry.verificationStatus === 'verified'
+            ? entry.runId
+            : null;
+    const [detail, setDetail] = useState<RunCardDetail | null | undefined>(
+        () => (verifiedRunId != null ? peekRunCard(verifiedRunId) : null),
+    );
+    useEffect(() => {
+        if (verifiedRunId == null || detail !== undefined) return;
+        let live = true;
+        loadRunCard(verifiedRunId).then((result) => {
+            if (live) setDetail(result);
+        });
+        return () => {
+            live = false;
+        };
+    }, [verifiedRunId, detail]);
 
     const isFallback =
         rtaFallback &&
@@ -304,6 +331,15 @@ export function RunHoverCard({
                             {v.label} <b>{v.value}</b>
                         </span>
                     ))}
+                </div>
+            ) : null}
+
+            {detail?.verifiedBy ? (
+                <div className={styles.verifiedBy}>
+                    Verified by <b>{detail.verifiedBy.name}</b>
+                    {detail.verifiedAt
+                        ? ` · ${formatRunDate(detail.verifiedAt)}`
+                        : null}
                 </div>
             ) : null}
 
