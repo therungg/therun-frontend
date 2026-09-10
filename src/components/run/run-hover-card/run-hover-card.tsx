@@ -71,8 +71,9 @@ function gameTimeText(gameTimeLabel: GameTimeLabel | undefined): string {
 }
 
 /**
- * Presentational only — built from the `LeaderboardEntry` on the row plus
- * what the table already knows about its neighbours. Nothing is fetched.
+ * Built from the `LeaderboardEntry` on the row plus what the table already
+ * knows about its neighbours, so it paints at once. The one exception is the
+ * verifier line, fetched on open (run-card-store) and added when it lands.
  */
 export function RunHoverCard({
     entry,
