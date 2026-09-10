@@ -31,6 +31,18 @@ interface PromptDialogProps {
      * for call sites where the API accepts an empty/omitted value.
      */
     minLength?: number;
+    /**
+     * Extra gate beyond `minLength` — e.g. requiring the typed value to
+     * match some other string exactly (case-insensitively) before the
+     * submit button enables, rather than just meeting a length floor.
+     * Checked against the trimmed value. Omit for the plain length check.
+     */
+    isValid?: (trimmed: string) => boolean;
+    /**
+     * Message shown instead of the length-based "is required" hint when the
+     * value is long enough but fails `isValid`. Ignored without `isValid`.
+     */
+    invalidHint?: string;
     submitLabel: string;
     submitVariant?: SubmitVariant;
     pending: boolean;
@@ -55,6 +67,8 @@ export function PromptDialog({
     initialValue = '',
     multiline = false,
     minLength = 0,
+    isValid,
+    invalidHint,
     submitLabel,
     submitVariant = 'primary',
     pending,
@@ -73,7 +87,8 @@ export function PromptDialog({
     }, [open, initialValue]);
 
     const trimmed = value.trim();
-    const valid = minLength <= 0 || trimmed.length >= minLength;
+    const meetsLength = minLength <= 0 || trimmed.length >= minLength;
+    const valid = meetsLength && (!isValid || isValid(trimmed));
 
     const requestClose = () => {
         if (!pending) onClose();
@@ -129,10 +144,13 @@ export function PromptDialog({
                         disabled={pending}
                     />
                 )}
-                {minLength > 0 && !valid && value.length > 0 && (
+                {minLength > 0 && !meetsLength && value.length > 0 && (
                     <div className={styles.fieldError}>
                         {fieldLabel} is required.
                     </div>
+                )}
+                {meetsLength && !valid && invalidHint && value.length > 0 && (
+                    <div className={styles.fieldError}>{invalidHint}</div>
                 )}
                 {error && (
                     <div className={styles.errorAlert} role="alert">

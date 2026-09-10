@@ -1,0 +1,61 @@
+@use '../../styles/design-tokens' as dt;
+@use '../../styles/board' as board;
+
+.effects {
+    margin: 0;
+    padding-left: 1.25rem;
+    display: grid;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    max-width: 60ch;
+}
+
+.dangerZone {
+    padding: dt.$spacing-2xl;
+    border-radius: dt.$radius-xl;
+    border: 1px solid rgba(dt.$accent-red, 0.3);
+    background: rgba(dt.$accent-red, 0.04);
+    display: grid;
+    gap: dt.$spacing-md;
+    justify-items: start;
+}
+
+.dangerZoneTitle {
+    font-size: dt.$font-size-md;
+    font-weight: 700;
+    color: dt.$accent-red;
+    margin: 0;
+}
+
+.dangerZoneBody {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: 0;
+    line-height: 1.5;
+    max-width: 60ch;
+}
+
+// Structural button chrome mirrors tournament-form.module.scss's
+// .primaryButton/.ghostButton/.dangerButton base (not paired with
+// bootstrap's .btn here, so it needs its own padding/radius); the red
+// itself comes from the shared board-dialog-btn-danger mixin so it stays
+// in sync with every other destructive action in the console.
+.dangerButton {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    padding: 0.65rem 1.4rem;
+    border-radius: dt.$radius-md;
+    font-size: dt.$font-size-sm;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: all dt.$transition-fast;
+
+    @include board.board-dialog-btn-danger;
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
