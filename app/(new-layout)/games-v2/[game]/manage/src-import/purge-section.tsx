@@ -155,6 +155,9 @@ export function PurgeSection({ gameId, gameDisplay, disabled }: Props) {
     const [confirmValue, setConfirmValue] = useState('');
     const [startError, setStartError] = useState<string | null>(null);
     const [starting, setStarting] = useState(false);
+    // A settled job otherwise owns the section for good: a failed purge could
+    // never be retried, and a finished one never re-run after a later import.
+    const [reopened, setReopened] = useState(false);
 
     const {
         job,
@@ -187,7 +190,19 @@ export function PurgeSection({ gameId, gameDisplay, disabled }: Props) {
             return;
         }
         setConfirmValue('');
+        setPreview(null);
+        setReopened(false);
         await refreshJob();
+    };
+
+    // Back to the confirm flow, carrying nothing over from the attempt that
+    // just ended — the counts it reported are stale the moment it settled.
+    const reopen = () => {
+        setPreview(null);
+        setPreviewError(null);
+        setConfirmValue('');
+        setStartError(null);
+        setReopened(true);
     };
 
     const running = job !== null && !isSettled(job);
@@ -196,7 +211,7 @@ export function PurgeSection({ gameId, gameDisplay, disabled }: Props) {
 
     // Once a job exists, its state drives the section — no need for a
     // separately-fetched preview any more.
-    if (!jobLoading && job !== null) {
+    if (!jobLoading && job !== null && !(reopened && isSettled(job))) {
         return (
             <section
                 className={`${styles.section} ${styles.dangerSection}`}
@@ -216,6 +231,18 @@ export function PurgeSection({ gameId, gameDisplay, disabled }: Props) {
                     </p>
                 )}
                 {!running && <Report job={job} />}
+                {!running && (
+                    <div className={styles.actions}>
+                        <button
+                            type="button"
+                            className={styles.btn}
+                            onClick={reopen}
+                            disabled={disabled}
+                        >
+                            {failed ? 'Try again' : 'Remove again'}
+                        </button>
+                    </div>
+                )}
             </section>
         );
     }
