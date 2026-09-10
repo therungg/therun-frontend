@@ -12,7 +12,11 @@ import styles from './src-import.module.scss';
 import {
     getSrcGameCandidatesAction,
     startSrcImportAction,
+    unblockPurgeAction,
 } from './src-import-actions';
+
+/** Substring of the backend's 409 when a purge has tombstoned this board. */
+const PURGE_BLOCK_MARKER = 'unblock it';
 
 export const SRC_PREFIX = 'https://www.speedrun.com/';
 
@@ -48,15 +52,33 @@ interface Props {
     gameId: number;
     gameSlug: string;
     onLinked: () => Promise<void>;
+    /** Only an admin can lift a purge's tombstone — the unblock button is theirs alone. */
+    isAdmin: boolean;
 }
 
 /** Shown only when the game has never been imported: link it, import settings. */
-export function LinkCard({ gameId, gameSlug, onLinked }: Props) {
+export function LinkCard({ gameId, gameSlug, onLinked, isAdmin }: Props) {
     const inputId = useId();
     const [slug, setSlug] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [pending, startTransition] = useTransition();
+    const [unblocking, setUnblocking] = useState(false);
+    const [unblockError, setUnblockError] = useState<string | null>(null);
     const url = srcUrlFromInput(slug);
+    const blockedByPurge =
+        error !== null && error.toLowerCase().includes(PURGE_BLOCK_MARKER);
+
+    const unblock = async () => {
+        setUnblocking(true);
+        setUnblockError(null);
+        const res = await unblockPurgeAction({ gameId });
+        setUnblocking(false);
+        if ('error' in res) {
+            setUnblockError(res.error);
+            return;
+        }
+        setError(null);
+    };
 
     // What the board looks like it should be linked to. One source request,
     // once, when the card mounts — the search is a fuzzy title match on the
@@ -159,7 +181,25 @@ export function LinkCard({ gameId, gameSlug, onLinked }: Props) {
                     {pending ? 'Starting…' : 'Link and import settings'}
                 </button>
             </form>
-            {error && <p className={styles.error}>{error}</p>}
+            {error && (
+                <p className={styles.error}>
+                    {error}
+                    {blockedByPurge && isAdmin && (
+                        <>
+                            {' '}
+                            <button
+                                type="button"
+                                className={styles.btn}
+                                onClick={unblock}
+                                disabled={unblocking}
+                            >
+                                {unblocking ? 'Unblocking…' : 'Unblock'}
+                            </button>
+                        </>
+                    )}
+                </p>
+            )}
+            {unblockError && <p className={styles.error}>{unblockError}</p>}
         </section>
     );
 }

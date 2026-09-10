@@ -158,6 +158,7 @@ export function ImportSections({
                     gameId={gameId}
                     gameSlug={gameSlug}
                     onLinked={refreshAll}
+                    isAdmin={isAdmin}
                 />
             ) : (
                 <>
