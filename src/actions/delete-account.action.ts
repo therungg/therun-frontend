@@ -26,7 +26,25 @@ export async function deleteAccountAction(
             body: { confirm: confirm.trim() },
         });
     } catch (e) {
-        if (e instanceof ModError) return { error: e.message };
+        if (e instanceof ModError) {
+            // Already tombstoned — either by an earlier request or by one
+            // that raced this one. The account is gone either way, so finish
+            // exactly the way a success does rather than stranding a
+            // signed-in shell on an account that no longer exists.
+            if (e.status === 403 && e.message === 'account already deleted') {
+                return { ok: true };
+            }
+            // A 500 does not mean nothing happened: the tombstone commits
+            // before the steps that can still throw, so the account may well
+            // be gone. Never retry automatically — say so and let a refresh
+            // settle which it was.
+            if (e.status === 500) {
+                return {
+                    error: "Something went wrong finishing the deletion. Refresh the page - if your account was deleted, you'll be signed out.",
+                };
+            }
+            return { error: e.message };
+        }
         return { error: 'Something went wrong. Please try again.' };
     }
     return { ok: true };
