@@ -1,8 +1,27 @@
 'use server';
 
+import { updateTag } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
 import { ModError, meFetch } from '~src/lib/moderation/mod-fetch';
 import type { DeleteAccountResponse } from '../../types/account.types';
+
+/**
+ * Everything keyed on a person that outlives their account. `user-` holds the
+ * profile page for a full hour, so without this the page you just deleted
+ * keeps answering. updateTag, not revalidateTag: stale-while-revalidate would
+ * serve the deleted profile one more time to whoever asks next.
+ */
+function forgetUser(username: string): void {
+    const lower = username.toLowerCase();
+    updateTag(`user-${lower}`);
+    updateTag(`user-card-${lower}`);
+    updateTag(`user-rankings:name:${lower}`);
+    // These are tagged with the caller's own casing rather than a normalised
+    // one, and the session is the only casing they are ever called with.
+    updateTag(`user-summary-${username}`);
+    updateTag(`user-dashboard-${username}`);
+    updateTag(`user-preferences-${username}`);
+}
 
 /**
  * Permanently delete the signed-in caller's own account. The account is
@@ -32,6 +51,7 @@ export async function deleteAccountAction(
             // exactly the way a success does rather than stranding a
             // signed-in shell on an account that no longer exists.
             if (e.status === 403 && e.message === 'account already deleted') {
+                forgetUser(session.username);
                 return { ok: true };
             }
             // A 500 does not mean nothing happened: the tombstone commits
@@ -47,5 +67,6 @@ export async function deleteAccountAction(
         }
         return { error: 'Something went wrong. Please try again.' };
     }
+    forgetUser(session.username);
     return { ok: true };
 }

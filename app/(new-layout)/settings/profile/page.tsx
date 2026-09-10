@@ -8,6 +8,9 @@ export default async function ProfileSettingsPage() {
     const session = await getSession();
     if (!session.id || !session.username) return null;
     const userData = await getGlobalUser(session.username);
+    // The signed-in caller's own profile: absent only if the account went away
+    // underneath the session (a deletion in another tab). Nothing to edit.
+    if (!userData) return null;
     return (
         <div className={styles.paneWide}>
             <header className={styles.paneHeader}>

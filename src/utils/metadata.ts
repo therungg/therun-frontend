@@ -129,7 +129,7 @@ export async function getUserProfilePhoto(
     // user-page view into a second Vercel invocation.
     let data: { picture?: string } | undefined;
     try {
-        data = await getGlobalUser(username);
+        data = (await getGlobalUser(username)) ?? undefined;
     } catch (e) {
         console.log(e);
         return undefined;

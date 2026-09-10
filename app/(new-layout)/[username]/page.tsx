@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { cacheLife } from 'next/cache';
+import { notFound } from 'next/navigation';
 import { GlobalGameData } from '~app/(new-layout)/[username]/[game]/[run]/run';
 import { getRunmap } from '~app/(new-layout)/[username]/runmap.component';
 import { UserProfile } from '~app/(new-layout)/[username]/user-profile';
@@ -95,6 +96,10 @@ async function UserProfilePage({ username }: { username: string }) {
         getUserRaceStats(username),
         getUserRankingsByName(username).catch(() => []),
     ] as const);
+
+    // Deleted, banned or anonymised: the API answers as though the account
+    // never existed, and so does the page.
+    if (!userData) notFound();
 
     // Find favorite game+category by total playtime
     const favoriteRun =

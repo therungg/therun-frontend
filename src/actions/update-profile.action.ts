@@ -48,6 +48,6 @@ export async function updateProfile(
         return mapApiError(e);
     }
 
-    updateTag(`user-${session.username}`);
+    updateTag(`user-${session.username.toLowerCase()}`);
     return { ok: true };
 }
