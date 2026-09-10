@@ -3,11 +3,11 @@
 
 // The board's own header (category-band-header.tsx). A contained board
 // surface directly above the leaderboard: the category as the headline with
-// its stats beside it and its record in gold mono — masthead vocabulary
-// signature #4. Presence from scale/type/spacing/containment only; no wash,
-// no gradient, no filled card.
+// its entry count beside it and its record in gold mono — masthead
+// vocabulary signature #4. Presence from scale/type/spacing/containment
+// only; no wash, no gradient, no filled card.
 .band {
-    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
+    @include board.board-surface(dt.$spacing-lg);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -16,7 +16,11 @@
     margin-bottom: dt.$spacing-sm;
 }
 
+// Title and its count share one baseline.
 .subject {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-md;
     min-width: 0;
 }
 
@@ -31,28 +35,27 @@
     line-height: 1.15;
 }
 
-// One quiet facts line — the category's scale as tertiary text, not a row of
-// stat tiles.
-.facts {
-    margin: dt.$spacing-xs 0 0;
-    font-size: dt.$font-size-sm;
-    color: var(--bs-tertiary-color);
+// The board's scale as a quiet mono count — the section-count vocabulary,
+// one size up so it holds its own beside the title.
+.count {
+    @include board.board-section-count;
+    font-size: dt.$font-size-xs;
+    white-space: nowrap;
 }
 
-// The record cluster, divided from the subject by a hairline. Gold lives in
-// the trophy glyph and the mono time only — never a fill or a border box.
+// The record: eyebrow, holder and time on ONE line, right-aligned so the
+// gold time lands on the table's time edge below it.
 .record {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    column-gap: dt.$spacing-lg;
-    row-gap: dt.$spacing-xs;
+    gap: dt.$spacing-md;
+    margin-left: auto;
     padding-left: dt.$spacing-2xl;
     border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
 
     @media (max-width: 575.98px) {
-        // Wraps under the subject: the divider becomes a top rule.
         width: 100%;
+        margin-left: 0;
         padding-left: 0;
         padding-top: dt.$spacing-md;
         border-left: 0;
@@ -60,10 +63,7 @@
     }
 }
 
-// The eyebrow takes the whole top line so the holder and the time sit
-// together on the line below it.
 .recordLabel {
-    flex-basis: 100%;
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
@@ -120,12 +120,10 @@
     }
 }
 
-// The record itself — gold mono, the cluster's one piece of scale.
 .recordTime {
     @include board.mono-time;
-    margin-left: auto;
     color: dt.$accent-gold;
-    font-size: dt.$font-size-xl;
+    font-size: dt.$font-size-lg;
     font-weight: 700;
     letter-spacing: -0.01em;
     line-height: 1;
