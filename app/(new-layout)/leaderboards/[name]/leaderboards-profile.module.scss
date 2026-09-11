@@ -25,11 +25,15 @@
     }
 }
 
+// The runs column is a size container: the entry rows lay out by the width
+// they actually get, not by the viewport (Bootstrap's 960px container at
+// 1000-1199px leaves the column far narrower than the viewport suggests).
 .main {
     grid-area: main;
     display: grid;
     gap: dt.$spacing-lg;
     min-width: 0;
+    container: profile-main / inline-size;
 }
 
 .sidebar {
@@ -295,28 +299,23 @@
 }
 
 .entries {
-    // Medal tones for the rank cell: muted metals, tuned per theme so each
-    // clears 4.5:1 against the board surface.
+    // Medal tones for the rank cell. The rank mixes them with the surface ink
+    // (see .entryRank), so they read on a light panel as well as a dark one.
     --rank-gold: #d4a73a;
     --rank-silver: #a9b4c2;
     --rank-bronze: #c07a45;
-
-    :global([data-bs-theme='light']) & {
-        --rank-gold: #8f6b10;
-        --rank-silver: #66707d;
-        --rank-bronze: #95562a;
-    }
 
     display: grid;
     gap: 2px;
 }
 
-// Rank first: rank | name + vars | time | date | details | badges. On
-// phones the rank spans both lines; the name sits on the first, time, date
-// and badges on the second, the details drop.
+// Rank first: rank | name + vars | time | date | details | badges. When the
+// runs column is under 720px the rank spans two lines: the name takes the
+// whole first line, time, date and badges wrap on the second, and the
+// details drop.
 .entry {
     display: grid;
-    grid-template-columns: 4.5rem minmax(0, 1fr) auto 7rem minmax(0, 1.2fr) auto;
+    grid-template-columns: 4.5rem minmax(0, 1.4fr) auto 7rem minmax(0, 1fr) auto;
     grid-template-areas: 'rank name time date details badges';
     column-gap: dt.$spacing-md;
     row-gap: 2px;
@@ -329,11 +328,31 @@
         background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.04));
     }
 
-    @media (max-width: 640px) {
-        grid-template-columns: 3.5rem auto auto minmax(0, 1fr);
+    @container profile-main (max-width: 719.98px) {
+        grid-template-columns: 4.5rem minmax(0, 1fr);
         grid-template-areas:
-            'rank name name name'
-            'rank time date badges';
+            'rank name'
+            'rank meta';
+    }
+
+    @media (max-width: 640px) {
+        grid-template-columns: 3.5rem minmax(0, 1fr);
+    }
+}
+
+// Time, date and badges. A plain pass-through on the one-line layout; the
+// wrapping second line of the two-line one.
+.entryMeta {
+    display: contents;
+
+    @container profile-main (max-width: 719.98px) {
+        grid-area: meta;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        column-gap: dt.$spacing-md;
+        row-gap: 2px;
+        min-width: 0;
     }
 }
 
@@ -350,9 +369,23 @@
     font-weight: 700;
     color: var(--bs-emphasis-color);
 
-    &[data-medal='gold'] { color: var(--rank-gold); }
-    &[data-medal='silver'] { color: var(--rank-silver); }
-    &[data-medal='bronze'] { color: var(--rank-bronze); }
+    &[data-medal='gold'] {
+        color: color-mix(in srgb, var(--rank-gold) 65%, var(--bs-emphasis-color));
+    }
+    &[data-medal='silver'] {
+        color: color-mix(
+            in srgb,
+            var(--rank-silver) 65%,
+            var(--bs-emphasis-color)
+        );
+    }
+    &[data-medal='bronze'] {
+        color: color-mix(
+            in srgb,
+            var(--rank-bronze) 65%,
+            var(--bs-emphasis-color)
+        );
+    }
 }
 
 .entryRankNone {
@@ -407,6 +440,10 @@
     svg {
         display: block;
     }
+
+    @media (max-width: 640px) {
+        display: none;
+    }
 }
 
 .entryDate {
@@ -428,7 +465,7 @@
         text-underline-offset: 2px;
     }
 
-    @media (max-width: 640px) {
+    @container profile-main (max-width: 719.98px) {
         display: none;
     }
 }
@@ -436,9 +473,15 @@
 .entryBadges {
     grid-area: badges;
     display: flex;
+    flex-wrap: wrap;
     gap: dt.$spacing-xs;
     align-items: center;
     justify-content: end;
+    min-width: 0;
+
+    @container profile-main (max-width: 719.98px) {
+        justify-content: start;
+    }
 }
 
 .entryVod {

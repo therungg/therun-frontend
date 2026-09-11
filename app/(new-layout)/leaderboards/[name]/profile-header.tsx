@@ -23,8 +23,8 @@ import type {
     LeaderboardsProfileStanding,
 } from '../../../../types/leaderboards-profile.types';
 import { RunnerAvatar } from '../../games-v2/[game]/leaderboard/runner-avatar';
+import { HeroStats } from './hero-stats';
 import styles from './leaderboards-profile.module.scss';
-import { HeroStats } from './standing-row';
 
 type IconType = ComponentType<{ size?: number; 'aria-hidden'?: boolean }>;
 
@@ -60,7 +60,9 @@ export function ProfileHeader({
 }) {
     const guest = runner.userId === null;
     const country = countryName(runner.country);
+    // Speedrun links are not shown on the profile.
     const socials = Object.entries(runner.socials)
+        .filter(([key]) => !/speedrun/i.test(key))
         .map(([key, value]) => ({ key, href: socialHref(value) }))
         .filter((s): s is { key: string; href: string } => s.href !== null);
 

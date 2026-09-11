@@ -3,16 +3,10 @@ import Link from '~src/components/link';
 import type { LeaderboardsProfile } from '../../../../types/leaderboards-profile.types';
 import { ActivityHeatmap } from './activity-heatmap';
 import { formatProfileDate } from './format';
+import { plural } from './hero-stats';
 import styles from './leaderboards-profile.module.scss';
 import { LiveStrip } from './live-strip';
 import { RecentPbs } from './recent-pbs';
-import { plural } from './standing-row';
-
-const dateFmt = new Intl.DateTimeFormat('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-});
 
 const n = (v: number) => v.toLocaleString('en-US');
 
@@ -35,14 +29,12 @@ function AboutCard({ runner }: { runner: LeaderboardsProfile['runner'] }) {
             {hasFacts ? (
                 <ul className={styles.facts}>
                     {runner.joinedAt ? (
-                        <li>
-                            Joined {dateFmt.format(new Date(runner.joinedAt))}
-                        </li>
+                        <li>Joined {formatProfileDate(runner.joinedAt)}</li>
                     ) : null}
                     {runner.firstBoardRunAt ? (
                         <li>
                             First board run{' '}
-                            {dateFmt.format(new Date(runner.firstBoardRunAt))}
+                            {formatProfileDate(runner.firstBoardRunAt)}
                         </li>
                     ) : null}
                     {runner.patron ? <li>Supporter</li> : null}

@@ -73,48 +73,50 @@ export function EntryRow({
                     <span className={styles.entryVars}> {vars}</span>
                 ) : null}
             </span>
-            <span className={styles.entryTime}>
-                {formatEntryTime(entry)}
-                {timing ? (
-                    <span className={styles.entryTiming}>{timing}</span>
-                ) : null}
-                <PbSparkline history={pbHistory} />
-            </span>
-            <span className={styles.entryDate}>
-                {entry.runDate ? formatProfileDate(entry.runDate) : '—'}
-            </span>
-            <span className={styles.entryDetails}>
-                {facts.map((f) => `${f} · `).join('')}
-                {entry.splitsHref ? (
-                    <Link href={entry.splitsHref}>{provenance}</Link>
-                ) : (
-                    provenance
-                )}
-                {attempts !== null && attempts > 0
-                    ? ` · ${attempts.toLocaleString('en-US')} ${attempts === 1 ? 'attempt' : 'attempts'}`
-                    : null}
-            </span>
-            <span className={styles.entryBadges}>
-                <span
-                    title={
-                        entry.verifiedAt
-                            ? `Verified ${formatProfileDate(entry.verifiedAt)}`
-                            : undefined
-                    }
-                >
-                    <VerificationBadge status={entry.status} />
+            <span className={styles.entryMeta}>
+                <span className={styles.entryTime}>
+                    {formatEntryTime(entry)}
+                    {timing ? (
+                        <span className={styles.entryTiming}>{timing}</span>
+                    ) : null}
+                    <PbSparkline history={pbHistory} />
                 </span>
-                {entry.vodUrl ? (
-                    <a
-                        href={entry.vodUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="Video"
-                        className={styles.entryVod}
+                <span className={styles.entryDate}>
+                    {entry.runDate ? formatProfileDate(entry.runDate) : '—'}
+                </span>
+                <span className={styles.entryDetails}>
+                    {facts.map((f) => `${f} · `).join('')}
+                    {entry.splitsHref ? (
+                        <Link href={entry.splitsHref}>{provenance}</Link>
+                    ) : (
+                        provenance
+                    )}
+                    {attempts !== null && attempts > 0
+                        ? ` · ${attempts.toLocaleString('en-US')} ${attempts === 1 ? 'attempt' : 'attempts'}`
+                        : null}
+                </span>
+                <span className={styles.entryBadges}>
+                    <span
+                        title={
+                            entry.verifiedAt
+                                ? `Verified ${formatProfileDate(entry.verifiedAt)}`
+                                : undefined
+                        }
                     >
-                        <PlayBtn size={14} />
-                    </a>
-                ) : null}
+                        <VerificationBadge status={entry.status} />
+                    </span>
+                    {entry.vodUrl ? (
+                        <a
+                            href={entry.vodUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Video"
+                            className={styles.entryVod}
+                        >
+                            <PlayBtn size={14} />
+                        </a>
+                    ) : null}
+                </span>
             </span>
         </div>
     );

@@ -11,12 +11,12 @@ import type {
 } from '../../../../types/leaderboards-profile.types';
 import { GameThemeStyle } from '../../games-v2/[game]/theme/game-theme-style';
 import { FeaturedRun } from './featured-run';
+import { plural } from './hero-stats';
 import styles from './leaderboards-profile.module.scss';
 import { ProfileHeader } from './profile-header';
 import { ProfileSidebar } from './profile-sidebar';
 import { ProfileTabs } from './profile-tabs';
 import { RejectedEntries } from './rejected-entries';
-import { plural } from './standing-row';
 
 interface PageProps {
     params: Promise<{ name: string }>;
@@ -122,7 +122,10 @@ export default async function LeaderboardsProfilePage({ params }: PageProps) {
                         />
                     ) : null}
                     <ProfileTabs
-                        games={profile.games}
+                        games={profile.games.map((g) => ({
+                            ...g,
+                            theme: null,
+                        }))}
                         country={profile.runner.country}
                     />
                     <Suspense fallback={null}>
