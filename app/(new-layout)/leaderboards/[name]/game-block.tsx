@@ -1,4 +1,3 @@
-import type { CSSProperties } from 'react';
 import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
 import { formatBoardDate } from '~src/lib/format-run-date';
@@ -22,14 +21,20 @@ function groupByLevel(entries: LeaderboardsProfileEntry[]) {
     return { plain, levels };
 }
 
+/**
+ * One game's block in the main column. `entries` is what the selected tab
+ * shows of this game; the summary line always describes the whole game.
+ */
 export function GameBlock({
     game,
+    entries,
     country,
 }: {
     game: LeaderboardsProfileGame;
+    entries: LeaderboardsProfileEntry[];
     country: string | null;
 }) {
-    const { plain, levels } = groupByLevel(game.entries);
+    const { plain, levels } = groupByLevel(entries);
     const summary = [
         `${game.entries.length} ${game.entries.length === 1 ? 'board' : 'boards'}`,
         game.bestRank !== null ? `best #${game.bestRank}` : null,
@@ -41,19 +46,8 @@ export function GameBlock({
             ? hours(game.playtimeMs)
             : null,
     ].filter(Boolean);
-    const themeStyle = game.theme
-        ? ({
-              '--board-accent': game.theme.accentColor,
-              '--board-surface-bg': `color-mix(in srgb, ${game.theme.panelColor} ${Math.round(game.theme.panelOpacity * 100)}%, transparent)`,
-          } as CSSProperties)
-        : undefined;
-
     return (
-        <section
-            className={styles.game}
-            data-game-id={game.gameId}
-            style={themeStyle}
-        >
+        <section className={styles.game} data-game-id={game.gameId}>
             <div className={styles.gameHead}>
                 <GameImage
                     src={game.imageUrl ?? ''}
@@ -97,21 +91,6 @@ export function GameBlock({
                     </div>
                 ))}
             </div>
-            {game.archived.length > 0 ? (
-                <details className={styles.archived}>
-                    <summary>Archived ({game.archived.length})</summary>
-                    <div className={styles.entries}>
-                        {game.archived.map((e) => (
-                            <EntryRow
-                                key={`${e.kind}-${e.runId ?? e.manualTimeId}`}
-                                entry={e}
-                                gameSlug={game.gameSlug}
-                                country={country}
-                            />
-                        ))}
-                    </div>
-                </details>
-            ) : null}
         </section>
     );
 }

@@ -26,22 +26,29 @@ export function ActivityHeatmap({
     const total = activity.reduce((s, a) => s + a.attempts, 0);
 
     return (
-        <section
-            className={styles.heatmap}
-            aria-label="Attempts per day, last year"
-        >
-            <div className={styles.gameSummary}>
-                {total.toLocaleString('en-US')} attempts in the last year
+        <section className={styles.card} aria-labelledby="profile-activity">
+            <h2 id="profile-activity" className={styles.cardTitle}>
+                Activity
+            </h2>
+            <div className={styles.cardNote}>
+                {total.toLocaleString('en-US')}{' '}
+                {total === 1 ? 'attempt' : 'attempts'} in the last year
             </div>
-            <div className={styles.heatmapGrid}>
-                {cells.map((c) => (
-                    <span
-                        key={c.date}
-                        className={styles.heatmapCell}
-                        data-level={level(c.attempts)}
-                        title={`${c.date}: ${c.attempts} attempts`}
-                    />
-                ))}
+            <div
+                className={styles.heatmapScroll}
+                role="img"
+                aria-label="Attempts per day, last year"
+            >
+                <div className={styles.heatmapGrid}>
+                    {cells.map((c) => (
+                        <span
+                            key={c.date}
+                            className={styles.heatmapCell}
+                            data-level={level(c.attempts)}
+                            title={`${c.date}: ${c.attempts} attempts`}
+                        />
+                    ))}
+                </div>
             </div>
         </section>
     );

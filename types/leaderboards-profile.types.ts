@@ -41,6 +41,10 @@ export interface LeaderboardsProfileEntry {
     vodUrl: string | null;
     hasSplits: boolean;
     splitsHref: string | null;
+    /** Attempts on the timer run behind this entry; null without one. */
+    attempts: number | null;
+    /** Successive PBs on this board, oldest first. */
+    pbHistory: { date: string; timeMs: number }[];
 }
 
 export interface LeaderboardsProfileGame {

@@ -5,17 +5,50 @@
     display: grid;
     gap: dt.$spacing-xl;
     padding-block: dt.$spacing-xl;
+    min-width: 0;
+}
+
+// Two columns: runs on the left, the runner on the right. Below 1000px the
+// sidebar stacks under the header, above the runs.
+.columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 20rem;
+    grid-template-areas: 'main side';
+    gap: dt.$spacing-xl;
+    align-items: start;
+
+    @media (max-width: 999.98px) {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+            'side'
+            'main';
+    }
+}
+
+.main {
+    grid-area: main;
+    display: grid;
+    gap: dt.$spacing-lg;
+    min-width: 0;
+}
+
+.sidebar {
+    grid-area: side;
+    display: grid;
+    gap: dt.$spacing-lg;
+    min-width: 0;
 }
 
 .header {
     @include board.board-surface(dt.$spacing-xl);
     display: grid;
-    grid-template-columns: auto 1fr;
-    gap: dt.$spacing-lg;
-    align-items: start;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    column-gap: dt.$spacing-lg;
+    row-gap: dt.$spacing-lg;
+    align-items: center;
 
     @media (max-width: 640px) {
-        grid-template-columns: 1fr;
+        grid-template-columns: auto minmax(0, 1fr);
     }
 }
 
@@ -27,75 +60,197 @@
 
     > img,
     > span {
-        width: 64px !important;
-        height: 64px !important;
-        font-size: 24px !important;
+        width: 80px !important;
+        height: 80px !important;
+        font-size: 30px !important;
     }
 }
 
 .identity {
     display: grid;
     gap: dt.$spacing-xs;
+    min-width: 0;
 }
 
 .name {
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-sm;
     margin: 0;
-    font-size: dt.$font-size-2xl;
+    font-size: dt.$font-size-3xl;
     font-weight: 700;
+    line-height: 1.15;
     color: var(--bs-emphasis-color);
+    overflow-wrap: anywhere;
 }
 
 .meta {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: dt.$spacing-md;
     color: var(--bs-secondary-color);
     font-size: dt.$font-size-sm;
 }
 
-.bio {
-    max-width: 60ch;
-    color: var(--bs-body-color);
+.country {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
 }
 
-.links {
+.socials {
     display: flex;
     flex-wrap: wrap;
-    gap: dt.$spacing-sm;
+    gap: dt.$spacing-xs;
 
     a {
         @include board.control-pill;
+        padding: dt.$spacing-xs;
     }
 }
 
+.headerActions {
+    display: flex;
+    gap: dt.$spacing-sm;
+    align-self: start;
+
+    @media (max-width: 640px) {
+        grid-column: 1 / -1;
+    }
+}
+
+.actionPill {
+    @include board.control-pill;
+    text-decoration: none;
+}
+
 .stateNote {
+    margin: 0;
     color: var(--bs-secondary-color);
     font-style: italic;
 }
 
-// Stat row: the hover card's pattern, scaled up.
-.standing {
-    @include board.board-surface(dt.$spacing-lg);
+// The header's three headline numbers, on the header's own grid.
+.hero {
+    grid-column: 1 / -1;
     display: flex;
     flex-wrap: wrap;
-    gap: dt.$spacing-xl;
+    column-gap: dt.$spacing-3xl;
+    row-gap: dt.$spacing-md;
+    padding-top: dt.$spacing-lg;
+    border-top: 1px solid
+        var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
+}
 
-    > span {
-        display: grid;
-        gap: 2px;
-        font-size: dt.$font-size-sm;
+.heroStat {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+    min-width: 0;
+    color: var(--bs-secondary-color);
+
+    b {
+        font-family: dt.$font-mono;
+        font-variant-numeric: tabular-nums;
+        font-size: dt.$font-size-2xl;
+        font-weight: 700;
+        color: var(--bs-emphasis-color);
+    }
+
+    a {
+        color: var(--bs-body-color);
+        overflow-wrap: anywhere;
+    }
+}
+
+// Tabs over the main column
+.tabsWrap {
+    display: grid;
+    gap: dt.$spacing-md;
+}
+
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs;
+}
+
+.tab {
+    @include board.control-pill;
+}
+
+.tabActive {
+    @include board.control-pill-active;
+}
+
+.tabPanel {
+    display: grid;
+    gap: dt.$spacing-lg;
+}
+
+.emptyNote {
+    @include board.board-surface(dt.$spacing-lg);
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+// Sidebar cards
+.card {
+    @include board.board-surface(dt.$spacing-lg);
+    display: grid;
+    gap: dt.$spacing-sm;
+    min-width: 0;
+}
+
+.cardTitle {
+    margin: 0;
+    font-size: dt.$font-size-base;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.cardNote {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.bio {
+    margin: 0;
+    color: var(--bs-body-color);
+    overflow-wrap: anywhere;
+}
+
+.facts {
+    display: grid;
+    gap: dt.$spacing-xs;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.statList {
+    display: grid;
+    gap: dt.$spacing-xs;
+    margin: 0;
+
+    > div {
+        display: flex;
+        justify-content: space-between;
+        gap: dt.$spacing-md;
+    }
+
+    dt {
+        font-weight: 400;
         color: var(--bs-secondary-color);
+        font-size: dt.$font-size-sm;
+    }
 
-        b {
-            font-family: dt.$font-mono;
-            font-variant-numeric: tabular-nums;
-            font-size: dt.$font-size-xl;
-            font-weight: 700;
-            color: var(--bs-emphasis-color);
-        }
+    dd {
+        margin: 0;
+        font-family: dt.$font-mono;
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        color: var(--bs-emphasis-color);
     }
 }
 
@@ -220,23 +375,23 @@
     align-items: center;
 }
 
-.archived {
-    summary {
-        @include board.control-pill;
-    }
-}
-
-// Heatmap
-.heatmap {
-    @include board.board-surface(dt.$spacing-lg);
+// Heatmap: fixed 11px cells, scrolling inside its card only. The scroller
+// runs right-to-left so it opens on the most recent weeks; the grid itself
+// is laid out left-to-right as usual.
+.heatmapScroll {
     overflow-x: auto;
+    direction: rtl;
 }
 
 .heatmapGrid {
+    direction: ltr;
     display: grid;
     grid-auto-flow: column;
     grid-template-rows: repeat(7, 11px);
+    grid-auto-columns: 11px;
+    justify-content: start;
     gap: 2px;
+    width: max-content;
 }
 
 .heatmapCell {
@@ -280,8 +435,11 @@
 }
 
 .live {
-    @include board.board-surface(dt.$spacing-md);
     display: flex;
+    color: var(--bs-emphasis-color);
+    font-size: dt.$font-size-sm;
+    font-weight: 500;
+    text-decoration: none;
     align-items: center;
     gap: dt.$spacing-md;
 }

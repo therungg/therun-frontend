@@ -4,53 +4,33 @@ import styles from './leaderboards-profile.module.scss';
 
 const n = (v: number) => v.toLocaleString('en-US');
 
-export function StandingRow({
+export const plural = (count: number, one: string, many: string) =>
+    count === 1 ? one : many;
+
+/** The header's three headline numbers: boards, first places, best. */
+export function HeroStats({
     standing,
 }: {
     standing: LeaderboardsProfileStanding;
 }) {
     return (
-        <div className={styles.standing}>
-            <span>
+        <div className={styles.hero}>
+            <span className={styles.heroStat}>
                 <b>{n(standing.boards)}</b>
-                boards
+                {plural(standing.boards, 'board', 'boards')}
             </span>
-            <span>
+            <span className={styles.heroStat}>
                 <b>{n(standing.first)}</b>
-                first places
-            </span>
-            <span>
-                <b>{n(standing.podiums)}</b>
-                podiums
-            </span>
-            <span>
-                <b>{n(standing.topTen)}</b>
-                top 10
+                {plural(standing.first, 'first place', 'first places')}
             </span>
             {standing.best ? (
-                <span>
-                    <b>#{standing.best.rank}</b>
+                <span className={styles.heroStat}>
+                    <b>#{n(standing.best.rank)}</b>
                     <Link
                         href={`/games-v2/${encodeURIComponent(standing.best.gameSlug)}`}
                     >
                         {standing.best.game} · {standing.best.category}
                     </Link>
-                </span>
-            ) : null}
-            <span>
-                <b>{n(standing.verified)}</b>
-                verified
-            </span>
-            {standing.pending > 0 ? (
-                <span>
-                    <b>{n(standing.pending)}</b>
-                    pending
-                </span>
-            ) : null}
-            {standing.races ? (
-                <span>
-                    <b>{n(standing.races.count)}</b>
-                    races · {standing.races.finishPercentage}% finished
                 </span>
             ) : null}
         </div>

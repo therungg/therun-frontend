@@ -4,17 +4,41 @@ import { Suspense } from 'react';
 import { getLeaderboardsProfile } from '~src/lib/leaderboards-profile';
 import buildMetadata, { getUserProfilePhoto } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
-import { ActivityHeatmap } from './activity-heatmap';
-import { GameBlock } from './game-block';
+import type { LeaderboardsProfileGame } from '../../../../types/leaderboards-profile.types';
+import { GameThemeStyle } from '../../games-v2/[game]/theme/game-theme-style';
 import styles from './leaderboards-profile.module.scss';
-import { LiveStrip } from './live-strip';
 import { ProfileHeader } from './profile-header';
+import { ProfileSidebar } from './profile-sidebar';
+import { ProfileTabs } from './profile-tabs';
 import { RecentPbs } from './recent-pbs';
 import { RejectedEntries } from './rejected-entries';
-import { StandingRow } from './standing-row';
+import { plural } from './standing-row';
 
 interface PageProps {
     params: Promise<{ name: string }>;
+}
+
+/**
+ * The runner's main game, whose theme dresses the whole page: the best rank
+ * wins, more attempts break a tie, and a runner with no rank gets no theme.
+ */
+function mainGame(
+    games: LeaderboardsProfileGame[],
+): LeaderboardsProfileGame | null {
+    let best: LeaderboardsProfileGame | null = null;
+    for (const g of games) {
+        if (g.bestRank === null) continue;
+        if (
+            !best ||
+            best.bestRank === null ||
+            g.bestRank < best.bestRank ||
+            (g.bestRank === best.bestRank &&
+                (g.attempts ?? 0) > (best.attempts ?? 0))
+        ) {
+            best = g;
+        }
+    }
+    return best;
 }
 
 export async function generateMetadata({
@@ -27,7 +51,7 @@ export async function generateMetadata({
     const { standing } = profile;
     return buildMetadata({
         title: `${profile.runner.name} — Leaderboards profile`,
-        description: `${profile.runner.name} is on ${standing.boards} leaderboards with ${standing.first} first places.`,
+        description: `${profile.runner.name} is on ${standing.boards} ${plural(standing.boards, 'leaderboard', 'leaderboards')} with ${standing.first} ${plural(standing.first, 'first place', 'first places')}.`,
         images: await getUserProfilePhoto(profile.runner.name),
     });
 }
@@ -38,42 +62,34 @@ export default async function LeaderboardsProfilePage({ params }: PageProps) {
     const profile = await getLeaderboardsProfile(decoded);
     if (!profile) notFound();
 
+    const theme = mainGame(profile.games)?.theme ?? null;
+
     return (
         <div className={styles.page}>
-            <ProfileHeader runner={profile.runner} />
-            {profile.runner.userId !== null ? (
-                <LiveStrip username={profile.runner.name} />
-            ) : null}
-            <StandingRow standing={profile.standing} />
-            {profile.activity.length > 0 ? (
-                <ActivityHeatmap activity={profile.activity} />
-            ) : null}
-            <section className={styles.section}>
-                {profile.games.length > 0 ? (
-                    <h2 className={styles.sectionTitle}>Games</h2>
-                ) : (
-                    <div className={styles.gameSummary}>
-                        No leaderboard runs yet.
-                    </div>
-                )}
-                {profile.games.map((game) => (
-                    <GameBlock
-                        key={game.gameId}
-                        game={game}
-                        country={profile.runner.country}
-                    />
-                ))}
-                <Suspense fallback={null}>
-                    <RejectedEntries
-                        name={profile.runner.name}
+            <GameThemeStyle theme={theme} />
+            <ProfileHeader
+                runner={profile.runner}
+                standing={profile.standing}
+            />
+            <div className={styles.columns}>
+                <div className={styles.main}>
+                    <ProfileTabs
                         games={profile.games}
                         country={profile.runner.country}
                     />
-                </Suspense>
-            </section>
-            {profile.recentPbs.length > 0 ? (
-                <RecentPbs pbs={profile.recentPbs} />
-            ) : null}
+                    <Suspense fallback={null}>
+                        <RejectedEntries
+                            name={profile.runner.name}
+                            games={profile.games}
+                            country={profile.runner.country}
+                        />
+                    </Suspense>
+                    {profile.recentPbs.length > 0 ? (
+                        <RecentPbs pbs={profile.recentPbs} />
+                    ) : null}
+                </div>
+                <ProfileSidebar profile={profile} />
+            </div>
         </div>
     );
 }
