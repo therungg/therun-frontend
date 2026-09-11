@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
 import { formatBoardDate } from '~src/lib/format-run-date';
@@ -40,9 +41,19 @@ export function GameBlock({
             ? hours(game.playtimeMs)
             : null,
     ].filter(Boolean);
+    const themeStyle = game.theme
+        ? ({
+              '--board-accent': game.theme.accentColor,
+              '--board-surface-bg': `color-mix(in srgb, ${game.theme.panelColor} ${Math.round(game.theme.panelOpacity * 100)}%, transparent)`,
+          } as CSSProperties)
+        : undefined;
 
     return (
-        <section className={styles.game} data-game-id={game.gameId}>
+        <section
+            className={styles.game}
+            data-game-id={game.gameId}
+            style={themeStyle}
+        >
             <div className={styles.gameHead}>
                 <GameImage
                     src={game.imageUrl ?? ''}
