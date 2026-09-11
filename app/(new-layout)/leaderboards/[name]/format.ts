@@ -1,3 +1,4 @@
+import { formatSubcategoryKey } from '~app/(new-layout)/games-v2/[game]/labels';
 import type {
     LeaderboardsProfileEntry,
     ProfileProvenance,
@@ -13,8 +14,9 @@ export function formatEntryTime(
     const s = total % 60;
     const pad = (v: number) => String(v).padStart(2, '0');
     const base = h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
-    return entry.showMilliseconds
-        ? `${base}.${String(ms % 1000).padStart(3, '0')}`
+    const millis = ms % 1000;
+    return entry.showMilliseconds && millis !== 0
+        ? `${base}.${String(millis).padStart(3, '0')}`
         : base;
 }
 
@@ -53,10 +55,40 @@ export function provenanceLabel(p: ProfileProvenance): string {
     }
 }
 
+/** The board's game-time label (e.g. `IGT`); real time carries no label. */
 export function timingLabel(
     entry: Pick<LeaderboardsProfileEntry, 'timing' | 'gameTimeLabel'>,
-): string {
+): string | null {
     return entry.timing === 'gametime'
         ? entry.gameTimeLabel.toUpperCase()
-        : 'RTA';
+        : null;
+}
+
+/**
+ * The entry's subcategory as copy, minus any value the category or level
+ * name already says: "Night Flight" with `category=flight` prints nothing
+ * extra.
+ */
+export function entrySubcategoryLabel(
+    entry: Pick<
+        LeaderboardsProfileEntry,
+        'subcategoryKey' | 'category' | 'level'
+    >,
+): string {
+    const names = [entry.category, entry.level ?? '']
+        .map((n) => n.trim().toLowerCase())
+        .filter(Boolean);
+    const said = (text: string) => {
+        const t = text.trim().toLowerCase();
+        return t !== '' && names.some((n) => n.includes(t));
+    };
+    const labels: string[] = [];
+    for (const pair of entry.subcategoryKey?.split('|') ?? []) {
+        const eq = pair.indexOf('=');
+        if (eq < 0) continue;
+        const label = formatSubcategoryKey(pair);
+        if (!label || said(pair.slice(eq + 1)) || said(label)) continue;
+        labels.push(label);
+    }
+    return labels.join(' · ');
 }

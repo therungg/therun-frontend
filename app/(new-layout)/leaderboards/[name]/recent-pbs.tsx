@@ -34,7 +34,7 @@ export function RecentPbs({ pbs }: { pbs: LeaderboardsProfileRecentPb[] }) {
                                 showMilliseconds: false,
                             })}
                         </span>
-                        <span className={styles.entryRank}>
+                        <span className={styles.recentRank}>
                             {pb.rank !== null ? `#${pb.rank}` : '—'}
                         </span>
                         <span className={styles.entryDate}>
