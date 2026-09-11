@@ -90,12 +90,22 @@ async function UserProfilePage({ username }: { username: string }) {
         });
     }
 
-    const [userData, liveData, raceStats, leaderboards] = await Promise.all([
-        getGlobalUser(username),
-        getLiveRunForUser(username),
-        getUserRaceStats(username),
-        getLeaderboardsProfile(username).catch(() => null),
-    ] as const);
+    const [userData, liveData, raceStats, leaderboardsProfile] =
+        await Promise.all([
+            getGlobalUser(username),
+            getLiveRunForUser(username),
+            getUserRaceStats(username),
+            getLeaderboardsProfile(username).catch(() => null),
+        ] as const);
+
+    // The client profile only needs the teaser's two numbers, not the whole
+    // leaderboards payload.
+    const leaderboardsStanding = leaderboardsProfile?.standing
+        ? {
+              boards: leaderboardsProfile.standing.boards,
+              first: leaderboardsProfile.standing.first,
+          }
+        : null;
 
     // Deleted, banned or anonymised: the API answers as though the account
     // never existed, and so does the page.
@@ -168,7 +178,7 @@ async function UserProfilePage({ username }: { username: string }) {
                 userData={userData}
                 allGlobalGameData={allGlobalGameData}
                 raceStats={raceStats}
-                leaderboards={leaderboards}
+                leaderboardsStanding={leaderboardsStanding}
             />
         </>
     );

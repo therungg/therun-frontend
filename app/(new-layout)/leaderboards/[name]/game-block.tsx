@@ -24,12 +24,12 @@ function groupByLevel(entries: LeaderboardsProfileEntry[]) {
 
 export function GameBlock({
     game,
-    extraEntries = [],
+    country,
 }: {
     game: LeaderboardsProfileGame;
-    extraEntries?: LeaderboardsProfileEntry[];
+    country: string | null;
 }) {
-    const { plain, levels } = groupByLevel([...game.entries, ...extraEntries]);
+    const { plain, levels } = groupByLevel(game.entries);
     const summary = [
         `${game.entries.length} ${game.entries.length === 1 ? 'board' : 'boards'}`,
         game.bestRank !== null ? `best #${game.bestRank}` : null,
@@ -80,6 +80,7 @@ export function GameBlock({
                         key={`${e.kind}-${e.runId ?? e.manualTimeId}`}
                         entry={e}
                         gameSlug={game.gameSlug}
+                        country={country}
                     />
                 ))}
                 {[...levels.entries()].map(([level, list]) => (
@@ -90,6 +91,7 @@ export function GameBlock({
                                 key={`${e.kind}-${e.runId ?? e.manualTimeId}`}
                                 entry={e}
                                 gameSlug={game.gameSlug}
+                                country={country}
                             />
                         ))}
                     </div>
@@ -104,6 +106,7 @@ export function GameBlock({
                                 key={`${e.kind}-${e.runId ?? e.manualTimeId}`}
                                 entry={e}
                                 gameSlug={game.gameSlug}
+                                country={country}
                             />
                         ))}
                     </div>

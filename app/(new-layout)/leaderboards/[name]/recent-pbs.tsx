@@ -28,9 +28,10 @@ export function RecentPbs({ pbs }: { pbs: LeaderboardsProfileRecentPb[] }) {
                             </span>
                         </span>
                         <span className={styles.entryTime}>
+                            {/* The board's own precision setting is not part of the recent-PB payload. */}
                             {formatEntryTime({
                                 timeMs: pb.timeMs,
-                                showMilliseconds: true,
+                                showMilliseconds: false,
                             })}
                         </span>
                         <span className={styles.entryRank}>

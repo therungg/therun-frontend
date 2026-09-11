@@ -42,6 +42,7 @@
     display: flex;
     align-items: center;
     gap: dt.$spacing-sm;
+    margin: 0;
     font-size: dt.$font-size-2xl;
     font-weight: 700;
     color: var(--bs-emphasis-color);
@@ -270,6 +271,11 @@
 
     &:hover {
         background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.04));
+    }
+
+    @media (max-width: 640px) {
+        grid-template-columns: 1fr auto;
+        row-gap: 2px;
     }
 }
 

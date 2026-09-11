@@ -1,3 +1,4 @@
+import { getSession } from '~src/actions/session.action';
 import { getRejectedEntriesAsViewer } from '~src/lib/leaderboards-profile';
 import type { LeaderboardsProfileGame } from '../../../../types/leaderboards-profile.types';
 import { EntryRow } from './entry-row';
@@ -5,14 +6,17 @@ import styles from './leaderboards-profile.module.scss';
 
 export async function RejectedEntries({
     name,
-    sessionId,
     games,
+    country,
 }: {
     name: string;
-    sessionId: string;
     games: LeaderboardsProfileGame[];
+    country: string | null;
 }) {
-    const rejected = await getRejectedEntriesAsViewer(name, sessionId);
+    const session = await getSession();
+    if (!session.username) return null;
+
+    const rejected = await getRejectedEntriesAsViewer(name, session.id);
     if (rejected.length === 0) return null;
     const slugOf = new Map(games.map((g) => [g.gameId, g.gameSlug]));
     return (
@@ -27,6 +31,7 @@ export async function RejectedEntries({
                         key={`${e.kind}-${e.runId ?? e.manualTimeId}`}
                         entry={e}
                         gameSlug={slugOf.get(e.gameId) ?? ''}
+                        country={country}
                     />
                 ))}
             </div>

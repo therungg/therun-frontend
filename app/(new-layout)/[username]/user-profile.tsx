@@ -3,7 +3,6 @@
 import React, { useEffect, useReducer, useState } from 'react';
 import { Col, Row, Tab, Tabs } from 'react-bootstrap';
 import { TwitchEmbed } from 'react-twitch-embed';
-import type { LeaderboardsProfile } from 'types/leaderboards-profile.types';
 import { GlobalGameData } from '~app/(new-layout)/[username]/[game]/[run]/run';
 import { prepareSessions } from '~app/(new-layout)/[username]/prepare-sessions.component';
 import { getRunmap } from '~app/(new-layout)/[username]/runmap.component';
@@ -36,7 +35,7 @@ export interface UserPageProps {
     allGlobalGameData: GlobalGameData[];
     liveData?: LiveRun;
     raceStats?: UserRaceStats;
-    leaderboards?: LeaderboardsProfile | null;
+    leaderboardsStanding?: { boards: number; first: number } | null;
 }
 
 export const UserProfile = ({
@@ -48,7 +47,7 @@ export const UserProfile = ({
     allGlobalGameData,
     liveData,
     raceStats,
-    leaderboards,
+    leaderboardsStanding,
 }: UserPageProps) => {
     const session = useSession();
     const isAdmin = !!session?.roles?.includes('admin');
@@ -218,23 +217,20 @@ export const UserProfile = ({
                             <div className="mb-4">
                                 <UserStats runs={currentRuns} />
                             </div>
-                            {leaderboards &&
-                            leaderboards.standing.boards > 0 ? (
+                            {leaderboardsStanding &&
+                            leaderboardsStanding.boards > 0 ? (
                                 <div className={styles.leaderboardsTeaser}>
                                     <span>
-                                        On <b>{leaderboards.standing.boards}</b>{' '}
+                                        On <b>{leaderboardsStanding.boards}</b>{' '}
                                         leaderboards
-                                        {leaderboards.standing.first > 0 ? (
+                                        {leaderboardsStanding.first > 0 ? (
                                             <>
                                                 ,{' '}
                                                 <b>
-                                                    {
-                                                        leaderboards.standing
-                                                            .first
-                                                    }
+                                                    {leaderboardsStanding.first}
                                                 </b>{' '}
                                                 first
-                                                {leaderboards.standing.first ===
+                                                {leaderboardsStanding.first ===
                                                 1
                                                     ? ' place'
                                                     : ' places'}

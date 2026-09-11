@@ -28,10 +28,10 @@ export function ProfileHeader({
                 />
             </div>
             <div className={styles.identity}>
-                <div className={styles.name}>
+                <h1 className={styles.name}>
                     {runner.name}
                     <CountryFlag country={runner.country} />
-                </div>
+                </h1>
                 <div className={styles.meta}>
                     {runner.pronouns ? <span>{runner.pronouns}</span> : null}
                     {runner.joinedAt ? (

@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
-import { getSession } from '~src/actions/session.action';
 import { getLeaderboardsProfile } from '~src/lib/leaderboards-profile';
 import buildMetadata, { getUserProfilePhoto } from '~src/utils/metadata';
+import { safeDecodeURI } from '~src/utils/uri';
 import { ActivityHeatmap } from './activity-heatmap';
 import { GameBlock } from './game-block';
 import styles from './leaderboards-profile.module.scss';
@@ -21,7 +21,7 @@ export async function generateMetadata({
     params,
 }: PageProps): Promise<Metadata> {
     const { name } = await params;
-    const decoded = decodeURIComponent(name);
+    const decoded = safeDecodeURI(name);
     const profile = await getLeaderboardsProfile(decoded);
     if (!profile) return buildMetadata({ description: 'Leaderboards profile' });
     const { standing } = profile;
@@ -34,14 +34,9 @@ export async function generateMetadata({
 
 export default async function LeaderboardsProfilePage({ params }: PageProps) {
     const { name } = await params;
-    const decoded = decodeURIComponent(name);
-    const [profile, session] = await Promise.all([
-        getLeaderboardsProfile(decoded),
-        getSession(),
-    ]);
+    const decoded = safeDecodeURI(name);
+    const profile = await getLeaderboardsProfile(decoded);
     if (!profile) notFound();
-
-    const viewerLoggedIn = Boolean(session.username);
 
     return (
         <div className={styles.page}>
@@ -54,19 +49,27 @@ export default async function LeaderboardsProfilePage({ params }: PageProps) {
                 <ActivityHeatmap activity={profile.activity} />
             ) : null}
             <section className={styles.section}>
-                <h2 className={styles.sectionTitle}>Games</h2>
+                {profile.games.length > 0 ? (
+                    <h2 className={styles.sectionTitle}>Games</h2>
+                ) : (
+                    <div className={styles.gameSummary}>
+                        No leaderboard runs yet.
+                    </div>
+                )}
                 {profile.games.map((game) => (
-                    <GameBlock key={game.gameId} game={game} />
+                    <GameBlock
+                        key={game.gameId}
+                        game={game}
+                        country={profile.runner.country}
+                    />
                 ))}
-                {viewerLoggedIn ? (
-                    <Suspense fallback={null}>
-                        <RejectedEntries
-                            name={profile.runner.name}
-                            sessionId={session.id}
-                            games={profile.games}
-                        />
-                    </Suspense>
-                ) : null}
+                <Suspense fallback={null}>
+                    <RejectedEntries
+                        name={profile.runner.name}
+                        games={profile.games}
+                        country={profile.runner.country}
+                    />
+                </Suspense>
             </section>
             {profile.recentPbs.length > 0 ? (
                 <RecentPbs pbs={profile.recentPbs} />

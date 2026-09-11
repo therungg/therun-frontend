@@ -10,9 +10,11 @@ import styles from './leaderboards-profile.module.scss';
 export function EntryRow({
     entry,
     gameSlug,
+    country,
 }: {
     entry: LeaderboardsProfileEntry;
     gameSlug: string;
+    country: string | null;
 }) {
     const href =
         gameSlug && entry.kind === 'run' && entry.runId !== null
@@ -57,10 +59,10 @@ export function EntryRow({
             </span>
             <span className={styles.entryRank}>
                 {entry.rank !== null ? `#${entry.rank}` : '—'}
-                {entry.countryRank !== null ? (
+                {entry.countryRank !== null && country ? (
                     <span className={styles.entryCountry}>
                         {' '}
-                        · #{entry.countryRank}
+                        · #{entry.countryRank} {country.toUpperCase()}
                     </span>
                 ) : null}
             </span>
@@ -71,9 +73,14 @@ export function EntryRow({
             <span className={styles.entryBadges}>
                 <VerificationBadge status={entry.status} />
                 {entry.vodUrl ? (
-                    <span title="Video">
+                    <a
+                        href={entry.vodUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Video"
+                    >
                         <PlayBtn size={14} />
-                    </span>
+                    </a>
                 ) : null}
                 {entry.splitsHref ? (
                     <Link href={entry.splitsHref} title="Splits">
