@@ -24,16 +24,14 @@ const EMPTY_TEXT: Record<TabId, string> = {
     archived: 'Nothing archived.',
 };
 
-// Pending runs sit on their own tab, so the Full game and Levels tabs show
-// only what has been decided.
+// Pending runs are on the boards, so Full game and Levels include them; the
+// Pending tab is that subset across both.
 const pick: Record<
     TabId,
     (game: LeaderboardsProfileGame) => LeaderboardsProfileEntry[]
 > = {
-    full: (g) =>
-        g.entries.filter((e) => e.level === null && e.status !== 'pending'),
-    levels: (g) =>
-        g.entries.filter((e) => e.level !== null && e.status !== 'pending'),
+    full: (g) => g.entries.filter((e) => e.level === null),
+    levels: (g) => g.entries.filter((e) => e.level !== null),
     pending: (g) => g.entries.filter((e) => e.status === 'pending'),
     archived: (g) => g.archived,
 };

@@ -2,9 +2,13 @@ import { PlayBtn } from 'react-bootstrap-icons';
 import { formatSubcategoryKey } from '~app/(new-layout)/games-v2/[game]/labels';
 import { VerificationBadge } from '~app/(new-layout)/games-v2/[game]/run-view/run-badges';
 import Link from '~src/components/link';
-import { formatBoardDate } from '~src/lib/format-run-date';
 import type { LeaderboardsProfileEntry } from '../../../../types/leaderboards-profile.types';
-import { formatEntryTime, provenanceLabel, timingLabel } from './format';
+import {
+    formatEntryTime,
+    formatProfileDate,
+    provenanceLabel,
+    timingLabel,
+} from './format';
 import styles from './leaderboards-profile.module.scss';
 
 export function EntryRow({
@@ -26,7 +30,7 @@ export function EntryRow({
         entry.region,
         provenanceLabel(entry.provenance),
         entry.verifiedAt
-            ? `Verified ${formatBoardDate(entry.verifiedAt)}`
+            ? `Verified ${formatProfileDate(entry.verifiedAt)}`
             : null,
     ].filter(Boolean);
 
@@ -67,7 +71,7 @@ export function EntryRow({
                 ) : null}
             </span>
             <span className={styles.entryDate}>
-                {entry.runDate ? formatBoardDate(entry.runDate) : '—'}
+                {entry.runDate ? formatProfileDate(entry.runDate) : '—'}
             </span>
             <span className={styles.entryDetails}>{details.join(' · ')}</span>
             <span className={styles.entryBadges}>

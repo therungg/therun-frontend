@@ -15,14 +15,12 @@ const n = (v: number) => v.toLocaleString('en-US');
 
 function AboutCard({ runner }: { runner: LeaderboardsProfile['runner'] }) {
     const hasAccount = runner.userId !== null;
-    const hasContent =
-        hasAccount ||
-        runner.bio ||
+    const hasFacts =
         runner.joinedAt ||
         runner.firstBoardRunAt ||
         runner.moderates.length > 0 ||
         runner.importLinked;
-    if (!hasContent) return null;
+    if (!runner.bio && !hasFacts) return null;
 
     return (
         <section className={styles.card} aria-labelledby="profile-about">
@@ -31,36 +29,40 @@ function AboutCard({ runner }: { runner: LeaderboardsProfile['runner'] }) {
             </h2>
             {hasAccount ? <LiveStrip username={runner.name} /> : null}
             {runner.bio ? <p className={styles.bio}>{runner.bio}</p> : null}
-            <ul className={styles.facts}>
-                {runner.joinedAt ? (
-                    <li>Joined {dateFmt.format(new Date(runner.joinedAt))}</li>
-                ) : null}
-                {runner.firstBoardRunAt ? (
-                    <li>
-                        First board run{' '}
-                        {dateFmt.format(new Date(runner.firstBoardRunAt))}
-                    </li>
-                ) : null}
-                {runner.patron ? <li>Supporter</li> : null}
-                {runner.moderates.length > 0 ? (
-                    <li>
-                        Moderates{' '}
-                        {runner.moderates.map((m, i) => (
-                            <span key={m.gameId}>
-                                {i > 0 ? ', ' : ''}
-                                <Link
-                                    href={`/games-v2/${encodeURIComponent(m.gameSlug)}`}
-                                >
-                                    {m.game}
-                                </Link>
-                            </span>
-                        ))}
-                    </li>
-                ) : null}
-                {runner.importLinked ? (
-                    <li>Imported runs are linked to this account.</li>
-                ) : null}
-            </ul>
+            {hasFacts ? (
+                <ul className={styles.facts}>
+                    {runner.joinedAt ? (
+                        <li>
+                            Joined {dateFmt.format(new Date(runner.joinedAt))}
+                        </li>
+                    ) : null}
+                    {runner.firstBoardRunAt ? (
+                        <li>
+                            First board run{' '}
+                            {dateFmt.format(new Date(runner.firstBoardRunAt))}
+                        </li>
+                    ) : null}
+                    {runner.patron ? <li>Supporter</li> : null}
+                    {runner.moderates.length > 0 ? (
+                        <li>
+                            Moderates{' '}
+                            {runner.moderates.map((m, i) => (
+                                <span key={m.gameId}>
+                                    {i > 0 ? ', ' : ''}
+                                    <Link
+                                        href={`/games-v2/${encodeURIComponent(m.gameSlug)}`}
+                                    >
+                                        {m.game}
+                                    </Link>
+                                </span>
+                            ))}
+                        </li>
+                    ) : null}
+                    {runner.importLinked ? (
+                        <li>Imported runs are linked to this account.</li>
+                    ) : null}
+                </ul>
+            ) : null}
         </section>
     );
 }

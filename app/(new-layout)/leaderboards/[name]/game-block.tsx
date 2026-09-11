@@ -1,11 +1,11 @@
 import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
-import { formatBoardDate } from '~src/lib/format-run-date';
 import type {
     LeaderboardsProfileEntry,
     LeaderboardsProfileGame,
 } from '../../../../types/leaderboards-profile.types';
 import { EntryRow } from './entry-row';
+import { formatProfileDate } from './format';
 import styles from './leaderboards-profile.module.scss';
 
 const hours = (ms: number) =>
@@ -38,7 +38,7 @@ export function GameBlock({
     const summary = [
         `${game.entries.length} ${game.entries.length === 1 ? 'board' : 'boards'}`,
         game.bestRank !== null ? `best #${game.bestRank}` : null,
-        game.lastRanAt ? `last ran ${formatBoardDate(game.lastRanAt)}` : null,
+        game.lastRanAt ? `last ran ${formatProfileDate(game.lastRanAt)}` : null,
         game.attempts !== null
             ? `${game.attempts.toLocaleString('en-US')} attempts`
             : null,

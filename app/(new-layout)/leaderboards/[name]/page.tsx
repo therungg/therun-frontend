@@ -26,16 +26,16 @@ function mainGame(
     games: LeaderboardsProfileGame[],
 ): LeaderboardsProfileGame | null {
     let best: LeaderboardsProfileGame | null = null;
+    let bestRank = Number.POSITIVE_INFINITY;
     for (const g of games) {
         if (g.bestRank === null) continue;
         if (
-            !best ||
-            best.bestRank === null ||
-            g.bestRank < best.bestRank ||
-            (g.bestRank === best.bestRank &&
-                (g.attempts ?? 0) > (best.attempts ?? 0))
+            g.bestRank < bestRank ||
+            (g.bestRank === bestRank &&
+                (g.attempts ?? 0) > (best?.attempts ?? 0))
         ) {
             best = g;
+            bestRank = g.bestRank;
         }
     }
     return best;

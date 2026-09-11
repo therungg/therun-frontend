@@ -18,6 +18,22 @@ export function formatEntryTime(
         : base;
 }
 
+const utcDateFmt = new Intl.DateTimeFormat('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+});
+
+/**
+ * "1 Mar 2026", fixed to UTC so the server render and the client hydration
+ * of the tabs always print the same day.
+ */
+export function formatProfileDate(iso: string): string {
+    const date = new Date(iso);
+    return Number.isNaN(date.getTime()) ? '' : utcDateFmt.format(date);
+}
+
 export function provenanceLabel(p: ProfileProvenance): string {
     switch (p) {
         case 'live':
