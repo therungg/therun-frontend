@@ -64,10 +64,18 @@ export function timingLabel(
         : null;
 }
 
+/** Lowercase word tokens: "Night Flight" -> ["night", "flight"]. */
+function wordTokens(text: string): string[] {
+    return text
+        .toLowerCase()
+        .split(/[^a-z0-9]+/)
+        .filter(Boolean);
+}
+
 /**
  * The entry's subcategory as copy, minus any value the category or level
- * name already says: "Night Flight" with `category=flight` prints nothing
- * extra.
+ * name already says in whole words: "Night Flight" with `category=flight`
+ * prints nothing extra, while "16 Star" still keeps a value of `1`.
  */
 export function entrySubcategoryLabel(
     entry: Pick<
@@ -75,12 +83,12 @@ export function entrySubcategoryLabel(
         'subcategoryKey' | 'category' | 'level'
     >,
 ): string {
-    const names = [entry.category, entry.level ?? '']
-        .map((n) => n.trim().toLowerCase())
-        .filter(Boolean);
+    const nameWords = new Set(
+        wordTokens(`${entry.category} ${entry.level ?? ''}`),
+    );
     const said = (text: string) => {
-        const t = text.trim().toLowerCase();
-        return t !== '' && names.some((n) => n.includes(t));
+        const words = wordTokens(text);
+        return words.length > 0 && words.every((w) => nameWords.has(w));
     };
     const labels: string[] = [];
     for (const pair of entry.subcategoryKey?.split('|') ?? []) {

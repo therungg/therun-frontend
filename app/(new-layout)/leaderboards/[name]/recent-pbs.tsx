@@ -27,7 +27,7 @@ export function RecentPbs({ pbs }: { pbs: LeaderboardsProfileRecentPb[] }) {
                                     : ''}
                             </span>
                         </span>
-                        <span className={styles.entryTime}>
+                        <span className={styles.recentTime}>
                             {/* The board's own precision setting is not part of the recent-PB payload. */}
                             {formatEntryTime({
                                 timeMs: pb.timeMs,
@@ -37,7 +37,7 @@ export function RecentPbs({ pbs }: { pbs: LeaderboardsProfileRecentPb[] }) {
                         <span className={styles.recentRank}>
                             {pb.rank !== null ? `#${pb.rank}` : '—'}
                         </span>
-                        <span className={styles.entryDate}>
+                        <span className={styles.recentDate}>
                             {formatRunDate(pb.achievedAt)}
                         </span>
                     </Link>

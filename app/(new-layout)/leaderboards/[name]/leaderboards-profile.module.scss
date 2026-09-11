@@ -523,6 +523,19 @@
     font-variant-numeric: tabular-nums;
 }
 
+.recentTime {
+    white-space: nowrap;
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+.recentDate {
+    white-space: nowrap;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
 .live {
     display: flex;
     color: var(--bs-emphasis-color);
