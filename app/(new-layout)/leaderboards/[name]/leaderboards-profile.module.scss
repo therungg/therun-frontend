@@ -310,7 +310,7 @@
 }
 
 // Rank first: rank | name + vars | time | date | details | badges. When the
-// runs column is under 720px the rank spans two lines: the name takes the
+// runs column is under 960px the rank spans two lines: the name takes the
 // whole first line, time, date and badges wrap on the second, and the
 // details drop.
 .entry {
@@ -328,7 +328,7 @@
         background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.04));
     }
 
-    @container profile-main (max-width: 719.98px) {
+    @container profile-main (max-width: 959.98px) {
         grid-template-columns: 4.5rem minmax(0, 1fr);
         grid-template-areas:
             'rank name'
@@ -345,7 +345,7 @@
 .entryMeta {
     display: contents;
 
-    @container profile-main (max-width: 719.98px) {
+    @container profile-main (max-width: 959.98px) {
         grid-area: meta;
         display: flex;
         flex-wrap: wrap;
@@ -465,7 +465,7 @@
         text-underline-offset: 2px;
     }
 
-    @container profile-main (max-width: 719.98px) {
+    @container profile-main (max-width: 959.98px) {
         display: none;
     }
 }
@@ -479,7 +479,7 @@
     justify-content: end;
     min-width: 0;
 
-    @container profile-main (max-width: 719.98px) {
+    @container profile-main (max-width: 959.98px) {
         justify-content: start;
     }
 }
