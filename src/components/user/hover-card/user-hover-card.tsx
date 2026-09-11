@@ -421,8 +421,22 @@ export function UserHoverCard({ username, context }: Props) {
             {liveRun ? <LiveStrip username={username} run={liveRun} /> : null}
 
             {context?.rank && context?.timeMs ? (
+                // The board's own rank mark: the podium ball its rows use,
+                // a plain number past third. No box, no edge.
                 <div className={styles.context}>
-                    <span className={styles.contextRank}>#{context.rank}</span>
+                    <span
+                        className={`${styles.medal} ${
+                            context.rank === 1
+                                ? styles.medalGold
+                                : context.rank === 2
+                                  ? styles.medalSilver
+                                  : context.rank === 3
+                                    ? styles.medalBronze
+                                    : styles.medalPlain
+                        }`}
+                    >
+                        {context.rank > 3 ? `#${context.rank}` : context.rank}
+                    </span>
                     <span className={styles.contextLabel}>
                         {context.label ?? 'on this board'}
                     </span>

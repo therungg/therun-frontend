@@ -238,20 +238,48 @@ $z-hover-card: 1060;
 }
 
 // ---- The hovered row --------------------------------------------
-// An accent edge ties it to the board it was opened from.
+// The rank reads exactly as it does on the board row: the podium ball,
+// then the time. Plain text, no box or edge around it.
 .context {
     display: flex;
-    align-items: baseline;
-    gap: 0.5rem;
-    padding: 0.4rem 0.6rem;
-    border-radius: dt.$radius-sm;
-    border-left: 3px solid var(--board-accent, var(--bs-primary));
-    background: var(--board-recess-bg, rgba(var(--bs-body-color-rgb), 0.045));
+    align-items: center;
+    gap: 0.55rem;
 }
 
-.contextRank {
-    @include board.mono-time;
+.medal {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 11px;
+    font-size: dt.$font-size-2xs;
     font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: #fff;
+}
+
+.medalGold {
+    background: dt.$accent-gold;
+}
+
+.medalSilver {
+    background: dt.$accent-silver;
+}
+
+.medalBronze {
+    background: dt.$accent-bronze;
+}
+
+// Past the podium the number stands on its own, like the board's rank
+// column.
+.medalPlain {
+    min-width: 0;
+    padding: 0;
+    color: var(--bs-emphasis-color);
+    font-size: dt.$font-size-xs;
 }
 
 .contextLabel {
