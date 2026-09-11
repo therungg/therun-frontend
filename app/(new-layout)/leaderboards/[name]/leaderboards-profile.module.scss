@@ -254,22 +254,13 @@
     }
 }
 
-.section {
-    display: grid;
-    gap: dt.$spacing-md;
-}
-
-.sectionTitle {
-    font-size: dt.$font-size-lg;
-    font-weight: 600;
-    color: var(--bs-emphasis-color);
-}
-
 // Game block
 .game {
     @include board.board-surface(dt.$spacing-lg);
     display: grid;
     gap: dt.$spacing-md;
+    // Clears the sticky top bar when the Games card jumps here.
+    scroll-margin-top: 5rem;
 }
 
 .gameHead {
@@ -490,20 +481,16 @@
     &[data-level='4'] { background: rgba(var(--bs-primary-rgb), 1); }
 }
 
-// Recent PBs
+// Recent PBs (sidebar card): game · category, then time, rank and date.
 .recent {
-    @include board.board-surface(dt.$spacing-lg);
     display: grid;
     gap: 2px;
 }
 
 .recentRow {
     display: grid;
-    grid-template-columns: 1fr 7rem 5rem 7rem;
-    gap: dt.$spacing-md;
-    align-items: center;
-    min-height: 40px;
-    padding: dt.$spacing-xs dt.$spacing-sm;
+    gap: 2px;
+    padding: dt.$spacing-xs;
     border-radius: dt.$radius-sm;
     color: inherit;
     text-decoration: none;
@@ -511,16 +498,25 @@
     &:hover {
         background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.04));
     }
+}
 
-    @media (max-width: 640px) {
-        grid-template-columns: 1fr auto;
-        row-gap: 2px;
-    }
+.recentName {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.recentLine {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: dt.$spacing-md;
 }
 
 .recentRank {
     font-family: dt.$font-mono;
     font-variant-numeric: tabular-nums;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
 }
 
 .recentTime {
@@ -551,4 +547,101 @@
     height: 8px;
     border-radius: 50%;
     background: var(--bs-danger);
+}
+
+// Games card: one row per game, each a jump to its block.
+.gameList {
+    display: grid;
+    gap: 2px;
+}
+
+.gameListRow {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: dt.$spacing-md;
+    align-items: center;
+    padding: dt.$spacing-xs;
+    border-radius: dt.$radius-sm;
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+        background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.04));
+    }
+
+    img {
+        width: 48px;
+        height: 64px;
+        object-fit: cover;
+        border-radius: dt.$radius-sm;
+    }
+}
+
+.gameListText {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.gameListName {
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    overflow-wrap: anywhere;
+}
+
+.gameListLine {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+}
+
+// Featured run
+.featured {
+    @include board.board-surface(dt.$spacing-lg);
+    display: grid;
+    gap: dt.$spacing-md;
+    min-width: 0;
+}
+
+.featuredMeta {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+    font-variant-numeric: tabular-nums;
+}
+
+.featuredVideo {
+    position: relative;
+    display: grid;
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: dt.$radius-sm;
+    background: var(--board-recess-bg, rgba(var(--bs-body-color-rgb), 0.08));
+}
+
+.featuredThumb {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.featuredPlay {
+    position: relative;
+    place-self: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.65);
+    color: #fff;
+
+    &:hover,
+    &:focus-visible {
+        background: rgba(0, 0, 0, 0.85);
+    }
 }

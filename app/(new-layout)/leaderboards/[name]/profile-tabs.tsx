@@ -1,6 +1,6 @@
 'use client';
 
-import { useSyncExternalStore } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import type {
     LeaderboardsProfileEntry,
     LeaderboardsProfileGame,
@@ -74,7 +74,24 @@ export function ProfileTabs({
         tabs.find((t) => t.id === 'full' && t.count > 0) ??
         tabs.find((t) => t.count > 0) ??
         tabs[0];
-    const active = tabs.find((t) => t.id === hash) ?? fallback;
+    // A `#game-<id>` hash (from the sidebar's Games card) is not a tab: it
+    // opens whichever tab shows that game, Full game first. Any other unknown
+    // hash is the default tab.
+    const gameId = hash.startsWith('game-') ? Number(hash.slice(5)) : null;
+    const gameTab =
+        gameId === null
+            ? undefined
+            : [fallback, ...tabs].find((t) =>
+                  t.blocks.some((b) => b.game.gameId === gameId),
+              );
+    const active = tabs.find((t) => t.id === hash) ?? gameTab ?? fallback;
+
+    // The block may only exist once the tab above has switched, after the
+    // browser has already tried (and failed) to scroll to it.
+    useEffect(() => {
+        if (!hash.startsWith('game-')) return;
+        document.getElementById(hash)?.scrollIntoView({ block: 'start' });
+    }, [hash]);
 
     if (games.length === 0) {
         return <div className={styles.emptyNote}>No leaderboard runs yet.</div>;

@@ -47,7 +47,11 @@ export function GameBlock({
             : null,
     ].filter(Boolean);
     return (
-        <section className={styles.game} data-game-id={game.gameId}>
+        <section
+            id={`game-${game.gameId}`}
+            className={styles.game}
+            data-game-id={game.gameId}
+        >
             <div className={styles.gameHead}>
                 <GameImage
                     src={game.imageUrl ?? ''}

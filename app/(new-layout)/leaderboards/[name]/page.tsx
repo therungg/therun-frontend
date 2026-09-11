@@ -2,15 +2,19 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { getLeaderboardsProfile } from '~src/lib/leaderboards-profile';
+import { isEmbeddableVod } from '~src/lib/vod-url';
 import buildMetadata, { getUserProfilePhoto } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
-import type { LeaderboardsProfileGame } from '../../../../types/leaderboards-profile.types';
+import type {
+    LeaderboardsProfileEntry,
+    LeaderboardsProfileGame,
+} from '../../../../types/leaderboards-profile.types';
 import { GameThemeStyle } from '../../games-v2/[game]/theme/game-theme-style';
+import { FeaturedRun } from './featured-run';
 import styles from './leaderboards-profile.module.scss';
 import { ProfileHeader } from './profile-header';
 import { ProfileSidebar } from './profile-sidebar';
 import { ProfileTabs } from './profile-tabs';
-import { RecentPbs } from './recent-pbs';
 import { RejectedEntries } from './rejected-entries';
 import { plural } from './standing-row';
 
@@ -41,6 +45,43 @@ function mainGame(
     return best;
 }
 
+type Playable = LeaderboardsProfileEntry & { vodUrl: string };
+
+/**
+ * The run the page leads with: the best-ranked visible entry whose video can
+ * be embedded (unranked last). On a tie a full-game run beats a level run,
+ * then the most recent run wins.
+ */
+function featuredRun(
+    games: LeaderboardsProfileGame[],
+): { entry: Playable; game: LeaderboardsProfileGame } | null {
+    let best: { entry: Playable; game: LeaderboardsProfileGame } | null = null;
+    const rankOf = (e: LeaderboardsProfileEntry) =>
+        e.rank ?? Number.POSITIVE_INFINITY;
+    const levelOf = (e: LeaderboardsProfileEntry) => (e.level === null ? 0 : 1);
+    const dateOf = (e: LeaderboardsProfileEntry) =>
+        e.runDate ? Date.parse(e.runDate) || 0 : 0;
+    const outranks = (
+        a: LeaderboardsProfileEntry,
+        b: LeaderboardsProfileEntry,
+    ) => {
+        if (rankOf(a) !== rankOf(b)) return rankOf(a) < rankOf(b);
+        if (levelOf(a) !== levelOf(b)) return levelOf(a) < levelOf(b);
+        return dateOf(a) > dateOf(b);
+    };
+    for (const game of games) {
+        for (const entry of game.entries) {
+            if (entry.archived || !entry.vodUrl) continue;
+            if (!isEmbeddableVod(entry.vodUrl)) continue;
+            const candidate = entry as Playable;
+            if (!best || outranks(candidate, best.entry)) {
+                best = { entry: candidate, game };
+            }
+        }
+    }
+    return best;
+}
+
 export async function generateMetadata({
     params,
 }: PageProps): Promise<Metadata> {
@@ -63,6 +104,7 @@ export default async function LeaderboardsProfilePage({ params }: PageProps) {
     if (!profile) notFound();
 
     const theme = mainGame(profile.games)?.theme ?? null;
+    const featured = featuredRun(profile.games);
 
     return (
         <div className={styles.page}>
@@ -73,6 +115,12 @@ export default async function LeaderboardsProfilePage({ params }: PageProps) {
             />
             <div className={styles.columns}>
                 <div className={styles.main}>
+                    {featured ? (
+                        <FeaturedRun
+                            entry={featured.entry}
+                            game={featured.game}
+                        />
+                    ) : null}
                     <ProfileTabs
                         games={profile.games}
                         country={profile.runner.country}
@@ -84,9 +132,6 @@ export default async function LeaderboardsProfilePage({ params }: PageProps) {
                             country={profile.runner.country}
                         />
                     </Suspense>
-                    {profile.recentPbs.length > 0 ? (
-                        <RecentPbs pbs={profile.recentPbs} />
-                    ) : null}
                 </div>
                 <ProfileSidebar profile={profile} />
             </div>
