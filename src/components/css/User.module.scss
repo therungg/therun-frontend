@@ -1,5 +1,7 @@
 @use '../../../app/(new-layout)/styles/design-tokens' as *;
+@use '../../../app/(new-layout)/styles/design-tokens' as dt;
 @use '../../../app/(new-layout)/styles/mixins' as *;
+@use '../../../app/(new-layout)/styles/board' as board;
 
 // ============================================
 // User Profile Styles
@@ -369,5 +371,18 @@
 
     .activityHeader {
         gap: $spacing-md;
+    }
+}
+
+.leaderboardsTeaser {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: dt.$spacing-md;
+    margin-bottom: $spacing-lg;
+
+    a {
+        @include board.control-pill;
     }
 }

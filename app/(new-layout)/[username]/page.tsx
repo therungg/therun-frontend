@@ -11,7 +11,7 @@ import { getGameGlobal } from '~src/components/game/get-game';
 import { JsonLd } from '~src/components/json-ld';
 import { getGlobalUser } from '~src/lib/get-global-user';
 import { getUserRuns } from '~src/lib/get-user-runs';
-import { getUserRankingsByName } from '~src/lib/leaderboards-v1';
+import { getLeaderboardsProfile } from '~src/lib/leaderboards-profile';
 import { getLiveRunForUser } from '~src/lib/live-runs';
 import { getUserRaceStats } from '~src/lib/races';
 import {
@@ -90,11 +90,11 @@ async function UserProfilePage({ username }: { username: string }) {
         });
     }
 
-    const [userData, liveData, raceStats, rankings] = await Promise.all([
+    const [userData, liveData, raceStats, leaderboards] = await Promise.all([
         getGlobalUser(username),
         getLiveRunForUser(username),
         getUserRaceStats(username),
-        getUserRankingsByName(username).catch(() => []),
+        getLeaderboardsProfile(username).catch(() => null),
     ] as const);
 
     // Deleted, banned or anonymised: the API answers as though the account
@@ -168,7 +168,7 @@ async function UserProfilePage({ username }: { username: string }) {
                 userData={userData}
                 allGlobalGameData={allGlobalGameData}
                 raceStats={raceStats}
-                rankings={rankings}
+                leaderboards={leaderboards}
             />
         </>
     );

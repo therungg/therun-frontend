@@ -468,6 +468,7 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
                                             ) : (
                                                 <UserLink
                                                     username={row.runnerName}
+                                                    to="leaderboards"
                                                 />
                                             )}
                                         </td>

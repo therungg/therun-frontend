@@ -806,7 +806,7 @@ function ItemMeta({ item }: { item: AttentionItem }) {
                         <span className={styles.guestBadge}>guest</span>
                     </>
                 ) : (
-                    <UserLink username={item.runnerName} />
+                    <UserLink username={item.runnerName} to="leaderboards" />
                 )}
             </span>
             <span className={styles.category}>{item.categoryName}</span>
@@ -1111,7 +1111,7 @@ function RunnerGroupCard({
                         aria-hidden="true"
                     />
                     {userId != null ? (
-                        <UserLink username={runnerName} />
+                        <UserLink username={runnerName} to="leaderboards" />
                     ) : (
                         <span>{runnerName}</span>
                     )}

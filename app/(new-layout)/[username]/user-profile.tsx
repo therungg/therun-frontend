@@ -3,9 +3,8 @@
 import React, { useEffect, useReducer, useState } from 'react';
 import { Col, Row, Tab, Tabs } from 'react-bootstrap';
 import { TwitchEmbed } from 'react-twitch-embed';
-import type { UserRanking } from 'types/leaderboards.types';
+import type { LeaderboardsProfile } from 'types/leaderboards-profile.types';
 import { GlobalGameData } from '~app/(new-layout)/[username]/[game]/[run]/run';
-import { LeaderboardPbs } from '~app/(new-layout)/[username]/leaderboard-pbs';
 import { prepareSessions } from '~app/(new-layout)/[username]/prepare-sessions.component';
 import { getRunmap } from '~app/(new-layout)/[username]/runmap.component';
 import { SrcImportTab } from '~app/(new-layout)/[username]/src-import-tab';
@@ -37,7 +36,7 @@ export interface UserPageProps {
     allGlobalGameData: GlobalGameData[];
     liveData?: LiveRun;
     raceStats?: UserRaceStats;
-    rankings?: UserRanking[];
+    leaderboards?: LeaderboardsProfile | null;
 }
 
 export const UserProfile = ({
@@ -49,7 +48,7 @@ export const UserProfile = ({
     allGlobalGameData,
     liveData,
     raceStats,
-    rankings,
+    leaderboards,
 }: UserPageProps) => {
     const session = useSession();
     const isAdmin = !!session?.roles?.includes('admin');
@@ -219,6 +218,36 @@ export const UserProfile = ({
                             <div className="mb-4">
                                 <UserStats runs={currentRuns} />
                             </div>
+                            {leaderboards &&
+                            leaderboards.standing.boards > 0 ? (
+                                <div className={styles.leaderboardsTeaser}>
+                                    <span>
+                                        On <b>{leaderboards.standing.boards}</b>{' '}
+                                        leaderboards
+                                        {leaderboards.standing.first > 0 ? (
+                                            <>
+                                                ,{' '}
+                                                <b>
+                                                    {
+                                                        leaderboards.standing
+                                                            .first
+                                                    }
+                                                </b>{' '}
+                                                first
+                                                {leaderboards.standing.first ===
+                                                1
+                                                    ? ' place'
+                                                    : ' places'}
+                                            </>
+                                        ) : null}
+                                    </span>
+                                    <Link
+                                        href={`/leaderboards/${encodeURIComponent(username)}`}
+                                    >
+                                        Leaderboards profile →
+                                    </Link>
+                                </div>
+                            ) : null}
                             {raceStats && (
                                 <div>
                                     <div className={styles.racesHeader}>
@@ -296,15 +325,6 @@ export const UserProfile = ({
                         withChat={true}
                     />
                 </Tab>
-                {isAdmin && rankings && rankings.length > 0 && (
-                    <Tab eventKey="rankings" title="Leaderboard PBs">
-                        <Row>
-                            <Col>
-                                <LeaderboardPbs rankings={rankings} />
-                            </Col>
-                        </Row>
-                    </Tab>
-                )}
                 {isAdmin && isOwnProfile && (
                     <Tab eventKey="import" title="Import runs">
                         <Row>
