@@ -455,6 +455,22 @@ $z-hover-card: 1060;
     text-align: right;
 }
 
+// A placement's rank: the number carries it, the board size stays quiet.
+.placeRank {
+    @include board.mono-time;
+    font-size: dt.$font-size-xs;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.placeOf {
+    margin-left: 0.3rem;
+    font-family: inherit;
+    font-weight: 400;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+}
+
 // ---- Footer -----------------------------------------------------
 .foot {
     display: flex;

@@ -256,6 +256,90 @@ function Ladder({ card }: { card: UserCardStats }) {
     );
 }
 
+/** "platform=n64,region=jpn" → "n64, jpn": the subcategory in plain words. */
+function subcategoryText(key: string): string {
+    return key
+        .split(',')
+        .map((pair) => pair.split('=')[1] ?? '')
+        .filter(Boolean)
+        .join(', ');
+}
+
+/** "top 1%" — rounded up, so a top-0.3% runner still reads as top 1%. */
+function topShare(rank: number, runnerCount: number): string {
+    if (rank === 1) return 'fastest';
+    return `top ${Math.max(1, Math.ceil((rank / runnerCount) * 100))}%`;
+}
+
+/**
+ * The runner's strongest placements: how far up each board they are,
+ * weighted by the board's size (the backend picks and orders them). The bar
+ * is their position on that board — full at the top, empty at the bottom.
+ */
+function Placements({ card }: { card: UserCardStats }) {
+    const game = card.game;
+    const placements = (game ? game.placements : card.placements) ?? [];
+    if (placements.length === 0) return null;
+
+    return (
+        <section className={styles.ladder}>
+            <div className={styles.ladderHead}>
+                <span className={styles.ladderTitle}>
+                    {game ? game.gameDisplay : 'Best placements'}
+                </span>
+                {game?.lastRunAt ? (
+                    <span className={styles.ladderAside}>
+                        last ran {relativeDate(game.lastRunAt)}
+                    </span>
+                ) : null}
+            </div>
+            <ol className={styles.ladderRows}>
+                {placements.map((p, i) => {
+                    const sub = game
+                        ? subcategoryText(p.subcategoryKey)
+                        : p.game;
+                    const position =
+                        ((p.runnerCount - p.rank + 1) / p.runnerCount) * 100;
+                    return (
+                        <li
+                            key={`${p.gameSlug}-${p.categorySlug}-${p.subcategoryKey}-${i}`}
+                            className={styles.ladderRow}
+                        >
+                            <span className={styles.ladderLabel}>
+                                <span className={styles.ladderName}>
+                                    {p.category}
+                                </span>
+                                {sub ? (
+                                    <span className={styles.ladderSub}>
+                                        {sub}
+                                    </span>
+                                ) : null}
+                            </span>
+                            <span className={styles.placeRank}>
+                                #{p.rank}
+                                <span className={styles.placeOf}>
+                                    of {whole.format(p.runnerCount)}
+                                </span>
+                            </span>
+                            <span className={styles.ladderTrack} aria-hidden>
+                                <span
+                                    className={styles.ladderBar}
+                                    style={{
+                                        width: `${Math.max(position, 2)}%`,
+                                    }}
+                                />
+                            </span>
+                            <span className={styles.ladderHours}>
+                                {topShare(p.rank, p.runnerCount)}
+                            </span>
+                        </li>
+                    );
+                })}
+            </ol>
+        </section>
+    );
+}
+
 interface KeyNumber {
     value: string;
     label: string;
@@ -474,7 +558,14 @@ export function UserHoverCard({ username, context }: Props) {
                         ))}
                     </dl>
 
-                    <Ladder card={card} />
+                    {/* Where they're strongest when the daily ranks know;
+                        where their hours went otherwise. */}
+                    {((card.game ? card.game.placements : card.placements)
+                        ?.length ?? 0) > 0 ? (
+                        <Placements card={card} />
+                    ) : (
+                        <Ladder card={card} />
+                    )}
                 </>
             ) : null}
 

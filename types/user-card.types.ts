@@ -48,8 +48,26 @@ export interface UserCardStats {
     races?: UserCardRaces | null;
     /** Board placings across every board they rank on. */
     boards?: UserCardBoards | null;
+    /** Their strongest placements across every game, best first. Absent
+     *  until the daily ranks exist for them. */
+    placements?: UserCardPlacement[];
     /** Only when the card was asked for with a game. */
     game?: UserCardGame | null;
+}
+
+/**
+ * One strong placement: how far up the board they are, weighted by how many
+ * runners the board has — #3 of 512 outranks #1 of 50. Up to a day old.
+ */
+export interface UserCardPlacement {
+    game: string;
+    gameSlug: string;
+    category: string;
+    categorySlug: string;
+    /** "k=v,…" of the subcategory; "" for the plain board. */
+    subcategoryKey: string;
+    rank: number;
+    runnerCount: number;
 }
 
 export interface UserCardRaces {
@@ -88,6 +106,8 @@ export interface UserCardGame {
     categories: UserCardGameCategory[];
     first: number;
     topTen: number;
+    /** Their strongest placements in this game, best first. */
+    placements?: UserCardPlacement[];
 }
 
 /**
