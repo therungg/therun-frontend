@@ -1,5 +1,103 @@
-import type { LeaderboardsProfileGame } from '../../../../types/leaderboards-profile.types';
+import { GameImage } from '~src/components/image/gameimage';
+import Link from '~src/components/link';
+import { formatBoardDate } from '~src/lib/format-run-date';
+import type {
+    LeaderboardsProfileEntry,
+    LeaderboardsProfileGame,
+} from '../../../../types/leaderboards-profile.types';
+import { EntryRow } from './entry-row';
+import styles from './leaderboards-profile.module.scss';
 
-export function GameBlock(_props: { game: LeaderboardsProfileGame }) {
-    return null;
+const hours = (ms: number) =>
+    `${Math.round(ms / 3_600_000).toLocaleString('en-US')} h`;
+
+function groupByLevel(entries: LeaderboardsProfileEntry[]) {
+    const plain = entries.filter((e) => e.level === null);
+    const levels = new Map<string, LeaderboardsProfileEntry[]>();
+    for (const e of entries) {
+        if (e.level === null) continue;
+        levels.set(e.level, [...(levels.get(e.level) ?? []), e]);
+    }
+    return { plain, levels };
+}
+
+export function GameBlock({
+    game,
+    extraEntries = [],
+}: {
+    game: LeaderboardsProfileGame;
+    extraEntries?: LeaderboardsProfileEntry[];
+}) {
+    const { plain, levels } = groupByLevel([...game.entries, ...extraEntries]);
+    const summary = [
+        `${game.entries.length} ${game.entries.length === 1 ? 'board' : 'boards'}`,
+        game.bestRank !== null ? `best #${game.bestRank}` : null,
+        game.lastRanAt ? `last ran ${formatBoardDate(game.lastRanAt)}` : null,
+        game.attempts !== null
+            ? `${game.attempts.toLocaleString('en-US')} attempts`
+            : null,
+        game.playtimeMs !== null && game.playtimeMs > 0
+            ? hours(game.playtimeMs)
+            : null,
+    ].filter(Boolean);
+
+    return (
+        <section className={styles.game} data-game-id={game.gameId}>
+            <div className={styles.gameHead}>
+                <GameImage
+                    src={game.imageUrl ?? ''}
+                    alt={game.game}
+                    quality="small"
+                    width={36}
+                    height={48}
+                />
+                <div>
+                    <Link
+                        href={`/games-v2/${encodeURIComponent(game.gameSlug)}`}
+                        className={styles.gameTitle}
+                    >
+                        {game.game}
+                    </Link>
+                    <div className={styles.gameSummary}>
+                        {summary.join(' · ')}
+                    </div>
+                </div>
+            </div>
+            <div className={styles.entries}>
+                {plain.map((e) => (
+                    <EntryRow
+                        key={`${e.kind}-${e.runId ?? e.manualTimeId}`}
+                        entry={e}
+                        gameSlug={game.gameSlug}
+                    />
+                ))}
+                {[...levels.entries()].map(([level, list]) => (
+                    <div key={level}>
+                        <div className={styles.levelHead}>{level}</div>
+                        {list.map((e) => (
+                            <EntryRow
+                                key={`${e.kind}-${e.runId ?? e.manualTimeId}`}
+                                entry={e}
+                                gameSlug={game.gameSlug}
+                            />
+                        ))}
+                    </div>
+                ))}
+            </div>
+            {game.archived.length > 0 ? (
+                <details className={styles.archived}>
+                    <summary>Archived ({game.archived.length})</summary>
+                    <div className={styles.entries}>
+                        {game.archived.map((e) => (
+                            <EntryRow
+                                key={`${e.kind}-${e.runId ?? e.manualTimeId}`}
+                                entry={e}
+                                gameSlug={game.gameSlug}
+                            />
+                        ))}
+                    </div>
+                </details>
+            ) : null}
+        </section>
+    );
 }
