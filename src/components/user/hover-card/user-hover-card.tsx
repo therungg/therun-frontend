@@ -153,14 +153,17 @@ interface LadderRow {
 }
 
 /**
- * The same splits file saved under several names shows up as several timer
- * rows with the same PB and playtime. They are one run to anyone reading the
- * card, so only the first (most played) of each stays.
+ * One splits file saved under several names shows up as several timer rows
+ * with the same PB. A PB is to the millisecond, so an identical PB in the
+ * same game is the same run: keep the most played row, drop the rest. The
+ * backend already does this; this keeps an older payload honest too. Rows
+ * without a PB are never merged.
  */
 function dedupeRuns(rows: LadderRow[]): LadderRow[] {
     const seen = new Set<string>();
     return rows.filter((row) => {
-        const key = `${row.pb ?? '-'}|${row.playtime}`;
+        if (row.pb == null) return true;
+        const key = `${row.sub ?? ''}#${row.pb}`;
         if (seen.has(key)) return false;
         seen.add(key);
         return true;
@@ -169,23 +172,26 @@ function dedupeRuns(rows: LadderRow[]): LadderRow[] {
 
 function ladderRows(card: UserCardStats): LadderRow[] {
     const rows: LadderRow[] = card.game
-        ? card.game.categories.map((c) => ({
-              key: c.categorySlug,
+        ? card.game.categories.map((c, i) => ({
+              key: `${c.categorySlug}-${i}`,
               label: c.category,
               pb: c.personalBest ?? c.gameTimePb,
               playtime: c.playtime,
           }))
-        : card.topRuns.map((r) => ({
-              key: `${r.game}-${r.category}`,
+        : card.topRuns.map((r, i) => ({
+              key: `${r.game}-${r.category}-${i}`,
               label: r.category,
               sub: r.game,
               pb: r.personalBest,
               playtime: r.playtime,
           }));
 
-    return dedupeRuns(rows)
-        .sort((a, b) => b.playtime - a.playtime)
-        .slice(0, LADDER_LIMIT);
+    // Most played first, so the row a repeat collapses into is the one
+    // with the most hours.
+    return dedupeRuns([...rows].sort((a, b) => b.playtime - a.playtime)).slice(
+        0,
+        LADDER_LIMIT,
+    );
 }
 
 /**
