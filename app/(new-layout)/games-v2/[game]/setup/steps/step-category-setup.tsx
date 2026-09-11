@@ -1,6 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
+import { splitLevelBoards } from '~src/lib/levels/display';
 import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
 import { CategoryMatrix } from './matrix/category-matrix';
@@ -32,9 +33,10 @@ export function StepCategorySetup({ data, onAdvance }: StepProps) {
     const params = useSearchParams();
     const catId = Number(params.get('cat')) || null;
 
-    const mains = data.categories.filter(
-        (c) => !c.archived && (c.isMain ?? false),
-    );
+    // Level boards are categories too, but they have their own step — this
+    // grid is the full-game categories only.
+    const { fullGame } = splitLevelBoards(data.categories, data.groups);
+    const mains = fullGame.filter((c) => !c.archived && (c.isMain ?? false));
 
     return (
         <section>
@@ -49,7 +51,7 @@ export function StepCategorySetup({ data, onAdvance }: StepProps) {
             ) : (
                 <CategoryMatrix
                     game={data.game}
-                    categories={data.categories}
+                    categories={fullGame}
                     groups={data.groups}
                     policies={data.policies}
                     initialOpenCategoryId={catId}

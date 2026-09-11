@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { Check2, Dot } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import Link from '~src/components/link';
+import { splitLevelBoards } from '~src/lib/levels/display';
 import { SETUP_STEP_LABELS } from '~src/lib/setup/steps';
 import type {
     BoardModRole,
@@ -71,8 +72,9 @@ function GoLiveFooter({ data }: { data: WizardData }) {
     const blockers = reviewSteps.filter((s) => s.status === 'blocker');
     const warnings = reviewSteps.filter((s) => s.status === 'warning');
 
-    const firstUnconfiguredMain = data.categories
-        .filter(
+    // Full-game only: the link lands on Category settings, which has no levels.
+    const firstUnconfiguredMain = splitLevelBoards(data.categories, data.groups)
+        .fullGame.filter(
             (c) =>
                 !c.archived && (c.isMain ?? false) && !(c.rules ?? '').trim(),
         )

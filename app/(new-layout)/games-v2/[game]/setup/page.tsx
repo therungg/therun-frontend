@@ -96,7 +96,11 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
     );
 
     const completeness = computeCompleteness({
-        categories: categoryFactsFromResolved(catData.categories),
+        // Full-game categories only: level boards are counted by the Levels
+        // step, and the category steps never show them.
+        categories: categoryFactsFromResolved(
+            splitLevelBoards(catData.categories, catData.groups).fullGame,
+        ),
         policyCount: policies.length,
         requireVideoAnywhere: catData.categories.some(
             (c) => !c.archived && c.requireVideo,

@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from 'react';
 import Link from '~src/components/link';
 import { buildSubmitHref } from '~src/lib/board-url';
+import { splitLevelBoards } from '~src/lib/levels/display';
 import { formatPlaytime } from '~src/lib/setup/board-pulse';
 import { activityShare, suggestFeaturedIds } from '~src/lib/setup/suggestions';
 import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
@@ -32,18 +33,20 @@ interface RowState {
 export function StepCategories({ data, onAdvance }: StepProps) {
     // Baseline: boards that already curated keep their flags; fresh boards
     // get suggested picks (high-activity categories pre-checked).
-    const hasExplicitMains = data.categories.some(
+    // Level boards are featured from the Levels step, not picked here.
+    const { fullGame } = splitLevelBoards(data.categories, data.groups);
+    const hasExplicitMains = fullGame.some(
         (c) => !c.archived && (c.isMain ?? false),
     );
     const suggested = suggestFeaturedIds(
-        data.categories.map((c) => ({
+        fullGame.map((c) => ({
             id: c.id,
             totalFinishedAttemptCount: c.totalFinishedAttemptCount ?? 0,
             uniqueRunners: c.uniqueRunners ?? 0,
         })),
     );
     const [rows, setRows] = useState<RowState[]>(
-        [...data.categories]
+        [...fullGame]
             // Runners first: how many people a category has is the better
             // signal of whether it belongs on a board than raw run count,
             // which one prolific runner can inflate on their own.
