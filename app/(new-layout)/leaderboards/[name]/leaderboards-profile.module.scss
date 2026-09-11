@@ -5,17 +5,54 @@
     display: grid;
     gap: dt.$spacing-xl;
     padding-block: dt.$spacing-xl;
+    min-width: 0;
+}
+
+// Two columns: runs on the left, the runner on the right. Below 1000px the
+// sidebar stacks under the header, above the runs.
+.columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 20rem;
+    grid-template-areas: 'main side';
+    gap: dt.$spacing-xl;
+    align-items: start;
+
+    @media (max-width: 999.98px) {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+            'side'
+            'main';
+    }
+}
+
+// The runs column is a size container: the entry rows lay out by the width
+// they actually get, not by the viewport (Bootstrap's 960px container at
+// 1000-1199px leaves the column far narrower than the viewport suggests).
+.main {
+    grid-area: main;
+    display: grid;
+    gap: dt.$spacing-lg;
+    min-width: 0;
+    container: profile-main / inline-size;
+}
+
+.sidebar {
+    grid-area: side;
+    display: grid;
+    gap: dt.$spacing-lg;
+    min-width: 0;
 }
 
 .header {
     @include board.board-surface(dt.$spacing-xl);
     display: grid;
-    grid-template-columns: auto 1fr;
-    gap: dt.$spacing-lg;
-    align-items: start;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    column-gap: dt.$spacing-lg;
+    row-gap: dt.$spacing-lg;
+    align-items: center;
 
     @media (max-width: 640px) {
-        grid-template-columns: 1fr;
+        grid-template-columns: auto minmax(0, 1fr);
     }
 }
 
@@ -27,87 +64,198 @@
 
     > img,
     > span {
-        width: 64px !important;
-        height: 64px !important;
-        font-size: 24px !important;
+        width: 80px !important;
+        height: 80px !important;
+        font-size: 30px !important;
     }
 }
 
 .identity {
     display: grid;
     gap: dt.$spacing-xs;
+    min-width: 0;
 }
 
 .name {
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-sm;
     margin: 0;
-    font-size: dt.$font-size-2xl;
+    font-size: dt.$font-size-3xl;
     font-weight: 700;
+    line-height: 1.15;
     color: var(--bs-emphasis-color);
+    overflow-wrap: anywhere;
 }
 
 .meta {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: dt.$spacing-md;
     color: var(--bs-secondary-color);
     font-size: dt.$font-size-sm;
 }
 
-.bio {
-    max-width: 60ch;
-    color: var(--bs-body-color);
+.country {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
 }
 
-.links {
+.socials {
     display: flex;
     flex-wrap: wrap;
-    gap: dt.$spacing-sm;
+    gap: dt.$spacing-xs;
 
     a {
         @include board.control-pill;
+        padding: dt.$spacing-xs;
     }
 }
 
+.headerActions {
+    display: flex;
+    gap: dt.$spacing-sm;
+    align-self: start;
+
+    @media (max-width: 640px) {
+        grid-column: 1 / -1;
+    }
+}
+
+.actionPill {
+    @include board.control-pill;
+    text-decoration: none;
+}
+
 .stateNote {
+    margin: 0;
     color: var(--bs-secondary-color);
     font-style: italic;
 }
 
-// Stat row: the hover card's pattern, scaled up.
-.standing {
-    @include board.board-surface(dt.$spacing-lg);
+// The header's three headline numbers, on the header's own grid.
+.hero {
+    grid-column: 1 / -1;
     display: flex;
     flex-wrap: wrap;
-    gap: dt.$spacing-xl;
+    column-gap: dt.$spacing-3xl;
+    row-gap: dt.$spacing-md;
+    padding-top: dt.$spacing-lg;
+    border-top: 1px solid
+        var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
+}
 
-    > span {
-        display: grid;
-        gap: 2px;
-        font-size: dt.$font-size-sm;
-        color: var(--bs-secondary-color);
+.heroStat {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+    min-width: 0;
+    color: var(--bs-secondary-color);
 
-        b {
-            font-family: dt.$font-mono;
-            font-variant-numeric: tabular-nums;
-            font-size: dt.$font-size-xl;
-            font-weight: 700;
-            color: var(--bs-emphasis-color);
-        }
+    b {
+        font-family: dt.$font-mono;
+        font-variant-numeric: tabular-nums;
+        font-size: dt.$font-size-2xl;
+        font-weight: 700;
+        color: var(--bs-emphasis-color);
+    }
+
+    a {
+        color: var(--bs-body-color);
+        overflow-wrap: anywhere;
     }
 }
 
-.section {
+// Tabs over the main column
+.tabsWrap {
     display: grid;
     gap: dt.$spacing-md;
 }
 
-.sectionTitle {
-    font-size: dt.$font-size-lg;
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs;
+}
+
+.tab {
+    @include board.control-pill;
+}
+
+.tabActive {
+    @include board.control-pill-active;
+}
+
+.tabPanel {
+    display: grid;
+    gap: dt.$spacing-lg;
+}
+
+.emptyNote {
+    @include board.board-surface(dt.$spacing-lg);
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+// Sidebar cards
+.card {
+    @include board.board-surface(dt.$spacing-lg);
+    display: grid;
+    gap: dt.$spacing-sm;
+    min-width: 0;
+}
+
+.cardTitle {
+    margin: 0;
+    font-size: dt.$font-size-base;
     font-weight: 600;
     color: var(--bs-emphasis-color);
+}
+
+.cardNote {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.bio {
+    margin: 0;
+    color: var(--bs-body-color);
+    overflow-wrap: anywhere;
+}
+
+.facts {
+    display: grid;
+    gap: dt.$spacing-xs;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.statList {
+    display: grid;
+    gap: dt.$spacing-xs;
+    margin: 0;
+
+    > div {
+        display: flex;
+        justify-content: space-between;
+        gap: dt.$spacing-md;
+    }
+
+    dt {
+        font-weight: 400;
+        color: var(--bs-secondary-color);
+        font-size: dt.$font-size-sm;
+    }
+
+    dd {
+        margin: 0;
+        font-family: dt.$font-mono;
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        color: var(--bs-emphasis-color);
+    }
 }
 
 // Game block
@@ -115,6 +263,8 @@
     @include board.board-surface(dt.$spacing-lg);
     display: grid;
     gap: dt.$spacing-md;
+    // Clears the sticky top bar when the Games card jumps here.
+    scroll-margin-top: 5rem;
 }
 
 .gameHead {
@@ -149,37 +299,110 @@
 }
 
 .entries {
+    // Medal tones for the rank cell. The rank mixes them with the surface ink
+    // (see .entryRank), so they read on a light panel as well as a dark one.
+    --rank-gold: #d4a73a;
+    --rank-silver: #a9b4c2;
+    --rank-bronze: #c07a45;
+
     display: grid;
     gap: 2px;
 }
 
+// Rank first: rank | name + vars | time | date | details | badges. When the
+// runs column is under 960px the rank spans two lines: the name takes the
+// whole first line, time, date and badges wrap on the second, and the
+// details drop.
 .entry {
     display: grid;
-    grid-template-columns: minmax(10rem, 2fr) 7rem 6rem 7rem 1fr auto;
-    gap: dt.$spacing-md;
+    grid-template-columns: 4.5rem minmax(0, 1.4fr) auto 7rem minmax(0, 1fr) auto;
+    grid-template-areas: 'rank name time date details badges';
+    column-gap: dt.$spacing-md;
+    row-gap: 2px;
     align-items: center;
     min-height: 44px;
     padding: dt.$spacing-xs dt.$spacing-sm;
     border-radius: dt.$radius-sm;
-    color: inherit;
-    text-decoration: none;
 
     &:hover {
         background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.04));
     }
 
-    @media (max-width: 900px) {
-        grid-template-columns: 1fr auto;
-        row-gap: 2px;
+    @container profile-main (max-width: 959.98px) {
+        grid-template-columns: 4.5rem minmax(0, 1fr);
+        grid-template-areas:
+            'rank name'
+            'rank meta';
+    }
+
+    @media (max-width: 640px) {
+        grid-template-columns: 3.5rem minmax(0, 1fr);
     }
 }
 
-.entryStatic {
-    cursor: default;
+// Time, date and badges. A plain pass-through on the one-line layout; the
+// wrapping second line of the two-line one.
+.entryMeta {
+    display: contents;
 
-    &:hover {
-        background: transparent;
+    @container profile-main (max-width: 959.98px) {
+        grid-area: meta;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        column-gap: dt.$spacing-md;
+        row-gap: 2px;
+        min-width: 0;
     }
+}
+
+.entryRankCell {
+    grid-area: rank;
+    display: grid;
+    line-height: 1.15;
+}
+
+.entryRank {
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+    color: var(--bs-emphasis-color);
+
+    &[data-medal='gold'] {
+        color: color-mix(in srgb, var(--rank-gold) 65%, var(--bs-emphasis-color));
+    }
+    &[data-medal='silver'] {
+        color: color-mix(
+            in srgb,
+            var(--rank-silver) 65%,
+            var(--bs-emphasis-color)
+        );
+    }
+    &[data-medal='bronze'] {
+        color: color-mix(
+            in srgb,
+            var(--rank-bronze) 65%,
+            var(--bs-emphasis-color)
+        );
+    }
+}
+
+.entryRankNone {
+    color: var(--bs-tertiary-color);
+}
+
+.entryCountry {
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+}
+
+.entryName {
+    grid-area: name;
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 .entryCategory {
@@ -193,50 +416,100 @@
 }
 
 .entryTime {
+    grid-area: time;
+    display: inline-flex;
+    align-items: baseline;
+    gap: dt.$spacing-xs;
+    white-space: nowrap;
     font-family: dt.$font-mono;
     font-variant-numeric: tabular-nums;
     font-weight: 600;
 }
 
-.entryRank {
-    font-family: dt.$font-mono;
-    font-variant-numeric: tabular-nums;
-}
-
-.entryCountry {
+.entryTiming {
     color: var(--bs-secondary-color);
-    font-size: dt.$font-size-sm;
+    font-size: dt.$font-size-xs;
+    font-weight: 400;
 }
 
-.entryDate,
-.entryDetails {
-    color: var(--bs-secondary-color);
-    font-size: dt.$font-size-sm;
-}
+.sparkline {
+    display: inline-flex;
+    align-self: center;
+    color: var(--board-accent, var(--bs-primary));
 
-.entryBadges {
-    display: flex;
-    gap: dt.$spacing-xs;
-    align-items: center;
-}
+    svg {
+        display: block;
+    }
 
-.archived {
-    summary {
-        @include board.control-pill;
+    @media (max-width: 640px) {
+        display: none;
     }
 }
 
-// Heatmap
-.heatmap {
-    @include board.board-surface(dt.$spacing-lg);
+.entryDate {
+    grid-area: date;
+    white-space: nowrap;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.entryDetails {
+    grid-area: details;
+    min-width: 0;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+
+    a {
+        color: inherit;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+
+    @container profile-main (max-width: 959.98px) {
+        display: none;
+    }
+}
+
+.entryBadges {
+    grid-area: badges;
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs;
+    align-items: center;
+    justify-content: end;
+    min-width: 0;
+
+    @container profile-main (max-width: 959.98px) {
+        justify-content: start;
+    }
+}
+
+.entryVod {
+    display: inline-flex;
+    color: var(--bs-secondary-color);
+
+    &:hover {
+        color: var(--bs-emphasis-color);
+    }
+}
+
+// Heatmap: fixed 11px cells, scrolling inside its card only. The scroller
+// runs right-to-left so it opens on the most recent weeks; the grid itself
+// is laid out left-to-right as usual.
+.heatmapScroll {
     overflow-x: auto;
+    direction: rtl;
 }
 
 .heatmapGrid {
+    direction: ltr;
     display: grid;
     grid-auto-flow: column;
     grid-template-rows: repeat(7, 11px);
+    grid-auto-columns: 11px;
+    justify-content: start;
     gap: 2px;
+    width: max-content;
 }
 
 .heatmapCell {
@@ -251,20 +524,16 @@
     &[data-level='4'] { background: rgba(var(--bs-primary-rgb), 1); }
 }
 
-// Recent PBs
+// Recent PBs (sidebar card): game · category, then time, rank and date.
 .recent {
-    @include board.board-surface(dt.$spacing-lg);
     display: grid;
     gap: 2px;
 }
 
 .recentRow {
     display: grid;
-    grid-template-columns: 1fr 7rem 5rem 7rem;
-    gap: dt.$spacing-md;
-    align-items: center;
-    min-height: 40px;
-    padding: dt.$spacing-xs dt.$spacing-sm;
+    gap: 2px;
+    padding: dt.$spacing-xs;
     border-radius: dt.$radius-sm;
     color: inherit;
     text-decoration: none;
@@ -272,16 +541,46 @@
     &:hover {
         background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.04));
     }
+}
 
-    @media (max-width: 640px) {
-        grid-template-columns: 1fr auto;
-        row-gap: 2px;
-    }
+.recentName {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.recentLine {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: dt.$spacing-md;
+}
+
+.recentRank {
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.recentTime {
+    white-space: nowrap;
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+.recentDate {
+    white-space: nowrap;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
 }
 
 .live {
-    @include board.board-surface(dt.$spacing-md);
     display: flex;
+    color: var(--bs-emphasis-color);
+    font-size: dt.$font-size-sm;
+    font-weight: 500;
+    text-decoration: none;
     align-items: center;
     gap: dt.$spacing-md;
 }
@@ -291,4 +590,101 @@
     height: 8px;
     border-radius: 50%;
     background: var(--bs-danger);
+}
+
+// Games card: one row per game, each a jump to its block.
+.gameList {
+    display: grid;
+    gap: 2px;
+}
+
+.gameListRow {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: dt.$spacing-md;
+    align-items: center;
+    padding: dt.$spacing-xs;
+    border-radius: dt.$radius-sm;
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+        background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.04));
+    }
+
+    img {
+        width: 48px;
+        height: 64px;
+        object-fit: cover;
+        border-radius: dt.$radius-sm;
+    }
+}
+
+.gameListText {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.gameListName {
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    overflow-wrap: anywhere;
+}
+
+.gameListLine {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+}
+
+// Featured run
+.featured {
+    @include board.board-surface(dt.$spacing-lg);
+    display: grid;
+    gap: dt.$spacing-md;
+    min-width: 0;
+}
+
+.featuredMeta {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+    font-variant-numeric: tabular-nums;
+}
+
+.featuredVideo {
+    position: relative;
+    display: grid;
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: dt.$radius-sm;
+    background: var(--board-recess-bg, rgba(var(--bs-body-color-rgb), 0.08));
+}
+
+.featuredThumb {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.featuredPlay {
+    position: relative;
+    place-self: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.65);
+    color: #fff;
+
+    &:hover,
+    &:focus-visible {
+        background: rgba(0, 0, 0, 0.85);
+    }
 }
