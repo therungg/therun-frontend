@@ -1,0 +1,294 @@
+@use '../../styles/design-tokens' as dt;
+@use '../../styles/board' as board;
+
+.page {
+    display: grid;
+    gap: dt.$spacing-xl;
+    padding-block: dt.$spacing-xl;
+}
+
+.header {
+    @include board.board-surface(dt.$spacing-xl);
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: dt.$spacing-lg;
+    align-items: start;
+
+    @media (max-width: 640px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+// RunnerAvatar's largest built-in size (md) is 32px; the profile header
+// wants a larger portrait, so this wraps it and rescales its rendered
+// root element (an <img> or a monogram <span>) via CSS instead.
+.avatar {
+    display: inline-flex;
+
+    > img,
+    > span {
+        width: 64px !important;
+        height: 64px !important;
+        font-size: 24px !important;
+    }
+}
+
+.identity {
+    display: grid;
+    gap: dt.$spacing-xs;
+}
+
+.name {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin: 0;
+    font-size: dt.$font-size-2xl;
+    font-weight: 700;
+    color: var(--bs-emphasis-color);
+}
+
+.meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-md;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.bio {
+    max-width: 60ch;
+    color: var(--bs-body-color);
+}
+
+.links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+
+    a {
+        @include board.control-pill;
+    }
+}
+
+.stateNote {
+    color: var(--bs-secondary-color);
+    font-style: italic;
+}
+
+// Stat row: the hover card's pattern, scaled up.
+.standing {
+    @include board.board-surface(dt.$spacing-lg);
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xl;
+
+    > span {
+        display: grid;
+        gap: 2px;
+        font-size: dt.$font-size-sm;
+        color: var(--bs-secondary-color);
+
+        b {
+            font-family: dt.$font-mono;
+            font-variant-numeric: tabular-nums;
+            font-size: dt.$font-size-xl;
+            font-weight: 700;
+            color: var(--bs-emphasis-color);
+        }
+    }
+}
+
+.section {
+    display: grid;
+    gap: dt.$spacing-md;
+}
+
+.sectionTitle {
+    font-size: dt.$font-size-lg;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+// Game block
+.game {
+    @include board.board-surface(dt.$spacing-lg);
+    display: grid;
+    gap: dt.$spacing-md;
+}
+
+.gameHead {
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: dt.$spacing-md;
+    align-items: center;
+
+    img {
+        width: 36px;
+        height: 48px;
+        object-fit: cover;
+        border-radius: dt.$radius-sm;
+    }
+}
+
+.gameTitle {
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.gameSummary {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.levelHead {
+    margin-top: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+}
+
+.entries {
+    display: grid;
+    gap: 2px;
+}
+
+.entry {
+    display: grid;
+    grid-template-columns: minmax(10rem, 2fr) 7rem 6rem 7rem 1fr auto;
+    gap: dt.$spacing-md;
+    align-items: center;
+    min-height: 44px;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    border-radius: dt.$radius-sm;
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+        background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.04));
+    }
+
+    @media (max-width: 900px) {
+        grid-template-columns: 1fr auto;
+        row-gap: 2px;
+    }
+}
+
+.entryStatic {
+    cursor: default;
+
+    &:hover {
+        background: transparent;
+    }
+}
+
+.entryCategory {
+    font-weight: 500;
+    color: var(--bs-emphasis-color);
+}
+
+.entryVars {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.entryTime {
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+.entryRank {
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+}
+
+.entryCountry {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.entryDate,
+.entryDetails {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.entryBadges {
+    display: flex;
+    gap: dt.$spacing-xs;
+    align-items: center;
+}
+
+.archived {
+    summary {
+        @include board.control-pill;
+    }
+}
+
+// Heatmap
+.heatmap {
+    @include board.board-surface(dt.$spacing-lg);
+    overflow-x: auto;
+}
+
+.heatmapGrid {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(7, 11px);
+    gap: 2px;
+}
+
+.heatmapCell {
+    width: 11px;
+    height: 11px;
+    border-radius: 2px;
+    background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.08));
+
+    &[data-level='1'] { background: rgba(var(--bs-primary-rgb), 0.25); }
+    &[data-level='2'] { background: rgba(var(--bs-primary-rgb), 0.45); }
+    &[data-level='3'] { background: rgba(var(--bs-primary-rgb), 0.7); }
+    &[data-level='4'] { background: rgba(var(--bs-primary-rgb), 1); }
+}
+
+// Recent PBs
+.recent {
+    @include board.board-surface(dt.$spacing-lg);
+    display: grid;
+    gap: 2px;
+}
+
+.recentRow {
+    display: grid;
+    grid-template-columns: 1fr 7rem 5rem 7rem;
+    gap: dt.$spacing-md;
+    align-items: center;
+    min-height: 40px;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    border-radius: dt.$radius-sm;
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+        background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.04));
+    }
+
+    @media (max-width: 640px) {
+        grid-template-columns: 1fr auto;
+        row-gap: 2px;
+    }
+}
+
+.live {
+    @include board.board-surface(dt.$spacing-md);
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+}
+
+.liveDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--bs-danger);
+}

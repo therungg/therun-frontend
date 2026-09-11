@@ -29,6 +29,12 @@ interface UserLinkProps extends ChildrenType {
      * immediately, before the card's own fetch resolves.
      */
     cardContext?: UserCardContext;
+    /**
+     * Which profile this link should point at. Board contexts (rows, run
+     * pages, mod tooling) opt into the leaderboards profile; everything
+     * else keeps pointing at the Stats profile.
+     */
+    to?: 'profile' | 'leaderboards';
 }
 
 interface UserGameLinkProps extends UserLinkProps, GameLinkProps {}
@@ -53,6 +59,7 @@ export const UserLink = ({
     parentIsUrl = false,
     hoverCard = true,
     cardContext,
+    to = 'profile',
 }: UserLinkProps) => {
     const { data: patreons, isLoading } = usePatreons();
 
@@ -63,7 +70,9 @@ export const UserLink = ({
     username = decodeURIComponent(username);
     const nameStr = username.replace('/', '');
 
-    if (url === '') url = username;
+    if (url === '') {
+        url = to === 'leaderboards' ? `/leaderboards${username}` : username;
+    }
 
     let displayNode: React.ReactNode = nameStr;
     if (

@@ -58,7 +58,10 @@ function BanRow({
             <tr className={styles.row}>
                 <td className={styles.runnerCell}>
                     <span className={styles.runner}>
-                        <UserLink username={rule.targetDisplayName} />
+                        <UserLink
+                            username={rule.targetDisplayName}
+                            to="leaderboards"
+                        />
                     </span>
                     {rule.reason && (
                         <span className={styles.banReason}>{rule.reason}</span>

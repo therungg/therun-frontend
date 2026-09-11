@@ -11,7 +11,7 @@ import { getGameGlobal } from '~src/components/game/get-game';
 import { JsonLd } from '~src/components/json-ld';
 import { getGlobalUser } from '~src/lib/get-global-user';
 import { getUserRuns } from '~src/lib/get-user-runs';
-import { getUserRankingsByName } from '~src/lib/leaderboards-v1';
+import { getLeaderboardsProfile } from '~src/lib/leaderboards-profile';
 import { getLiveRunForUser } from '~src/lib/live-runs';
 import { getUserRaceStats } from '~src/lib/races';
 import {
@@ -90,12 +90,22 @@ async function UserProfilePage({ username }: { username: string }) {
         });
     }
 
-    const [userData, liveData, raceStats, rankings] = await Promise.all([
-        getGlobalUser(username),
-        getLiveRunForUser(username),
-        getUserRaceStats(username),
-        getUserRankingsByName(username).catch(() => []),
-    ] as const);
+    const [userData, liveData, raceStats, leaderboardsProfile] =
+        await Promise.all([
+            getGlobalUser(username),
+            getLiveRunForUser(username),
+            getUserRaceStats(username),
+            getLeaderboardsProfile(username).catch(() => null),
+        ] as const);
+
+    // The client profile only needs the teaser's two numbers, not the whole
+    // leaderboards payload.
+    const leaderboardsStanding = leaderboardsProfile?.standing
+        ? {
+              boards: leaderboardsProfile.standing.boards,
+              first: leaderboardsProfile.standing.first,
+          }
+        : null;
 
     // Deleted, banned or anonymised: the API answers as though the account
     // never existed, and so does the page.
@@ -168,7 +178,7 @@ async function UserProfilePage({ username }: { username: string }) {
                 userData={userData}
                 allGlobalGameData={allGlobalGameData}
                 raceStats={raceStats}
-                rankings={rankings}
+                leaderboardsStanding={leaderboardsStanding}
             />
         </>
     );

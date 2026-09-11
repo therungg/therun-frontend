@@ -120,6 +120,14 @@ export function UserMenu({ username, picture, sessionError }: UserMenuProps) {
                     Profile
                 </Link>
                 <Link
+                    href={`/leaderboards/${encodeURIComponent(username ?? '')}`}
+                    className={styles.item}
+                    role="menuitem"
+                    onClick={() => setOpen(false)}
+                >
+                    Leaderboards profile
+                </Link>
+                <Link
                     href="/settings"
                     className={styles.item}
                     role="menuitem"

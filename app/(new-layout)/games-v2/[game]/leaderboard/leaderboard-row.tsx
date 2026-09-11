@@ -443,6 +443,7 @@ export function LeaderboardRow({
                             <UserLink
                                 username={entry.runnerName}
                                 url={undefined}
+                                to="leaderboards"
                                 // A guest has no account behind the name, so
                                 // there is no card to open.
                                 hoverCard={!entry.isGuest}

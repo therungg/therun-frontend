@@ -55,7 +55,11 @@ export function ManageRunPage({ data, provenance, history }: Props) {
                             </span>
                         </>
                     ) : (
-                        <UserLink username={run.runnerName} url={undefined} />
+                        <UserLink
+                            username={run.runnerName}
+                            url={undefined}
+                            to="leaderboards"
+                        />
                     )}
                 </div>
                 <small className="text-muted">

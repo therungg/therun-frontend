@@ -573,6 +573,7 @@ export function RosterView({
                                                             username={
                                                                 row.runnerName
                                                             }
+                                                            to="leaderboards"
                                                         />
                                                     )}
                                                 </td>

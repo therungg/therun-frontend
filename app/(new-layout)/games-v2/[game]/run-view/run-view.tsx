@@ -217,7 +217,10 @@ export function RunView({
                             {model.isGuest ? (
                                 model.runnerName
                             ) : (
-                                <UserLink username={model.runnerName} />
+                                <UserLink
+                                    username={model.runnerName}
+                                    to="leaderboards"
+                                />
                             )}
                             {/* RunDetail/ManualTimeDetail carry no country — unlike
                             LeaderboardEntry, this join isn't available here yet. */}
