@@ -37,6 +37,9 @@ interface Props {
     policies?: BoardPolicyRow[];
     variables?: VariableRow[];
     onEditCategory?: (categoryId: number) => void;
+    /** After any write lands — the wizard re-reads its server data here so
+     *  a new level shows up in the table and the rail count. */
+    onChanged?: () => void;
 }
 
 /**
@@ -59,11 +62,18 @@ export function LevelsPane({
     policies,
     variables,
     onEditCategory,
+    onChanged,
 }: Props) {
-    const { overview, loading, error, reload } = useLevelOverview(
-        gameSlug,
-        gameId,
-    );
+    const {
+        overview,
+        loading,
+        error,
+        reload: reloadOverview,
+    } = useLevelOverview(gameSlug, gameId);
+    const reload = async () => {
+        await reloadOverview();
+        onChanged?.();
+    };
     const [addLevelOpen, setAddLevelOpen] = useState(false);
     const [promptError, setPromptError] = useState<string | null>(null);
     const [pending, startTransition] = useTransition();

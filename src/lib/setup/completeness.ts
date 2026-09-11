@@ -47,8 +47,9 @@ export interface CompletenessInput {
      */
     subcategoryVariableCount?: number;
     filterVariableCount?: number;
-    /** Count of `kind:'level'` category groups, for the levels step's summary. */
-    levelGroupCount?: number;
+    /** Active level boards (categories in the game's `kind:'level'` group),
+     *  for the levels step's summary. */
+    levelCount?: number;
     /**
      * The board's link to its source, for the import step. `configAppliedAt`
      * is the moment a settings import actually wrote the board — a linked
@@ -197,7 +198,7 @@ export function computeCompleteness(
     // have levels, so this step is always done — only the summary reflects
     // the count. (A todo-when-empty rule would break the fully-set-up-board
     // invariant for every game without individual levels.)
-    const levelCount = input.levelGroupCount ?? 0;
+    const levelCount = input.levelCount ?? 0;
     steps.push({
         step: 'levels',
         status: 'done',

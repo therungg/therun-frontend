@@ -383,16 +383,16 @@ describe('computeCompleteness', () => {
         const step = (c: ReturnType<typeof computeCompleteness>) =>
             c.steps.find((s) => s.step === 'levels');
 
-        it('is done with "No levels yet" when there are no level groups', () => {
-            const c = computeCompleteness(input({ levelGroupCount: 0 }));
+        it('is done with "No levels yet" when there are no levels', () => {
+            const c = computeCompleteness(input({ levelCount: 0 }));
             expect(step(c)).toMatchObject({
                 status: 'done',
                 summary: 'No levels yet',
             });
         });
 
-        it('is done with a count summary when level groups exist', () => {
-            const c = computeCompleteness(input({ levelGroupCount: 2 }));
+        it('is done with a count summary when levels exist', () => {
+            const c = computeCompleteness(input({ levelCount: 2 }));
             expect(step(c)).toMatchObject({
                 status: 'done',
                 summary: '2 levels',

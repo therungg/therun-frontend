@@ -22,7 +22,7 @@ export interface OverviewStats {
     offBoardWithRuns: number;
     /** Archived (inactive) full-game categories. */
     archived: number;
-    /** Individual levels — category groups with kind 'level'. */
+    /** Individual levels — active categories in the kind:'level' group. */
     levels: number;
     /** Category groups (kind 'normal') — the band's grouping structure. */
     categoryGroups: number;
@@ -50,7 +50,7 @@ export function buildOverviewStats(input: {
 
     // A level board is a category sitting in a kind:'level' group; everything
     // else is a full-game category. The overview counts and lists them apart.
-    const { fullGame } = splitLevelBoards(rows, groups);
+    const { fullGame, levelBoards } = splitLevelBoards(rows, groups);
 
     let featured = 0;
     let offBoardWithRuns = 0;
@@ -70,12 +70,11 @@ export function buildOverviewStats(input: {
     let finishedRuns = 0;
     for (const r of rows) finishedRuns += r.totalFinishedAttemptCount;
 
-    let levels = 0;
+    // One kind:'level' group holds every level, so levels are counted by
+    // board, not by group.
+    const levels = levelBoards.filter((r) => r.active).length;
     let categoryGroups = 0;
-    for (const g of groups) {
-        if (g.kind === 'level') levels += 1;
-        else categoryGroups += 1;
-    }
+    for (const g of groups) if (g.kind !== 'level') categoryGroups += 1;
 
     // A merged row can carry several sources (flagged AND reported), so these
     // are "items involving X" tallies and may overlap — total stays the count

@@ -2,10 +2,13 @@ import { subject as caslSubject } from '@casl/ability';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
+import { loadConsoleCatalog } from '~src/lib/category-mgmt';
+import { keepConsoleRow } from '~src/lib/console/keep-console-row';
 import { getGameIdentifiers, getGameMetadata } from '~src/lib/game-mgmt';
 import { listGameModerators } from '~src/lib/game-moderators';
 import { getQuickStats, resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { listCategoryVariables } from '~src/lib/leaderboard-variables';
+import { splitLevelBoards } from '~src/lib/levels/display';
 import { listPolicies } from '~src/lib/moderation/policies';
 import {
     categoryFactsFromResolved,
@@ -67,6 +70,7 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         identifiers,
         metadata,
         settingsJob,
+        catalog,
     ] = await Promise.all([
         getQuickStats(game.id),
         resolveCategory(game.id),
@@ -78,6 +82,9 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         // the step (it is skippable); the read itself is moderator-gated, so a
         // failure means "no import to report", not a broken page.
         getSrcImportJob(session.id, game.id, 'settings').catch(() => null),
+        // The console's rows/groups, so the Levels step can be the console's
+        // Levels pane rather than a copy of it.
+        loadConsoleCatalog(game.id),
     ]);
 
     // Variables are category-scoped only — one list call per category. The
@@ -97,12 +104,16 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         slug: identifiers.slug,
         moderatorCount: moderators.length,
         configured: metadata.configured,
-        // Category groups only — level groups (each individual level is its
-        // own kind:'level' group) belong to the Levels step, not the
+        // Category groups only — the level group (one kind:'level' group
+        // holding every level board) belongs to the Levels step, not the
         // category-grouping structure.
         groupCount: catData.groups.filter((g) => g.kind !== 'level').length,
-        levelGroupCount: catData.groups.filter((g) => g.kind === 'level')
-            .length,
+        // A level is a category in that group, so count the boards, not the
+        // group.
+        levelCount: splitLevelBoards(
+            catData.categories.filter((c) => !c.archived),
+            catData.groups,
+        ).levelBoards.length,
         ungroupedMainCount: catData.categories.filter(
             (c) => !c.archived && (c.isMain ?? false) && c.groupId == null,
         ).length,
@@ -114,12 +125,19 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         },
     });
 
+    const resolvedIds = new Set(catData.categories.map((c) => c.id));
     const data: WizardData = {
         game,
         stats,
         categories: catData.categories,
         groups: catData.groups,
         levelTemplates: catData.levelTemplates,
+        // Same membership rule as the console: resolveCategory's list is the
+        // verdict on which rows exist.
+        manageRows: catalog.rows.filter((r) =>
+            keepConsoleRow(r.id, resolvedIds),
+        ),
+        manageGroups: catalog.groups,
         variables,
         policies,
         moderators,
