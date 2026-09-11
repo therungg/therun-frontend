@@ -14,10 +14,10 @@ export interface ExportableBoard {
 }
 
 /**
- * Every board the whole-game export covers: all non-archived categories,
- * levels included. Deliberately wider than the overview wall, which holds
- * only Featured full-game categories — the wall is a reading surface and the
- * export is the data behind the game.
+ * Every board the whole-game export covers: exactly the boards a visitor can
+ * open — Featured, non-archived categories, level boards included (the same
+ * filter the board page applies). Non-Featured categories are not publicly
+ * viewable, so they stay out of the file too.
  *
  * Public read, like the boards themselves. Returns null on an unknown game so
  * the client can show a retryable error instead of downloading an empty file.
@@ -33,7 +33,7 @@ export async function listExportableBoards(
             groups.filter((g) => g.kind === 'level').map((g) => g.id),
         );
         return categories
-            .filter((c) => !c.archived)
+            .filter((c) => !c.archived && c.isMain)
             .map((c) => ({
                 categorySlug: c.name,
                 categoryDisplay: c.display,

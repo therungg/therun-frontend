@@ -30,8 +30,8 @@ interface Progress {
 }
 
 /**
- * "Export all" on the game overview: every non-archived board of the game —
- * levels included — as one CSV or JSON.
+ * "Export all" on the game overview: every public board of the game (Featured,
+ * non-archived) — levels included — as one CSV or JSON.
  *
  * Fans out one request per board rather than asking the backend for the whole
  * game in one response: a board export is already capped at 10 000 rows and
@@ -234,8 +234,8 @@ export function ExportAllButton({ gameSlug }: Props) {
                             {label('json', 'Download JSON')}
                         </button>
                         <span className={leaderboardStyles.exportNote}>
-                            Every board of this game, levels included, in one
-                            file.
+                            Every board shown on this game, levels included, in
+                            one file.
                         </span>
                         {note && (
                             <span className={leaderboardStyles.exportNote}>
