@@ -12,6 +12,24 @@ const canonicalOf = (bucket: string[]): string | null =>
     bucket.length > 0 ? bucket[0] : null;
 
 /**
+ * THE slice rule, shared by both surfaces so a card and a standings column
+ * never disagree. `candidates` are the values this category has for one
+ * variable (normalized); `order` is the union's value order for it.
+ */
+function resolveSliceValue(
+    picked: string | undefined,
+    candidates: ReadonlySet<string>,
+    ownDefault: string | null | undefined,
+    order: readonly string[],
+): string | undefined {
+    if (picked !== undefined && candidates.has(picked)) return picked;
+    if (ownDefault != null && candidates.has(ownDefault)) return ownDefault;
+    for (const v of order) if (candidates.has(v)) return v;
+    // A value the union doesn't list (shouldn't happen); stay deterministic.
+    return candidates.values().next().value;
+}
+
+/**
  * Union of subcategory variables across categories, keyed by
  * `nameNormalized`. Mirrors the backend's standings `variables` so the
  * overview (which builds it from per-category defs) and standings (which
@@ -112,16 +130,23 @@ export function effectiveSelection(
 /**
  * Which board of ONE category the selection means, expressed as the
  * category's own subcategory values (normalized) — the `subcategoryValues`
- * a board fetch takes. Rules, in order, per subcategory variable the
- * category carries:
- *   1. the picked value, when this category has it;
- *   2. else this category's own default;
- *   3. else its first value.
- * A picker key the category does not carry is ignored.
+ * a board fetch takes. Uses `resolveSliceValue` — the same rule
+ * `pickBoardIndex` uses over a standings payload — so a card and a
+ * standings column never disagree: per subcategory variable the category
+ * carries, the picked value if this category has it, else this category's
+ * own default, else the union's first value the category has, else this
+ * category's own first value. A picker key the category does not carry is
+ * ignored.
+ *
+ * Known residual: the standings payload omits boards with no ranked runs,
+ * so for a value this category defines but has no run on, this can name a
+ * board `pickBoardIndex` then can't find (empty on standings) while this
+ * function still returns it (rendered, empty, on the overview card).
  */
 export function sliceValuesForCategory(
     defs: VariableRow[],
     selection: SliceSelection,
+    variables: StandingsVariable[],
 ): Record<string, string> {
     const out: Record<string, string> = {};
     for (const def of defs) {
@@ -131,28 +156,39 @@ export function sliceValuesForCategory(
             .filter((v): v is string => v !== null)
             .map(normalizeVariableName);
         if (values.length === 0) continue;
-        const picked = selection[def.nameNormalized];
+        const candidates = new Set(values);
         const defBucket =
             def.defaultValueIndex != null
                 ? def.values[def.defaultValueIndex]
                 : undefined;
         const own = defBucket ? canonicalOf(defBucket) : null;
         const ownNorm = own !== null ? normalizeVariableName(own) : null;
-        out[def.nameNormalized] =
-            picked !== undefined && values.includes(picked)
-                ? picked
-                : ownNorm !== null && values.includes(ownNorm)
-                  ? ownNorm
-                  : values[0];
+        const order =
+            variables
+                .find((v) => v.key === def.nameNormalized)
+                ?.values.map((x) => x.value) ?? values;
+        const resolved = resolveSliceValue(
+            selection[def.nameNormalized],
+            candidates,
+            ownNorm,
+            order,
+        );
+        if (resolved !== undefined) out[def.nameNormalized] = resolved;
     }
     return out;
 }
 
 /**
- * The same rules as `sliceValuesForCategory`, but over a standings payload
- * where the category's boards are the columns sharing its `id`. Returns the
- * index into `boards` of the matching board, or null when no board holds
- * runs for that combination (the caller renders a greyed column).
+ * The same rule as `sliceValuesForCategory` (`resolveSliceValue`), but over a
+ * standings payload where the category's boards are the columns sharing its
+ * `id`. Returns the index into `boards` of the matching board, or null when
+ * no board holds runs for that combination (the caller renders a greyed
+ * column).
+ *
+ * Known residual: the payload omits boards with no ranked runs, so for a
+ * value this category defines but has no run on, `sliceValuesForCategory`
+ * can still name it (an empty board on the overview card) while this
+ * function falls back past it to a board that does exist.
  */
 export function pickBoardIndex(
     boards: StandingsCategory[],
@@ -178,23 +214,14 @@ export function pickBoardIndex(
 
     const wanted: Record<string, string> = {};
     for (const [k, values] of carried) {
-        const picked = selection[k];
-        if (picked !== undefined && values.has(picked)) {
-            wanted[k] = picked;
-            continue;
-        }
         const variable = variables.find((v) => v.key === k);
-        const own = variable?.defaultsByCategory[String(categoryId)];
-        if (own !== undefined && values.has(own)) {
-            wanted[k] = own;
-            continue;
-        }
-        const union = variable?.defaultValue ?? undefined;
-        if (union !== undefined && values.has(union)) {
-            wanted[k] = union;
-            continue;
-        }
-        wanted[k] = [...values].sort()[0];
+        const resolved = resolveSliceValue(
+            selection[k],
+            values,
+            variable?.defaultsByCategory[String(categoryId)],
+            variable?.values.map((x) => x.value) ?? [],
+        );
+        if (resolved !== undefined) wanted[k] = resolved;
     }
 
     const match = candidates.find(({ b }) => {
