@@ -235,6 +235,8 @@
 
 .segTrack {
     display: inline-flex;
+    flex-wrap: wrap;
+    max-width: 100%;
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.8);
     border-radius: dt.$radius-md;
     background: rgba(var(--bs-body-color-rgb), 0.05);
