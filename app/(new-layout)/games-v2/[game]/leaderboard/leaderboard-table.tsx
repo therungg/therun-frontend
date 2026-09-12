@@ -217,13 +217,22 @@ export function LeaderboardTable({
                   label: `${r.rank}`,
               }))
             : rawDisplayRanks;
-    const standings = computeRunStandings(
-        leaderboard.entries,
-        displayRanks,
-        leaderboard.entries.findIndex((e) =>
-            isSameRunner(e.runnerName, sessionUsername),
-        ),
-    );
+    // The gap block reads the rows either side of a run to answer "what does
+    // it take to move up" — which only means anything while the board is in
+    // rank order. Under a date sort the neighbours are whatever finished
+    // nearby in time, so the gaps would be true numbers about arbitrary runs.
+    // No standings then: the hover card drops the block entirely (it guards
+    // on `standing != null`) rather than showing a misleading one.
+    const standings =
+        sort === 'date'
+            ? []
+            : computeRunStandings(
+                  leaderboard.entries,
+                  displayRanks,
+                  leaderboard.entries.findIndex((e) =>
+                      isSameRunner(e.runnerName, sessionUsername),
+                  ),
+              );
     // Row-level hide flags need the all-null override folded into the same
     // key the secondary column actually is (rt or gt — depends on
     // primaryTiming), not blanket-applied to gameTime.
