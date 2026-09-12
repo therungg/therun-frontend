@@ -1,0 +1,11 @@
+@use '../../../styles/design-tokens' as dt;
+
+// One wrapping line of segmented controls, the board masthead's subcategory
+// tier lifted above a page: caption inline, segments joined in a track.
+.band {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm dt.$spacing-lg;
+    padding-block: dt.$spacing-sm;
+}
