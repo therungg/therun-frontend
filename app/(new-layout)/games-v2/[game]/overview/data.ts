@@ -132,9 +132,33 @@ export async function loadGameOverviewData(
     const cardCategories = overviewCardCategories(featured, groups);
     const today = isoDaysAgo(0);
 
-    // Variable definitions first: the picker's union and each card's board
-    // depend on them. Cached for hours per category, so this is cheap after
-    // the first view; a failed fetch means "no subcategories" for that card.
+    // These five don't depend on the variable defs below — start them
+    // immediately so a cold defs cache doesn't hold up the rest of the page.
+    const quickStatsPromise = getQuickStats(game.id).catch(() => ({
+        totalRunTime: 0,
+        totalAttemptCount: 0,
+        totalFinishedAttemptCount: 0,
+        totalPbs: 0,
+        uniqueRunners: 0,
+    }));
+    const gameMetaPromise = getGameMetadata(game.id).catch(
+        () => EMPTY_GAME_METADATA,
+    );
+    const recentPbsPromise = getRecentPbs(game.id, RECENT_PB_FETCH_LIMIT, {
+        featuredOnly: true,
+    }).catch(() => []);
+    const rawYourRunsPromise = sessionUsername
+        ? getUserRankingsByName(sessionUsername).catch(() => [])
+        : Promise.resolve([]);
+    const activity90Promise = getGameActivityTimeseries(
+        game.id,
+        isoDaysAgo(90),
+        today,
+    ).catch(() => []);
+
+    // Variable definitions: the picker's union and each card's board depend
+    // on them. Cached for hours per category, so this is cheap after the
+    // first view; a failed fetch means "no subcategories" for that card.
     const defsByCategory = await Promise.all(
         cardCategories.map(async (c) => ({
             categoryId: c.id,
@@ -157,28 +181,16 @@ export async function loadGameOverviewData(
         cardEntries,
         activity90,
     ] = await Promise.all([
-        getQuickStats(game.id).catch(() => ({
-            totalRunTime: 0,
-            totalAttemptCount: 0,
-            totalFinishedAttemptCount: 0,
-            totalPbs: 0,
-            uniqueRunners: 0,
-        })),
-        getGameMetadata(game.id).catch(() => EMPTY_GAME_METADATA),
-        getRecentPbs(game.id, RECENT_PB_FETCH_LIMIT, {
-            featuredOnly: true,
-        }).catch(() => []),
-        sessionUsername
-            ? getUserRankingsByName(sessionUsername).catch(() => [])
-            : Promise.resolve([]),
+        quickStatsPromise,
+        gameMetaPromise,
+        recentPbsPromise,
+        rawYourRunsPromise,
         Promise.all(
             cardCategories.map((c, i) =>
                 fetchCardEntries(game.name, c, cardSlices[i]),
             ),
         ),
-        getGameActivityTimeseries(game.id, isoDaysAgo(90), today).catch(
-            () => [],
-        ),
+        activity90Promise,
     ]);
 
     return {
