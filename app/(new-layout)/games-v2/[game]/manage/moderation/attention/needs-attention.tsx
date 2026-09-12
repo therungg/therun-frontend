@@ -22,7 +22,7 @@ import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { FlagSeverity } from '../../../../../../../types/moderation.types';
-import { formatSubcategoryKey } from '../../../labels';
+import { formatSubcategoryKey, humanizeWord } from '../../../labels';
 import type {
     BanScope,
     ModVerb,
@@ -121,6 +121,24 @@ const VERIFICATION_LABEL: Record<string, string> = {
     verified: 'Verified',
     rejected: 'Rejected',
 };
+
+/** Auto-verify's failed-check flag reasons (run_flags.reason), labeled for
+ * the triage queue. Any other flag reason (including the pre-existing
+ * manual/report ones) falls back to humanizeWord — see flagReasonLabel. */
+const AUTO_VERIFY_FLAG_LABEL: Record<string, string> = {
+    consistency: 'Split data inconsistent',
+    'live-match': 'Live timing mismatch',
+    ambiguous_live_match: 'Ambiguous live match',
+    no_live_match: 'No live timing',
+    'gold-beat': 'Beat a gold split',
+    'pb-jump': 'Large PB improvement',
+    'prior-runs': 'Too few verified runs',
+    'top-n': 'Top-N needs a human',
+};
+
+function flagReasonLabel(reason: string): string {
+    return AUTO_VERIFY_FLAG_LABEL[reason] ?? humanizeWord(reason);
+}
 
 /** An active run-action invocation against one or more items. */
 interface RunAction {
@@ -928,7 +946,13 @@ function SingleItemCard({
 
             <ItemMeta item={item} />
 
-            {item.note && <div className={styles.note}>{item.note}</div>}
+            {(item.flagReason || item.note) && (
+                <div className={styles.note}>
+                    {item.flagReason ? flagReasonLabel(item.flagReason) : null}
+                    {item.flagReason && item.note ? ' — ' : null}
+                    {item.note}
+                </div>
+            )}
 
             {isSelfClaim && item.manualTimeId != null ? (
                 <ManualTimeVerdictRow

@@ -91,6 +91,7 @@ export interface AttentionItem {
     vodUrl: string | null;
     verificationStatus: string | null;
     note: string | null; // report/appeal reason, or a short flag detail
+    flagReason: string | null; // raw check/flag reason string when sources includes 'flag'
 }
 
 const SEV_RANK: Record<FlagSeverity, number> = { high: 3, medium: 2, low: 1 };
@@ -146,10 +147,14 @@ export function mergeAttention(
             ? (next.note ?? prev.note)
             : (prev.note ?? next.note);
         prev.vodUrl = prev.vodUrl ?? next.vodUrl;
+        prev.flagReason = prev.flagReason ?? next.flagReason;
     };
 
     for (const q of queue) {
         const src = sourceForFlag(String(q.reason));
+        const flagReason = src === 'flag' ? String(q.reason) : null;
+        const messageDetail =
+            typeof q.details?.message === 'string' ? q.details.message : null;
         fold(q.run.runId, {
             key: `run:${q.run.runId}`,
             sources: [src],
@@ -166,7 +171,11 @@ export function mergeAttention(
             gameTimeMs: q.run.gameTimeMs,
             vodUrl: q.run.vodUrl,
             verificationStatus: q.run.verificationStatus,
-            note: q.reason === 'reported' ? null : shortDetail(q.details),
+            note:
+                q.reason === 'reported'
+                    ? null
+                    : (messageDetail ?? shortDetail(q.details)),
+            flagReason,
         });
     }
     for (const r of reports) {
@@ -187,6 +196,7 @@ export function mergeAttention(
             vodUrl: null,
             verificationStatus: null,
             note: r.reason,
+            flagReason: null,
         });
     }
     for (const m of pendingClaims) {
@@ -209,6 +219,7 @@ export function mergeAttention(
             vodUrl: m.evidenceUrl,
             verificationStatus: m.verificationStatus,
             note: m.reason || null,
+            flagReason: null,
         });
     }
 
