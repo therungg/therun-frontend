@@ -54,10 +54,11 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
     // no attempt data at all, and used to read "0 runners · 0 attempts" under
     // three visible runners. Attempts are gone from the card with it — they
     // describe timer uploads, which is not what this page is about.
-    const { category, entries, boardRunners } = card;
+    const { category, entries, boardRunners, sliceLabel } = card;
     const { wr, podium } = splitCardEntries(entries);
     const boardHref = buildBoardHref(gameSlug, {
         categorySlug: category.name,
+        subcategoryKey: card.subcategoryKey,
     });
 
     return (
@@ -77,10 +78,20 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
                     </div>
                     {/* Full plate width, not tucked beside the emblem — the
                         spec line needs the run to stay on one line. */}
-                    {boardRunners != null && (
+                    {(sliceLabel || boardRunners != null) && (
                         <span className={styles.plaqueStats}>
-                            {formatCount(boardRunners)} runner
-                            {boardRunners === 1 ? '' : 's'}
+                            {sliceLabel && (
+                                <span className={styles.plaqueSlice}>
+                                    {sliceLabel}
+                                </span>
+                            )}
+                            {sliceLabel && boardRunners != null && ' · '}
+                            {boardRunners != null && (
+                                <>
+                                    {formatCount(boardRunners)} runner
+                                    {boardRunners === 1 ? '' : 's'}
+                                </>
+                            )}
                         </span>
                     )}
                 </div>

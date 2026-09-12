@@ -176,6 +176,13 @@
     color: var(--bs-tertiary-color);
 }
 
+// Which board of the category the plaque shows ("Mario · 1P"). Same line as
+// the runner count, one weight up so the board reads before its size.
+.plaqueSlice {
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+}
+
 // ---- Record zone ---------------------------------------------
 // The numeral owns a full line — unobstructed, it can be set nearly
 // twice the title's size, which is what makes the plate read as a record

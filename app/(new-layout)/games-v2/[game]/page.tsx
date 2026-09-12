@@ -161,6 +161,7 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
             featured,
             groups,
             sessionUsername,
+            sp,
         );
         return (
             <>

@@ -8,6 +8,7 @@ import gamePageStyles from '../game-page.module.scss';
 import { GameHero } from '../header/game-hero';
 import { ViewTabs } from '../header/view-tabs';
 import { Sidebar } from '../sidebar/sidebar';
+import { SlicePicker } from '../slice/slice-picker';
 import { SubmitDialogProvider } from '../submit-dialog/submit-dialog-context';
 import { CategoryCard } from './category-card';
 import { CollapsibleSection } from './collapsible-section';
@@ -152,6 +153,10 @@ export function GameOverviewPage({
                                 <ExportAllButton gameSlug={data.game.name} />
                             </div>
                         </div>
+                        <SlicePicker
+                            variables={data.sliceVariables}
+                            selection={data.sliceSelection}
+                        />
                         {data.cards.length === 0 ? (
                             <div className={styles.emptyState}>
                                 <p className={styles.emptyTitle}>
