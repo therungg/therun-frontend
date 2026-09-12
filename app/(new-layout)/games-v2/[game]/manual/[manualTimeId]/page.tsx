@@ -106,6 +106,8 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
                 verifiedBy: null,
                 rejectionReason: null,
                 boardStanding: null,
+                verifiedVia: null,
+                autoVerifyResult: null,
             }}
             history={[]}
             sessionUsername={session.username || null}

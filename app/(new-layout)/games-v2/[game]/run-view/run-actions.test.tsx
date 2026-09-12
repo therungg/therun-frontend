@@ -65,6 +65,8 @@ const baseModel = (over: Partial<RunViewModel> = {}): RunViewModel => ({
     verifiedBy: null,
     rejectionReason: null,
     boardStanding: null,
+    verifiedVia: null,
+    autoVerifyResult: null,
     ...over,
 });
 

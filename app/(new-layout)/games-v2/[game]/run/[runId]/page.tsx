@@ -140,6 +140,8 @@ export default async function RunDetailPage({ params }: PageProps) {
                 verifiedBy: run.verifiedBy ?? null,
                 rejectionReason: run.rejectionReason ?? null,
                 boardStanding,
+                verifiedVia: run.verifiedVia ?? null,
+                autoVerifyResult: run.autoVerifyResult ?? null,
             }}
             history={history}
             sessionUsername={session.username || null}

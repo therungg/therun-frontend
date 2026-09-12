@@ -25,3 +25,37 @@
 .variablesLine {
     max-width: 100%;
 }
+
+// Secondary badge beside the main verification pill — plain, no semantic
+// color of its own (same neutral pill as .rejected).
+.autoVerified {
+    @include board.board-pill;
+}
+
+.autoVerifyBreakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.autoVerifyHeading {
+    font-weight: 600;
+}
+
+.autoVerifyLine {
+    display: flex;
+    align-items: baseline;
+    gap: 0.25rem;
+}
+
+.autoVerifyPass {
+    color: var(--bs-primary);
+}
+
+.autoVerifyFail {
+    color: dt.$accent-amber;
+}
+
+.autoVerifyFooter {
+    margin-top: 0.25rem;
+}

@@ -14,14 +14,23 @@ import type {
     RunOrigin,
     RunOriginRef,
 } from '../../../../../types/leaderboards.types';
-import type { HistoryEvent } from '../../../../../types/moderation.types';
+import type {
+    AutoVerifyResult,
+    HistoryEvent,
+    VerifiedVia,
+} from '../../../../../types/moderation.types';
 import { formatSubcategoryKey } from '../labels';
 import { CountryFlag } from '../leaderboard/country-flag';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
 import { isSameRunner } from '../shared/is-same-runner';
 import { OriginPanel } from './origin-panel';
 import { RunActions } from './run-actions';
-import { VariablesLine, VerificationBadge } from './run-badges';
+import {
+    AutoVerifiedBadge,
+    AutoVerifyBreakdown,
+    VariablesLine,
+    VerificationBadge,
+} from './run-badges';
 import { RunEvidencePanel } from './run-evidence-panel';
 import { RunHistoryList } from './run-history-list';
 import styles from './run-view.module.scss';
@@ -72,6 +81,13 @@ export interface RunViewModel {
     verifiedBy: RunOriginRef | null;
     rejectionReason: string | null;
     boardStanding: RunBoardStanding | null;
+    /** Who produced the run's current verdict; null covers everything that
+     * isn't the auto-verify checks (see docs/frontend-guide-auto-verify.md
+     * §3) — not evidence a human reviewed it. */
+    verifiedVia: VerifiedVia;
+    /** Per-check auto-verify result; set whenever the checks actually ran
+     * (pass or fail), null otherwise. Mod-only display. */
+    autoVerifyResult: AutoVerifyResult | null;
 }
 
 export function RunView({
@@ -206,6 +222,9 @@ export function RunView({
                             <VerificationBadge
                                 status={model.verificationStatus}
                             />
+                            <AutoVerifiedBadge
+                                verifiedVia={model.verifiedVia}
+                            />
                             {isTombstone && (
                                 <span className={styles.notRankedPill}>
                                     Not ranked
@@ -326,6 +345,11 @@ export function RunView({
                 </div>
 
                 <RunHistoryList events={history} />
+                {isMod && model.autoVerifyResult && (
+                    <div className={styles.surface}>
+                        <AutoVerifyBreakdown result={model.autoVerifyResult} />
+                    </div>
+                )}
                 {modPanel}
             </div>
         </div>
