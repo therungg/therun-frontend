@@ -115,6 +115,7 @@ function PolicyControls({
                         </option>
                     ))}
                 </select>
+                <p className="text-muted small mb-0 mt-1">{BACKFILL_NOTE}</p>
             </div>
 
             <div>
@@ -448,7 +449,7 @@ export function AutoVerifyPane({ gameSlug, gameDisplay, categories }: Props) {
         <div className={consoleStyles.surface}>
             <header className={consoleStyles.paneHeader}>
                 <div>
-                    <div className={consoleStyles.paneEyebrow}>Queue</div>
+                    <div className={consoleStyles.paneEyebrow}>Moderation</div>
                     <h2 className={consoleStyles.paneTitle}>Auto-verify</h2>
                 </div>
             </header>
