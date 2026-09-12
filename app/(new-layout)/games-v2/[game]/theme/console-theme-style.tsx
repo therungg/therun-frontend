@@ -23,24 +23,30 @@ export function ConsoleThemeStyle({ theme }: { theme: GameTheme | null }) {
                     __html: buildConsoleThemeCss(theme),
                 }}
             />
-            {theme.backgroundUrl ? (
-                <div className={styles.anchor} aria-hidden>
-                    <div
-                        className={styles.art}
-                        style={
-                            {
-                                // Handed to the stylesheet as a variable because
-                                // the image is painted by a pseudo-element (it is
-                                // the blurred layer, under the scrim). Keep the
-                                // JSON quotes: url("...") is a quoted CSS string,
-                                // so JSON-escaped backslashes/quotes in the URL
-                                // can't break out of it.
-                                '--console-art': `url(${JSON.stringify(theme.backgroundUrl)})`,
-                            } as React.CSSProperties
-                        }
-                    />
-                </div>
-            ) : null}
+            <div className={styles.anchor} aria-hidden>
+                <div
+                    className={styles.art}
+                    style={
+                        {
+                            // Handed to the stylesheet as a variable because
+                            // the image is painted by a pseudo-element (it is
+                            // the blurred layer, under the scrim). Keep the
+                            // JSON quotes: url("...") is a quoted CSS string,
+                            // so JSON-escaped backslashes/quotes in the URL
+                            // can't break out of it.
+                            //
+                            // Rendered even with no image: this element also
+                            // carries the color wash that runs the length of
+                            // the page, which a board with no art needs just
+                            // as much as one with it. `none` simply leaves the
+                            // picture layer empty.
+                            '--console-art': theme.backgroundUrl
+                                ? `url(${JSON.stringify(theme.backgroundUrl)})`
+                                : 'none',
+                        } as React.CSSProperties
+                    }
+                />
+            </div>
         </>
     );
 }

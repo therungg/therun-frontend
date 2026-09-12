@@ -6,15 +6,25 @@
 // content column has no surface of its own), so a fixed backdrop would run
 // table rows over picture detail for the whole page.
 //
-// So the art becomes a band at the top of the console: it scrolls away with the
-// masthead it sits behind, and it is gone before the first table.
+// So the PICTURE becomes a band at the top of the console: it scrolls away with
+// the masthead it sits behind, and it is gone before the first table.
 //
-// And it is blurred. A screenshot cropped to a wide, short band shows an
-// arbitrary slice of itself — one object floating in the top gutter, which
+// The COLOR, though, runs the whole length of the page. A band that carried
+// both left the console washed in the game's color down to a line partway down
+// the page and flatly un-themed below it — on a long console that line reads as
+// the background having stopped. So the band's picture ends where it always
+// did, and a monotonic tint of the accent carries on from there, decaying to
+// the bare canvas at the very bottom. There is no y at which the wash ends,
+// only one at which it has already faded out.
+//
+// And the picture is blurred. A screenshot cropped to a wide, short band shows
+// an arbitrary slice of itself — one object floating in the top gutter, which
 // reads as a rendering accident rather than a header image. Out of focus it
 // stops being a picture and becomes what the console actually wants from it:
 // this game's light and color, above this game's console.
 
+// Height 0 in flow — it never displaces the masthead it sits behind, it only
+// gives `.art` something to position against.
 .anchor {
     position: relative;
     height: 0;
@@ -27,13 +37,42 @@
     // up behind it instead of stopping at its lower edge. --topbar-h mirrors
     // Topbar.module.scss; 1.5rem is the container's own top margin (`my-4`).
     --topbar-h: 48px;
+    // How far down the picture (and its scrim) reach. Below this line only the
+    // color wash continues.
+    --band-h: calc(20rem + var(--topbar-h));
+    // The exact color the wash has reached at the bottom of the picture band.
+    // The scrim ends on this same color, so picture and wash meet with no seam.
+    --wash-mid: color-mix(
+        in srgb,
+        var(--board-accent, transparent) 4%,
+        var(--console-canvas, #0d0f0d)
+    );
     top: calc(-1 * (var(--topbar-h) + 1.5rem));
     left: 0;
     right: 0;
-    height: calc(20rem + var(--topbar-h));
+    // Far past any fold. The wash's last stop is the bare canvas, so whatever
+    // lies below this element is already the exact color the gradient ends on
+    // — the element's own bottom edge can never show. Sized in vh rather than
+    // stretched to the container so nothing has to become a containing block.
+    height: 300vh;
     z-index: -1;
     overflow: hidden;
     pointer-events: none;
+    // The continuing wash: strongest behind the masthead, already down to
+    // --wash-mid where the picture ends, bare canvas by the bottom of the
+    // page. Monotonic — a gradient that rose anywhere would read as a second
+    // band.
+    background: linear-gradient(
+        180deg,
+        color-mix(
+                in srgb,
+                var(--board-accent, transparent) 9%,
+                var(--console-canvas, #0d0f0d)
+            )
+            0%,
+        var(--wash-mid) var(--band-h),
+        var(--console-canvas, #0d0f0d) 100%
+    );
     // The band has no side edges: it dissolves into the canvas left and right
     // the same way it does downward.
     $edges: linear-gradient(
@@ -48,12 +87,16 @@
 }
 
 // The image itself, inset past every edge so the blur has material to smear
-// and never shows a soft border of its own. The URL arrives as --console-art
+// and never shows a soft border of its own. It is clipped to the band — the
+// wash below it is color only, never picture. The URL arrives as --console-art
 // (set inline by ConsoleThemeStyle), so nothing user-typed reaches this file.
 .art::before {
     content: '';
     position: absolute;
-    inset: -4rem;
+    top: -4rem;
+    left: -4rem;
+    right: -4rem;
+    height: calc(var(--band-h) + 4rem);
     background-image: var(--console-art);
     background-size: cover;
     background-position: center;
@@ -64,18 +107,21 @@
 // the nav sit ON this band, and their text is plain site ink — it has to read
 // over a bright patch of somebody's screenshot.
 //
-// It fades into exactly the canvas it sits on: --console-canvas is the same
-// tinted canvas color the page gradient ends at (see theme-css.ts), so the band
-// has no visible bottom edge.
+// Its last stop is --wash-mid, which is exactly what the wash underneath has
+// reached at that same y, so the picture is fully covered by the time the band
+// ends and the two layers meet on one color.
 .art::after {
     content: '';
     position: absolute;
-    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--band-h);
     background: linear-gradient(
         180deg,
         color-mix(in srgb, var(--console-canvas, #0d0f0d) 60%, transparent) 0%,
         color-mix(in srgb, var(--console-canvas, #0d0f0d) 86%, transparent) 45%,
-        var(--console-canvas, #0d0f0d) 100%
+        var(--wash-mid) 100%
     );
 }
 
@@ -87,6 +133,6 @@
 
 @media (max-width: 768px) {
     .art {
-        height: calc(14rem + var(--topbar-h));
+        --band-h: calc(14rem + var(--topbar-h));
     }
 }

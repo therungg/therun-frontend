@@ -333,8 +333,10 @@ export function deriveConsoleThemeVars(
         '--board-recess-bg': tint(chrome.recess),
         '--board-recess-strong-bg': tint(chrome.recessStrong),
         '--site-canvas-bg': canvasHex,
-        // The art scrim's end stop, so the background art fades into exactly
-        // the canvas it sits on (see console-theme.module.scss).
+        // The base the console's background layer is built on: the art scrim
+        // fades onto it, and the color wash that runs the length of the page
+        // decays back to it (see console-theme.module.scss). Same value as the
+        // canvas itself, so neither layer can show an edge against the page.
         '--console-canvas': canvasHex,
         '--board-accent': accentHex,
         '--board-accent-soft': `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.08)`,
