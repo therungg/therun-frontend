@@ -13,6 +13,8 @@ export interface ToggleSection {
 
 interface Props {
     categories: StandingsCategory[];
+    /** Entry count to show per category (indexed like categories); null hides the count. */
+    counts: (number | null)[];
     sections: ToggleSection[];
     /** Indices into `categories`. */
     selected: number[];
@@ -32,6 +34,7 @@ interface Props {
  */
 export function CategoryToggles({
     categories,
+    counts,
     sections,
     selected,
     onToggle,
@@ -79,9 +82,11 @@ export function CategoryToggles({
                                         onClick={() => onToggle(i)}
                                     >
                                         {categories[i].display}
-                                        <span className={styles.pillCount}>
-                                            {categories[i].entryCount}
-                                        </span>
+                                        {counts[i] != null && (
+                                            <span className={styles.pillCount}>
+                                                {counts[i]}
+                                            </span>
+                                        )}
                                     </button>
                                 ))}
                                 {!flat && section.indices.length > 1 && (

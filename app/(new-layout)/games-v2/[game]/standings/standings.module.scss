@@ -320,6 +320,23 @@ $col-score: 7.5rem;
     color: var(--bs-tertiary-color);
 }
 
+// Which board of the category this column is ("Mario · 1P"), or why it is
+// empty. Under the name, quiet — the category is the subject.
+.sliceTag {
+    display: block;
+    font-size: dt.$font-size-2xs;
+    font-weight: 400;
+    color: var(--bs-tertiary-color);
+    white-space: nowrap;
+}
+
+// A counted category with no board for the picked combination: present so
+// the category doesn't vanish when the picker moves, dimmed so it reads as
+// empty rather than broken.
+.thPlaceholder {
+    opacity: 0.55;
+}
+
 .tdRank {
     @include board.board-rank;
 }

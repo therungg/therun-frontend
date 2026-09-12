@@ -23,7 +23,7 @@ export interface ScoredRunner {
     coverage: number;
     /** Highest single-cell points across the selected categories; the second tie-break. */
     best: number;
-    /** Indexed by position in the SELECTED category list, not the full one. */
+    /** Indexed by position in the SELECTED column list; null for a column the runner has no run on, or a placeholder column. */
     cells: (ScoredCell | null)[];
 }
 
@@ -117,7 +117,7 @@ export function computeStandings(
     selected: number[],
     limit: number,
 ): ScoredRunner[] {
-    if (selected.length === 0 || limit <= 0) return [];
+    if (selected.every((c) => c < 0) || limit <= 0) return [];
 
     const n = matrix.runners.length;
     const rows: ScoredRunner[] = [];
@@ -129,6 +129,13 @@ export function computeStandings(
         const cells: (ScoredCell | null)[] = [];
 
         for (const c of selected) {
+            // A placeholder column (no board for the picked combination)
+            // keeps its slot so cells stay aligned with the columns, but
+            // pays nothing.
+            if (c < 0) {
+                cells.push(null);
+                continue;
+            }
             const p = matrix.pts[c][r];
             if (p > 0) {
                 sum += p;
