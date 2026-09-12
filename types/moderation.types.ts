@@ -286,11 +286,11 @@ export type PolicyType =
 
 export type AutoVerifyPreset = 'off' | 'lenient' | 'standard' | 'strict';
 
-export interface AutoVerifyPolicyValue {
+export type AutoVerifyPolicyValue = {
     preset: AutoVerifyPreset;
     neverTopN: number; // 0-1000; 0 disables the guard
     requireLive: boolean;
-}
+};
 
 // Verdict detail stored on a run (finished_runs.auto_verify_result).
 export type AutoVerifyCheckName =
