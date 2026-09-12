@@ -22,7 +22,7 @@ import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { FlagSeverity } from '../../../../../../../types/moderation.types';
-import { formatSubcategoryKey, humanizeWord } from '../../../labels';
+import { formatSubcategoryKey } from '../../../labels';
 import type {
     BanScope,
     ModVerb,
@@ -123,8 +123,8 @@ const VERIFICATION_LABEL: Record<string, string> = {
 };
 
 /** Auto-verify's failed-check flag reasons (run_flags.reason), labeled for
- * the triage queue. Any other flag reason (including the pre-existing
- * manual/report ones) falls back to humanizeWord — see flagReasonLabel. */
+ * the triage queue. The only caller is guarded by isAutoVerifyFlagReason, so
+ * every reason passed to flagReasonLabel is a key of this map. */
 const AUTO_VERIFY_FLAG_LABEL: Record<string, string> = {
     consistency: 'Split data inconsistent',
     'live-match': 'Live timing mismatch',
@@ -137,7 +137,7 @@ const AUTO_VERIFY_FLAG_LABEL: Record<string, string> = {
 };
 
 function flagReasonLabel(reason: string): string {
-    return AUTO_VERIFY_FLAG_LABEL[reason] ?? humanizeWord(reason);
+    return AUTO_VERIFY_FLAG_LABEL[reason];
 }
 
 /** Only auto-verify's own failed-check reasons get a triage label — the
