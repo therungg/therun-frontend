@@ -200,6 +200,14 @@ export type FlagReason =
     | 'fresh_account_top_n'
     | 'pending_self_claim'
     | 'appeal'
+    | 'consistency'
+    | 'live-match'
+    | 'ambiguous_live_match'
+    | 'no_live_match'
+    | 'gold-beat'
+    | 'pb-jump'
+    | 'prior-runs'
+    | 'top-n'
     | (string & {});
 export type SuggestedAction =
     | 'reject'
@@ -220,6 +228,9 @@ export interface QueueItemRun {
     vodUrl: string | null;
     verificationStatus: string;
     endedAt: string;
+    verifiedVia?: VerifiedVia;
+    verifiedAt?: string | null;
+    autoVerifyResult?: AutoVerifyResult | null;
 }
 
 export interface QueueItem {
@@ -270,7 +281,45 @@ export type PolicyType =
     | 'max_time'
     | 'require_video_top_n'
     | 'auto_flag_pb_jump_pct'
-    | 'auto_flag_faster_than_wr_pct';
+    | 'auto_flag_faster_than_wr_pct'
+    | 'auto_verify';
+
+export type AutoVerifyPreset = 'off' | 'lenient' | 'standard' | 'strict';
+
+export interface AutoVerifyPolicyValue {
+    preset: AutoVerifyPreset;
+    neverTopN: number; // 0-1000; 0 disables the guard
+    requireLive: boolean;
+}
+
+// Verdict detail stored on a run (finished_runs.auto_verify_result).
+export type AutoVerifyCheckName =
+    | 'consistency'
+    | 'live-match'
+    | 'gold-beat'
+    | 'pb-jump'
+    | 'prior-runs'
+    | 'top-n';
+
+export interface AutoVerifyCheckResult {
+    pass: boolean;
+    reason?: string;
+    flagReason?: string;
+    details: Record<string, unknown>;
+}
+
+export type AutoVerifyOutcome = 'pass' | 'fail' | 'awaiting_live';
+
+export interface AutoVerifyResult {
+    preset: string;
+    presetVersion: number;
+    evaluatedAt: string;
+    outcome: AutoVerifyOutcome;
+    snapshotId: number | null;
+    checks: Partial<Record<AutoVerifyCheckName, AutoVerifyCheckResult>>;
+}
+
+export type VerifiedVia = 'mod' | 'grant' | 'auto' | 'self' | null;
 
 // min_time policy value, as stored/validated by the backend.
 export interface MinTimePolicyValue {
@@ -887,6 +936,9 @@ export interface ModQueueItem {
     createdAt: string;
     ineligibleReason: string | null;
     leaderboardEligible: boolean;
+    verifiedVia?: VerifiedVia;
+    verifiedAt?: string | null;
+    autoVerifyResult?: AutoVerifyResult | null;
 }
 
 export interface ModQueuePage {

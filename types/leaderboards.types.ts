@@ -1,3 +1,5 @@
+import type { AutoVerifyResult, VerifiedVia } from './moderation.types';
+
 export interface ResolvedGame {
     id: number;
     name: string;
@@ -340,6 +342,8 @@ export interface RunDetail {
     /** The runner's timer stats for this category; null for imported runs,
      * set times, guest runs and redacted runs. Absent on older deploys. */
     timerStats?: RunTimerStats | null;
+    verifiedVia?: VerifiedVia;
+    autoVerifyResult?: AutoVerifyResult | null;
 }
 
 export interface RunTimerStats {
