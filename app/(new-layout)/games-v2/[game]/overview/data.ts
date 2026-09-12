@@ -6,8 +6,17 @@ import { getQuickStats, getRecentPbs } from '~src/lib/games-v1';
 import {
     getLeaderboard,
     getUserRankingsByName,
+    getVariables,
 } from '~src/lib/leaderboards-v1';
 import { splitLevelBoards } from '~src/lib/levels/display';
+import {
+    readSliceSelection,
+    type SliceSelection,
+    sliceLabel,
+    sliceValuesForCategory,
+    subcategoryKeyOf,
+    unionSubcategoryVariables,
+} from '~src/lib/variables/slice-selection';
 import type {
     LeaderboardEntry,
     QuickStats,
@@ -15,13 +24,16 @@ import type {
     ResolvedCategory,
     ResolvedGame,
     ResolvedGroup,
+    StandingsVariable,
     UserRanking,
+    VariableRow,
 } from '../../../../../types/leaderboards.types';
 import { isoDaysAgo, toSparklineSeries } from '../header/sparkline-data';
 import {
     filterPbsToFeatured,
     RECENT_PB_FETCH_LIMIT,
 } from '../sidebar/featured-pbs';
+import type { GamePageSearchParams } from '../types';
 
 export interface OverviewCardData {
     category: ResolvedCategory;
@@ -35,6 +47,10 @@ export interface OverviewCardData {
      * says nothing rather than claiming zero.
      */
     boardRunners: number | null;
+    /** "Mario · 1P" — which board of the category the card shows; null when it has no subcategories. */
+    sliceLabel: string | null;
+    /** The board's `name=value|…` key for the card's link; "" when none. */
+    subcategoryKey: string;
 }
 
 export interface GameOverviewData {
@@ -48,21 +64,26 @@ export interface GameOverviewData {
     /** Zero-filled daily playtime, last 90 days — the hero's sparkline. */
     activitySparkline: number[];
     sessionUsername: string | null;
+    /** The subcategory picker's definition (union over the cards' categories); [] = no picker. */
+    sliceVariables: StandingsVariable[];
+    /** The picker's state from the URL (normalized, validated). */
+    sliceSelection: SliceSelection;
 }
 
-// The card's record is the top of the category's DEFAULT board — the exact
-// board clicking the card lands on (no subcategory values, not combined,
-// unverified included), so the numbers on the card always match the top
-// of the table behind it. One request per category, top 3 for the podium.
+// The card's record is the top of the board the picker names for this
+// category — the exact board clicking the card lands on (not combined,
+// unverified included), so the numbers on the card always match the top of
+// the table behind it. One request per category, top 3 for the podium.
 async function fetchCardEntries(
     gameSlug: string,
     category: ResolvedCategory,
+    subcategoryValues: Record<string, string>,
 ): Promise<{ entries: LeaderboardEntry[]; boardRunners: number | null }> {
     try {
         const res = await getLeaderboard({
             gameSlug,
             categorySlug: category.name,
-            subcategoryValues: {},
+            subcategoryValues,
             combined: false,
             verified: false,
             page: 1,
@@ -106,9 +127,52 @@ export async function loadGameOverviewData(
     featured: ResolvedCategory[],
     groups: ResolvedGroup[],
     sessionUsername: string | null,
+    sp: GamePageSearchParams,
 ): Promise<GameOverviewData> {
     const cardCategories = overviewCardCategories(featured, groups);
     const today = isoDaysAgo(0);
+
+    // These five don't depend on the variable defs below — start them
+    // immediately so a cold defs cache doesn't hold up the rest of the page.
+    const quickStatsPromise = getQuickStats(game.id).catch(() => ({
+        totalRunTime: 0,
+        totalAttemptCount: 0,
+        totalFinishedAttemptCount: 0,
+        totalPbs: 0,
+        uniqueRunners: 0,
+    }));
+    const gameMetaPromise = getGameMetadata(game.id).catch(
+        () => EMPTY_GAME_METADATA,
+    );
+    const recentPbsPromise = getRecentPbs(game.id, RECENT_PB_FETCH_LIMIT, {
+        featuredOnly: true,
+    }).catch(() => []);
+    const rawYourRunsPromise = sessionUsername
+        ? getUserRankingsByName(sessionUsername).catch(() => [])
+        : Promise.resolve([]);
+    const activity90Promise = getGameActivityTimeseries(
+        game.id,
+        isoDaysAgo(90),
+        today,
+    ).catch(() => []);
+
+    // Variable definitions: the picker's union and each card's board depend
+    // on them. Cached for hours per category, so this is cheap after the
+    // first view; a failed fetch means "no subcategories" for that card.
+    const defsByCategory = await Promise.all(
+        cardCategories.map(async (c) => ({
+            categoryId: c.id,
+            defs: await getVariables(game.name, c.name)
+                .then((r) => r.variables as VariableRow[])
+                .catch(() => [] as VariableRow[]),
+        })),
+    );
+    const sliceVariables = unionSubcategoryVariables(defsByCategory);
+    const sliceSelection = readSliceSelection(sp, sliceVariables);
+    const cardSlices = defsByCategory.map(({ defs }) =>
+        sliceValuesForCategory(defs, sliceSelection, sliceVariables),
+    );
+
     const [
         quickStats,
         gameMeta,
@@ -117,24 +181,16 @@ export async function loadGameOverviewData(
         cardEntries,
         activity90,
     ] = await Promise.all([
-        getQuickStats(game.id).catch(() => ({
-            totalRunTime: 0,
-            totalAttemptCount: 0,
-            totalFinishedAttemptCount: 0,
-            totalPbs: 0,
-            uniqueRunners: 0,
-        })),
-        getGameMetadata(game.id).catch(() => EMPTY_GAME_METADATA),
-        getRecentPbs(game.id, RECENT_PB_FETCH_LIMIT, {
-            featuredOnly: true,
-        }).catch(() => []),
-        sessionUsername
-            ? getUserRankingsByName(sessionUsername).catch(() => [])
-            : Promise.resolve([]),
-        Promise.all(cardCategories.map((c) => fetchCardEntries(game.name, c))),
-        getGameActivityTimeseries(game.id, isoDaysAgo(90), today).catch(
-            () => [],
+        quickStatsPromise,
+        gameMetaPromise,
+        recentPbsPromise,
+        rawYourRunsPromise,
+        Promise.all(
+            cardCategories.map((c, i) =>
+                fetchCardEntries(game.name, c, cardSlices[i]),
+            ),
         ),
+        activity90Promise,
     ]);
 
     return {
@@ -146,11 +202,15 @@ export async function loadGameOverviewData(
             category,
             entries: cardEntries[i].entries,
             boardRunners: cardEntries[i].boardRunners,
+            sliceLabel: sliceLabel(cardSlices[i], sliceVariables),
+            subcategoryKey: subcategoryKeyOf(cardSlices[i], sliceVariables),
         })),
         // The sidebar must not surface PBs from boards the wall can't link to.
         recentPbs: filterPbsToFeatured(recentPbs, cardCategories),
         yourRuns: rawYourRuns.filter((r) => r.gameSlug === game.name),
         activitySparkline: toSparklineSeries(activity90, 90),
         sessionUsername,
+        sliceVariables,
+        sliceSelection,
     };
 }

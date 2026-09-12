@@ -11,11 +11,22 @@ import { RunnerAvatar } from '../leaderboard/runner-avatar';
 import type { ScoredRunner } from './scoring';
 import styles from './standings.module.scss';
 
+export interface StandingsColumn {
+    /** Representative board for the category (first with its id) — carries id/name/display/timing. */
+    category: StandingsCategory;
+    /** Index into the payload's boards, or null when no board holds runs for the picked combination. */
+    boardIdx: number | null;
+    /** "Mario · 1P" or null. */
+    sliceLabel: string | null;
+    /** Link key for buildBoardHref; "" when no subcategories. */
+    subcategoryKey: string;
+}
+
 interface Props {
     gameSlug: string;
     rows: ScoredRunner[];
-    /** The selected categories, in the same order as each row's cells. */
-    columns: StandingsCategory[];
+    /** The counted columns, in the same order as each row's cells. */
+    columns: StandingsColumn[];
 }
 
 const RANK_CLASS: Record<number, string> = {
@@ -104,26 +115,42 @@ export function StandingsTable({ gameSlug, rows, columns }: Props) {
                             <th className={styles.thScore} scope="col">
                                 Points
                             </th>
-                            {columns.map((category) => (
+                            {columns.map((col) => (
                                 <th
-                                    key={category.id}
-                                    className={styles.thCategory}
+                                    key={`${col.category.id}:${col.subcategoryKey}`}
+                                    className={`${styles.thCategory} ${
+                                        col.boardIdx === null
+                                            ? styles.thPlaceholder
+                                            : ''
+                                    }`}
                                     scope="col"
                                     data-col
                                 >
                                     <Link
                                         href={buildBoardHref(gameSlug, {
-                                            categorySlug: category.name,
+                                            categorySlug: col.category.name,
+                                            subcategoryKey: col.subcategoryKey,
                                         })}
                                         className={styles.thLink}
                                     >
-                                        {category.display}
+                                        {col.category.display}
                                     </Link>
-                                    {category.timing === 'gt' && (
+                                    {col.category.timing === 'gt' && (
                                         <span className={styles.timingTag}>
-                                            {category.gameTimeLabel === 'lrt'
+                                            {col.category.gameTimeLabel ===
+                                            'lrt'
                                                 ? 'LRT'
                                                 : 'IGT'}
+                                        </span>
+                                    )}
+                                    {col.sliceLabel && (
+                                        <span className={styles.sliceTag}>
+                                            {col.sliceLabel}
+                                        </span>
+                                    )}
+                                    {col.boardIdx === null && (
+                                        <span className={styles.sliceTag}>
+                                            No runs on this board
                                         </span>
                                     )}
                                 </th>
@@ -198,7 +225,7 @@ export function StandingsTable({ gameSlug, rows, columns }: Props) {
                                     </td>
                                     {row.cells.map((cell, c) => (
                                         <td
-                                            key={columns[c].id}
+                                            key={`${columns[c].category.id}:${columns[c].subcategoryKey}`}
                                             className={styles.tdCell}
                                         >
                                             {cell ? (
@@ -212,7 +239,7 @@ export function StandingsTable({ gameSlug, rows, columns }: Props) {
                                                                 cell.rank
                                                             ] ?? ''
                                                         }`}
-                                                        title={`#${cell.rank} of ${columns[c].entryCount.toLocaleString()} · ${titleTime(cell.timeMs)} · ${ptsText(cell.pts)} points`}
+                                                        title={`#${cell.rank} of ${columns[c].category.entryCount.toLocaleString()} · ${titleTime(cell.timeMs)} · ${ptsText(cell.pts)} points`}
                                                     >
                                                         #{cell.rank}
                                                     </span>
@@ -236,7 +263,7 @@ export function StandingsTable({ gameSlug, rows, columns }: Props) {
                                                                 of{' '}
                                                                 {columns[
                                                                     c
-                                                                ].entryCount.toLocaleString()}
+                                                                ].category.entryCount.toLocaleString()}
                                                             </span>
                                                         </span>
                                                         <span

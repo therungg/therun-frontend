@@ -451,6 +451,14 @@ export interface StandingsCategory {
     /** Fastest time on the board; the denominator for this column's pct. */
     wrTimeMs: number;
     entryCount: number;
+    /**
+     * Normalized subcategory values identifying this board within its
+     * category; `{}` when the category has no subcategory variables. Several
+     * columns share one `id` — a column is a board, not a category. Optional
+     * so a payload from an older backend deploy still types; treat absent as
+     * `{}`.
+     */
+    subcategory?: Record<string, string>;
 }
 
 export interface StandingsRunner {
@@ -459,6 +467,29 @@ export interface StandingsRunner {
     isGuest: boolean;
     picture: string | null;
     country: string | null;
+}
+
+export interface StandingsVariableValue {
+    /** Normalized — what `subcategory` and the URL carry. */
+    value: string;
+    /** Canonical display form for the picker. */
+    display: string;
+}
+
+/**
+ * One subcategory variable as the picker sees it: the union over the game's
+ * featured categories by key. Name, value order and `defaultValue` come from
+ * the first category carrying the key; `defaultsByCategory` keeps each
+ * category's own default so a category that disagrees falls back to its own.
+ */
+export interface StandingsVariable {
+    key: string;
+    name: string;
+    values: StandingsVariableValue[];
+    defaultValue: string | null;
+    categoryIds: number[];
+    /** categoryId (string key) -> normalized default; absent when none. */
+    defaultsByCategory: Record<string, string>;
 }
 
 /** [categoryIndex, runnerIndex, rank, timeMs] */
@@ -471,6 +502,8 @@ export interface GameStandings {
     cells: StandingsCell[];
     /** Set when the backend's 5000-runner guard fired. */
     truncated: boolean;
+    /** The subcategory picker's definition. Absent from an older backend; treat as `[]`. */
+    variables?: StandingsVariable[];
 }
 
 /**
