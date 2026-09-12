@@ -3,8 +3,8 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
 import {
-    pickBoardIndex,
     readSliceSelection,
+    resolveBoard,
     sliceLabel,
     subcategoryKeyOf,
 } from '~src/lib/variables/slice-selection';
@@ -137,17 +137,13 @@ export function StandingsView({ gameSlug, data, sections }: Props) {
         [searchParams, variables],
     );
 
-    // The picked board per category (indexed like categoryList), or null
-    // when no board holds runs for the picked combination.
-    const boardIdxByCategory = useMemo(
+    // The combination each category resolves to (indexed like categoryList)
+    // and the board holding it, or index null when no board holds runs for
+    // that combination.
+    const resolvedByCategory = useMemo(
         () =>
             categoryList.map((c) =>
-                pickBoardIndex(
-                    data.categories,
-                    c.id,
-                    sliceSelection,
-                    variables,
-                ),
+                resolveBoard(data.categories, c.id, sliceSelection, variables),
             ),
         [categoryList, data.categories, sliceSelection, variables],
     );
@@ -155,34 +151,40 @@ export function StandingsView({ gameSlug, data, sections }: Props) {
     // Pill counts follow the picked board, not the representative one.
     const counts = useMemo(
         () =>
-            boardIdxByCategory.map((idx) =>
-                idx === null ? null : data.categories[idx].entryCount,
+            resolvedByCategory.map(({ index }) =>
+                index === null ? null : data.categories[index].entryCount,
             ),
-        [boardIdxByCategory, data.categories],
+        [resolvedByCategory, data.categories],
     );
 
     // One column per counted category: the board the picker names, or a
     // placeholder when no board holds runs for that combination — the
-    // category must not vanish just because the picker moved.
+    // category must not vanish just because the picker moved. Label and link
+    // come from the resolved combination either way, so a placeholder still
+    // names and opens the (empty) board it stands for.
     const columns = useMemo<StandingsColumn[]>(
         () =>
             selected.map((ci) => {
                 const category = categoryList[ci];
-                const boardIdx = boardIdxByCategory[ci];
+                const resolved = resolvedByCategory[ci];
                 const board =
-                    boardIdx === null ? null : data.categories[boardIdx];
-                const sub = board?.subcategory ?? {};
+                    resolved.index === null
+                        ? null
+                        : data.categories[resolved.index];
                 return {
                     category: board ?? category,
-                    boardIdx,
-                    sliceLabel: board ? sliceLabel(sub, variables) : null,
-                    subcategoryKey: subcategoryKeyOf(sub, variables),
+                    boardIdx: resolved.index,
+                    sliceLabel: sliceLabel(resolved.values, variables),
+                    subcategoryKey: subcategoryKeyOf(
+                        resolved.values,
+                        variables,
+                    ),
                 };
             }),
         [
             selected,
             categoryList,
-            boardIdxByCategory,
+            resolvedByCategory,
             data.categories,
             variables,
         ],
