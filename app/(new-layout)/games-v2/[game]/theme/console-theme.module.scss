@@ -90,6 +90,15 @@
 // and never shows a soft border of its own. It is clipped to the band — the
 // wash below it is color only, never picture. The URL arrives as --console-art
 // (set inline by ConsoleThemeStyle), so nothing user-typed reaches this file.
+//
+// clip-path is what holds the picture to the band. A blur paints roughly three
+// times its radius PAST the box, and `.art` is now page-length, so its
+// overflow no longer cuts that halo off at the band the way a band-height
+// `.art` used to — the smear escaped below the scrim and showed up as a green
+// smudge in the gutter between the nav and the first panel, where no panel
+// covers the backdrop. Clipping applies after filtering, so this removes the
+// halo; the image's own soft bottom edge stays hidden because the scrim is
+// fully opaque by the time it gets there.
 .art::before {
     content: '';
     position: absolute;
@@ -101,6 +110,7 @@
     background-size: cover;
     background-position: center;
     filter: blur(14px) saturate(1.15);
+    clip-path: inset(0);
 }
 
 // The scrim never drops below 60% canvas: the console masthead and the top of
