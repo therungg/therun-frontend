@@ -261,6 +261,8 @@ export function GamePage({
                                                         .country ?? undefined,
                                                 pageSize:
                                                     data.activeFilters.pageSize,
+                                                sort: data.activeFilters.sort,
+                                                dir: data.activeFilters.dir,
                                             }}
                                             sessionUsername={
                                                 data.sessionUsername

@@ -40,6 +40,12 @@ export interface LeaderboardQuery {
     country?: string;
     page?: number;
     pageSize?: number;
+    /** Sort the board by run date instead of by time. Default 'time'. */
+    sort?: 'time' | 'date';
+    /** Sort direction. Default 'asc'. For a date sort, callers pass 'desc'
+     * explicitly to get newest-first — the backend's own default direction
+     * is 'asc' regardless of sort field. */
+    dir?: 'asc' | 'desc';
 }
 
 function canonicalSubcategoryFragment(
@@ -73,6 +79,8 @@ function buildLeaderboardQS(q: LeaderboardQuery): string {
     if (q.country) sp.set('country', q.country);
     if (q.page) sp.set('page', String(q.page));
     if (q.pageSize) sp.set('pageSize', String(q.pageSize));
+    if (q.sort && q.sort !== 'time') sp.set('sort', q.sort);
+    if (q.dir && q.dir !== 'asc') sp.set('dir', q.dir);
     return sp.toString();
 }
 
@@ -98,7 +106,7 @@ export async function getLeaderboard(
     // Writers bust the coarse tag for read-your-writes across all of a
     // category's views (default selection, partial selections, combined).
     cacheTag(
-        `lb:${q.gameSlug}:${q.categorySlug}:${canonicalSubcategoryFragment(q.subcategoryValues, q.combined)}:${q.timing}:${q.verified ? 'v' : 'a'}`,
+        `lb:${q.gameSlug}:${q.categorySlug}:${canonicalSubcategoryFragment(q.subcategoryValues, q.combined)}:${q.timing}:${q.verified ? 'v' : 'a'}:${q.sort ?? 'time'}:${q.dir ?? 'asc'}`,
         `lb:${q.gameSlug}:${q.categorySlug}`,
     );
 

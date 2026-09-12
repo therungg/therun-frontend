@@ -52,6 +52,22 @@ interface Props {
     /** category.rtaFallback — a GT-board entry with no game time is ranked by
      * its real time and gets an RTA marker in the ranked column. */
     rtaFallback?: boolean;
+    /**
+     * Board order. `entry.rank` always means "rank by time" — sorting by
+     * date only changes which rows are on screen and in what order, never
+     * what the `#` column says, so a date-sorted board legitimately reads
+     * #1, #47, #3. Omit both (along with `onSort`) to leave the Date header
+     * as plain inert text — board-curation.tsx renders this same table with
+     * no sort control of its own.
+     */
+    sort?: 'time' | 'date';
+    dir?: 'asc' | 'desc';
+    /** Present only when the host wants a sort control on the Date header;
+     * fires on click, cycling newest-first -> oldest-first -> default time
+     * order. The host owns the actual sort state. */
+    onSort?: () => void;
+    /** Disables the Date header's sort button while a sort fetch is in flight. */
+    sortPending?: boolean;
     /** Bulk selection — checkbox column only renders when `canManage`.
      * Keys are `r:<runId>` / `m:<manualTimeId>` (see selection.ts). */
     selectedKeys?: Set<BoardSelectionKey>;
@@ -85,6 +101,10 @@ export function LeaderboardTable({
     subcategoryKey,
     subcategoryDefKeys,
     rtaFallback = false,
+    sort,
+    dir,
+    onSort,
+    sortPending = false,
     selectedKeys,
     onToggleSelect,
     onToggleAllVisible,
@@ -174,10 +194,29 @@ export function LeaderboardTable({
     const hidden = (key: TimingKey) =>
         timingColumnHidden(key, { hideRealTime, hideGameTime }) ||
         (key === secondary.key && secondaryAllNull);
-    const displayRanks = computeDisplayRanks(
+    // computeDisplayRanks marks a row tied only with its NEIGHBOR in the
+    // loaded window — a sound read when the window is time-ordered, since a
+    // tie group is then contiguous. Under a date sort it isn't: two rows
+    // that share a time can land anywhere apart, so a genuine tie's partner
+    // is usually not adjacent, and the "=" that does survive shows up as an
+    // orphan next to rows with unrelated dates — reading as a stray, bogus
+    // marker rather than the tie band it's supposed to be. Rather than
+    // rewrite the rank/tie logic itself (display-rank.ts stays
+    // adjacency-based for the default view), strip the "=" decoration here
+    // whenever the board isn't in its default time order; each row still
+    // shows its own real time rank.
+    const rawDisplayRanks = computeDisplayRanks(
         leaderboard.entries,
         primaryTiming,
     );
+    const displayRanks =
+        sort === 'date'
+            ? rawDisplayRanks.map((r) => ({
+                  ...r,
+                  tied: false,
+                  label: `${r.rank}`,
+              }))
+            : rawDisplayRanks;
     const standings = computeRunStandings(
         leaderboard.entries,
         displayRanks,
@@ -257,8 +296,42 @@ export function LeaderboardTable({
                         ))}
                         <th
                             className={`${styles.when} ${styles.secondaryHeader}`}
+                            aria-sort={
+                                onSort
+                                    ? sort === 'date'
+                                        ? dir === 'desc'
+                                            ? 'descending'
+                                            : 'ascending'
+                                        : 'none'
+                                    : undefined
+                            }
                         >
-                            Date
+                            {onSort ? (
+                                <button
+                                    type="button"
+                                    className={styles.sortHeaderBtn}
+                                    onClick={onSort}
+                                    disabled={sortPending}
+                                    aria-label={
+                                        sort === 'date'
+                                            ? `Sorted by date, ${
+                                                  dir === 'desc'
+                                                      ? 'newest first'
+                                                      : 'oldest first'
+                                              }. Activate to change sort.`
+                                            : 'Sort by date'
+                                    }
+                                >
+                                    Date
+                                    {sort === 'date' && (
+                                        <span aria-hidden="true">
+                                            {dir === 'desc' ? ' ↓' : ' ↑'}
+                                        </span>
+                                    )}
+                                </button>
+                            ) : (
+                                'Date'
+                            )}
                         </th>
                         <th aria-label="Video, status and actions" />
                     </tr>

@@ -16,6 +16,11 @@ import {
     fetchLeaderboardPage,
     findRunnerPage,
 } from '../actions/fetch-page.action';
+import {
+    type BoardSort,
+    type BoardSortDir,
+    DEFAULT_BOARD_SORT,
+} from '../filters/board-sort';
 import type { BuiltinFilterState } from '../filters/builtin-params';
 import { FiltersPopover } from '../filters/filters-popover';
 import type {
@@ -170,6 +175,25 @@ export function LeaderboardPager({
     // bookkeeping every control below derives from. Navigation swaps it
     // wholesale, so totals stay honest if the board changes size under us.
     const [board, setBoard] = useState<LeaderboardResponse>(initial);
+    // Board order. Owned here (not derived from `query`) so a click on the
+    // Date header can refetch without waiting on a server round trip through
+    // the URL. Seeded from `query`, which the page itself derived from the
+    // URL on this render.
+    const [sortState, setSortState] = useState<{
+        sort: BoardSort;
+        dir: BoardSortDir;
+    }>({
+        sort: query.sort ?? DEFAULT_BOARD_SORT.sort,
+        dir: query.dir ?? DEFAULT_BOARD_SORT.dir,
+    });
+    // The query every fetch actually uses — `query` itself is a prop and
+    // stays pinned to what the server rendered, so an in-session sort toggle
+    // has to be layered on top rather than mutating it.
+    const effectiveQuery = {
+        ...query,
+        sort: sortState.sort,
+        dir: sortState.dir,
+    };
     // Board's top edge — page navigation scrolls this back into view so a
     // "next page" click never leaves the viewport stranded mid-table, and a
     // deep link straight to ?page=N gets anchored on mount.
@@ -279,6 +303,34 @@ export function LeaderboardPager({
         );
     };
 
+    // Same pattern as setUrlPage: only write a param when it departs from
+    // the field's own default (time / asc) — a date sort's own newest-first
+    // default is a UI choice made explicitly below, not an omission here.
+    const setUrlSort = (sort: BoardSort, dir: BoardSortDir) => {
+        const sp = new URLSearchParams(window.location.search);
+        if (sort === DEFAULT_BOARD_SORT.sort) sp.delete('sort');
+        else sp.set('sort', sort);
+        if (dir === DEFAULT_BOARD_SORT.dir) sp.delete('dir');
+        else sp.set('dir', dir);
+        sp.delete('page');
+        const qs = sp.toString();
+        window.history.replaceState(
+            null,
+            '',
+            qs ? `${window.location.pathname}?${qs}` : window.location.pathname,
+        );
+    };
+
+    // newest-first -> oldest-first -> back to the board's default time order.
+    const nextSort = (current: {
+        sort: BoardSort;
+        dir: BoardSortDir;
+    }): { sort: BoardSort; dir: BoardSortDir } => {
+        if (current.sort !== 'date') return { sort: 'date', dir: 'desc' };
+        if (current.dir === 'desc') return { sort: 'date', dir: 'asc' };
+        return { sort: 'time', dir: 'asc' };
+    };
+
     const showPage = (res: LeaderboardResponse, page: number) => {
         setNavError(null);
         setBoard(res);
@@ -290,12 +342,37 @@ export function LeaderboardPager({
     const goTo = (page: number) => {
         if (page < 1 || page > board.totalPages || page === board.page) return;
         startTransition(async () => {
-            const res = await fetchLeaderboardPage({ ...query, page });
+            const res = await fetchLeaderboardPage({ ...effectiveQuery, page });
             if (!res) {
                 setNavError(page);
                 return;
             }
             showPage(res, page);
+            boardTopRef.current?.scrollIntoView({ block: 'start' });
+        });
+    };
+
+    // Sort toggle: always jumps to page 1 (the current page number belongs
+    // to the old order) and updates the URL alongside the board.
+    const handleSortToggle = () => {
+        const next = nextSort(sortState);
+        startTransition(async () => {
+            const res = await fetchLeaderboardPage({
+                ...query,
+                sort: next.sort,
+                dir: next.dir,
+                page: 1,
+            });
+            if (!res) {
+                setNavError(1);
+                return;
+            }
+            setSortState(next);
+            setNavError(null);
+            setBoard(res);
+            setSelectedKeys(new Set());
+            lastClickedRef.current = null;
+            setUrlSort(next.sort, next.dir);
             boardTopRef.current?.scrollIntoView({ block: 'start' });
         });
     };
@@ -308,7 +385,10 @@ export function LeaderboardPager({
     // client-side half of "the mod sees the result immediately".
     const [isRefetching, startRefetch] = useTransition();
     const refetchCurrentPage = async () => {
-        const res = await fetchLeaderboardPage({ ...query, page: board.page });
+        const res = await fetchLeaderboardPage({
+            ...effectiveQuery,
+            page: board.page,
+        });
         if (res) setBoard(res);
     };
 
@@ -478,8 +558,8 @@ export function LeaderboardPager({
         setFindMeStatus('searching');
         startTransition(async () => {
             // One round trip: the backend locates the runner on the current
-            // view (same filters/verified/timing) and returns their page.
-            const res = await findRunnerPage(query, sessionUsername);
+            // view (same filters/verified/timing/sort) and returns their page.
+            const res = await findRunnerPage(effectiveQuery, sessionUsername);
             if (!res) {
                 setNavError(board.page);
                 setFindMeStatus('idle');
@@ -607,7 +687,7 @@ export function LeaderboardPager({
                                 </button>
                             )}
                             <ExportButton
-                                query={query}
+                                query={effectiveQuery}
                                 gameSlug={gameSlug}
                                 categorySlug={categorySlug}
                                 subcategoryKey={subcategoryKey}
@@ -637,6 +717,10 @@ export function LeaderboardPager({
                     subcategoryKey={subcategoryKey}
                     subcategoryDefKeys={subcategoryDefKeys}
                     rtaFallback={rtaFallback}
+                    sort={sortState.sort}
+                    dir={sortState.dir}
+                    onSort={handleSortToggle}
+                    sortPending={isPending}
                     selectedKeys={selectedKeys}
                     onToggleSelect={toggleSelect}
                     onToggleAllVisible={toggleAllVisible}

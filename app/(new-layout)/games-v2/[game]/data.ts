@@ -16,6 +16,7 @@ import type {
     ResolvedGroup,
     VariableRow,
 } from '../../../../types/leaderboards.types';
+import { DEFAULT_BOARD_SORT, parseBoardSortParams } from './filters/board-sort';
 import { parseBuiltinParams } from './filters/builtin-params';
 import {
     filterPbsToFeatured,
@@ -58,6 +59,8 @@ const RESERVED_LOWER = new Set([
     'pagesize',
     'timing',
     'view',
+    'sort',
+    'dir',
 ]);
 
 export async function loadGamePageData(
@@ -156,6 +159,7 @@ export async function loadGamePageData(
     const combined = sp.combined === '1' || sp.combined === 'true';
     const builtins = parseBuiltinParams(sp);
     const verified = builtins.verified;
+    const boardSort = parseBoardSortParams(sp);
     const page = sp.page ? Math.max(1, parseInt(sp.page, 10) || 1) : 1;
     const pageSize = sp.pageSize
         ? Math.min(
@@ -177,6 +181,8 @@ export async function loadGamePageData(
         page,
         pageSize,
         varFilters,
+        sort: boardSort.sort,
+        dir: boardSort.dir,
     };
 
     const [boardResult, quickStats, recentPbs, rawYourRuns, gameMeta] =
@@ -257,6 +263,8 @@ export async function loadGamePageData(
             combined,
             verified,
             builtins,
+            sort: boardSort.sort,
+            dir: boardSort.dir,
             page,
             pageSize,
         },
@@ -502,6 +510,8 @@ function emptyFilters() {
         combined: false,
         verified: false,
         builtins: parseBuiltinParams({}),
+        sort: DEFAULT_BOARD_SORT.sort,
+        dir: DEFAULT_BOARD_SORT.dir,
         page: 1,
         pageSize: DEFAULT_PAGE_SIZE,
     };

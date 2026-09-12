@@ -13,6 +13,7 @@ import type {
     VariableRow,
 } from '../../../../types/leaderboards.types';
 import type { LevelTemplate } from '../../../../types/levels.types';
+import type { BoardSort, BoardSortDir } from './filters/board-sort';
 import type { BuiltinFilterState } from './filters/builtin-params';
 
 export interface GamePageSearchParams {
@@ -34,6 +35,10 @@ export interface GamePageSearchParams {
     pageSize?: string;
     /** 'moderation' -> the board's public Moderation tab (see leaderboard/moderation/). */
     view?: string;
+    /** Board order: run date instead of time rank. The `#` column keeps
+     * showing each run's real time rank regardless — see board-sort.ts. */
+    sort?: string;
+    dir?: string;
     [key: string]: string | undefined;
 }
 
@@ -94,6 +99,8 @@ export interface GamePageData {
         combined: boolean;
         verified: boolean;
         builtins: BuiltinFilterState;
+        sort: BoardSort;
+        dir: BoardSortDir;
         page: number;
         pageSize: number;
     };
