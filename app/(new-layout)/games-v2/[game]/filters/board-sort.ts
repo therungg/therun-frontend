@@ -21,13 +21,13 @@ export function parseBoardSortParams(
     sp: Record<string, string | undefined>,
 ): BoardSortState {
     const sort: BoardSort = sp.sort === 'date' ? 'date' : 'time';
-    const dir: BoardSortDir =
-        sp.dir === 'asc' || sp.dir === 'desc'
-            ? sp.dir
-            : // No explicit direction: a fresh date sort reads newest-first,
-              // the backend's own per-field default is 'asc' either way.
-              sort === 'date'
-              ? 'desc'
-              : 'asc';
+    // An absent direction always means ascending, whatever the sort field is
+    // — matching the backend, which defaults `dir` to 'asc' unconditionally.
+    // Newest-first comes from the header toggle (nextSort in
+    // leaderboard-pager), which writes an explicit dir=desc. Defaulting a
+    // bare `?sort=date` to 'desc' here would invert oldest-first on reload:
+    // setUrlSort omits dir when it is 'asc', so oldest-first is written to
+    // the URL as a bare `?sort=date` and has to read back the same way.
+    const dir: BoardSortDir = sp.dir === 'desc' ? 'desc' : 'asc';
     return { sort, dir };
 }
