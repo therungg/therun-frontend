@@ -6,6 +6,7 @@ import { getMyBoardClaim } from '~src/lib/board-claims';
 import { getGameMetadata } from '~src/lib/game-mgmt';
 import { listGameModerators } from '~src/lib/game-moderators';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
+import { getVariables } from '~src/lib/leaderboards-v1';
 import { getPublicModLog } from '~src/lib/moderation/public-mod-log';
 import { selfAnonymizeState } from '~src/lib/moderation/self-service';
 import { normalizeSlug } from '~src/lib/normalize-slug';
@@ -13,6 +14,7 @@ import {
     getAllActiveRacesByGame,
     getRaceGameStatsByGame,
 } from '~src/lib/races';
+import { normalizeVariableName } from '~src/lib/variables/keys';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
@@ -77,13 +79,39 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
     if (!sp.board && sp.category) {
         const legacy = sp.category;
         const norm = normalizeSlug(legacy);
-        const namesABoard = categories.some(
+        const match = categories.find(
             (c) =>
                 !c.archived &&
                 c.isMain &&
                 (c.name === legacy || normalizeSlug(c.name) === norm),
         );
-        if (namesABoard) {
+        // The picker also writes `?category=<value>` when a game defines a
+        // subcategory variable literally named "Category" — indistinguishable
+        // from the legacy param by key alone. Cheapest disambiguation without
+        // loading every featured category's variables up front: fetch the
+        // matched category's own defs (cached for hours) and check whether
+        // the value is actually one of that variable's values rather than a
+        // board name that happens to collide with it.
+        let isPickerValue = false;
+        if (match) {
+            const { variables } = await getVariables(
+                resolvedGame.name,
+                match.name,
+            ).catch(() => ({ variables: [] }));
+            const categoryVar = variables.find(
+                (v) =>
+                    v.role === 'subcategory' && v.nameNormalized === 'category',
+            );
+            if (categoryVar) {
+                const normVal = normalizeVariableName(legacy);
+                isPickerValue = categoryVar.values.some((bucket) =>
+                    bucket.some(
+                        (alias) => normalizeVariableName(alias) === normVal,
+                    ),
+                );
+            }
+        }
+        if (match && !isPickerValue) {
             const q = new URLSearchParams(
                 Object.entries(sp).filter(
                     (e): e is [string, string] => typeof e[1] === 'string',
