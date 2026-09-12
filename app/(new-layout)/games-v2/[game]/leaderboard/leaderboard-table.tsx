@@ -68,6 +68,16 @@ interface Props {
     onSort?: () => void;
     /** Disables the Date header's sort button while a sort fetch is in flight. */
     sortPending?: boolean;
+    /** Present only when the host wants the ranked time column clickable.
+     * Returns the board to its record order — fastest first, always. A
+     * leaderboard has no slowest-first reading, so this selects rather than
+     * toggles, and does nothing when the board is already in that order. */
+    onRankedSelect?: () => void;
+    /** Present only when the host wants the OTHER time column clickable;
+     * fires with that column's clock and re-ranks the whole board by it —
+     * the "Ranked" tag and the column order follow, because both derive from
+     * `primaryTiming`. Omit to leave the secondary header inert. */
+    onTimingSelect?: (key: TimingKey) => void;
     /** Bulk selection — checkbox column only renders when `canManage`.
      * Keys are `r:<runId>` / `m:<manualTimeId>` (see selection.ts). */
     selectedKeys?: Set<BoardSelectionKey>;
@@ -105,6 +115,8 @@ export function LeaderboardTable({
     dir,
     onSort,
     sortPending = false,
+    onRankedSelect,
+    onTimingSelect,
     selectedKeys,
     onToggleSelect,
     onToggleAllVisible,
@@ -276,8 +288,29 @@ export function LeaderboardTable({
                             <th
                                 className={styles.rankedHeader}
                                 aria-label={`${primary.label} — ranking column`}
+                                // Records are always fastest-first, so this
+                                // column is only ever ascending — and a
+                                // date-sorted board isn't ordered by it at
+                                // all, so it reports no direction then.
+                                aria-sort={
+                                    onRankedSelect && sort !== 'date'
+                                        ? 'ascending'
+                                        : undefined
+                                }
                             >
-                                {primary.label}
+                                {onRankedSelect ? (
+                                    <button
+                                        type="button"
+                                        className={styles.sortHeaderBtn}
+                                        onClick={onRankedSelect}
+                                        disabled={sortPending}
+                                        title={`Rank this board by ${primary.label.toLowerCase()}, fastest first`}
+                                    >
+                                        {primary.label}
+                                    </button>
+                                ) : (
+                                    primary.label
+                                )}
                                 {/* Only when a second time column exists —
                                     with one column there is nothing to
                                     disambiguate. */}
@@ -295,7 +328,21 @@ export function LeaderboardTable({
                             <th
                                 className={`${styles.secondaryHeader} ${styles.secondaryTimeHeader}`}
                             >
-                                {secondary.label}
+                                {onTimingSelect ? (
+                                    <button
+                                        type="button"
+                                        className={styles.sortHeaderBtn}
+                                        onClick={() =>
+                                            onTimingSelect(secondary.key)
+                                        }
+                                        disabled={sortPending}
+                                        title={`Rank this board by ${secondary.label.toLowerCase()}`}
+                                    >
+                                        {secondary.label}
+                                    </button>
+                                ) : (
+                                    secondary.label
+                                )}
                             </th>
                         )}
                         {visibleValueColumns.map((col) => (

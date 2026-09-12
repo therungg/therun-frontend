@@ -235,8 +235,8 @@ export function GamePage({
                                                 gameSlug: data.game.name,
                                                 categorySlug:
                                                     data.selectedCategory.name,
-                                                timing: data.selectedCategory
-                                                    .primaryTiming,
+                                                timing: data.activeFilters
+                                                    .timing,
                                                 subcategoryValues:
                                                     data.activeFilters
                                                         .subcategoryValues,
@@ -274,7 +274,16 @@ export function GamePage({
                                             gameDisplay={data.game.display}
                                             selfHidden={selfHidden}
                                             variableKeys={variableKeys}
+                                            // The clock actually ranking this
+                                            // render, not the category's
+                                            // configured one: the table
+                                            // derives column order and the
+                                            // "Ranked" tag from this, so a
+                                            // ?timing= override moves both.
                                             primaryTiming={
+                                                data.activeFilters.timing
+                                            }
+                                            defaultTiming={
                                                 data.selectedCategory
                                                     .primaryTiming
                                             }

@@ -65,6 +65,13 @@ interface Props {
     selfHidden?: SelfAnonymizeState | null;
     variableKeys: string[];
     primaryTiming: TimingKey;
+    /** The category's OWN configured clock, which may differ from
+     * `primaryTiming` once a reader has clicked the other time column. Used
+     * only to decide when `?timing=` can be left out of the URL — the same
+     * "write a param only when it departs from the default" rule the page
+     * and sort params follow. Optional: a host that never overrides the clock
+     * mounts the board at its default, so `primaryTiming` stands in. */
+    defaultTiming?: TimingKey;
     /** What the board calls its game-time clock. Display only. */
     gameTimeLabel?: 'igt' | 'lrt';
     filtersActive: boolean;
@@ -126,6 +133,7 @@ export function LeaderboardPager({
     selfHidden = null,
     variableKeys,
     primaryTiming,
+    defaultTiming = primaryTiming,
     gameTimeLabel = 'igt',
     filtersActive,
     showMilliseconds,
@@ -186,13 +194,20 @@ export function LeaderboardPager({
         sort: query.sort ?? DEFAULT_BOARD_SORT.sort,
         dir: query.dir ?? DEFAULT_BOARD_SORT.dir,
     });
+    // Which clock ranks the board. Owned here for the same reason as
+    // sortState: clicking the other time column refetches straight away
+    // instead of waiting for ?timing= to round-trip through the server.
+    const [timingState, setTimingState] = useState<TimingKey>(query.timing);
     // The query every fetch actually uses — `query` itself is a prop and
-    // stays pinned to what the server rendered, so an in-session sort toggle
-    // has to be layered on top rather than mutating it.
+    // stays pinned to what the server rendered, so an in-session sort or
+    // timing change has to be layered on top rather than mutating it.
+    // EVERY fetch below must go through this: reading `query` directly would
+    // quietly drop whichever of the two the reader changed most recently.
     const effectiveQuery = {
         ...query,
         sort: sortState.sort,
         dir: sortState.dir,
+        timing: timingState,
     };
     // Board's top edge — page navigation scrolls this back into view so a
     // "next page" click never leaves the viewport stranded mid-table, and a
@@ -352,15 +367,35 @@ export function LeaderboardPager({
         });
     };
 
-    // Sort toggle: always jumps to page 1 (the current page number belongs
-    // to the old order) and updates the URL alongside the board.
-    const handleSortToggle = () => {
-        const next = nextSort(sortState);
+    // Writes the ranking clock into the URL, omitting it when it matches the
+    // category's own configured timing — same rule as setUrlPage/setUrlSort.
+    const setUrlTiming = (timing: TimingKey) => {
+        const sp = new URLSearchParams(window.location.search);
+        if (timing === defaultTiming) sp.delete('timing');
+        else sp.set('timing', timing);
+        sp.delete('page');
+        const qs = sp.toString();
+        window.history.replaceState(
+            null,
+            '',
+            qs ? `${window.location.pathname}?${qs}` : window.location.pathname,
+        );
+    };
+
+    // Every order change shares this: jump to page 1 (the current page number
+    // belongs to the old order), swap the board, then write the URL. Fetches
+    // from `effectiveQuery` so a sort change keeps the chosen clock and a
+    // clock change keeps the chosen sort.
+    const applyOrder = (
+        next: { sort: BoardSort; dir: BoardSortDir },
+        timing: TimingKey,
+    ) => {
         startTransition(async () => {
             const res = await fetchLeaderboardPage({
-                ...query,
+                ...effectiveQuery,
                 sort: next.sort,
                 dir: next.dir,
+                timing,
                 page: 1,
             });
             if (!res) {
@@ -368,13 +403,35 @@ export function LeaderboardPager({
                 return;
             }
             setSortState(next);
+            setTimingState(timing);
             setNavError(null);
             setBoard(res);
             setSelectedKeys(new Set());
             lastClickedRef.current = null;
             setUrlSort(next.sort, next.dir);
+            setUrlTiming(timing);
             boardTopRef.current?.scrollIntoView({ block: 'start' });
         });
+    };
+
+    const handleSortToggle = () => applyOrder(nextSort(sortState), timingState);
+
+    // The ranked column puts the board back in record order. There is no
+    // second direction: a leaderboard read slowest-first isn't a leaderboard,
+    // so this selects fastest-first rather than toggling, and a board already
+    // in that order has nothing to refetch.
+    const handleRankedSelect = () => {
+        if (sortState.sort === 'time' && sortState.dir === 'asc') return;
+        applyOrder({ sort: 'time', dir: 'asc' }, timingState);
+    };
+
+    // The other clock: re-rank the whole board by it. Column order and the
+    // "Ranked" tag follow, because both derive from primaryTiming, which the
+    // page reads from this same ?timing=. The sort mode is deliberately left
+    // alone — a date-sorted board stays date-sorted, ranked by the new clock.
+    const handleTimingSelect = (next: TimingKey) => {
+        if (next === timingState) return;
+        applyOrder(sortState, next);
     };
 
     // Read-your-writes for the bulk bar's own mutations: the backend's cache
@@ -709,7 +766,7 @@ export function LeaderboardPager({
                     gameSlug={gameSlug}
                     variableKeys={variableKeys}
                     valueColumns={valueColumns}
-                    primaryTiming={primaryTiming}
+                    primaryTiming={timingState}
                     gameTimeLabel={gameTimeLabel}
                     filtersActive={filtersActive}
                     showMilliseconds={showMilliseconds}
@@ -721,6 +778,8 @@ export function LeaderboardPager({
                     dir={sortState.dir}
                     onSort={handleSortToggle}
                     sortPending={isPending}
+                    onRankedSelect={handleRankedSelect}
+                    onTimingSelect={handleTimingSelect}
                     selectedKeys={selectedKeys}
                     onToggleSelect={toggleSelect}
                     onToggleAllVisible={toggleAllVisible}

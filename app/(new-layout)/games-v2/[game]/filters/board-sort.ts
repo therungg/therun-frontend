@@ -1,11 +1,26 @@
-// URL <-> state for the board's date sort. Deliberately separate from
-// builtin-params.ts: sort reorders the same rows rather than narrowing them,
-// so it must stay OUT of BuiltinFilterState / countBuiltinFilters /
-// hasBuiltinFilters — folding it in would wrongly light up the "filters
-// active" chip and the Clear-filters affordance for a plain reorder.
+// URL <-> state for the board's order: which clock ranks it (timing), which
+// field it sorts by (sort) and in which direction (dir). Deliberately
+// separate from builtin-params.ts: none of these narrow the board, they only
+// reorder it, so they must stay OUT of BuiltinFilterState /
+// countBuiltinFilters / hasBuiltinFilters — folding them in would wrongly
+// light up the "filters active" chip and the Clear-filters affordance.
 
 export type BoardSort = 'time' | 'date';
 export type BoardSortDir = 'asc' | 'desc';
+/** Which clock the board ranks by — the column carrying the "Ranked" tag. */
+export type BoardTiming = 'rt' | 'gt';
+
+/**
+ * The ranking clock. Unlike sort/dir there is no global default: each
+ * category configures its own `primaryTiming`, so the fallback is passed in
+ * and `?timing=` only ever overrides it.
+ */
+export function parseBoardTimingParam(
+    sp: Record<string, string | undefined>,
+    fallback: BoardTiming,
+): BoardTiming {
+    return sp.timing === 'rt' || sp.timing === 'gt' ? sp.timing : fallback;
+}
 
 export interface BoardSortState {
     sort: BoardSort;

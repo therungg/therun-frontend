@@ -16,7 +16,11 @@ import type {
     ResolvedGroup,
     VariableRow,
 } from '../../../../types/leaderboards.types';
-import { DEFAULT_BOARD_SORT, parseBoardSortParams } from './filters/board-sort';
+import {
+    DEFAULT_BOARD_SORT,
+    parseBoardSortParams,
+    parseBoardTimingParam,
+} from './filters/board-sort';
 import { parseBuiltinParams } from './filters/builtin-params';
 import {
     filterPbsToFeatured,
@@ -160,6 +164,10 @@ export async function loadGamePageData(
     const builtins = parseBuiltinParams(sp);
     const verified = builtins.verified;
     const boardSort = parseBoardSortParams(sp);
+    // Which clock ranks the board. The category configures a primary timing;
+    // clicking the other time column overrides it with ?timing=, which moves
+    // the "Ranked" tag onto that column and renumbers the board by it.
+    const timing = parseBoardTimingParam(sp, selected.primaryTiming);
     const page = sp.page ? Math.max(1, parseInt(sp.page, 10) || 1) : 1;
     const pageSize = sp.pageSize
         ? Math.min(
@@ -187,7 +195,7 @@ export async function loadGamePageData(
 
     const [boardResult, quickStats, recentPbs, rawYourRuns, gameMeta] =
         await Promise.all([
-            getLeaderboard({ ...baseQuery, timing: selected.primaryTiming }),
+            getLeaderboard({ ...baseQuery, timing }),
             getQuickStats(game.id).catch(() => ({
                 totalRunTime: 0,
                 totalAttemptCount: 0,
@@ -226,7 +234,7 @@ export async function loadGamePageData(
 
     const [subcategoryValueCounts, categoryBoardCounts] = await Promise.all([
         loadSubcategoryValueCounts(
-            { ...baseQuery, timing: selected.primaryTiming },
+            { ...baseQuery, timing },
             varsResp.variables,
             boardResult.ok && !combined ? leaderboard.totalItems : null,
         ),
@@ -265,6 +273,7 @@ export async function loadGamePageData(
             builtins,
             sort: boardSort.sort,
             dir: boardSort.dir,
+            timing,
             page,
             pageSize,
         },
@@ -512,6 +521,9 @@ function emptyFilters() {
         builtins: parseBuiltinParams({}),
         sort: DEFAULT_BOARD_SORT.sort,
         dir: DEFAULT_BOARD_SORT.dir,
+        // Matches the placeholder category this fallback ships with, whose
+        // own primaryTiming is 'rt' — there is no real category to read.
+        timing: 'rt' as const,
         page: 1,
         pageSize: DEFAULT_PAGE_SIZE,
     };

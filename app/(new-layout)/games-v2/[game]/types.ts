@@ -13,7 +13,11 @@ import type {
     VariableRow,
 } from '../../../../types/leaderboards.types';
 import type { LevelTemplate } from '../../../../types/levels.types';
-import type { BoardSort, BoardSortDir } from './filters/board-sort';
+import type {
+    BoardSort,
+    BoardSortDir,
+    BoardTiming,
+} from './filters/board-sort';
 import type { BuiltinFilterState } from './filters/builtin-params';
 
 export interface GamePageSearchParams {
@@ -39,6 +43,9 @@ export interface GamePageSearchParams {
      * showing each run's real time rank regardless — see board-sort.ts. */
     sort?: string;
     dir?: string;
+    /** Which clock ranks the board ('rt' | 'gt'), overriding the category's
+     * configured primaryTiming. Set by clicking the other time column. */
+    timing?: string;
     [key: string]: string | undefined;
 }
 
@@ -101,6 +108,9 @@ export interface GamePageData {
         builtins: BuiltinFilterState;
         sort: BoardSort;
         dir: BoardSortDir;
+        /** The clock actually used to rank this render — the category's
+         * primaryTiming unless ?timing= overrode it. */
+        timing: BoardTiming;
         page: number;
         pageSize: number;
     };
