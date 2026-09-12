@@ -140,6 +140,12 @@ function flagReasonLabel(reason: string): string {
     return AUTO_VERIFY_FLAG_LABEL[reason] ?? humanizeWord(reason);
 }
 
+/** Only auto-verify's own failed-check reasons get a triage label — the
+ * pre-existing manual/report flag reasons keep showing just their note. */
+function isAutoVerifyFlagReason(reason: string): boolean {
+    return reason in AUTO_VERIFY_FLAG_LABEL;
+}
+
 /** An active run-action invocation against one or more items. */
 interface RunAction {
     verb: ModVerb;
@@ -948,8 +954,14 @@ function SingleItemCard({
 
             {(item.flagReason || item.note) && (
                 <div className={styles.note}>
-                    {item.flagReason ? flagReasonLabel(item.flagReason) : null}
-                    {item.flagReason && item.note ? ' — ' : null}
+                    {item.flagReason && isAutoVerifyFlagReason(item.flagReason)
+                        ? flagReasonLabel(item.flagReason)
+                        : null}
+                    {item.flagReason &&
+                    isAutoVerifyFlagReason(item.flagReason) &&
+                    item.note
+                        ? ' — '
+                        : null}
                     {item.note}
                 </div>
             )}
