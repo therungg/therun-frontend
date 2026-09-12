@@ -32,6 +32,15 @@ const PRESET_OPTIONS: Array<{ value: AutoVerifyPreset; label: string }> = [
     { value: 'strict', label: 'Strict' },
 ];
 
+const PRESET_HINTS: Record<AutoVerifyPreset, string> = {
+    off: 'nothing is verified automatically.',
+    lenient:
+        'live check when available, allows a 10% gold beat and a 15% PB jump, no prior verified runs needed.',
+    standard:
+        'live check when available, allows a 5% gold beat and an 8% PB jump, needs 1 prior verified run.',
+    strict: 'live tracking required, allows a 2% gold beat and a 4% PB jump, needs 3 prior verified runs.',
+};
+
 const DEFAULT_NEVER_TOP_N = 10;
 
 interface FormState {
@@ -88,9 +97,6 @@ function sameState(a: FormState, b: FormState): boolean {
     );
 }
 
-const BACKFILL_NOTE =
-    'Turning this on evaluates up to the 100 most recent pending runs in this scope. A successful save doesn’t guarantee every one was judged.';
-
 function PolicyControls({
     idPrefix,
     state,
@@ -130,7 +136,13 @@ function PolicyControls({
                         </option>
                     ))}
                 </select>
-                <p className="text-muted small mb-0 mt-1">{BACKFILL_NOTE}</p>
+                <ul className="text-muted small mb-0 mt-1 ps-3">
+                    {PRESET_OPTIONS.map((opt) => (
+                        <li key={opt.value}>
+                            {opt.label} — {PRESET_HINTS[opt.value]}
+                        </li>
+                    ))}
+                </ul>
             </div>
 
             <div>
@@ -182,7 +194,7 @@ function PolicyControls({
                     htmlFor={`${idPrefix}-require-live`}
                     className="form-check-label small"
                 >
-                    Require live tracking
+                    Require therun.gg live tracking
                 </label>
             </div>
         </div>
@@ -214,7 +226,6 @@ function GameWideSection({
     const handleSave = () => {
         if (neverTopN === null) return;
         setError(null);
-        const wasOff = !policy || original.preset === 'off';
         startSaving(async () => {
             const value: AutoVerifyPolicyValue = {
                 preset: state.preset,
@@ -233,11 +244,7 @@ function GameWideSection({
                 return;
             }
 
-            if (wasOff && state.preset !== 'off') {
-                toast.success(`Auto-verify saved. ${BACKFILL_NOTE}`);
-            } else {
-                toast.success('Auto-verify saved.');
-            }
+            toast.success('Auto-verify saved.');
             await onSaved();
         });
     };
@@ -312,7 +319,6 @@ function CategoryOverrideRow({
     const handleSave = () => {
         if (neverTopN === null) return;
         setError(null);
-        const wasOff = !policy || stateFromPolicy(policy).preset === 'off';
         startSaving(async () => {
             const value: AutoVerifyPolicyValue = {
                 preset: state.preset,
@@ -332,11 +338,7 @@ function CategoryOverrideRow({
                 return;
             }
 
-            if (wasOff && state.preset !== 'off') {
-                toast.success(`Override saved. ${BACKFILL_NOTE}`);
-            } else {
-                toast.success('Override saved.');
-            }
+            toast.success('Override saved.');
             setExpanded(false);
             await onSaved();
         });
@@ -484,16 +486,8 @@ export function AutoVerifyPane({ gameSlug, gameDisplay, categories }: Props) {
                 </div>
             </header>
             <p className={consoleStyles.paneLede}>
-                Automatically verifies timer runs whose split data passes a set
-                of checks for {gameDisplay}. Everything except the live receive
-                times comes from the runner&apos;s own splits file and attempt
-                history — live match proves the timer didn&apos;t run faster
-                than wall-clock time between splits, but it can&apos;t detect a
-                paused timer or spliced footage, which always passes. Gold-beat
-                and PB-jump are weak signals for a fresh splits file with little
-                history. A minimum-time policy and the top-N guard below remain
-                the backstops. Auto-verified is not the same as checked by a
-                human.
+                Verifies runs outside the top X automatically, based on live
+                data, splits and run timing.
             </p>
 
             {loading && !hasLoaded ? (
