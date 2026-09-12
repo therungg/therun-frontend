@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { compareByBoardOrder } from '~src/lib/console/category-order';
-import { getGameMetadata } from '~src/lib/game-mgmt';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { listCategoryVariables } from '~src/lib/leaderboard-variables';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
@@ -48,10 +47,7 @@ export default async function CategoryDetailPage({ params }: Props) {
     if (!game) notFound();
     if (!canModerateGame(session, game.name)) notFound();
 
-    const [{ categories, levelTemplates }, metadata] = await Promise.all([
-        resolveCategory(game.id),
-        getGameMetadata(game.id),
-    ]);
+    const { categories, levelTemplates } = await resolveCategory(game.id);
 
     const categoryId = Number.parseInt(rawId, 10);
     if (!Number.isFinite(categoryId)) notFound();
@@ -107,12 +103,6 @@ export default async function CategoryDetailPage({ params }: Props) {
                 canEditStandards={chrome.flags.canEditStandards}
                 copySources={copySources}
                 levelTemplates={levelTemplates}
-                gameTimingDefaults={{
-                    primaryTiming: metadata.primaryTiming,
-                    gameTimeLabel: metadata.gameTimeLabel,
-                    hideRealTime: metadata.hideRealTime,
-                    hideGameTime: metadata.hideGameTime,
-                }}
                 prev={index > 0 ? ordered[index - 1] : null}
                 next={
                     index >= 0 && index < ordered.length - 1

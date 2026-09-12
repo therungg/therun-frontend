@@ -14,22 +14,10 @@ import {
 import kit from '../shared/form-kit.module.scss';
 import { updateTimingSettingsAction } from './actions/update-timing-settings.action';
 
-/** The game's board-wide timing defaults (step 1 of the wizard), for the
- * "matches the game default?" caption. Optional — mounts that can't supply
- * it just don't get the caption. */
-export interface GameTimingDefaults {
-    primaryTiming: 'rt' | 'gt' | null;
-    /** What the game default calls the game-time clock; null = unset (IGT). */
-    gameTimeLabel: 'igt' | 'lrt' | null;
-    hideRealTime: boolean;
-    hideGameTime: boolean;
-}
-
 interface Props {
     gameSlug: string;
     gameId: number;
     category: ResolvedCategory | null;
-    gameDefaults?: GameTimingDefaults;
 }
 
 // The primary clock is always shown — the form only asks whether the
@@ -102,36 +90,7 @@ function hidePairOf(state: State): {
     };
 }
 
-function defaultsState(defaults: GameTimingDefaults): State {
-    // Game defaults don't carry rtaFallback — it stays a per-category call.
-    return stateOf({
-        primaryTiming:
-            defaults.primaryTiming === 'gt' ? 'gametime' : 'realtime',
-        gameTimeLabel: defaults.gameTimeLabel === 'lrt' ? 'lrt' : 'igt',
-        hideRealTime: defaults.hideRealTime,
-        hideGameTime: defaults.hideGameTime,
-        rtaFallback: false,
-    });
-}
-
-function describeState(state: State): string {
-    const primary =
-        state.primaryTiming === 'gametime'
-            ? state.gameTimeLabel === 'lrt'
-                ? 'Load-removed time'
-                : 'Game time'
-            : 'Real time';
-    return state.showSecondary
-        ? `${primary} · both clocks shown`
-        : `${primary} only`;
-}
-
-export function TimingSettingsSection({
-    gameSlug,
-    gameId,
-    category,
-    gameDefaults,
-}: Props) {
+export function TimingSettingsSection({ gameSlug, gameId, category }: Props) {
     const fallback: StoredFlags = {
         primaryTiming: 'realtime',
         gameTimeLabel: 'igt',
@@ -179,14 +138,6 @@ export function TimingSettingsSection({
         desired.hideGameTime !== original.hideGameTime ||
         desiredRtaFallback !== original.rtaFallback;
     const busy = isSaving;
-
-    const gameDefault = gameDefaults ? defaultsState(gameDefaults) : null;
-    const matchesDefault =
-        gameDefault != null &&
-        gameDefault.primaryTiming === state.primaryTiming &&
-        (state.primaryTiming === 'realtime' ||
-            gameDefault.gameTimeLabel === state.gameTimeLabel) &&
-        gameDefault.showSecondary === state.showSecondary;
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
@@ -313,33 +264,6 @@ export function TimingSettingsSection({
                             </p>
                         )}
                     </>
-                )}
-                {gameDefault && (
-                    <p className="text-muted small mb-0 mt-1">
-                        Game default: {describeState(gameDefault)}
-                        {matchesDefault ? (
-                            '. This category matches.'
-                        ) : (
-                            <>
-                                {' · '}
-                                <button
-                                    type="button"
-                                    className="btn btn-link btn-sm p-0 align-baseline"
-                                    disabled={busy}
-                                    onClick={() =>
-                                        // Clock fields only — rtaFallback has
-                                        // no game-level default to restore.
-                                        setState((s) => ({
-                                            ...gameDefault,
-                                            rtaFallback: s.rtaFallback,
-                                        }))
-                                    }
-                                >
-                                    Use game default
-                                </button>
-                            </>
-                        )}
-                    </p>
                 )}
                 <InlineError>{formError}</InlineError>
                 <SectionFooter>

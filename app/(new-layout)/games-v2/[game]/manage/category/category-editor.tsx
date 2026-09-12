@@ -12,10 +12,7 @@ import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
 import { CategorySettingsSection } from '../category-tab/category-settings-section';
 import { RulesSection } from '../category-tab/rules-section';
 import { Standards } from '../moderation/configure/standards';
-import {
-    type GameTimingDefaults,
-    TimingSettingsSection,
-} from '../timing/timing-settings-section';
+import { TimingSettingsSection } from '../timing/timing-settings-section';
 import styles from './category-editor.module.scss';
 import { CopyFromControl } from './copy-from-control';
 
@@ -36,9 +33,6 @@ interface Props {
      *  from…" control. Omitted callers simply don't get the control — it
      *  renders only when this is provided AND the moderator can configure. */
     copySources?: CopySources;
-    /** Game-wide timing defaults, for the Timing section's "matches the game
-     *  default?" caption. Optional — mounts without metadata skip the caption. */
-    gameTimingDefaults?: GameTimingDefaults;
 }
 
 /**
@@ -71,7 +65,6 @@ export function CategoryEditor({
     canEditStandards,
     context,
     copySources,
-    gameTimingDefaults,
 }: Props) {
     const visible = useMemo(
         () =>
@@ -117,7 +110,6 @@ export function CategoryEditor({
                 gameSlug={game.name}
                 gameId={game.id}
                 category={category}
-                gameDefaults={gameTimingDefaults}
             />
         ),
         standards: (

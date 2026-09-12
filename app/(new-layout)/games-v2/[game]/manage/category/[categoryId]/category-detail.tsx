@@ -9,7 +9,6 @@ import type {
     ResolvedGame,
 } from '../../../../../../../types/leaderboards.types';
 import type { LevelTemplate } from '../../../../../../../types/levels.types';
-import type { GameTimingDefaults } from '../../timing/timing-settings-section';
 import { CategoryEditor, type CopySources } from '../category-editor';
 import styles from './category-detail.module.scss';
 
@@ -20,7 +19,6 @@ interface Props {
     canModerate: boolean;
     canEditStandards: boolean;
     copySources?: CopySources;
-    gameTimingDefaults?: GameTimingDefaults;
     /** The game's level categories — this category is one of them, or an
      *  instance of one, or neither. */
     levelTemplates?: LevelTemplate[];
@@ -37,7 +35,6 @@ export function CategoryDetail({
     canModerate,
     canEditStandards,
     copySources,
-    gameTimingDefaults,
     levelTemplates = [],
     prev,
     next,
@@ -78,7 +75,6 @@ export function CategoryDetail({
                 canModerate={canModerate}
                 canEditStandards={canEditStandards}
                 copySources={copySources}
-                gameTimingDefaults={gameTimingDefaults}
                 context="console"
             />
         </div>

@@ -164,8 +164,6 @@ export interface BoardDefaults {
     primaryTiming: 'rt' | 'gt' | null;
     /** What the board default calls the game-time clock; null = unset (IGT). */
     gameTimeLabel: GameTimeLabel | null;
-    /** Whether the board shows the clock it does not rank by. */
-    showOtherTime: boolean;
     sortAscending: boolean | null;
     showMilliseconds: boolean | null;
     /** Starter rules text for categories with none of their own. */
@@ -179,12 +177,9 @@ export function boardDefaults(
     policies: BoardPolicyRow[],
 ): BoardDefaults {
     const gamePolicy = findGameMinPolicy(policies);
-    const primary = metadata.primaryTiming ?? 'rt';
     return {
         primaryTiming: metadata.primaryTiming,
         gameTimeLabel: metadata.gameTimeLabel,
-        showOtherTime:
-            primary === 'gt' ? !metadata.hideRealTime : !metadata.hideGameTime,
         sortAscending: metadata.sortAscending,
         showMilliseconds: metadata.showMilliseconds,
         rulesTemplate: metadata.rulesTemplate,
@@ -203,9 +198,10 @@ export function hasDefault(
     switch (column) {
         case 'timing':
             return defaults.primaryTiming !== null;
-        // Stored as two non-null booleans, so the board always states one.
+        // No board-level default any more — visibility is stamped per
+        // category, same as rules.
         case 'otherTime':
-            return true;
+            return false;
         case 'minimum':
             return defaults.minMs !== null;
         case 'rules':
@@ -269,7 +265,8 @@ export function deviates(
                 )
             );
         case 'otherTime':
-            return showsOtherTime(category) !== defaults.showOtherTime;
+            // No board default to deviate from any more.
+            return false;
         case 'minimum': {
             // A category with no minimum of its own does not deviate: the
             // board minimum is what applies to it.
