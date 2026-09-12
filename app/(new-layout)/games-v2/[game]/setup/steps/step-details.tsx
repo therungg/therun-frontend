@@ -1,10 +1,13 @@
 'use client';
 
 import { useRef, useState, useTransition } from 'react';
+import { splitLevelBoards } from '~src/lib/levels/display';
 import {
+    otherTimeField,
     type TimingChoice,
     timingChoiceOf,
 } from '~src/lib/setup/board-defaults';
+import { bulkUpdateCategoriesAction } from '../actions/bulk-update-categories.action';
 import { updateGameMetadataAction } from '../actions/update-game-metadata.action';
 import { GameDetailsForm } from '../game-details-form';
 import styles from '../setup.module.scss';
@@ -33,11 +36,20 @@ export function StepDetails({ data, onAdvance }: StepProps) {
     // timing flip ("show the secondary too" keeps meaning that), and the
     // server's both-hidden guard can never trip because the primary's hide
     // flag is derived as false at save time.
+    // Seeded from the categories this control writes to, not from the game
+    // row, which no longer governs anything. Mixed boards seed as "shown" —
+    // the switch states an intent to apply, not an existing uniform value.
     const [showSecondary, setShowSecondary] = useState(() => {
-        const initial = data.metadata.primaryTiming ?? 'rt';
-        return initial === 'rt'
-            ? !(data.metadata.hideGameTime ?? false)
-            : !(data.metadata.hideRealTime ?? false);
+        const targets = splitLevelBoards(
+            data.categories,
+            data.groups,
+        ).fullGame.filter((c) => !c.archived);
+        if (targets.length === 0) return true;
+        return targets.some((c) =>
+            c.primaryTiming === 'gt'
+                ? !(c.hideRealTime ?? false)
+                : !(c.hideGameTime ?? false),
+        );
     });
 
     const [formBusy, setFormBusy] = useState(false);
@@ -75,12 +87,43 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                               : 'igt',
                     gameRules: gameRules.trim() || null,
                     emulatorPolicy,
-                    hideRealTime: timing === 'rt' ? false : !showSecondary,
-                    hideGameTime: timing === 'rt' ? !showSecondary : false,
                 });
                 if ('error' in metaRes) {
                     setDefaultsError(metaRes.error);
                     return;
+                }
+
+                // Timing visibility is stamped, not inherited: this control
+                // is a one-time bulk set across the board's full-game
+                // categories. Level boards are the Levels step's business —
+                // they follow their template, not this switch.
+                const targets = splitLevelBoards(
+                    data.categories,
+                    data.groups,
+                ).fullGame.filter((c) => !c.archived);
+
+                // Which flag expresses "show the other clock" depends on what
+                // each category ranks by, so the write is grouped by the
+                // category's own primary timing rather than sent as one field.
+                for (const primary of ['rt', 'gt'] as const) {
+                    const ids = targets
+                        .filter((c) => c.primaryTiming === primary)
+                        .map((c) => c.id);
+                    // The backend caps a bulk call at BULK_CATEGORY_LIMIT (200).
+                    for (let i = 0; i < ids.length; i += 200) {
+                        const chunk = ids.slice(i, i + 200);
+                        if (chunk.length === 0) continue;
+                        const res = await bulkUpdateCategoriesAction({
+                            gameSlug: data.game.name,
+                            gameId: data.game.id,
+                            categoryIds: chunk,
+                            fields: otherTimeField(primary, showSecondary),
+                        });
+                        if ('error' in res) {
+                            setDefaultsError(res.error);
+                            return;
+                        }
+                    }
                 }
 
                 onAdvance();
@@ -165,6 +208,10 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                     </div>
                     <div>
                         <h4 className="h6">Time columns</h4>
+                        <p className="text-muted small mb-2">
+                            Applies to every category on this board. Individual
+                            categories can be changed afterwards.
+                        </p>
                         <div className="form-check">
                             <input
                                 type="checkbox"

@@ -119,7 +119,7 @@ export type SrcConfigFieldValue =
     | { label: string; url: string }[]
     | null;
 export interface SrcConfigFieldChange {
-    /** emulatorPolicy | primaryTiming | gameTimeLabel | hideRealTime | hideGameTime | showMilliseconds | platforms | releaseYear | discordUrl | links */
+    /** emulatorPolicy | primaryTiming | gameTimeLabel | showMilliseconds | platforms | releaseYear | discordUrl | links (hideRealTime/hideGameTime are stamped per category now, not game-level) */
     field: string;
     from: SrcConfigFieldValue;
     to: SrcConfigFieldValue;
