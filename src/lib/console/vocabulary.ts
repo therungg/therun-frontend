@@ -9,6 +9,7 @@ export type ConceptId =
     | 'overview'
     | 'attention'
     | 'mod-queue'
+    | 'auto-verify'
     | 'roster'
     | 'reports'
     | 'bans'
@@ -37,6 +38,7 @@ export const CONCEPT_LABEL: Record<ConceptId, string> = {
     overview: 'Overview',
     attention: 'Needs attention',
     'mod-queue': 'Mod queue',
+    'auto-verify': 'Auto-verify',
     roster: 'Browse runs',
     reports: 'Reports',
     bans: 'Bans',

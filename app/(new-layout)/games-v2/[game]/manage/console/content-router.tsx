@@ -26,6 +26,7 @@ import { LevelsPane } from '../levels/levels-pane';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import { ModApplicationsCard } from '../moderation/attention/mod-applications-card';
 import { NeedsAttention } from '../moderation/attention/needs-attention';
+import { AutoVerifyPane } from '../moderation/auto-verify/auto-verify-pane';
 import { ActiveBans } from '../moderation/configure/active-bans';
 import { ModQueuePane } from '../moderation/queue/mod-queue-pane';
 import { BoardOverview } from '../overview/board-overview';
@@ -131,6 +132,14 @@ export function ContentRouter(props: ContentRouterProps) {
         case 'mod-queue':
             return (
                 <ModQueuePane
+                    gameSlug={game.name}
+                    gameDisplay={game.display}
+                    categories={categories}
+                />
+            );
+        case 'auto-verify':
+            return (
+                <AutoVerifyPane
                     gameSlug={game.name}
                     gameDisplay={game.display}
                     categories={categories}

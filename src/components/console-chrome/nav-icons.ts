@@ -19,6 +19,7 @@ import {
     ListOl,
     ListUl,
     Palette,
+    PatchCheck,
     PersonX,
     ShieldLock,
     Speedometer2,
@@ -29,6 +30,7 @@ import type { NavItemId } from '~app/(new-layout)/games-v2/[game]/manage/console
 export const NAV_ICON: Record<NavItemId, IconType> = {
     overview: Speedometer2,
     'mod-queue': CheckCircle,
+    'auto-verify': PatchCheck,
     attention: ExclamationTriangle,
     roster: ListOl,
     reports: Flag,

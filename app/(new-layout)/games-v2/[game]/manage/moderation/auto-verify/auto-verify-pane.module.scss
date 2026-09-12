@@ -1,0 +1,76 @@
+@use '../../../../../styles/design-tokens' as dt;
+
+.fieldCol {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+    max-width: 40rem;
+}
+
+.warning {
+    margin-top: dt.$spacing-xs;
+    font-size: dt.$font-size-sm;
+    color: dt.$accent-amber;
+}
+
+.overridesSection {
+    margin-top: dt.$spacing-lg;
+}
+
+.overridesSummary {
+    cursor: pointer;
+    font-weight: 700;
+    padding: dt.$spacing-sm 0;
+}
+
+.overridesList {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+    margin-top: dt.$spacing-md;
+}
+
+.overrideRow {
+    border: 1px solid var(--bs-border-color);
+    border-radius: dt.$radius-md;
+    padding: dt.$spacing-md;
+}
+
+.overrideHead {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    flex-wrap: wrap;
+}
+
+.overrideName {
+    font-weight: 700;
+}
+
+.overrideSummary {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.overrideToggle {
+    margin-left: auto;
+    background: none;
+    border: 0;
+    color: var(--bs-primary);
+    font-size: dt.$font-size-sm;
+    padding: 0;
+    cursor: pointer;
+}
+
+.overrideBody {
+    margin-top: dt.$spacing-md;
+}
+
+.removeBtn {
+    background: none;
+    border: 0;
+    color: var(--bs-danger);
+    font-size: dt.$font-size-sm;
+    cursor: pointer;
+    padding: 0;
+}

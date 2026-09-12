@@ -7,6 +7,7 @@ import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 export type NavItemId =
     | 'overview'
     | 'mod-queue'
+    | 'auto-verify'
     | 'attention'
     | 'roster'
     | 'reports'
@@ -75,6 +76,7 @@ const ALL_GROUPS: NavGroup[] = [
         items: [
             { id: 'overview', label: CONCEPT_LABEL.overview },
             { id: 'mod-queue', label: CONCEPT_LABEL['mod-queue'] },
+            { id: 'auto-verify', label: CONCEPT_LABEL['auto-verify'] },
         ],
     },
     {
@@ -134,7 +136,11 @@ function itemVisible(
     // `flags.canReassign`.
     if (itemId === 'reassign') return false;
     if (itemId === 'moderators') return flags.canEditMods;
-    if (groupId === 'moderate' || itemId === 'mod-queue')
+    if (
+        groupId === 'moderate' ||
+        itemId === 'mod-queue' ||
+        itemId === 'auto-verify'
+    )
         return flags.canModerate;
     if (itemId === 'categories') return flags.canConfigure || flags.canModerate;
     // Boards is pulled from the console for now. Hiding it here also drops
