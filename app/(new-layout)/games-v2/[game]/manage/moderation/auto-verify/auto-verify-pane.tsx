@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import type {
+    AutoVerifyPolicyValue,
     AutoVerifyPreset,
     BoardPolicyRow,
     CreatePolicyInput,
@@ -35,20 +36,33 @@ const DEFAULT_NEVER_TOP_N = 10;
 
 interface FormState {
     preset: AutoVerifyPreset;
-    neverTopN: number;
+    /** Raw text of the "never auto-verify top" input. Held as a string so a
+     * momentarily-blank field (the moderator clearing it to retype) doesn't
+     * coerce to 0 and silently turn the top-N guard off. Parsed to a number
+     * only when saving — see parseNeverTopN. */
+    neverTopN: string;
     requireLive: boolean;
+}
+
+/** Parses the top-N field's raw text into a valid non-negative integer, or
+ * null when the text isn't one (including the blank string) — the caller
+ * must treat null as "can't save yet", never as 0. */
+function parseNeverTopN(text: string): number | null {
+    if (text.trim() === '') return null;
+    const n = Number(text);
+    return Number.isInteger(n) && n >= 0 ? n : null;
 }
 
 function defaultState(): FormState {
     return {
         preset: 'off',
-        neverTopN: DEFAULT_NEVER_TOP_N,
+        neverTopN: String(DEFAULT_NEVER_TOP_N),
         requireLive: false,
     };
 }
 
 function stateFromPolicy(policy: BoardPolicyRow): FormState {
-    const v = policy.value as Partial<FormState>;
+    const v = policy.value as Partial<AutoVerifyPolicyValue>;
     return {
         preset:
             v.preset === 'off' ||
@@ -57,10 +71,11 @@ function stateFromPolicy(policy: BoardPolicyRow): FormState {
             v.preset === 'strict'
                 ? v.preset
                 : 'off',
-        neverTopN:
+        neverTopN: String(
             typeof v.neverTopN === 'number' && Number.isFinite(v.neverTopN)
                 ? v.neverTopN
                 : DEFAULT_NEVER_TOP_N,
+        ),
         requireLive: v.requireLive === true,
     };
 }
@@ -135,15 +150,16 @@ function PolicyControls({
                     style={{ maxWidth: '10rem' }}
                     value={state.neverTopN}
                     disabled={disabled}
-                    onChange={(e) => {
-                        const n = Number(e.target.value);
-                        onChange({
-                            ...state,
-                            neverTopN: Number.isFinite(n) ? n : 0,
-                        });
-                    }}
+                    onChange={(e) =>
+                        onChange({ ...state, neverTopN: e.target.value })
+                    }
                 />
-                {state.neverTopN === 0 && (
+                {parseNeverTopN(state.neverTopN) === null && (
+                    <p className="text-danger small mb-0 mt-1">
+                        A number is required.
+                    </p>
+                )}
+                {parseNeverTopN(state.neverTopN) === 0 && (
                     <div className={styles.warning}>
                         Any run — a would-be world record included — can
                         auto-verify.
@@ -192,14 +208,17 @@ function GameWideSection({
     }, [policy]);
 
     const dirty = !sameState(state, original);
+    const neverTopN = parseNeverTopN(state.neverTopN);
+    const invalid = neverTopN === null;
 
     const handleSave = () => {
+        if (neverTopN === null) return;
         setError(null);
         const wasOff = !policy || original.preset === 'off';
         startSaving(async () => {
-            const value = {
+            const value: AutoVerifyPolicyValue = {
                 preset: state.preset,
-                neverTopN: state.neverTopN,
+                neverTopN,
                 requireLive: state.requireLive,
             };
             const res = policy
@@ -231,9 +250,7 @@ function GameWideSection({
     return (
         <FormSection
             title="Game-wide"
-            status={
-                policy && policy.value.preset !== 'off' ? 'done' : undefined
-            }
+            status={policy && original.preset !== 'off' ? 'done' : undefined}
             lede="Applies to every category on this board unless a category has its own override below."
         >
             <PolicyControls
@@ -248,7 +265,7 @@ function GameWideSection({
                         type="button"
                         className={kit.saveBtn}
                         onClick={handleSave}
-                        disabled={isSaving || !dirty}
+                        disabled={isSaving || !dirty || invalid}
                     >
                         {isSaving ? 'Saving…' : 'Save'}
                     </button>
@@ -289,13 +306,17 @@ function CategoryOverrideRow({
         setState(policy ? stateFromPolicy(policy) : defaultState());
     }, [policy]);
 
+    const neverTopN = parseNeverTopN(state.neverTopN);
+    const invalid = neverTopN === null;
+
     const handleSave = () => {
+        if (neverTopN === null) return;
         setError(null);
         const wasOff = !policy || stateFromPolicy(policy).preset === 'off';
         startSaving(async () => {
-            const value = {
+            const value: AutoVerifyPolicyValue = {
                 preset: state.preset,
-                neverTopN: state.neverTopN,
+                neverTopN,
                 requireLive: state.requireLive,
             };
             const res = policy
@@ -338,13 +359,15 @@ function CategoryOverrideRow({
         });
     };
 
+    const overrideSummary = policy ? stateFromPolicy(policy) : null;
+
     return (
         <div className={styles.overrideRow}>
             <div className={styles.overrideHead}>
                 <span className={styles.overrideName}>{category.display}</span>
                 <span className={styles.overrideSummary}>
-                    {policy
-                        ? `${policy.value.preset} · top ${policy.value.neverTopN} · ${policy.value.requireLive ? 'live required' : 'live optional'}`
+                    {overrideSummary
+                        ? `${overrideSummary.preset} · top ${overrideSummary.neverTopN} · ${overrideSummary.requireLive ? 'live required' : 'live optional'}`
                         : '(inherits game)'}
                 </span>
                 {!expanded && (
@@ -372,7 +395,7 @@ function CategoryOverrideRow({
                                 type="button"
                                 className={kit.saveBtn}
                                 onClick={handleSave}
-                                disabled={isSaving}
+                                disabled={isSaving || invalid}
                             >
                                 {isSaving ? 'Saving…' : 'Save'}
                             </button>
@@ -415,6 +438,7 @@ export function AutoVerifyPane({ gameSlug, gameDisplay, categories }: Props) {
     const [policies, setPolicies] = useState<BoardPolicyRow[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [hasLoaded, setHasLoaded] = useState(false);
     const [overridesOpen, setOverridesOpen] = useState(false);
 
     const load = useCallback(async () => {
@@ -425,6 +449,7 @@ export function AutoVerifyPane({ gameSlug, gameDisplay, categories }: Props) {
         }
         setError(null);
         setPolicies(res.policies);
+        setHasLoaded(true);
     }, [gameSlug]);
 
     useEffect(() => {
@@ -437,6 +462,11 @@ export function AutoVerifyPane({ gameSlug, gameDisplay, categories }: Props) {
             cancelled = true;
         };
     }, [load]);
+
+    const handleRetry = () => {
+        setLoading(true);
+        load().finally(() => setLoading(false));
+    };
 
     const gamePolicy = policies.find((p) => p.categoryId === null);
     const policyByCategory = new Map(
@@ -466,12 +496,25 @@ export function AutoVerifyPane({ gameSlug, gameDisplay, categories }: Props) {
                 human.
             </p>
 
-            {loading ? (
+            {loading && !hasLoaded ? (
                 <p className="text-muted">Loading auto-verify settings…</p>
-            ) : error ? (
+            ) : error && !hasLoaded ? (
                 <InlineError>{error}</InlineError>
             ) : (
                 <>
+                    {error && (
+                        <div className="mb-3">
+                            <InlineError>{error}</InlineError>
+                            <button
+                                type="button"
+                                className={kit.resetBtn}
+                                onClick={handleRetry}
+                                disabled={loading}
+                            >
+                                Retry
+                            </button>
+                        </div>
+                    )}
                     <GameWideSection
                         gameSlug={gameSlug}
                         policy={gamePolicy}
