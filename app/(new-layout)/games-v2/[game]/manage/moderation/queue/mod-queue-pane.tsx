@@ -11,6 +11,7 @@ import type {
     ModQueueStatus,
 } from '../../../../../../../types/moderation.types';
 import { HideIdentityDialog } from '../../../leaderboard/hide-identity-dialog';
+import { AutoVerifiedBadge } from '../../../run-view/run-badges';
 import { BackLink } from '../../../shared/back-link';
 import type { ModVerb, RunActionTarget } from '../shared/action-model';
 import { RunActionDialog } from '../shared/run-action-dialog';
@@ -59,6 +60,18 @@ function waitingLabel(days: number | null): string {
     return months === 1 ? '1 month' : `${months} months`;
 }
 
+const SPOT_CHECK_WINDOW_MS = 7 * 86_400_000;
+
+/** The spot-check filter: passed the auto-verify checks, and recently — an
+ * older `'grant'`-verified row can have `verifiedAt: null`, which just
+ * excludes it here rather than throwing. */
+function isRecentAutoVerify(row: ModQueueItem, now: number): boolean {
+    if (row.verifiedVia !== 'auto' || !row.verifiedAt) return false;
+    const t = Date.parse(row.verifiedAt);
+    if (Number.isNaN(t)) return false;
+    return now - t <= SPOT_CHECK_WINDOW_MS;
+}
+
 export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
     const baseHref = `/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation`;
     const boardHref = `/games-v2/${encodeURIComponent(gameSlug)}`;
@@ -66,6 +79,11 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
     const [status, setStatus] = useState<ModQueueStatus>('pending');
     const [categoryId, setCategoryId] = useState<number | null>(null);
     const [page, setPage] = useState(1);
+    // Spot-check filter: forces the fetch to `verified` and narrows the
+    // loaded page to recent auto-verify passes. Kept separate from `status`
+    // so the status tab the moderator had picked is still there when they
+    // turn the toggle back off.
+    const [autoVerifyOnly, setAutoVerifyOnly] = useState(false);
 
     const [rows, setRows] = useState<ModQueueItem[] | null>(null);
     const [totalItems, setTotalItems] = useState(0);
@@ -96,6 +114,7 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
         status?: ModQueueStatus;
         categoryId?: number | null;
         page?: number;
+        autoVerifyOnly?: boolean;
     }) => {
         const nextStatus = overrides?.status ?? status;
         const nextCategory =
@@ -103,12 +122,18 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
                 ? overrides.categoryId
                 : categoryId;
         const nextPage = overrides?.page ?? page;
+        const nextAutoVerifyOnly = overrides?.autoVerifyOnly ?? autoVerifyOnly;
         setError(null);
         setSelected(new Set());
         const ticket = ++requestId.current;
         startLoad(async () => {
+            // The spot-check filter only makes sense over verified runs, so
+            // it overrides whatever status tab is selected for the fetch —
+            // the tab itself is left alone and wins again once the toggle
+            // comes back off.
+            const fetchStatus = nextAutoVerifyOnly ? 'verified' : nextStatus;
             const res = await loadModQueueAction(gameSlug, {
-                status: nextStatus,
+                status: fetchStatus,
                 categoryId: nextCategory ?? undefined,
                 page: nextPage,
                 pageSize: PAGE_SIZE,
@@ -120,9 +145,17 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
                 setTotalItems(0);
                 return;
             }
-            setRows(res.page.items);
+            // Filtered client-side, over the page the backend already
+            // returned — paging still walks the full verified set, it just
+            // may show fewer (or zero) matching rows on any given page.
+            const items = nextAutoVerifyOnly
+                ? res.page.items.filter((r) =>
+                      isRecentAutoVerify(r, Date.now()),
+                  )
+                : res.page.items;
+            setRows(items);
             setTotalItems(res.page.totalItems);
-            setLoadedStatus(nextStatus);
+            setLoadedStatus(fetchStatus);
         });
     };
 
@@ -141,6 +174,7 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
             .map((r) => waitingDays(r.createdAt, now))
             .filter((d): d is number => d != null);
         return {
+            count: rows.length,
             withVod,
             noVod: rows.length - withVod,
             guests,
@@ -290,6 +324,12 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
                             type="button"
                             role="tab"
                             aria-selected={status === tab.value}
+                            disabled={autoVerifyOnly}
+                            title={
+                                autoVerifyOnly
+                                    ? 'Spot-check only looks at approved runs — turn it off to pick a different tab.'
+                                    : undefined
+                            }
                             className={
                                 status === tab.value
                                     ? `${styles.tab} ${styles.tabActive}`
@@ -331,14 +371,50 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
                         ))}
                     </select>
                 </div>
+
+                <div className={styles.spotCheck}>
+                    <div className="form-check form-switch">
+                        <input
+                            id="queue-auto-verify-only"
+                            type="checkbox"
+                            role="switch"
+                            className="form-check-input"
+                            checked={autoVerifyOnly}
+                            onChange={(e) => {
+                                const next = e.target.checked;
+                                setAutoVerifyOnly(next);
+                                setPage(1);
+                                load({ autoVerifyOnly: next, page: 1 });
+                            }}
+                        />
+                        <label
+                            htmlFor="queue-auto-verify-only"
+                            className="form-check-label small"
+                        >
+                            Auto-verified, last 7 days
+                        </label>
+                    </div>
+                    {autoVerifyOnly && (
+                        <p className={styles.spotCheckNote}>
+                            Spot-checking approved runs from this page only —
+                            page through to check others.
+                        </p>
+                    )}
+                </div>
             </div>
 
             {summary && (
                 <div className={styles.summary}>
                     <div className={styles.stat}>
-                        <span className={styles.statValue}>{totalItems}</span>
+                        <span className={styles.statValue}>
+                            {autoVerifyOnly ? summary.count : totalItems}
+                        </span>
                         <span className={styles.statLabel}>
-                            {loadedStatus === 'pending' ? 'waiting' : 'runs'}
+                            {autoVerifyOnly
+                                ? 'auto-verified here'
+                                : loadedStatus === 'pending'
+                                  ? 'waiting'
+                                  : 'runs'}
                         </span>
                     </div>
                     <div className={styles.stat}>
@@ -387,9 +463,11 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
                     />
                     <p className={styles.emptyTitle}>Nothing is waiting</p>
                     <p className="mb-0">
-                        {loadedStatus === 'pending'
-                            ? 'Every run on a visible board has a verdict.'
-                            : 'No runs match this view.'}
+                        {autoVerifyOnly
+                            ? 'No auto-verified runs on this page in the last 7 days.'
+                            : loadedStatus === 'pending'
+                              ? 'Every run on a visible board has a verdict.'
+                              : 'No runs match this view.'}
                     </p>
                 </div>
             )}
@@ -397,7 +475,7 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
             {rows != null && rows.length > 0 && (
                 <div
                     className={
-                        status === loadedStatus
+                        (autoVerifyOnly ? 'verified' : status) === loadedStatus
                             ? 'table-responsive'
                             : `table-responsive ${styles.stale}`
                     }
@@ -510,6 +588,11 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
                                         </td>
                                         <td>
                                             <div className={styles.meta}>
+                                                <AutoVerifiedBadge
+                                                    verifiedVia={
+                                                        row.verifiedVia ?? null
+                                                    }
+                                                />
                                                 {row.vodUrl ? (
                                                     <button
                                                         type="button"

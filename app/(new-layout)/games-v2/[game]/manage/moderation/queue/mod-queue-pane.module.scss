@@ -31,6 +31,18 @@
     min-width: 14rem;
 }
 
+.spotCheck {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+}
+
+.spotCheckNote {
+    margin: 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
 .filterLabel {
     @include board.board-eyebrow;
     display: block;
