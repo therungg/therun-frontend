@@ -299,6 +299,12 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
         load();
     };
 
+    // While the toggle is on, the table shows verified rows regardless of
+    // `status` — the tab strip must agree, or it contradicts what's on
+    // screen. `status` itself stays untouched so it's restored when the
+    // toggle goes off.
+    const highlightedStatus = autoVerifyOnly ? 'verified' : status;
+
     return (
         <div className={consoleStyles.surface}>
             <div className={consoleStyles.paneHeader}>
@@ -323,7 +329,7 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
                             key={tab.value}
                             type="button"
                             role="tab"
-                            aria-selected={status === tab.value}
+                            aria-selected={highlightedStatus === tab.value}
                             disabled={autoVerifyOnly}
                             title={
                                 autoVerifyOnly
@@ -331,7 +337,7 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
                                     : undefined
                             }
                             className={
-                                status === tab.value
+                                highlightedStatus === tab.value
                                     ? `${styles.tab} ${styles.tabActive}`
                                     : styles.tab
                             }
