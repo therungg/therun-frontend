@@ -95,17 +95,29 @@ export function unionSubcategoryVariables(
  * key, unknown value, empty) is absent, and absent means "default".
  */
 export function readSliceSelection(
-    params: Record<string, string | undefined> | URLSearchParams,
+    params: Record<string, string | string[] | undefined> | URLSearchParams,
     variables: StandingsVariable[],
 ): SliceSelection {
-    const get = (key: string): string | undefined =>
-        params instanceof URLSearchParams
-            ? (params.get(key) ?? undefined)
-            : params[key];
+    // Keys matched case-insensitively (same rule the board's own param
+    // parser uses — see app/(new-layout)/games-v2/[game]/data.ts). A
+    // repeated key on the Record form (Next's searchParams for
+    // `?x=a&x=b`) arrives as `string[]`, not `string`; keep the first
+    // occurrence, mirroring `URLSearchParams.get()`.
+    const lowered = new Map<string, string | string[] | undefined>();
+    if (params instanceof URLSearchParams) {
+        for (const [key, value] of params.entries()) {
+            const lower = key.toLowerCase();
+            if (!lowered.has(lower)) lowered.set(lower, value);
+        }
+    } else {
+        for (const [key, value] of Object.entries(params)) {
+            lowered.set(key.toLowerCase(), value);
+        }
+    }
     const selection: SliceSelection = {};
     for (const v of variables) {
-        const raw = get(v.key);
-        if (!raw) continue;
+        const raw = lowered.get(v.key);
+        if (typeof raw !== 'string' || raw === '') continue;
         const norm = normalizeVariableName(raw);
         if (v.values.some((x) => x.value === norm)) selection[v.key] = norm;
     }
