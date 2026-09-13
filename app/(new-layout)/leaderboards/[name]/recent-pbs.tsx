@@ -1,6 +1,6 @@
 import { formatSubcategoryKey } from '~app/(new-layout)/games-v2/[game]/labels';
-import Link from '~src/components/link';
 import type { LeaderboardsProfileRecentPb } from '../../../../types/leaderboards-profile.types';
+import { RunLink } from './board-link';
 import { formatEntryTime, formatProfileDate } from './format';
 import styles from './leaderboards-profile.module.scss';
 
@@ -15,9 +15,11 @@ export function RecentPbs({ pbs }: { pbs: LeaderboardsProfileRecentPb[] }) {
             </h2>
             <div className={styles.recent}>
                 {pbs.slice(0, LIMIT).map((pb) => (
-                    <Link
+                    <RunLink
                         key={pb.runId}
-                        href={`/games-v2/${encodeURIComponent(pb.gameSlug)}/run/${pb.runId}`}
+                        gameSlug={pb.gameSlug}
+                        game={pb.game}
+                        runId={pb.runId}
                         className={styles.recentRow}
                     >
                         <span className={styles.recentName}>
@@ -47,7 +49,7 @@ export function RecentPbs({ pbs }: { pbs: LeaderboardsProfileRecentPb[] }) {
                                 {formatProfileDate(pb.achievedAt)}
                             </span>
                         </span>
-                    </Link>
+                    </RunLink>
                 ))}
             </div>
         </section>

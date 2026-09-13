@@ -18,7 +18,7 @@ export async function RejectedEntries({
 
     const rejected = await getRejectedEntriesAsViewer(name, session.id);
     if (rejected.length === 0) return null;
-    const slugOf = new Map(games.map((g) => [g.gameId, g.gameSlug]));
+    const gameOf = new Map(games.map((g) => [g.gameId, g]));
     return (
         <section className={styles.game}>
             <div className={styles.gameTitle}>Rejected</div>
@@ -30,7 +30,8 @@ export async function RejectedEntries({
                     <EntryRow
                         key={`${e.kind}-${e.runId ?? e.manualTimeId}`}
                         entry={e}
-                        gameSlug={slugOf.get(e.gameId) ?? ''}
+                        gameSlug={gameOf.get(e.gameId)?.gameSlug ?? ''}
+                        game={gameOf.get(e.gameId)?.game ?? ''}
                         country={country}
                     />
                 ))}

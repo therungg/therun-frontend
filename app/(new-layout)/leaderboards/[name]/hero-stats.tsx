@@ -1,5 +1,5 @@
-import Link from '~src/components/link';
 import type { LeaderboardsProfileStanding } from '../../../../types/leaderboards-profile.types';
+import { GameLink } from './board-link';
 import styles from './leaderboards-profile.module.scss';
 
 const n = (v: number) => v.toLocaleString('en-US');
@@ -26,11 +26,12 @@ export function HeroStats({
             {standing.best ? (
                 <span className={styles.heroStat}>
                     <b>#{n(standing.best.rank)}</b>
-                    <Link
-                        href={`/games-v2/${encodeURIComponent(standing.best.gameSlug)}`}
+                    <GameLink
+                        gameSlug={standing.best.gameSlug}
+                        game={standing.best.game}
                     >
                         {standing.best.game} · {standing.best.category}
-                    </Link>
+                    </GameLink>
                 </span>
             ) : null}
         </div>
