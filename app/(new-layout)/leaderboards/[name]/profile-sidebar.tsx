@@ -1,5 +1,6 @@
 import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
+import { safeEncodeURI } from '~src/utils/uri';
 import type { LeaderboardsProfile } from '../../../../types/leaderboards-profile.types';
 import { ActivityHeatmap } from './activity-heatmap';
 import { formatProfileDate } from './format';
@@ -45,7 +46,7 @@ function AboutCard({ runner }: { runner: LeaderboardsProfile['runner'] }) {
                                 <span key={m.gameId}>
                                     {i > 0 ? ', ' : ''}
                                     <Link
-                                        href={`/games-v2/${encodeURIComponent(m.gameSlug)}`}
+                                        href={`/games/${safeEncodeURI(m.game)}`}
                                     >
                                         {m.game}
                                     </Link>

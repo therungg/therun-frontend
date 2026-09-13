@@ -4,10 +4,6 @@ function str(v: unknown): string | null {
     return typeof v === 'string' && v.length > 0 ? v : null;
 }
 
-function num(v: unknown): number | null {
-    return typeof v === 'number' && Number.isFinite(v) ? v : null;
-}
-
 /** "Any% run of Celeste" / "run of Celeste" / null when no game name is known. */
 function runSubject(
     gameDisplay: string | null,
@@ -84,42 +80,5 @@ export function describe(n: NotificationRow): string {
         }
         default:
             return 'You have a new notification.';
-    }
-}
-
-/**
- * Link target for a notification, when the payload carries enough to build one.
- * Every field is typeof-guarded — a missing or mistyped field means no link
- * rather than a broken one (see W4 handoff for payload guarantees).
- */
-export function linkFor(n: NotificationRow): string | null {
-    const p = (n.payload ?? {}) as Record<string, unknown>;
-    const gameSlug = str(p.gameSlug);
-
-    switch (n.type) {
-        case 'board_claim_approved':
-            return gameSlug
-                ? `/games-v2/${encodeURIComponent(gameSlug)}/setup`
-                : null;
-        case 'board_claim_denied':
-            return gameSlug
-                ? `/games-v2/${encodeURIComponent(gameSlug)}`
-                : null;
-        case 'verdict_applied': {
-            const runId = num(p.runId);
-            return gameSlug && runId !== null
-                ? `/games-v2/${encodeURIComponent(gameSlug)}/run/${runId}`
-                : null;
-        }
-        case 'manual_time_verdict':
-        case 'manual_time_created':
-        case 'manual_time_deleted': {
-            const manualTimeId = num(p.manualTimeId);
-            return gameSlug && manualTimeId !== null
-                ? `/games-v2/${encodeURIComponent(gameSlug)}/manual/${manualTimeId}`
-                : null;
-        }
-        default:
-            return null;
     }
 }

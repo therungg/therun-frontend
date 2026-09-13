@@ -1,4 +1,5 @@
 import Link from '~src/components/link';
+import { safeEncodeURI } from '~src/utils/uri';
 import type { LeaderboardsProfileStanding } from '../../../../types/leaderboards-profile.types';
 import styles from './leaderboards-profile.module.scss';
 
@@ -26,9 +27,7 @@ export function HeroStats({
             {standing.best ? (
                 <span className={styles.heroStat}>
                     <b>#{n(standing.best.rank)}</b>
-                    <Link
-                        href={`/games-v2/${encodeURIComponent(standing.best.gameSlug)}`}
-                    >
+                    <Link href={`/games/${safeEncodeURI(standing.best.game)}`}>
                         {standing.best.game} · {standing.best.category}
                     </Link>
                 </span>

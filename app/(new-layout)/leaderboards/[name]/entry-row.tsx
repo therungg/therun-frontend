@@ -16,17 +16,11 @@ const MEDALS: Record<number, string> = { 1: 'gold', 2: 'silver', 3: 'bronze' };
 
 export function EntryRow({
     entry,
-    gameSlug,
     country,
 }: {
     entry: LeaderboardsProfileEntry;
-    gameSlug: string;
     country: string | null;
 }) {
-    const href =
-        gameSlug && entry.kind === 'run' && entry.runId !== null
-            ? `/games-v2/${encodeURIComponent(gameSlug)}/run/${entry.runId}`
-            : null;
     // Not deployed everywhere yet — read defensively.
     const attempts = entry.attempts ?? null;
     const pbHistory = entry.pbHistory ?? [];
@@ -60,15 +54,7 @@ export function EntryRow({
                 ) : null}
             </span>
             <span className={styles.entryName}>
-                {href ? (
-                    <Link href={href} className={styles.entryCategory}>
-                        {entry.category}
-                    </Link>
-                ) : (
-                    <span className={styles.entryCategory}>
-                        {entry.category}
-                    </span>
-                )}
+                <span className={styles.entryCategory}>{entry.category}</span>
                 {vars ? (
                     <span className={styles.entryVars}> {vars}</span>
                 ) : null}

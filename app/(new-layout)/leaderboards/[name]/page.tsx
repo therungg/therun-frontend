@@ -131,7 +131,6 @@ export default async function LeaderboardsProfilePage({ params }: PageProps) {
                     <Suspense fallback={null}>
                         <RejectedEntries
                             name={profile.runner.name}
-                            games={profile.games}
                             country={profile.runner.country}
                         />
                     </Suspense>

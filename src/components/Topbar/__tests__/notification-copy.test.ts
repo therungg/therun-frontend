@@ -1,9 +1,6 @@
 import { expect, test, describe as vDescribe } from 'vitest';
 import type { NotificationRow } from '../../../../types/moderation.types';
-import {
-    describe as describeNotification,
-    linkFor,
-} from '../notification-copy';
+import { describe as describeNotification } from '../notification-copy';
 
 const row = (over: Partial<NotificationRow>): NotificationRow => ({
     id: 1,
@@ -13,126 +10,6 @@ const row = (over: Partial<NotificationRow>): NotificationRow => ({
     readAt: null,
     createdAt: '2026-07-18T00:00:00.000Z',
     ...over,
-});
-
-vDescribe('linkFor', () => {
-    vDescribe('board_claim_approved', () => {
-        test('links to setup when gameSlug is present', () => {
-            const n = row({
-                type: 'board_claim_approved',
-                payload: { gameSlug: 'celeste' },
-            });
-            expect(linkFor(n)).toBe('/games-v2/celeste/setup');
-        });
-        test('null when gameSlug is missing', () => {
-            const n = row({ type: 'board_claim_approved', payload: {} });
-            expect(linkFor(n)).toBeNull();
-        });
-        test('null when gameSlug is wrong-typed', () => {
-            const n = row({
-                type: 'board_claim_approved',
-                payload: { gameSlug: 123 },
-            });
-            expect(linkFor(n)).toBeNull();
-        });
-    });
-
-    vDescribe('board_claim_denied', () => {
-        test('links to the game when gameSlug is present', () => {
-            const n = row({
-                type: 'board_claim_denied',
-                payload: { gameSlug: 'celeste' },
-            });
-            expect(linkFor(n)).toBe('/games-v2/celeste');
-        });
-        test('null when gameSlug is missing', () => {
-            const n = row({ type: 'board_claim_denied', payload: {} });
-            expect(linkFor(n)).toBeNull();
-        });
-        test('null when gameSlug is null', () => {
-            const n = row({
-                type: 'board_claim_denied',
-                payload: { gameSlug: null },
-            });
-            expect(linkFor(n)).toBeNull();
-        });
-    });
-
-    vDescribe('verdict_applied', () => {
-        test('links to the run when gameSlug and runId are present', () => {
-            const n = row({
-                type: 'verdict_applied',
-                payload: { gameSlug: 'celeste', runId: 42 },
-            });
-            expect(linkFor(n)).toBe('/games-v2/celeste/run/42');
-        });
-        test('null when gameSlug is missing (current backend emission)', () => {
-            const n = row({
-                type: 'verdict_applied',
-                payload: { runId: 42, action: 'reject' },
-            });
-            expect(linkFor(n)).toBeNull();
-        });
-        test('null when runId is wrong-typed', () => {
-            const n = row({
-                type: 'verdict_applied',
-                payload: { gameSlug: 'celeste', runId: '42' },
-            });
-            expect(linkFor(n)).toBeNull();
-        });
-    });
-
-    vDescribe('manual_time_verdict / created / deleted', () => {
-        test.each([
-            'manual_time_verdict',
-            'manual_time_created',
-            'manual_time_deleted',
-        ] as const)(
-            '%s links when gameSlug and manualTimeId present',
-            (type) => {
-                const n = row({
-                    type,
-                    payload: { gameSlug: 'celeste', manualTimeId: 7 },
-                });
-                expect(linkFor(n)).toBe('/games-v2/celeste/manual/7');
-            },
-        );
-        test.each([
-            'manual_time_verdict',
-            'manual_time_created',
-            'manual_time_deleted',
-        ] as const)('%s is null when manualTimeId is missing', (type) => {
-            const n = row({ type, payload: { gameSlug: 'celeste' } });
-            expect(linkFor(n)).toBeNull();
-        });
-        test.each([
-            'manual_time_verdict',
-            'manual_time_created',
-            'manual_time_deleted',
-        ] as const)('%s is null when manualTimeId is wrong-typed', (type) => {
-            const n = row({
-                type,
-                payload: { gameSlug: 'celeste', manualTimeId: '7' },
-            });
-            expect(linkFor(n)).toBeNull();
-        });
-    });
-
-    test('unknown type never links', () => {
-        const n = row({
-            type: 'something_new',
-            payload: { gameSlug: 'celeste', runId: 1, manualTimeId: 1 },
-        });
-        expect(linkFor(n)).toBeNull();
-    });
-
-    test('missing payload entirely does not throw and returns null', () => {
-        const n = row({
-            type: 'verdict_applied',
-            payload: undefined as unknown as Record<string, unknown>,
-        });
-        expect(linkFor(n)).toBeNull();
-    });
 });
 
 vDescribe('describeNotification', () => {

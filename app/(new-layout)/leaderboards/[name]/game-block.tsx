@@ -1,5 +1,6 @@
 import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
+import { safeEncodeURI } from '~src/utils/uri';
 import type {
     LeaderboardsProfileEntry,
     LeaderboardsProfileGame,
@@ -58,7 +59,7 @@ export function GameBlock({
                 />
                 <div>
                     <Link
-                        href={`/games-v2/${encodeURIComponent(game.gameSlug)}`}
+                        href={`/games/${safeEncodeURI(game.game)}`}
                         className={styles.gameTitle}
                     >
                         {game.game}
@@ -73,7 +74,6 @@ export function GameBlock({
                     <EntryRow
                         key={`${e.kind}-${e.runId ?? e.manualTimeId}`}
                         entry={e}
-                        gameSlug={game.gameSlug}
                         country={country}
                     />
                 ))}
@@ -84,7 +84,6 @@ export function GameBlock({
                             <EntryRow
                                 key={`${e.kind}-${e.runId ?? e.manualTimeId}`}
                                 entry={e}
-                                gameSlug={game.gameSlug}
                                 country={country}
                             />
                         ))}
