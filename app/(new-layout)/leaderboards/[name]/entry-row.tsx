@@ -2,7 +2,6 @@ import { PlayBtn } from 'react-bootstrap-icons';
 import { VerificationBadge } from '~app/(new-layout)/games-v2/[game]/run-view/run-badges';
 import Link from '~src/components/link';
 import type { LeaderboardsProfileEntry } from '../../../../types/leaderboards-profile.types';
-import { RunLink } from './board-link';
 import {
     entrySubcategoryLabel,
     formatEntryTime,
@@ -17,13 +16,9 @@ const MEDALS: Record<number, string> = { 1: 'gold', 2: 'silver', 3: 'bronze' };
 
 export function EntryRow({
     entry,
-    gameSlug,
-    game,
     country,
 }: {
     entry: LeaderboardsProfileEntry;
-    gameSlug: string;
-    game: string;
     country: string | null;
 }) {
     // Not deployed everywhere yet — read defensively.
@@ -59,20 +54,7 @@ export function EntryRow({
                 ) : null}
             </span>
             <span className={styles.entryName}>
-                {entry.kind === 'run' && entry.runId !== null ? (
-                    <RunLink
-                        gameSlug={gameSlug}
-                        game={game}
-                        runId={entry.runId}
-                        className={styles.entryCategory}
-                    >
-                        {entry.category}
-                    </RunLink>
-                ) : (
-                    <span className={styles.entryCategory}>
-                        {entry.category}
-                    </span>
-                )}
+                <span className={styles.entryCategory}>{entry.category}</span>
                 {vars ? (
                     <span className={styles.entryVars}> {vars}</span>
                 ) : null}

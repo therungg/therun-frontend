@@ -1,9 +1,10 @@
 import { GameImage } from '~src/components/image/gameimage';
+import Link from '~src/components/link';
+import { safeEncodeURI } from '~src/utils/uri';
 import type {
     LeaderboardsProfileEntry,
     LeaderboardsProfileGame,
 } from '../../../../types/leaderboards-profile.types';
-import { GameLink } from './board-link';
 import { EntryRow } from './entry-row';
 import { formatProfileDate } from './format';
 import styles from './leaderboards-profile.module.scss';
@@ -57,13 +58,12 @@ export function GameBlock({
                     height={48}
                 />
                 <div>
-                    <GameLink
-                        gameSlug={game.gameSlug}
-                        game={game.game}
+                    <Link
+                        href={`/games/${safeEncodeURI(game.game)}`}
                         className={styles.gameTitle}
                     >
                         {game.game}
-                    </GameLink>
+                    </Link>
                     <div className={styles.gameSummary}>
                         {summary.join(' · ')}
                     </div>
@@ -74,8 +74,6 @@ export function GameBlock({
                     <EntryRow
                         key={`${e.kind}-${e.runId ?? e.manualTimeId}`}
                         entry={e}
-                        gameSlug={game.gameSlug}
-                        game={game.game}
                         country={country}
                     />
                 ))}
@@ -86,8 +84,6 @@ export function GameBlock({
                             <EntryRow
                                 key={`${e.kind}-${e.runId ?? e.manualTimeId}`}
                                 entry={e}
-                                gameSlug={game.gameSlug}
-                                game={game.game}
                                 country={country}
                             />
                         ))}

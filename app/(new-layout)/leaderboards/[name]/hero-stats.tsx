@@ -1,5 +1,6 @@
+import Link from '~src/components/link';
+import { safeEncodeURI } from '~src/utils/uri';
 import type { LeaderboardsProfileStanding } from '../../../../types/leaderboards-profile.types';
-import { GameLink } from './board-link';
 import styles from './leaderboards-profile.module.scss';
 
 const n = (v: number) => v.toLocaleString('en-US');
@@ -26,12 +27,9 @@ export function HeroStats({
             {standing.best ? (
                 <span className={styles.heroStat}>
                     <b>#{n(standing.best.rank)}</b>
-                    <GameLink
-                        gameSlug={standing.best.gameSlug}
-                        game={standing.best.game}
-                    >
+                    <Link href={`/games/${safeEncodeURI(standing.best.game)}`}>
                         {standing.best.game} · {standing.best.category}
-                    </GameLink>
+                    </Link>
                 </span>
             ) : null}
         </div>

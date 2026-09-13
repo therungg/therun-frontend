@@ -1,7 +1,8 @@
 import { GameImage } from '~src/components/image/gameimage';
+import Link from '~src/components/link';
+import { safeEncodeURI } from '~src/utils/uri';
 import type { LeaderboardsProfile } from '../../../../types/leaderboards-profile.types';
 import { ActivityHeatmap } from './activity-heatmap';
-import { GameLink } from './board-link';
 import { formatProfileDate } from './format';
 import { plural } from './hero-stats';
 import styles from './leaderboards-profile.module.scss';
@@ -44,12 +45,11 @@ function AboutCard({ runner }: { runner: LeaderboardsProfile['runner'] }) {
                             {runner.moderates.map((m, i) => (
                                 <span key={m.gameId}>
                                     {i > 0 ? ', ' : ''}
-                                    <GameLink
-                                        gameSlug={m.gameSlug}
-                                        game={m.game}
+                                    <Link
+                                        href={`/games/${safeEncodeURI(m.game)}`}
                                     >
                                         {m.game}
-                                    </GameLink>
+                                    </Link>
                                 </span>
                             ))}
                         </li>

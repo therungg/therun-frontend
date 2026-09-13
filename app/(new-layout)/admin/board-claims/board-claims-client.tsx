@@ -60,11 +60,7 @@ export function BoardClaimsClient({ groups }: Props) {
             {groups.map((g) => (
                 <div key={g.gameId} className={styles.gameCard}>
                     <div className={styles.gameHead}>
-                        <Link
-                            href={`/games-v2/${encodeURIComponent(g.gameSlug)}`}
-                        >
-                            <strong>{g.gameDisplay}</strong>
-                        </Link>
+                        <strong>{g.gameDisplay}</strong>
                         {g.board && (
                             <span className={styles.gameMeta}>
                                 {g.board.uniqueRunners} runners ·{' '}
