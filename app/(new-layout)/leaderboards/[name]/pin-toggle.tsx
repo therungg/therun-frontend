@@ -40,7 +40,6 @@ export function PinToggle({ entry }: { entry: LeaderboardsProfileEntry }) {
             }
             aria-pressed={pinned}
             aria-disabled={full}
-            aria-label={pinned ? 'Unpin' : 'Pin'}
             title={
                 full
                     ? `${PIN_LIMIT} pins max, remove one first`
@@ -51,10 +50,11 @@ export function PinToggle({ entry }: { entry: LeaderboardsProfileEntry }) {
             onClick={toggle}
         >
             {pinned ? (
-                <PinFill size={14} aria-hidden />
+                <PinFill size={13} aria-hidden />
             ) : (
-                <Pin size={14} aria-hidden />
+                <Pin size={13} aria-hidden />
             )}
+            {pinned ? 'Pinned' : 'Pin'}
         </button>
     );
 }

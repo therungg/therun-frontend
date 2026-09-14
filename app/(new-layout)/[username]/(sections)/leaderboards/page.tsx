@@ -5,11 +5,17 @@ import { getLeaderboardsProfile } from '~src/lib/leaderboards-profile';
 import buildMetadata from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 import { plural } from '../../../leaderboards/[name]/format';
+import { OwnerControls } from '../../../leaderboards/[name]/owner-controls';
+import { PinnedRuns } from '../../../leaderboards/[name]/pinned-runs';
 import { ProfileTabs } from '../../../leaderboards/[name]/profile-tabs';
 import { RejectedEntries } from '../../../leaderboards/[name]/rejected-entries';
 import { ShowcaseProvider } from '../../../leaderboards/[name]/showcase-provider';
 import { DEFAULT_LAYOUT } from '../../../leaderboards/[name]/showcase-rules';
-import styles from '../sections.module.scss';
+import sectionStyles from '../sections.module.scss';
+import styles from './leaderboards.module.scss';
+import { SectionEditBar } from './section-edit-bar';
+import { ShowcaseHeading } from './showcase-heading';
+import { StandingStrip } from './standing-strip';
 
 interface PageProps {
     params: Promise<{ username: string }>;
@@ -32,41 +38,49 @@ export default async function RunnerLeaderboardsPage({ params }: PageProps) {
     const { username } = await params;
     const profile = await getLeaderboardsProfile(safeDecodeURI(username));
     if (!profile) notFound();
-    const { standing } = profile;
     const games = profile.games.map((g) => ({ ...g, theme: null }));
+    // An older backend sends no layout; saving from that would wipe the
+    // runner's arrangement, so there is nothing to customize.
+    const canCustomize =
+        profile.layout !== undefined && profile.runner.userId !== null;
+    const empty = profile.games.length === 0;
+
     return (
         <ShowcaseProvider
             games={games}
             layout={profile.layout ?? DEFAULT_LAYOUT}
         >
-            <div className={styles.facts}>
-                <div className={styles.fact}>
-                    <b>{standing.boards.toLocaleString('en-US')}</b>
-                    <span>{plural(standing.boards, 'Board', 'Boards')}</span>
-                </div>
-                <div className={styles.fact}>
-                    <b>{standing.first.toLocaleString('en-US')}</b>
-                    <span>
-                        {plural(standing.first, 'First place', 'First places')}
-                    </span>
-                </div>
-                <div className={styles.fact}>
-                    <b>{standing.podiums.toLocaleString('en-US')}</b>
-                    <span>{plural(standing.podiums, 'Podium', 'Podiums')}</span>
-                </div>
-                <div className={styles.fact}>
-                    <b>{standing.topTen.toLocaleString('en-US')}</b>
-                    <span>Top 10</span>
-                </div>
-            </div>
-            <div className={styles.ledger}>
-                <ProfileTabs country={profile.runner.country} />
-                <Suspense fallback={null}>
-                    <RejectedEntries
-                        name={profile.runner.name}
-                        country={profile.runner.country}
-                    />
-                </Suspense>
+            <div className={styles.page}>
+                {empty ? null : <StandingStrip profile={profile} />}
+                {empty ? null : (
+                    <section className={styles.block}>
+                        <ShowcaseHeading>
+                            {canCustomize ? (
+                                <Suspense fallback={null}>
+                                    <OwnerControls name={profile.runner.name} />
+                                </Suspense>
+                            ) : null}
+                        </ShowcaseHeading>
+                        <div className={sectionStyles.ledger}>
+                            <PinnedRuns />
+                        </div>
+                    </section>
+                )}
+                <section className={styles.block}>
+                    {empty ? null : (
+                        <h2 className={styles.blockTitle}>All runs</h2>
+                    )}
+                    <div className={sectionStyles.ledger}>
+                        <ProfileTabs country={profile.runner.country} />
+                        <Suspense fallback={null}>
+                            <RejectedEntries
+                                name={profile.runner.name}
+                                country={profile.runner.country}
+                            />
+                        </Suspense>
+                    </div>
+                </section>
+                {canCustomize ? <SectionEditBar /> : null}
             </div>
         </ShowcaseProvider>
     );

@@ -2,12 +2,19 @@
 
 import { useState } from 'react';
 import { ArrowDown, ArrowUp, Pin, PlayFill } from 'react-bootstrap-icons';
-import { VerificationBadge } from '~app/(new-layout)/games-v2/[game]/run-view/run-badges';
 import { GameImage } from '~src/components/image/gameimage';
+import Link from '~src/components/link';
 import { Vod, youtubeParser } from '~src/components/run/dashboard/vod';
 import { isEmbeddableVod } from '~src/lib/vod-url';
+import { safeEncodeURI } from '~src/utils/uri';
 import type { PinRef } from '../../../../types/leaderboards-profile.types';
-import { formatEntryTime, formatProfileDate } from './format';
+import { EntryStatus } from './entry-row';
+import {
+    entrySubcategoryLabel,
+    formatEntryTime,
+    formatProfileDate,
+    timingLabel,
+} from './format';
 import styles from './leaderboards-profile.module.scss';
 import { move, readDragIndex, writeDragIndex } from './reorder';
 import { useShowcase } from './showcase-provider';
@@ -69,47 +76,68 @@ export function PinCard({
 }) {
     const { entry, game } = pin;
     const medal = entry.rank !== null ? MEDALS[entry.rank] : undefined;
+    const vars = entrySubcategoryLabel(entry);
+    const timing = timingLabel(entry);
     return (
         <article
             className={video ? `${styles.pin} ${styles.pinWide}` : styles.pin}
+            data-medal={medal}
             {...dragProps}
         >
             {video && entry.vodUrl ? <PinVideo vodUrl={entry.vodUrl} /> : null}
             <div className={styles.pinBody}>
-                <GameImage
-                    src={game.imageUrl ?? ''}
-                    alt=""
-                    quality="small"
-                    width={48}
-                    height={64}
-                />
+                <Link
+                    href={`/games/${safeEncodeURI(game.game)}`}
+                    className={styles.pinArt}
+                    tabIndex={-1}
+                    aria-hidden
+                >
+                    <GameImage
+                        src={game.imageUrl ?? ''}
+                        alt=""
+                        quality="medium"
+                        width={60}
+                        height={80}
+                    />
+                </Link>
                 <div className={styles.pinText}>
-                    <span
-                        className={
-                            entry.rank !== null
-                                ? styles.entryRank
-                                : `${styles.entryRank} ${styles.entryRankNone}`
-                        }
-                        data-medal={medal}
-                    >
-                        {entry.rank !== null ? `#${entry.rank}` : '—'}
-                    </span>
-                    <span className={styles.pinTitle}>
-                        {game.game} · {entry.category}
-                        {entry.level ? ` · ${entry.level}` : ''}
-                    </span>
-                    <span className={styles.pinLine}>
-                        <span className={styles.recentTime}>
-                            {formatEntryTime(entry)}
+                    <span className={styles.pinRankLine}>
+                        <span className={styles.pinRank}>
+                            {entry.rank !== null ? `#${entry.rank}` : '—'}
                         </span>
-                        {entry.runDate ? (
-                            <span className={styles.recentDate}>
-                                {formatProfileDate(entry.runDate)}
+                        {entry.rank !== null &&
+                        (entry.totalRunners ?? 0) > 1 ? (
+                            <span className={styles.pinOf}>
+                                of{' '}
+                                {(entry.totalRunners ?? 0).toLocaleString(
+                                    'en-US',
+                                )}
                             </span>
                         ) : null}
-                        <VerificationBadge status={entry.status} />
+                    </span>
+                    <span className={styles.pinGame}>{game.game}</span>
+                    <span className={styles.pinTitle}>
+                        {entry.category}
+                        {entry.level ? ` · ${entry.level}` : ''}
+                        {vars ? (
+                            <span className={styles.pinVars}> · {vars}</span>
+                        ) : null}
                     </span>
                 </div>
+            </div>
+            <div className={styles.pinFoot}>
+                <span className={styles.pinTime}>
+                    {formatEntryTime(entry)}
+                    {timing ? (
+                        <span className={styles.entryTiming}>{timing}</span>
+                    ) : null}
+                </span>
+                {entry.runDate ? (
+                    <span className={styles.pinDate}>
+                        {formatProfileDate(entry.runDate)}
+                    </span>
+                ) : null}
+                <EntryStatus entry={entry} />
             </div>
             {children}
         </article>
@@ -180,11 +208,10 @@ export function PinnedRuns() {
                                         <button
                                             type="button"
                                             className={styles.pinToggle}
-                                            aria-label="Pin"
-                                            title="Pin"
                                             onClick={() => addPin(ref)}
                                         >
-                                            <Pin size={14} aria-hidden />
+                                            <Pin size={13} aria-hidden />
+                                            Pin this
                                         </button>
                                     </div>
                                 ) : (
@@ -239,23 +266,18 @@ export function PinnedRuns() {
                         </PinCard>
                     );
                 })}
-                {editing && !showAuto
-                    ? Array.from(
-                          { length: PIN_LIMIT - pins.length },
-                          (_, i) => (
-                              <div key={`slot-${i}`} className={styles.pinSlot}>
-                                  Pin a run from the list below
-                              </div>
-                          ),
-                      )
-                    : null}
+                {editing && !showAuto && pins.length < PIN_LIMIT ? (
+                    <div className={styles.pinSlot}>
+                        <Pin size={16} aria-hidden />
+                        <span>
+                            {PIN_LIMIT - pins.length} of {PIN_LIMIT} slots left
+                        </span>
+                        <span className={styles.pinSlotHint}>
+                            Pin runs from the list below
+                        </span>
+                    </div>
+                ) : null}
             </section>
-            {showAuto ? (
-                <p className={styles.cardNote}>
-                    Showing the automatic picks. Pin runs from the list below to
-                    choose your own.
-                </p>
-            ) : null}
             {editing && !showAuto && pins.length >= PIN_LIMIT ? (
                 <p className={styles.cardNote}>
                     {PIN_LIMIT} pins max, remove one first
