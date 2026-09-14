@@ -4,8 +4,12 @@ import { getRunnerProfileHead, getRunnerStats } from '~src/lib/runner-profile';
 import buildMetadata from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 import { formatCount, formatHours } from '../format';
-import styles from '../sections.module.scss';
-import { GameStats } from './game-stats';
+import { ProfileBlock } from '../profile-block';
+import styles from '../profile-ui.module.scss';
+import { medalOf, plural } from '../ranks';
+import { StatStrip, type StripTile } from '../stat-strip';
+import { GamesPanel } from './games-panel';
+import { PlaytimeBar } from './playtime-bar';
 
 interface PageProps {
     params: Promise<{ username: string }>;
@@ -38,29 +42,53 @@ export default async function RunnerStatsPage({ params }: PageProps) {
         return <p className={styles.empty}>No splits uploaded yet.</p>;
     }
     const { totals } = stats;
+    const games = [...stats.games].sort((a, b) => b.playtimeMs - a.playtimeMs);
+    const finishRate =
+        totals.attempts > 0
+            ? Math.round((totals.finishedAttempts / totals.attempts) * 100)
+            : null;
+    const bestRank = games.reduce<number | null>(
+        (best, g) =>
+            g.bestRank !== null && (best === null || g.bestRank < best)
+                ? g.bestRank
+                : best,
+        null,
+    );
+
+    const tiles: StripTile[] = [
+        { value: formatCount(totals.attempts), label: 'attempts' },
+        { value: formatCount(totals.finishedAttempts), label: 'finished runs' },
+    ];
+    if (finishRate !== null) {
+        tiles.push({ value: `${finishRate}%`, label: 'of attempts finished' });
+    }
+    if (bestRank !== null) {
+        tiles.push({
+            value: `#${bestRank}`,
+            label: 'best rank',
+            medal: medalOf(bestRank),
+        });
+    }
+
     return (
-        <>
-            <div className={styles.facts}>
-                <div className={styles.fact}>
-                    <b>{formatHours(totals.playtimeMs)}</b>
-                    <span>Playtime</span>
-                </div>
-                <div className={styles.fact}>
-                    <b>{formatCount(totals.attempts)}</b>
-                    <span>Attempts</span>
-                </div>
-                <div className={styles.fact}>
-                    <b>{formatCount(totals.finishedAttempts)}</b>
-                    <span>Finished runs</span>
-                </div>
-                <div className={styles.fact}>
-                    <b>{formatCount(totals.games)}</b>
-                    <span>Games</span>
-                </div>
-            </div>
-            {stats.games.map((g) => (
-                <GameStats key={g.gameId} game={g} />
-            ))}
-        </>
+        <div className={styles.page}>
+            <StatStrip
+                label="Totals"
+                lead={{
+                    value: formatHours(totals.playtimeMs),
+                    label: 'Played',
+                    what: `${plural(totals.games, 'game', 'games')} · ${plural(totals.categories, 'category', 'categories')}`,
+                }}
+                tiles={tiles}
+            />
+            {games.length > 1 ? (
+                <ProfileBlock title="Where the hours went">
+                    <PlaytimeBar games={games} total={totals.playtimeMs} />
+                </ProfileBlock>
+            ) : null}
+            <ProfileBlock title="Games" note="Most played first">
+                <GamesPanel games={games} username={head.runner.name} />
+            </ProfileBlock>
+        </div>
     );
 }

@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { SessionOverview } from '~src/components/run/user-detail/session-overview';
 import { getUserRuns } from '~src/lib/get-user-runs';
 import {
     getRunnerActivity,
@@ -8,10 +7,15 @@ import {
 } from '~src/lib/runner-profile';
 import buildMetadata from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
-import { ActivityHeatmap } from '../../../leaderboards/[name]/activity-heatmap';
-import { prepareSessions } from '../../prepare-sessions.component';
-import { formatCount, formatHourWindow } from '../format';
-import styles from '../sections.module.scss';
+import { formatCount } from '../format';
+import { ProfileBlock } from '../profile-block';
+import ui from '../profile-ui.module.scss';
+import { plural } from '../ranks';
+import { StatStrip, type StripLead, type StripTile } from '../stat-strip';
+import { DayOfWeek, TimeOfDay } from './rhythm';
+import { toSessionRows } from './session-rows';
+import { SessionsPanel } from './sessions-panel';
+import { YearHeatmap } from './year-heatmap';
 
 interface PageProps {
     params: Promise<{ username: string }>;
@@ -32,13 +36,9 @@ export async function generateMetadata({
     });
 }
 
-const days = (n: number) => `${formatCount(n)} ${n === 1 ? 'day' : 'days'}`;
-
 /** "London" from "Europe/London", "New York" from "America/New_York". */
-const shortTimezone = (timezone: string) => {
-    const last = timezone.split('/').pop() ?? timezone;
-    return last.replace(/_/g, ' ');
-};
+const shortTimezone = (timezone: string) =>
+    (timezone.split('/').pop() ?? timezone).replace(/_/g, ' ');
 
 export default async function RunnerActivityPage({ params }: PageProps) {
     const { username } = await params;
@@ -49,56 +49,84 @@ export default async function RunnerActivityPage({ params }: PageProps) {
     ]);
     if (!head || head.runner.guest || !activity) notFound();
     const runs = (await getUserRuns(name)) ?? [];
-    const sessions = prepareSessions(runs, false);
-    const usualHoursLabel = head.runner.timezone
-        ? `Usually runs (${shortTimezone(head.runner.timezone)})`
-        : 'Usually runs';
+    const sessions = toSessionRows(runs);
+
+    const { streaks } = activity;
+    const activeDays = activity.days.filter((d) => d.attempts > 0).length;
+    const attempts = activity.days.reduce((s, d) => s + d.attempts, 0);
+
+    const lead: StripLead | null =
+        streaks.current > 0
+            ? {
+                  value: plural(streaks.current, 'day', 'days'),
+                  label: 'Current streak',
+                  what:
+                      streaks.longest > streaks.current
+                          ? `Longest ${plural(streaks.longest, 'day', 'days')}`
+                          : 'Their longest yet',
+              }
+            : streaks.longest > 0
+              ? {
+                    value: plural(streaks.longest, 'day', 'days'),
+                    label: 'Longest streak',
+                    what: null,
+                }
+              : null;
+    const tiles: StripTile[] = [];
+    if (activity.hoursThisYear > 0) {
+        tiles.push({
+            value: `${formatCount(activity.hoursThisYear)} h`,
+            label: 'played this year',
+        });
+    }
+    if (attempts > 0) {
+        tiles.push({
+            value: formatCount(attempts),
+            label: 'attempts in 12 months',
+        });
+    }
+    if (activeDays > 0) {
+        tiles.push({
+            value: formatCount(activeDays),
+            label: activeDays === 1 ? 'active day' : 'active days',
+        });
+    }
+
+    const place = head.runner.timezone
+        ? shortTimezone(head.runner.timezone)
+        : null;
+
     return (
-        <>
-            <div className={styles.facts}>
-                <div className={styles.fact}>
-                    <b>{days(activity.streaks.current)}</b>
-                    <span>Current streak</span>
-                </div>
-                <div className={styles.fact}>
-                    <b>{days(activity.streaks.longest)}</b>
-                    <span>Longest streak</span>
-                </div>
-                <div className={styles.fact}>
-                    <b>{formatCount(activity.hoursThisYear)} h</b>
-                    <span>This year</span>
-                </div>
-                {activity.usualHours ? (
-                    <div className={styles.fact}>
-                        <b>
-                            {formatHourWindow(
-                                activity.usualHours.startHour,
-                                activity.usualHours.endHour,
-                            )}
-                        </b>
-                        <span>{usualHoursLabel}</span>
-                    </div>
-                ) : null}
-            </div>
+        <div className={ui.page}>
+            <StatStrip label="Activity" lead={lead} tiles={tiles} />
             {activity.days.length > 0 ? (
-                <ActivityHeatmap
-                    activity={activity.days.map((d) => ({
-                        date: d.date,
-                        attempts: d.attempts,
-                    }))}
-                />
+                <>
+                    <ProfileBlock
+                        title="Last 12 months"
+                        note={`${plural(attempts, 'attempt', 'attempts')} on ${plural(activeDays, 'day', 'days')}`}
+                    >
+                        <YearHeatmap days={activity.days} />
+                    </ProfileBlock>
+                    <div className={ui.columns}>
+                        <ProfileBlock title="Time of day">
+                            <TimeOfDay
+                                usual={activity.usualHours}
+                                place={place}
+                            />
+                        </ProfileBlock>
+                        <ProfileBlock title="Day of the week">
+                            <DayOfWeek days={activity.days} />
+                        </ProfileBlock>
+                    </div>
+                </>
             ) : (
-                <p className={styles.empty}>No activity in the last year.</p>
+                <p className={ui.empty}>No activity in the last year.</p>
             )}
-            <section
-                className={styles.panel}
-                aria-labelledby="activity-sessions"
-            >
-                <h2 id="activity-sessions" className={styles.panelTitle}>
-                    Sessions
-                </h2>
-                <SessionOverview sessions={sessions} />
-            </section>
-        </>
+            {sessions.length > 0 ? (
+                <ProfileBlock title="Recent sessions">
+                    <SessionsPanel sessions={sessions} />
+                </ProfileBlock>
+            ) : null}
+        </div>
     );
 }

@@ -32,12 +32,15 @@ interface RunDownloadsViewProps {
      * Set true when the surrounding tab/panel is visible so we lazy-load.
      */
     isActive: boolean;
+    /** Backups only: no current-file card and no section headers. */
+    backupsOnly?: boolean;
 }
 
 export function RunDownloadsView({
     run,
     username,
     isActive,
+    backupsOnly = false,
 }: RunDownloadsViewProps) {
     const [state, setState] = useState<FetchState>({ status: 'idle' });
     const loadedFor = useRef<string | null>(null);
@@ -94,8 +97,9 @@ export function RunDownloadsView({
 
     return (
         <>
-            <CurrentSplits run={run} />
+            {backupsOnly ? null : <CurrentSplits run={run} />}
             <Backups
+                bare={backupsOnly}
                 state={
                     state.status === 'loaded'
                         ? { status: 'loaded', data: state.data }

@@ -34,41 +34,58 @@ export function CurrentSplits({ run }: CurrentSplitsProps) {
     );
 }
 
-function CurrentCard({ run }: { run: Run }) {
-    const splitsFile = decodeURIComponent(run.splitsFile as string)
+/** The run's current .lss, fetched and saved under a readable name. */
+export function splitsFileUrl(
+    run: Run,
+): { url: string; fallbackUrl: string; filename: string } | null {
+    if (!run.splitsFile) return null;
+    const splitsFile = decodeURIComponent(run.splitsFile)
         .replaceAll('%', '%25')
         .replaceAll('+++', '+%2B+')
         .replaceAll('++', '%2B+')
         .replaceAll('NG+', 'NG%2B');
+    return {
+        url: `${process.env.NEXT_PUBLIC_SPLITS_CLOUDFRONT_URL}/${splitsFile}`,
+        fallbackUrl: `${process.env.NEXT_PUBLIC_SPLITS_CLOUDFRONT_URL}/${splitsFile.replaceAll('+', '%2B')}`,
+        filename: `${run.user}_${run.game}_${run.run}.lss`,
+    };
+}
 
-    const url = `${process.env.NEXT_PUBLIC_SPLITS_CLOUDFRONT_URL}/${splitsFile}`;
-    const fallbackUrl = `${process.env.NEXT_PUBLIC_SPLITS_CLOUDFRONT_URL}/${splitsFile.replaceAll('+', '%2B')}`;
-    const downloadFilename = `${run.user}_${run.game}_${run.run}.lss`;
+export async function downloadSplitsFile(run: Run): Promise<void> {
+    const file = splitsFileUrl(run);
+    if (!file) return;
+    toast.info(
+        `If you want to remove the run history on these splits, use 'Edit Splits' -> 'Other...' -> 'Clear History' from within LiveSplit.`,
+    );
+
+    let response = await fetch(file.url);
+    if (!response.ok) {
+        response = await fetch(file.fallbackUrl);
+    }
+    if (!response.ok) {
+        toast.error('Failed to download splits file.');
+        return;
+    }
+
+    const blob = new Blob([await response.blob()], {
+        type: 'application/octet-stream',
+    });
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = file.filename;
+    a.click();
+    URL.revokeObjectURL(blobUrl);
+}
+
+function CurrentCard({ run }: { run: Run }) {
+    const file = splitsFileUrl(run);
+    const url = file?.url ?? '';
+    const downloadFilename = file?.filename ?? '';
 
     const handleDownload = async (e: React.MouseEvent) => {
         e.preventDefault();
-        toast.info(
-            `If you want to remove the run history on these splits, use 'Edit Splits' -> 'Other...' -> 'Clear History' from within LiveSplit.`,
-        );
-
-        let response = await fetch(url);
-        if (!response.ok) {
-            response = await fetch(fallbackUrl);
-        }
-        if (!response.ok) {
-            toast.error('Failed to download splits file.');
-            return;
-        }
-
-        const blob = new Blob([await response.blob()], {
-            type: 'application/octet-stream',
-        });
-        const blobUrl = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = blobUrl;
-        a.download = downloadFilename;
-        a.click();
-        URL.revokeObjectURL(blobUrl);
+        await downloadSplitsFile(run);
     };
 
     return (

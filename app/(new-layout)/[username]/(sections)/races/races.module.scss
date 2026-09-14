@@ -1,0 +1,103 @@
+@use '../../../styles/design-tokens' as dt;
+
+.byGame {
+    --cols: minmax(0, 2fr) 4rem 4.5rem 6.5rem minmax(7rem, 1fr) minmax(8rem, 1fr);
+
+    @container profile-block (max-width: 759.98px) {
+        --cols: minmax(0, 1fr) 3rem auto auto;
+    }
+}
+
+.recent {
+    --cols: minmax(0, 2.2fr) minmax(6rem, 0.8fr) minmax(5.5rem, 0.7fr)
+        minmax(10rem, 1.3fr) 7.5rem;
+
+    @container profile-block (max-width: 759.98px) {
+        --cols: minmax(0, 1fr) auto auto;
+    }
+}
+
+.pair {
+    display: inline-flex;
+    align-items: center;
+    justify-content: end;
+    gap: dt.$spacing-sm;
+}
+
+.raceName {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    min-width: 0;
+
+    img,
+    .raceArtEmpty {
+        flex: none;
+        width: 24px;
+        height: 32px;
+        object-fit: cover;
+        border-radius: 3px;
+        background: rgba(var(--bs-emphasis-color-rgb), 0.06);
+    }
+
+    .nameMain,
+    span span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+.result {
+    display: inline-flex;
+    align-items: baseline;
+    gap: dt.$spacing-xs;
+}
+
+.winner {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    min-width: 0;
+    font-size: dt.$font-size-sm;
+
+    @container profile-block (max-width: 759.98px) {
+        display: none;
+    }
+}
+
+.trophy {
+    flex: none;
+    color: var(--rank-gold);
+}
+
+.winnerName {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.won {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: color-mix(in srgb, var(--rank-gold) 75%, var(--bs-emphasis-color));
+    font-weight: 600;
+}
+
+.pager {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: dt.$spacing-lg;
+    padding: dt.$spacing-sm;
+    border-top: 1px solid
+        var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
+    font-size: dt.$font-size-sm;
+
+    button:disabled {
+        opacity: 0.4;
+        cursor: default;
+    }
+}

@@ -1,8 +1,7 @@
-import Link from '~src/components/link';
 import { safeEncodeURI } from '~src/utils/uri';
 import type { LeaderboardsProfile } from '../../../../../types/leaderboards-profile.types';
 import { plural } from '../../../leaderboards/[name]/format';
-import styles from './leaderboards.module.scss';
+import { StatStrip } from '../stat-strip';
 
 const MEDALS: Record<number, string> = { 1: 'gold', 2: 'silver', 3: 'bronze' };
 
@@ -62,30 +61,20 @@ export function StandingStrip({ profile }: { profile: LeaderboardsProfile }) {
     });
 
     return (
-        <section className={styles.standing} aria-label="Standing">
-            {best ? (
-                <Link
-                    href={`/games/${safeEncodeURI(best.game)}`}
-                    className={styles.standingLead}
-                    data-medal={MEDALS[best.rank]}
-                >
-                    <span className={styles.leadRank}>#{best.rank}</span>
-                    <span className={styles.leadText}>
-                        <span className={styles.leadLabel}>Best result</span>
-                        <span className={styles.leadWhat}>
-                            {best.game} · {best.category}
-                        </span>
-                    </span>
-                </Link>
-            ) : null}
-            <ul className={styles.standingTiles}>
-                {tiles.map((t) => (
-                    <li key={t.label} data-medal={t.medal}>
-                        <b>{t.value}</b>
-                        <span>{t.label}</span>
-                    </li>
-                ))}
-            </ul>
-        </section>
+        <StatStrip
+            label="Standing"
+            lead={
+                best
+                    ? {
+                          value: `#${best.rank}`,
+                          label: 'Best result',
+                          what: `${best.game} · ${best.category}`,
+                          href: `/games/${safeEncodeURI(best.game)}`,
+                          medal: MEDALS[best.rank],
+                      }
+                    : null
+            }
+            tiles={tiles}
+        />
     );
 }
