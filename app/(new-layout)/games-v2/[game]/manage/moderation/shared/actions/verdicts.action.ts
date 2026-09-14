@@ -11,6 +11,7 @@ import {
 import { applyVerdicts, previewVerdicts } from '~src/lib/moderation/verdicts';
 import type {
     BulkVerdictResult,
+    RejectionReasonKey,
     VerdictAction,
     VerdictPreviewResult,
 } from '../../../../../../../../types/moderation.types';
@@ -58,6 +59,7 @@ export async function applyVerdictsAction(
     action: VerdictAction,
     runIds: number[],
     reason: string,
+    reasonKey?: RejectionReasonKey,
 ): Promise<{ ok: true; result: BulkVerdictResult } | Fail> {
     const g = await requireMod(gameSlug);
     if ('error' in g) return g;
@@ -66,6 +68,7 @@ export async function applyVerdictsAction(
             action,
             runIds,
             reason,
+            ...(reasonKey ? { reasonKey } : {}),
         });
         await revalidateAffectedBoards(
             g.gameId,

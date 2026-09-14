@@ -174,10 +174,20 @@ export interface VerdictPreviewResult {
     notFoundRunCount?: number;
 }
 
+export type RejectionReasonKey =
+    | 'no_video'
+    | 'wrong_category'
+    | 'timing_rule'
+    | 'splits_inconsistent'
+    | 'duplicate'
+    | 'other';
+
 export interface BulkVerdictInput {
     action: VerdictAction;
     runIds: number[];
     reason: string;
+    /** Sent on reject. `other` needs a reason of 10+ characters. */
+    reasonKey?: RejectionReasonKey;
 }
 
 export interface BulkVerdictResult {
