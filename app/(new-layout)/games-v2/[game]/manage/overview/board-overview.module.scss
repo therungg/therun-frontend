@@ -403,6 +403,12 @@
     @include board.board-empty-title;
 }
 
+// A .card's own content has zero padding (see .card above); rows placed
+// straight under .cardHead — the digest's counts — need it back.
+.cardBody {
+    padding: 0 dt.$spacing-xl dt.$spacing-lg;
+}
+
 // ---- Rail cards --------------------------------------------
 .railCard {
     @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
