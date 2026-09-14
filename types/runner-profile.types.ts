@@ -40,7 +40,7 @@ export interface ProfileLayout {
     pins: ProfilePinRef[];
     videoPin: ProfilePinRef | null;
     mainGameId: number | null;
-    gameOrder: 'rank' | 'recent' | 'name' | 'manual';
+    gameOrder: 'runners' | 'rank' | 'recent' | 'name' | 'manual';
     manualGameIds: number[];
 }
 
@@ -52,7 +52,7 @@ export interface ResolvedProfileLayout {
     pins: ProfilePinRef[];
     videoPin: ProfilePinRef | null;
     mainGameId: number | null;
-    gameOrder: 'rank' | 'recent' | 'name' | 'manual';
+    gameOrder: 'runners' | 'rank' | 'recent' | 'name' | 'manual';
     manualGameIds: number[];
     /** True when the runner never saved a layout (either attribute). */
     isDefault: boolean;

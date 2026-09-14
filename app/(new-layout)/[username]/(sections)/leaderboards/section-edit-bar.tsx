@@ -7,6 +7,7 @@ import { useShowcase } from '../../../leaderboards/[name]/showcase-provider';
 import styles from './leaderboards.module.scss';
 
 const ORDER_LABELS: Record<GameOrder, string> = {
+    runners: 'Most runners',
     rank: 'Best rank',
     recent: 'Most recent',
     name: 'Name',

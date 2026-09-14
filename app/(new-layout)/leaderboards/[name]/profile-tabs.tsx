@@ -12,6 +12,7 @@ import { useShowcase } from './showcase-provider';
 import {
     COLLAPSE_AT,
     mainGameOf,
+    onBiggerBoard,
     orderGames,
     type SortMode,
     sortOptions,
@@ -54,6 +55,8 @@ export function ProfileTabs({ country }: { country: string | null }) {
         ? (sort as SortMode)
         : 'runner';
     const games = orderGames(unordered, draft, mode);
+    const byRunners =
+        (mode === 'runner' ? draft.gameOrder : mode) === 'runners';
     const mainId = mainGameOf(unordered, draft.mainGameId)?.gameId ?? null;
     const needle = filter.trim().toLowerCase();
     const matches = (g: LeaderboardsProfileGame) =>
@@ -77,7 +80,16 @@ export function ProfileTabs({ country }: { country: string | null }) {
     const views = (Object.keys(pick) as TabId[]).map((id) => {
         const blocks = games
             .filter(matches)
-            .map((game) => ({ game, entries: pick[id](game) }))
+            .map((game) => {
+                const entries = pick[id](game);
+                // Ordered by board size, a game's biggest boards lead it too.
+                return {
+                    game,
+                    entries: byRunners
+                        ? [...entries].sort(onBiggerBoard)
+                        : entries,
+                };
+            })
             .filter((b) => b.entries.length > 0);
         const count = blocks.reduce((n, b) => n + b.entries.length, 0);
         return { id, blocks, count };

@@ -69,6 +69,7 @@ export function EditBar() {
                         }))
                     }
                 >
+                    <option value="runners">Most runners</option>
                     <option value="rank">Best rank</option>
                     <option value="recent">Most recent</option>
                     <option value="name">Name</option>
