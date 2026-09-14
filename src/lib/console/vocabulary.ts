@@ -116,8 +116,8 @@ export interface ConceptTile {
  */
 export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
     'mod-queue': {
-        action: 'Verify what came in',
-        blurb: 'Every run still waiting on a verdict, oldest first — approve, decline, or act on the runner behind it.',
+        action: 'Decide what needs you',
+        blurb: 'Reports and appeals first, then runs where a wrong call would show on the board, then routine runs in batches you can approve at once.',
     },
     attention: {
         action: 'Review what’s waiting',

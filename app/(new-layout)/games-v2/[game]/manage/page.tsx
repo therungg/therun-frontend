@@ -20,10 +20,10 @@ import {
     canModerateGame,
 } from '~src/lib/moderation/can-moderate';
 import { listManualTimes } from '~src/lib/moderation/manual-times';
-import { listModQueue } from '~src/lib/moderation/mod-queue';
 import { listPolicies } from '~src/lib/moderation/policies';
 import { listGameReports } from '~src/lib/moderation/reports';
 import { listQueue } from '~src/lib/moderation/triage';
+import { getWorklist, getWorklistDigest } from '~src/lib/moderation/worklist';
 import {
     type BoardCompleteness,
     categoryFactsFromResolved,
@@ -111,6 +111,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
         settingsJob,
         runsJob,
         queuePendingCount,
+        digest,
     ] = await Promise.all([
         getGameIdentifiers(game.id).catch(() => ({
             slug: null,
@@ -132,15 +133,16 @@ export default async function GameAdminConsolePage({ params }: Props) {
         // import" line for settings and one for runs.
         getSrcImportJob(sessionId, game.id, 'settings').catch(() => null),
         getSrcImportJob(sessionId, game.id, 'resync').catch(() => null),
-        // Runs awaiting a verdict — the sidebar's count beside Mod queue.
-        // One page of one row is enough: the total is what's wanted.
+        // Runs that need a moderator — the sidebar's count beside Mod queue.
+        // One row of one page is enough: counts.needsYou is the total.
         canModerate
-            ? listModQueue(sessionId, game.id, {
-                  status: 'pending',
-                  pageSize: 1,
-              })
-                  .then((p) => p.totalItems)
+            ? getWorklist(sessionId, game.id, { pageSize: 1 })
+                  .then((p) => p.counts.needsYou)
                   .catch(() => null)
+            : Promise.resolve(null),
+        // Seven-day summary for the overview's digest card.
+        canModerate
+            ? getWorklistDigest(sessionId, game.id, 7).catch(() => null)
             : Promise.resolve(null),
     ]);
     const { rows: rawRows, groups } = catalog;
@@ -300,6 +302,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 settingsJob={settingsJob}
                 runsJob={runsJob}
                 queuePendingCount={queuePendingCount}
+                digest={digest}
             />
         </Suspense>
     );
