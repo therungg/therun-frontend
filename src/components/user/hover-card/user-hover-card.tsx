@@ -5,7 +5,7 @@ import {
     Bluesky,
     Trophy,
     Twitch,
-    TwitterX,
+    Twitter,
     Youtube,
 } from 'react-bootstrap-icons';
 import { nameHue } from '~app/(new-layout)/games-v2/[game]/leaderboard/avatar-hue';
@@ -32,7 +32,7 @@ interface Props {
 const SOCIAL_ICON: Record<SocialNetwork, typeof Twitch> = {
     twitch: Twitch,
     youtube: Youtube,
-    twitter: TwitterX,
+    twitter: Twitter,
     bluesky: Bluesky,
 };
 
@@ -493,7 +493,11 @@ export function UserHoverCard({ username, context }: Props) {
                                         aria-label={`${username} on ${link.label}`}
                                         title={link.label}
                                     >
-                                        <Icon size={13} aria-hidden />
+                                        <Icon
+                                            size={13}
+                                            color={link.color}
+                                            aria-hidden
+                                        />
                                     </a>
                                 );
                             })}

@@ -4,6 +4,8 @@ export interface SocialLink {
     network: SocialNetwork;
     label: string;
     href: string;
+    /** The network's own brand colour, for its icon. */
+    color: string;
 }
 
 const PROFILE_URL: Record<SocialNetwork, (handle: string) => string> = {
@@ -13,10 +15,17 @@ const PROFILE_URL: Record<SocialNetwork, (handle: string) => string> = {
     bluesky: (h) => `https://bsky.app/profile/${h}`,
 };
 
+const COLOR: Record<SocialNetwork, string> = {
+    twitch: '#9146FF',
+    youtube: '#FF0000',
+    twitter: '#1DA1F2',
+    bluesky: '#1185FE',
+};
+
 const LABEL: Record<SocialNetwork, string> = {
     twitch: 'Twitch',
     youtube: 'YouTube',
-    twitter: 'X',
+    twitter: 'Twitter',
     bluesky: 'Bluesky',
 };
 
@@ -54,6 +63,8 @@ export function socialLinks(
     return order.flatMap((network) => {
         const raw = socials[network];
         const href = raw ? toHref(network, raw) : null;
-        return href ? [{ network, label: LABEL[network], href }] : [];
+        return href
+            ? [{ network, label: LABEL[network], href, color: COLOR[network] }]
+            : [];
     });
 }
