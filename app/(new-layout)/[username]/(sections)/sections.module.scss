@@ -3,6 +3,7 @@
 
 .sectionPage {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: dt.$spacing-xl;
     padding-block: dt.$spacing-2xl dt.$spacing-3xl;
     min-width: 0;

@@ -11,7 +11,7 @@ export function ProfileSubnav({
     name: string;
     guest: boolean;
 }) {
-    const pathname = decodeURIComponent(usePathname() ?? '');
+    const pathname = usePathname() ?? '';
     const base = `/${encodeURIComponent(name)}`;
     const items = guest
         ? [

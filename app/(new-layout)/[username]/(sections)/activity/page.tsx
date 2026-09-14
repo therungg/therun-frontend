@@ -22,24 +22,37 @@ export async function generateMetadata({
 }: PageProps): Promise<Metadata> {
     const { username } = await params;
     const name = safeDecodeURI(username);
+    const head = await getRunnerProfileHead(name);
+    if (!head || head.runner.guest) {
+        return buildMetadata({ description: 'Runner profile' });
+    }
     return buildMetadata({
-        title: `${name} — Activity`,
-        description: `${name}'s streaks, activity and sessions on therun.gg.`,
+        title: `${head.runner.name} — Activity`,
+        description: `${head.runner.name}'s streaks, activity and sessions on therun.gg.`,
     });
 }
 
 const days = (n: number) => `${formatCount(n)} ${n === 1 ? 'day' : 'days'}`;
 
+/** "London" from "Europe/London", "New York" from "America/New_York". */
+const shortTimezone = (timezone: string) => {
+    const last = timezone.split('/').pop() ?? timezone;
+    return last.replace(/_/g, ' ');
+};
+
 export default async function RunnerActivityPage({ params }: PageProps) {
     const { username } = await params;
     const name = safeDecodeURI(username);
-    const [head, activity, runs] = await Promise.all([
+    const [head, activity] = await Promise.all([
         getRunnerProfileHead(name),
         getRunnerActivity(name),
-        getUserRuns(name),
     ]);
     if (!head || head.runner.guest || !activity) notFound();
+    const runs = (await getUserRuns(name)) ?? [];
     const sessions = prepareSessions(runs, false);
+    const usualHoursLabel = head.runner.timezone
+        ? `Usually runs (${shortTimezone(head.runner.timezone)})`
+        : 'Usually runs';
     return (
         <>
             <div className={styles.facts}>
@@ -63,7 +76,7 @@ export default async function RunnerActivityPage({ params }: PageProps) {
                                 activity.usualHours.endHour,
                             )}
                         </b>
-                        <span>Usually runs</span>
+                        <span>{usualHoursLabel}</span>
                     </div>
                 ) : null}
             </div>

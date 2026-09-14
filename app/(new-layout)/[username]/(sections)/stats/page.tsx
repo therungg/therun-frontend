@@ -16,9 +16,13 @@ export async function generateMetadata({
 }: PageProps): Promise<Metadata> {
     const { username } = await params;
     const name = safeDecodeURI(username);
+    const head = await getRunnerProfileHead(name);
+    if (!head || head.runner.guest) {
+        return buildMetadata({ description: 'Runner profile' });
+    }
     return buildMetadata({
-        title: `${name} — Stats`,
-        description: `${name}'s games, personal bests and attempts on therun.gg.`,
+        title: `${head.runner.name} — Stats`,
+        description: `${head.runner.name}'s games, personal bests and attempts on therun.gg.`,
     });
 }
 

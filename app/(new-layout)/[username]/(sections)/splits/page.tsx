@@ -16,20 +16,25 @@ export async function generateMetadata({
 }: PageProps): Promise<Metadata> {
     const { username } = await params;
     const name = safeDecodeURI(username);
+    const head = await getRunnerProfileHead(name);
+    if (!head || head.runner.guest) {
+        return buildMetadata({ description: 'Runner profile' });
+    }
     return buildMetadata({
-        title: `${name} — Splits`,
-        description: `Download ${name}'s splits files from therun.gg.`,
+        title: `${head.runner.name} — Splits`,
+        description: `Download ${head.runner.name}'s splits files from therun.gg.`,
     });
 }
 
 export default async function RunnerSplitsPage({ params }: PageProps) {
     const { username } = await params;
     const name = safeDecodeURI(username);
-    const [head, runs] = await Promise.all([
-        getRunnerProfileHead(name),
-        getUserRuns(name),
-    ]);
+    const head = await getRunnerProfileHead(name);
     if (!head || head.runner.guest) notFound();
+    const runs = (await getUserRuns(name)) ?? [];
+    if (runs.length === 0) {
+        return <p className={styles.empty}>No splits uploaded yet.</p>;
+    }
     return (
         <section className={styles.panel} aria-label="Splits">
             <ProfileDownloadsTab
