@@ -4,6 +4,9 @@ import type {
     ProfileProvenance,
 } from '../../../../types/leaderboards-profile.types';
 
+export const plural = (count: number, one: string, many: string) =>
+    count === 1 ? one : many;
+
 export function formatEntryTime(
     entry: Pick<LeaderboardsProfileEntry, 'timeMs' | 'showMilliseconds'>,
 ): string {

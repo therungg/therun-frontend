@@ -588,34 +588,6 @@
     background: var(--bs-danger);
 }
 
-// Games card: one row per game, each a jump to its block.
-.gameList {
-    display: grid;
-    gap: 2px;
-}
-
-.gameListRow {
-    display: grid;
-    grid-template-columns: 48px minmax(0, 1fr);
-    gap: dt.$spacing-md;
-    align-items: center;
-    padding: dt.$spacing-xs;
-    border-radius: dt.$radius-sm;
-    color: inherit;
-    text-decoration: none;
-
-    &:hover {
-        background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.04));
-    }
-
-    img {
-        width: 48px;
-        height: 64px;
-        object-fit: cover;
-        border-radius: dt.$radius-sm;
-    }
-}
-
 .gameListText {
     display: grid;
     gap: 2px;
@@ -633,18 +605,70 @@
     font-size: dt.$font-size-xs;
 }
 
-// Featured run
-.featured {
-    @include board.board-surface(dt.$spacing-lg);
+// Pinned runs: up to six cards, three across; the one with the video spans
+// the row. Under 640px everything is one column.
+.pins {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-auto-flow: dense;
+    gap: dt.$spacing-md;
+    // Medal tones, shared with the ledger rows.
+    --rank-gold: #d4a73a;
+    --rank-silver: #a9b4c2;
+    --rank-bronze: #c07a45;
+
+    @container profile-main (max-width: 959.98px) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @media (max-width: 640px) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.pin {
+    @include board.board-surface(dt.$spacing-md);
     display: grid;
     gap: dt.$spacing-md;
     min-width: 0;
+    position: relative;
 }
 
-.featuredMeta {
-    color: var(--bs-secondary-color);
-    font-size: dt.$font-size-sm;
-    font-variant-numeric: tabular-nums;
+.pinWide {
+    grid-column: 1 / -1;
+}
+
+.pinBody {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: dt.$spacing-md;
+    align-items: center;
+
+    img {
+        width: 48px;
+        height: 64px;
+        object-fit: cover;
+        border-radius: dt.$radius-sm;
+    }
+}
+
+.pinText {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.pinTitle {
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    overflow-wrap: anywhere;
+}
+
+.pinLine {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
 }
 
 .featuredVideo {
@@ -683,4 +707,173 @@
     &:focus-visible {
         background: rgba(0, 0, 0, 0.85);
     }
+}
+
+// Ledger controls: sort, filter, expand all — one wrapping row over the tabs.
+.ledgerControls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
+}
+
+.ledgerSort {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    max-width: 100%;
+    min-width: 0;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+
+    select {
+        @include board.control-pill;
+        max-width: 100%;
+        min-width: 0;
+        text-overflow: ellipsis;
+    }
+}
+
+.ledgerFilter {
+    @include board.control-pill;
+    @include board.board-input-rules;
+    border: 1px solid
+        var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
+    min-width: 12rem;
+}
+
+.gameHeadButton {
+    grid-template-columns: 36px 1fr auto;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    text-align: left;
+    color: inherit;
+    cursor: pointer;
+}
+
+// Shelf: art tiles with a medal badge, two across in the sidebar.
+.shelf {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: dt.$spacing-sm;
+    --rank-gold: #d4a73a;
+    --rank-silver: #a9b4c2;
+    --rank-bronze: #c07a45;
+}
+
+.shelfScroll {
+    max-height: 28rem;
+    overflow-y: auto;
+}
+
+.shelfTile {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: dt.$spacing-sm;
+    align-items: center;
+    padding: dt.$spacing-xs;
+    border: 0;
+    border-radius: dt.$radius-sm;
+    background: none;
+    text-align: left;
+    color: inherit;
+    cursor: pointer;
+
+    &:hover {
+        background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.04));
+    }
+}
+
+.shelfArt {
+    position: relative;
+    display: inline-flex;
+
+    img {
+        width: 48px;
+        height: 64px;
+        object-fit: cover;
+        border-radius: dt.$radius-sm;
+    }
+}
+
+.shelfBadge {
+    position: absolute;
+    right: -4px;
+    bottom: -4px;
+    padding: 0 dt.$spacing-xs;
+    border-radius: dt.$radius-sm;
+    background: var(--board-surface-bg, var(--bs-body-bg));
+    font-family: dt.$font-mono;
+    font-size: dt.$font-size-xs;
+    font-weight: 700;
+    color: var(--bs-emphasis-color);
+
+    &[data-medal='gold'] { color: color-mix(in srgb, var(--rank-gold) 65%, var(--bs-emphasis-color)); }
+    &[data-medal='silver'] { color: color-mix(in srgb, var(--rank-silver) 65%, var(--bs-emphasis-color)); }
+    &[data-medal='bronze'] { color: color-mix(in srgb, var(--rank-bronze) 65%, var(--bs-emphasis-color)); }
+}
+
+// Edit mode's bar takes the hero row's place in the header.
+.editBar {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-md;
+    padding-top: dt.$spacing-lg;
+    border-top: 1px solid
+        var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
+}
+
+.editBarActions {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin-left: auto;
+
+    @media (max-width: 640px) {
+        margin-left: 0;
+    }
+}
+
+// Custom game order: one column while active, so the tile's up/down
+// controls have room without overflowing the sidebar card.
+.shelfManual {
+    grid-template-columns: minmax(0, 1fr);
+
+    .shelfTile {
+        cursor: grab;
+    }
+
+    .pinTools {
+        grid-column: 1 / -1;
+    }
+}
+
+.pinToggle {
+    @include board.control-pill;
+    padding: dt.$spacing-xs;
+}
+
+.pinToggleOn {
+    @include board.control-pill-active;
+}
+
+.pinTools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-xs;
+}
+
+.pinSlot {
+    display: grid;
+    place-items: center;
+    min-height: 6rem;
+    border: 1px dashed var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
+    border-radius: dt.$radius-md;
+    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-sm;
 }

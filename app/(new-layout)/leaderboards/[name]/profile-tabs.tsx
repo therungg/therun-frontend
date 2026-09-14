@@ -1,12 +1,22 @@
 'use client';
 
-import { useEffect, useSyncExternalStore } from 'react';
+import { useEffect, useState } from 'react';
 import type {
     LeaderboardsProfileEntry,
     LeaderboardsProfileGame,
 } from '../../../../types/leaderboards-profile.types';
 import { GameBlock } from './game-block';
 import styles from './leaderboards-profile.module.scss';
+import { LedgerControls } from './ledger-controls';
+import { useShowcase } from './showcase-provider';
+import {
+    COLLAPSE_AT,
+    mainGameOf,
+    orderGames,
+    type SortMode,
+    sortOptions,
+} from './showcase-rules';
+import { setProfileUrl, useProfileUrl } from './url-state';
 
 type TabId = 'full' | 'levels' | 'pending' | 'archived';
 
@@ -36,32 +46,29 @@ const pick: Record<
     archived: (g) => g.archived,
 };
 
-// The selected tab lives in the URL hash so it survives a reload.
-function subscribe(onChange: () => void) {
-    window.addEventListener('hashchange', onChange);
-    return () => window.removeEventListener('hashchange', onChange);
-}
-const readHash = () => window.location.hash.slice(1);
-const serverHash = () => '';
-
-function selectTab(id: TabId, fallback: TabId) {
-    const url = new URL(window.location.href);
-    url.hash = id === fallback ? '' : id;
-    window.history.replaceState(window.history.state, '', url);
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
-}
-
-export function ProfileTabs({
-    games,
-    country,
-}: {
-    games: LeaderboardsProfileGame[];
-    country: string | null;
-}) {
-    const hash = useSyncExternalStore(subscribe, readHash, serverHash);
+export function ProfileTabs({ country }: { country: string | null }) {
+    const { games: unordered, draft } = useShowcase();
+    const { hash, sort, game: filter } = useProfileUrl();
+    const options = sortOptions(draft);
+    const mode = (options as string[]).includes(sort)
+        ? (sort as SortMode)
+        : 'runner';
+    const games = orderGames(unordered, draft, mode);
+    const mainId = mainGameOf(unordered, draft.mainGameId)?.gameId ?? null;
+    const needle = filter.trim().toLowerCase();
+    const matches = (g: LeaderboardsProfileGame) =>
+        needle === '' || g.game.toLowerCase().includes(needle);
+    const [expanded, setExpanded] = useState<Set<number>>(() => new Set());
+    const collapsing = unordered.length >= COLLAPSE_AT;
+    const isCollapsed = (g: LeaderboardsProfileGame) =>
+        collapsing &&
+        needle === '' &&
+        g.gameId !== mainId &&
+        !expanded.has(g.gameId);
 
     const views = (Object.keys(pick) as TabId[]).map((id) => {
         const blocks = games
+            .filter(matches)
             .map((game) => ({ game, entries: pick[id](game) }))
             .filter((b) => b.entries.length > 0);
         const count = blocks.reduce((n, b) => n + b.entries.length, 0);
@@ -86,14 +93,17 @@ export function ProfileTabs({
               );
     const active = tabs.find((t) => t.id === hash) ?? gameTab ?? fallback;
 
-    // The block may only exist once the tab above has switched, after the
-    // browser has already tried (and failed) to scroll to it.
+    // A `#game-<id>` hash also expands that block. The block may only exist
+    // once the tab above has switched, after the browser has already tried
+    // (and failed) to scroll to it, so this effect scrolls again once it can.
     useEffect(() => {
         if (!hash.startsWith('game-')) return;
+        const id = Number(hash.slice(5));
+        setExpanded((s) => (s.has(id) ? s : new Set(s).add(id)));
         document.getElementById(hash)?.scrollIntoView({ block: 'start' });
     }, [hash]);
 
-    if (games.length === 0) {
+    if (unordered.length === 0) {
         return <div className={styles.emptyNote}>No leaderboard runs yet.</div>;
     }
 
@@ -114,13 +124,23 @@ export function ProfileTabs({
                                     ? `${styles.tab} ${styles.tabActive}`
                                     : styles.tab
                             }
-                            onClick={() => selectTab(t.id, fallback.id)}
+                            onClick={() =>
+                                setProfileUrl({
+                                    hash: t.id === fallback.id ? '' : t.id,
+                                })
+                            }
                         >
                             {`${TAB_LABELS[t.id]} (${t.count.toLocaleString('en-US')})`}
                         </button>
                     ))}
                 </div>
             ) : null}
+            <LedgerControls
+                anyCollapsed={active.blocks.some((b) => isCollapsed(b.game))}
+                onExpandAll={() =>
+                    setExpanded(new Set(unordered.map((g) => g.gameId)))
+                }
+            />
             <div
                 id="profile-tabpanel"
                 role={tabs.length > 1 ? 'tabpanel' : undefined}
@@ -131,7 +151,7 @@ export function ProfileTabs({
             >
                 {active.blocks.length === 0 ? (
                     <div className={styles.emptyNote}>
-                        {EMPTY_TEXT[active.id]}
+                        {needle ? 'No games match.' : EMPTY_TEXT[active.id]}
                     </div>
                 ) : (
                     active.blocks.map((b) => (
@@ -140,6 +160,13 @@ export function ProfileTabs({
                             game={b.game}
                             entries={b.entries}
                             country={country}
+                            collapsed={isCollapsed(b.game)}
+                            onExpand={() =>
+                                setExpanded((s) =>
+                                    new Set(s).add(b.game.gameId),
+                                )
+                            }
+                            single={unordered.length === 1}
                         />
                     ))
                 )}

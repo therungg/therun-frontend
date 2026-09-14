@@ -11,6 +11,7 @@ import {
 } from './format';
 import styles from './leaderboards-profile.module.scss';
 import { PbSparkline } from './pb-sparkline';
+import { PinToggle } from './pin-toggle';
 
 const MEDALS: Record<number, string> = { 1: 'gold', 2: 'silver', 3: 'bronze' };
 
@@ -82,6 +83,7 @@ export function EntryRow({
                         : null}
                 </span>
                 <span className={styles.entryBadges}>
+                    <PinToggle entry={entry} />
                     <span
                         title={
                             entry.verifiedAt

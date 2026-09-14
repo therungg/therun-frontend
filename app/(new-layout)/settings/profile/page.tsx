@@ -1,4 +1,5 @@
 import { getSession } from '~src/actions/session.action';
+import Link from '~src/components/link';
 import { getGlobalUser } from '~src/lib/get-global-user';
 import buildMetadata from '~src/utils/metadata';
 import styles from '../settings.module.scss';
@@ -17,6 +18,13 @@ export default async function ProfileSettingsPage() {
                 <h1 className={styles.paneTitle}>Profile</h1>
             </header>
             <ProfileForm initial={userData} />
+            <p className={styles.paneNote}>
+                <Link
+                    href={`/leaderboards/${encodeURIComponent(session.username)}?edit=1`}
+                >
+                    Arrange your Leaderboards profile
+                </Link>
+            </p>
         </div>
     );
 }

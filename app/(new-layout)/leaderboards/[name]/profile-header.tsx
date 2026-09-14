@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react';
+import { Suspense } from 'react';
 import {
     Discord,
     Facebook,
@@ -23,8 +24,10 @@ import type {
     LeaderboardsProfileStanding,
 } from '../../../../types/leaderboards-profile.types';
 import { RunnerAvatar } from '../../games-v2/[game]/leaderboard/runner-avatar';
+import { EditBar } from './edit-bar';
 import { HeroStats } from './hero-stats';
 import styles from './leaderboards-profile.module.scss';
+import { OwnerControls } from './owner-controls';
 
 type IconType = ComponentType<{ size?: number; 'aria-hidden'?: boolean }>;
 
@@ -54,9 +57,13 @@ function countryName(country: string | null): string | null {
 export function ProfileHeader({
     runner,
     standing,
+    games,
+    canCustomize,
 }: {
     runner: LeaderboardsProfileRunner;
     standing: LeaderboardsProfileStanding;
+    games: number;
+    canCustomize: boolean;
 }) {
     const guest = runner.userId === null;
     const country = countryName(runner.country);
@@ -126,9 +133,15 @@ export function ProfileHeader({
                     >
                         Stats profile
                     </Link>
+                    {canCustomize ? (
+                        <Suspense fallback={null}>
+                            <OwnerControls name={runner.name} />
+                        </Suspense>
+                    ) : null}
                 </div>
             ) : null}
-            <HeroStats standing={standing} />
+            <HeroStats standing={standing} games={games} />
+            <EditBar />
         </header>
     );
 }

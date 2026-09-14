@@ -112,4 +112,25 @@ export interface LeaderboardsProfile {
     activity: { date: string; attempts: number }[];
     games: LeaderboardsProfileGame[];
     recentPbs: LeaderboardsProfileRecentPb[];
+    /** Not deployed everywhere yet — read defensively. */
+    layout?: ResolvedLeaderboardsLayout;
+}
+
+export type PinRef = { kind: 'run' | 'manual'; id: number };
+
+export type GameOrder = 'rank' | 'recent' | 'name' | 'manual';
+
+/** What the runner saved. */
+export interface LeaderboardsLayout {
+    mainGameId: number | null;
+    pins: PinRef[];
+    videoPin: PinRef | null;
+    gameOrder: GameOrder;
+    manualGameIds: number[];
+    showActivity: boolean;
+}
+
+/** The saved layout checked by the backend against this payload. */
+export interface ResolvedLeaderboardsLayout extends LeaderboardsLayout {
+    isDefault: boolean;
 }
