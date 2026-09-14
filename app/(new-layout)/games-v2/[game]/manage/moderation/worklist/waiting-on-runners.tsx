@@ -43,9 +43,13 @@ export function WaitingOnRunnersSection({
                         ? 'Runner reminded.'
                         : 'Already reminded in the last day.',
                 );
-            else
+            else if (res.count > 0)
                 toast.success(
                     'Accepted without a video. The run is back on the board as pending.',
+                );
+            else
+                toast.info(
+                    'Nothing changed. The run is no longer waiting for a video.',
                 );
             onChanged();
         });

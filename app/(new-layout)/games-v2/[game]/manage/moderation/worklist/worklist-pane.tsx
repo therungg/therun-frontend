@@ -221,9 +221,14 @@ export function WorklistPane({
             setError(res.error);
             return;
         }
-        toast.success(
-            `Asked ${item.runnerName} for a video. The run is off the board until they add one.`,
-        );
+        if (res.count > 0)
+            toast.success(
+                `Asked ${item.runnerName} for a video. The run is off the board until they add one.`,
+            );
+        else
+            toast.info(
+                'Nothing changed. The run already has a video, is no longer pending, or is already off the board.',
+            );
         load();
     };
 
