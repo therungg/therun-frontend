@@ -1,7 +1,7 @@
 'use client';
 
 import moment from 'moment/moment';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 
 interface IsoToFormattedProps {
     iso: string | Date;
@@ -326,7 +326,25 @@ export const DurationAsTimer = ({ duration }: { duration: string }) => {
     );
 };
 
+const subscribeNothing = () => () => {
+    // Nothing to unsubscribe: "mounted" never changes after hydration.
+};
+
+/**
+ * "3 hours ago". The server's HTML can be a cached render from hours earlier
+ * and runs in UTC, so until hydration both sides print the same absolute UTC
+ * date; the relative text and the local-time title follow once mounted.
+ */
 export const FromNow = ({ time }: { time: string | Date }) => {
+    const mounted = useSyncExternalStore(
+        subscribeNothing,
+        () => true,
+        () => false,
+    );
+    if (!mounted) {
+        const utc = `${moment.utc(time).format('YYYY-MM-DD HH:mm')} UTC`;
+        return <abbr title={utc}>{utc}</abbr>;
+    }
     return (
         <abbr title={moment(time).format('LLLL')}>
             {moment(time).fromNow()}
