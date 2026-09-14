@@ -202,6 +202,32 @@
     margin-top: 1rem;
 }
 
+.batch {
+    border: 1px solid var(--bs-border-color);
+    border-radius: dt.$radius-md;
+    padding: dt.$spacing-md dt.$spacing-lg;
+
+    & + & {
+        margin-top: dt.$spacing-sm;
+    }
+}
+
+.batchHead {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: dt.$spacing-md;
+}
+
+.batchToggle {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: inherit;
+    font-weight: 600;
+    text-align: left;
+}
+
 @media (max-width: 900px) {
     .row {
         grid-template-columns: 1fr;

@@ -7,6 +7,7 @@ import type {
     VariableRow,
 } from '../../../../../../../types/leaderboards.types';
 import type {
+    WorklistBatch,
     WorklistItem,
     WorklistPage,
 } from '../../../../../../../types/worklist.types';
@@ -20,6 +21,7 @@ import { applyVerdictsAction } from '../shared/actions/verdicts.action';
 import { RunActionDialog } from '../shared/run-action-dialog';
 import { fireUndoToast } from '../shared/undo-toast';
 import { loadWorklistAction } from './actions/worklist.action';
+import { WorklistBatchCard } from './worklist-batch';
 import { inspectorBoard, TIER_TITLE, toInspectorEntry } from './worklist-model';
 import styles from './worklist-pane.module.scss';
 import { WorklistRow } from './worklist-row';
@@ -27,6 +29,15 @@ import { WorklistRow } from './worklist-row';
 const PAGE_SIZE = 25;
 const APPROVE_REASON = 'Approved. No issues found.';
 const UNDO_APPROVE_REASON = 'Undo of an approval from the worklist';
+/** `/verdicts` accepts up to 500 run ids per call. */
+const VERDICT_CHUNK_SIZE = 500;
+
+function chunk<T>(items: T[], size: number): T[][] {
+    const out: T[][] = [];
+    for (let i = 0; i < items.length; i += size)
+        out.push(items.slice(i, i + size));
+    return out;
+}
 
 interface Props {
     gameSlug: string;
@@ -86,6 +97,7 @@ export function WorklistPane({
     const [error, setError] = useState<string | null>(null);
     const [isLoading, startLoad] = useTransition();
     const [busyRunId, setBusyRunId] = useState<number | null>(null);
+    const [busyBatchKey, setBusyBatchKey] = useState<string | null>(null);
     const [dialog, setDialog] = useState<Dialog | null>(null);
     const [now, setNow] = useState(() => new Date());
     const [inspectRunId, setInspectRunId] = useState<number | null>(null);
@@ -139,6 +151,54 @@ export function WorklistPane({
                     [item.runId],
                     UNDO_APPROVE_REASON,
                 ),
+            load,
+        );
+        load();
+    };
+
+    // A batch approves in one click, chunked so no single call exceeds the
+    // verdict endpoint's 500-id cap. Stops on the first failing chunk; undo
+    // only unverifies the chunks that actually went through.
+    const approveBatch = async (batch: WorklistBatch) => {
+        setBusyBatchKey(batch.key);
+        const chunks = chunk(batch.runIds, VERDICT_CHUNK_SIZE);
+        const doneChunks: number[][] = [];
+        let affectedRunCount = 0;
+        let failure: string | null = null;
+        for (const runIds of chunks) {
+            const res = await applyVerdictsAction(
+                gameSlug,
+                'verify',
+                runIds,
+                APPROVE_REASON,
+            );
+            if ('error' in res) {
+                failure = res.error;
+                break;
+            }
+            affectedRunCount += res.result.affectedRunCount;
+            doneChunks.push(runIds);
+        }
+        setBusyBatchKey(null);
+        if (failure) {
+            setError(failure);
+            if (doneChunks.length > 0) load();
+            return;
+        }
+        fireUndoToast(
+            `Approved ${affectedRunCount} runs.`,
+            async () => {
+                for (const runIds of doneChunks) {
+                    const res = await applyVerdictsAction(
+                        gameSlug,
+                        'unverify',
+                        runIds,
+                        UNDO_APPROVE_REASON,
+                    );
+                    if ('error' in res) return res;
+                }
+                return { ok: true };
+            },
             load,
         );
         load();
@@ -250,7 +310,32 @@ export function WorklistPane({
 
             {nothing && <p className={styles.empty}>Nothing needs you.</p>}
 
-            {/* Task 6 renders data.batches here, above the rows. */}
+            {data && data.batches.length > 0 && (
+                <section className={styles.tier}>
+                    <h3 className={styles.tierTitle}>Routine, grouped</h3>
+                    {data.batches.map((batch) => (
+                        <WorklistBatchCard
+                            key={batch.key}
+                            batch={batch}
+                            now={now}
+                            busy={busyBatchKey === batch.key}
+                            onApproveAll={approveBatch}
+                            onApprove={approve}
+                            onVerb={(it, verb) =>
+                                setDialog({
+                                    kind: 'action',
+                                    verb,
+                                    target: targetFor(it),
+                                })
+                            }
+                            onHideIdentity={(it) =>
+                                setDialog({ kind: 'hide', item: it })
+                            }
+                            onInspect={openInspector}
+                        />
+                    ))}
+                </section>
+            )}
 
             {([1, 2, 3] as const).map((tier) => {
                 const inTier = items.filter((i) => i.tier === tier);
