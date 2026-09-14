@@ -150,40 +150,62 @@
 }
 
 .headerSide {
+    grid-row: 1;
+    grid-column: 3;
     display: flex;
     align-items: center;
-    gap: dt.$spacing-sm;
-    padding-top: 6px;
+    padding-top: 4px;
 
     @media (max-width: 575.98px) {
+        grid-row: auto;
         grid-column: 1 / -1;
         order: 1;
         padding-top: 0;
     }
 }
 
+// Where to find the runner elsewhere: named, so nobody has to decode a glyph.
 .socials {
+    grid-column: 2 / -1;
     display: flex;
-    gap: dt.$spacing-xs;
-    margin: 0;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+    margin: dt.$spacing-xs 0 0;
     padding: 0;
     list-style: none;
+
+    @media (max-width: 575.98px) {
+        grid-column: 1 / -1;
+    }
 
     a {
         display: inline-flex;
         align-items: center;
-        justify-content: center;
-        width: 34px;
-        height: 34px;
-        border-radius: 50%;
-        color: var(--bs-secondary-color);
-        background: rgba(var(--bs-emphasis-color-rgb), 0.05);
-        transition: background-color dt.$transition-fast,
-            color dt.$transition-fast;
+        gap: 6px;
+        padding: 4px 12px 4px 10px;
+        border: 1px solid
+            var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
+        border-radius: 999px;
+        color: var(--bs-body-color);
+        font-size: dt.$font-size-xs;
+        font-weight: 500;
+        text-decoration: none;
+        transition: border-color dt.$transition-fast,
+            color dt.$transition-fast, background-color dt.$transition-fast;
+
+        svg {
+            color: var(--bs-secondary-color);
+            transition: color dt.$transition-fast;
+        }
 
         &:hover {
+            border-color: rgba(var(--bs-primary-rgb), 0.5);
+            background: rgba(var(--bs-primary-rgb), 0.08);
             color: var(--bs-emphasis-color);
-            background: rgba(var(--bs-primary-rgb), 0.14);
+
+            svg {
+                color: var(--bs-emphasis-color);
+            }
         }
 
         &:focus-visible {
@@ -192,8 +214,7 @@
         }
 
         @media (pointer: coarse) {
-            width: 44px;
-            height: 44px;
+            padding-block: 10px;
         }
     }
 }
@@ -298,3 +319,4 @@
     gap: dt.$spacing-lg;
     min-width: 0;
 }
+
