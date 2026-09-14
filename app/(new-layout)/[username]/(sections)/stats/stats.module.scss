@@ -1,0 +1,90 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+.gameHead {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) auto;
+    gap: dt.$spacing-md;
+    align-items: center;
+
+    img {
+        width: 36px;
+        height: 48px;
+        object-fit: cover;
+        border-radius: dt.$radius-sm;
+    }
+}
+
+.gameText {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.gameLine {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+}
+
+.table {
+    @include board.board-table;
+
+    min-width: 40rem;
+
+    th,
+    td {
+        white-space: nowrap;
+    }
+
+    th[scope='row'] {
+        font-weight: 400;
+        color: var(--bs-emphasis-color);
+        white-space: normal;
+    }
+
+    thead th {
+        color: var(--bs-secondary-color);
+        font-size: dt.$font-size-sm;
+        font-weight: 500;
+    }
+
+    tbody td {
+        border-bottom: 1px solid var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
+        font-family: dt.$font-mono;
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+    }
+}
+
+.igt {
+    display: block;
+    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-xs;
+}
+
+.rank {
+    --rank-gold: #d4a73a;
+    --rank-silver: #a9b4c2;
+    --rank-bronze: #c07a45;
+
+    font-family: dt.$font-mono;
+    font-weight: 700;
+
+    &[data-medal='gold'] {
+        color: color-mix(in srgb, var(--rank-gold) 65%, var(--bs-emphasis-color));
+    }
+
+    &[data-medal='silver'] {
+        color: color-mix(in srgb, var(--rank-silver) 65%, var(--bs-emphasis-color));
+    }
+
+    &[data-medal='bronze'] {
+        color: color-mix(in srgb, var(--rank-bronze) 65%, var(--bs-emphasis-color));
+    }
+}
+
+.rankNone {
+    color: var(--bs-tertiary-color);
+}
