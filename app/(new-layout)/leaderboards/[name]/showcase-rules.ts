@@ -75,8 +75,20 @@ export const onBiggerBoard = (
 ) => boardSize(b) - boardSize(a) || (outranks(a, b) ? -1 : 1);
 
 /**
- * The default showcase when the runner pinned nothing: their runs on the
- * boards with the most runners, whatever game they are in. Each category and
+ * What a run is worth for the showcase: the board's field divided by the
+ * rank. A bigger board pays more, but placing counts just as hard, so a
+ * back-of-the-pack run on a huge board is worth about a point: #4 of 200 is
+ * 50, #1 of 10 is 10, #2 of 10 is 5, #997 of 1,044 is 1. (The standings'
+ * square-root curve is gentler on rank than a showcase should be.)
+ */
+export const entryPoints = (e: LeaderboardsProfileEntry) =>
+    e.rank !== null && e.rank > 0 && boardSize(e) > 0
+        ? boardSize(e) / e.rank
+        : 0;
+
+/**
+ * The default showcase when the runner pinned nothing: their six runs worth
+ * the most points, whatever game they are in. Each category and
  * subcategory is its own board.
  */
 export function autoPins(games: LeaderboardsProfileGame[]): Pinned[] {
@@ -87,7 +99,11 @@ export function autoPins(games: LeaderboardsProfileGame[]): Pinned[] {
             all.push({ entry, game });
         }
     }
-    all.sort((a, b) => onBiggerBoard(a.entry, b.entry));
+    all.sort(
+        (a, b) =>
+            entryPoints(b.entry) - entryPoints(a.entry) ||
+            onBiggerBoard(a.entry, b.entry),
+    );
     return all.slice(0, PIN_LIMIT);
 }
 

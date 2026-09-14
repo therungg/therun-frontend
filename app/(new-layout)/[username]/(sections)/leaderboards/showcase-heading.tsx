@@ -10,7 +10,7 @@ export function ShowcaseHeading({ children }: { children: ReactNode }) {
     const auto = draft.pins.length === 0;
     const note = !editing
         ? auto
-            ? 'Runs on the biggest boards'
+            ? 'Best placements, weighted by board size'
             : null
         : auto
           ? 'Automatic picks. Pin these, or pin any run from the list below.'
