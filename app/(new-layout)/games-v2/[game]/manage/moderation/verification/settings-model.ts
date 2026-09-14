@@ -1,0 +1,254 @@
+import type {
+    AutoVerifySetting,
+    EffectiveSettings,
+    IntakeSetting,
+    SaveSettingsInput,
+    SettingSource,
+    SettingsPreview,
+    VerifyWindowSetting,
+    VideoRule,
+} from '../../../../../../../types/verification-settings.types';
+
+/** Numbers are held as text so a field the moderator is retyping never coerces to 0. */
+export type SettingsForm = {
+    acceptTimer: boolean;
+    manualMode: IntakeSetting['manual']['mode'];
+    manualDays: string;
+    videoRequire: VideoRule['require'];
+    videoTopN: string;
+    videoTimeMs: string;
+    videoOnMissing: VideoRule['onMissing'];
+    autoTrustOn: boolean;
+    autoTrustAfter: string;
+    preset: AutoVerifySetting['preset'];
+    neverTopN: string;
+    requireLive: boolean;
+    windowMode: VerifyWindowSetting['mode'];
+    windowN: string;
+    windowTimeMs: string;
+};
+
+export const PRESET_OPTIONS: Array<{
+    value: AutoVerifySetting['preset'];
+    label: string;
+}> = [
+    { value: 'off', label: 'Off' },
+    { value: 'lenient', label: 'Lenient' },
+    { value: 'standard', label: 'Standard' },
+    { value: 'strict', label: 'Strict' },
+];
+
+/** Same wording as the old Auto-verify pane, which moderators already know. */
+export const PRESET_HINTS: Record<AutoVerifySetting['preset'], string> = {
+    off: 'Nothing is verified automatically.',
+    lenient:
+        'Live check when available, allows a 10% gold beat and a 15% PB jump, no prior verified runs needed.',
+    standard:
+        'Live check when available, allows a 5% gold beat and an 8% PB jump, needs 1 prior verified run.',
+    strict: 'Live tracking required, allows a 2% gold beat and a 4% PB jump, needs 3 prior verified runs.',
+};
+
+export const formFrom = (e: EffectiveSettings): SettingsForm => {
+    const manual = e.intake.value.manual;
+    const video = e.videoRule.value;
+    const window = e.verifyWindow.value;
+    return {
+        acceptTimer: e.intake.value.acceptTimer,
+        manualMode: manual.mode,
+        manualDays: manual.mode === 'account_age' ? String(manual.days) : '7',
+        videoRequire: video.require,
+        videoTopN: String(video.topN ?? 10),
+        videoTimeMs: String(video.timeMs ?? ''),
+        videoOnMissing: video.onMissing,
+        autoTrustOn: e.autoTrust.value.afterVerifiedRuns !== null,
+        autoTrustAfter: String(e.autoTrust.value.afterVerifiedRuns ?? 5),
+        preset: e.autoVerify.value.preset,
+        neverTopN: String(e.autoVerify.value.neverTopN),
+        requireLive: e.autoVerify.value.requireLive,
+        windowMode: window.mode,
+        windowN: window.mode === 'top_n' ? String(window.n) : '10',
+        windowTimeMs: window.mode === 'under_time' ? String(window.timeMs) : '',
+    };
+};
+
+const int = (text: string): number | null =>
+    /^\d+$/.test(text.trim()) ? Number(text.trim()) : null;
+
+/** First problem with the form, in the words the editor shows, or null. */
+export const validateForm = (f: SettingsForm): string | null => {
+    if (
+        f.manualMode === 'account_age' &&
+        !(int(f.manualDays) && int(f.manualDays)! <= 365)
+    )
+        return 'Account age must be 1 to 365 days.';
+    if (
+        f.videoRequire === 'top_n' &&
+        !(int(f.videoTopN) && int(f.videoTopN)! <= 1000)
+    )
+        return 'Top N for video must be 1 to 1000.';
+    if (f.videoRequire === 'under_time' && !int(f.videoTimeMs))
+        return 'Enter the time under which a video is required.';
+    if (
+        f.autoTrustOn &&
+        !(int(f.autoTrustAfter) && int(f.autoTrustAfter)! <= 100)
+    )
+        return 'Trust after must be 1 to 100 verified runs.';
+    if (int(f.neverTopN) === null || int(f.neverTopN)! > 1000)
+        return 'Never auto-verify the top must be 0 to 1000.';
+    if (
+        f.windowMode === 'top_n' &&
+        !(int(f.windowN) && int(f.windowN)! <= 1000)
+    )
+        return 'Review window must be 1 to 1000 runs.';
+    if (f.windowMode === 'under_time' && !int(f.windowTimeMs))
+        return 'Enter the review window time.';
+    return null;
+};
+
+const intakeOf = (f: SettingsForm): IntakeSetting => ({
+    acceptTimer: f.acceptTimer,
+    manual:
+        f.manualMode === 'account_age'
+            ? { mode: 'account_age', days: int(f.manualDays)! }
+            : ({ mode: f.manualMode } as IntakeSetting['manual']),
+});
+const videoOf = (f: SettingsForm): VideoRule => ({
+    require: f.videoRequire,
+    ...(f.videoRequire === 'top_n' ? { topN: int(f.videoTopN)! } : {}),
+    ...(f.videoRequire === 'under_time' ? { timeMs: int(f.videoTimeMs)! } : {}),
+    onMissing: f.videoOnMissing,
+});
+const autoVerifyOf = (f: SettingsForm): AutoVerifySetting => ({
+    preset: f.preset,
+    neverTopN: int(f.neverTopN)!,
+    requireLive: f.requireLive,
+});
+const windowOf = (f: SettingsForm): VerifyWindowSetting =>
+    f.windowMode === 'top_n'
+        ? { mode: 'top_n', n: int(f.windowN)! }
+        : { mode: 'under_time', timeMs: int(f.windowTimeMs)! };
+
+const same = (a: unknown, b: unknown) =>
+    JSON.stringify(a) === JSON.stringify(b);
+
+/** Only the settings the moderator changed go in the request. */
+export const inputFrom = (
+    f: SettingsForm,
+    original: SettingsForm,
+    categoryId: number | null,
+): SaveSettingsInput => {
+    const input: SaveSettingsInput = { categoryId };
+    if (!same(intakeOf(f), intakeOf(original))) input.intake = intakeOf(f);
+    if (!same(videoOf(f), videoOf(original))) input.videoRule = videoOf(f);
+    const trust = {
+        afterVerifiedRuns: f.autoTrustOn ? int(f.autoTrustAfter)! : null,
+    };
+    const trustBefore = {
+        afterVerifiedRuns: original.autoTrustOn
+            ? int(original.autoTrustAfter)
+            : null,
+    };
+    if (!same(trust, trustBefore)) input.autoTrust = trust;
+    if (!same(autoVerifyOf(f), autoVerifyOf(original)))
+        input.autoVerify = autoVerifyOf(f);
+    if (!same(windowOf(f), windowOf(original)))
+        input.verifyWindow = windowOf(f);
+    return input;
+};
+
+export const isDirty = (f: SettingsForm, original: SettingsForm) =>
+    !same(f, original);
+
+/** A change that hides runs, closes intake or changes automation must be previewed first. */
+export const needsPreview = (input: SaveSettingsInput) =>
+    input.videoRule !== undefined ||
+    input.autoVerify !== undefined ||
+    input.intake !== undefined;
+
+export const sourceLabel = (s: SettingSource): string =>
+    ({
+        category: 'Set for this category',
+        game: 'Game default',
+        category_import: 'From the imported category settings',
+        default: 'Built-in default',
+    })[s];
+
+const videoWords = (v: VideoRule) => {
+    switch (v.require) {
+        case 'nothing':
+            return 'no video required';
+        case 'everything':
+            return 'video required for every run';
+        case 'top_n':
+            return `video required for the top ${v.topN}`;
+        case 'under_time':
+            return 'video required under a time';
+    }
+};
+
+/** One line describing a category's settings, for the collapsed override row. */
+export const summarize = (e: EffectiveSettings): string => {
+    const parts = [
+        videoWords(e.videoRule.value),
+        e.autoVerify.value.preset === 'off'
+            ? 'auto-verify off'
+            : `auto-verify ${e.autoVerify.value.preset}`,
+    ];
+    if (!e.intake.value.acceptTimer) parts.push('timer runs closed');
+    if (e.intake.value.manual.mode === 'off') parts.push('no submitted times');
+    return parts.join(', ');
+};
+
+/** What a preview means, as sentences, most consequential first. */
+export const previewSentences = (p: SettingsPreview): string[] => {
+    const out: string[] = [];
+    if (p.videoRule) {
+        const v = p.videoRule;
+        if (v.existingWithoutVideo === 0) {
+            out.push('Every pending run this rule covers already has a video.');
+        } else {
+            out.push(
+                `${v.existingWithoutVideo} pending ${v.existingWithoutVideo === 1 ? 'run' : 'runs'} on the board would need a video under this rule.`,
+            );
+            if (v.wouldHide > 0)
+                out.push(
+                    `${v.wouldHide} would come off the board until the runner adds one, if you apply this to runs already there.`,
+                );
+            if (v.wouldFlag > 0)
+                out.push(
+                    `${v.wouldFlag} would stay on the board and show in the mod queue instead.`,
+                );
+        }
+        if (v.newRunsLastWeek > 0)
+            out.push(
+                `In the last 7 days, ${v.newRunsLastWeek} new ${v.newRunsLastWeek === 1 ? 'run' : 'runs'} would have been asked for a video.`,
+            );
+        if (v.verifiedWithoutVideo > 0)
+            out.push(
+                `${v.verifiedWithoutVideo} verified ${v.verifiedWithoutVideo === 1 ? 'run has' : 'runs have'} no video. Verified runs are never taken off the board.`,
+            );
+    }
+    if (p.autoVerify) {
+        const a = p.autoVerify;
+        out.push(
+            a.pendingEvaluated === 0
+                ? 'No pending timer runs to check.'
+                : `Of the ${a.pendingEvaluated} most recent pending runs, ${a.wouldClear} would be verified automatically, ${a.wouldFlag} would be flagged for review, and ${a.awaitingLive} would wait for a live run.`,
+        );
+    }
+    if (p.intake) {
+        if (p.intake.timerRunsLastWeek > 0)
+            out.push(
+                `${p.intake.timerRunsLastWeek} timer ${p.intake.timerRunsLastWeek === 1 ? 'run' : 'runs'} arrived in the last 7 days. With timer runs closed, runs like these would be kept but left off the board.`,
+            );
+        if (p.intake.pendingSelfClaims > 0)
+            out.push(
+                `${p.intake.pendingSelfClaims} self-claimed ${p.intake.pendingSelfClaims === 1 ? 'time is' : 'times are'} waiting in the mod queue. This change doesn't affect them.`,
+            );
+    }
+    if (p.autoTrust)
+        out.push(
+            `${p.autoTrust.runnersWhoQualifyNow} ${p.autoTrust.runnersWhoQualifyNow === 1 ? 'runner' : 'runners'} would be trusted on their next verified run.`,
+        );
+    return out;
+};
