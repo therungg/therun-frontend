@@ -806,3 +806,22 @@
     &[data-medal='silver'] { color: color-mix(in srgb, var(--rank-silver) 65%, var(--bs-emphasis-color)); }
     &[data-medal='bronze'] { color: color-mix(in srgb, var(--rank-bronze) 65%, var(--bs-emphasis-color)); }
 }
+
+// Edit mode's bar takes the hero row's place in the header.
+.editBar {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-md;
+    padding-top: dt.$spacing-lg;
+    border-top: 1px solid
+        var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
+}
+
+.editBarActions {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin-left: auto;
+}

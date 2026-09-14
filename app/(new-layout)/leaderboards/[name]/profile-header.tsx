@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react';
+import { Suspense } from 'react';
 import {
     Discord,
     Facebook,
@@ -23,8 +24,10 @@ import type {
     LeaderboardsProfileStanding,
 } from '../../../../types/leaderboards-profile.types';
 import { RunnerAvatar } from '../../games-v2/[game]/leaderboard/runner-avatar';
+import { EditBar } from './edit-bar';
 import { HeroStats } from './hero-stats';
 import styles from './leaderboards-profile.module.scss';
+import { OwnerControls } from './owner-controls';
 
 type IconType = ComponentType<{ size?: number; 'aria-hidden'?: boolean }>;
 
@@ -128,9 +131,13 @@ export function ProfileHeader({
                     >
                         Stats profile
                     </Link>
+                    <Suspense fallback={null}>
+                        <OwnerControls name={runner.name} />
+                    </Suspense>
                 </div>
             ) : null}
             <HeroStats standing={standing} games={games} />
+            <EditBar />
         </header>
     );
 }

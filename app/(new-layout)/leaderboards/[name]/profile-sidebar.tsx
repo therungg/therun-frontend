@@ -1,10 +1,10 @@
 import Link from '~src/components/link';
 import { safeEncodeURI } from '~src/utils/uri';
 import type { LeaderboardsProfile } from '../../../../types/leaderboards-profile.types';
+import { ActivityGate } from './activity-gate';
 import { ActivityHeatmap } from './activity-heatmap';
-import { formatProfileDate } from './format';
+import { formatProfileDate, plural } from './format';
 import { GamesShelf } from './games-shelf';
-import { plural } from './hero-stats';
 import styles from './leaderboards-profile.module.scss';
 import { LiveStrip } from './live-strip';
 import { RecentPbs } from './recent-pbs';
@@ -107,7 +107,9 @@ export function ProfileSidebar({ profile }: { profile: LeaderboardsProfile }) {
             <StandingCard standing={profile.standing} />
             <GamesShelf />
             {profile.activity.length > 0 ? (
-                <ActivityHeatmap activity={profile.activity} />
+                <ActivityGate>
+                    <ActivityHeatmap activity={profile.activity} />
+                </ActivityGate>
             ) : null}
             {profile.recentPbs.length > 0 ? (
                 <RecentPbs pbs={profile.recentPbs} />

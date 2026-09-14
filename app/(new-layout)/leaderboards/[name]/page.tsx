@@ -5,7 +5,7 @@ import { getLeaderboardsProfile } from '~src/lib/leaderboards-profile';
 import buildMetadata, { getUserProfilePhoto } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 import { GameThemeStyle } from '../../games-v2/[game]/theme/game-theme-style';
-import { plural } from './hero-stats';
+import { plural } from './format';
 import styles from './leaderboards-profile.module.scss';
 import { PinnedRuns } from './pinned-runs';
 import { ProfileHeader } from './profile-header';
