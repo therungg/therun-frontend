@@ -11,6 +11,7 @@ import { formatTimeMs } from '~src/lib/run-view/time-format';
 import buildMetadata from '~src/utils/metadata';
 import { formatSubcategoryKey } from '../../labels';
 import { ModProvenancePanel } from '../../run-view/mod-provenance-panel';
+import { RunVerdictControls } from '../../run-view/run-verdict-controls';
 import { type RunBoardStanding, RunView } from '../../run-view/run-view';
 import { isSameRunner } from '../../shared/is-same-runner';
 
@@ -148,12 +149,26 @@ export default async function RunDetailPage({ params }: PageProps) {
             isMod={isMod}
             modPanel={
                 isMod ? (
-                    <ModProvenancePanel
-                        provenance={provenance}
-                        history={history}
-                        gameSlug={game.name}
-                        runId={runId}
-                    />
+                    <>
+                        <RunVerdictControls
+                            gameSlug={game.name}
+                            runId={runId}
+                            runnerName={run.runnerName}
+                            userId={run.userId ?? null}
+                            categoryId={run.categoryId}
+                            categoryDisplay={run.categoryDisplay}
+                            subcategoryKey={run.subcategoryKey ?? ''}
+                            timeMs={run.realTime ?? run.gameTime ?? null}
+                            runDate={run.runDate ?? null}
+                            verificationStatus={run.verificationStatus}
+                        />
+                        <ModProvenancePanel
+                            provenance={provenance}
+                            history={history}
+                            gameSlug={game.name}
+                            runId={runId}
+                        />
+                    </>
                 ) : undefined
             }
         />
