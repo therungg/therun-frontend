@@ -29,7 +29,12 @@ import {
 } from './actions/worklist.action';
 import { type TrustCandidate, TrustPrompt } from './trust-prompt';
 import { WorklistBatchCard } from './worklist-batch';
-import { inspectorBoard, TIER_TITLE, toInspectorEntry } from './worklist-model';
+import {
+    boardLabel,
+    inspectorBoard,
+    TIER_TITLE,
+    toInspectorEntry,
+} from './worklist-model';
 import styles from './worklist-pane.module.scss';
 import { WorklistRow } from './worklist-row';
 
@@ -65,10 +70,13 @@ type Dialog =
     | { kind: 'action'; verb: ModVerb; target: RunActionTarget }
     | { kind: 'hide'; item: WorklistItem };
 
-const targetFor = (item: WorklistItem): RunActionTarget => ({
+const targetFor = (
+    item: WorklistItem,
+    variables: VariableRow[],
+): RunActionTarget => ({
     kind: 'runs',
     runIds: [item.runId],
-    label: `${item.runnerName} · ${item.categoryDisplay}`,
+    label: `${item.runnerName} · ${boardLabel(item, variables)}`,
     runTimeMs:
         item.primaryTiming === 'gametime' && item.gameTime !== null
             ? item.gameTime
@@ -403,6 +411,7 @@ export function WorklistPane({
                     <h3 className={styles.tierTitle}>Routine, grouped</h3>
                     {data.batches.map((batch) => (
                         <WorklistBatchCard
+                            variables={variables}
                             key={batch.key}
                             batch={batch}
                             now={now}
@@ -413,7 +422,7 @@ export function WorklistPane({
                                 setDialog({
                                     kind: 'action',
                                     verb,
-                                    target: targetFor(it),
+                                    target: targetFor(it, variables),
                                 })
                             }
                             onHideIdentity={(it) =>
@@ -438,6 +447,7 @@ export function WorklistPane({
                         <ul className={styles.rows}>
                             {inTier.map((item) => (
                                 <WorklistRow
+                                    variables={variables}
                                     key={item.runId}
                                     item={item}
                                     now={now}
@@ -447,7 +457,7 @@ export function WorklistPane({
                                         setDialog({
                                             kind: 'action',
                                             verb,
-                                            target: targetFor(it),
+                                            target: targetFor(it, variables),
                                         })
                                     }
                                     onHideIdentity={(it) =>

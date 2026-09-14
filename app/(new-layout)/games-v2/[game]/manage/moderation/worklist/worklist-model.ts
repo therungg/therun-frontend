@@ -1,6 +1,7 @@
 import type {
     LeaderboardEntry,
     ResolvedCategory,
+    VariableRow,
 } from '../../../../../../../types/leaderboards.types';
 import type {
     WorklistItem,
@@ -8,7 +9,36 @@ import type {
     WorklistTier,
     WorklistTrackRecord,
 } from '../../../../../../../types/worklist.types';
+import { formatSubcategoryKey } from '../../../labels';
 import type { TimingKey } from '../../../leaderboard/timing-columns';
+
+/**
+ * The run's subcategory in words ("PC · Patch 1.0"), or '' when the board has
+ * none. Only this category's subcategory variables are used, so a variable of
+ * the same name on another category can't relabel the value.
+ */
+export const subcategoryLabel = (
+    item: Pick<WorklistItem, 'categoryId' | 'subcategoryKey'>,
+    variables: VariableRow[],
+): string =>
+    formatSubcategoryKey(
+        item.subcategoryKey,
+        variables.filter(
+            (v) => v.categoryId === item.categoryId && v.role === 'subcategory',
+        ),
+    );
+
+/** "Any% · PC" — the category with its subcategory, as a moderator names a board. */
+export const boardLabel = (
+    item: Pick<
+        WorklistItem,
+        'categoryId' | 'categoryDisplay' | 'subcategoryKey'
+    >,
+    variables: VariableRow[],
+): string => {
+    const sub = subcategoryLabel(item, variables);
+    return sub ? `${item.categoryDisplay} · ${sub}` : item.categoryDisplay;
+};
 
 /** Plain words for every reason the backend emits. Unknown reasons fall back to the raw key. */
 export const REASON_LABEL: Record<string, string> = {

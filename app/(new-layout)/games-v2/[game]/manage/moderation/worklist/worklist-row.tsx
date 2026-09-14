@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import type { VariableRow } from '../../../../../../../types/leaderboards.types';
 import type { AutoVerifyResult } from '../../../../../../../types/moderation.types';
 import type { WorklistItem } from '../../../../../../../types/worklist.types';
 import { AutoVerifyBreakdown } from '../../../run-view/run-badges';
 import type { ModVerb } from '../shared/action-model';
 import {
     ageTone,
+    boardLabel,
     boardTimeMs,
     deltaLabel,
     reasonLabel,
@@ -24,8 +26,11 @@ export function WorklistRow({
     onVerb,
     onHideIdentity,
     onInspect,
+    variables,
 }: {
     item: WorklistItem;
+    /** The game's variables — names the run's subcategory beside its category. */
+    variables: VariableRow[];
     now: Date;
     busy: boolean;
     onApprove: (item: WorklistItem) => void;
@@ -46,7 +51,7 @@ export function WorklistRow({
                 type="button"
                 className={styles.rowMain}
                 onClick={() => onInspect(item)}
-                aria-label={`Open ${item.runnerName}'s run on ${item.categoryDisplay}`}
+                aria-label={`Open ${item.runnerName}'s run on ${boardLabel(item, variables)}`}
             >
                 <span className={`${styles.age} ${styles[`age_${tone}`]}`}>
                     {waitingLabel(item.waitingSince, now)}
@@ -64,7 +69,7 @@ export function WorklistRow({
                     {record && <span className={styles.meta}>{record}</span>}
                 </span>
                 <span className={styles.board}>
-                    <span>{item.categoryDisplay}</span>
+                    <span>{boardLabel(item, variables)}</span>
                     <span className={styles.meta}>
                         would be #{item.wouldBeRank}
                     </span>
