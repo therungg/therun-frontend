@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useTransition } from 'react';
+import { toast } from 'react-toastify';
 import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import type {
     ResolvedCategory,
@@ -20,7 +21,13 @@ import type { ModVerb, RunActionTarget } from '../shared/action-model';
 import { applyVerdictsAction } from '../shared/actions/verdicts.action';
 import { RunActionDialog } from '../shared/run-action-dialog';
 import { fireUndoToast } from '../shared/undo-toast';
-import { loadWorklistAction } from './actions/worklist.action';
+import {
+    dismissTrustAction,
+    grantTrustAction,
+    loadTrustStateAction,
+    loadWorklistAction,
+} from './actions/worklist.action';
+import { type TrustCandidate, TrustPrompt } from './trust-prompt';
 import { WorklistBatchCard } from './worklist-batch';
 import { inspectorBoard, TIER_TITLE, toInspectorEntry } from './worklist-model';
 import styles from './worklist-pane.module.scss';
@@ -101,6 +108,10 @@ export function WorklistPane({
     const [dialog, setDialog] = useState<Dialog | null>(null);
     const [now, setNow] = useState(() => new Date());
     const [inspectRunId, setInspectRunId] = useState<number | null>(null);
+    const [trustCandidate, setTrustCandidate] = useState<TrustCandidate | null>(
+        null,
+    );
+    const [trustBusy, setTrustBusy] = useState(false);
 
     // A slow response for a filter or page the moderator already left must
     // not paint the current one. Each load takes a ticket; only the newest writes.
@@ -129,6 +140,38 @@ export function WorklistPane({
     // load reads the current filter and page; the rule is off project-wide anyway
     useEffect(load, [gameSlug, categoryId, page]);
 
+    // Asks the backend whether this runner has earned a trust offer — two
+    // approvals with no decline in between, not already trusted, not
+    // dismissed before. Never blocks the approval itself.
+    const maybeOfferTrust = async (item: WorklistItem) => {
+        if (item.userId === null || item.isGuest || item.trackRecord?.trusted)
+            return;
+        const res = await loadTrustStateAction(gameSlug, item.userId);
+        if ('error' in res || !res.trust.trustOffer) return;
+        setTrustCandidate({
+            userId: item.userId,
+            runnerName: item.runnerName,
+            categoryId: item.categoryId,
+            categoryDisplay: item.categoryDisplay,
+        });
+    };
+
+    const settleTrust = async (
+        op: () => Promise<{ ok: true } | { error: string }>,
+        message: string,
+    ) => {
+        setTrustBusy(true);
+        const res = await op();
+        setTrustBusy(false);
+        if ('error' in res) {
+            setError(res.error);
+            return;
+        }
+        toast.success(message);
+        setTrustCandidate(null);
+        load();
+    };
+
     const approve = async (item: WorklistItem) => {
         setBusyRunId(item.runId);
         const res = await applyVerdictsAction(
@@ -154,6 +197,7 @@ export function WorklistPane({
             load,
         );
         load();
+        void maybeOfferTrust(item);
     };
 
     // A batch approves in one click, chunked so no single call exceeds the
@@ -202,6 +246,10 @@ export function WorklistPane({
             load,
         );
         load();
+        if (batch.items.every((i) => i.userId === batch.items[0]?.userId)) {
+            const [first] = batch.items;
+            if (first) void maybeOfferTrust(first);
+        }
     };
 
     const items = data?.items ?? [];
@@ -260,6 +308,46 @@ export function WorklistPane({
                 and appeals come first, then runs where a wrong call would show
                 on the board, then everything routine.
             </p>
+
+            {trustCandidate && (
+                <TrustPrompt
+                    runner={trustCandidate}
+                    busy={trustBusy}
+                    onYes={() =>
+                        settleTrust(
+                            () =>
+                                grantTrustAction(
+                                    gameSlug,
+                                    trustCandidate.userId,
+                                    null,
+                                ),
+                            `${trustCandidate.runnerName}'s runs on this game are now accepted automatically.`,
+                        )
+                    }
+                    onOnlyBoard={() =>
+                        settleTrust(
+                            () =>
+                                grantTrustAction(
+                                    gameSlug,
+                                    trustCandidate.userId,
+                                    trustCandidate.categoryId,
+                                ),
+                            `${trustCandidate.runnerName}'s runs on ${trustCandidate.categoryDisplay} are now accepted automatically.`,
+                        )
+                    }
+                    onNo={() =>
+                        settleTrust(
+                            () =>
+                                dismissTrustAction(
+                                    gameSlug,
+                                    trustCandidate.userId,
+                                ),
+                            `Won't ask about ${trustCandidate.runnerName} again.`,
+                        )
+                    }
+                    onLater={() => setTrustCandidate(null)}
+                />
+            )}
 
             <div className={styles.toolbar}>
                 <label className={styles.boardPicker}>
