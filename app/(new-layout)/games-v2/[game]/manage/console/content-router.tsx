@@ -18,6 +18,7 @@ import type {
 } from '../../../../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
 import type { SrcImportJob } from '../../../../../../types/src-import.types';
+import type { WorklistDigest } from '../../../../../../types/worklist.types';
 import { VariablesGrid } from '../../setup/steps/variables/variables-grid';
 import { BoardCuration } from '../boards/board-curation';
 import { GameTab } from '../game-tab/game-tab';
@@ -29,6 +30,7 @@ import { NeedsAttention } from '../moderation/attention/needs-attention';
 import { AutoVerifyPane } from '../moderation/auto-verify/auto-verify-pane';
 import { ActiveBans } from '../moderation/configure/active-bans';
 import { ModQueuePane } from '../moderation/queue/mod-queue-pane';
+import { WorklistPane } from '../moderation/worklist/worklist-pane';
 import { BoardOverview } from '../overview/board-overview';
 import { ReassignPane } from '../reassignments/reassign-pane';
 import { SrcImportPane } from '../src-import/src-import-pane';
@@ -82,9 +84,14 @@ export interface ContentRouterProps {
     settingsJob?: SrcImportJob | null;
     /** Latest runs import, for the overview card's per-kind lines. */
     runsJob?: SrcImportJob | null;
+    /** Seven-day summary of what the worklist decided and flagged, for the
+     * overview's digest card. */
+    digest?: WorklistDigest | null;
     /** Whether this viewer can reach the moderation queue — gates the
      * overview's Needs-attention KPI. */
     canModerate: boolean;
+    /** Live worklist count from the pane, forwarded to the sidebar badge. */
+    onQueueCountChange?: (count: number) => void;
     onGroupsChange: (g: ManageGroup[]) => void;
     onRowChange: (
         categoryId: number,
@@ -130,6 +137,19 @@ export function ContentRouter(props: ContentRouterProps) {
 
     switch (activeItem) {
         case 'mod-queue':
+            return (
+                <WorklistPane
+                    gameSlug={game.name}
+                    gameId={game.id}
+                    gameDisplay={game.display}
+                    categories={categories}
+                    boardCategories={props.boardCategories}
+                    variables={props.variables}
+                    onNeedsYouChange={props.onQueueCountChange}
+                    onNavigate={onNavigate}
+                />
+            );
+        case 'queue-history':
             return (
                 <ModQueuePane
                     gameSlug={game.name}
@@ -326,6 +346,7 @@ export function ContentRouter(props: ContentRouterProps) {
                     syncJob={props.syncJob}
                     settingsJob={props.settingsJob}
                     runsJob={props.runsJob}
+                    digest={props.digest}
                     navGroups={props.navGroups}
                     canModerate={props.canModerate}
                     onNavigate={onNavigate}

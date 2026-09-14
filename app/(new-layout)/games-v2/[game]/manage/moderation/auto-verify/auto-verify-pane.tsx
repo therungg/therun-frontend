@@ -18,6 +18,7 @@ import {
 } from '../policies/actions/policies-actions.action';
 import { loadAutoVerifyAction } from './actions/load-auto-verify.action';
 import styles from './auto-verify-pane.module.scss';
+import { TrustedRunners } from './trusted-runners';
 
 interface Props {
     gameSlug: string;
@@ -547,6 +548,11 @@ export function AutoVerifyPane({ gameSlug, gameDisplay, categories }: Props) {
                             )}
                         </div>
                     </details>
+
+                    <TrustedRunners
+                        gameSlug={gameSlug}
+                        categories={categories}
+                    />
                 </>
             )}
         </div>

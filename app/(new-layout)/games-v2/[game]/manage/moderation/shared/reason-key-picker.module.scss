@@ -1,0 +1,32 @@
+@use '../../../../../styles/design-tokens' as dt;
+
+.group {
+    display: grid;
+    gap: dt.$spacing-xs;
+    border: 0;
+    padding: 0;
+    margin: 0 0 dt.$spacing-md;
+}
+
+.legend {
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    margin-bottom: dt.$spacing-xs;
+}
+
+.option {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    border-radius: dt.$radius-sm;
+    cursor: pointer;
+
+    &[data-selected='true'] {
+        background: var(--bs-tertiary-bg);
+    }
+
+    input {
+        margin: 0;
+    }
+}

@@ -7,6 +7,7 @@ import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 export type NavItemId =
     | 'overview'
     | 'mod-queue'
+    | 'queue-history'
     | 'auto-verify'
     | 'attention'
     | 'roster'
@@ -228,12 +229,17 @@ export function isLandingPaneId(
  * Panes that stay out of the sidebar nav but remain valid deep-link
  * landings. Needs attention and Bans are hidden from the Queue group for
  * now but every `?pane=attention` / `?pane=bans` link still opens them.
- * `level-categories` merged into the Levels pane but stays deep-linkable —
- * it lands on the Levels pane's templates tab (see content-router.tsx).
+ * `queue-history` is the old Mod queue pane, kept reachable for decided
+ * runs (Approved / Declined) and the auto-verify spot check now that
+ * `mod-queue` itself opens the worklist. `level-categories` merged into
+ * the Levels pane but stays deep-linkable — it lands on the Levels pane's
+ * templates tab (see content-router.tsx).
  */
 function hiddenLandingIds(flags: NavFlags): NavItemId[] {
     return [
-        ...(flags.canModerate ? (['attention', 'bans'] as NavItemId[]) : []),
+        ...(flags.canModerate
+            ? (['attention', 'bans', 'queue-history'] as NavItemId[])
+            : []),
         ...(flags.canConfigure ? (['level-categories'] as NavItemId[]) : []),
     ];
 }

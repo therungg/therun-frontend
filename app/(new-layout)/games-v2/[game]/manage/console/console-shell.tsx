@@ -25,6 +25,7 @@ import type {
 } from '../../../../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
 import type { SrcImportJob } from '../../../../../../types/src-import.types';
+import type { WorklistDigest } from '../../../../../../types/worklist.types';
 import { BackLink } from '../../shared/back-link';
 import type { ReorderChange } from '../game-tab/reorder-changes';
 import type { AttentionItem } from '../moderation/attention/attention-model';
@@ -74,6 +75,9 @@ export interface ConsoleShellProps {
     settingsJob?: SrcImportJob | null;
     /** Latest runs import, for the overview card's per-kind lines. */
     runsJob?: SrcImportJob | null;
+    /** Seven-day summary of what the worklist decided and flagged, for the
+     * overview's digest card. */
+    digest?: WorklistDigest | null;
     /** Runs awaiting a verdict — the count beside Mod queue in the sidebar.
      * Null when the viewer can't moderate or the count failed to load. */
     queuePendingCount?: number | null;
@@ -100,6 +104,7 @@ export function ConsoleShell({
     syncJob,
     settingsJob,
     runsJob,
+    digest,
     queuePendingCount = null,
 }: ConsoleShellProps) {
     const groups = useMemo(() => buildNav(flags), [flags]);
@@ -133,6 +138,12 @@ export function ConsoleShell({
         setupCompleteness.steps.find((s) => s.step === 'boards')?.status !==
             'done';
 
+    // Seeded from the server's count, then kept current by the worklist pane
+    // so the badge drops as the moderator approves.
+    const [liveQueueCount, setLiveQueueCount] = useState<number | null>(
+        queuePendingCount ?? null,
+    );
+
     // Ambient sidebar status from data the shell already holds. The count
     // pill wins over a dot when both could apply.
     const badges = useMemo(() => {
@@ -143,8 +154,8 @@ export function ConsoleShell({
             },
         };
         // The one number a moderator checks daily: runs waiting on them.
-        if (queuePendingCount != null && queuePendingCount > 0) {
-            map['mod-queue'] = { count: queuePendingCount };
+        if (liveQueueCount != null && liveQueueCount > 0) {
+            map['mod-queue'] = { count: liveQueueCount };
         }
         const pending = modApplications?.length ?? 0;
         if (pending > 0) map.moderators = { count: pending };
@@ -165,7 +176,7 @@ export function ConsoleShell({
     }, [
         attentionItems.length,
         degradedSources.length,
-        queuePendingCount,
+        liveQueueCount,
         modApplications,
         syncJob,
         boardHealth,
@@ -347,6 +358,9 @@ export function ConsoleShell({
         // `groups`) — label it directly.
         if (activeItem === 'level-categories')
             return CONCEPT_LABEL['level-categories'];
+        // `queue-history` is likewise a hidden landing pane — it never
+        // appears in `groups` (see hiddenLandingIds in nav-model.ts).
+        if (activeItem === 'queue-history') return 'Decided runs';
         return 'Admin console';
     }, [groups, activeItem]);
 
@@ -437,7 +451,9 @@ export function ConsoleShell({
                     syncJob={syncJob}
                     settingsJob={settingsJob}
                     runsJob={runsJob}
+                    digest={digest}
                     canModerate={flags.canModerate}
+                    onQueueCountChange={setLiveQueueCount}
                     onGroupsChange={setManageGroups}
                     onRowChange={applyRowPatch}
                     onRowsReorder={applyRowsReorder}

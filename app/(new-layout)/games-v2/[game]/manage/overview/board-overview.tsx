@@ -13,11 +13,13 @@ import type { BoardHealth } from '~src/lib/setup/health';
 import type { GameModerator } from '../../../../../../types/board-claims.types';
 import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
 import type { SrcImportJob } from '../../../../../../types/src-import.types';
+import type { WorklistDigest } from '../../../../../../types/worklist.types';
 import { BoardHealthCard } from '../console/board-health-card';
 import type { NavGroup, NavItemId } from '../console/nav-model';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import { isSettled } from '../src-import/use-src-import-job';
 import styles from './board-overview.module.scss';
+import { DigestCard } from './digest-card';
 import { buildOverviewStats, timeAgo, topFeaturedRows } from './overview-model';
 
 /** "Never" or a short date of the last finished job of one kind. */
@@ -68,6 +70,8 @@ interface Props {
     settingsJob?: SrcImportJob | null;
     /** Latest runs import — the import card's "Runs" line. */
     runsJob?: SrcImportJob | null;
+    /** Seven-day summary of what the worklist decided and flagged. */
+    digest?: WorklistDigest | null;
     /** Permission-filtered console nav — decides which cards and tiles show. */
     navGroups: NavGroup[];
     canModerate: boolean;
@@ -94,6 +98,7 @@ export function BoardOverview({
     syncJob,
     settingsJob,
     runsJob,
+    digest,
     navGroups,
     canModerate,
     onNavigate,
@@ -334,6 +339,13 @@ export function BoardOverview({
                     </button>
                 )}
             </div>
+
+            {canModerate && digest && (
+                <DigestCard
+                    digest={digest}
+                    onOpenQueue={() => onNavigate('mod-queue')}
+                />
+            )}
 
             {/* Main grid */}
             <div className={styles.grid}>
