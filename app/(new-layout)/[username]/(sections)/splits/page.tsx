@@ -1,11 +1,14 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { ProfileDownloadsTab } from '~src/components/run/downloads/profile-downloads-tab';
 import { getUserRuns } from '~src/lib/get-user-runs';
 import { getRunnerProfileHead } from '~src/lib/runner-profile';
 import buildMetadata from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
-import styles from '../sections.module.scss';
+import { ProfileBlock } from '../profile-block';
+import ui from '../profile-ui.module.scss';
+import { plural } from '../ranks';
+import { ProfileLayouts } from './profile-layouts';
+import { SplitsPanel } from './splits-panel';
 
 interface PageProps {
     params: Promise<{ username: string }>;
@@ -32,16 +35,21 @@ export default async function RunnerSplitsPage({ params }: PageProps) {
     const head = await getRunnerProfileHead(name);
     if (!head || head.runner.guest) notFound();
     const runs = (await getUserRuns(name)) ?? [];
-    if (runs.length === 0) {
-        return <p className={styles.empty}>No splits uploaded yet.</p>;
-    }
+    const withFile = runs.filter((r) => r.splitsFile).length;
+
     return (
-        <section className={styles.panel} aria-label="Splits">
-            <ProfileDownloadsTab
-                username={head.runner.name}
-                runs={runs}
-                isActive
-            />
-        </section>
+        <div className={ui.page}>
+            {runs.length === 0 ? (
+                <p className={ui.empty}>No splits uploaded yet.</p>
+            ) : (
+                <ProfileBlock
+                    title="Splits files"
+                    note={`${plural(withFile, 'file', 'files')} to download for LiveSplit`}
+                >
+                    <SplitsPanel runs={runs} username={head.runner.name} />
+                </ProfileBlock>
+            )}
+            <ProfileLayouts username={head.runner.name} />
+        </div>
     );
 }

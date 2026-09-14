@@ -48,7 +48,11 @@ interface LayoutsSectionProps {
     isActive: boolean;
 }
 
-export function LayoutsSection({ username, isActive }: LayoutsSectionProps) {
+/**
+ * A runner's LiveSplit layouts: what is stored, and downloading, uploading and
+ * deleting them. Shared by the downloads tab and the profile's Splits page.
+ */
+export function useLayouts(username: string, isActive: boolean) {
     const [state, setState] = useState<LayoutsLoadState>({ status: 'idle' });
     const loadedOnce = useRef(false);
     const [busy, setBusy] = useState(false);
@@ -221,10 +225,36 @@ export function LayoutsSection({ username, isActive }: LayoutsSectionProps) {
     };
 
     const isLoaded = state.status === 'loaded';
-    const isOwner = isLoaded ? state.viewerIsOwner : false;
-    const layouts = isLoaded ? state.layouts : [];
-    const tier = isLoaded ? state.tier : null;
-    const cap = isLoaded ? state.cap : null;
+    return {
+        state,
+        busy,
+        fileInputRef,
+        load,
+        handleDownload,
+        handleDelete,
+        onFileChange,
+        isLoaded,
+        isOwner: isLoaded ? state.viewerIsOwner : false,
+        layouts: isLoaded ? state.layouts : [],
+        tier: isLoaded ? state.tier : null,
+        cap: isLoaded ? state.cap : null,
+    };
+}
+
+export function LayoutsSection({ username, isActive }: LayoutsSectionProps) {
+    const {
+        state,
+        busy,
+        fileInputRef,
+        handleDownload,
+        handleDelete,
+        onFileChange,
+        isLoaded,
+        isOwner,
+        layouts,
+        tier,
+        cap,
+    } = useLayouts(username, isActive);
     const atCap =
         isOwner && cap !== null && cap !== undefined && layouts.length >= cap;
 
@@ -422,7 +452,7 @@ export function LayoutsSection({ username, isActive }: LayoutsSectionProps) {
     );
 }
 
-function formatBytes(bytes: number): string {
+export function formatBytes(bytes: number): string {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;

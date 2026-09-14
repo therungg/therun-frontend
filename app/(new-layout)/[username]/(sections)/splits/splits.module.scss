@@ -1,0 +1,38 @@
+@use '../../../styles/design-tokens' as dt;
+
+.splits {
+    --cols: minmax(0, 2fr) minmax(6rem, 0.8fr) minmax(5rem, 0.6fr)
+        minmax(6.5rem, 0.7fr) auto;
+
+    @container profile-block (max-width: 759.98px) {
+        --cols: minmax(0, 1fr) auto auto;
+    }
+}
+
+.layouts {
+    --cols: minmax(0, 1fr) 5rem 7rem auto;
+
+    @container profile-block (max-width: 759.98px) {
+        --cols: minmax(0, 1fr) auto auto;
+    }
+}
+
+.actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: end;
+    gap: dt.$spacing-xs;
+}
+
+.actionLabel {
+    @container profile-block (max-width: 559.98px) {
+        display: none;
+    }
+}
+
+.layoutsEmpty {
+    margin: 0;
+    padding: dt.$spacing-lg;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}

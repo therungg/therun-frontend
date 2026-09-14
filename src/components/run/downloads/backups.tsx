@@ -29,6 +29,8 @@ interface BackupsProps {
     state: BackupsState;
     filenameBase: string;
     onRetry: () => void;
+    /** Leave out the section header, for a host that titles it itself. */
+    bare?: boolean;
 }
 
 function PaywallBanner({ viewerIsOwner }: { viewerIsOwner: boolean }) {
@@ -183,16 +185,23 @@ function EmptyBackups({
     );
 }
 
-export function Backups({ state, filenameBase, onRetry }: BackupsProps) {
+export function Backups({
+    state,
+    filenameBase,
+    onRetry,
+    bare = false,
+}: BackupsProps) {
     return (
         <section className={styles.section}>
-            <SectionHeader
-                icon={<CloudArrowDown size={28} />}
-                kicker="Version history"
-                title="Cloud backups"
-                subtitle="Automatic versioned copies of every upload — restore any one with a click."
-                tone="accent"
-            />
+            {bare ? null : (
+                <SectionHeader
+                    icon={<CloudArrowDown size={28} />}
+                    kicker="Version history"
+                    title="Cloud backups"
+                    subtitle="Automatic versioned copies of every upload — restore any one with a click."
+                    tone="accent"
+                />
+            )}
 
             {state.status === 'loading' && (
                 <div className={styles.loadingState}>Loading backups…</div>

@@ -1,0 +1,490 @@
+@use '../../styles/design-tokens' as dt;
+@use '../../styles/board' as board;
+
+// The shared look of the runner profile's section pages: a stat strip, titled
+// blocks, and panels of collapsible groups over aligned rows.
+
+.page {
+    --rank-gold: #d4a73a;
+    --rank-silver: #a9b4c2;
+    --rank-bronze: #c07a45;
+
+    display: grid;
+    gap: dt.$spacing-3xl;
+    min-width: 0;
+}
+
+@mixin medal-tone {
+    &[data-medal='gold'] {
+        --medal: var(--rank-gold);
+    }
+    &[data-medal='silver'] {
+        --medal: var(--rank-silver);
+    }
+    &[data-medal='bronze'] {
+        --medal: var(--rank-bronze);
+    }
+}
+
+@mixin medal-ink {
+    color: color-mix(
+        in srgb,
+        var(--medal, var(--bs-emphasis-color)) 70%,
+        var(--bs-emphasis-color)
+    );
+}
+
+$border: var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
+$row-line: color-mix(in srgb, #{$border} 70%, transparent);
+
+// ---- Blocks --------------------------------------------------------------
+
+.block {
+    display: grid;
+    gap: dt.$spacing-lg;
+    min-width: 0;
+    // Rows lay out by the width they get, not by the viewport.
+    container: profile-block / inline-size;
+}
+
+.blockHead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-sm dt.$spacing-lg;
+}
+
+.blockHeadText {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px dt.$spacing-md;
+    min-width: 0;
+}
+
+.blockTitle {
+    margin: 0;
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--bs-emphasis-color);
+}
+
+.blockNote {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
+    gap: dt.$spacing-3xl dt.$spacing-xl;
+    min-width: 0;
+}
+
+.empty {
+    @include board.board-surface(dt.$spacing-xl);
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+// ---- Stat strip ----------------------------------------------------------
+
+.strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: dt.$spacing-lg dt.$spacing-3xl;
+    min-width: 0;
+}
+
+.lead {
+    @include medal-tone;
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-lg;
+    min-width: 0;
+    max-width: 100%;
+    color: inherit;
+    text-decoration: none;
+
+    &:is(a):hover .leadWhat {
+        color: var(--bs-emphasis-color);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+}
+
+.leadValue {
+    @include medal-ink;
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    font-size: dt.$font-size-hero-title;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+
+    @container profile-block (max-width: 479.98px) {
+        font-size: dt.$font-size-display;
+    }
+}
+
+.leadText {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.leadLabel {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.leadWhat {
+    color: var(--bs-body-color);
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.tiles {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-lg 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    min-width: 0;
+
+    li {
+        @include medal-tone;
+        display: grid;
+        gap: 2px;
+        padding-inline: dt.$spacing-2xl;
+        border-left: 1px solid $border;
+
+        @container profile-block (max-width: 575.98px) {
+            padding-inline: 0 dt.$spacing-2xl;
+            border-left: 0;
+        }
+    }
+
+    b {
+        @include medal-ink;
+        font-family: dt.$font-mono;
+        font-variant-numeric: tabular-nums;
+        font-size: dt.$font-size-xl;
+        font-weight: 700;
+        line-height: 1.1;
+        white-space: nowrap;
+    }
+
+    span {
+        color: var(--bs-secondary-color);
+        font-size: dt.$font-size-sm;
+        white-space: nowrap;
+    }
+}
+
+.strip > .tiles:first-child li:first-child {
+    padding-left: 0;
+    border-left: 0;
+}
+
+// ---- Panels of groups and rows -------------------------------------------
+
+.panel {
+    @include board.board-surface(0);
+    display: grid;
+    overflow: hidden;
+    min-width: 0;
+}
+
+.card {
+    @include board.board-surface(dt.$spacing-xl);
+    display: grid;
+    align-content: start;
+    gap: dt.$spacing-md;
+    min-width: 0;
+}
+
+// A row's columns come from its panel: `--cols` on the panel, or on a row.
+.row,
+.colHead {
+    display: grid;
+    grid-template-columns: var(--cols);
+    column-gap: dt.$spacing-lg;
+    align-items: center;
+    padding: dt.$spacing-xs dt.$spacing-lg dt.$spacing-xs 2.6rem;
+    min-width: 0;
+
+    @container profile-block (max-width: 559.98px) {
+        padding-left: dt.$spacing-lg;
+        column-gap: dt.$spacing-md;
+    }
+}
+
+.row {
+    @include medal-tone;
+    min-height: 44px;
+    border-top: 1px solid $row-line;
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+        background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.035));
+    }
+}
+
+.rowFlush {
+    padding-left: dt.$spacing-lg;
+}
+
+.colHead {
+    min-height: 36px;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+    font-weight: 500;
+}
+
+.group + .group {
+    border-top: 1px solid $border;
+}
+
+.colHead + .group {
+    border-top: 1px solid $border;
+}
+
+.groupHead {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-sm dt.$spacing-lg dt.$spacing-sm dt.$spacing-sm;
+    min-width: 0;
+}
+
+.groupLabel {
+    padding: dt.$spacing-sm dt.$spacing-lg dt.$spacing-xs;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
+}
+
+.groupToggle {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    border: 0;
+    border-radius: dt.$radius-md;
+    background: none;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+        background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.05));
+    }
+
+    &:disabled {
+        cursor: default;
+    }
+
+    img {
+        flex: none;
+        width: 27px;
+        height: 36px;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+}
+
+.chevron {
+    flex: none;
+    color: var(--bs-secondary-color);
+    transform: rotate(90deg);
+    transition: transform dt.$transition-fast;
+
+    .group[data-collapsed] & {
+        transform: none;
+    }
+
+    .groupToggle:disabled & {
+        visibility: hidden;
+    }
+}
+
+.groupTitle {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 700;
+    color: var(--bs-emphasis-color);
+
+    @container profile-block (max-width: 559.98px) {
+        white-space: normal;
+        overflow-wrap: break-word;
+    }
+}
+
+.groupMeta {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+
+    @container profile-block (max-width: 559.98px) {
+        display: none;
+    }
+}
+
+.groupAside {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+    white-space: nowrap;
+}
+
+// ---- Cells ---------------------------------------------------------------
+
+.name {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+    min-width: 0;
+}
+
+.nameMain {
+    flex: none;
+    max-width: 100%;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    overflow-wrap: anywhere;
+}
+
+.nameSub {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+}
+
+.stacked {
+    display: grid;
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.num {
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    font-size: dt.$font-size-sm;
+    white-space: nowrap;
+}
+
+.strong {
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.muted {
+    color: var(--bs-secondary-color);
+}
+
+.faint {
+    color: var(--bs-tertiary-color);
+}
+
+.small {
+    font-size: dt.$font-size-xs;
+}
+
+.end {
+    justify-self: end;
+    text-align: right;
+}
+
+// A column that leaves the row when it gets narrow.
+.optional {
+    @container profile-block (max-width: 759.98px) {
+        display: none;
+    }
+}
+
+.rank {
+    @include medal-tone;
+    @include medal-ink;
+    justify-self: start;
+    font-variant-numeric: tabular-nums;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    white-space: nowrap;
+
+    &[data-medal] {
+        padding: 1px 10px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--medal) 22%, transparent);
+    }
+}
+
+.pill {
+    padding: 1px 9px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--rank-gold) 22%, transparent);
+    color: color-mix(in srgb, var(--rank-gold) 75%, var(--bs-emphasis-color));
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.iconLink {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 28px;
+    height: 28px;
+    padding-inline: 6px;
+    border: 0;
+    border-radius: dt.$radius-sm;
+    background: none;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+
+    &:hover {
+        background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.06));
+        color: var(--bs-emphasis-color);
+    }
+}
+
+.button {
+    @include board.control-pill;
+    border: 1px solid $border;
+    color: var(--bs-emphasis-color);
+    font-size: dt.$font-size-xs;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.detail {
+    padding: dt.$spacing-md dt.$spacing-lg dt.$spacing-lg 2.6rem;
+    border-top: 1px solid $row-line;
+    background: var(--board-recess-bg, rgba(var(--bs-body-color-rgb), 0.02));
+}

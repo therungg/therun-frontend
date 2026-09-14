@@ -1,92 +1,99 @@
 @use '../../../styles/design-tokens' as dt;
-@use '../../../styles/board' as board;
 
-.gameHead {
+.games {
+    --cols: minmax(0, 2.2fr) minmax(5.5rem, 0.8fr) minmax(5.5rem, 0.8fr)
+        minmax(4.5rem, 0.6fr) minmax(4rem, 0.5fr) minmax(4.5rem, 0.6fr) 4rem;
+
+    @container profile-block (max-width: 759.98px) {
+        --cols: minmax(0, 1fr) auto 4.5rem 3.5rem;
+    }
+}
+
+// Six game tones, then a neutral for everything else. Muted enough to sit
+// on the panel without shouting, distinct enough to match the legend.
+@mixin tones {
+    background: rgba(var(--bs-secondary-color-rgb, 140, 140, 140), 0.35);
+
+    &[data-tone='0'] {
+        background: #5fae6e;
+    }
+    &[data-tone='1'] {
+        background: #4f8fcf;
+    }
+    &[data-tone='2'] {
+        background: #d0a347;
+    }
+    &[data-tone='3'] {
+        background: #a578cf;
+    }
+    &[data-tone='4'] {
+        background: #cf7466;
+    }
+    &[data-tone='5'] {
+        background: #4fb0ad;
+    }
+}
+
+.bar {
+    display: flex;
+    gap: 3px;
+    height: 14px;
+    overflow: hidden;
+    border-radius: 999px;
+}
+
+.barPart {
+    @include tones;
+    flex-basis: 0;
+    min-width: 3px;
+}
+
+.legend {
     display: grid;
-    grid-template-columns: 36px minmax(0, 1fr) auto;
-    gap: dt.$spacing-md;
-    align-items: center;
+    grid-template-columns: repeat(auto-fill, minmax(min(22rem, 100%), 1fr));
+    gap: dt.$spacing-sm dt.$spacing-xl;
+    margin: dt.$spacing-xs 0 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+        display: flex;
+        align-items: center;
+        gap: dt.$spacing-sm;
+        min-width: 0;
+        font-size: dt.$font-size-sm;
+    }
 
     img {
-        width: 36px;
-        height: 48px;
+        flex: none;
+        width: 15px;
+        height: 20px;
         object-fit: cover;
-        border-radius: dt.$radius-sm;
+        border-radius: 2px;
     }
 }
 
-.gameText {
-    display: grid;
-    gap: 2px;
-    min-width: 0;
+.swatch {
+    @include tones;
+    flex: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
 }
 
-.gameLine {
-    color: var(--bs-secondary-color);
-    font-size: dt.$font-size-sm;
+.legendName {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--bs-body-color);
+}
+
+.legendValue {
+    margin-left: auto;
     font-family: dt.$font-mono;
     font-variant-numeric: tabular-nums;
-}
-
-.table {
-    @include board.board-table;
-
-    min-width: 40rem;
-
-    th,
-    td {
-        white-space: nowrap;
-    }
-
-    th[scope='row'] {
-        font-weight: 400;
-        color: var(--bs-emphasis-color);
-        white-space: normal;
-    }
-
-    thead th {
-        color: var(--bs-secondary-color);
-        font-size: dt.$font-size-sm;
-        font-weight: 500;
-        text-transform: none;
-        letter-spacing: normal;
-    }
-
-    tbody td {
-        border-bottom: 1px solid var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
-        font-family: dt.$font-mono;
-        font-variant-numeric: tabular-nums;
-        text-align: right;
-    }
-}
-
-.igt {
-    display: block;
-    color: var(--bs-secondary-color);
     font-size: dt.$font-size-xs;
-}
-
-.rank {
-    --rank-gold: #d4a73a;
-    --rank-silver: #a9b4c2;
-    --rank-bronze: #c07a45;
-
-    font-family: dt.$font-mono;
-    font-weight: 700;
-
-    &[data-medal='gold'] {
-        color: color-mix(in srgb, var(--rank-gold) 65%, var(--bs-emphasis-color));
-    }
-
-    &[data-medal='silver'] {
-        color: color-mix(in srgb, var(--rank-silver) 65%, var(--bs-emphasis-color));
-    }
-
-    &[data-medal='bronze'] {
-        color: color-mix(in srgb, var(--rank-bronze) 65%, var(--bs-emphasis-color));
-    }
-}
-
-.rankNone {
-    color: var(--bs-tertiary-color);
+    white-space: nowrap;
+    color: var(--bs-emphasis-color);
 }
