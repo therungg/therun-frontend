@@ -17,6 +17,7 @@ import {
 import { formatRunDate } from '~src/lib/format-run-date';
 import type {
     PreviewExcludeResult,
+    RejectionReasonKey,
     UserEligibleRunRow,
     UserExclusionRuleInput,
     VerdictAction,
@@ -48,6 +49,7 @@ import {
     applyVerdictsAction,
     previewVerdictsAction,
 } from './actions/verdicts.action';
+import { ReasonKeyPicker } from './reason-key-picker';
 import styles from './run-action-dialog.module.scss';
 import {
     AffectedSummary,
@@ -236,6 +238,7 @@ export function RunActionForm({
     const [replaceDateText, setReplaceDateText] = useState('');
 
     const [reason, setReason] = useState('');
+    const [reasonKey, setReasonKey] = useState<RejectionReasonKey | null>(null);
     const [preview, setPreview] = useState<PreviewState | null>(null);
     const [previewError, setPreviewError] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -459,8 +462,17 @@ export function RunActionForm({
         setNotify(removeReasonMeta(next).defaultNotify);
     };
 
-    const reasonRequired = REASON_REQUIRED[verb];
-    const reasonOk = reasonRequired ? reason.trim().length >= MIN_REASON : true;
+    // Decline takes a key from the closed list; only "Other" needs words.
+    // Every other verb keeps its own rule.
+    const reasonRequired =
+        verb === 'reject' ? reasonKey === 'other' : REASON_REQUIRED[verb];
+    const reasonOk =
+        verb === 'reject'
+            ? reasonKey !== null &&
+              (reasonKey !== 'other' || reason.trim().length >= MIN_REASON)
+            : reasonRequired
+              ? reason.trim().length >= MIN_REASON
+              : true;
     const confirmGatedOnPreview = PREVIEW_GATES_CONFIRM[verb] && isPreviewing;
     const busy = isConfirming || confirmGatedOnPreview;
 
@@ -645,6 +657,7 @@ export function RunActionForm({
                         confirmVerdictAction,
                         runIds,
                         finalReason,
+                        verb === 'reject' && reasonKey ? reasonKey : undefined,
                     );
                     if ('error' in res) return setError(res.error);
                     n = res.result.affectedRunCount;
@@ -1092,6 +1105,14 @@ export function RunActionForm({
                         </ul>
                     )}
 
+                {verb === 'reject' && (
+                    <ReasonKeyPicker
+                        value={reasonKey}
+                        onChange={setReasonKey}
+                        disabled={isConfirming}
+                    />
+                )}
+
                 <ReasonZone
                     category={
                         verb === 'remove'
@@ -1192,7 +1213,10 @@ export function RunActionDialog({
 
     const confirmRef = useRef<HTMLButtonElement>(null);
     const reasonFieldRef = useRef<HTMLTextAreaElement>(null);
-    const initialFocusRef = REASON_REQUIRED[verb] ? reasonFieldRef : confirmRef;
+    const initialFocusRef =
+        verb !== 'reject' && REASON_REQUIRED[verb]
+            ? reasonFieldRef
+            : confirmRef;
 
     const headerTarget =
         target.kind === 'runs'
