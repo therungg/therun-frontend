@@ -27,11 +27,13 @@ import {
     loadTrustStateAction,
     loadWorklistAction,
 } from './actions/worklist.action';
+import { SelfClaimRow } from './self-claim-row';
 import { type TrustCandidate, TrustPrompt } from './trust-prompt';
 import { WorklistBatchCard } from './worklist-batch';
 import {
     boardLabel,
     inspectorBoard,
+    TIER_COUNT_LABEL,
     TIER_TITLE,
     toInspectorEntry,
 } from './worklist-model';
@@ -386,9 +388,15 @@ export function WorklistPane({
                         <span>
                             <strong>{data.counts.needsYou}</strong> need you
                         </span>
-                        <span>{data.counts.tier1} reports and appeals</span>
-                        <span>{data.counts.tier2} at risk</span>
-                        <span>{data.counts.tier3} routine</span>
+                        <span>
+                            {data.counts.tier1} {TIER_COUNT_LABEL[1]}
+                        </span>
+                        <span>
+                            {data.counts.tier2} {TIER_COUNT_LABEL[2]}
+                        </span>
+                        <span>
+                            {data.counts.tier3} {TIER_COUNT_LABEL[3]}
+                        </span>
                     </div>
                 )}
             </div>
@@ -437,7 +445,10 @@ export function WorklistPane({
 
             {([1, 2, 3] as const).map((tier) => {
                 const inTier = items.filter((i) => i.tier === tier);
-                if (inTier.length === 0) return null;
+                // Self-claims are tier 1 but not paged: they show on page 1 only.
+                const claims =
+                    tier === 1 && page === 1 ? (data?.selfClaims ?? []) : [];
+                if (inTier.length === 0 && claims.length === 0) return null;
                 return (
                     <section
                         key={tier}
@@ -465,6 +476,16 @@ export function WorklistPane({
                                         setDialog({ kind: 'hide', item: it })
                                     }
                                     onInspect={openInspector}
+                                />
+                            ))}
+                            {claims.map((claim) => (
+                                <SelfClaimRow
+                                    key={`claim:${claim.manualTimeId}`}
+                                    claim={claim}
+                                    gameSlug={gameSlug}
+                                    variables={variables}
+                                    now={now}
+                                    onDone={load}
                                 />
                             ))}
                         </ul>

@@ -64,10 +64,40 @@ export type WorklistBatch = {
     items: WorklistItem[]; // every member, same order as runIds
 };
 
+export type WorklistSelfClaim = {
+    manualTimeId: number;
+    runnerName: string;
+    userId: number | null;
+    isGuest: boolean;
+    categoryId: number;
+    categoryName: string;
+    categoryDisplay: string;
+    subcategoryKey: string;
+    timing: 'realtime' | 'gametime';
+    timeMs: number;
+    evidenceUrl: string | null;
+    /** ISO; the date the runner says they got it. */
+    runDate: string | null;
+    /** What the runner wrote with the claim. */
+    note: string | null;
+    /** ISO; when it was claimed. */
+    createdAt: string;
+    trackRecord: WorklistTrackRecord | null;
+};
+
 export type WorklistPage = {
     /** The boards this list covers: featured categories, then levels. Nothing else is moderated. */
     boards: { id: number; display: string }[];
-    counts: { needsYou: number; tier1: number; tier2: number; tier3: number };
+    /** tier1 and needsYou include selfClaims. */
+    counts: {
+        needsYou: number;
+        tier1: number;
+        tier2: number;
+        tier3: number;
+        selfClaims: number;
+    };
+    /** Tier 1: times runners typed in themselves, oldest first, not paged, at most 200. */
+    selfClaims: WorklistSelfClaim[];
     waitingOnRunners: null; // always null for now; see Not yet
     batches: WorklistBatch[]; // tier-3 groups; complete on every page
     items: WorklistItem[]; // tier 1, tier 2, then unbatched tier 3, paged

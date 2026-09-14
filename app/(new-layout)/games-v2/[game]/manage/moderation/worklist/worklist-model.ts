@@ -59,9 +59,16 @@ export const reasonLabel = (r: WorklistReason): string =>
     REASON_LABEL[r.reason] ?? r.reason;
 
 export const TIER_TITLE: Record<WorklistTier, string> = {
-    1: 'Reports and appeals',
+    1: 'Reports, appeals and self-claimed times',
     2: 'Failed checks and unknown runners near the top',
     3: 'Routine',
+};
+
+/** The same tiers as a count reads them: "3 reports, appeals and self-claims". */
+export const TIER_COUNT_LABEL: Record<WorklistTier, string> = {
+    1: 'reports, appeals and self-claims',
+    2: 'failed checks or unknown runners',
+    3: 'routine',
 };
 
 const DAY = 86_400_000;
