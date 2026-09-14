@@ -1,6 +1,7 @@
 import { safeEncodeURI } from '~src/utils/uri';
 import type { LeaderboardsProfile } from '../../../../../types/leaderboards-profile.types';
 import { plural } from '../../../leaderboards/[name]/format';
+import { autoPins } from '../../../leaderboards/[name]/showcase-rules';
 import { StatStrip } from '../stat-strip';
 
 const MEDALS: Record<number, string> = { 1: 'gold', 2: 'silver', 3: 'bronze' };
@@ -30,7 +31,18 @@ function bestShare(profile: LeaderboardsProfile) {
  */
 export function StandingStrip({ profile }: { profile: LeaderboardsProfile }) {
     const { standing } = profile;
-    const best = standing.best;
+    // The lead is the showcase's own first pick: the run worth the most
+    // placement points, not simply the lowest rank number.
+    const top = autoPins(profile.games)[0] ?? null;
+    const best =
+        top && top.entry.rank !== null
+            ? {
+                  rank: top.entry.rank,
+                  game: top.game.game,
+                  category: top.entry.category,
+                  total: top.entry.totalRunners ?? 0,
+              }
+            : null;
     const share = bestShare(profile);
     const games = profile.games.length;
 
@@ -67,7 +79,10 @@ export function StandingStrip({ profile }: { profile: LeaderboardsProfile }) {
                 best
                     ? {
                           value: `#${best.rank}`,
-                          label: 'Best result',
+                          label:
+                              best.total > 1
+                                  ? `Best result · of ${count(best.total)} runners`
+                                  : 'Best result',
                           what: `${best.game} · ${best.category}`,
                           href: `/games/${safeEncodeURI(best.game)}`,
                           medal: MEDALS[best.rank],
