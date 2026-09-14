@@ -5,7 +5,6 @@ import { getLeaderboardsProfile } from '~src/lib/leaderboards-profile';
 import buildMetadata from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 import { plural } from '../../../leaderboards/[name]/format';
-import ledgerStyles from '../../../leaderboards/[name]/leaderboards-profile.module.scss';
 import { ProfileTabs } from '../../../leaderboards/[name]/profile-tabs';
 import { RejectedEntries } from '../../../leaderboards/[name]/rejected-entries';
 import { ShowcaseProvider } from '../../../leaderboards/[name]/showcase-provider';
@@ -60,7 +59,7 @@ export default async function RunnerLeaderboardsPage({ params }: PageProps) {
                     <span>Top 10</span>
                 </div>
             </div>
-            <div className={ledgerStyles.main}>
+            <div className={styles.ledger}>
                 <ProfileTabs country={profile.runner.country} />
                 <Suspense fallback={null}>
                     <RejectedEntries

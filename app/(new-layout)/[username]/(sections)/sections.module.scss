@@ -140,3 +140,12 @@
     color: var(--bs-secondary-color);
     font-size: dt.$font-size-sm;
 }
+
+// The leaderboards ledger's rows lay out by the width they get
+// (container queries named profile-main in the ledger stylesheet).
+.ledger {
+    container: profile-main / inline-size;
+    display: grid;
+    gap: dt.$spacing-lg;
+    min-width: 0;
+}
