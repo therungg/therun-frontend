@@ -194,18 +194,13 @@
             color dt.$transition-fast, background-color dt.$transition-fast;
 
         svg {
-            color: var(--bs-secondary-color);
-            transition: color dt.$transition-fast;
+            color: var(--social-color, var(--bs-secondary-color));
         }
 
         &:hover {
-            border-color: rgba(var(--bs-primary-rgb), 0.5);
-            background: rgba(var(--bs-primary-rgb), 0.08);
+            border-color: color-mix(in srgb, var(--social-color, var(--bs-primary)) 55%, transparent);
+            background: color-mix(in srgb, var(--social-color, var(--bs-primary)) 10%, transparent);
             color: var(--bs-emphasis-color);
-
-            svg {
-                color: var(--bs-emphasis-color);
-            }
         }
 
         &:focus-visible {

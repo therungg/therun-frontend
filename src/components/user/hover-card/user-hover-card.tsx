@@ -493,7 +493,11 @@ export function UserHoverCard({ username, context }: Props) {
                                         aria-label={`${username} on ${link.label}`}
                                         title={link.label}
                                     >
-                                        <Icon size={13} aria-hidden />
+                                        <Icon
+                                            size={13}
+                                            color={link.color}
+                                            aria-hidden
+                                        />
                                     </a>
                                 );
                             })}
