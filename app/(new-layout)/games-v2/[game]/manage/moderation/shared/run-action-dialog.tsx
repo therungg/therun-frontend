@@ -50,6 +50,7 @@ import {
     previewVerdictsAction,
 } from './actions/verdicts.action';
 import { ReasonKeyPicker } from './reason-key-picker';
+import { REJECTION_REASONS } from './rejection-reasons';
 import styles from './run-action-dialog.module.scss';
 import {
     AffectedSummary,
@@ -632,11 +633,22 @@ export function RunActionForm({
                 if (manualOp == null || manualTimeIds.length === 0) {
                     return null;
                 }
+                // Set times still need a written reason. A decline picked from
+                // the list with no note sends the reason's own label instead.
+                const keyLabel =
+                    verb === 'reject' && reasonKey
+                        ? REJECTION_REASONS.find((r) => r.key === reasonKey)
+                              ?.label
+                        : undefined;
+                const manualReason =
+                    finalReason.length >= MIN_REASON || !keyLabel
+                        ? finalReason
+                        : keyLabel;
                 const res = await manualTimesBulkAction(
                     gameSlug,
                     manualTimeIds,
                     manualOp,
-                    finalReason,
+                    manualReason,
                 );
                 if ('error' in res) return res.error;
                 if (res.failed > 0) {
