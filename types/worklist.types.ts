@@ -65,6 +65,8 @@ export type WorklistBatch = {
 };
 
 export type WorklistPage = {
+    /** The boards this list covers: featured categories, then levels. Nothing else is moderated. */
+    boards: { id: number; display: string }[];
     counts: { needsYou: number; tier1: number; tier2: number; tier3: number };
     waitingOnRunners: null; // always null for now; see Not yet
     batches: WorklistBatch[]; // tier-3 groups; complete on every page

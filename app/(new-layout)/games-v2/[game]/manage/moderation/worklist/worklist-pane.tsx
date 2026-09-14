@@ -100,7 +100,8 @@ export function WorklistPane({
     gameSlug,
     gameId,
     gameDisplay,
-    categories,
+    // `categories` stays in Props for the router but the picker lists only the
+    // boards the worklist covers, which the backend returns with the list.
     boardCategories,
     variables,
     onNeedsYouChange,
@@ -373,7 +374,7 @@ export function WorklistPane({
                         }}
                     >
                         <option value="">All boards</option>
-                        {categories.map((c) => (
+                        {(data?.boards ?? []).map((c) => (
                             <option key={c.id} value={c.id}>
                                 {c.display}
                             </option>
