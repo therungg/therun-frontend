@@ -14,7 +14,8 @@ export function PinToggle({ entry }: { entry: LeaderboardsProfileEntry }) {
     const pinned = draft.pins.some((p) => samePin(p, ref));
     const full = !pinned && draft.pins.length >= PIN_LIMIT;
 
-    const toggle = () =>
+    const toggle = () => {
+        if (full) return;
         setDraft((d) => {
             if (pinned) {
                 const pins = d.pins.filter((p) => !samePin(p, ref));
@@ -27,6 +28,7 @@ export function PinToggle({ entry }: { entry: LeaderboardsProfileEntry }) {
             if (d.pins.length >= PIN_LIMIT) return d;
             return { ...d, pins: [...d.pins, ref] };
         });
+    };
 
     return (
         <button
@@ -37,6 +39,7 @@ export function PinToggle({ entry }: { entry: LeaderboardsProfileEntry }) {
                     : styles.pinToggle
             }
             aria-pressed={pinned}
+            aria-disabled={full}
             aria-label={pinned ? 'Unpin' : 'Pin'}
             title={
                 full
@@ -45,7 +48,6 @@ export function PinToggle({ entry }: { entry: LeaderboardsProfileEntry }) {
                       ? 'Unpin'
                       : 'Pin'
             }
-            disabled={full}
             onClick={toggle}
         >
             {pinned ? (

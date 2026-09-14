@@ -5,7 +5,7 @@ import { ArrowDown, ArrowUp } from 'react-bootstrap-icons';
 import { GameImage } from '~src/components/image/gameimage';
 import { formatProfileDate } from './format';
 import styles from './leaderboards-profile.module.scss';
-import { move } from './reorder';
+import { move, readDragIndex, writeDragIndex } from './reorder';
 import { useShowcase } from './showcase-provider';
 import {
     COLLAPSE_AT,
@@ -107,22 +107,13 @@ export function GamesShelf() {
                                 className={styles.shelfTile}
                                 draggable
                                 onDragStart={(e) =>
-                                    e.dataTransfer.setData(
-                                        'text/plain',
-                                        String(i),
-                                    )
+                                    writeDragIndex(e, 'games', i)
                                 }
                                 onDragOver={(e) => e.preventDefault()}
                                 onDrop={(e) => {
-                                    e.preventDefault();
-                                    moveGame(
-                                        Number(
-                                            e.dataTransfer.getData(
-                                                'text/plain',
-                                            ),
-                                        ),
-                                        i,
-                                    );
+                                    const from = readDragIndex(e, 'games');
+                                    if (from === null) return;
+                                    moveGame(from, i);
                                 }}
                             >
                                 {content}
