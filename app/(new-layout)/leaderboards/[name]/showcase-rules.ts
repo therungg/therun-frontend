@@ -16,7 +16,7 @@ export const DEFAULT_LAYOUT: ResolvedLeaderboardsLayout = {
     mainGameId: null,
     pins: [],
     videoPin: null,
-    gameOrder: 'rank',
+    gameOrder: 'runners',
     manualGameIds: [],
     showActivity: true,
     isDefault: true,
@@ -65,22 +65,30 @@ export const outranks = (
     return dateOf(a) > dateOf(b);
 };
 
+/** How many runners are on the board this entry sits on. */
+export const boardSize = (e: LeaderboardsProfileEntry) => e.totalRunners ?? 0;
+
+/** The bigger board first, then the better rank, then the newer run. */
+export const onBiggerBoard = (
+    a: LeaderboardsProfileEntry,
+    b: LeaderboardsProfileEntry,
+) => boardSize(b) - boardSize(a) || (outranks(a, b) ? -1 : 1);
+
 /**
- * The default showcase when the runner pinned nothing: each game's best
- * visible entry, best ranks first, up to the pin limit.
+ * The default showcase when the runner pinned nothing: their runs on the
+ * boards with the most runners, whatever game they are in. Each category and
+ * subcategory is its own board.
  */
 export function autoPins(games: LeaderboardsProfileGame[]): Pinned[] {
-    const best: Pinned[] = [];
+    const all: Pinned[] = [];
     for (const game of games) {
-        let top: LeaderboardsProfileEntry | null = null;
         for (const entry of game.entries) {
-            if (entry.archived) continue;
-            if (!top || outranks(entry, top)) top = entry;
+            if (entry.archived || entry.status === 'rejected') continue;
+            all.push({ entry, game });
         }
-        if (top) best.push({ entry: top, game });
     }
-    best.sort((a, b) => (outranks(a.entry, b.entry) ? -1 : 1));
-    return best.slice(0, PIN_LIMIT);
+    all.sort((a, b) => onBiggerBoard(a.entry, b.entry));
+    return all.slice(0, PIN_LIMIT);
 }
 
 /** Saved pins in saved order; auto pins only when none survive. */
@@ -134,6 +142,7 @@ export type SortMode = 'runner' | GameOrder | 'attempts';
 
 export const SORT_LABELS: Record<SortMode, string> = {
     runner: "Runner's order",
+    runners: 'Most runners',
     manual: "Runner's order",
     rank: 'Best rank',
     recent: 'Most recent',
@@ -185,6 +194,17 @@ export function orderGames(
             );
         case 'name':
             return list.sort(byName);
+        case 'runners': {
+            const biggest = (g: LeaderboardsProfileGame) =>
+                Math.max(0, ...g.entries.map(boardSize));
+            return list.sort(
+                (a, b) =>
+                    biggest(b) - biggest(a) ||
+                    (a.bestRank ?? Number.POSITIVE_INFINITY) -
+                        (b.bestRank ?? Number.POSITIVE_INFINITY) ||
+                    byName(a, b),
+            );
+        }
         default:
             return list.sort(
                 (a, b) =>
@@ -199,7 +219,7 @@ export function orderGames(
 export function sortOptions(
     layout: Pick<LeaderboardsLayout, 'gameOrder'>,
 ): SortMode[] {
-    const auto: SortMode[] = ['rank', 'recent', 'attempts', 'name'];
+    const auto: SortMode[] = ['runners', 'rank', 'recent', 'attempts', 'name'];
     if (layout.gameOrder === 'manual') return ['runner', ...auto];
     return [layout.gameOrder, ...auto.filter((m) => m !== layout.gameOrder)];
 }
