@@ -633,18 +633,69 @@
     font-size: dt.$font-size-xs;
 }
 
-// Featured run
-.featured {
-    @include board.board-surface(dt.$spacing-lg);
+// Pinned runs: up to six cards, three across; the one with the video spans
+// the row. Under 640px everything is one column.
+.pins {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: dt.$spacing-md;
+    // Medal tones, shared with the ledger rows.
+    --rank-gold: #d4a73a;
+    --rank-silver: #a9b4c2;
+    --rank-bronze: #c07a45;
+
+    @container profile-main (max-width: 959.98px) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @media (max-width: 640px) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.pin {
+    @include board.board-surface(dt.$spacing-md);
     display: grid;
     gap: dt.$spacing-md;
     min-width: 0;
+    position: relative;
 }
 
-.featuredMeta {
-    color: var(--bs-secondary-color);
-    font-size: dt.$font-size-sm;
-    font-variant-numeric: tabular-nums;
+.pinWide {
+    grid-column: 1 / -1;
+}
+
+.pinBody {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: dt.$spacing-md;
+    align-items: center;
+
+    img {
+        width: 48px;
+        height: 64px;
+        object-fit: cover;
+        border-radius: dt.$radius-sm;
+    }
+}
+
+.pinText {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.pinTitle {
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    overflow-wrap: anywhere;
+}
+
+.pinLine {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
 }
 
 .featuredVideo {

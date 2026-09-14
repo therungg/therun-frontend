@@ -11,8 +11,10 @@ export const plural = (count: number, one: string, many: string) =>
 /** The header's three headline numbers: boards, first places, best. */
 export function HeroStats({
     standing,
+    games,
 }: {
     standing: LeaderboardsProfileStanding;
+    games: number;
 }) {
     return (
         <div className={styles.hero}>
@@ -24,6 +26,12 @@ export function HeroStats({
                 <b>{n(standing.first)}</b>
                 {plural(standing.first, 'first place', 'first places')}
             </span>
+            {games > 1 ? (
+                <span className={styles.heroStat}>
+                    <b>{n(games)}</b>
+                    games
+                </span>
+            ) : null}
             {standing.best ? (
                 <span className={styles.heroStat}>
                     <b>#{n(standing.best.rank)}</b>

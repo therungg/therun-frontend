@@ -54,9 +54,11 @@ function countryName(country: string | null): string | null {
 export function ProfileHeader({
     runner,
     standing,
+    games,
 }: {
     runner: LeaderboardsProfileRunner;
     standing: LeaderboardsProfileStanding;
+    games: number;
 }) {
     const guest = runner.userId === null;
     const country = countryName(runner.country);
@@ -128,7 +130,7 @@ export function ProfileHeader({
                     </Link>
                 </div>
             ) : null}
-            <HeroStats standing={standing} />
+            <HeroStats standing={standing} games={games} />
         </header>
     );
 }

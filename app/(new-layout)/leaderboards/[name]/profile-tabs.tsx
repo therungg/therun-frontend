@@ -7,6 +7,7 @@ import type {
 } from '../../../../types/leaderboards-profile.types';
 import { GameBlock } from './game-block';
 import styles from './leaderboards-profile.module.scss';
+import { useShowcase } from './showcase-provider';
 import { setProfileUrl, useProfileUrl } from './url-state';
 
 type TabId = 'full' | 'levels' | 'pending' | 'archived';
@@ -37,13 +38,8 @@ const pick: Record<
     archived: (g) => g.archived,
 };
 
-export function ProfileTabs({
-    games,
-    country,
-}: {
-    games: LeaderboardsProfileGame[];
-    country: string | null;
-}) {
+export function ProfileTabs({ country }: { country: string | null }) {
+    const { games } = useShowcase();
     const { hash } = useProfileUrl();
 
     const views = (Object.keys(pick) as TabId[]).map((id) => {
