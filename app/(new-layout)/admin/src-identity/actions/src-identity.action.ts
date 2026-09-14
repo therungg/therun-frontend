@@ -9,6 +9,10 @@ export interface SrcIdentity {
     srcUserId: string | null;
     srcUsername: string | null;
     srcVerifiedAt?: string | null;
+    /** PUT only: imported runs moved from the SRC name onto the account. */
+    claimedRuns?: number;
+    /** PUT only: imported runs folded into the runner's own copy. */
+    mergedRuns?: number;
 }
 
 // The identity routes live on the src-import API, not the main /admin one.

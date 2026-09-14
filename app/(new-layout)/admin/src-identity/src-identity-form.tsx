@@ -55,8 +55,12 @@ export const SrcIdentityForm = () => {
             );
             setCurrent({ ...current, ...res });
             setSrcName(res.srcUsername ?? '');
+            const runs =
+                res.claimedRuns || res.mergedRuns
+                    ? ` Moved ${res.claimedRuns ?? 0} imported runs onto the account, merged ${res.mergedRuns ?? 0} into runs they already had.`
+                    : '';
             setMessage(
-                `Linked ${current.username} to ${res.srcUsername ?? res.srcUserId}.`,
+                `Linked ${current.username} to ${res.srcUsername ?? res.srcUserId}.${runs}`,
             );
         });
     };
