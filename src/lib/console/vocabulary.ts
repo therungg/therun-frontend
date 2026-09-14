@@ -38,7 +38,7 @@ export const CONCEPT_LABEL: Record<ConceptId, string> = {
     overview: 'Overview',
     attention: 'Needs attention',
     'mod-queue': 'Mod queue',
-    'auto-verify': 'Auto-verify',
+    'auto-verify': 'Verification',
     roster: 'Browse runs',
     reports: 'Reports',
     bans: 'Bans',

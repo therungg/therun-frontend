@@ -128,7 +128,9 @@ export function SettingsEditor({
 
     const sentences = preview ? previewSentences(preview) : [];
     const offerApply =
-        !!preview?.videoRule && preview.videoRule.wouldHide > 0 && enforced;
+        !!preview?.videoRule &&
+        preview.videoRule.wouldHide + preview.videoRule.wouldFlag > 0 &&
+        enforced;
 
     return (
         <div className={styles.editor}>
