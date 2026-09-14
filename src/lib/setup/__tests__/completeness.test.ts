@@ -32,6 +32,7 @@ function input(over: Partial<CompletenessInput>): CompletenessInput {
         configured: true,
         groupCount: 0,
         ungroupedMainCount: 0,
+        verificationConfigured: true,
         srcImport: {
             linked: true,
             configAppliedAt: '2026-09-09T10:00:00.000Z',

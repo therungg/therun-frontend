@@ -9,7 +9,9 @@ import { listGameModerators } from '~src/lib/game-moderators';
 import { getQuickStats, resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { listCategoryVariables } from '~src/lib/leaderboard-variables';
 import { splitLevelBoards } from '~src/lib/levels/display';
+import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { listPolicies } from '~src/lib/moderation/policies';
+import { getVerificationSettings } from '~src/lib/moderation/verification-settings';
 import {
     categoryFactsFromResolved,
     computeCompleteness,
@@ -61,6 +63,10 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
     // Same check the console uses (load-chrome.ts) — the per-category editor
     // gates its Minimum time section on it, and the wizard mounts that editor.
     const canEditStandards = ability.can('edit', 'moderators');
+    // Verification settings are gated by the backend's own moderator check
+    // (verify-reject-run), not category-settings edit rights, so a viewer who
+    // can reach the wizard but can't moderate simply sees the step as todo.
+    const canModerate = canModerateGame(session, game.name);
 
     const [
         stats,
@@ -71,6 +77,7 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         metadata,
         settingsJob,
         catalog,
+        verificationConfigured,
     ] = await Promise.all([
         getQuickStats(game.id),
         resolveCategory(game.id),
@@ -85,6 +92,11 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         // The console's rows/groups, so the Levels step can be the console's
         // Levels pane rather than a copy of it.
         loadConsoleCatalog(game.id),
+        canModerate
+            ? getVerificationSettings(session.id, game.id)
+                  .then((v) => v.configured)
+                  .catch(() => false)
+            : Promise.resolve(false),
     ]);
 
     // Variables are category-scoped only — one list call per category. The
@@ -121,6 +133,7 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         ungroupedMainCount: catData.categories.filter(
             (c) => !c.archived && (c.isMain ?? false) && c.groupId == null,
         ).length,
+        verificationConfigured,
         ...variableFactsFromRows(variables),
         srcImport: {
             linked: settingsJob !== null,

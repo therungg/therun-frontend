@@ -2,7 +2,7 @@ import { SETUP_STEP_ORDER, type SetupStepId } from './completeness';
 
 export interface SetupStepMeta {
     id: SetupStepId;
-    /** 1-8, matches the ghost numeral in the wizard's step header. */
+    /** 1-9, matches the ghost numeral in the wizard's step header. */
     num: number;
     label: string;
     skippable: boolean;
@@ -46,7 +46,8 @@ export const SETUP_STEPS: SetupStepMeta[] = [
         skippable: true,
         wide: true,
     },
-    { id: 'boards', num: 8, label: 'Boards', skippable: false, wide: true },
+    { id: 'verification', num: 8, label: 'Verification', skippable: false },
+    { id: 'boards', num: 9, label: 'Boards', skippable: false, wide: true },
 ];
 
 export const SETUP_STEP_LABELS: Record<SetupStepId, string> =

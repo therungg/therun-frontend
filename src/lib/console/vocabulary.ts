@@ -204,6 +204,7 @@ export const STEP_CONCEPTS: Record<SetupStepId, ConceptId[]> = {
     groups: ['groups'],
     'category-setup': ['categories'],
     variables: ['subcategories', 'filters'],
+    verification: ['auto-verify'],
     boards: ['boards'],
 };
 
@@ -221,6 +222,7 @@ const BOARD_PANES: ReadonlySet<ConceptId> = new Set<ConceptId>([
     'levels',
     'level-categories',
     'boards',
+    'auto-verify',
     'moderators',
     'reassign',
     'import',
