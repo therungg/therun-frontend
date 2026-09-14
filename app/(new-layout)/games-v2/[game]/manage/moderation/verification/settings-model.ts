@@ -95,11 +95,8 @@ export const validateForm = (f: SettingsForm): string | null => {
         return 'Trust after must be 1 to 100 verified runs.';
     if (int(f.neverTopN) === null || int(f.neverTopN)! > 1000)
         return 'Never auto-verify the top must be 0 to 1000.';
-    if (
-        f.windowMode === 'top_n' &&
-        !(int(f.windowN) && int(f.windowN)! <= 1000)
-    )
-        return 'Review window must be 1 to 1000 runs.';
+    if (f.windowMode === 'top_n' && !int(f.windowN))
+        return 'Review window must be at least 1 run.';
     if (f.windowMode === 'under_time' && !int(f.windowTimeMs))
         return 'Enter the review window time.';
     return null;
