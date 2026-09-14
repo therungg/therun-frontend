@@ -1,7 +1,7 @@
-'use server';
-
-import { groupCategoryStatsByGame } from '~app/(new-layout)/[username]/races/group-category-stats-by-game';
-import { UserRaceProfile } from '~app/(new-layout)/[username]/races/user-race-profile';
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { groupCategoryStatsByGame } from '~app/(new-layout)/[username]/(sections)/races/group-category-stats-by-game';
+import { UserRaceProfile } from '~app/(new-layout)/[username]/(sections)/races/user-race-profile';
 import {
     DetailedUserStats,
     RaceParticipant,
@@ -11,15 +11,31 @@ import {
     getRaceParticipationsByUser,
     getRacesByIds,
 } from '~src/lib/races';
+import { getRunnerProfileHead } from '~src/lib/runner-profile';
+import buildMetadata from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 
 interface PageProps {
     params: Promise<{ username: string }>;
 }
 
+export async function generateMetadata({
+    params,
+}: PageProps): Promise<Metadata> {
+    const { username } = await params;
+    const name = safeDecodeURI(username);
+    return buildMetadata({
+        title: `${name} — Races`,
+        description: `${name}'s race results and ratings on therun.gg.`,
+    });
+}
+
 export default async function Page(props: PageProps) {
     const params = await props.params;
     const username = safeDecodeURI(params.username);
+
+    const head = await getRunnerProfileHead(username);
+    if (!head || head.runner.guest) notFound();
 
     const promises = [
         getDetailedUserStats(username),

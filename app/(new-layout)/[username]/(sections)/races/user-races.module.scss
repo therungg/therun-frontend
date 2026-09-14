@@ -1,5 +1,5 @@
-@use '../../styles/design-tokens' as *;
-@use '../../styles/mixins' as *;
+@use '../../../styles/design-tokens' as *;
+@use '../../../styles/mixins' as *;
 
 // ============================================
 // User Race Card
@@ -39,6 +39,21 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+}
+
+.raceCardRow {
+    display: flex;
+    height: 100%;
+}
+
+.raceCardImageCol {
+    flex: 0 0 25%;
+    max-width: 25%;
+}
+
+.raceCardBodyCol {
+    flex: 1 1 75%;
+    min-width: 0;
 }
 
 .raceGameTitle {
@@ -163,11 +178,10 @@
     margin-top: $spacing-sm;
 }
 
-.sectionHeading {
-    font-size: $font-size-2xl;
-    font-weight: $heading-font-weight;
-    letter-spacing: $heading-letter-spacing;
-    margin-bottom: $spacing-lg;
+.grid {
+    display: grid;
+    gap: $spacing-lg;
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
 }
 
 .noRaces {

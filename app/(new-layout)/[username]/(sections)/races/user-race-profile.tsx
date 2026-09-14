@@ -1,9 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Col, Row } from 'react-bootstrap';
-import { UserRaceStatsByGame } from '~app/(new-layout)/[username]/races/user-race-stats-by-game';
-import { UserRaces } from '~app/(new-layout)/[username]/races/user-races';
+import { UserRaceStatsByGame } from '~app/(new-layout)/[username]/(sections)/races/user-race-stats-by-game';
+import { UserRaces } from '~app/(new-layout)/[username]/(sections)/races/user-races';
 import {
     Race,
     RaceParticipant,
@@ -14,6 +13,7 @@ import {
     BreadcrumbItem,
 } from '~src/components/breadcrumbs/breadcrumb';
 import { UserRaceStatsTable } from '~src/components/run/user-detail/user-race-stats';
+import sectionStyles from '../sections.module.scss';
 import styles from './user-races.module.scss';
 
 interface UserRaceProfileProps {
@@ -46,23 +46,23 @@ export const UserRaceProfile = ({
     return (
         <div className={styles.profileContainer}>
             <Breadcrumb breadcrumbs={breadcrumbs} />
-            <Row>
-                <Col xl={7} xxl={7}>
-                    <h2 className={styles.sectionHeading}>Races</h2>
+            <div className={styles.grid}>
+                <section className={sectionStyles.panel}>
+                    <h2 className={sectionStyles.panelTitle}>Races</h2>
                     <UserRaces
                         participations={participations}
                         initialRaces={initialRaces}
                         username={username}
                     />
-                </Col>
-                <Col xl={5} xxl={5}>
-                    <h2 className={styles.sectionHeading}>Stats</h2>
+                </section>
+                <section className={sectionStyles.panel}>
+                    <h2 className={sectionStyles.panelTitle}>Stats</h2>
                     <div className="mb-3">
                         <UserRaceStatsTable raceStats={globalStats} />
                     </div>
                     <UserRaceStatsByGame stats={categoryStatsMap} />
-                </Col>
-            </Row>
+                </section>
+            </div>
         </div>
     );
 };
