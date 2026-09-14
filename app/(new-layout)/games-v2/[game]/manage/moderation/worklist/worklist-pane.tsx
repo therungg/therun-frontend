@@ -11,14 +11,16 @@ import type {
     WorklistPage,
 } from '../../../../../../../types/worklist.types';
 import { HideIdentityDialog } from '../../../leaderboard/hide-identity-dialog';
+import { RunInspector } from '../../../leaderboard/run-inspector';
 import { BackLink } from '../../../shared/back-link';
+import { subcategoryVariablesFor } from '../../boards/subcategory-bands';
 import type { NavItemId } from '../../console/nav-model';
 import type { ModVerb, RunActionTarget } from '../shared/action-model';
 import { applyVerdictsAction } from '../shared/actions/verdicts.action';
 import { RunActionDialog } from '../shared/run-action-dialog';
 import { fireUndoToast } from '../shared/undo-toast';
 import { loadWorklistAction } from './actions/worklist.action';
-import { TIER_TITLE } from './worklist-model';
+import { inspectorBoard, TIER_TITLE, toInspectorEntry } from './worklist-model';
 import styles from './worklist-pane.module.scss';
 import { WorklistRow } from './worklist-row';
 
@@ -28,6 +30,9 @@ const UNDO_APPROVE_REASON = 'Undo of an approval from the worklist';
 
 interface Props {
     gameSlug: string;
+    /** ResolvedCategory carries no gameId; the inspector needs it for its
+     * `/v1/me/*` owner verbs. */
+    gameId: number;
     gameDisplay: string;
     categories: Array<{ id: number; display: string }>;
     boardCategories: ResolvedCategory[];
@@ -67,10 +72,11 @@ const targetFor = (item: WorklistItem): RunActionTarget => ({
 
 export function WorklistPane({
     gameSlug,
+    gameId,
     gameDisplay,
     categories,
-    boardCategories: _boardCategories,
-    variables: _variables,
+    boardCategories,
+    variables,
     onNeedsYouChange,
     onNavigate,
 }: Props) {
@@ -82,6 +88,7 @@ export function WorklistPane({
     const [busyRunId, setBusyRunId] = useState<number | null>(null);
     const [dialog, setDialog] = useState<Dialog | null>(null);
     const [now, setNow] = useState(() => new Date());
+    const [inspectRunId, setInspectRunId] = useState<number | null>(null);
 
     // A slow response for a filter or page the moderator already left must
     // not paint the current one. Each load takes a ticket; only the newest writes.
@@ -144,6 +151,31 @@ export function WorklistPane({
     const nothing = data !== null && data.counts.needsYou === 0;
 
     const boardHref = `/games-v2/${encodeURIComponent(gameSlug)}`;
+
+    // The order the moderator sees: batch members first (Task 6 renders them
+    // above the tiers), then the tiered rows. Prev/next in the inspector walks this.
+    const displayOrder: WorklistItem[] = [
+        ...(data?.batches.flatMap((b) => b.items) ?? []),
+        ...items,
+    ];
+    const inspectIndex =
+        inspectRunId === null
+            ? -1
+            : displayOrder.findIndex((i) => i.runId === inspectRunId);
+    const inspectItem = inspectIndex >= 0 ? displayOrder[inspectIndex] : null;
+    const inspectContext = inspectItem
+        ? inspectorBoard(inspectItem, boardCategories)
+        : null;
+
+    const openInspector = (item: WorklistItem) => {
+        if (!inspectorBoard(item, boardCategories)) {
+            setError(
+                "This run's board isn't in this console's list. Open it from the run page.",
+            );
+            return;
+        }
+        setInspectRunId(item.runId);
+    };
 
     return (
         <div className={consoleStyles.surface}>
@@ -248,9 +280,7 @@ export function WorklistPane({
                                     onHideIdentity={(it) =>
                                         setDialog({ kind: 'hide', item: it })
                                     }
-                                    onInspect={() => {
-                                        /* Task 5 */
-                                    }}
+                                    onInspect={openInspector}
                                 />
                             ))}
                         </ul>
@@ -314,6 +344,46 @@ export function WorklistPane({
                     categoryId={dialog.item.categoryId}
                     categoryDisplay={dialog.item.categoryDisplay}
                     subcategoryKey={dialog.item.subcategoryKey}
+                />
+            )}
+            {inspectItem && inspectContext && (
+                <RunInspector
+                    entry={toInspectorEntry(inspectItem)}
+                    gameSlug={gameSlug}
+                    gameId={gameId}
+                    gameDisplay={gameDisplay}
+                    categorySlug={inspectContext.category.name}
+                    categoryDisplay={inspectContext.category.display}
+                    categoryId={inspectContext.category.id}
+                    requireVideo={inspectContext.category.requireVideo}
+                    primaryTiming={inspectContext.primaryTiming}
+                    rtaFallback={inspectContext.category.rtaFallback}
+                    subcategoryDefKeys={subcategoryVariablesFor(
+                        inspectContext.category.id,
+                        variables,
+                    ).map((v) => v.nameNormalized)}
+                    gameTimeLabel={inspectContext.category.gameTimeLabel}
+                    showMilliseconds={
+                        inspectContext.category.showMilliseconds ?? true
+                    }
+                    onClose={() => setInspectRunId(null)}
+                    onMutated={load}
+                    onPrev={
+                        inspectIndex > 0
+                            ? () =>
+                                  setInspectRunId(
+                                      displayOrder[inspectIndex - 1].runId,
+                                  )
+                            : undefined
+                    }
+                    onNext={
+                        inspectIndex < displayOrder.length - 1
+                            ? () =>
+                                  setInspectRunId(
+                                      displayOrder[inspectIndex + 1].runId,
+                                  )
+                            : undefined
+                    }
                 />
             )}
         </div>
