@@ -11,7 +11,10 @@ import {
     getWorklistDigest,
     grantTrust,
     listTrustGrants,
+    nudgeRuns,
+    requestVideo,
     revokeTrust,
+    waiveVideo,
 } from '~src/lib/moderation/worklist';
 import type {
     TrustGrant,
@@ -146,5 +149,54 @@ export async function revokeTrustAction(
         return { ok: true };
     } catch (e) {
         return fail(e, 'Failed to revoke trust.');
+    }
+}
+
+export async function requestVideoAction(
+    gameSlug: string,
+    runIds: number[],
+): Promise<{ ok: true; count: number } | Fail> {
+    const g = await requireMod(gameSlug);
+    if ('error' in g) return g;
+    try {
+        return {
+            ok: true,
+            count: (await requestVideo(g.sessionId, g.gameId, runIds))
+                .requested,
+        };
+    } catch (e) {
+        return fail(e, 'Failed to ask for a video.');
+    }
+}
+
+export async function nudgeRunsAction(
+    gameSlug: string,
+    runIds: number[],
+): Promise<{ ok: true; count: number } | Fail> {
+    const g = await requireMod(gameSlug);
+    if ('error' in g) return g;
+    try {
+        return {
+            ok: true,
+            count: (await nudgeRuns(g.sessionId, g.gameId, runIds)).nudged,
+        };
+    } catch (e) {
+        return fail(e, 'Failed to remind the runner.');
+    }
+}
+
+export async function waiveVideoAction(
+    gameSlug: string,
+    runIds: number[],
+): Promise<{ ok: true; count: number } | Fail> {
+    const g = await requireMod(gameSlug);
+    if ('error' in g) return g;
+    try {
+        return {
+            ok: true,
+            count: (await waiveVideo(g.sessionId, g.gameId, runIds)).waived,
+        };
+    } catch (e) {
+        return fail(e, 'Failed to accept without a video.');
     }
 }

@@ -1,0 +1,95 @@
+// Types for per-game (and per-category override) verification settings.
+// Mirrors the backend contract in docs/frontend-guide-verification-settings.md
+// (copied verbatim from src/leaderboards/verification-settings/types.ts on the
+// backend) — field names and casing are exactly what the backend reads/writes,
+// do not "fix" them.
+
+export type ManualSubmissions =
+    | { mode: 'off' }
+    | { mode: 'trusted' } // trust grant, or a verified run on this game
+    | { mode: 'account_age'; days: number } // 1-365
+    | { mode: 'anyone' };
+
+export type IntakeSetting = { acceptTimer: boolean; manual: ManualSubmissions };
+
+export type VideoRule = {
+    require: 'nothing' | 'top_n' | 'under_time' | 'everything';
+    topN?: number; // 1-1000, required when require = "top_n"
+    timeMs?: number; // > 0, required when require = "under_time"
+    onMissing: 'hide' | 'flag';
+};
+
+export type AutoTrustSetting = { afterVerifiedRuns: number | null }; // null = off; 1-100
+
+export type AutoVerifySetting = {
+    preset: 'off' | 'lenient' | 'standard' | 'strict';
+    neverTopN: number;
+    requireLive: boolean;
+};
+
+export type VerifyWindowSetting =
+    | { mode: 'top_n'; n: number }
+    | { mode: 'under_time'; timeMs: number };
+
+export type SettingSource = 'category' | 'game' | 'category_import' | 'default';
+
+export type EffectiveSettings = {
+    intake: { value: IntakeSetting; source: SettingSource };
+    videoRule: { value: VideoRule; source: SettingSource };
+    autoTrust: { value: AutoTrustSetting; source: SettingSource };
+    autoVerify: { value: AutoVerifySetting; source: SettingSource };
+    verifyWindow: { value: VerifyWindowSetting; source: SettingSource };
+};
+
+export type VerificationSettingsView = {
+    enforced: boolean; // the SSM switch
+    configured: boolean; // any row of the five types exists for this game
+    game: EffectiveSettings; // what a category with no override gets
+    categories: {
+        categoryId: number;
+        display: string;
+        effective: EffectiveSettings;
+        overridden: Array<keyof EffectiveSettings>;
+    }[]; // featured and level boards, featured first
+};
+
+export type SaveSettingsInput = {
+    categoryId: number | null; // null = game default
+    intake?: IntakeSetting | null; // null removes the row (category: inherit the game; game: built-in default)
+    videoRule?: VideoRule | null;
+    autoTrust?: AutoTrustSetting | null;
+    autoVerify?: AutoVerifySetting | null;
+    verifyWindow?: VerifyWindowSetting | null;
+    applyVideoRuleToExisting?: boolean; // default false; see Previews
+};
+
+export type SettingsPreview = {
+    categoryIds: number[]; // the boards the change reaches
+    videoRule?: {
+        existingWithoutVideo: number; // pending board entries the new rule covers that have no video today
+        wouldHide: number; // of those, with an owner we can notify ("apply to runs already on the board")
+        wouldFlag: number; // of those, guests, or every one when onMissing = "flag"
+        verifiedWithoutVideo: number; // verified entries the rule covers with no video; never hidden, shown for context
+        newRunsLastWeek: number; // pending personal bests from the last 7 days the rule would have caught
+        sample: {
+            runId: number;
+            runnerName: string;
+            categoryDisplay: string;
+            rank: number;
+            timeMs: number;
+        }[]; // up to 5
+    };
+    autoVerify?: {
+        pendingEvaluated: number; // pending timer runs replayed, at most 100
+        wouldClear: number;
+        wouldFlag: number;
+        awaitingLive: number;
+    };
+    intake?: {
+        timerRunsLastWeek: number; // timer runs that would have landed ineligible
+        pendingSelfClaims: number; // unaffected; shown so the moderator knows they exist
+    };
+    autoTrust?: {
+        runnersWhoQualifyNow: number; // would be trusted on their next verified run
+    };
+};

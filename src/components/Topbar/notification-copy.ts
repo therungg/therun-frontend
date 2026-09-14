@@ -78,6 +78,18 @@ export function describe(n: NotificationRow): string {
             const reason = str(p.reason);
             return `Your application to moderate ${gameDisplay ?? 'this game'} was declined${reason ? ` (${reason})` : ''}`;
         }
+        case 'run_needs_video': {
+            const subject = runSubject(gameDisplay, categoryDisplay);
+            return subject
+                ? `Your ${subject} needs a video before it goes on the board.`
+                : 'One of your runs needs a video before it goes on the board.';
+        }
+        case 'run_video_waived': {
+            const subject = runSubject(gameDisplay, categoryDisplay);
+            return subject
+                ? `A moderator accepted your ${subject} without a video.`
+                : 'A moderator accepted one of your runs without a video.';
+        }
         default:
             return 'You have a new notification.';
     }
