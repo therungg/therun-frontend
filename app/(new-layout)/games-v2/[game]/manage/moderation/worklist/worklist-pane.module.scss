@@ -1,0 +1,214 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/board' as board;
+
+// The worklist. Same family as the mod queue (queue/mod-queue-pane.module.scss):
+// age is the only thing that carries colour, everything else is weight and
+// structure. Rows are an <li> grid here, not a table, so the age spine lives
+// on the row itself rather than on a first cell.
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.boardPicker {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.counts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: dt.$font-size-xs;
+}
+
+.empty {
+    font-size: 1.25rem;
+    padding: 3rem 0;
+    text-align: center;
+}
+
+.tier + .tier {
+    margin-top: 1.5rem;
+}
+
+.tierTitle {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.5rem;
+}
+
+.rows {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+// A left spine per row, keyed to age — same rule as the mod queue. Fresh
+// rows get none at all: only rows that have been waiting earn ink.
+.row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+        'main verbs'
+        'reasons verbs'
+        'checks checks';
+    gap: 0.25rem 1rem;
+    padding: 0.75rem 0.5rem;
+    border-bottom: 1px solid var(--bs-border-color);
+    box-shadow: inset 2px 0 0 transparent;
+}
+
+.row_aging {
+    box-shadow: inset 2px 0 0 dt.$accent-amber;
+}
+
+.row_stale {
+    box-shadow: inset 2px 0 0 dt.$accent-red;
+}
+
+.rowMain {
+    grid-area: main;
+    display: grid;
+    grid-template-columns: 5rem minmax(10rem, 2fr) minmax(8rem, 1.5fr) minmax(7rem, 1fr) auto;
+    gap: 1rem;
+    align-items: baseline;
+    text-align: left;
+    background: none;
+    border: 0;
+    padding: 0;
+    color: inherit;
+    cursor: pointer;
+}
+
+.age {
+    @include board.mono-time;
+    white-space: nowrap;
+}
+
+.age_aging {
+    color: dt.$accent-amber;
+}
+
+.age_stale {
+    color: dt.$accent-red-light;
+    font-weight: 700;
+}
+
+.runner,
+.board,
+.time {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.runnerName {
+    font-weight: 600;
+    display: flex;
+    gap: 0.375rem;
+    align-items: center;
+}
+
+.meta {
+    font-size: dt.$font-size-xs;
+    opacity: 0.75;
+}
+
+.reasons {
+    grid-area: reasons;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    align-items: center;
+}
+
+.reason {
+    font-size: 0.75rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--bs-border-color);
+}
+
+.reason_high {
+    font-weight: 600;
+}
+
+.verbs {
+    grid-area: verbs;
+    display: flex;
+    gap: 0.375rem;
+    align-items: start;
+}
+
+.more {
+    position: relative;
+}
+
+.menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.25rem);
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    min-width: 10rem;
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+
+    button {
+        text-align: left;
+        padding: 0.5rem 0.75rem;
+        background: none;
+        border: 0;
+        color: inherit;
+    }
+}
+
+.checks {
+    grid-area: checks;
+}
+
+.pill {
+    @include board.board-pill;
+}
+
+.pillMuted {
+    opacity: 0.6;
+}
+
+.linkButton {
+    background: none;
+    border: 0;
+    padding: 0;
+    text-decoration: underline;
+    color: inherit;
+    font-size: dt.$font-size-xs;
+}
+
+.pager {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+@media (max-width: 900px) {
+    .row {
+        grid-template-columns: 1fr;
+        grid-template-areas: 'main' 'reasons' 'verbs' 'checks';
+    }
+
+    .rowMain {
+        grid-template-columns: 4rem 1fr;
+    }
+}
