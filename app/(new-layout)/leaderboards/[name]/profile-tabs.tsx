@@ -47,7 +47,7 @@ const pick: Record<
 };
 
 export function ProfileTabs({ country }: { country: string | null }) {
-    const { games: unordered, draft } = useShowcase();
+    const { games: unordered, draft, editing, setDraft } = useShowcase();
     const { hash, sort, game: filter } = useProfileUrl();
     const options = sortOptions(draft);
     const mode = (options as string[]).includes(sort)
@@ -58,13 +58,21 @@ export function ProfileTabs({ country }: { country: string | null }) {
     const needle = filter.trim().toLowerCase();
     const matches = (g: LeaderboardsProfileGame) =>
         needle === '' || g.game.toLowerCase().includes(needle);
-    const [expanded, setExpanded] = useState<Set<number>>(() => new Set());
+    // Games the viewer folded or unfolded, flipped from each game's default:
+    // a long list opens on the main game only, a short one opens everything.
+    const [toggled, setToggled] = useState<Set<number>>(() => new Set());
     const collapsing = unordered.length >= COLLAPSE_AT;
+    const foldedByDefault = (g: LeaderboardsProfileGame) =>
+        collapsing && needle === '' && g.gameId !== mainId;
     const isCollapsed = (g: LeaderboardsProfileGame) =>
-        collapsing &&
-        needle === '' &&
-        g.gameId !== mainId &&
-        !expanded.has(g.gameId);
+        foldedByDefault(g) !== toggled.has(g.gameId);
+    const toggle = (id: number) =>
+        setToggled((s) => {
+            const next = new Set(s);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
 
     const views = (Object.keys(pick) as TabId[]).map((id) => {
         const blocks = games
@@ -99,9 +107,33 @@ export function ProfileTabs({ country }: { country: string | null }) {
     useEffect(() => {
         if (!hash.startsWith('game-')) return;
         const id = Number(hash.slice(5));
-        setExpanded((s) => (s.has(id) ? s : new Set(s).add(id)));
+        const game = unordered.find((g) => g.gameId === id);
+        if (game) {
+            setToggled((s) => {
+                const next = new Set(s);
+                if (foldedByDefault(game)) next.add(id);
+                else next.delete(id);
+                return next;
+            });
+        }
         document.getElementById(hash)?.scrollIntoView({ block: 'start' });
     }, [hash]);
+
+    // Edit mode with the runner's own order: the full ordered list is what
+    // moves, so a block's neighbours are the games around it on that list.
+    const manual = editing && draft.gameOrder === 'manual' && mode === 'runner';
+    const ordered = games.map((g) => g.gameId);
+    const moveGame = (gameId: number, by: -1 | 1) => {
+        const from = ordered.indexOf(gameId);
+        const to = from + by;
+        if (from < 0 || to < 0 || to >= ordered.length) return null;
+        return () =>
+            setDraft((d) => {
+                const ids = [...ordered];
+                [ids[from], ids[to]] = [ids[to], ids[from]];
+                return { ...d, manualGameIds: ids };
+            });
+    };
 
     if (unordered.length === 0) {
         return <div className={styles.emptyNote}>No leaderboard runs yet.</div>;
@@ -109,38 +141,55 @@ export function ProfileTabs({ country }: { country: string | null }) {
 
     return (
         <div className={styles.tabsWrap}>
-            {tabs.length > 1 ? (
-                <div className={styles.tabs} role="tablist" aria-label="Runs">
-                    {tabs.map((t) => (
-                        <button
-                            key={t.id}
-                            type="button"
-                            role="tab"
-                            id={`profile-tab-${t.id}`}
-                            aria-selected={t.id === active.id}
-                            aria-controls="profile-tabpanel"
-                            className={
-                                t.id === active.id
-                                    ? `${styles.tab} ${styles.tabActive}`
-                                    : styles.tab
-                            }
-                            onClick={() =>
-                                setProfileUrl({
-                                    hash: t.id === fallback.id ? '' : t.id,
-                                })
-                            }
-                        >
-                            {`${TAB_LABELS[t.id]} (${t.count.toLocaleString('en-US')})`}
-                        </button>
-                    ))}
-                </div>
-            ) : null}
-            <LedgerControls
-                anyCollapsed={active.blocks.some((b) => isCollapsed(b.game))}
-                onExpandAll={() =>
-                    setExpanded(new Set(unordered.map((g) => g.gameId)))
-                }
-            />
+            <div className={styles.ledgerToolbar}>
+                {tabs.length > 1 ? (
+                    <div
+                        className={styles.tabs}
+                        role="tablist"
+                        aria-label="Runs"
+                    >
+                        {tabs.map((t) => (
+                            <button
+                                key={t.id}
+                                type="button"
+                                role="tab"
+                                id={`profile-tab-${t.id}`}
+                                aria-selected={t.id === active.id}
+                                aria-controls="profile-tabpanel"
+                                className={
+                                    t.id === active.id
+                                        ? `${styles.tab} ${styles.tabActive}`
+                                        : styles.tab
+                                }
+                                onClick={() =>
+                                    setProfileUrl({
+                                        hash: t.id === fallback.id ? '' : t.id,
+                                    })
+                                }
+                            >
+                                {TAB_LABELS[t.id]}
+                                <span className={styles.tabCount}>
+                                    {t.count.toLocaleString('en-US')}
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+                ) : null}
+                <LedgerControls
+                    anyCollapsed={active.blocks.some((b) =>
+                        isCollapsed(b.game),
+                    )}
+                    onExpandAll={() =>
+                        setToggled(
+                            new Set(
+                                unordered
+                                    .filter(foldedByDefault)
+                                    .map((g) => g.gameId),
+                            ),
+                        )
+                    }
+                />
+            </div>
             <div
                 id="profile-tabpanel"
                 role={tabs.length > 1 ? 'tabpanel' : undefined}
@@ -161,12 +210,19 @@ export function ProfileTabs({ country }: { country: string | null }) {
                             entries={b.entries}
                             country={country}
                             collapsed={isCollapsed(b.game)}
-                            onExpand={() =>
-                                setExpanded((s) =>
-                                    new Set(s).add(b.game.gameId),
-                                )
+                            onToggle={
+                                unordered.length > 1
+                                    ? () => toggle(b.game.gameId)
+                                    : undefined
                             }
-                            single={unordered.length === 1}
+                            onMove={
+                                manual
+                                    ? {
+                                          up: moveGame(b.game.gameId, -1),
+                                          down: moveGame(b.game.gameId, 1),
+                                      }
+                                    : undefined
+                            }
                         />
                     ))
                 )}

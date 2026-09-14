@@ -165,10 +165,20 @@
     }
 }
 
-// Tabs over the main column
+// Tabs and ledger controls share one row over the runs.
 .tabsWrap {
     display: grid;
-    gap: dt.$spacing-md;
+    gap: dt.$spacing-lg;
+    min-width: 0;
+}
+
+.ledgerToolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-sm dt.$spacing-lg;
+    min-width: 0;
 }
 
 .tabs {
@@ -185,15 +195,27 @@
     @include board.control-pill-active;
 }
 
-.tabPanel {
-    display: grid;
-    gap: dt.$spacing-lg;
+.tabCount {
+    margin-left: 2px;
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    font-size: dt.$font-size-xs;
+    opacity: 0.75;
 }
+
 
 .emptyNote {
     @include board.board-surface(dt.$spacing-lg);
     color: var(--bs-secondary-color);
     font-size: dt.$font-size-sm;
+}
+
+.customize {
+    @include board.control-pill;
+    border: 1px solid
+        var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
+    color: var(--bs-emphasis-color);
+    text-decoration: none;
 }
 
 // Sidebar cards
@@ -258,156 +280,266 @@
     }
 }
 
-// Game block
-.game {
-    @include board.board-surface(dt.$spacing-lg);
+// The runs panel: every game in one surface, each a group row over its runs.
+.tabPanel {
+    @include board.board-surface(0);
     display: grid;
-    gap: dt.$spacing-md;
+    overflow: hidden;
+    // Medal tones for ranks. They mix with the surface ink, so they read on a
+    // light panel as well as a dark one.
+    --rank-gold: #d4a73a;
+    --rank-silver: #a9b4c2;
+    --rank-bronze: #c07a45;
+}
+
+.tabPanel > .emptyNote {
+    border: 0;
+    border-radius: 0;
+}
+
+@mixin medal-tone {
+    &[data-medal='gold'] {
+        --medal: var(--rank-gold);
+    }
+    &[data-medal='silver'] {
+        --medal: var(--rank-silver);
+    }
+    &[data-medal='bronze'] {
+        --medal: var(--rank-bronze);
+    }
+}
+
+@mixin medal-ink {
+    color: color-mix(
+        in srgb,
+        var(--medal, var(--bs-emphasis-color)) 70%,
+        var(--bs-emphasis-color)
+    );
+}
+
+$row-line: color-mix(
+    in srgb,
+    var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5)) 70%,
+    transparent
+);
+
+.game {
+    display: grid;
     // Clears the sticky top bar when the Games card jumps here.
     scroll-margin-top: 5rem;
+
+    & + & {
+        border-top: 1px solid
+            var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
+    }
 }
 
 .gameHead {
-    display: grid;
-    grid-template-columns: 36px 1fr;
-    gap: dt.$spacing-md;
+    display: flex;
     align-items: center;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-sm dt.$spacing-lg dt.$spacing-sm dt.$spacing-sm;
+    min-width: 0;
+}
+
+.gameToggle {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    border: 0;
+    border-radius: dt.$radius-md;
+    background: none;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+        background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.05));
+    }
+
+    &:disabled {
+        cursor: default;
+
+        .gameChevron {
+            visibility: hidden;
+        }
+    }
 
     img {
-        width: 36px;
-        height: 48px;
+        flex: none;
+        width: 27px;
+        height: 36px;
         object-fit: cover;
-        border-radius: dt.$radius-sm;
+        border-radius: 4px;
+    }
+}
+
+.gameChevron {
+    flex: none;
+    color: var(--bs-secondary-color);
+    transform: rotate(90deg);
+    transition: transform dt.$transition-fast;
+
+    .game[data-collapsed] & {
+        transform: none;
     }
 }
 
 .gameTitle {
-    font-weight: 600;
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    @container profile-main (max-width: 559.98px) {
+        white-space: normal;
+        overflow-wrap: break-word;
+    }
+
+    font-weight: 700;
     color: var(--bs-emphasis-color);
 }
 
 .gameSummary {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     color: var(--bs-secondary-color);
     font-size: dt.$font-size-sm;
+
+    @container profile-main (max-width: 559.98px) {
+        display: none;
+    }
 }
 
-.levelHead {
-    margin-top: dt.$spacing-sm;
-    font-size: dt.$font-size-sm;
-    font-weight: 600;
+.gameStanding {
+    @container profile-main (max-width: 559.98px) {
+        > span:not(.gameFirsts) {
+            display: none;
+        }
+
+        .longLabel {
+            display: none;
+        }
+
+        .shortLabel {
+            display: inline;
+        }
+    }
+
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: dt.$spacing-sm;
     color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+    white-space: nowrap;
+}
+
+.gameFirsts {
+    padding: 1px 9px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--rank-gold) 22%, transparent);
+    color: color-mix(in srgb, var(--rank-gold) 75%, var(--bs-emphasis-color));
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
+}
+
+.gameLink,
+.gameMove {
+    display: inline-flex;
+    flex: none;
+    gap: dt.$spacing-xs;
+}
+
+.gameLink {
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: dt.$radius-sm;
+    color: var(--bs-secondary-color);
+
+    &:hover {
+        background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.05));
+        color: var(--bs-emphasis-color);
+    }
 }
 
 .entries {
-    // Medal tones for the rank cell. The rank mixes them with the surface ink
-    // (see .entryRank), so they read on a light panel as well as a dark one.
-    --rank-gold: #d4a73a;
-    --rank-silver: #a9b4c2;
-    --rank-bronze: #c07a45;
-
     display: grid;
-    gap: 2px;
 }
 
-// Rank first: rank | name + vars | time | date | details | badges. When the
-// runs column is under 960px the rank spans two lines: the name takes the
-// whole first line, time, date and badges wrap on the second, and the
-// details drop.
-.entry {
+.levelGroup {
     display: grid;
-    grid-template-columns: 4.5rem minmax(0, 1.4fr) auto 7rem minmax(0, 1fr) auto;
-    grid-template-areas: 'rank name time date details badges';
-    column-gap: dt.$spacing-md;
-    row-gap: 2px;
-    align-items: center;
-    min-height: 44px;
-    padding: dt.$spacing-xs dt.$spacing-sm;
-    border-radius: dt.$radius-sm;
-
-    &:hover {
-        background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.04));
-    }
-
-    @container profile-main (max-width: 959.98px) {
-        grid-template-columns: 4.5rem minmax(0, 1fr);
-        grid-template-areas:
-            'rank name'
-            'rank meta';
-    }
-
-    @media (max-width: 640px) {
-        grid-template-columns: 3.5rem minmax(0, 1fr);
-    }
 }
 
-// Time, date and badges. A plain pass-through on the one-line layout; the
-// wrapping second line of the two-line one.
-.entryMeta {
-    display: contents;
-
-    @container profile-main (max-width: 959.98px) {
-        grid-area: meta;
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        column-gap: dt.$spacing-md;
-        row-gap: 2px;
-        min-width: 0;
-    }
-}
-
-.entryRankCell {
-    grid-area: rank;
-    display: grid;
-    line-height: 1.15;
-}
-
-.entryRank {
-    font-family: dt.$font-mono;
-    font-variant-numeric: tabular-nums;
-    font-size: dt.$font-size-lg;
-    font-weight: 700;
-    color: var(--bs-emphasis-color);
-
-    &[data-medal='gold'] {
-        color: color-mix(in srgb, var(--rank-gold) 65%, var(--bs-emphasis-color));
-    }
-    &[data-medal='silver'] {
-        color: color-mix(
-            in srgb,
-            var(--rank-silver) 65%,
-            var(--bs-emphasis-color)
-        );
-    }
-    &[data-medal='bronze'] {
-        color: color-mix(
-            in srgb,
-            var(--rank-bronze) 65%,
-            var(--bs-emphasis-color)
-        );
-    }
-}
-
-.entryRankNone {
-    color: var(--bs-tertiary-color);
-}
-
-.entryCountry {
-    font-family: dt.$font-mono;
-    font-variant-numeric: tabular-nums;
+.levelHead {
+    padding: dt.$spacing-sm dt.$spacing-xl dt.$spacing-xs 2.6rem;
+    border-top: 1px solid $row-line;
     color: var(--bs-secondary-color);
     font-size: dt.$font-size-xs;
+    font-weight: 600;
+}
+
+// name | rank | time | date | icons — the same columns in every game, so
+// times line up down the whole panel. Under 640px the name takes its own line.
+.entry {
+    @include medal-tone;
+    display: grid;
+    grid-template-columns:
+        minmax(0, 2.4fr) minmax(3.5rem, 0.5fr) minmax(9rem, 1fr)
+        minmax(6.5rem, 0.7fr) auto;
+    grid-template-areas: 'name rank time date badges';
+    column-gap: dt.$spacing-lg;
+    align-items: center;
+    min-height: 44px;
+    padding: dt.$spacing-xs dt.$spacing-lg dt.$spacing-xs 2.6rem;
+    border-top: 1px solid $row-line;
+
+    &:hover {
+        background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.035));
+    }
+
+    @container profile-main (max-width: 639.98px) {
+        grid-template-columns: 3.5rem minmax(0, 1fr) auto;
+        grid-template-areas:
+            'name name name'
+            'rank time badges';
+        row-gap: 2px;
+        padding: dt.$spacing-sm dt.$spacing-lg;
+    }
 }
 
 .entryName {
     grid-area: name;
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
     min-width: 0;
-    overflow-wrap: anywhere;
 }
 
 .entryCategory {
-    font-weight: 500;
+    flex: none;
+    max-width: 100%;
+    font-weight: 600;
     color: var(--bs-emphasis-color);
+    overflow-wrap: anywhere;
+}
+
+.entryDetails {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
 }
 
 .entryVars {
@@ -415,33 +547,61 @@
     font-size: dt.$font-size-sm;
 }
 
+.entryRankCell {
+    grid-area: rank;
+    display: flex;
+}
+
+.entryRank {
+    @include medal-ink;
+    font-variant-numeric: tabular-nums;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    white-space: nowrap;
+
+    .entry[data-medal] & {
+        padding: 1px 10px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--medal) 22%, transparent);
+    }
+}
+
+.entryRankNone {
+    color: var(--bs-tertiary-color);
+}
+
 .entryTime {
     grid-area: time;
     display: inline-flex;
-    align-items: baseline;
-    gap: dt.$spacing-xs;
+    align-items: center;
+    justify-content: start;
+    gap: dt.$spacing-sm;
     white-space: nowrap;
     font-family: dt.$font-mono;
     font-variant-numeric: tabular-nums;
+    font-size: dt.$font-size-sm;
     font-weight: 600;
+    color: var(--bs-emphasis-color);
+
 }
 
 .entryTiming {
     color: var(--bs-secondary-color);
-    font-size: dt.$font-size-xs;
-    font-weight: 400;
+    font-size: dt.$font-size-2xs;
+    font-weight: 500;
 }
 
 .sparkline {
     display: inline-flex;
     align-self: center;
     color: var(--board-accent, var(--bs-primary));
+    opacity: 0.8;
 
     svg {
         display: block;
     }
 
-    @media (max-width: 640px) {
+    @container profile-main (max-width: 899.98px) {
         display: none;
     }
 }
@@ -451,21 +611,8 @@
     white-space: nowrap;
     color: var(--bs-secondary-color);
     font-size: dt.$font-size-sm;
-}
 
-.entryDetails {
-    grid-area: details;
-    min-width: 0;
-    color: var(--bs-secondary-color);
-    font-size: dt.$font-size-sm;
-
-    a {
-        color: inherit;
-        text-decoration: underline;
-        text-underline-offset: 2px;
-    }
-
-    @container profile-main (max-width: 959.98px) {
+    @container profile-main (max-width: 639.98px) {
         display: none;
     }
 }
@@ -473,24 +620,53 @@
 .entryBadges {
     grid-area: badges;
     display: flex;
-    flex-wrap: wrap;
     gap: dt.$spacing-xs;
     align-items: center;
     justify-content: end;
-    min-width: 0;
-
-    @container profile-main (max-width: 959.98px) {
-        justify-content: start;
-    }
 }
 
-.entryVod {
+.entryIcon,
+.entryIconSpacer {
     display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: dt.$radius-sm;
+}
+
+.entryIcon {
     color: var(--bs-secondary-color);
 
     &:hover {
+        background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.06));
         color: var(--bs-emphasis-color);
     }
+}
+
+.statusVerified,
+.statusPending,
+.statusRejected {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-width: 26px;
+    font-size: dt.$font-size-xs;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.statusVerified {
+    color: var(--bs-success);
+}
+
+.statusPending {
+    color: var(--bs-tertiary-color);
+}
+
+.statusRejected {
+    color: var(--bs-danger);
 }
 
 // Heatmap: fixed 11px cells, scrolling inside its card only. The scroller
@@ -611,8 +787,7 @@
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-auto-flow: dense;
-    gap: dt.$spacing-md;
-    // Medal tones, shared with the ledger rows.
+    gap: dt.$spacing-lg;
     --rank-gold: #d4a73a;
     --rank-silver: #a9b4c2;
     --rank-bronze: #c07a45;
@@ -621,17 +796,53 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    @media (max-width: 640px) {
-        grid-template-columns: minmax(0, 1fr);
+    // Phones swipe through the showcase instead of scrolling past six cards.
+    @container profile-main (max-width: 559.98px) {
+        grid-template-columns: none;
+        grid-auto-flow: column;
+        grid-auto-columns: 86%;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+        padding-bottom: 2px;
+
+        > * {
+            scroll-snap-align: start;
+        }
     }
 }
 
 .pin {
-    @include board.board-surface(dt.$spacing-md);
+    @include board.board-surface(dt.$spacing-lg);
+    @include medal-tone;
+    position: relative;
     display: grid;
+    align-content: space-between;
     gap: dt.$spacing-md;
     min-width: 0;
-    position: relative;
+    overflow: hidden;
+    transition: border-color dt.$transition-fast, transform dt.$transition-fast;
+
+    // A podium run carries its medal along the top edge.
+    &[data-medal]::before {
+        content: '';
+        position: absolute;
+        inset: 0 0 auto;
+        height: 2px;
+        background: var(--medal);
+    }
+
+    &:hover {
+        border-color: color-mix(
+            in srgb,
+            var(--medal, var(--bs-primary)) 45%,
+            var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5))
+        );
+    }
+
+    &[draggable='true'] {
+        cursor: grab;
+    }
 }
 
 .pinWide {
@@ -640,15 +851,20 @@
 
 .pinBody {
     display: grid;
-    grid-template-columns: 48px minmax(0, 1fr);
-    gap: dt.$spacing-md;
-    align-items: center;
+    grid-template-columns: 60px minmax(0, 1fr);
+    gap: dt.$spacing-lg;
+    align-items: start;
+}
+
+.pinArt {
+    display: inline-flex;
 
     img {
-        width: 48px;
-        height: 64px;
+        width: 60px;
+        height: 80px;
         object-fit: cover;
         border-radius: dt.$radius-sm;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
     }
 }
 
@@ -658,17 +874,74 @@
     min-width: 0;
 }
 
+.pinRankLine {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+}
+
+.pinRank {
+    @include medal-ink;
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    font-size: dt.$font-size-3xl;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.03em;
+}
+
+.pinOf {
+    color: var(--bs-secondary-color);
+    font-family: dt.$font-mono;
+    font-size: dt.$font-size-xs;
+}
+
+.pinGame {
+    margin-top: dt.$spacing-xs;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .pinTitle {
     font-weight: 600;
     color: var(--bs-emphasis-color);
+    line-height: 1.3;
     overflow-wrap: anywhere;
 }
 
-.pinLine {
+.pinVars {
+    color: var(--bs-secondary-color);
+    font-weight: 400;
+}
+
+.pinFoot {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: dt.$spacing-sm;
+    gap: dt.$spacing-xs dt.$spacing-md;
+    padding-top: dt.$spacing-md;
+    border-top: 1px solid
+        var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
+}
+
+.pinTime {
+    display: inline-flex;
+    align-items: baseline;
+    gap: dt.$spacing-xs;
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    font-size: dt.$font-size-md;
+    font-weight: 700;
+    color: var(--bs-emphasis-color);
+}
+
+.pinDate {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+    margin-right: auto;
 }
 
 .featuredVideo {
@@ -742,16 +1015,6 @@
     min-width: 12rem;
 }
 
-.gameHeadButton {
-    grid-template-columns: 36px 1fr auto;
-    width: 100%;
-    padding: 0;
-    border: 0;
-    background: none;
-    text-align: left;
-    color: inherit;
-    cursor: pointer;
-}
 
 // Shelf: art tiles with a medal badge, two across in the sidebar.
 .shelf {
@@ -854,7 +1117,12 @@
 
 .pinToggle {
     @include board.control-pill;
-    padding: dt.$spacing-xs;
+    justify-content: center;
+    min-width: 5.5rem;
+    border: 1px solid
+        var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
+    font-size: dt.$font-size-xs;
+    white-space: nowrap;
 }
 
 .pinToggleOn {
@@ -870,10 +1138,23 @@
 
 .pinSlot {
     display: grid;
-    place-items: center;
-    min-height: 6rem;
-    border: 1px dashed var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
-    border-radius: dt.$radius-md;
+    place-content: center;
+    justify-items: center;
+    gap: dt.$spacing-xs;
+    min-height: 7rem;
+    padding: dt.$spacing-lg;
+    text-align: center;
+    border: 1px dashed var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.6));
+    border-radius: dt.$radius-lg;
     color: var(--bs-tertiary-color);
     font-size: dt.$font-size-sm;
+}
+
+.pinSlotHint {
+    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-xs;
+}
+
+.shortLabel {
+    display: none;
 }

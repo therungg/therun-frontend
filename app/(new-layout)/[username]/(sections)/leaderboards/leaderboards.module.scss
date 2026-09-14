@@ -1,0 +1,234 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+.page {
+    --rank-gold: #d4a73a;
+    --rank-silver: #a9b4c2;
+    --rank-bronze: #c07a45;
+
+    display: grid;
+    gap: dt.$spacing-3xl;
+    min-width: 0;
+}
+
+.block {
+    display: grid;
+    gap: dt.$spacing-lg;
+    min-width: 0;
+}
+
+.blockHead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-sm dt.$spacing-lg;
+}
+
+.blockHeadText {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px dt.$spacing-md;
+    min-width: 0;
+}
+
+.blockTitle {
+    margin: 0;
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--bs-emphasis-color);
+}
+
+.blockNote {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+@mixin medal-ink {
+    &[data-medal='gold'] {
+        --medal: var(--rank-gold);
+    }
+    &[data-medal='silver'] {
+        --medal: var(--rank-silver);
+    }
+    &[data-medal='bronze'] {
+        --medal: var(--rank-bronze);
+    }
+}
+
+// ---- Standing ------------------------------------------------------------
+
+.standing {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: dt.$spacing-lg dt.$spacing-3xl;
+    min-width: 0;
+}
+
+// The best result leads: a big medal-toned rank beside what it was on.
+.standingLead {
+    @include medal-ink;
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-lg;
+    min-width: 0;
+    max-width: 100%;
+    color: inherit;
+    text-decoration: none;
+
+    &:hover .leadWhat {
+        color: var(--bs-emphasis-color);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+}
+
+.leadRank {
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    font-size: dt.$font-size-hero-title;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: color-mix(
+        in srgb,
+        var(--medal, var(--bs-emphasis-color)) 70%,
+        var(--bs-emphasis-color)
+    );
+}
+
+.leadText {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.leadLabel {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.leadWhat {
+    color: var(--bs-body-color);
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.standingTiles {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-lg 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    min-width: 0;
+
+    li {
+        @include medal-ink;
+        display: grid;
+        gap: 2px;
+        padding-inline: dt.$spacing-2xl;
+        border-left: 1px solid
+            var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
+
+        @media (max-width: 575.98px) {
+            padding-inline: 0 dt.$spacing-2xl;
+            border-left: 0;
+        }
+    }
+
+    b {
+        font-family: dt.$font-mono;
+        font-variant-numeric: tabular-nums;
+        font-size: dt.$font-size-xl;
+        font-weight: 700;
+        line-height: 1.1;
+        color: color-mix(
+            in srgb,
+            var(--medal, var(--bs-emphasis-color)) 70%,
+            var(--bs-emphasis-color)
+        );
+    }
+
+    span {
+        color: var(--bs-secondary-color);
+        font-size: dt.$font-size-sm;
+        white-space: nowrap;
+    }
+}
+
+// Without a lead the first tile starts flush.
+.standing > .standingTiles:first-child li:first-child {
+    padding-left: 0;
+    border-left: 0;
+}
+
+// ---- Edit bar ------------------------------------------------------------
+
+.editBar {
+    position: sticky;
+    bottom: dt.$spacing-lg;
+    z-index: 20;
+    justify-self: center;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm dt.$spacing-lg;
+    width: min(44rem, 100%);
+    padding: dt.$spacing-sm dt.$spacing-sm dt.$spacing-sm dt.$spacing-lg;
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.35);
+    border-radius: dt.$radius-xl;
+    background: var(--board-surface-bg, var(--bs-body-bg));
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+.editTitle {
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.editField {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+
+    select {
+        @include board.control-pill;
+        border: 1px solid
+            var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
+        color: var(--bs-emphasis-color);
+    }
+}
+
+.editActions {
+    display: inline-flex;
+    gap: dt.$spacing-xs;
+    margin-left: auto;
+}
+
+.editCancel {
+    @include board.control-pill;
+}
+
+.editSave {
+    @include board.control-pill;
+    padding-inline: dt.$spacing-lg;
+    background: var(--bs-primary);
+    color: #fff;
+    font-weight: 600;
+
+    &:hover:not(:disabled) {
+        background: color-mix(in srgb, var(--bs-primary) 85%, #fff);
+        color: #fff;
+    }
+
+    &:disabled {
+        background: rgba(var(--bs-primary-rgb), 0.35);
+    }
+}

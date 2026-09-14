@@ -1,4 +1,9 @@
-import { ChevronDown } from 'react-bootstrap-icons';
+import {
+    ArrowDown,
+    ArrowUp,
+    ArrowUpRight,
+    ChevronRight,
+} from 'react-bootstrap-icons';
 import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
 import { safeEncodeURI } from '~src/utils/uri';
@@ -7,7 +12,6 @@ import type {
     LeaderboardsProfileGame,
 } from '../../../../types/leaderboards-profile.types';
 import { EntryRow } from './entry-row';
-import { formatProfileDate } from './format';
 import styles from './leaderboards-profile.module.scss';
 
 const hours = (ms: number) =>
@@ -23,111 +27,154 @@ function groupByLevel(entries: LeaderboardsProfileEntry[]) {
     return { plain, levels };
 }
 
+const plural = (n: number, one: string, many: string) =>
+    `${n.toLocaleString('en-US')} ${n === 1 ? one : many}`;
+
 /**
- * One game's block in the main column. `entries` is what the selected tab
- * shows of this game; the summary line always describes the whole game.
+ * One game in the runs panel: a group row that folds its runs away, then the
+ * runs themselves. `entries` is what the selected tab shows of this game; the
+ * group row always describes the whole game.
  */
 export function GameBlock({
     game,
     entries,
     country,
     collapsed = false,
-    onExpand,
-    single = false,
+    onToggle,
+    onMove,
 }: {
     game: LeaderboardsProfileGame;
     entries: LeaderboardsProfileEntry[];
     country: string | null;
     collapsed?: boolean;
-    onExpand?: () => void;
-    single?: boolean;
+    onToggle?: () => void;
+    /** Edit mode with the runner's own order: move this game up or down. */
+    onMove?: { up: (() => void) | null; down: (() => void) | null };
 }) {
     const { plain, levels } = groupByLevel(entries);
-    const summary = [
-        `${game.entries.length} ${game.entries.length === 1 ? 'board' : 'boards'}`,
-        game.bestRank !== null ? `best #${game.bestRank}` : null,
-        game.lastRanAt ? `last ran ${formatProfileDate(game.lastRanAt)}` : null,
-        game.attempts !== null
-            ? `${game.attempts.toLocaleString('en-US')} attempts`
+    const firsts = game.entries.filter((e) => e.rank === 1).length;
+    const podiums = game.entries.filter(
+        (e) => e.rank !== null && e.rank <= 3,
+    ).length;
+    const meta = [
+        plural(game.entries.length, 'board', 'boards'),
+        game.attempts !== null && game.attempts > 0
+            ? plural(game.attempts, 'attempt', 'attempts')
             : null,
         game.playtimeMs !== null && game.playtimeMs > 0
             ? hours(game.playtimeMs)
             : null,
     ].filter(Boolean);
-
-    if (collapsed) {
-        return (
-            <section id={`game-${game.gameId}`} className={styles.game}>
-                <button
-                    type="button"
-                    className={`${styles.gameHead} ${styles.gameHeadButton}`}
-                    onClick={onExpand}
-                    aria-expanded={false}
-                >
-                    <GameImage
-                        src={game.imageUrl ?? ''}
-                        alt={game.game}
-                        quality="small"
-                        width={36}
-                        height={48}
-                    />
-                    <div>
-                        <span className={styles.gameTitle}>{game.game}</span>
-                        <div className={styles.gameSummary}>
-                            {summary.join(' · ')}
-                        </div>
-                    </div>
-                    <ChevronDown size={16} aria-hidden />
-                </button>
-            </section>
-        );
-    }
+    const standing = [
+        podiums > firsts ? plural(podiums, 'podium', 'podiums') : null,
+        game.bestRank !== null && firsts === 0
+            ? `best #${game.bestRank}`
+            : null,
+    ].filter(Boolean);
 
     return (
-        <section id={`game-${game.gameId}`} className={styles.game}>
-            {single ? null : (
-                <div className={styles.gameHead}>
+        <section
+            id={`game-${game.gameId}`}
+            className={styles.game}
+            data-collapsed={collapsed || undefined}
+        >
+            <div className={styles.gameHead}>
+                <button
+                    type="button"
+                    className={styles.gameToggle}
+                    onClick={onToggle}
+                    aria-expanded={!collapsed}
+                    disabled={!onToggle}
+                >
+                    <ChevronRight
+                        size={12}
+                        aria-hidden
+                        className={styles.gameChevron}
+                    />
                     <GameImage
                         src={game.imageUrl ?? ''}
-                        alt={game.game}
+                        alt=""
                         quality="small"
-                        width={36}
-                        height={48}
+                        width={27}
+                        height={36}
                     />
-                    <div>
-                        <Link
-                            href={`/games/${safeEncodeURI(game.game)}`}
-                            className={styles.gameTitle}
+                    <span className={styles.gameTitle}>{game.game}</span>
+                    <span className={styles.gameSummary}>
+                        {meta.join(' · ')}
+                    </span>
+                </button>
+                <span className={styles.gameStanding}>
+                    {firsts > 0 ? (
+                        <span className={styles.gameFirsts}>
+                            <span className={styles.longLabel}>
+                                {firsts === 1
+                                    ? 'First place'
+                                    : `${firsts} first places`}
+                            </span>
+                            <span className={styles.shortLabel}>
+                                {firsts === 1 ? '#1' : `${firsts}× #1`}
+                            </span>
+                        </span>
+                    ) : null}
+                    {standing.length > 0 ? (
+                        <span>{standing.join(' · ')}</span>
+                    ) : null}
+                </span>
+                {onMove ? (
+                    <span className={styles.gameMove}>
+                        <button
+                            type="button"
+                            className={styles.tab}
+                            aria-label={`Move ${game.game} up`}
+                            disabled={!onMove.up}
+                            onClick={onMove.up ?? undefined}
                         >
-                            {game.game}
-                        </Link>
-                        <div className={styles.gameSummary}>
-                            {summary.join(' · ')}
+                            <ArrowUp size={13} aria-hidden />
+                        </button>
+                        <button
+                            type="button"
+                            className={styles.tab}
+                            aria-label={`Move ${game.game} down`}
+                            disabled={!onMove.down}
+                            onClick={onMove.down ?? undefined}
+                        >
+                            <ArrowDown size={13} aria-hidden />
+                        </button>
+                    </span>
+                ) : (
+                    <Link
+                        href={`/games/${safeEncodeURI(game.game)}`}
+                        className={styles.gameLink}
+                        aria-label={`${game.game} leaderboards`}
+                        title="Open the game's leaderboards"
+                    >
+                        <ArrowUpRight size={13} aria-hidden />
+                    </Link>
+                )}
+            </div>
+            {collapsed ? null : (
+                <div className={styles.entries}>
+                    {plain.map((e) => (
+                        <EntryRow
+                            key={`${e.kind}-${e.runId ?? e.manualTimeId}`}
+                            entry={e}
+                            country={country}
+                        />
+                    ))}
+                    {[...levels.entries()].map(([level, list]) => (
+                        <div key={level} className={styles.levelGroup}>
+                            <div className={styles.levelHead}>{level}</div>
+                            {list.map((e) => (
+                                <EntryRow
+                                    key={`${e.kind}-${e.runId ?? e.manualTimeId}`}
+                                    entry={e}
+                                    country={country}
+                                />
+                            ))}
                         </div>
-                    </div>
+                    ))}
                 </div>
             )}
-            <div className={styles.entries}>
-                {plain.map((e) => (
-                    <EntryRow
-                        key={`${e.kind}-${e.runId ?? e.manualTimeId}`}
-                        entry={e}
-                        country={country}
-                    />
-                ))}
-                {[...levels.entries()].map(([level, list]) => (
-                    <div key={level}>
-                        <div className={styles.levelHead}>{level}</div>
-                        {list.map((e) => (
-                            <EntryRow
-                                key={`${e.kind}-${e.runId ?? e.manualTimeId}`}
-                                entry={e}
-                                country={country}
-                            />
-                        ))}
-                    </div>
-                ))}
-            </div>
         </section>
     );
 }

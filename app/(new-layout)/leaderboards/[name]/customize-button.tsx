@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { Sliders } from 'react-bootstrap-icons';
 import styles from './leaderboards-profile.module.scss';
 import { useShowcase } from './showcase-provider';
 
@@ -19,9 +20,10 @@ export function CustomizeButton() {
     return (
         <button
             type="button"
-            className={styles.actionPill}
+            className={styles.customize}
             onClick={() => setEditing(true)}
         >
+            <Sliders size={14} aria-hidden />
             Customize
         </button>
     );
