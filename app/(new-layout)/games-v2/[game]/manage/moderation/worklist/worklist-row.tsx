@@ -26,6 +26,7 @@ export function WorklistRow({
     onVerb,
     onHideIdentity,
     onInspect,
+    onRequestVideo,
     variables,
 }: {
     item: WorklistItem;
@@ -37,6 +38,7 @@ export function WorklistRow({
     onVerb: (item: WorklistItem, verb: ModVerb) => void;
     onHideIdentity: (item: WorklistItem) => void;
     onInspect: (item: WorklistItem) => void;
+    onRequestVideo?: (item: WorklistItem) => void;
 }) {
     const [showChecks, setShowChecks] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
@@ -140,6 +142,20 @@ export function WorklistRow({
                     </button>
                     {menuOpen && (
                         <div className={styles.menu} role="menu">
+                            {!item.vodUrl &&
+                                item.userId !== null &&
+                                onRequestVideo && (
+                                    <button
+                                        type="button"
+                                        role="menuitem"
+                                        onClick={() => {
+                                            setMenuOpen(false);
+                                            onRequestVideo(item);
+                                        }}
+                                    >
+                                        Ask for a video
+                                    </button>
+                                )}
                             <button
                                 type="button"
                                 role="menuitem"

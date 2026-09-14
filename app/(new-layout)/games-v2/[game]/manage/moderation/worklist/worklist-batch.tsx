@@ -19,6 +19,7 @@ export function WorklistBatchCard({
     onVerb,
     onHideIdentity,
     onInspect,
+    onRequestVideo,
     variables,
 }: {
     batch: WorklistBatch;
@@ -30,6 +31,7 @@ export function WorklistBatchCard({
     onVerb: (item: WorklistItem, verb: ModVerb) => void;
     onHideIdentity: (item: WorklistItem) => void;
     onInspect: (item: WorklistItem) => void;
+    onRequestVideo?: (item: WorklistItem) => void;
 }) {
     const [open, setOpen] = useState(false);
     return (
@@ -65,6 +67,7 @@ export function WorklistBatchCard({
                             onVerb={onVerb}
                             onHideIdentity={onHideIdentity}
                             onInspect={onInspect}
+                            onRequestVideo={onRequestVideo}
                         />
                     ))}
                 </ul>

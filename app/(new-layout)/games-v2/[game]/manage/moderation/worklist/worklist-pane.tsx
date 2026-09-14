@@ -26,9 +26,11 @@ import {
     grantTrustAction,
     loadTrustStateAction,
     loadWorklistAction,
+    requestVideoAction,
 } from './actions/worklist.action';
 import { SelfClaimRow } from './self-claim-row';
 import { type TrustCandidate, TrustPrompt } from './trust-prompt';
+import { WaitingOnRunnersSection } from './waiting-on-runners';
 import { WorklistBatchCard } from './worklist-batch';
 import {
     boardLabel,
@@ -209,6 +211,20 @@ export function WorklistPane({
         );
         load();
         void maybeOfferTrust(item);
+    };
+
+    const requestVideo = async (item: WorklistItem) => {
+        setBusyRunId(item.runId);
+        const res = await requestVideoAction(gameSlug, [item.runId]);
+        setBusyRunId(null);
+        if ('error' in res) {
+            setError(res.error);
+            return;
+        }
+        toast.success(
+            `Asked ${item.runnerName} for a video. The run is off the board until they add one.`,
+        );
+        load();
     };
 
     // A batch approves in one click, chunked so no single call exceeds the
@@ -438,6 +454,7 @@ export function WorklistPane({
                                 setDialog({ kind: 'hide', item: it })
                             }
                             onInspect={openInspector}
+                            onRequestVideo={requestVideo}
                         />
                     ))}
                 </section>
@@ -476,6 +493,7 @@ export function WorklistPane({
                                         setDialog({ kind: 'hide', item: it })
                                     }
                                     onInspect={openInspector}
+                                    onRequestVideo={requestVideo}
                                 />
                             ))}
                             {claims.map((claim) => (
@@ -492,6 +510,15 @@ export function WorklistPane({
                     </section>
                 );
             })}
+
+            {data && page === 1 && (
+                <WaitingOnRunnersSection
+                    gameSlug={gameSlug}
+                    waiting={data.waitingOnRunners}
+                    variables={variables}
+                    onChanged={load}
+                />
+            )}
 
             {data && totalPages > 1 && (
                 <nav className={styles.pager} aria-label="Worklist pages">
