@@ -1,7 +1,7 @@
 import React, { memo, useMemo } from 'react';
 import { Col, Row, Table } from 'react-bootstrap';
-import { groupCategoryStatsByGame } from '~app/(new-layout)/[username]/races/group-category-stats-by-game';
-import { UserRaceStatsByGameWithoutUrls } from '~app/(new-layout)/[username]/races/user-race-stats-by-game';
+import { groupCategoryStatsByGame } from '~app/(new-layout)/[username]/(sections)/races/group-category-stats-by-game';
+import { UserRaceStatsByGameWithoutUrls } from '~app/(new-layout)/[username]/(sections)/races/user-race-stats-by-game';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { WrappedCounter } from '../wrapped-counter';
 import { WrappedWithData } from '../wrapped-types';

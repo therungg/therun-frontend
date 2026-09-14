@@ -1,0 +1,152 @@
+@use '../../styles/design-tokens' as dt;
+@use '../../styles/board' as board;
+
+.sectionPage {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: dt.$spacing-xl;
+    padding-block: dt.$spacing-2xl dt.$spacing-3xl;
+    min-width: 0;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-lg;
+    min-width: 0;
+}
+
+.avatar {
+    display: inline-flex;
+
+    > img,
+    > span {
+        width: 56px !important;
+        height: 56px !important;
+        font-size: 22px !important;
+    }
+}
+
+.identity {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.name {
+    margin: 0;
+    font-size: dt.$font-size-2xl;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+
+    a {
+        color: var(--bs-emphasis-color);
+        text-decoration: none;
+    }
+}
+
+.meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-md;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.nav {
+    display: flex;
+    gap: dt.$spacing-xl;
+    overflow-x: auto;
+    border-bottom: 1px solid
+        var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
+    scrollbar-width: none;
+}
+
+.navLink {
+    position: relative;
+    padding-block: dt.$spacing-sm;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+    white-space: nowrap;
+    text-decoration: none;
+
+    &:hover {
+        color: var(--bs-emphasis-color);
+    }
+}
+
+.navLinkActive {
+    color: var(--bs-emphasis-color);
+    font-weight: 500;
+
+    &::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -1px;
+        height: 2px;
+        border-radius: 2px;
+        background: var(--bs-primary);
+    }
+}
+
+.panel {
+    @include board.board-surface(dt.$spacing-xl);
+    display: grid;
+    gap: dt.$spacing-md;
+    min-width: 0;
+}
+
+.panelTitle {
+    margin: 0;
+    font-size: dt.$font-size-md;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: dt.$spacing-lg;
+}
+
+.fact {
+    display: grid;
+    gap: 2px;
+
+    b {
+        font-family: dt.$font-mono;
+        font-variant-numeric: tabular-nums;
+        font-size: dt.$font-size-xl;
+        font-weight: 600;
+        color: var(--bs-emphasis-color);
+    }
+
+    span {
+        color: var(--bs-secondary-color);
+        font-size: dt.$font-size-sm;
+    }
+}
+
+.tableScroll {
+    overflow-x: auto;
+    min-width: 0;
+}
+
+.empty {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+// The leaderboards ledger's rows lay out by the width they get
+// (container queries named profile-main in the ledger stylesheet).
+.ledger {
+    container: profile-main / inline-size;
+    display: grid;
+    gap: dt.$spacing-lg;
+    min-width: 0;
+}

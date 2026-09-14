@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { Col, Row } from 'react-bootstrap';
 import { RaceParticipantTimer } from '~app/(new-layout)/races/[race]/race-timer';
 import { RacePlacings } from '~app/(new-layout)/races/components/race-placings';
 import {
@@ -76,71 +75,59 @@ export const ViewUserRaces = ({
     username: string;
 }) => {
     return (
-        <Row>
+        <div className={styles.grid}>
             {races.map((race) => {
                 const userParticipation = race.participants?.find(
                     (participant) => participant.user === username,
                 ) as RaceParticipantWithLiveData;
 
                 return (
-                    <Col
-                        xxl={6}
-                        xl={12}
-                        lg={6}
-                        md={12}
+                    <a
                         key={race.raceId}
-                        className="mb-3"
+                        href={`/races/${race.raceId}`}
+                        className="card-link-wrapper"
                     >
-                        <a
-                            href={`/races/${race.raceId}`}
-                            className="card-link-wrapper"
-                        >
-                            <div className={styles.raceCard}>
-                                <Row className="h-100 g-0">
-                                    <Col xs={3} sm={3}>
-                                        <img
-                                            className={styles.raceCardImage}
-                                            src={
-                                                race.gameImage &&
-                                                race.gameImage !== 'noimage'
-                                                    ? race.gameImage
-                                                    : `/logo_dark_theme_no_text_transparent.png`
-                                            }
-                                            alt={race.displayGame}
-                                        />
-                                    </Col>
-                                    <Col
-                                        xs={9}
-                                        sm={9}
-                                        className={styles.raceCardBody}
-                                    >
-                                        <div className="justify-content-between d-flex">
-                                            <span
-                                                className={`text-truncate ${styles.raceGameTitle}`}
-                                            >
-                                                {race.displayGame}
-                                            </span>
-                                            <span
-                                                className={`text-truncate ${styles.raceCategoryTitle}`}
-                                            >
-                                                {race.displayCategory}
-                                            </span>
-                                        </div>
-                                        <hr
-                                            className={styles.gameStatsDivider}
-                                        />
-                                        <ViewUserRace
-                                            race={race}
-                                            participation={userParticipation}
-                                        />
-                                    </Col>
-                                </Row>
+                        <div className={styles.raceCard}>
+                            <div className={styles.raceCardRow}>
+                                <div className={styles.raceCardImageCol}>
+                                    <img
+                                        className={styles.raceCardImage}
+                                        src={
+                                            race.gameImage &&
+                                            race.gameImage !== 'noimage'
+                                                ? race.gameImage
+                                                : `/logo_dark_theme_no_text_transparent.png`
+                                        }
+                                        alt={race.displayGame}
+                                    />
+                                </div>
+                                <div
+                                    className={`${styles.raceCardBodyCol} ${styles.raceCardBody}`}
+                                >
+                                    <div className="justify-content-between d-flex">
+                                        <span
+                                            className={`text-truncate ${styles.raceGameTitle}`}
+                                        >
+                                            {race.displayGame}
+                                        </span>
+                                        <span
+                                            className={`text-truncate ${styles.raceCategoryTitle}`}
+                                        >
+                                            {race.displayCategory}
+                                        </span>
+                                    </div>
+                                    <hr className={styles.gameStatsDivider} />
+                                    <ViewUserRace
+                                        race={race}
+                                        participation={userParticipation}
+                                    />
+                                </div>
                             </div>
-                        </a>
-                    </Col>
+                        </div>
+                    </a>
                 );
             })}
-        </Row>
+        </div>
     );
 };
 export const ViewUserRace = ({
