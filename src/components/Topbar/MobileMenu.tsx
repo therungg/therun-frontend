@@ -185,6 +185,13 @@ export function MobileMenu({ username, featuredPatrons }: MobileMenuProps) {
                     Duplicate runs
                 </Link>
                 <Link
+                    href="/admin/src-identity"
+                    className={styles.link}
+                    onClick={close}
+                >
+                    SRC Identity
+                </Link>
+                <Link
                     href="/admin/role-assignments"
                     className={styles.link}
                     onClick={close}
