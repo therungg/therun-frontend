@@ -153,6 +153,21 @@ export const inputFrom = (
     return input;
 };
 
+/** Every setting as the form holds it, for saving the defaults as they stand. */
+export const fullInputFrom = (
+    f: SettingsForm,
+    categoryId: number | null,
+): SaveSettingsInput => ({
+    categoryId,
+    intake: intakeOf(f),
+    videoRule: videoOf(f),
+    autoTrust: {
+        afterVerifiedRuns: f.autoTrustOn ? int(f.autoTrustAfter)! : null,
+    },
+    autoVerify: autoVerifyOf(f),
+    verifyWindow: windowOf(f),
+});
+
 export const isDirty = (f: SettingsForm, original: SettingsForm) =>
     !same(f, original);
 
@@ -161,6 +176,12 @@ export const needsPreview = (input: SaveSettingsInput) =>
     input.videoRule !== undefined ||
     input.autoVerify !== undefined ||
     input.intake !== undefined;
+
+/** Preview is offered (not required) when only automatic trust changed. */
+export const canPreview = (input: SaveSettingsInput) =>
+    needsPreview(input) ||
+    (input.autoTrust !== undefined &&
+        input.autoTrust?.afterVerifiedRuns != null);
 
 export const sourceLabel = (s: SettingSource): string =>
     ({
@@ -197,7 +218,10 @@ export const summarize = (e: EffectiveSettings): string => {
 };
 
 /** What a preview means, as sentences, most consequential first. */
-export const previewSentences = (p: SettingsPreview): string[] => {
+export const previewSentences = (
+    p: SettingsPreview,
+    enforced: boolean,
+): string[] => {
     const out: string[] = [];
     if (p.videoRule) {
         const v = p.videoRule;
@@ -207,14 +231,20 @@ export const previewSentences = (p: SettingsPreview): string[] => {
             out.push(
                 `${v.existingWithoutVideo} pending ${v.existingWithoutVideo === 1 ? 'run' : 'runs'} on the board would need a video under this rule.`,
             );
-            if (v.wouldHide > 0)
+            if (!enforced) {
                 out.push(
-                    `${v.wouldHide} would come off the board until the runner adds one, if you apply this to runs already there.`,
+                    'Runs already on the board stay as they are while these settings are not active yet.',
                 );
-            if (v.wouldFlag > 0)
-                out.push(
-                    `${v.wouldFlag} would stay on the board and show in the mod queue instead.`,
-                );
+            } else {
+                if (v.wouldHide > 0)
+                    out.push(
+                        `${v.wouldHide} would come off the board until the runner adds one, if you also apply the rule to runs already there.`,
+                    );
+                if (v.wouldFlag > 0)
+                    out.push(
+                        `${v.wouldFlag} would stay on the board and show in the mod queue, if you also apply the rule to runs already there.`,
+                    );
+            }
         }
         if (v.newRunsLastWeek > 0)
             out.push(
@@ -247,5 +277,6 @@ export const previewSentences = (p: SettingsPreview): string[] => {
         out.push(
             `${p.autoTrust.runnersWhoQualifyNow} ${p.autoTrust.runnersWhoQualifyNow === 1 ? 'runner' : 'runners'} would be trusted on their next verified run.`,
         );
+    if (out.length === 0) out.push('Nothing on the board changes.');
     return out;
 };

@@ -20,7 +20,9 @@ import {
 } from './actions/verification-settings.action';
 import styles from './settings-editor.module.scss';
 import {
+    canPreview,
     formFrom,
+    fullInputFrom,
     inputFrom,
     isDirty,
     needsPreview,
@@ -38,9 +40,12 @@ interface Props {
     categoryId: number | null;
     effective: EffectiveSettings;
     enforced: boolean;
+    /** Game editor only: whether any setting has been saved for this game.
+     *  When false, the defaults can be saved as they stand. */
+    configured?: boolean;
     onSaved: (view: VerificationSettingsView) => void;
     /** Category editors only: drop every override and inherit the game again. */
-    onRemoveOverride?: () => void;
+    onRemoveOverride?: () => Promise<void>;
 }
 
 export function SettingsEditor({
@@ -48,6 +53,7 @@ export function SettingsEditor({
     categoryId,
     effective,
     enforced,
+    configured,
     onSaved,
     onRemoveOverride,
 }: Props) {
@@ -58,6 +64,8 @@ export function SettingsEditor({
     const [error, setError] = useState<string | null>(null);
     const [isPreviewing, startPreview] = useTransition();
     const [isSaving, startSave] = useTransition();
+    const [confirmRemove, setConfirmRemove] = useState(false);
+    const [isRemoving, startRemove] = useTransition();
 
     // A slow preview response for a form the moderator has since changed
     // again must not land on top of the newer form. Each preview call takes
@@ -80,10 +88,25 @@ export function SettingsEditor({
 
     const invalid = validateForm(form);
     const dirty = isDirty(form, original);
-    const input = invalid ? null : inputFrom(form, original, categoryId);
-    const mustPreview = input !== null && needsPreview(input);
+    // Nothing saved for the game yet and the form untouched: saving writes
+    // the defaults as they stand, so a moderator who agrees with them isn't
+    // stuck. Unchanged values act on nothing, so no preview is needed.
+    const acceptDefaults =
+        categoryId === null && configured === false && !dirty && !invalid;
+    const input = invalid
+        ? null
+        : acceptDefaults
+          ? fullInputFrom(form, categoryId)
+          : inputFrom(form, original, categoryId);
+    const mustPreview =
+        input !== null && !acceptDefaults && needsPreview(input);
+    const offerPreview = input !== null && !acceptDefaults && canPreview(input);
     const canSave =
-        dirty && !invalid && (!mustPreview || preview !== null) && !isSaving;
+        (dirty || acceptDefaults) &&
+        !invalid &&
+        (!mustPreview || preview !== null) &&
+        !isSaving &&
+        !isRemoving;
 
     const runPreview = () => {
         if (!input) return;
@@ -126,7 +149,7 @@ export function SettingsEditor({
         });
     };
 
-    const sentences = preview ? previewSentences(preview) : [];
+    const sentences = preview ? previewSentences(preview, enforced) : [];
     const offerApply =
         !!preview?.videoRule &&
         preview.videoRule.wouldHide + preview.videoRule.wouldFlag > 0 &&
@@ -367,17 +390,54 @@ export function SettingsEditor({
 
             <InlineError>{error ?? (dirty ? invalid : null)}</InlineError>
 
+            {!enforced && (
+                <p className={styles.notice} role="status">
+                    Saved settings are not active yet: video rules, closing
+                    timer runs, limits on submitted times and automatic trust
+                    are not enforced. Auto-verify, the review window and
+                    reopening timer runs apply as soon as you save.
+                </p>
+            )}
+
             <SectionFooter>
-                {onRemoveOverride && (
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-link"
-                        onClick={onRemoveOverride}
-                        disabled={isSaving}
-                    >
-                        Use the game default
-                    </button>
-                )}
+                {onRemoveOverride &&
+                    (confirmRemove ? (
+                        <>
+                            <span className={styles.hint}>
+                                Remove this board's overrides?
+                            </span>
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-outline-danger"
+                                onClick={() =>
+                                    startRemove(async () => {
+                                        await onRemoveOverride();
+                                        setConfirmRemove(false);
+                                    })
+                                }
+                                disabled={isRemoving || isSaving}
+                            >
+                                {isRemoving ? 'Removing…' : 'Remove'}
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-link"
+                                onClick={() => setConfirmRemove(false)}
+                                disabled={isRemoving}
+                            >
+                                Cancel
+                            </button>
+                        </>
+                    ) : (
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-link"
+                            onClick={() => setConfirmRemove(true)}
+                            disabled={isSaving}
+                        >
+                            Use the game default
+                        </button>
+                    ))}
                 <button
                     type="button"
                     className="btn btn-sm btn-outline-secondary"
@@ -392,7 +452,7 @@ export function SettingsEditor({
                 >
                     Reset
                 </button>
-                {mustPreview && (
+                {offerPreview && (
                     <button
                         type="button"
                         className="btn btn-sm btn-outline-primary"
@@ -408,7 +468,11 @@ export function SettingsEditor({
                     onClick={save}
                     disabled={!canSave}
                 >
-                    {isSaving ? 'Saving…' : 'Save'}
+                    {isSaving
+                        ? 'Saving…'
+                        : acceptDefaults
+                          ? 'Use these settings'
+                          : 'Save'}
                 </button>
             </SectionFooter>
             {mustPreview && !preview && dirty && !invalid && (

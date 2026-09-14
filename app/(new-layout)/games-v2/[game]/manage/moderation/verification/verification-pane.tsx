@@ -50,23 +50,22 @@ export function VerificationPane({ gameSlug, gameDisplay, categories }: Props) {
         setVersion((v) => v + 1);
     };
 
-    const removeOverride = (categoryId: number) => {
-        startLoad(async () => {
-            const res = await saveVerificationSettingsAction(gameSlug, {
-                categoryId,
-                intake: null,
-                videoRule: null,
-                autoTrust: null,
-                autoVerify: null,
-                verifyWindow: null,
-            });
-            if ('error' in res) {
-                setError(res.error);
-                return;
-            }
-            saved(res.view);
-            setOpen(null);
+    const removeOverride = async (categoryId: number) => {
+        const res = await saveVerificationSettingsAction(gameSlug, {
+            categoryId,
+            intake: null,
+            videoRule: null,
+            autoTrust: null,
+            autoVerify: null,
+            verifyWindow: null,
         });
+        if ('error' in res) {
+            setError(res.error);
+            return;
+        }
+        setError(null);
+        saved(res.view);
+        setOpen(null);
     };
 
     const boardHref = `/games-v2/${encodeURIComponent(gameSlug)}`;
@@ -90,14 +89,6 @@ export function VerificationPane({ gameSlug, gameDisplay, categories }: Props) {
                 category where that category is different.
             </p>
 
-            {view && !view.enforced && (
-                <p className={styles.notice} role="status">
-                    These settings are saved and previewed now. They start
-                    acting on runs when verification settings are turned on for
-                    the site.
-                </p>
-            )}
-
             <InlineError>{error}</InlineError>
 
             {view && (
@@ -110,6 +101,7 @@ export function VerificationPane({ gameSlug, gameDisplay, categories }: Props) {
                             categoryId={null}
                             effective={view.game}
                             enforced={view.enforced}
+                            configured={view.configured}
                             onSaved={saved}
                         />
                     </section>
