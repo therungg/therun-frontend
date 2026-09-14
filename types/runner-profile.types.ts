@@ -108,6 +108,8 @@ export interface RunnerProfileHead {
     runner: LeaderboardsProfile['runner'] & {
         guest: boolean;
         timezone: string | null;
+        /** Another name the runner goes by; absent on older payloads. */
+        aka?: string | null;
         runningSince: string | null;
     };
     headline: Record<HeadlineId, HeadlineValue | null>;

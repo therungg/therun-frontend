@@ -10,34 +10,64 @@
 }
 
 .header {
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-lg;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    column-gap: dt.$spacing-xl;
+    row-gap: dt.$spacing-sm;
     min-width: 0;
+
+    @media (max-width: 575.98px) {
+        grid-template-columns: auto minmax(0, 1fr);
+        column-gap: dt.$spacing-lg;
+    }
 }
 
 .avatar {
+    grid-row: span 2;
     display: inline-flex;
 
     > img,
     > span {
-        width: 56px !important;
-        height: 56px !important;
-        font-size: 22px !important;
+        width: 72px !important;
+        height: 72px !important;
+        font-size: 28px !important;
+    }
+
+    @media (max-width: 575.98px) {
+        grid-row: auto;
+
+        > img,
+        > span {
+            width: 56px !important;
+            height: 56px !important;
+            font-size: 22px !important;
+        }
     }
 }
 
 .identity {
     display: grid;
-    gap: 2px;
+    gap: dt.$spacing-xs;
+    min-width: 0;
+    padding-top: 2px;
+}
+
+.nameRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: dt.$spacing-md;
+    row-gap: 2px;
     min-width: 0;
 }
 
 .name {
     margin: 0;
-    font-size: dt.$font-size-2xl;
-    font-weight: 600;
-    letter-spacing: -0.02em;
+    color: var(--bs-emphasis-color);
+    font-size: dt.$font-size-3xl;
+    font-weight: 700;
+    letter-spacing: -0.025em;
     line-height: 1.1;
     overflow-wrap: anywhere;
 
@@ -45,15 +75,133 @@
         color: var(--bs-emphasis-color);
         text-decoration: none;
     }
+
+    @media (max-width: 575.98px) {
+        font-size: dt.$font-size-2xl;
+    }
+}
+
+.aka {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-base;
+    overflow-wrap: anywhere;
 }
 
 .meta {
+    // Each fact carries its dot in the gap before it. The list starts one gap
+    // to the left and clips that strip, so a wrapped line never opens on a dot.
+    --meta-gap: #{dt.$spacing-lg};
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: dt.$spacing-md;
+    column-gap: var(--meta-gap);
+    row-gap: 2px;
+    margin: 0 0 0 calc(-1 * var(--meta-gap));
+    padding: 0 0 0 var(--meta-gap);
+    list-style: none;
+    clip-path: inset(0 0 0 var(--meta-gap));
     color: var(--bs-secondary-color);
     font-size: dt.$font-size-sm;
+
+    li {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        white-space: nowrap;
+
+        &::before {
+            content: '';
+            position: absolute;
+            top: calc(50% - 1.5px);
+            left: calc(-0.5 * var(--meta-gap) - 1.5px);
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            background: currentColor;
+            opacity: 0.6;
+        }
+    }
+}
+
+.country {
+    gap: 6px;
+
+    img {
+        width: 18px;
+        height: 12px;
+        border-radius: 2px;
+        object-fit: cover;
+    }
+}
+
+.bio {
+    grid-column: 2 / -1;
+    max-width: 65ch;
+    margin: 0;
+    color: var(--bs-body-color);
+    font-size: dt.$font-size-sm;
+    line-height: 1.5;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+
+    @media (max-width: 575.98px) {
+        grid-column: 1 / -1;
+    }
+}
+
+.headerSide {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    padding-top: 6px;
+
+    @media (max-width: 575.98px) {
+        grid-column: 1 / -1;
+        order: 1;
+        padding-top: 0;
+    }
+}
+
+.socials {
+    display: flex;
+    gap: dt.$spacing-xs;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        color: var(--bs-secondary-color);
+        background: rgba(var(--bs-emphasis-color-rgb), 0.05);
+        transition: background-color dt.$transition-fast,
+            color dt.$transition-fast;
+
+        &:hover {
+            color: var(--bs-emphasis-color);
+            background: rgba(var(--bs-primary-rgb), 0.14);
+        }
+
+        &:focus-visible {
+            outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+            outline-offset: 1px;
+        }
+
+        @media (pointer: coarse) {
+            width: 44px;
+            height: 44px;
+        }
+    }
+}
+
+.editProfile {
+    @include board.control-pill;
+    text-decoration: none;
+    white-space: nowrap;
 }
 
 .nav {
