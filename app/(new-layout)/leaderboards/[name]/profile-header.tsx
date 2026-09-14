@@ -58,10 +58,12 @@ export function ProfileHeader({
     runner,
     standing,
     games,
+    canCustomize,
 }: {
     runner: LeaderboardsProfileRunner;
     standing: LeaderboardsProfileStanding;
     games: number;
+    canCustomize: boolean;
 }) {
     const guest = runner.userId === null;
     const country = countryName(runner.country);
@@ -131,9 +133,11 @@ export function ProfileHeader({
                     >
                         Stats profile
                     </Link>
-                    <Suspense fallback={null}>
-                        <OwnerControls name={runner.name} />
-                    </Suspense>
+                    {canCustomize ? (
+                        <Suspense fallback={null}>
+                            <OwnerControls name={runner.name} />
+                        </Suspense>
+                    ) : null}
                 </div>
             ) : null}
             <HeroStats standing={standing} games={games} />

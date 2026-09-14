@@ -43,6 +43,7 @@ export default async function LeaderboardsProfilePage({ params }: PageProps) {
     const layout = profile.layout ?? DEFAULT_LAYOUT;
     const theme = mainGameOf(profile.games, layout.mainGameId)?.theme ?? null;
     const games = profile.games.map((g) => ({ ...g, theme: null }));
+    const canCustomize = profile.layout !== undefined;
 
     return (
         <ShowcaseProvider games={games} layout={layout}>
@@ -52,6 +53,7 @@ export default async function LeaderboardsProfilePage({ params }: PageProps) {
                     runner={profile.runner}
                     standing={profile.standing}
                     games={profile.games.length}
+                    canCustomize={canCustomize}
                 />
                 <div className={styles.columns}>
                     <div className={styles.main}>

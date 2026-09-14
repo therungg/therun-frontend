@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowDown, ArrowUp, PlayFill } from 'react-bootstrap-icons';
+import { ArrowDown, ArrowUp, Pin, PlayFill } from 'react-bootstrap-icons';
 import { VerificationBadge } from '~app/(new-layout)/games-v2/[game]/run-view/run-badges';
 import { GameImage } from '~src/components/image/gameimage';
 import { Vod, youtubeParser } from '~src/components/run/dashboard/vod';
@@ -12,6 +12,7 @@ import styles from './leaderboards-profile.module.scss';
 import { move, readDragIndex, writeDragIndex } from './reorder';
 import { useShowcase } from './showcase-provider';
 import {
+    autoPins,
     entryRef,
     findEntry,
     PIN_LIMIT,
@@ -118,13 +119,16 @@ export function PinCard({
 /** The showcase: the runner's pins, or the best run per game when none. */
 export function PinnedRuns() {
     const { games, draft, editing, setDraft } = useShowcase();
+    const showAuto = editing && draft.pins.length === 0;
     const pins = editing
-        ? draft.pins
-              .map((p) => findEntry(games, p))
-              .filter((p): p is Pinned => p !== null)
+        ? showAuto
+            ? autoPins(games)
+            : draft.pins
+                  .map((p) => findEntry(games, p))
+                  .filter((p): p is Pinned => p !== null)
         : resolvePins(games, draft.pins);
     if (!editing && pins.length === 0) return null;
-    const video = pickVideoPin(pins, draft.videoPin);
+    const video = showAuto ? null : pickVideoPin(pins, draft.videoPin);
     const isVideo = (p: Pinned) =>
         video !== null && samePin(entryRef(p.entry), entryRef(video.entry));
 
@@ -138,6 +142,8 @@ export function PinnedRuns() {
         }));
     const setVideo = (ref: PinRef) =>
         setDraft((d) => ({ ...d, videoPin: ref }));
+    const addPin = (ref: PinRef) =>
+        setDraft((d) => ({ ...d, pins: [...d.pins, ref] }));
 
     return (
         <>
@@ -150,7 +156,7 @@ export function PinnedRuns() {
                             pin={pin}
                             video={isVideo(pin)}
                             dragProps={
-                                editing
+                                editing && !showAuto
                                     ? {
                                           draggable: true,
                                           onDragStart: (e) =>
@@ -169,53 +175,71 @@ export function PinnedRuns() {
                             }
                         >
                             {editing ? (
-                                <div className={styles.pinTools}>
-                                    <button
-                                        type="button"
-                                        className={styles.tab}
-                                        aria-label="Move up"
-                                        disabled={i === 0}
-                                        onClick={() => movePin(i, i - 1)}
-                                    >
-                                        <ArrowUp size={14} aria-hidden />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className={styles.tab}
-                                        aria-label="Move down"
-                                        disabled={i === pins.length - 1}
-                                        onClick={() => movePin(i, i + 1)}
-                                    >
-                                        <ArrowDown size={14} aria-hidden />
-                                    </button>
-                                    {pin.entry.vodUrl &&
-                                    isEmbeddableVod(pin.entry.vodUrl) ? (
-                                        <label className={styles.ledgerSort}>
-                                            <input
-                                                type="radio"
-                                                name="video-pin"
-                                                checked={samePin(
-                                                    draft.videoPin,
-                                                    ref,
-                                                )}
-                                                onChange={() => setVideo(ref)}
-                                            />
-                                            <span>Plays video</span>
-                                        </label>
-                                    ) : null}
-                                    <button
-                                        type="button"
-                                        className={styles.tab}
-                                        onClick={() => removePin(ref)}
-                                    >
-                                        Remove
-                                    </button>
-                                </div>
+                                showAuto ? (
+                                    <div className={styles.pinTools}>
+                                        <button
+                                            type="button"
+                                            className={styles.pinToggle}
+                                            aria-label="Pin"
+                                            title="Pin"
+                                            onClick={() => addPin(ref)}
+                                        >
+                                            <Pin size={14} aria-hidden />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className={styles.pinTools}>
+                                        <button
+                                            type="button"
+                                            className={styles.tab}
+                                            aria-label="Move up"
+                                            disabled={i === 0}
+                                            onClick={() => movePin(i, i - 1)}
+                                        >
+                                            <ArrowUp size={14} aria-hidden />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={styles.tab}
+                                            aria-label="Move down"
+                                            disabled={i === pins.length - 1}
+                                            onClick={() => movePin(i, i + 1)}
+                                        >
+                                            <ArrowDown size={14} aria-hidden />
+                                        </button>
+                                        {pin.entry.vodUrl &&
+                                        isEmbeddableVod(pin.entry.vodUrl) ? (
+                                            <label
+                                                className={styles.ledgerSort}
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="video-pin"
+                                                    checked={samePin(
+                                                        draft.videoPin,
+                                                        ref,
+                                                    )}
+                                                    onChange={() =>
+                                                        setVideo(ref)
+                                                    }
+                                                />
+                                                <span>Plays video</span>
+                                            </label>
+                                        ) : null}
+                                        <button
+                                            type="button"
+                                            className={styles.tab}
+                                            onClick={() => removePin(ref)}
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                )
                             ) : null}
                         </PinCard>
                     );
                 })}
-                {editing
+                {editing && !showAuto
                     ? Array.from(
                           { length: PIN_LIMIT - pins.length },
                           (_, i) => (
@@ -226,7 +250,13 @@ export function PinnedRuns() {
                       )
                     : null}
             </section>
-            {editing && pins.length >= PIN_LIMIT ? (
+            {showAuto ? (
+                <p className={styles.cardNote}>
+                    Showing the automatic picks. Pin runs from the list below to
+                    choose your own.
+                </p>
+            ) : null}
+            {editing && !showAuto && pins.length >= PIN_LIMIT ? (
                 <p className={styles.cardNote}>
                     {PIN_LIMIT} pins max, remove one first
                 </p>

@@ -610,6 +610,7 @@
 .pins {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-auto-flow: dense;
     gap: dt.$spacing-md;
     // Medal tones, shared with the ledger rows.
     --rank-gold: #d4a73a;
@@ -720,17 +721,24 @@
     display: inline-flex;
     align-items: center;
     gap: dt.$spacing-xs;
+    max-width: 100%;
+    min-width: 0;
     color: var(--bs-secondary-color);
     font-size: dt.$font-size-sm;
 
     select {
         @include board.control-pill;
+        max-width: 100%;
+        min-width: 0;
+        text-overflow: ellipsis;
     }
 }
 
 .ledgerFilter {
     @include board.control-pill;
     @include board.board-input-rules;
+    border: 1px solid
+        var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
     min-width: 12rem;
 }
 
@@ -824,6 +832,10 @@
     align-items: center;
     gap: dt.$spacing-sm;
     margin-left: auto;
+
+    @media (max-width: 640px) {
+        margin-left: 0;
+    }
 }
 
 // Custom game order: one column while active, so the tile's up/down
