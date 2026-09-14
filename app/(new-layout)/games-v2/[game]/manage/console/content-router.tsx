@@ -30,9 +30,9 @@ import { LevelsPane } from '../levels/levels-pane';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import { ModApplicationsCard } from '../moderation/attention/mod-applications-card';
 import { NeedsAttention } from '../moderation/attention/needs-attention';
-import { AutoVerifyPane } from '../moderation/auto-verify/auto-verify-pane';
 import { ActiveBans } from '../moderation/configure/active-bans';
 import { ModQueuePane } from '../moderation/queue/mod-queue-pane';
+import { VerificationPane } from '../moderation/verification/verification-pane';
 import { WorklistPane } from '../moderation/worklist/worklist-pane';
 import { BoardOverview } from '../overview/board-overview';
 import { ReassignPane } from '../reassignments/reassign-pane';
@@ -164,7 +164,7 @@ export function ContentRouter(props: ContentRouterProps) {
             );
         case 'auto-verify':
             return (
-                <AutoVerifyPane
+                <VerificationPane
                     gameSlug={game.name}
                     gameDisplay={game.display}
                     categories={categories}

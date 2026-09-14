@@ -1,7 +1,7 @@
 @use '../../../../../styles/design-tokens' as dt;
 
 // Same row shape as the per-category overrides list in this pane
-// (auto-verify-pane.module.scss's .overrideRow) — one bordered row per grant.
+// (verification-pane.module.scss's .category) — one bordered row per grant.
 
 .list {
     display: flex;

@@ -54,6 +54,22 @@ export type WorklistItem = {
     trackRecord: WorklistTrackRecord | null; // null for guests
 };
 
+/** The worklist page's waitingOnRunners slot: runs held back for a missing video, owner only (guests are flagged, never hidden). */
+export type WaitingOnRunners = {
+    count: number;
+    items: {
+        runId: number;
+        runnerName: string;
+        userId: number;
+        categoryId: number;
+        categoryDisplay: string;
+        subcategoryKey: string;
+        timeMs: number;
+        askedAt: string | null; // when the video was first asked for; null if no ask was logged
+        lastNudgedAt: string | null;
+    }[]; // at most 50, oldest ask first; count is the full total
+};
+
 export type WorklistBatchKind = 'trusted_clean' | 'same_runner';
 
 export type WorklistBatch = {
@@ -98,7 +114,7 @@ export type WorklistPage = {
     };
     /** Tier 1: times runners typed in themselves, oldest first, not paged, at most 200. */
     selfClaims: WorklistSelfClaim[];
-    waitingOnRunners: null; // always null for now; see Not yet
+    waitingOnRunners: WaitingOnRunners;
     batches: WorklistBatch[]; // tier-3 groups; complete on every page
     items: WorklistItem[]; // tier 1, tier 2, then unbatched tier 3, paged
     totalItems: number; // length of the unbatched list

@@ -11,6 +11,7 @@ export type SetupStepId =
     | 'groups'
     | 'category-setup'
     | 'variables'
+    | 'verification'
     | 'boards';
 
 export type SetupStepStatus = 'done' | 'todo' | 'warning' | 'blocker';
@@ -40,6 +41,9 @@ export interface CompletenessInput {
     groupCount: number;
     /** Featured categories sitting outside every group. */
     ungroupedMainCount: number;
+    /** Whether the game has any saved verification settings row (game or
+     *  category), for the verification step. */
+    verificationConfigured: boolean;
     /**
      * Distinct subcategory / filter variable names on the board, for the
      * variables step's summary. Optional — an empty board has none, and the
@@ -79,6 +83,7 @@ export const SETUP_STEP_ORDER: SetupStepId[] = [
     'groups',
     'category-setup',
     'variables',
+    'verification',
     'boards',
 ];
 
@@ -289,6 +294,18 @@ export function computeCompleteness(
                     : `${subs} ${subs === 1 ? 'subcategory' : 'subcategories'} · ${filters} ${filters === 1 ? 'filter' : 'filters'}`,
         });
     }
+
+    // Whether a run needs a video before it counts, decided once here rather
+    // than left to whatever the built-in defaults happen to be.
+    steps.push(
+        input.verificationConfigured
+            ? {
+                  step: 'verification',
+                  status: 'done',
+                  summary: 'Settings saved',
+              }
+            : { step: 'verification', status: 'todo', summary: 'Not set yet' },
+    );
 
     steps.push(
         input.configured

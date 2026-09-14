@@ -94,3 +94,37 @@ export function revokeTrust(
         method: 'DELETE',
     });
 }
+
+const worklistPost = <T>(
+    sessionId: string,
+    gameId: number,
+    sub: string,
+    runIds: number[],
+): Promise<T> =>
+    meFetch(`${base(gameId)}/worklist/${sub}`, {
+        sessionId,
+        method: 'POST',
+        body: { runIds },
+    });
+
+export const requestVideo = (
+    sessionId: string,
+    gameId: number,
+    runIds: number[],
+) =>
+    worklistPost<{ requested: number }>(
+        sessionId,
+        gameId,
+        'request-video',
+        runIds,
+    );
+export const nudgeRuns = (
+    sessionId: string,
+    gameId: number,
+    runIds: number[],
+) => worklistPost<{ nudged: number }>(sessionId, gameId, 'nudge', runIds);
+export const waiveVideo = (
+    sessionId: string,
+    gameId: number,
+    runIds: number[],
+) => worklistPost<{ waived: number }>(sessionId, gameId, 'waive', runIds);

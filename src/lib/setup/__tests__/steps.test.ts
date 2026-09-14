@@ -27,6 +27,7 @@ describe('SETUP_STEPS', () => {
             'groups',
             'category-setup',
             'variables',
+            'verification',
             'boards',
         ]);
         expect(SETUP_STEPS.map((s) => s.label)).toEqual([
@@ -37,6 +38,7 @@ describe('SETUP_STEPS', () => {
             'Category groups',
             'Category settings',
             'Subcategories & filters',
+            'Verification',
             'Boards',
         ]);
     });
@@ -53,10 +55,10 @@ describe('SETUP_STEPS', () => {
         expect(new Set(labels).size).toBe(labels.length);
     });
 
-    it('makes only the final step non-skippable', () => {
+    it('makes verification and the final step non-skippable', () => {
         expect(
             SETUP_STEPS.filter((s) => !s.skippable).map((s) => s.id),
-        ).toEqual(['boards']);
+        ).toEqual(['verification', 'boards']);
     });
 
     it('derives labels and indexes from the same list', () => {

@@ -22,6 +22,7 @@ import { StepGroups } from './steps/step-groups';
 import { StepImport } from './steps/step-import';
 import { StepLevels } from './steps/step-levels';
 import { StepVariables } from './steps/step-variables';
+import { StepVerification } from './steps/step-verification';
 import type { WizardData } from './types';
 
 interface Props {
@@ -246,6 +247,14 @@ function CurrentStep({
         case 'variables':
             return (
                 <StepVariables
+                    data={data}
+                    onAdvance={onAdvance}
+                    onBack={onBack}
+                />
+            );
+        case 'verification':
+            return (
+                <StepVerification
                     data={data}
                     onAdvance={onAdvance}
                     onBack={onBack}

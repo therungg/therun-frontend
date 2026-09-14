@@ -267,6 +267,16 @@ export function QueueSummary({
                 </ol>
             )}
 
+            {worklist.waitingOnRunners.count > 0 && (
+                <p className={styles.history}>
+                    {worklist.waitingOnRunners.count}{' '}
+                    {worklist.waitingOnRunners.count === 1
+                        ? 'run is'
+                        : 'runs are'}{' '}
+                    off the board until the runner adds a video.
+                </p>
+            )}
+
             {(history || waiting === 0) && (
                 <p className={styles.history}>
                     {history ?? 'No runs were decided in the last 7 days.'}{' '}

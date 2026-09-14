@@ -23,6 +23,7 @@ import { listManualTimes } from '~src/lib/moderation/manual-times';
 import { listPolicies } from '~src/lib/moderation/policies';
 import { listGameReports } from '~src/lib/moderation/reports';
 import { listQueue } from '~src/lib/moderation/triage';
+import { getVerificationSettings } from '~src/lib/moderation/verification-settings';
 import { getWorklist, getWorklistDigest } from '~src/lib/moderation/worklist';
 import {
     type BoardCompleteness,
@@ -220,9 +221,17 @@ export default async function GameAdminConsolePage({ params }: Props) {
         variables: [],
     });
     if (canConfigure) {
-        const [gameMods, metadata] = await Promise.all([
+        const [gameMods, metadata, verificationConfigured] = await Promise.all([
             listGameModerators(game.id).catch(() => []),
             getGameMetadata(game.id).catch(() => null),
+            // Gated on canModerate, not canConfigure — the backend's
+            // verification-settings route checks verify-reject-run, the same
+            // permission canModerateGame mirrors.
+            canModerate
+                ? getVerificationSettings(sessionId, game.id)
+                      .then((v) => v.configured)
+                      .catch(() => false)
+                : Promise.resolve(false),
         ]);
         moderators = gameMods;
         categoryConfig = buildCategoryRows({ categories, policies, variables });
@@ -245,6 +254,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
                     (c) =>
                         !c.archived && (c.isMain ?? false) && c.groupId == null,
                 ).length,
+                verificationConfigured,
                 ...variableFactsFromRows(variables),
             });
             boardHealth = computeBoardHealth({

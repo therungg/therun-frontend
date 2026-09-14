@@ -53,6 +53,7 @@ export const REASON_LABEL: Record<string, string> = {
     'pb-jump': 'Big jump from their PB',
     'prior-runs': 'Few verified runs before this',
     'top-n': 'Would place near the top',
+    missing_video: 'No video, and the board needs one',
 };
 
 export const reasonLabel = (r: WorklistReason): string =>
@@ -92,6 +93,18 @@ export const waitingLabel = (iso: string, now: Date): string => {
     if (d <= 0) return 'today';
     if (d === 1) return '1 day';
     return `${d} days`;
+};
+
+/**
+ * "reminded today" / "reminded 1 day ago" / "reminded N days ago" — its own
+ * function rather than `reminded ${waitingLabel(...)} ago`, because
+ * `waitingLabel`'s "today" makes that read as "reminded today ago".
+ */
+export const remindedLabel = (iso: string, now: Date): string => {
+    const d = daysSince(iso, now);
+    if (d <= 0) return 'reminded today';
+    if (d === 1) return 'reminded 1 day ago';
+    return `reminded ${d} days ago`;
 };
 
 export const boardTimeMs = (item: WorklistItem): number =>
