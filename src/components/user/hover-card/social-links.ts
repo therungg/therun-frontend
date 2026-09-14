@@ -16,7 +16,7 @@ const PROFILE_URL: Record<SocialNetwork, (handle: string) => string> = {
 const LABEL: Record<SocialNetwork, string> = {
     twitch: 'Twitch',
     youtube: 'YouTube',
-    twitter: 'X',
+    twitter: 'Twitter',
     bluesky: 'Bluesky',
 };
 

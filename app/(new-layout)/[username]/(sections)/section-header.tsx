@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { Bluesky, Twitch, TwitterX, Youtube } from 'react-bootstrap-icons';
+import { Bluesky, Twitch, Twitter, Youtube } from 'react-bootstrap-icons';
 import { countries } from '~src/common/countries';
 import Link from '~src/components/link';
 import { CountryFlag } from '~src/components/user/hover-card/country-flag';
@@ -16,7 +16,7 @@ import styles from './sections.module.scss';
 const SOCIAL_ICON: Record<SocialNetwork, typeof Twitch> = {
     twitch: Twitch,
     youtube: Youtube,
-    twitter: TwitterX,
+    twitter: Twitter,
     bluesky: Bluesky,
 };
 

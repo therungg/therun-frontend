@@ -5,7 +5,7 @@ import {
     Bluesky,
     Trophy,
     Twitch,
-    TwitterX,
+    Twitter,
     Youtube,
 } from 'react-bootstrap-icons';
 import { nameHue } from '~app/(new-layout)/games-v2/[game]/leaderboard/avatar-hue';
@@ -32,7 +32,7 @@ interface Props {
 const SOCIAL_ICON: Record<SocialNetwork, typeof Twitch> = {
     twitch: Twitch,
     youtube: Youtube,
-    twitter: TwitterX,
+    twitter: Twitter,
     bluesky: Bluesky,
 };
 
