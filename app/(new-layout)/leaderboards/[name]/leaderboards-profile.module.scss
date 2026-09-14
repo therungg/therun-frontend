@@ -588,34 +588,6 @@
     background: var(--bs-danger);
 }
 
-// Games card: one row per game, each a jump to its block.
-.gameList {
-    display: grid;
-    gap: 2px;
-}
-
-.gameListRow {
-    display: grid;
-    grid-template-columns: 48px minmax(0, 1fr);
-    gap: dt.$spacing-md;
-    align-items: center;
-    padding: dt.$spacing-xs;
-    border-radius: dt.$radius-sm;
-    color: inherit;
-    text-decoration: none;
-
-    &:hover {
-        background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.04));
-    }
-
-    img {
-        width: 48px;
-        height: 64px;
-        object-fit: cover;
-        border-radius: dt.$radius-sm;
-    }
-}
-
 .gameListText {
     display: grid;
     gap: 2px;
@@ -734,4 +706,103 @@
     &:focus-visible {
         background: rgba(0, 0, 0, 0.85);
     }
+}
+
+// Ledger controls: sort, filter, expand all — one wrapping row over the tabs.
+.ledgerControls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
+}
+
+.ledgerSort {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+
+    select {
+        @include board.control-pill;
+    }
+}
+
+.ledgerFilter {
+    @include board.control-pill;
+    @include board.board-input-rules;
+    min-width: 12rem;
+}
+
+.gameHeadButton {
+    grid-template-columns: 36px 1fr auto;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    text-align: left;
+    color: inherit;
+    cursor: pointer;
+}
+
+// Shelf: art tiles with a medal badge, two across in the sidebar.
+.shelf {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: dt.$spacing-sm;
+    --rank-gold: #d4a73a;
+    --rank-silver: #a9b4c2;
+    --rank-bronze: #c07a45;
+}
+
+.shelfScroll {
+    max-height: 28rem;
+    overflow-y: auto;
+}
+
+.shelfTile {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: dt.$spacing-sm;
+    align-items: center;
+    padding: dt.$spacing-xs;
+    border: 0;
+    border-radius: dt.$radius-sm;
+    background: none;
+    text-align: left;
+    color: inherit;
+    cursor: pointer;
+
+    &:hover {
+        background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.04));
+    }
+}
+
+.shelfArt {
+    position: relative;
+    display: inline-flex;
+
+    img {
+        width: 48px;
+        height: 64px;
+        object-fit: cover;
+        border-radius: dt.$radius-sm;
+    }
+}
+
+.shelfBadge {
+    position: absolute;
+    right: -4px;
+    bottom: -4px;
+    padding: 0 dt.$spacing-xs;
+    border-radius: dt.$radius-sm;
+    background: var(--board-surface-bg, var(--bs-body-bg));
+    font-family: dt.$font-mono;
+    font-size: dt.$font-size-xs;
+    font-weight: 700;
+    color: var(--bs-emphasis-color);
+
+    &[data-medal='gold'] { color: color-mix(in srgb, var(--rank-gold) 65%, var(--bs-emphasis-color)); }
+    &[data-medal='silver'] { color: color-mix(in srgb, var(--rank-silver) 65%, var(--bs-emphasis-color)); }
+    &[data-medal='bronze'] { color: color-mix(in srgb, var(--rank-bronze) 65%, var(--bs-emphasis-color)); }
 }

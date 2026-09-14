@@ -1,9 +1,9 @@
-import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
 import { safeEncodeURI } from '~src/utils/uri';
 import type { LeaderboardsProfile } from '../../../../types/leaderboards-profile.types';
 import { ActivityHeatmap } from './activity-heatmap';
 import { formatProfileDate } from './format';
+import { GamesShelf } from './games-shelf';
 import { plural } from './hero-stats';
 import styles from './leaderboards-profile.module.scss';
 import { LiveStrip } from './live-strip';
@@ -99,69 +99,13 @@ function StandingCard({
     );
 }
 
-/** Every game, in the main column's order; a row jumps to that game's block. */
-function GamesCard({ games }: { games: LeaderboardsProfile['games'] }) {
-    return (
-        <section className={styles.card} aria-labelledby="profile-games">
-            <h2 id="profile-games" className={styles.cardTitle}>
-                Games
-            </h2>
-            <div className={styles.gameList}>
-                {games.map((game) => {
-                    const line = [
-                        game.bestRank !== null
-                            ? `best #${game.bestRank}`
-                            : null,
-                        game.attempts !== null
-                            ? `${n(game.attempts)} attempts`
-                            : null,
-                        game.playtimeMs !== null && game.playtimeMs > 0
-                            ? `${n(Math.round(game.playtimeMs / 3_600_000))} h`
-                            : null,
-                        game.lastRanAt
-                            ? `last ran ${formatProfileDate(game.lastRanAt)}`
-                            : null,
-                    ].filter(Boolean);
-                    return (
-                        <a
-                            key={game.gameId}
-                            href={`#game-${game.gameId}`}
-                            className={styles.gameListRow}
-                        >
-                            <GameImage
-                                src={game.imageUrl ?? ''}
-                                alt=""
-                                quality="small"
-                                width={48}
-                                height={64}
-                            />
-                            <span className={styles.gameListText}>
-                                <span className={styles.gameListName}>
-                                    {game.game}
-                                </span>
-                                {line.length > 0 ? (
-                                    <span className={styles.gameListLine}>
-                                        {line.join(' · ')}
-                                    </span>
-                                ) : null}
-                            </span>
-                        </a>
-                    );
-                })}
-            </div>
-        </section>
-    );
-}
-
 /** The right-hand column: About, Standing, Games, Activity and Recent PBs. */
 export function ProfileSidebar({ profile }: { profile: LeaderboardsProfile }) {
     return (
         <aside className={styles.sidebar} aria-label="Runner">
             <AboutCard runner={profile.runner} />
             <StandingCard standing={profile.standing} />
-            {profile.games.length > 0 ? (
-                <GamesCard games={profile.games} />
-            ) : null}
+            <GamesShelf />
             {profile.activity.length > 0 ? (
                 <ActivityHeatmap activity={profile.activity} />
             ) : null}

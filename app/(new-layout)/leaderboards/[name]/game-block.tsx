@@ -1,3 +1,4 @@
+import { ChevronDown } from 'react-bootstrap-icons';
 import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
 import { safeEncodeURI } from '~src/utils/uri';
@@ -30,10 +31,16 @@ export function GameBlock({
     game,
     entries,
     country,
+    collapsed = false,
+    onExpand,
+    single = false,
 }: {
     game: LeaderboardsProfileGame;
     entries: LeaderboardsProfileEntry[];
     country: string | null;
+    collapsed?: boolean;
+    onExpand?: () => void;
+    single?: boolean;
 }) {
     const { plain, levels } = groupByLevel(entries);
     const summary = [
@@ -47,28 +54,59 @@ export function GameBlock({
             ? hours(game.playtimeMs)
             : null,
     ].filter(Boolean);
+
+    if (collapsed) {
+        return (
+            <section id={`game-${game.gameId}`} className={styles.game}>
+                <button
+                    type="button"
+                    className={`${styles.gameHead} ${styles.gameHeadButton}`}
+                    onClick={onExpand}
+                    aria-expanded={false}
+                >
+                    <GameImage
+                        src={game.imageUrl ?? ''}
+                        alt={game.game}
+                        quality="small"
+                        width={36}
+                        height={48}
+                    />
+                    <div>
+                        <span className={styles.gameTitle}>{game.game}</span>
+                        <div className={styles.gameSummary}>
+                            {summary.join(' · ')}
+                        </div>
+                    </div>
+                    <ChevronDown size={16} aria-hidden />
+                </button>
+            </section>
+        );
+    }
+
     return (
         <section id={`game-${game.gameId}`} className={styles.game}>
-            <div className={styles.gameHead}>
-                <GameImage
-                    src={game.imageUrl ?? ''}
-                    alt={game.game}
-                    quality="small"
-                    width={36}
-                    height={48}
-                />
-                <div>
-                    <Link
-                        href={`/games/${safeEncodeURI(game.game)}`}
-                        className={styles.gameTitle}
-                    >
-                        {game.game}
-                    </Link>
-                    <div className={styles.gameSummary}>
-                        {summary.join(' · ')}
+            {single ? null : (
+                <div className={styles.gameHead}>
+                    <GameImage
+                        src={game.imageUrl ?? ''}
+                        alt={game.game}
+                        quality="small"
+                        width={36}
+                        height={48}
+                    />
+                    <div>
+                        <Link
+                            href={`/games/${safeEncodeURI(game.game)}`}
+                            className={styles.gameTitle}
+                        >
+                            {game.game}
+                        </Link>
+                        <div className={styles.gameSummary}>
+                            {summary.join(' · ')}
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
             <div className={styles.entries}>
                 {plain.map((e) => (
                     <EntryRow
