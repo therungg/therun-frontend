@@ -48,6 +48,8 @@
         color: var(--bs-secondary-color);
         font-size: dt.$font-size-sm;
         font-weight: 500;
+        text-transform: none;
+        letter-spacing: normal;
     }
 
     tbody td {
@@ -60,7 +62,7 @@
 
 .igt {
     display: block;
-    color: var(--bs-tertiary-color);
+    color: var(--bs-secondary-color);
     font-size: dt.$font-size-xs;
 }
 

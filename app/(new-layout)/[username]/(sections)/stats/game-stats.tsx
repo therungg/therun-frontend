@@ -34,7 +34,7 @@ export function GameStats({ game }: { game: RunnerStatsGame }) {
                         {formatCount(game.finishedAttempts)} finished
                     </span>
                 </div>
-                <Rank rank={game.bestRank} />
+                {game.bestRank !== null ? <Rank rank={game.bestRank} /> : null}
             </div>
             <div className={sectionStyles.tableScroll}>
                 <table className={styles.table}>
