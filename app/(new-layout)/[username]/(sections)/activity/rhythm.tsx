@@ -1,48 +1,5 @@
 import styles from './activity.module.scss';
 
-const pad = (n: number) => String(n % 24).padStart(2, '0');
-
-/** The 24 hours of a day, their usual window lit. */
-export function TimeOfDay({
-    usual,
-    place,
-}: {
-    usual: { startHour: number; endHour: number; share: number } | null;
-    place: string | null;
-}) {
-    const lit = (h: number) => {
-        if (!usual) return false;
-        const hh = h < usual.startHour ? h + 24 : h;
-        return hh >= usual.startHour && hh < usual.endHour;
-    };
-    return (
-        <div className={styles.rhythmCard}>
-            <div className={styles.hours}>
-                {Array.from({ length: 24 }, (_, h) => (
-                    <span
-                        key={h}
-                        className={styles.hour}
-                        data-lit={lit(h) || undefined}
-                        title={`${pad(h)}:00`}
-                    />
-                ))}
-            </div>
-            <div className={styles.hourScale} aria-hidden>
-                <span>00</span>
-                <span>06</span>
-                <span>12</span>
-                <span>18</span>
-                <span>24</span>
-            </div>
-            <p className={styles.rhythmNote}>
-                {usual
-                    ? `${Math.round(usual.share * 100)}% of their attempts start between ${pad(usual.startHour)}:00 and ${pad(usual.endHour)}:00${place ? `, ${place} time` : ' (UTC)'}.`
-                    : 'Not enough attempts to tell yet.'}
-            </p>
-        </div>
-    );
-}
-
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const WEEKDAY_NAMES = [
     'Sundays',

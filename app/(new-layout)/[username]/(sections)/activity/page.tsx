@@ -12,9 +12,10 @@ import { ProfileBlock } from '../profile-block';
 import ui from '../profile-ui.module.scss';
 import { plural } from '../ranks';
 import { StatStrip, type StripLead, type StripTile } from '../stat-strip';
-import { DayOfWeek, TimeOfDay } from './rhythm';
+import { DayOfWeek } from './rhythm';
 import { toSessionRows } from './session-rows';
 import { SessionsPanel } from './sessions-panel';
+import { TimeOfDay } from './time-of-day';
 import { YearHeatmap } from './year-heatmap';
 
 interface PageProps {
@@ -35,10 +36,6 @@ export async function generateMetadata({
         description: `${head.runner.name}'s streaks, activity and sessions on therun.gg.`,
     });
 }
-
-/** "London" from "Europe/London", "New York" from "America/New_York". */
-const shortTimezone = (timezone: string) =>
-    (timezone.split('/').pop() ?? timezone).replace(/_/g, ' ');
 
 export default async function RunnerActivityPage({ params }: PageProps) {
     const { username } = await params;
@@ -92,10 +89,6 @@ export default async function RunnerActivityPage({ params }: PageProps) {
         });
     }
 
-    const place = head.runner.timezone
-        ? shortTimezone(head.runner.timezone)
-        : null;
-
     return (
         <div className={ui.page}>
             <StatStrip label="Activity" lead={lead} tiles={tiles} />
@@ -111,7 +104,7 @@ export default async function RunnerActivityPage({ params }: PageProps) {
                         <ProfileBlock title="Time of day">
                             <TimeOfDay
                                 usual={activity.usualHours}
-                                place={place}
+                                timezone={head.runner.timezone}
                             />
                         </ProfileBlock>
                         <ProfileBlock title="Day of the week">

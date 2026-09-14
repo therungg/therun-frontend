@@ -138,6 +138,18 @@
     margin: dt.$spacing-xs 0 0;
     color: var(--bs-secondary-color);
     font-size: dt.$font-size-sm;
+
+    b {
+        color: var(--bs-emphasis-color);
+        font-weight: 600;
+    }
+}
+
+.rhythmSub {
+    display: block;
+    margin-top: 2px;
+    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-xs;
 }
 
 .weekdays {
