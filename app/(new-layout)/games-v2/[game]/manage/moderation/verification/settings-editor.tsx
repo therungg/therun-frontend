@@ -30,7 +30,6 @@ import {
     PRESET_OPTIONS,
     previewSentences,
     type SettingsForm,
-    sourceLabel,
     validateForm,
 } from './settings-model';
 
@@ -157,14 +156,10 @@ export function SettingsEditor({
 
     return (
         <div className={styles.editor}>
-            <FormSection
-                title="What this board accepts"
-                lede={sourceLabel(effective.intake.source)}
-            >
+            <FormSection title="What this board accepts">
                 <SwitchField
                     id={`timer-${categoryId ?? 'game'}`}
-                    label="Accept runs from the timer"
-                    hint="When off, timer runs are still kept, but they stay off the board until this is turned back on."
+                    label="Accept runs directly from LiveSplit"
                     checked={form.acceptTimer}
                     onChange={(v) => set('acceptTimer', v)}
                 />
@@ -194,18 +189,9 @@ export function SettingsEditor({
                         />
                     </label>
                 )}
-                {form.manualMode === 'trusted' && (
-                    <p className={styles.hint}>
-                        Trusted means a runner you trusted, or anyone with a
-                        verified run on this game.
-                    </p>
-                )}
             </FormSection>
 
-            <FormSection
-                title="What's verified automatically"
-                lede={sourceLabel(effective.autoVerify.source)}
-            >
+            <FormSection title="What's verified automatically">
                 <SegmentedControl
                     label="Auto-verify"
                     value={form.preset}
@@ -239,7 +225,6 @@ export function SettingsEditor({
                 <SwitchField
                     id={`trust-${categoryId ?? 'game'}`}
                     label="Trust runners automatically"
-                    hint="After this many verified runs on this game with none declined, their runs are verified without review."
                     checked={form.autoTrustOn}
                     onChange={(v) => set('autoTrustOn', v)}
                 />
@@ -260,10 +245,7 @@ export function SettingsEditor({
                 )}
             </FormSection>
 
-            <FormSection
-                title="What needs a video"
-                lede={sourceLabel(effective.videoRule.source)}
-            >
+            <FormSection title="What needs a video">
                 <SegmentedControl
                     label="Video required for"
                     value={form.videoRequire}
@@ -363,9 +345,6 @@ export function SettingsEditor({
                         />
                     </label>
                 )}
-                <p className={styles.hint}>
-                    Runs outside the review window are not put in the mod queue.
-                </p>
             </FormSection>
 
             {preview && (
@@ -380,7 +359,6 @@ export function SettingsEditor({
                         <SwitchField
                             id={`apply-${categoryId ?? 'game'}`}
                             label="Also apply the video rule to runs already on the board"
-                            hint="Off means only new runs are asked for a video."
                             checked={applyToExisting}
                             onChange={setApplyToExisting}
                         />
@@ -476,12 +454,7 @@ export function SettingsEditor({
                 </button>
             </SectionFooter>
             {mustPreview && !preview && dirty && !invalid && (
-                <p className={styles.hint}>
-                    Preview before saving.
-                    {input?.autoVerify && input.autoVerify.preset !== 'off'
-                        ? ' Checking auto-verify replays up to 100 recent runs and takes a few seconds.'
-                        : ''}
-                </p>
+                <p className={styles.hint}>Preview before saving.</p>
             )}
         </div>
     );

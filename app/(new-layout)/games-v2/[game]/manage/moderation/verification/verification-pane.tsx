@@ -83,12 +83,6 @@ export function VerificationPane({ gameSlug, gameDisplay, categories }: Props) {
                     <BackLink href={boardHref} label="Back to leaderboard" />
                 </div>
             </div>
-            <p className={consoleStyles.paneLede}>
-                What this board accepts, what's verified without you, and what
-                needs a video. Set it once for the game, then change it for a
-                category where that category is different.
-            </p>
-
             <InlineError>{error}</InlineError>
 
             {view && (

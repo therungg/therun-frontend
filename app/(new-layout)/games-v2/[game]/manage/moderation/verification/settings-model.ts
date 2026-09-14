@@ -3,7 +3,6 @@ import type {
     EffectiveSettings,
     IntakeSetting,
     SaveSettingsInput,
-    SettingSource,
     SettingsPreview,
     VerifyWindowSetting,
     VideoRule,
@@ -182,14 +181,6 @@ export const canPreview = (input: SaveSettingsInput) =>
     needsPreview(input) ||
     (input.autoTrust !== undefined &&
         input.autoTrust?.afterVerifiedRuns != null);
-
-export const sourceLabel = (s: SettingSource): string =>
-    ({
-        category: 'Set for this category',
-        game: 'Game default',
-        category_import: 'From the imported category settings',
-        default: 'Built-in default',
-    })[s];
 
 const videoWords = (v: VideoRule) => {
     switch (v.require) {
