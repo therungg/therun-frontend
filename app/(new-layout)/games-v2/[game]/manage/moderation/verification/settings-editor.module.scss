@@ -1,0 +1,47 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/board' as board;
+
+.editor {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xl;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    max-width: 20rem;
+}
+
+.fieldLabel {
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+}
+
+.hint {
+    margin: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    max-width: 70ch;
+}
+
+.preview {
+    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
+    border-left: 3px solid dt.$accent-amber;
+
+    ul {
+        margin: 0 0 dt.$spacing-md;
+        padding-left: dt.$spacing-lg;
+        display: flex;
+        flex-direction: column;
+        gap: dt.$spacing-xs;
+    }
+}
+
+.previewTitle {
+    margin: 0 0 dt.$spacing-sm;
+    font-size: dt.$font-size-base;
+    font-weight: 600;
+}
