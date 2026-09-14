@@ -25,7 +25,10 @@ import type {
 } from '../../../../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
 import type { SrcImportJob } from '../../../../../../types/src-import.types';
-import type { WorklistDigest } from '../../../../../../types/worklist.types';
+import type {
+    WorklistDigest,
+    WorklistPage,
+} from '../../../../../../types/worklist.types';
 import { BackLink } from '../../shared/back-link';
 import type { ReorderChange } from '../game-tab/reorder-changes';
 import type { AttentionItem } from '../moderation/attention/attention-model';
@@ -75,9 +78,11 @@ export interface ConsoleShellProps {
     settingsJob?: SrcImportJob | null;
     /** Latest runs import, for the overview card's per-kind lines. */
     runsJob?: SrcImportJob | null;
-    /** Seven-day summary of what the worklist decided and flagged, for the
-     * overview's digest card. */
+    /** Seven-day history of what was decided and flagged, for the overview's
+     * queue summary. */
     digest?: WorklistDigest | null;
+    /** First page of the mod queue, for the overview's queue summary. */
+    worklist?: WorklistPage | null;
     /** Runs awaiting a verdict — the count beside Mod queue in the sidebar.
      * Null when the viewer can't moderate or the count failed to load. */
     queuePendingCount?: number | null;
@@ -105,6 +110,7 @@ export function ConsoleShell({
     settingsJob,
     runsJob,
     digest,
+    worklist,
     queuePendingCount = null,
 }: ConsoleShellProps) {
     const groups = useMemo(() => buildNav(flags), [flags]);
@@ -452,6 +458,7 @@ export function ConsoleShell({
                     settingsJob={settingsJob}
                     runsJob={runsJob}
                     digest={digest}
+                    worklist={worklist}
                     canModerate={flags.canModerate}
                     onQueueCountChange={setLiveQueueCount}
                     onGroupsChange={setManageGroups}

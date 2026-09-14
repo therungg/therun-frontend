@@ -1,0 +1,285 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/board' as board;
+
+// ============================================================
+// Mod queue summary — the console front door's first block.
+// Reads like a splits panel: a runner already knows how to scan
+// name, delta, time without being taught. One strong element (the
+// count set in the timer face); everything else stays quiet.
+// ============================================================
+
+// Tier colours. Urgency is the only thing that gets colour here,
+// and age gets it in the wait column — nothing else is tinted.
+$tier-1: dt.$accent-red;
+$tier-2: dt.$accent-amber;
+$tier-3: color-mix(in srgb, var(--bs-body-color) 28%, transparent);
+
+.summary {
+    @include board.board-surface(dt.$spacing-2xl);
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xl;
+}
+
+.head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-md dt.$spacing-xl;
+}
+
+.headline {
+    margin: 0;
+    font-size: dt.$font-size-2xl;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.1;
+    display: flex;
+    align-items: baseline;
+    gap: 0.4ch;
+
+    .summary[data-state='clear'] & {
+        font-size: dt.$font-size-xl;
+        color: var(--bs-secondary-color);
+        font-weight: 500;
+    }
+}
+
+// The one loud thing: the count in the same face as a run's timer.
+.count {
+    @include board.mono-time;
+    font-size: dt.$font-size-hero-time;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 0.9;
+}
+
+.open {
+    @include board.board-btn-primary;
+    flex-shrink: 0;
+}
+
+// ---- Urgency bar -------------------------------------------
+.bar {
+    display: flex;
+    gap: 3px;
+    height: 0.5rem;
+}
+
+.segment {
+    flex-basis: 0;
+    min-width: 0.75rem;
+    border-radius: 2px;
+    transition: flex-grow 320ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    &[data-tier='1'] {
+        background: $tier-1;
+    }
+    &[data-tier='2'] {
+        background: $tier-2;
+    }
+    &[data-tier='3'] {
+        background: $tier-3;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        transition: none;
+    }
+}
+
+.legend {
+    list-style: none;
+    margin: calc(-1 * #{dt.$spacing-sm}) 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs dt.$spacing-xl;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+
+    li {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 0.35ch;
+
+        &::before {
+            content: '';
+            align-self: center;
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 2px;
+            margin-right: 0.25rem;
+        }
+        &[data-tier='1']::before {
+            background: $tier-1;
+        }
+        &[data-tier='2']::before {
+            background: $tier-2;
+        }
+        &[data-tier='3']::before {
+            background: $tier-3;
+        }
+    }
+}
+
+.legendCount {
+    @include board.mono-time;
+    font-weight: 600;
+}
+
+// ---- Next up, as split rows ------------------------------------
+.splits {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+}
+
+.split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 14rem) 5.5rem 7.5rem;
+    align-items: baseline;
+    gap: dt.$spacing-lg;
+    width: 100%;
+    padding: dt.$spacing-md dt.$spacing-sm dt.$spacing-md dt.$spacing-lg;
+    border: 0;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    position: relative;
+
+    // The tier sits in the gutter like the current-split marker.
+    &::before {
+        content: '';
+        position: absolute;
+        inset-block: dt.$spacing-md;
+        inset-inline-start: 0;
+        width: 3px;
+        border-radius: 2px;
+    }
+    &[data-tier='1']::before {
+        background: $tier-1;
+    }
+    &[data-tier='2']::before {
+        background: $tier-2;
+    }
+    &[data-tier='3']::before {
+        background: $tier-3;
+    }
+
+    &:hover {
+        background: color-mix(in srgb, var(--bs-body-color) 4%, transparent);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--bs-primary);
+        outline-offset: -2px;
+        border-radius: dt.$radius-sm;
+    }
+}
+
+.name {
+    min-width: 0;
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+    flex-wrap: wrap;
+}
+
+.runner {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.board {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.reason {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+// Where a split shows its delta.
+.wait {
+    @include board.mono-time;
+    font-size: dt.$font-size-sm;
+    text-align: right;
+    color: var(--bs-secondary-color);
+
+    &[data-tone='aging'] {
+        color: color-mix(in srgb, #{dt.$accent-amber} 85%, var(--bs-body-color));
+    }
+    &[data-tone='stale'] {
+        color: dt.$accent-red;
+        font-weight: 600;
+    }
+}
+
+.time {
+    @include board.mono-time;
+    font-size: dt.$font-size-base;
+    font-weight: 600;
+    text-align: right;
+    letter-spacing: -0.02em;
+}
+
+// ---- History -----------------------------------------------
+.history {
+    margin: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    line-height: 1.5;
+    max-width: 70ch;
+}
+
+.quiet {
+    @include board.board-quiet-link;
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+}
+
+.unavailable {
+    margin: 0;
+    color: var(--bs-secondary-color);
+}
+
+@media (max-width: 720px) {
+    .count {
+        font-size: dt.$font-size-display;
+    }
+
+    .split {
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+            'name time'
+            'reason wait';
+        row-gap: 2px;
+    }
+
+    .name {
+        grid-area: name;
+    }
+    .reason {
+        grid-area: reason;
+    }
+    .wait {
+        grid-area: wait;
+    }
+    .time {
+        grid-area: time;
+    }
+}

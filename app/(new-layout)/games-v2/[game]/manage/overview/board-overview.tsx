@@ -4,23 +4,28 @@ import { BoxArrowUpRight } from 'react-bootstrap-icons';
 import chrome from '~src/components/console-chrome/console.module.scss';
 import { NAV_ICON } from '~src/components/console-chrome/nav-icons';
 import Link from '~src/components/link';
-import { DurationToFormatted } from '~src/components/util/datetime';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import { CONCEPT_TILE } from '~src/lib/console/vocabulary';
 import { splitLevelBoards } from '~src/lib/levels/display';
 import type { BoardCompleteness } from '~src/lib/setup/completeness';
 import type { BoardHealth } from '~src/lib/setup/health';
 import type { GameModerator } from '../../../../../../types/board-claims.types';
-import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
+import type {
+    ResolvedGame,
+    VariableRow,
+} from '../../../../../../types/leaderboards.types';
 import type { SrcImportJob } from '../../../../../../types/src-import.types';
-import type { WorklistDigest } from '../../../../../../types/worklist.types';
+import type {
+    WorklistDigest,
+    WorklistPage,
+} from '../../../../../../types/worklist.types';
 import { BoardHealthCard } from '../console/board-health-card';
 import type { NavGroup, NavItemId } from '../console/nav-model';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import { isSettled } from '../src-import/use-src-import-job';
 import styles from './board-overview.module.scss';
-import { DigestCard } from './digest-card';
 import { buildOverviewStats, timeAgo, topFeaturedRows } from './overview-model';
+import { QueueSummary } from './queue-summary';
 
 /** "Never" or a short date of the last finished job of one kind. */
 function lastLine(job: SrcImportJob | null): string {
@@ -41,19 +46,6 @@ const FEATURED_ON_DASHBOARD = new Set<NavItemId>([
     'attention',
 ]);
 
-const SEV_CLASS = {
-    high: 'sevHigh',
-    medium: 'sevMedium',
-    low: 'sevLow',
-} as const;
-
-const SOURCE_LABEL = {
-    flag: 'flag',
-    report: 'report',
-    appeal: 'appeal',
-    self_claim: 'claim',
-} as const;
-
 interface Props {
     game: Pick<ResolvedGame, 'id' | 'name' | 'display'>;
     rows: ManageCategoryRow[];
@@ -72,6 +64,10 @@ interface Props {
     runsJob?: SrcImportJob | null;
     /** Seven-day summary of what the worklist decided and flagged. */
     digest?: WorklistDigest | null;
+    /** First page of the mod queue — drives the queue summary. */
+    worklist?: WorklistPage | null;
+    /** The game's variables, to name each run's subcategory. */
+    variables?: VariableRow[];
     /** Permission-filtered console nav — decides which cards and tiles show. */
     navGroups: NavGroup[];
     canModerate: boolean;
@@ -99,6 +95,8 @@ export function BoardOverview({
     settingsJob,
     runsJob,
     digest,
+    worklist,
+    variables,
     navGroups,
     canModerate,
     onNavigate,
@@ -140,38 +138,6 @@ export function BoardOverview({
             (it) => !FEATURED_ON_DASHBOARD.has(it.id) && it.id in CONCEPT_TILE,
         );
 
-    // Items arrive sorted severity desc, oldest first within a severity — so
-    // the first rows are exactly what a moderator should judge first.
-    const attentionTotal = stats.attention.total;
-    const topSeverity = attentionItems[0]?.severity ?? null;
-    const previewItems = attentionItems.slice(0, 3);
-    const oldestCreatedAt =
-        attentionItems.length > 0
-            ? attentionItems.reduce(
-                  (min, it) => (it.createdAt < min ? it.createdAt : min),
-                  attentionItems[0].createdAt,
-              )
-            : null;
-
-    const breakdownParts: string[] = [];
-    if (stats.attention.flags > 0) {
-        breakdownParts.push(
-            `${stats.attention.flags} flag${stats.attention.flags === 1 ? '' : 's'}`,
-        );
-    }
-    if (stats.attention.reports > 0) {
-        breakdownParts.push(
-            `${stats.attention.reports} report${stats.attention.reports === 1 ? '' : 's'}`,
-        );
-    }
-    if (stats.attention.claims > 0) {
-        breakdownParts.push(
-            `${stats.attention.claims} claim${stats.attention.claims === 1 ? '' : 's'}`,
-        );
-    }
-    const oldestAgo = timeAgo(oldestCreatedAt);
-    if (oldestAgo) breakdownParts.push(`oldest ${oldestAgo}`);
-
     const lastSyncAgo = timeAgo(
         syncJob?.runsImportedAt ?? syncJob?.finishedAt ?? syncJob?.createdAt,
     );
@@ -197,80 +163,15 @@ export function BoardOverview({
                 What needs a moderator, and the board's vitals.
             </p>
 
-            {/* Status headline: the queue state before anything else. */}
+            {/* The mod queue before anything else: does anything need me? */}
             {canModerate && (
-                <section
-                    className={styles.status}
-                    data-sev={attentionTotal > 0 ? topSeverity : undefined}
-                    aria-label="Queue status"
-                >
-                    <div className={styles.statusHead}>
-                        <span className={styles.statusCount}>
-                            {attentionTotal}
-                        </span>
-                        <div className={styles.statusText}>
-                            <h3 className={styles.statusTitle}>
-                                {attentionTotal === 0
-                                    ? 'All clear'
-                                    : 'Waiting for review'}
-                            </h3>
-                            <p className={styles.statusSub}>
-                                {attentionTotal === 0
-                                    ? 'No flags, reports or claims waiting.'
-                                    : breakdownParts.join(' · ')}
-                            </p>
-                        </div>
-                        {attentionTotal > 0 && (
-                            <button
-                                type="button"
-                                className={styles.statusOpen}
-                                onClick={() => onNavigate('attention')}
-                            >
-                                Open the queue
-                            </button>
-                        )}
-                    </div>
-                    {previewItems.length > 0 && (
-                        <ul className={styles.previewList}>
-                            {previewItems.map((item) => (
-                                <li key={item.key}>
-                                    <button
-                                        type="button"
-                                        className={`${styles.previewRow} ${styles[SEV_CLASS[item.severity]]}`}
-                                        onClick={() => onNavigate('attention')}
-                                    >
-                                        <span className={styles.previewRunner}>
-                                            {item.runnerName}
-                                        </span>
-                                        <span className={styles.previewCat}>
-                                            {item.categoryName}
-                                        </span>
-                                        <span className={styles.previewTime}>
-                                            <DurationToFormatted
-                                                duration={item.timeMs}
-                                                withMillis
-                                            />
-                                        </span>
-                                        <span className={styles.previewSource}>
-                                            {item.sources
-                                                .map((s) => SOURCE_LABEL[s])
-                                                .join(' · ')}
-                                        </span>
-                                        <span className={styles.previewAge}>
-                                            {timeAgo(item.createdAt)}
-                                        </span>
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                    {attentionTotal > previewItems.length && (
-                        <p className={styles.previewMore}>
-                            + {attentionTotal - previewItems.length} more in the
-                            queue
-                        </p>
-                    )}
-                </section>
+                <QueueSummary
+                    worklist={worklist ?? null}
+                    digest={digest ?? null}
+                    variables={variables ?? []}
+                    onOpenQueue={() => onNavigate('mod-queue')}
+                    onOpenDecided={() => onNavigate('queue-history')}
+                />
             )}
 
             {/* Vitals band */}
@@ -339,13 +240,6 @@ export function BoardOverview({
                     </button>
                 )}
             </div>
-
-            {canModerate && digest && (
-                <DigestCard
-                    digest={digest}
-                    onOpenQueue={() => onNavigate('mod-queue')}
-                />
-            )}
 
             {/* Main grid */}
             <div className={styles.grid}>
