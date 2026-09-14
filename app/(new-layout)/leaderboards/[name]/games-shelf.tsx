@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { ArrowDown, ArrowUp } from 'react-bootstrap-icons';
 import { GameImage } from '~src/components/image/gameimage';
 import { formatProfileDate } from './format';
 import styles from './leaderboards-profile.module.scss';
+import { move } from './reorder';
 import { useShowcase } from './showcase-provider';
 import {
     COLLAPSE_AT,
@@ -19,15 +21,25 @@ const MEDALS: Record<number, string> = { 1: 'gold', 2: 'silver', 3: 'bronze' };
 
 /** Every game as an art tile with its best rank; a tile filters the ledger. */
 export function GamesShelf() {
-    const { games: unordered, draft } = useShowcase();
+    const { games: unordered, draft, editing, setDraft } = useShowcase();
     const { sort } = useProfileUrl();
     const [showAll, setShowAll] = useState(false);
     if (unordered.length < 2) return null;
+    const manual = editing && draft.gameOrder === 'manual';
     const options = sortOptions(draft);
     const mode = (options as string[]).includes(sort)
         ? (sort as SortMode)
         : 'runner';
-    const games = orderGames(unordered, draft, mode);
+    const games = manual
+        ? orderGames(
+              unordered,
+              { gameOrder: 'manual', manualGameIds: draft.manualGameIds },
+              'runner',
+          )
+        : orderGames(unordered, draft, mode);
+    const ids = games.map((g) => g.gameId);
+    const moveGame = (from: number, to: number) =>
+        setDraft((d) => ({ ...d, manualGameIds: move(ids, from, to) }));
     const scrolls = games.length > SHELF_SCROLL_AT && !showAll;
 
     return (
@@ -36,13 +48,15 @@ export function GamesShelf() {
                 Games
             </h2>
             <div
-                className={
-                    scrolls
-                        ? `${styles.shelf} ${styles.shelfScroll}`
-                        : styles.shelf
-                }
+                className={[
+                    styles.shelf,
+                    scrolls ? styles.shelfScroll : '',
+                    manual ? styles.shelfManual : '',
+                ]
+                    .filter(Boolean)
+                    .join(' ')}
             >
-                {games.map((game) => {
+                {games.map((game, i) => {
                     const medal =
                         game.bestRank !== null
                             ? MEDALS[game.bestRank]
@@ -55,22 +69,8 @@ export function GamesShelf() {
                             ? formatProfileDate(game.lastRanAt)
                             : null,
                     ].filter(Boolean);
-                    return (
-                        <button
-                            key={game.gameId}
-                            type="button"
-                            className={styles.shelfTile}
-                            onClick={() =>
-                                unordered.length >= COLLAPSE_AT
-                                    ? setProfileUrl({
-                                          game: game.game,
-                                          hash: `game-${game.gameId}`,
-                                      })
-                                    : setProfileUrl({
-                                          hash: `game-${game.gameId}`,
-                                      })
-                            }
-                        >
+                    const content = (
+                        <>
                             <span className={styles.shelfArt}>
                                 <GameImage
                                     src={game.imageUrl ?? ''}
@@ -98,6 +98,74 @@ export function GamesShelf() {
                                     </span>
                                 ) : null}
                             </span>
+                        </>
+                    );
+                    if (manual) {
+                        return (
+                            <div
+                                key={game.gameId}
+                                className={styles.shelfTile}
+                                draggable
+                                onDragStart={(e) =>
+                                    e.dataTransfer.setData(
+                                        'text/plain',
+                                        String(i),
+                                    )
+                                }
+                                onDragOver={(e) => e.preventDefault()}
+                                onDrop={(e) => {
+                                    e.preventDefault();
+                                    moveGame(
+                                        Number(
+                                            e.dataTransfer.getData(
+                                                'text/plain',
+                                            ),
+                                        ),
+                                        i,
+                                    );
+                                }}
+                            >
+                                {content}
+                                <span className={styles.pinTools}>
+                                    <button
+                                        type="button"
+                                        className={styles.tab}
+                                        aria-label="Move up"
+                                        disabled={i === 0}
+                                        onClick={() => moveGame(i, i - 1)}
+                                    >
+                                        <ArrowUp size={14} aria-hidden />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={styles.tab}
+                                        aria-label="Move down"
+                                        disabled={i === games.length - 1}
+                                        onClick={() => moveGame(i, i + 1)}
+                                    >
+                                        <ArrowDown size={14} aria-hidden />
+                                    </button>
+                                </span>
+                            </div>
+                        );
+                    }
+                    return (
+                        <button
+                            key={game.gameId}
+                            type="button"
+                            className={styles.shelfTile}
+                            onClick={() =>
+                                unordered.length >= COLLAPSE_AT
+                                    ? setProfileUrl({
+                                          game: game.game,
+                                          hash: `game-${game.gameId}`,
+                                      })
+                                    : setProfileUrl({
+                                          hash: `game-${game.gameId}`,
+                                      })
+                            }
+                        >
+                            {content}
                         </button>
                     );
                 })}

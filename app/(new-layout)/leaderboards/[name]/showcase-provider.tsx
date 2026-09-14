@@ -17,16 +17,6 @@ import type {
     ResolvedLeaderboardsLayout,
 } from '../../../../types/leaderboards-profile.types';
 
-export const DEFAULT_LAYOUT: ResolvedLeaderboardsLayout = {
-    mainGameId: null,
-    pins: [],
-    videoPin: null,
-    gameOrder: 'rank',
-    manualGameIds: [],
-    showActivity: true,
-    isDefault: true,
-};
-
 const strip = (l: ResolvedLeaderboardsLayout): LeaderboardsLayout => ({
     mainGameId: l.mainGameId,
     pins: l.pins,

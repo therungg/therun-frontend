@@ -1,15 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { PlayFill } from 'react-bootstrap-icons';
+import { ArrowDown, ArrowUp, PlayFill } from 'react-bootstrap-icons';
 import { VerificationBadge } from '~app/(new-layout)/games-v2/[game]/run-view/run-badges';
 import { GameImage } from '~src/components/image/gameimage';
 import { Vod, youtubeParser } from '~src/components/run/dashboard/vod';
+import { isEmbeddableVod } from '~src/lib/vod-url';
+import type { PinRef } from '../../../../types/leaderboards-profile.types';
 import { formatEntryTime, formatProfileDate } from './format';
 import styles from './leaderboards-profile.module.scss';
+import { move } from './reorder';
 import { useShowcase } from './showcase-provider';
 import {
     entryRef,
+    findEntry,
+    PIN_LIMIT,
     type Pinned,
     pickVideoPin,
     pinKey,
@@ -54,16 +59,19 @@ export function PinCard({
     pin,
     video,
     children,
+    dragProps,
 }: {
     pin: Pinned;
     video: boolean;
     children?: React.ReactNode;
+    dragProps?: React.HTMLAttributes<HTMLElement>;
 }) {
     const { entry, game } = pin;
     const medal = entry.rank !== null ? MEDALS[entry.rank] : undefined;
     return (
         <article
             className={video ? `${styles.pin} ${styles.pinWide}` : styles.pin}
+            {...dragProps}
         >
             {video && entry.vodUrl ? <PinVideo vodUrl={entry.vodUrl} /> : null}
             <div className={styles.pinBody}>
@@ -109,22 +117,116 @@ export function PinCard({
 
 /** The showcase: the runner's pins, or the best run per game when none. */
 export function PinnedRuns() {
-    const { games, draft } = useShowcase();
-    const pins = resolvePins(games, draft.pins);
-    if (pins.length === 0) return null;
+    const { games, draft, editing, setDraft } = useShowcase();
+    const pins = editing
+        ? draft.pins
+              .map((p) => findEntry(games, p))
+              .filter((p): p is Pinned => p !== null)
+        : resolvePins(games, draft.pins);
+    if (!editing && pins.length === 0) return null;
     const video = pickVideoPin(pins, draft.videoPin);
+    const isVideo = (p: Pinned) =>
+        video !== null && samePin(entryRef(p.entry), entryRef(video.entry));
+
+    const movePin = (from: number, to: number) =>
+        setDraft((d) => ({ ...d, pins: move(d.pins, from, to) }));
+    const removePin = (ref: PinRef) =>
+        setDraft((d) => ({
+            ...d,
+            pins: d.pins.filter((p) => !samePin(p, ref)),
+            videoPin: samePin(d.videoPin, ref) ? null : d.videoPin,
+        }));
+    const setVideo = (ref: PinRef) =>
+        setDraft((d) => ({ ...d, videoPin: ref }));
+
     return (
         <section className={styles.pins} aria-label="Pinned runs">
-            {pins.map((pin) => (
-                <PinCard
-                    key={pinKey(entryRef(pin.entry))}
-                    pin={pin}
-                    video={
-                        video !== null &&
-                        samePin(entryRef(pin.entry), entryRef(video.entry))
-                    }
-                />
-            ))}
+            {pins.map((pin, i) => {
+                const ref = entryRef(pin.entry);
+                return (
+                    <PinCard
+                        key={pinKey(ref)}
+                        pin={pin}
+                        video={isVideo(pin)}
+                        dragProps={
+                            editing
+                                ? {
+                                      draggable: true,
+                                      onDragStart: (e) =>
+                                          e.dataTransfer.setData(
+                                              'text/plain',
+                                              String(i),
+                                          ),
+                                      onDragOver: (e) => e.preventDefault(),
+                                      onDrop: (e) => {
+                                          e.preventDefault();
+                                          movePin(
+                                              Number(
+                                                  e.dataTransfer.getData(
+                                                      'text/plain',
+                                                  ),
+                                              ),
+                                              i,
+                                          );
+                                      },
+                                  }
+                                : undefined
+                        }
+                    >
+                        {editing ? (
+                            <div className={styles.pinTools}>
+                                <button
+                                    type="button"
+                                    className={styles.tab}
+                                    aria-label="Move up"
+                                    disabled={i === 0}
+                                    onClick={() => movePin(i, i - 1)}
+                                >
+                                    <ArrowUp size={14} aria-hidden />
+                                </button>
+                                <button
+                                    type="button"
+                                    className={styles.tab}
+                                    aria-label="Move down"
+                                    disabled={i === pins.length - 1}
+                                    onClick={() => movePin(i, i + 1)}
+                                >
+                                    <ArrowDown size={14} aria-hidden />
+                                </button>
+                                {pin.entry.vodUrl &&
+                                isEmbeddableVod(pin.entry.vodUrl) ? (
+                                    <label className={styles.ledgerSort}>
+                                        <input
+                                            type="radio"
+                                            name="video-pin"
+                                            checked={samePin(
+                                                draft.videoPin,
+                                                ref,
+                                            )}
+                                            onChange={() => setVideo(ref)}
+                                        />
+                                        <span>Plays video</span>
+                                    </label>
+                                ) : null}
+                                <button
+                                    type="button"
+                                    className={styles.tab}
+                                    onClick={() => removePin(ref)}
+                                >
+                                    Remove
+                                </button>
+                            </div>
+                        ) : null}
+                    </PinCard>
+                );
+            })}
+            {editing
+                ? Array.from({ length: PIN_LIMIT - pins.length }, (_, i) => (
+                      <div key={`slot-${i}`} className={styles.pinSlot}>
+                          Pin a run from the list below
+                      </div>
+                  ))
+                : null}
         </section>
     );
 }

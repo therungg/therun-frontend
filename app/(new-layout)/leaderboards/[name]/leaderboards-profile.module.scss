@@ -825,3 +825,43 @@
     gap: dt.$spacing-sm;
     margin-left: auto;
 }
+
+// Custom game order: one column while active, so the tile's up/down
+// controls have room without overflowing the sidebar card.
+.shelfManual {
+    grid-template-columns: minmax(0, 1fr);
+
+    .shelfTile {
+        cursor: grab;
+    }
+
+    .pinTools {
+        grid-column: 1 / -1;
+    }
+}
+
+.pinToggle {
+    @include board.control-pill;
+    padding: dt.$spacing-xs;
+}
+
+.pinToggleOn {
+    @include board.control-pill-active;
+}
+
+.pinTools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-xs;
+}
+
+.pinSlot {
+    display: grid;
+    place-items: center;
+    min-height: 6rem;
+    border: 1px dashed var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
+    border-radius: dt.$radius-md;
+    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-sm;
+}

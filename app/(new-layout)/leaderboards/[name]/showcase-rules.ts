@@ -5,11 +5,22 @@ import type {
     LeaderboardsProfileEntry,
     LeaderboardsProfileGame,
     PinRef,
+    ResolvedLeaderboardsLayout,
 } from '../../../../types/leaderboards-profile.types';
 
 export const PIN_LIMIT = 6;
 export const COLLAPSE_AT = 9;
 export const SHELF_SCROLL_AT = 12;
+
+export const DEFAULT_LAYOUT: ResolvedLeaderboardsLayout = {
+    mainGameId: null,
+    pins: [],
+    videoPin: null,
+    gameOrder: 'rank',
+    manualGameIds: [],
+    showActivity: true,
+    isDefault: true,
+};
 
 export type Pinned = {
     entry: LeaderboardsProfileEntry;

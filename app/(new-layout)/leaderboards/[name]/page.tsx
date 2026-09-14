@@ -12,8 +12,8 @@ import { ProfileHeader } from './profile-header';
 import { ProfileSidebar } from './profile-sidebar';
 import { ProfileTabs } from './profile-tabs';
 import { RejectedEntries } from './rejected-entries';
-import { DEFAULT_LAYOUT, ShowcaseProvider } from './showcase-provider';
-import { mainGameOf } from './showcase-rules';
+import { ShowcaseProvider } from './showcase-provider';
+import { DEFAULT_LAYOUT, mainGameOf } from './showcase-rules';
 
 interface PageProps {
     params: Promise<{ name: string }>;
