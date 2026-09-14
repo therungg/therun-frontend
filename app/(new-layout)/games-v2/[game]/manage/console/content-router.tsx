@@ -18,7 +18,10 @@ import type {
 } from '../../../../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
 import type { SrcImportJob } from '../../../../../../types/src-import.types';
-import type { WorklistDigest } from '../../../../../../types/worklist.types';
+import type {
+    WorklistDigest,
+    WorklistPage,
+} from '../../../../../../types/worklist.types';
 import { VariablesGrid } from '../../setup/steps/variables/variables-grid';
 import { BoardCuration } from '../boards/board-curation';
 import { GameTab } from '../game-tab/game-tab';
@@ -84,9 +87,11 @@ export interface ContentRouterProps {
     settingsJob?: SrcImportJob | null;
     /** Latest runs import, for the overview card's per-kind lines. */
     runsJob?: SrcImportJob | null;
-    /** Seven-day summary of what the worklist decided and flagged, for the
-     * overview's digest card. */
+    /** Seven-day history of what was decided and flagged, for the overview's
+     * queue summary. */
     digest?: WorklistDigest | null;
+    /** First page of the mod queue, for the overview's queue summary. */
+    worklist?: WorklistPage | null;
     /** Whether this viewer can reach the moderation queue — gates the
      * overview's Needs-attention KPI. */
     canModerate: boolean;
@@ -347,6 +352,8 @@ export function ContentRouter(props: ContentRouterProps) {
                     settingsJob={props.settingsJob}
                     runsJob={props.runsJob}
                     digest={props.digest}
+                    worklist={props.worklist}
+                    variables={props.variables}
                     navGroups={props.navGroups}
                     canModerate={props.canModerate}
                     onNavigate={onNavigate}

@@ -110,7 +110,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
         syncJob,
         settingsJob,
         runsJob,
-        queuePendingCount,
+        worklist,
         digest,
     ] = await Promise.all([
         getGameIdentifiers(game.id).catch(() => ({
@@ -133,14 +133,12 @@ export default async function GameAdminConsolePage({ params }: Props) {
         // import" line for settings and one for runs.
         getSrcImportJob(sessionId, game.id, 'settings').catch(() => null),
         getSrcImportJob(sessionId, game.id, 'resync').catch(() => null),
-        // Runs that need a moderator — the sidebar's count beside Mod queue.
-        // One row of one page is enough: counts.needsYou is the total.
+        // First page of the mod queue: the overview's summary reads its counts,
+        // batches and most urgent rows, and the sidebar badge its total.
         canModerate
-            ? getWorklist(sessionId, game.id, { pageSize: 1 })
-                  .then((p) => p.counts.needsYou)
-                  .catch(() => null)
+            ? getWorklist(sessionId, game.id, { pageSize: 5 }).catch(() => null)
             : Promise.resolve(null),
-        // Seven-day summary for the overview's digest card.
+        // Seven-day history for the overview's queue summary.
         canModerate
             ? getWorklistDigest(sessionId, game.id, 7).catch(() => null)
             : Promise.resolve(null),
@@ -301,7 +299,8 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 syncJob={syncJob}
                 settingsJob={settingsJob}
                 runsJob={runsJob}
-                queuePendingCount={queuePendingCount}
+                queuePendingCount={worklist?.counts.needsYou ?? null}
+                worklist={worklist}
                 digest={digest}
             />
         </Suspense>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import type { VariableRow } from '../../../../../../../types/leaderboards.types';
 import type {
     WorklistBatch,
     WorklistItem,
@@ -18,8 +19,10 @@ export function WorklistBatchCard({
     onVerb,
     onHideIdentity,
     onInspect,
+    variables,
 }: {
     batch: WorklistBatch;
+    variables: VariableRow[];
     now: Date;
     busy: boolean;
     onApproveAll: (batch: WorklistBatch) => void;
@@ -53,6 +56,7 @@ export function WorklistBatchCard({
                 <ul className={styles.rows}>
                     {batch.items.map((item) => (
                         <WorklistRow
+                            variables={variables}
                             key={item.runId}
                             item={item}
                             now={now}

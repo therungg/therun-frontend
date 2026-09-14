@@ -27,9 +27,16 @@ import {
     loadTrustStateAction,
     loadWorklistAction,
 } from './actions/worklist.action';
+import { SelfClaimRow } from './self-claim-row';
 import { type TrustCandidate, TrustPrompt } from './trust-prompt';
 import { WorklistBatchCard } from './worklist-batch';
-import { inspectorBoard, TIER_TITLE, toInspectorEntry } from './worklist-model';
+import {
+    boardLabel,
+    inspectorBoard,
+    TIER_COUNT_LABEL,
+    TIER_TITLE,
+    toInspectorEntry,
+} from './worklist-model';
 import styles from './worklist-pane.module.scss';
 import { WorklistRow } from './worklist-row';
 
@@ -65,10 +72,13 @@ type Dialog =
     | { kind: 'action'; verb: ModVerb; target: RunActionTarget }
     | { kind: 'hide'; item: WorklistItem };
 
-const targetFor = (item: WorklistItem): RunActionTarget => ({
+const targetFor = (
+    item: WorklistItem,
+    variables: VariableRow[],
+): RunActionTarget => ({
     kind: 'runs',
     runIds: [item.runId],
-    label: `${item.runnerName} · ${item.categoryDisplay}`,
+    label: `${item.runnerName} · ${boardLabel(item, variables)}`,
     runTimeMs:
         item.primaryTiming === 'gametime' && item.gameTime !== null
             ? item.gameTime
@@ -92,7 +102,8 @@ export function WorklistPane({
     gameSlug,
     gameId,
     gameDisplay,
-    categories,
+    // `categories` stays in Props for the router but the picker lists only the
+    // boards the worklist covers, which the backend returns with the list.
     boardCategories,
     variables,
     onNeedsYouChange,
@@ -365,7 +376,7 @@ export function WorklistPane({
                         }}
                     >
                         <option value="">All boards</option>
-                        {categories.map((c) => (
+                        {(data?.boards ?? []).map((c) => (
                             <option key={c.id} value={c.id}>
                                 {c.display}
                             </option>
@@ -377,9 +388,15 @@ export function WorklistPane({
                         <span>
                             <strong>{data.counts.needsYou}</strong> need you
                         </span>
-                        <span>{data.counts.tier1} reports and appeals</span>
-                        <span>{data.counts.tier2} at risk</span>
-                        <span>{data.counts.tier3} routine</span>
+                        <span>
+                            {data.counts.tier1} {TIER_COUNT_LABEL[1]}
+                        </span>
+                        <span>
+                            {data.counts.tier2} {TIER_COUNT_LABEL[2]}
+                        </span>
+                        <span>
+                            {data.counts.tier3} {TIER_COUNT_LABEL[3]}
+                        </span>
                     </div>
                 )}
             </div>
@@ -403,6 +420,7 @@ export function WorklistPane({
                     <h3 className={styles.tierTitle}>Routine, grouped</h3>
                     {data.batches.map((batch) => (
                         <WorklistBatchCard
+                            variables={variables}
                             key={batch.key}
                             batch={batch}
                             now={now}
@@ -413,7 +431,7 @@ export function WorklistPane({
                                 setDialog({
                                     kind: 'action',
                                     verb,
-                                    target: targetFor(it),
+                                    target: targetFor(it, variables),
                                 })
                             }
                             onHideIdentity={(it) =>
@@ -427,7 +445,10 @@ export function WorklistPane({
 
             {([1, 2, 3] as const).map((tier) => {
                 const inTier = items.filter((i) => i.tier === tier);
-                if (inTier.length === 0) return null;
+                // Self-claims are tier 1 but not paged: they show on page 1 only.
+                const claims =
+                    tier === 1 && page === 1 ? (data?.selfClaims ?? []) : [];
+                if (inTier.length === 0 && claims.length === 0) return null;
                 return (
                     <section
                         key={tier}
@@ -438,6 +459,7 @@ export function WorklistPane({
                         <ul className={styles.rows}>
                             {inTier.map((item) => (
                                 <WorklistRow
+                                    variables={variables}
                                     key={item.runId}
                                     item={item}
                                     now={now}
@@ -447,13 +469,23 @@ export function WorklistPane({
                                         setDialog({
                                             kind: 'action',
                                             verb,
-                                            target: targetFor(it),
+                                            target: targetFor(it, variables),
                                         })
                                     }
                                     onHideIdentity={(it) =>
                                         setDialog({ kind: 'hide', item: it })
                                     }
                                     onInspect={openInspector}
+                                />
+                            ))}
+                            {claims.map((claim) => (
+                                <SelfClaimRow
+                                    key={`claim:${claim.manualTimeId}`}
+                                    claim={claim}
+                                    gameSlug={gameSlug}
+                                    variables={variables}
+                                    now={now}
+                                    onDone={load}
                                 />
                             ))}
                         </ul>
