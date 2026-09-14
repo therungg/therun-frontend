@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useSyncExternalStore } from 'react';
+import { useEffect } from 'react';
 import type {
     LeaderboardsProfileEntry,
     LeaderboardsProfileGame,
 } from '../../../../types/leaderboards-profile.types';
 import { GameBlock } from './game-block';
 import styles from './leaderboards-profile.module.scss';
+import { setProfileUrl, useProfileUrl } from './url-state';
 
 type TabId = 'full' | 'levels' | 'pending' | 'archived';
 
@@ -36,21 +37,6 @@ const pick: Record<
     archived: (g) => g.archived,
 };
 
-// The selected tab lives in the URL hash so it survives a reload.
-function subscribe(onChange: () => void) {
-    window.addEventListener('hashchange', onChange);
-    return () => window.removeEventListener('hashchange', onChange);
-}
-const readHash = () => window.location.hash.slice(1);
-const serverHash = () => '';
-
-function selectTab(id: TabId, fallback: TabId) {
-    const url = new URL(window.location.href);
-    url.hash = id === fallback ? '' : id;
-    window.history.replaceState(window.history.state, '', url);
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
-}
-
 export function ProfileTabs({
     games,
     country,
@@ -58,7 +44,7 @@ export function ProfileTabs({
     games: LeaderboardsProfileGame[];
     country: string | null;
 }) {
-    const hash = useSyncExternalStore(subscribe, readHash, serverHash);
+    const { hash } = useProfileUrl();
 
     const views = (Object.keys(pick) as TabId[]).map((id) => {
         const blocks = games
@@ -114,7 +100,11 @@ export function ProfileTabs({
                                     ? `${styles.tab} ${styles.tabActive}`
                                     : styles.tab
                             }
-                            onClick={() => selectTab(t.id, fallback.id)}
+                            onClick={() =>
+                                setProfileUrl({
+                                    hash: t.id === fallback.id ? '' : t.id,
+                                })
+                            }
                         >
                             {`${TAB_LABELS[t.id]} (${t.count.toLocaleString('en-US')})`}
                         </button>
