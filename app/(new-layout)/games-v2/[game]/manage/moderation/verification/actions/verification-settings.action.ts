@@ -15,7 +15,8 @@ import type {
     VerificationSettingsView,
 } from '../../../../../../../../types/verification-settings.types';
 
-type Fail = { error: string };
+/** `forbidden` marks a viewer who isn't a moderator of this game. */
+type Fail = { error: string; forbidden?: boolean };
 
 async function requireMod(
     gameSlug: string,
@@ -25,13 +26,19 @@ async function requireMod(
     const game = await resolveGame(gameSlug);
     if (!game) return { error: 'Game not found.' };
     if (!canModerateGame(session, game.name)) {
-        return { error: 'Not authorized to moderate this game.' };
+        return {
+            error: 'Not authorized to moderate this game.',
+            forbidden: true,
+        };
     }
     return { sessionId: session.id, gameId: game.id };
 }
 
 function fail(e: unknown, fallback: string): Fail {
-    if (e instanceof ModError) return { error: e.message };
+    if (e instanceof ModError)
+        return e.status === 403
+            ? { error: e.message, forbidden: true }
+            : { error: e.message };
     return { error: fallback };
 }
 
