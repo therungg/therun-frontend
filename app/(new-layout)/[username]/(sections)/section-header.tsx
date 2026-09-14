@@ -80,36 +80,34 @@ export function SectionHeader({ head }: { head: RunnerProfileHead }) {
                     {runner.guest ? <li>No account on therun</li> : null}
                 </ul>
             </div>
-            {links.length > 0 || canEdit ? (
+            {canEdit ? (
                 <div className={styles.headerSide}>
-                    {links.length > 0 ? (
-                        <ul className={styles.socials}>
-                            {links.map((link) => {
-                                const Icon = SOCIAL_ICON[link.network];
-                                return (
-                                    <li key={link.network}>
-                                        <a
-                                            href={link.href}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            aria-label={`${runner.name} on ${link.label}`}
-                                            title={link.label}
-                                        >
-                                            <Icon size={16} aria-hidden />
-                                        </a>
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                    ) : null}
-                    {canEdit ? (
-                        <Suspense fallback={null}>
-                            <EditProfileLink name={runner.name} />
-                        </Suspense>
-                    ) : null}
+                    <Suspense fallback={null}>
+                        <EditProfileLink name={runner.name} />
+                    </Suspense>
                 </div>
             ) : null}
             {bio ? <p className={styles.bio}>{bio}</p> : null}
+            {links.length > 0 ? (
+                <ul className={styles.socials}>
+                    {links.map((link) => {
+                        const Icon = SOCIAL_ICON[link.network];
+                        return (
+                            <li key={link.network}>
+                                <a
+                                    href={link.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label={`${runner.name} on ${link.label}`}
+                                >
+                                    <Icon size={14} aria-hidden />
+                                    {link.label}
+                                </a>
+                            </li>
+                        );
+                    })}
+                </ul>
+            ) : null}
         </header>
     );
 }
