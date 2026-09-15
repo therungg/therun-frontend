@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowDown, ArrowUp, Pin, PlayFill } from 'react-bootstrap-icons';
+import { getTwitchVodThumbnailAction } from '~src/actions/vod-thumbnail.action';
 import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
 import { Vod, youtubeParser } from '~src/components/run/dashboard/vod';
@@ -40,12 +41,26 @@ const MEDALS: Record<number, string> = { 1: 'gold', 2: 'silver', 3: 'bronze' };
 function PinVideo({ vodUrl, title }: { vodUrl: string; title: string }) {
     const [playing, setPlaying] = useState(false);
     const youtubeId = youtubeParser(vodUrl);
+    const [twitchThumb, setTwitchThumb] = useState<string | null>(null);
+    useEffect(() => {
+        if (youtubeId || !vodUrl.includes('twitch')) return;
+        let live = true;
+        getTwitchVodThumbnailAction(vodUrl).then((url) => {
+            if (live) setTwitchThumb(url);
+        });
+        return () => {
+            live = false;
+        };
+    }, [vodUrl, youtubeId]);
+    const thumb = youtubeId
+        ? `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`
+        : twitchThumb;
     return (
         <>
             <div className={styles.featuredVideo}>
-                {youtubeId ? (
+                {thumb ? (
                     <img
-                        src={`https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`}
+                        src={thumb}
                         alt=""
                         loading="lazy"
                         className={styles.featuredThumb}
