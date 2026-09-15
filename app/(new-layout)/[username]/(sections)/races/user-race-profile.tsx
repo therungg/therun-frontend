@@ -20,6 +20,7 @@ import { ProfileGroup } from '../profile-group';
 import ui from '../profile-ui.module.scss';
 import { medalOf, ordinal, plural } from '../ranks';
 import { StatStrip, type StripLead, type StripTile } from '../stat-strip';
+import type { ResolvedStrip } from '../strips/resolve';
 import styles from './races.module.scss';
 
 interface UserRaceProfileProps {
@@ -29,6 +30,7 @@ interface UserRaceProfileProps {
     participations: RaceParticipant[];
     initialRaces: Race[];
     stripTiles: StripTile[];
+    strip: ResolvedStrip | null;
     stripEditor: ReactNode;
 }
 
@@ -49,6 +51,7 @@ export const UserRaceProfile = ({
     participations,
     initialRaces,
     stripTiles,
+    strip,
     stripEditor,
 }: UserRaceProfileProps) => {
     if (!participations || participations.length === 0 || !globalStats) {
@@ -81,6 +84,7 @@ export const UserRaceProfile = ({
                 label="Race standing"
                 lead={lead}
                 tiles={stripTiles}
+                strip={strip ?? undefined}
                 editor={stripEditor}
             />
             <ProfileBlock

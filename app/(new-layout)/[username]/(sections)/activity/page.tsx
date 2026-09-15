@@ -89,6 +89,7 @@ export default async function RunnerActivityPage({ params }: PageProps) {
                 label="Activity"
                 lead={lead}
                 tiles={strip.tiles}
+                strip={strip}
                 editor={
                     <Suspense fallback={null}>
                         <StripEditor name={head.runner.name} strip={strip} />

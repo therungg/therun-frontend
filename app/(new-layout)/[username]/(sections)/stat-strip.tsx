@@ -2,6 +2,11 @@ import type { ReactNode } from 'react';
 import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
 import styles from './profile-ui.module.scss';
+import { type StripTile, TileList } from './stat-strip-tiles';
+import { LiveTiles } from './strips/live-tiles';
+import type { ResolvedStrip } from './strips/resolve';
+
+export type { StripTile };
 
 export interface StripLead {
     value: string;
@@ -13,23 +18,20 @@ export interface StripLead {
     image?: string | null;
 }
 
-export interface StripTile {
-    value: string;
-    label: string;
-    medal?: string;
-}
-
 /** A section page's opening line: one big number, then the few that matter. */
 export function StatStrip({
     lead,
     tiles,
     label,
     editor,
+    strip,
 }: {
     lead?: StripLead | null;
     tiles: StripTile[];
     label: string;
     editor?: ReactNode;
+    /** When the runner can edit the strip: lets the tiles preview unsaved picks. */
+    strip?: ResolvedStrip;
 }) {
     const leadBody = lead ? (
         <>
@@ -73,16 +75,7 @@ export function StatStrip({
                     </div>
                 )
             ) : null}
-            {tiles.length > 0 ? (
-                <ul className={styles.tiles}>
-                    {tiles.map((t) => (
-                        <li key={t.label} data-medal={t.medal}>
-                            <b>{t.value}</b>
-                            <span>{t.label}</span>
-                        </li>
-                    ))}
-                </ul>
-            ) : null}
+            {strip ? <LiveTiles strip={strip} /> : <TileList tiles={tiles} />}
             {editor}
         </section>
     );

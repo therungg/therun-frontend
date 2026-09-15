@@ -88,6 +88,7 @@ export default async function Page(props: PageProps) {
             participations={participations || []}
             initialRaces={initialRaces}
             stripTiles={strip?.tiles ?? []}
+            strip={strip}
             stripEditor={
                 strip ? (
                     <Suspense fallback={null}>

@@ -52,6 +52,7 @@ export function StandingStrip({
                     : null
             }
             tiles={strip.tiles}
+            strip={strip}
             editor={
                 profile.runner.userId !== null ? (
                     <Suspense fallback={null}>

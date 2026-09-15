@@ -1,12 +1,13 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { ArrowLeft, ArrowRight, PencilSquare } from 'react-bootstrap-icons';
 import { saveProfileStrip } from '~src/actions/profile-strip.action';
 import { useShowcaseOptional } from '../../../leaderboards/[name]/showcase-provider';
 import styles from '../profile-ui.module.scss';
 import { type ResolvedStrip, STRIP_MAX, type StripOption } from './resolve';
+import { setStripDraft } from './strip-draft-store';
 
 /**
  * The runner's own control for which stats their strip shows. On the
@@ -37,8 +38,23 @@ export function StripPicker({ strip }: { strip: ResolvedStrip }) {
         }
     }
 
+    // The strip previews unsaved picks while the picker is open. The draft
+    // is dropped on cancel and on unmount, and once saved picks arrive from
+    // the server (so the strip doesn't flash back to the old tiles first).
+    const pickedKey = strip.picked.join(',');
+    useEffect(() => {
+        setStripDraft(strip.tab, null);
+    }, [pickedKey, strip.tab]);
+    // Leaving Customize drops the draft too (a cancelled session must not keep
+    // previewing; after a save the refreshed picks replace it a moment later).
+    useEffect(() => {
+        if (!inCustomize) setStripDraft(strip.tab, null);
+    }, [inCustomize, strip.tab]);
+    useEffect(() => () => setStripDraft(strip.tab, null), [strip.tab]);
+
     const change = (next: string[]) => {
         setIds(next);
+        setStripDraft(strip.tab, next);
         if (inCustomize) showcase?.setStripDraft(next);
     };
     const toggle = (id: string) =>
@@ -143,7 +159,10 @@ export function StripPicker({ strip }: { strip: ResolvedStrip }) {
                     <button
                         type="button"
                         className={styles.stripButton}
-                        onClick={() => setOpen(false)}
+                        onClick={() => {
+                            setStripDraft(strip.tab, null);
+                            setOpen(false);
+                        }}
                     >
                         Cancel
                     </button>

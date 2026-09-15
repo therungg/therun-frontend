@@ -70,6 +70,7 @@ export default async function RunnerStatsPage({ params }: PageProps) {
                     what: `${plural(totals.games, 'game', 'games')} · ${plural(totals.categories, 'category', 'categories')}`,
                 }}
                 tiles={strip.tiles}
+                strip={strip}
                 editor={
                     <Suspense fallback={null}>
                         <StripEditor name={head.runner.name} strip={strip} />

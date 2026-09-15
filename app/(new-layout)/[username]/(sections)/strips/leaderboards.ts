@@ -66,6 +66,7 @@ export const leaderboardsStrip: StripCatalog<LeaderboardsProfile> = {
         {
             id: 'boards',
             name: 'Boards',
+            pairedWith: 'games',
             build: (p, shown) => {
                 const boards = p.standing.boards;
                 if (boards === 0) return null;
