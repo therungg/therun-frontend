@@ -52,11 +52,19 @@ async function ViewerTheme({
     const pick = choosePick({ hasPage, kind, viewer });
     const page = hasPage ? { label } : null;
     const mine = !!viewer?.theme;
+    // A runner's background image belongs to their own profile. Worn anywhere
+    // else (a board, someone else's profile) their theme keeps its colours
+    // but drops the image, and panels go opaque as they do without one.
+    const ownProfile =
+        kind === 'profile' &&
+        label.toLowerCase() === session.username?.toLowerCase();
+    const mineTheme =
+        viewer?.theme && !ownProfile
+            ? { ...viewer.theme, backgroundUrl: null }
+            : (viewer?.theme ?? null);
     return (
         <>
-            {viewer?.theme ? (
-                <ThemeLayer theme={viewer.theme} pick="mine" />
-            ) : null}
+            {mineTheme ? <ThemeLayer theme={mineTheme} pick="mine" /> : null}
             {pick !== (hasPage ? 'page' : 'none') ? (
                 <script
                     dangerouslySetInnerHTML={{ __html: pickScript(pick, kind) }}
