@@ -103,6 +103,7 @@ export function ShowcaseProvider({
                 return;
             }
             setEditingState(false);
+            setStripDraftState(null);
             router.refresh();
         });
     }, [draft, stripDraft, router]);

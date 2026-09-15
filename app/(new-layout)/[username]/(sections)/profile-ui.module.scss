@@ -251,6 +251,13 @@ $row-line: color-mix(in srgb, #{$border} 70%, transparent);
     button {
         @include board.control-pill;
         padding: 0.2rem;
+
+        // control-pill's own coarse-pointer bump is undone by the
+        // unconditional `padding` shorthand above (its note says as much) —
+        // restore a ≥44px touch target here.
+        @media (pointer: coarse) {
+            padding: dt.$spacing-lg;
+        }
     }
 }
 

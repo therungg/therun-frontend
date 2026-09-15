@@ -6,7 +6,7 @@ import { ArrowLeft, ArrowRight, PencilSquare } from 'react-bootstrap-icons';
 import { saveProfileStrip } from '~src/actions/profile-strip.action';
 import { useShowcaseOptional } from '../../../leaderboards/[name]/showcase-provider';
 import styles from '../profile-ui.module.scss';
-import { type ResolvedStrip, STRIP_MAX } from './resolve';
+import { type ResolvedStrip, STRIP_MAX, type StripOption } from './resolve';
 
 /**
  * The runner's own control for which stats their strip shows. On the
@@ -21,6 +21,17 @@ export function StripPicker({ strip }: { strip: ResolvedStrip }) {
     const [ids, setIds] = useState<string[]>(strip.picked);
     const [error, setError] = useState<string | null>(null);
     const [saving, startSaving] = useTransition();
+
+    // Customize mode can be entered more than once per mount (it toggles on
+    // the showcase, not this component); each time it opens, the picks
+    // should start from what is actually saved, not whatever was left over
+    // from a previous session. Adjust state during render rather than an
+    // effect, per React's "storing information from previous renders".
+    const [prevInCustomize, setPrevInCustomize] = useState(inCustomize);
+    if (inCustomize !== prevInCustomize) {
+        setPrevInCustomize(inCustomize);
+        if (inCustomize) setIds(strip.picked);
+    }
 
     const change = (next: string[]) => {
         setIds(next);
@@ -54,7 +65,9 @@ export function StripPicker({ strip }: { strip: ResolvedStrip }) {
 
     const byId = new Map(strip.options.map((o) => [o.id, o]));
     const ordered = [
-        ...ids.map((id) => byId.get(id)).filter((o) => o !== undefined),
+        ...ids
+            .map((id) => byId.get(id))
+            .filter((o): o is StripOption => o !== undefined),
         ...strip.options.filter((o) => !ids.includes(o.id)),
     ];
 
