@@ -14,7 +14,6 @@ import {
     timingLabel,
 } from './format';
 import styles from './leaderboards-profile.module.scss';
-import { PbSparkline } from './pb-sparkline';
 import { PinToggle } from './pin-toggle';
 
 const MEDALS: Record<number, string> = { 1: 'gold', 2: 'silver', 3: 'bronze' };
@@ -96,7 +95,6 @@ export function EntryRow({
 }) {
     // Not deployed everywhere yet — read defensively.
     const attempts = entry.attempts ?? null;
-    const pbHistory = entry.pbHistory ?? [];
     const vars = entrySubcategoryLabel(entry);
     const timing = timingLabel(entry);
     const provenance = provenanceLabel(entry.provenance);
@@ -148,7 +146,6 @@ export function EntryRow({
                 {timing ? (
                     <span className={styles.entryTiming}>{timing}</span>
                 ) : null}
-                <PbSparkline history={pbHistory} />
             </span>
             <span
                 className={styles.entryDate}

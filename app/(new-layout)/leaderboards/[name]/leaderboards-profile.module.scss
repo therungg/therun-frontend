@@ -591,21 +591,6 @@ $row-line: color-mix(
     font-weight: 500;
 }
 
-.sparkline {
-    display: inline-flex;
-    align-self: center;
-    color: var(--board-accent, var(--bs-primary));
-    opacity: 0.8;
-
-    svg {
-        display: block;
-    }
-
-    @container profile-main (max-width: 899.98px) {
-        display: none;
-    }
-}
-
 .entryDate {
     grid-area: date;
     white-space: nowrap;
