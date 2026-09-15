@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from '~src/components/link';
 import PatreonName from '~src/components/patreon/patreon-name';
+import { ThemeMenu } from '~src/components/theme-menu';
 import { BunnyIcon } from '~src/icons/bunny-icon';
 import { Can } from '~src/rbac/Can.component';
 import type {
@@ -29,10 +30,6 @@ const GlobalSearch = dynamic(
         ),
     { ssr: false },
 );
-
-const DarkModeSlider = dynamic(() => import('../dark-mode-slider'), {
-    ssr: false,
-});
 
 function MobilePatronName({
     patron,
@@ -334,7 +331,7 @@ export function MobileMenu({ username, featuredPatrons }: MobileMenuProps) {
 
                 <div className={styles.footer}>
                     <div className={styles.footerToggle}>
-                        <DarkModeSlider />
+                        <ThemeMenu variant="mobile" />
                     </div>
                 </div>
             </div>
