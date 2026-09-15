@@ -59,6 +59,17 @@ export type VerificationSettingsView = {
         effective: EffectiveSettings;
         overridden: Array<keyof EffectiveSettings>;
     }[]; // featured and level boards, featured first
+    /**
+     * How often a moderator has disagreed with the dials on this game. Shown
+     * beside them because a dial nobody checks is a guess that stays a guess.
+     */
+    overrules: {
+        rejectedAPass: number; // the dials were too lenient
+        verifiedAFail: number; // the dials were too strict
+        tooStrict: Array<{ check: string; n: number }>;
+        tooLenient: Array<{ reason: string; n: number }>;
+        lastAt: string | null;
+    };
 };
 
 export type SaveSettingsInput = {

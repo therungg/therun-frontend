@@ -9,6 +9,7 @@ import {
     loadVerificationSettingsAction,
     saveVerificationSettingsAction,
 } from './actions/verification-settings.action';
+import { OverruleSummary } from './overrule-summary';
 import { SettingsEditor } from './settings-editor';
 import { summarize } from './settings-model';
 import styles from './verification-pane.module.scss';
@@ -86,6 +87,7 @@ export function VerificationPane({ gameSlug, gameDisplay, categories }: Props) {
                 <>
                     <section className={styles.block}>
                         <h3 className={styles.blockTitle}>Every category</h3>
+                        <OverruleSummary overrules={view.overrules} />
                         <SettingsEditor
                             key={`game:${version}`}
                             gameSlug={gameSlug}
