@@ -341,7 +341,11 @@ export interface AutoVerifyResult {
     checks: Partial<Record<AutoVerifyCheckName, AutoVerifyCheckResult>>;
 }
 
-export type VerifiedVia = 'mod' | 'grant' | 'auto' | 'self' | null;
+/**
+ * Whose decision made this run verified. 'src' means speedrun.com's — the run
+ * is verified here on the strength of being verified there.
+ */
+export type VerifiedVia = 'mod' | 'auto' | 'self' | 'src' | null;
 
 // min_time policy value, as stored/validated by the backend.
 export interface MinTimePolicyValue {

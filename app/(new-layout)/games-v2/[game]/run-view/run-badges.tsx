@@ -89,6 +89,17 @@ export function AutoVerifiedBadge({
 }: {
     verifiedVia: VerifiedVia;
 }) {
+    if (verifiedVia === 'src') {
+        return (
+            <span
+                className={styles.autoVerified}
+                aria-label="verified on speedrun.com"
+                title="Verified on speedrun.com and imported. therun.gg did not make this call."
+            >
+                Verified on speedrun.com
+            </span>
+        );
+    }
     if (verifiedVia !== 'auto') return null;
     return (
         <span

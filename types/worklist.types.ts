@@ -44,7 +44,7 @@ export type WorklistItem = {
     vodUrl: string | null;
     endedAt: string; // ISO
     waitingSince: string; // ISO; earliest of endedAt and open flag createdAt
-    verifiedVia: 'mod' | 'grant' | 'auto' | 'self' | null;
+    verifiedVia: 'mod' | 'auto' | 'self' | 'src' | null;
     autoVerifyResult: unknown | null; // same shape as the run detail's autoVerifyResult
     leaderboardEligible: boolean;
     excluded: boolean;
@@ -124,7 +124,7 @@ export type WorklistPage = {
 export type WorklistDigest = {
     days: number;
     since: string; // ISO
-    autoVerified: number; // verified_via in ('auto','grant') within the window
+    autoVerified: number; // verified_via = 'auto' within the window
     modVerified: number; // verified_via = 'mod', status verified, within the window
     declined: number; // status rejected, verified_at within the window
     flagged: { reason: string; count: number }[]; // run_flags created within the window
