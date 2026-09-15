@@ -1,0 +1,146 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { useState, useTransition } from 'react';
+import { ArrowLeft, ArrowRight, PencilSquare } from 'react-bootstrap-icons';
+import { saveProfileStrip } from '~src/actions/profile-strip.action';
+import { useShowcaseOptional } from '../../../leaderboards/[name]/showcase-provider';
+import styles from '../profile-ui.module.scss';
+import { type ResolvedStrip, STRIP_MAX } from './resolve';
+
+/**
+ * The runner's own control for which stats their strip shows. On the
+ * Leaderboards tab in Customize mode it is always open and saves with the
+ * showcase; everywhere else it opens from the pencil and saves itself.
+ */
+export function StripPicker({ strip }: { strip: ResolvedStrip }) {
+    const router = useRouter();
+    const showcase = useShowcaseOptional();
+    const inCustomize = strip.tab === 'leaderboards' && !!showcase?.editing;
+    const [open, setOpen] = useState(false);
+    const [ids, setIds] = useState<string[]>(strip.picked);
+    const [error, setError] = useState<string | null>(null);
+    const [saving, startSaving] = useTransition();
+
+    const change = (next: string[]) => {
+        setIds(next);
+        if (inCustomize) showcase?.setStripDraft(next);
+    };
+    const toggle = (id: string) =>
+        change(ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]);
+    const shift = (from: number, to: number) => {
+        const next = [...ids];
+        const [moved] = next.splice(from, 1);
+        next.splice(to, 0, moved);
+        change(next);
+    };
+
+    if (!inCustomize && !open) {
+        return (
+            <button
+                type="button"
+                className={styles.stripEdit}
+                aria-label="Choose stats"
+                onClick={() => {
+                    setIds(strip.picked);
+                    setError(null);
+                    setOpen(true);
+                }}
+            >
+                <PencilSquare size={14} aria-hidden />
+            </button>
+        );
+    }
+
+    const byId = new Map(strip.options.map((o) => [o.id, o]));
+    const ordered = [
+        ...ids.map((id) => byId.get(id)).filter((o) => o !== undefined),
+        ...strip.options.filter((o) => !ids.includes(o.id)),
+    ];
+
+    const save = () =>
+        startSaving(async () => {
+            const result = await saveProfileStrip(strip.tab, ids);
+            if (!result.ok) {
+                setError(result.error);
+                return;
+            }
+            setOpen(false);
+            router.refresh();
+        });
+
+    return (
+        <div
+            className={styles.stripPanel}
+            role="group"
+            aria-label="Stats on this strip"
+        >
+            <ul className={styles.stripOptions}>
+                {ordered.map((o) => {
+                    const at = ids.indexOf(o.id);
+                    const on = at !== -1;
+                    return (
+                        <li
+                            key={o.id}
+                            data-empty={o.preview === null || undefined}
+                        >
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    checked={on}
+                                    disabled={!on && ids.length >= STRIP_MAX}
+                                    onChange={() => toggle(o.id)}
+                                />
+                                <span>{o.name}</span>
+                                <b>{o.preview ?? 'No data yet'}</b>
+                            </label>
+                            {on ? (
+                                <span className={styles.stripMove}>
+                                    <button
+                                        type="button"
+                                        aria-label={`Move ${o.name} left`}
+                                        disabled={at === 0}
+                                        onClick={() => shift(at, at - 1)}
+                                    >
+                                        <ArrowLeft size={12} aria-hidden />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        aria-label={`Move ${o.name} right`}
+                                        disabled={at === ids.length - 1}
+                                        onClick={() => shift(at, at + 1)}
+                                    >
+                                        <ArrowRight size={12} aria-hidden />
+                                    </button>
+                                </span>
+                            ) : null}
+                        </li>
+                    );
+                })}
+            </ul>
+            {inCustomize ? null : (
+                <span className={styles.stripActions}>
+                    {error ? (
+                        <span className={styles.stripError}>{error}</span>
+                    ) : null}
+                    <button
+                        type="button"
+                        className={styles.stripButton}
+                        onClick={() => setOpen(false)}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        className={styles.stripButton}
+                        data-primary
+                        disabled={saving}
+                        onClick={save}
+                    >
+                        {saving ? 'Saving…' : 'Save'}
+                    </button>
+                </span>
+            )}
+        </div>
+    );
+}

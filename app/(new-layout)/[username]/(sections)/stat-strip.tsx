@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import Link from '~src/components/link';
 import styles from './profile-ui.module.scss';
 
@@ -20,10 +21,12 @@ export function StatStrip({
     lead,
     tiles,
     label,
+    editor,
 }: {
     lead?: StripLead | null;
     tiles: StripTile[];
     label: string;
+    editor?: ReactNode;
 }) {
     const leadBody = lead ? (
         <>
@@ -66,6 +69,7 @@ export function StatStrip({
                     ))}
                 </ul>
             ) : null}
+            {editor}
         </section>
     );
 }

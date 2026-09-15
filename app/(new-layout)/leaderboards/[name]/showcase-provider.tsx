@@ -38,6 +38,9 @@ interface Showcase {
     error: string | null;
     setEditing: (on: boolean) => void;
     setDraft: (update: (d: LeaderboardsLayout) => LeaderboardsLayout) => void;
+    /** The leaderboards stat strip's draft picks, set while customizing. */
+    stripDraft: string[] | null;
+    setStripDraft: (ids: string[]) => void;
     save: () => void;
 }
 
@@ -57,12 +60,15 @@ export function ShowcaseProvider({
     const [draft, setDraftState] = useState<LeaderboardsLayout>(() =>
         strip(layout),
     );
+    const [stripDraft, setStripDraftState] = useState<string[] | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [saving, startSaving] = useTransition();
 
     const dirty = useMemo(
-        () => JSON.stringify(draft) !== JSON.stringify(strip(layout)),
-        [draft, layout],
+        () =>
+            JSON.stringify(draft) !== JSON.stringify(strip(layout)) ||
+            stripDraft !== null,
+        [draft, layout, stripDraft],
     );
 
     const setEditing = useCallback(
@@ -71,6 +77,7 @@ export function ShowcaseProvider({
             // layout whenever edit mode changes, so a stale draft from a
             // prior save never resurfaces the next time it opens.
             setDraftState(strip(layout));
+            setStripDraftState(null);
             setError(null);
             setEditingState(on);
         },
@@ -83,9 +90,14 @@ export function ShowcaseProvider({
         [],
     );
 
+    const setStripDraft = useCallback(
+        (ids: string[]) => setStripDraftState(ids),
+        [],
+    );
+
     const save = useCallback(() => {
         startSaving(async () => {
-            const result = await saveLeaderboardsLayout(draft, null);
+            const result = await saveLeaderboardsLayout(draft, stripDraft);
             if (!result.ok) {
                 setError(result.error);
                 return;
@@ -93,7 +105,7 @@ export function ShowcaseProvider({
             setEditingState(false);
             router.refresh();
         });
-    }, [draft, router]);
+    }, [draft, stripDraft, router]);
 
     const value = useMemo<Showcase>(
         () => ({
@@ -106,6 +118,8 @@ export function ShowcaseProvider({
             error,
             setEditing,
             setDraft,
+            stripDraft,
+            setStripDraft,
             save,
         }),
         [
@@ -118,6 +132,8 @@ export function ShowcaseProvider({
             error,
             setEditing,
             setDraft,
+            stripDraft,
+            setStripDraft,
             save,
         ],
     );

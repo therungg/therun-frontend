@@ -193,6 +193,89 @@ $row-line: color-mix(in srgb, #{$border} 70%, transparent);
     border-left: 0;
 }
 
+// ---- Strip picker (owner only) ------------------------------------------
+
+.stripEdit {
+    @include board.control-pill;
+    align-self: center;
+    margin-left: auto;
+}
+
+.stripPanel {
+    @include board.board-surface(dt.$spacing-lg);
+    flex-basis: 100%;
+    display: grid;
+    gap: dt.$spacing-md;
+}
+
+.stripOptions {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    gap: dt.$spacing-sm dt.$spacing-lg;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: dt.$spacing-sm;
+        min-width: 0;
+
+        &[data-empty] {
+            opacity: 0.55;
+        }
+    }
+
+    label {
+        display: flex;
+        align-items: baseline;
+        gap: dt.$spacing-sm;
+        min-width: 0;
+        cursor: pointer;
+    }
+
+    b {
+        font-family: dt.$font-mono;
+        font-variant-numeric: tabular-nums;
+        color: var(--bs-secondary-color);
+        white-space: nowrap;
+    }
+}
+
+.stripMove {
+    display: inline-flex;
+    gap: 2px;
+
+    button {
+        @include board.control-pill;
+        padding: 0.2rem;
+    }
+}
+
+.stripActions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: dt.$spacing-sm;
+}
+
+.stripButton {
+    @include board.control-pill;
+
+    &[data-primary] {
+        @include board.control-pill-active;
+    }
+}
+
+.stripError {
+    color: var(--bs-danger-text-emphasis);
+    font-size: dt.$font-size-sm;
+    margin-right: auto;
+}
+
 // ---- Panels of groups and rows -------------------------------------------
 
 .panel {
