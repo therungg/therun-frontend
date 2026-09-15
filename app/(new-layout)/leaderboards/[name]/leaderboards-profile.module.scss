@@ -766,7 +766,7 @@ $row-line: color-mix(
     font-size: dt.$font-size-xs;
 }
 
-// Pinned runs: up to six cards, three across; the video run is the same size
+// Pinned runs: up to three cards, three across; the video run is the same size
 // with its thumbnail on top. Under 640px everything is one column.
 .pins {
     display: grid;
@@ -784,7 +784,7 @@ $row-line: color-mix(
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    // Phones swipe through the showcase instead of scrolling past six cards.
+    // Phones swipe through the showcase instead of scrolling past the cards.
     @container profile-main (max-width: 559.98px) {
         grid-template-columns: none;
         grid-auto-flow: column;

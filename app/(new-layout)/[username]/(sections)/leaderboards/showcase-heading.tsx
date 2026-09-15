@@ -14,7 +14,7 @@ export function ShowcaseHeading({ children }: { children: ReactNode }) {
             : null
         : auto
           ? 'Automatic picks. Pin these, or pin any run from the list below.'
-          : 'Up to 6 runs. Drag cards to reorder.';
+          : 'Up to 3 runs. Drag cards to reorder.';
     return (
         <div className={styles.blockHead}>
             <div className={styles.blockHeadText}>

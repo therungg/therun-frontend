@@ -8,7 +8,7 @@ import type {
     ResolvedLeaderboardsLayout,
 } from '../../../../types/leaderboards-profile.types';
 
-export const PIN_LIMIT = 6;
+export const PIN_LIMIT = 3;
 export const COLLAPSE_AT = 9;
 export const SHELF_SCROLL_AT = 12;
 
@@ -87,7 +87,7 @@ export const entryPoints = (e: LeaderboardsProfileEntry) =>
         : 0;
 
 /**
- * The default showcase when the runner pinned nothing: their six runs worth
+ * The default showcase when the runner pinned nothing: their three runs worth
  * the most points, whatever game they are in. Each category and
  * subcategory is its own board.
  */

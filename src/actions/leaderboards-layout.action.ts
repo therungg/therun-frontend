@@ -17,7 +17,7 @@ const pinRef = z.object({
 const layoutSchema = z
     .object({
         mainGameId: z.number().int().positive().nullable(),
-        pins: z.array(pinRef).max(6),
+        pins: z.array(pinRef).max(3),
         videoPin: pinRef.nullable(),
         gameOrder: z.enum(['runners', 'rank', 'recent', 'name', 'manual']),
         manualGameIds: z.array(z.number().int().positive()).max(500),
