@@ -27,6 +27,8 @@ export type HeadlineId =
     | 'currentStreak'
     | 'longestStreak';
 
+export type StripTab = 'leaderboards' | 'stats' | 'activity' | 'races';
+
 export type ProfilePinRef =
     | { kind: 'run'; id: number }
     | { kind: 'manual'; id: number }
@@ -114,6 +116,8 @@ export interface RunnerProfileHead {
     };
     headline: Record<HeadlineId, HeadlineValue | null>;
     layout: ResolvedProfileLayout;
+    /** Stat strip tiles per tab; null = defaults. Absent on older payloads. */
+    strips?: Record<StripTab, string[] | null>;
     chapters: Record<ChapterId, boolean>;
     pins: ResolvedPin[];
     pinsAreAutomatic: boolean;

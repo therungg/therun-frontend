@@ -85,7 +85,7 @@ export function ShowcaseProvider({
 
     const save = useCallback(() => {
         startSaving(async () => {
-            const result = await saveLeaderboardsLayout(draft);
+            const result = await saveLeaderboardsLayout(draft, null);
             if (!result.ok) {
                 setError(result.error);
                 return;
