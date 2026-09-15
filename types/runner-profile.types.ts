@@ -118,6 +118,8 @@ export interface RunnerProfileHead {
     layout: ResolvedProfileLayout;
     /** Stat strip tiles per tab; null = defaults. Absent on older payloads. */
     strips?: Record<StripTab, string[] | null>;
+    /** The runner's resolved profile theme (own, main game's, or none). Absent on older payloads. */
+    theme?: GameTheme | null;
     chapters: Record<ChapterId, boolean>;
     pins: ResolvedPin[];
     pinsAreAutomatic: boolean;
