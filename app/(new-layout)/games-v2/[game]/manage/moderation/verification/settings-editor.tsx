@@ -215,96 +215,105 @@ export function SettingsEditor({
                         : 'Nothing is verified automatically — every run reaches you.'}
                 </p>
                 {form.autoVerifyEnabled && (
-                    <>
-                        <label className={styles.field}>
-                            <span className={styles.fieldLabel}>
-                                Never auto-verify the top
-                            </span>
-                            <input
-                                className="form-control form-control-sm"
-                                inputMode="numeric"
-                                value={form.neverTopN}
-                                onChange={(e) =>
-                                    set('neverTopN', e.target.value)
+                    <div className={styles.dials}>
+                        <div className={styles.dialGroup}>
+                            <label className={styles.dial}>
+                                <span>Never auto-verify the top</span>
+                                <input
+                                    className={`form-control form-control-sm ${styles.dialInput}`}
+                                    inputMode="numeric"
+                                    value={form.neverTopN}
+                                    onChange={(e) =>
+                                        set('neverTopN', e.target.value)
+                                    }
+                                />
+                            </label>
+                            <label className={styles.dial}>
+                                <span>A runner needs</span>
+                                <input
+                                    className={`form-control form-control-sm ${styles.dialInput}`}
+                                    inputMode="numeric"
+                                    value={form.minPriorVerifiedRuns}
+                                    onChange={(e) =>
+                                        set(
+                                            'minPriorVerifiedRuns',
+                                            e.target.value,
+                                        )
+                                    }
+                                />
+                                <span>verified runs on this game first</span>
+                            </label>
+                            <p className={styles.dialNote}>
+                                A run landing inside the top always reaches you,
+                                however clean it looks — set it to 0 to turn
+                                that off. Runs verified by you or by
+                                speedrun.com count toward the second; ones this
+                                setting cleared do not, so nobody builds a
+                                record on its own say-so.
+                            </p>
+                        </div>
+
+                        <div className={styles.dialGroup}>
+                            <label className={styles.dial}>
+                                <span>A split may beat their own best by</span>
+                                <input
+                                    className={`form-control form-control-sm ${styles.dialInput}`}
+                                    inputMode="decimal"
+                                    value={form.maxGoldBeatPct}
+                                    onChange={(e) =>
+                                        set('maxGoldBeatPct', e.target.value)
+                                    }
+                                />
+                                <span className={styles.dialSuffix}>%</span>
+                            </label>
+                            <label className={styles.dial}>
+                                <span>A run may beat their own PB by</span>
+                                <input
+                                    className={`form-control form-control-sm ${styles.dialInput}`}
+                                    inputMode="decimal"
+                                    value={form.maxPbJumpPct}
+                                    onChange={(e) =>
+                                        set('maxPbJumpPct', e.target.value)
+                                    }
+                                />
+                                <span className={styles.dialSuffix}>%</span>
+                            </label>
+                            <p className={styles.dialNote}>
+                                Both compare a runner only to their own history,
+                                so neither is checked for someone with no runs
+                                on this board yet. Lower numbers send you more
+                                runs.
+                            </p>
+                        </div>
+
+                        <div className={styles.dialGroup}>
+                            <SegmentedControl
+                                label="Live timing"
+                                value={form.liveData}
+                                options={[
+                                    {
+                                        value: 'must_match',
+                                        label: 'Must match the splits',
+                                    },
+                                    {
+                                        value: 'uploads_off',
+                                        label: 'No live uploads',
+                                    },
+                                ]}
+                                onChange={(v) =>
+                                    set(
+                                        'liveData',
+                                        v as SettingsForm['liveData'],
+                                    )
                                 }
                             />
-                            <span className={styles.hint}>
-                                A run landing this high always reaches you,
-                                however clean it looks. 0 turns it off.
-                            </span>
-                        </label>
-                        <label className={styles.field}>
-                            <span className={styles.fieldLabel}>
-                                Verified runs needed on this game first
-                            </span>
-                            <input
-                                className="form-control form-control-sm"
-                                inputMode="numeric"
-                                value={form.minPriorVerifiedRuns}
-                                onChange={(e) =>
-                                    set('minPriorVerifiedRuns', e.target.value)
-                                }
-                            />
-                            <span className={styles.hint}>
-                                Runs verified by you or by speedrun.com count;
-                                ones this setting cleared do not, so nobody can
-                                build up a record on its own say-so.
-                            </span>
-                        </label>
-                        <label className={styles.field}>
-                            <span className={styles.fieldLabel}>
-                                Largest gold beat allowed, in percent
-                            </span>
-                            <input
-                                className="form-control form-control-sm"
-                                inputMode="numeric"
-                                value={form.maxGoldBeatPct}
-                                onChange={(e) =>
-                                    set('maxGoldBeatPct', e.target.value)
-                                }
-                            />
-                            <span className={styles.hint}>
-                                How far a single split may beat the runner's own
-                                best-ever before you look. Lower sends you more
-                                runs. Skipped for a runner with no history here.
-                            </span>
-                        </label>
-                        <label className={styles.field}>
-                            <span className={styles.fieldLabel}>
-                                Largest PB improvement allowed, in percent
-                            </span>
-                            <input
-                                className="form-control form-control-sm"
-                                inputMode="numeric"
-                                value={form.maxPbJumpPct}
-                                onChange={(e) =>
-                                    set('maxPbJumpPct', e.target.value)
-                                }
-                            />
-                            <span className={styles.hint}>
-                                How much a run may beat the runner's own
-                                previous PB. Their first PB here has nothing to
-                                compare against, so it is not checked.
-                            </span>
-                        </label>
-                        <SegmentedControl
-                            label="Live timing"
-                            value={form.liveData}
-                            options={[
-                                {
-                                    value: 'must_match',
-                                    label: 'Must match the splits',
-                                },
-                                {
-                                    value: 'uploads_off',
-                                    label: 'No live uploads',
-                                },
-                            ]}
-                            onChange={(v) =>
-                                set('liveData', v as SettingsForm['liveData'])
-                            }
-                        />
-                    </>
+                            <p className={styles.dialNote}>
+                                {form.liveData === 'must_match'
+                                    ? 'A run whose live timing disagrees with its splits reaches you. One with no live run at all is not judged either way.'
+                                    : 'This board ignores live timing entirely.'}
+                            </p>
+                        </div>
+                    </div>
                 )}
             </FormSection>
 
