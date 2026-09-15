@@ -2,9 +2,11 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { getLeaderboardsProfile } from '~src/lib/leaderboards-profile';
+import { getRunnerProfileHead } from '~src/lib/runner-profile';
 import buildMetadata, { getUserProfilePhoto } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
-import { GameThemeStyle } from '../../games-v2/[game]/theme/game-theme-style';
+import { PageTheme } from '../../games-v2/[game]/theme/page-theme';
+import { profileThemeOf } from '../../games-v2/[game]/theme/theme-pick';
 import { plural } from './format';
 import styles from './leaderboards-profile.module.scss';
 import { PinnedRuns } from './pinned-runs';
@@ -13,7 +15,7 @@ import { ProfileSidebar } from './profile-sidebar';
 import { ProfileTabs } from './profile-tabs';
 import { RejectedEntries } from './rejected-entries';
 import { ShowcaseProvider } from './showcase-provider';
-import { DEFAULT_LAYOUT, mainGameOf } from './showcase-rules';
+import { DEFAULT_LAYOUT } from './showcase-rules';
 
 interface PageProps {
     params: Promise<{ name: string }>;
@@ -37,18 +39,24 @@ export async function generateMetadata({
 export default async function LeaderboardsProfilePage({ params }: PageProps) {
     const { name } = await params;
     const decoded = safeDecodeURI(name);
-    const profile = await getLeaderboardsProfile(decoded);
+    const [profile, head] = await Promise.all([
+        getLeaderboardsProfile(decoded),
+        getRunnerProfileHead(decoded).catch(() => null),
+    ]);
     if (!profile) notFound();
 
     const layout = profile.layout ?? DEFAULT_LAYOUT;
-    const theme = mainGameOf(profile.games, layout.mainGameId)?.theme ?? null;
     const games = profile.games.map((g) => ({ ...g, theme: null }));
     const canCustomize = profile.layout !== undefined;
 
     return (
         <ShowcaseProvider games={games} layout={layout}>
             <div className={styles.page}>
-                <GameThemeStyle theme={theme} />
+                <PageTheme
+                    kind="profile"
+                    label={profile.runner.name}
+                    theme={head ? profileThemeOf(head) : null}
+                />
                 <ProfileHeader
                     runner={profile.runner}
                     standing={profile.standing}

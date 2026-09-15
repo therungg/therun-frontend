@@ -17,7 +17,7 @@ import type { ClaimCtaState } from '../claim/claim-cta';
 import { GameHero } from '../header/game-hero';
 import { isoDaysAgo, toSparklineSeries } from '../header/sparkline-data';
 import { ViewTabs } from '../header/view-tabs';
-import { GameThemeStyle } from '../theme/game-theme-style';
+import { PageTheme } from '../theme/page-theme';
 import {
     dropStandingsCategories,
     orderStandingsForDisplay,
@@ -124,7 +124,11 @@ export default async function GameStandingsPage({ params }: PageProps) {
             {/* The tabs are the board's own pages, so they carry the board's
                 theme; without this they fell back to site green while the
                 root route next door was themed. */}
-            <GameThemeStyle theme={gameMeta?.theme ?? null} />
+            <PageTheme
+                kind="game"
+                label={resolvedGame.display}
+                theme={gameMeta?.theme ?? null}
+            />
             <GameHero
                 game={resolvedGame}
                 stats={quickStats}

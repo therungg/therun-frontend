@@ -24,7 +24,7 @@ import { GamePage } from './game-page';
 import { loadGameOverviewData } from './overview/data';
 import { GameOverviewPage } from './overview/overview-page';
 import { decideGameRootView } from './root-view';
-import { GameThemeStyle } from './theme/game-theme-style';
+import { PageTheme } from './theme/page-theme';
 import type { GamePageSearchParams } from './types';
 
 export const maxDuration = 60;
@@ -193,7 +193,11 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
         );
         return (
             <>
-                <GameThemeStyle theme={theme} />
+                <PageTheme
+                    kind="game"
+                    label={resolvedGame.display}
+                    theme={theme}
+                />
                 <GameOverviewPage
                     data={data}
                     canManage={canManage}
@@ -230,7 +234,7 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
 
     return (
         <>
-            <GameThemeStyle theme={theme} />
+            <PageTheme kind="game" label={resolvedGame.display} theme={theme} />
             <GamePage
                 data={data}
                 canManage={canManage}

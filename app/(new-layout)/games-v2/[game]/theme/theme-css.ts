@@ -236,17 +236,21 @@ const GLOBAL_KEYS = new Set([
  * theme never bleeds into the site topbar, which lives outside it. The board
  * owns its colors, so the scoped block is scheme-independent (emitted once).
  */
-export function buildThemeCss(theme: GameTheme): string {
+export function buildThemeCss(
+    theme: GameTheme,
+    pick?: 'page' | 'mine',
+): string {
     const vars = deriveThemeVars(theme, 'dark');
     const global: Record<string, string> = {};
     const scoped: Record<string, string> = {};
     for (const [k, v] of Object.entries(vars)) {
         (GLOBAL_KEYS.has(k) ? global : scoped)[k] = v;
     }
+    const html = pick ? `html[data-theme-pick='${pick}']` : '';
     return [
-        block("[data-bs-theme='dark']", global),
-        block("[data-bs-theme='light']", global),
-        block('.main-container', scoped),
+        block(`${html}[data-bs-theme='dark']`, global),
+        block(`${html}[data-bs-theme='light']`, global),
+        block(`${html ? `${html} ` : ''}.main-container`, scoped),
     ].join('\n');
 }
 

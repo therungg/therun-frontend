@@ -1,13 +1,10 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { ThemeMenu } from '../theme-menu';
 import { NotificationsBell } from './NotificationsBell';
 import styles from './TopbarUtilities.module.scss';
 import { UserMenu } from './UserMenu';
-
-const DarkModeSlider = dynamic(() => import('../dark-mode-slider'), {
-    ssr: false,
-});
 
 const GlobalSearch = dynamic(
     () =>
@@ -34,7 +31,7 @@ export function TopbarUtilities({
                 <GlobalSearch />
             </div>
             <div className={styles.desktopOnly}>
-                <DarkModeSlider />
+                <ThemeMenu />
             </div>
             {username && <NotificationsBell />}
             <UserMenu

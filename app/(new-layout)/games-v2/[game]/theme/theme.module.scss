@@ -29,3 +29,12 @@
         rgba(250, 250, 250, 0.86) 60%
     );
 }
+
+.backdrop[data-theme-backdrop] {
+    display: none;
+}
+
+:global(html[data-theme-pick='page']) .backdrop[data-theme-backdrop='page'],
+:global(html[data-theme-pick='mine']) .backdrop[data-theme-backdrop='mine'] {
+    display: block;
+}
