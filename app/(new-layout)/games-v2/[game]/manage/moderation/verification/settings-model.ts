@@ -251,7 +251,7 @@ export const previewSentences = (
         out.push(
             a.pendingEvaluated === 0
                 ? 'No pending timer runs to check.'
-                : `Of the ${a.pendingEvaluated} most recent pending runs, ${a.wouldClear} would be verified automatically, ${a.wouldFlag} would be flagged for review, and ${a.awaitingLive} would wait for a live run.`,
+                : `Of the ${a.pendingEvaluated} most recent pending runs, ${a.wouldClear} would be verified automatically, ${a.wouldFlag} would be flagged for review, and ${a.couldNotCheck} could not be checked at all.`,
         );
     }
     if (p.intake) {

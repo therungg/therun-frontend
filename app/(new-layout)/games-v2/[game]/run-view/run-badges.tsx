@@ -75,7 +75,8 @@ export const AUTO_VERIFY_CHECK_LABELS: Record<AutoVerifyCheckName, string> = {
 const AUTO_VERIFY_OUTCOME_LABELS: Record<AutoVerifyOutcome, string> = {
     pass: 'Passed',
     fail: 'Failed',
-    awaiting_live: 'Waiting for live timing',
+    // Nothing was judged — never render this as a soft pass.
+    could_not_check: 'Not checked',
 };
 
 /**

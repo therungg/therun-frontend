@@ -83,7 +83,7 @@ export type SettingsPreview = {
         pendingEvaluated: number; // pending timer runs replayed, at most 100
         wouldClear: number;
         wouldFlag: number;
-        awaitingLive: number;
+        couldNotCheck: number;
     };
     intake?: {
         timerRunsLastWeek: number; // timer runs that would have landed ineligible

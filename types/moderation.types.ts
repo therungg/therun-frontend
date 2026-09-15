@@ -318,13 +318,25 @@ export interface AutoVerifyCheckResult {
     details: Record<string, unknown>;
 }
 
-export type AutoVerifyOutcome = 'pass' | 'fail' | 'awaiting_live';
+/**
+ * `could_not_check` means no judgement was reached at all — never treat it as a
+ * soft pass. Mirrors src/leaderboards/auto-verify/types.ts.
+ */
+export type AutoVerifyOutcome = 'pass' | 'fail' | 'could_not_check';
+
+/** Why nothing was judged. Only `awaiting_live` is retryable. */
+export type AutoVerifyUncheckedReason =
+    | 'awaiting_live'
+    | 'no_splits_history'
+    | 'attempt_not_found';
 
 export interface AutoVerifyResult {
     preset: string;
     presetVersion: number;
     evaluatedAt: string;
     outcome: AutoVerifyOutcome;
+    /** Set when and only when `outcome` is 'could_not_check'. */
+    uncheckedReason?: AutoVerifyUncheckedReason | null;
     snapshotId: number | null;
     checks: Partial<Record<AutoVerifyCheckName, AutoVerifyCheckResult>>;
 }

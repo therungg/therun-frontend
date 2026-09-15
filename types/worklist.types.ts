@@ -70,10 +70,10 @@ export type WaitingOnRunners = {
     }[]; // at most 50, oldest ask first; count is the full total
 };
 
-export type WorklistBatchKind = 'trusted_clean' | 'same_runner';
+export type WorklistBatchKind = 'known_runner' | 'same_runner';
 
 export type WorklistBatch = {
-    key: string; // stable: "trusted_clean" or "runner:{userId|g:name}"
+    key: string; // stable: "known_runner" or "runner:{userId|g:name}"
     kind: WorklistBatchKind;
     label: string; // e.g. "12 runs from runners you've verified before, all checks clean"
     runIds: number[];
