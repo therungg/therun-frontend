@@ -28,6 +28,7 @@ export function StandingStrip({
                   game: top.game.game,
                   category: top.entry.category,
                   total: top.entry.totalRunners ?? 0,
+                  image: top.game.imageUrl,
               }
             : null;
     const strip = resolveStrip(leaderboardsStrip, profile, saved);
@@ -46,6 +47,7 @@ export function StandingStrip({
                           what: `${best.game} · ${best.category}`,
                           href: `/games/${safeEncodeURI(best.game)}`,
                           medal: MEDALS[best.rank],
+                          image: best.image,
                       }
                     : null
             }

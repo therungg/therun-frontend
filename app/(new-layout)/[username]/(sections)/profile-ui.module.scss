@@ -116,6 +116,19 @@ $row-line: color-mix(in srgb, #{$border} 70%, transparent);
     }
 }
 
+.leadArt {
+    display: inline-flex;
+    flex-shrink: 0;
+
+    img {
+        width: 45px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: dt.$radius-sm;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    }
+}
+
 .leadValue {
     @include medal-ink;
     font-family: dt.$font-mono;
