@@ -1,0 +1,105 @@
+.list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.5rem;
+}
+
+.rowMain {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.board {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.time {
+    font-variant-numeric: tabular-nums;
+    font-size: 1.1rem;
+}
+
+.rowMeta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-left: auto;
+}
+
+.waiting {
+    font-size: 0.875rem;
+    opacity: 0.75;
+}
+
+/* --- the form --- */
+
+.rules {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    max-height: 18rem;
+    overflow-y: auto;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.rulesHeading {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.fieldLabel {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.hint {
+    font-size: 0.85rem;
+    opacity: 0.75;
+    margin: 0;
+}
+
+.timerNote {
+    font-size: 0.85rem;
+    opacity: 0.85;
+    margin: 0;
+}
+
+.retime {
+    margin-top: 0.5rem;
+}
+
+.applyRetime {
+    align-self: flex-start;
+    margin-top: 0.5rem;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
