@@ -5,14 +5,20 @@ import { toast } from 'react-toastify';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { VariableRow } from '../../../../../../../types/leaderboards.types';
 import type { WaitingOnRunners } from '../../../../../../../types/worklist.types';
+import { applyVerdictsAction } from '../shared/actions/verdicts.action';
 import { nudgeRunsAction, waiveVideoAction } from './actions/worklist.action';
 import { boardLabel, remindedLabel, waitingLabel } from './worklist-model';
 import styles from './worklist-pane.module.scss';
 
 /**
- * Runs off the board until their owner adds a video. Not work: nothing here
- * counts toward what's waiting on the moderator. Two verbs: remind the runner,
- * or accept the run without a video.
+ * Runs the board is waiting on a *person* for, not a moderator: one off the board
+ * until its owner adds a video, and a PB held until its runner submits it. Not
+ * work — nothing here counts toward what is waiting on the moderator — but a
+ * moderator can end the wait either way.
+ *
+ * The escape hatch matters more than it looks. An account that has never been
+ * signed into cannot be shown the submission form, so without a way for a
+ * moderator to rule on a held run, those PBs would wait forever.
  */
 export function WaitingOnRunnersSection({
     gameSlug,
@@ -30,8 +36,26 @@ export function WaitingOnRunnersSection({
     const now = new Date();
     if (waiting.count === 0) return null;
 
-    const act = (runId: number, verb: 'nudge' | 'waive') =>
+    const act = (runId: number, verb: 'nudge' | 'waive' | 'accept') =>
         startBusy(async () => {
+            if (verb === 'accept') {
+                // Verifying a held run releases the hold server-side and puts it
+                // back on the board, without its runner ever having submitted.
+                const res = await applyVerdictsAction(
+                    gameSlug,
+                    'verify',
+                    [runId],
+                    'Accepted without waiting for the runner',
+                );
+                if ('error' in res) return void toast.error(res.error);
+                toast.success(
+                    res.result.affectedRunCount > 0
+                        ? 'Accepted. The run is on the board and no longer waiting.'
+                        : 'Nothing changed. This run is no longer waiting.',
+                );
+                onChanged();
+                return;
+            }
             const res =
                 verb === 'nudge'
                     ? await nudgeRunsAction(gameSlug, [runId])
@@ -54,6 +78,16 @@ export function WaitingOnRunnersSection({
             onChanged();
         });
 
+    const submissions = waiting.items.filter(
+        (w) => w.waitingFor === 'submission',
+    ).length;
+    const heading =
+        submissions === 0
+            ? `${waiting.count} ${waiting.count === 1 ? 'run is' : 'runs are'} waiting for the runner to add a video`
+            : submissions === waiting.count
+              ? `${waiting.count} ${waiting.count === 1 ? 'run is' : 'runs are'} waiting for the runner to submit ${waiting.count === 1 ? 'it' : 'them'}`
+              : `${waiting.count} runs are waiting on their runners`;
+
     return (
         <section className={styles.tier}>
             <button
@@ -62,8 +96,7 @@ export function WaitingOnRunnersSection({
                 aria-expanded={open}
                 onClick={() => setOpen((v) => !v)}
             >
-                {waiting.count} {waiting.count === 1 ? 'run is' : 'runs are'}{' '}
-                waiting for the runner to add a video
+                {heading}
             </button>
             {open && (
                 <ul className={styles.rows}>
@@ -77,6 +110,11 @@ export function WaitingOnRunnersSection({
                                     {w.askedAt
                                         ? waitingLabel(w.askedAt, now)
                                         : 'Not asked yet'}
+                                </span>
+                                <span className={styles.meta}>
+                                    {w.waitingFor === 'submission'
+                                        ? 'needs submitting'
+                                        : 'needs a video'}
                                 </span>
                                 <span className={styles.runner}>
                                     <span className={styles.runnerName}>
@@ -107,14 +145,25 @@ export function WaitingOnRunnersSection({
                                 >
                                     Remind runner
                                 </button>
-                                <button
-                                    type="button"
-                                    className="btn btn-sm btn-outline-secondary"
-                                    disabled={busy}
-                                    onClick={() => act(w.runId, 'waive')}
-                                >
-                                    Accept without video
-                                </button>
+                                {w.waitingFor === 'submission' ? (
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-outline-secondary"
+                                        disabled={busy}
+                                        onClick={() => act(w.runId, 'accept')}
+                                    >
+                                        Accept without waiting
+                                    </button>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-outline-secondary"
+                                        disabled={busy}
+                                        onClick={() => act(w.runId, 'waive')}
+                                    >
+                                        Accept without video
+                                    </button>
+                                )}
                             </div>
                         </li>
                     ))}

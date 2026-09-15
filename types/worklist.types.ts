@@ -52,7 +52,11 @@ export type WorklistItem = {
     trackRecord: WorklistTrackRecord | null; // null for guests
 };
 
-/** The worklist page's waitingOnRunners slot: runs held back for a missing video, owner only (guests are flagged, never hidden). */
+/**
+ * The worklist's waitingOnRunners slot: runs the board is waiting on a person
+ * for — a missing video, or a PB held until its runner submits it. Owner only
+ * (guests are flagged, never hidden).
+ */
 export type WaitingOnRunners = {
     count: number;
     items: {
@@ -63,6 +67,8 @@ export type WaitingOnRunners = {
         categoryDisplay: string;
         subcategoryKey: string;
         timeMs: number;
+        /** What the board is waiting for. */
+        waitingFor: 'video' | 'submission';
         askedAt: string | null; // when the video was first asked for; null if no ask was logged
         lastNudgedAt: string | null;
     }[]; // at most 50, oldest ask first; count is the full total
