@@ -228,6 +228,10 @@ export function SettingsEditor({
                                     set('neverTopN', e.target.value)
                                 }
                             />
+                            <span className={styles.hint}>
+                                A run landing this high always reaches you,
+                                however clean it looks. 0 turns it off.
+                            </span>
                         </label>
                         <label className={styles.field}>
                             <span className={styles.fieldLabel}>
@@ -241,6 +245,11 @@ export function SettingsEditor({
                                     set('minPriorVerifiedRuns', e.target.value)
                                 }
                             />
+                            <span className={styles.hint}>
+                                Runs verified by you or by speedrun.com count;
+                                ones this setting cleared do not, so nobody can
+                                build up a record on its own say-so.
+                            </span>
                         </label>
                         <label className={styles.field}>
                             <span className={styles.fieldLabel}>
@@ -254,6 +263,11 @@ export function SettingsEditor({
                                     set('maxGoldBeatPct', e.target.value)
                                 }
                             />
+                            <span className={styles.hint}>
+                                How far a single split may beat the runner's own
+                                best-ever before you look. Lower sends you more
+                                runs. Skipped for a runner with no history here.
+                            </span>
                         </label>
                         <label className={styles.field}>
                             <span className={styles.fieldLabel}>
@@ -267,6 +281,11 @@ export function SettingsEditor({
                                     set('maxPbJumpPct', e.target.value)
                                 }
                             />
+                            <span className={styles.hint}>
+                                How much a run may beat the runner's own
+                                previous PB. Their first PB here has nothing to
+                                compare against, so it is not checked.
+                            </span>
                         </label>
                         <SegmentedControl
                             label="Live timing"

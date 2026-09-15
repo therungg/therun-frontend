@@ -47,6 +47,13 @@ export const formFrom = (e: EffectiveSettings): SettingsForm => {
 const int = (text: string): number | null =>
     /^\d+$/.test(text.trim()) ? Number(text.trim()) : null;
 
+/** A percentage a moderator typed: 0-100, decimals allowed, blank is not zero. */
+const pct = (v: string): boolean => {
+    if (v.trim() === '') return false;
+    const n = Number(v);
+    return Number.isFinite(n) && n >= 0 && n <= 100;
+};
+
 /** First problem with the form, in the words the editor shows, or null. */
 export const validateForm = (f: SettingsForm): string | null => {
     if (
@@ -63,6 +70,19 @@ export const validateForm = (f: SettingsForm): string | null => {
         return 'Enter the time under which a video is required.';
     if (int(f.neverTopN) === null || int(f.neverTopN)! > 1000)
         return 'Never auto-verify the top must be 0 to 1000.';
+    // Only worth checking the rest when they are actually in use; an untouched
+    // form with auto-verify off should not scold.
+    if (f.autoVerifyEnabled) {
+        if (
+            int(f.minPriorVerifiedRuns) === null ||
+            int(f.minPriorVerifiedRuns)! > 100
+        )
+            return 'Verified runs needed first must be 0 to 100.';
+        if (!pct(f.maxGoldBeatPct))
+            return 'Largest gold beat must be a number from 0 to 100.';
+        if (!pct(f.maxPbJumpPct))
+            return 'Largest PB improvement must be a number from 0 to 100.';
+    }
     return null;
 };
 
@@ -143,7 +163,9 @@ const videoWords = (v: VideoRule) => {
 export const summarize = (e: EffectiveSettings): string => {
     const parts = [
         videoWords(e.videoRule.value),
-        e.autoVerify.value.enabled ? 'auto-verify on' : 'auto-verify off',
+        e.autoVerify.value.enabled
+            ? `auto-verify on, never the top ${e.autoVerify.value.neverTopN}`
+            : 'auto-verify off',
     ];
     if (e.intake.value.timerRuns === 'runner_submits')
         parts.push('runners submit their own PBs');
