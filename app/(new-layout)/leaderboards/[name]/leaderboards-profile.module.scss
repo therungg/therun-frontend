@@ -787,6 +787,9 @@ $row-line: color-mix(
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-auto-flow: dense;
+    // Each card keeps its own height: a video card makes its row taller
+    // without stretching the cards beside it.
+    align-items: start;
     gap: dt.$spacing-lg;
     --rank-gold: #d4a73a;
     --rank-silver: #a9b4c2;
