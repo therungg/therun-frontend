@@ -3,6 +3,7 @@
 import { useLayoutEffect } from 'react';
 import { publishThemeOptions } from '~src/components/theme-options-store';
 import type { ThemePick } from '~src/lib/theme-settings';
+import { applyThemeScheme, holdThemeScheme } from './theme-scheme';
 
 /**
  * Re-applies the pick attributes on client-side navigation (the inline script
@@ -26,15 +27,19 @@ export function ThemePickSync({
         html.dataset.themePage = kind;
         html.dataset.themeDefault = pick;
         html.dataset.themePick = pick;
+        applyThemeScheme(pick);
+        const release = holdThemeScheme();
         publishThemeOptions({
             page: label === null ? null : { label },
             mine,
             defaultPick: pick,
         });
         return () => {
+            release();
             delete html.dataset.themePage;
             delete html.dataset.themeDefault;
             delete html.dataset.themePick;
+            applyThemeScheme('none');
             publishThemeOptions(null);
         };
     }, [kind, pick, label, mine]);

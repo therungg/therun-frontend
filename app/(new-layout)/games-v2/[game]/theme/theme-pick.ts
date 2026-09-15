@@ -24,7 +24,13 @@ export function choosePick({
 
 /** Inline script body setting the pick attributes before paint. Values are from a closed set. */
 export function pickScript(pick: ThemePick, kind: 'profile' | 'game'): string {
-    return `(function(h){h.dataset.themePage=${JSON.stringify(kind)};h.dataset.themeDefault=${JSON.stringify(pick)};h.dataset.themePick=${JSON.stringify(pick)};})(document.documentElement);`;
+    // A theme runs on the dark color mode (see theme-scheme.ts); 'none' leaves
+    // the mode next-themes already set from the visitor's choice.
+    const dark =
+        pick === 'none'
+            ? ''
+            : "h.setAttribute('data-bs-theme','dark');h.style.colorScheme='dark';";
+    return `(function(h){h.dataset.themePage=${JSON.stringify(kind)};h.dataset.themeDefault=${JSON.stringify(pick)};h.dataset.themePick=${JSON.stringify(pick)};${dark}})(document.documentElement);`;
 }
 
 /**

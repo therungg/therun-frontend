@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { applyThemeScheme } from '~app/(new-layout)/games-v2/[game]/theme/theme-scheme';
 import {
     setCurrentPick,
     useCurrentPick,
@@ -50,6 +51,7 @@ export function ThemeMenu({ variant = 'desktop' }: ThemeMenuProps) {
         setCurrentPick(next);
         if (options) {
             document.documentElement.dataset.themePick = next;
+            applyThemeScheme(next);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [options, pathname]);
@@ -82,6 +84,10 @@ export function ThemeMenu({ variant = 'desktop' }: ThemeMenuProps) {
     const selectDefault = useCallback(
         (mode: 'light' | 'dark') => {
             document.documentElement.dataset.themePick = 'none';
+            // Set the mode directly too: a theme had forced dark, and setTheme
+            // skips re-applying when the stored choice didn't change.
+            document.documentElement.setAttribute('data-bs-theme', mode);
+            document.documentElement.style.colorScheme = mode;
             setTheme(mode);
             setCurrentPick('none');
             setOpen(false);
@@ -91,6 +97,7 @@ export function ThemeMenu({ variant = 'desktop' }: ThemeMenuProps) {
 
     const selectPick = useCallback((next: ThemePick) => {
         document.documentElement.dataset.themePick = next;
+        applyThemeScheme(next);
         setCurrentPick(next);
         setOpen(false);
     }, []);
