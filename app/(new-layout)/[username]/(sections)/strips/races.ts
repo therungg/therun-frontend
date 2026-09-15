@@ -47,13 +47,10 @@ export const racesStrip: StripCatalog<RacesStripData> = {
         {
             id: 'raceTime',
             name: 'Time spent racing',
-            build: (d) =>
-                d.totalRaceTime
-                    ? {
-                          value: formatRaceTime(d.totalRaceTime),
-                          label: 'spent racing',
-                      }
-                    : null,
+            build: (d) => ({
+                value: d.totalRaceTime ? formatRaceTime(d.totalRaceTime) : '—',
+                label: 'spent racing',
+            }),
         },
     ],
     defaults: () => ['races', 'finishRate', 'raceTime'],

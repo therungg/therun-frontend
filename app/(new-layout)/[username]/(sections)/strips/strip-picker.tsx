@@ -30,7 +30,11 @@ export function StripPicker({ strip }: { strip: ResolvedStrip }) {
     const [prevInCustomize, setPrevInCustomize] = useState(inCustomize);
     if (inCustomize !== prevInCustomize) {
         setPrevInCustomize(inCustomize);
-        if (inCustomize) setIds(strip.picked);
+        if (inCustomize) {
+            setIds(strip.picked);
+            setOpen(false);
+            setError(null);
+        }
     }
 
     const change = (next: string[]) => {
