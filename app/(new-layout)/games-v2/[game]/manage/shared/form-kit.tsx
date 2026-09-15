@@ -63,7 +63,7 @@ export function SegmentedControl({
 }: {
     label: string;
     value: string;
-    options: Array<{ value: string; label: string }>;
+    options: Array<{ value: string; label: string; disabled?: boolean }>;
     onChange: (value: string) => void;
     disabled?: boolean;
 }) {
@@ -84,7 +84,7 @@ export function SegmentedControl({
                         type="button"
                         role="radio"
                         aria-checked={opt.value === value}
-                        disabled={disabled}
+                        disabled={disabled || opt.disabled}
                         className={
                             opt.value === value
                                 ? `${styles.segment} ${styles.segmentActive}`
