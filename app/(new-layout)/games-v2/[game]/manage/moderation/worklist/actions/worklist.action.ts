@@ -5,20 +5,13 @@ import { resolveGame } from '~src/lib/games-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { ModError } from '~src/lib/moderation/mod-fetch';
 import {
-    dismissTrustOffer,
-    getTrustState,
     getWorklist,
     getWorklistDigest,
-    grantTrust,
-    listTrustGrants,
     nudgeRuns,
     requestVideo,
-    revokeTrust,
     waiveVideo,
 } from '~src/lib/moderation/worklist';
 import type {
-    TrustGrant,
-    TrustState,
     WorklistDigest,
     WorklistFilter,
     WorklistPage,
@@ -73,82 +66,6 @@ export async function loadDigestAction(
         };
     } catch (e) {
         return fail(e, 'Failed to load the digest.');
-    }
-}
-
-export async function loadTrustStateAction(
-    gameSlug: string,
-    userId: number,
-): Promise<{ ok: true; trust: TrustState } | Fail> {
-    const g = await requireMod(gameSlug);
-    if ('error' in g) return g;
-    try {
-        return {
-            ok: true,
-            trust: await getTrustState(g.sessionId, g.gameId, userId),
-        };
-    } catch (e) {
-        return fail(e, 'Failed to load trust state.');
-    }
-}
-
-export async function dismissTrustAction(
-    gameSlug: string,
-    userId: number,
-): Promise<{ ok: true } | Fail> {
-    const g = await requireMod(gameSlug);
-    if ('error' in g) return g;
-    try {
-        await dismissTrustOffer(g.sessionId, g.gameId, userId);
-        return { ok: true };
-    } catch (e) {
-        return fail(e, 'Failed to save that.');
-    }
-}
-
-export async function grantTrustAction(
-    gameSlug: string,
-    userId: number,
-    categoryId: number | null,
-): Promise<{ ok: true; grant: TrustGrant } | Fail> {
-    const g = await requireMod(gameSlug);
-    if ('error' in g) return g;
-    try {
-        return {
-            ok: true,
-            grant: await grantTrust(g.sessionId, g.gameId, userId, categoryId),
-        };
-    } catch (e) {
-        return fail(e, 'Failed to trust this runner.');
-    }
-}
-
-export async function listTrustGrantsAction(
-    gameSlug: string,
-): Promise<{ ok: true; grants: TrustGrant[] } | Fail> {
-    const g = await requireMod(gameSlug);
-    if ('error' in g) return g;
-    try {
-        return {
-            ok: true,
-            grants: await listTrustGrants(g.sessionId, g.gameId),
-        };
-    } catch (e) {
-        return fail(e, 'Failed to load trusted runners.');
-    }
-}
-
-export async function revokeTrustAction(
-    gameSlug: string,
-    grantId: number,
-): Promise<{ ok: true } | Fail> {
-    const g = await requireMod(gameSlug);
-    if ('error' in g) return g;
-    try {
-        await revokeTrust(g.sessionId, g.gameId, grantId);
-        return { ok: true };
-    } catch (e) {
-        return fail(e, 'Failed to revoke trust.');
     }
 }
 

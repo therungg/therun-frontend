@@ -222,27 +222,6 @@ export function SettingsEditor({
                         />
                     </>
                 )}
-                <SwitchField
-                    id={`trust-${categoryId ?? 'game'}`}
-                    label="Trust runners automatically"
-                    checked={form.autoTrustOn}
-                    onChange={(v) => set('autoTrustOn', v)}
-                />
-                {form.autoTrustOn && (
-                    <label className={styles.field}>
-                        <span className={styles.fieldLabel}>
-                            Verified runs before trusting
-                        </span>
-                        <input
-                            className="form-control form-control-sm"
-                            inputMode="numeric"
-                            value={form.autoTrustAfter}
-                            onChange={(e) =>
-                                set('autoTrustAfter', e.target.value)
-                            }
-                        />
-                    </label>
-                )}
             </FormSection>
 
             <FormSection title="What needs a video">
@@ -306,44 +285,6 @@ export function SettingsEditor({
                             )
                         }
                     />
-                )}
-                <SegmentedControl
-                    label="Review window"
-                    value={form.windowMode}
-                    options={[
-                        { value: 'top_n', label: 'The top runs' },
-                        { value: 'under_time', label: 'Runs under a time' },
-                    ]}
-                    onChange={(v) =>
-                        set('windowMode', v as SettingsForm['windowMode'])
-                    }
-                />
-                {form.windowMode === 'top_n' ? (
-                    <label className={styles.field}>
-                        <span className={styles.fieldLabel}>
-                            Review the top
-                        </span>
-                        <input
-                            className="form-control form-control-sm"
-                            inputMode="numeric"
-                            value={form.windowN}
-                            onChange={(e) => set('windowN', e.target.value)}
-                        />
-                    </label>
-                ) : (
-                    <label className={styles.field}>
-                        <span className={styles.fieldLabel}>
-                            Review runs under this time, in milliseconds
-                        </span>
-                        <input
-                            className="form-control form-control-sm"
-                            inputMode="numeric"
-                            value={form.windowTimeMs}
-                            onChange={(e) =>
-                                set('windowTimeMs', e.target.value)
-                            }
-                        />
-                    </label>
                 )}
             </FormSection>
 

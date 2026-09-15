@@ -4,7 +4,6 @@ import type {
     IntakeSetting,
     SaveSettingsInput,
     SettingsPreview,
-    VerifyWindowSetting,
     VideoRule,
 } from '../../../../../../../types/verification-settings.types';
 
@@ -17,14 +16,9 @@ export type SettingsForm = {
     videoTopN: string;
     videoTimeMs: string;
     videoOnMissing: VideoRule['onMissing'];
-    autoTrustOn: boolean;
-    autoTrustAfter: string;
     preset: AutoVerifySetting['preset'];
     neverTopN: string;
     requireLive: boolean;
-    windowMode: VerifyWindowSetting['mode'];
-    windowN: string;
-    windowTimeMs: string;
 };
 
 export const PRESET_OPTIONS: Array<{
@@ -50,7 +44,6 @@ export const PRESET_HINTS: Record<AutoVerifySetting['preset'], string> = {
 export const formFrom = (e: EffectiveSettings): SettingsForm => {
     const manual = e.intake.value.manual;
     const video = e.videoRule.value;
-    const window = e.verifyWindow.value;
     return {
         acceptTimer: e.intake.value.acceptTimer,
         manualMode: manual.mode,
@@ -59,14 +52,9 @@ export const formFrom = (e: EffectiveSettings): SettingsForm => {
         videoTopN: String(video.topN ?? 10),
         videoTimeMs: String(video.timeMs ?? ''),
         videoOnMissing: video.onMissing,
-        autoTrustOn: e.autoTrust.value.afterVerifiedRuns !== null,
-        autoTrustAfter: String(e.autoTrust.value.afterVerifiedRuns ?? 5),
         preset: e.autoVerify.value.preset,
         neverTopN: String(e.autoVerify.value.neverTopN),
         requireLive: e.autoVerify.value.requireLive,
-        windowMode: window.mode,
-        windowN: window.mode === 'top_n' ? String(window.n) : '10',
-        windowTimeMs: window.mode === 'under_time' ? String(window.timeMs) : '',
     };
 };
 
@@ -87,17 +75,8 @@ export const validateForm = (f: SettingsForm): string | null => {
         return 'Top N for video must be 1 to 1000.';
     if (f.videoRequire === 'under_time' && !int(f.videoTimeMs))
         return 'Enter the time under which a video is required.';
-    if (
-        f.autoTrustOn &&
-        !(int(f.autoTrustAfter) && int(f.autoTrustAfter)! <= 100)
-    )
-        return 'Trust after must be 1 to 100 verified runs.';
     if (int(f.neverTopN) === null || int(f.neverTopN)! > 1000)
         return 'Never auto-verify the top must be 0 to 1000.';
-    if (f.windowMode === 'top_n' && !int(f.windowN))
-        return 'Review window must be at least 1 run.';
-    if (f.windowMode === 'under_time' && !int(f.windowTimeMs))
-        return 'Enter the review window time.';
     return null;
 };
 
@@ -119,11 +98,6 @@ const autoVerifyOf = (f: SettingsForm): AutoVerifySetting => ({
     neverTopN: int(f.neverTopN)!,
     requireLive: f.requireLive,
 });
-const windowOf = (f: SettingsForm): VerifyWindowSetting =>
-    f.windowMode === 'top_n'
-        ? { mode: 'top_n', n: int(f.windowN)! }
-        : { mode: 'under_time', timeMs: int(f.windowTimeMs)! };
-
 const same = (a: unknown, b: unknown) =>
     JSON.stringify(a) === JSON.stringify(b);
 
@@ -136,19 +110,8 @@ export const inputFrom = (
     const input: SaveSettingsInput = { categoryId };
     if (!same(intakeOf(f), intakeOf(original))) input.intake = intakeOf(f);
     if (!same(videoOf(f), videoOf(original))) input.videoRule = videoOf(f);
-    const trust = {
-        afterVerifiedRuns: f.autoTrustOn ? int(f.autoTrustAfter)! : null,
-    };
-    const trustBefore = {
-        afterVerifiedRuns: original.autoTrustOn
-            ? int(original.autoTrustAfter)
-            : null,
-    };
-    if (!same(trust, trustBefore)) input.autoTrust = trust;
     if (!same(autoVerifyOf(f), autoVerifyOf(original)))
         input.autoVerify = autoVerifyOf(f);
-    if (!same(windowOf(f), windowOf(original)))
-        input.verifyWindow = windowOf(f);
     return input;
 };
 
@@ -160,11 +123,7 @@ export const fullInputFrom = (
     categoryId,
     intake: intakeOf(f),
     videoRule: videoOf(f),
-    autoTrust: {
-        afterVerifiedRuns: f.autoTrustOn ? int(f.autoTrustAfter)! : null,
-    },
     autoVerify: autoVerifyOf(f),
-    verifyWindow: windowOf(f),
 });
 
 export const isDirty = (f: SettingsForm, original: SettingsForm) =>
@@ -176,11 +135,7 @@ export const needsPreview = (input: SaveSettingsInput) =>
     input.autoVerify !== undefined ||
     input.intake !== undefined;
 
-/** Preview is offered (not required) when only automatic trust changed. */
-export const canPreview = (input: SaveSettingsInput) =>
-    needsPreview(input) ||
-    (input.autoTrust !== undefined &&
-        input.autoTrust?.afterVerifiedRuns != null);
+export const canPreview = (input: SaveSettingsInput) => needsPreview(input);
 
 const videoWords = (v: VideoRule) => {
     switch (v.require) {
@@ -264,10 +219,6 @@ export const previewSentences = (
                 `${p.intake.pendingSelfClaims} self-claimed ${p.intake.pendingSelfClaims === 1 ? 'time is' : 'times are'} waiting in the mod queue. This change doesn't affect them.`,
             );
     }
-    if (p.autoTrust)
-        out.push(
-            `${p.autoTrust.runnersWhoQualifyNow} ${p.autoTrust.runnersWhoQualifyNow === 1 ? 'runner' : 'runners'} would be trusted on their next verified run.`,
-        );
     if (out.length === 0) out.push('Nothing on the board changes.');
     return out;
 };

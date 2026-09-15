@@ -60,11 +60,6 @@ export function ModProvenancePanel({
                     <dt className="col-sm-3">Excluded</dt>
                     <dd className="col-sm-9">{mod.excluded ? 'Yes' : 'No'}</dd>
 
-                    <dt className="col-sm-3">Verify queue hidden</dt>
-                    <dd className="col-sm-9">
-                        {mod.verifyQueueHidden ? 'Yes' : 'No'}
-                    </dd>
-
                     {rawVariables && Object.keys(rawVariables).length > 0 && (
                         <>
                             <dt className="col-sm-3">Raw variables</dt>

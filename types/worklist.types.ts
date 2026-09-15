@@ -21,8 +21,6 @@ export type WorklistTrackRecord = {
     rejectedRunsThisGame: number;
     gamesRun: number; // distinct games with any finished run
     hasLiveTracked: boolean; // any live_run_snapshots row
-    trusted: boolean; // an auto_verify_grants row covers this game (game-wide or any category)
-    trustOffer: boolean; // see Trust below
 };
 
 export type WorklistItem = {
@@ -130,24 +128,6 @@ export type WorklistDigest = {
     modVerified: number; // verified_via = 'mod', status verified, within the window
     declined: number; // status rejected, verified_at within the window
     flagged: { reason: string; count: number }[]; // run_flags created within the window
-};
-
-export type TrustState = {
-    userId: number;
-    trusted: boolean;
-    trustOffer: boolean;
-    approvalsSinceDecline: number;
-};
-
-export type TrustGrant = {
-    id: number;
-    userId: number;
-    username: string | null;
-    gameId: number;
-    categoryId: number | null; // null = the whole game
-    createdBy: number;
-    reason: string | null;
-    createdAt: string;
 };
 
 export type WorklistFilter = {

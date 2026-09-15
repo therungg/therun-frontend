@@ -11,7 +11,6 @@ import {
 } from './actions/verification-settings.action';
 import { SettingsEditor } from './settings-editor';
 import { summarize } from './settings-model';
-import { TrustedRunners } from './trusted-runners';
 import styles from './verification-pane.module.scss';
 
 interface Props {
@@ -55,9 +54,7 @@ export function VerificationPane({ gameSlug, gameDisplay, categories }: Props) {
             categoryId,
             intake: null,
             videoRule: null,
-            autoTrust: null,
             autoVerify: null,
-            verifyWindow: null,
         });
         if ('error' in res) {
             setError(res.error);
@@ -162,11 +159,6 @@ export function VerificationPane({ gameSlug, gameDisplay, categories }: Props) {
                             })}
                         </ul>
                     </section>
-
-                    <TrustedRunners
-                        gameSlug={gameSlug}
-                        categories={categories}
-                    />
                 </>
             )}
         </div>

@@ -6,7 +6,7 @@
 
 export type ManualSubmissions =
     | { mode: 'off' }
-    | { mode: 'trusted' } // trust grant, or a verified run on this game
+    | { mode: 'trusted' } // a verified run on this game
     | { mode: 'account_age'; days: number } // 1-365
     | { mode: 'anyone' };
 
@@ -19,26 +19,18 @@ export type VideoRule = {
     onMissing: 'hide' | 'flag';
 };
 
-export type AutoTrustSetting = { afterVerifiedRuns: number | null }; // null = off; 1-100
-
 export type AutoVerifySetting = {
     preset: 'off' | 'lenient' | 'standard' | 'strict';
     neverTopN: number;
     requireLive: boolean;
 };
 
-export type VerifyWindowSetting =
-    | { mode: 'top_n'; n: number }
-    | { mode: 'under_time'; timeMs: number };
-
 export type SettingSource = 'category' | 'game' | 'category_import' | 'default';
 
 export type EffectiveSettings = {
     intake: { value: IntakeSetting; source: SettingSource };
     videoRule: { value: VideoRule; source: SettingSource };
-    autoTrust: { value: AutoTrustSetting; source: SettingSource };
     autoVerify: { value: AutoVerifySetting; source: SettingSource };
-    verifyWindow: { value: VerifyWindowSetting; source: SettingSource };
 };
 
 export type VerificationSettingsView = {
@@ -57,9 +49,7 @@ export type SaveSettingsInput = {
     categoryId: number | null; // null = game default
     intake?: IntakeSetting | null; // null removes the row (category: inherit the game; game: built-in default)
     videoRule?: VideoRule | null;
-    autoTrust?: AutoTrustSetting | null;
     autoVerify?: AutoVerifySetting | null;
-    verifyWindow?: VerifyWindowSetting | null;
     applyVideoRuleToExisting?: boolean; // default false; see Previews
 };
 
@@ -88,8 +78,5 @@ export type SettingsPreview = {
     intake?: {
         timerRunsLastWeek: number; // timer runs that would have landed ineligible
         pendingSelfClaims: number; // unaffected; shown so the moderator knows they exist
-    };
-    autoTrust?: {
-        runnersWhoQualifyNow: number; // would be trusted on their next verified run
     };
 };

@@ -64,9 +64,6 @@ export function WorklistRow({
                         {item.isGuest && (
                             <span className={styles.pill}>Guest</span>
                         )}
-                        {item.trackRecord?.trusted && (
-                            <span className={styles.pill}>Trusted</span>
-                        )}
                     </span>
                     {record && <span className={styles.meta}>{record}</span>}
                 </span>
