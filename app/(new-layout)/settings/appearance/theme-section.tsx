@@ -2,9 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import { toast } from 'react-toastify';
 import {
     FormSection,
+    InlineError,
     SectionFooter,
     SegmentedControl,
     SwitchField,
@@ -30,12 +30,19 @@ const PROFILE_OPTIONS: Array<{ value: ProfileThemeSource; label: string }> = [
 export function ThemeSection({ initial }: { initial: ThemeSettings }) {
     const router = useRouter();
     const [settings, setSettings] = useState(initial);
+    const [status, setStatus] = useState<'idle' | 'saved' | 'error'>('idle');
+    const [error, setError] = useState<string | null>(null);
     const [pending, startTransition] = useTransition();
 
     const hasTheme = settings.theme != null;
 
+    const set = (updater: (s: ThemeSettings) => ThemeSettings) => {
+        setStatus('idle');
+        setSettings(updater);
+    };
+
     const setTheme = (theme: GameTheme | null) => {
-        setSettings((s) => ({
+        set((s) => ({
             ...s,
             theme,
             profileTheme:
@@ -46,13 +53,15 @@ export function ThemeSection({ initial }: { initial: ThemeSettings }) {
     };
 
     const save = () => {
+        setError(null);
         startTransition(async () => {
             const res = await saveThemeSettingsAction(settings);
             if (!res.ok) {
-                toast.error(res.error);
+                setStatus('error');
+                setError(res.error);
                 return;
             }
-            toast.success('Theme settings saved.');
+            setStatus('saved');
             router.refresh();
         });
     };
@@ -76,7 +85,7 @@ export function ThemeSection({ initial }: { initial: ThemeSettings }) {
                 value={settings.profileTheme}
                 disabled={pending}
                 onChange={(value) =>
-                    setSettings((s) => ({
+                    set((s) => ({
                         ...s,
                         profileTheme: value as ProfileThemeSource,
                     }))
@@ -93,7 +102,7 @@ export function ThemeSection({ initial }: { initial: ThemeSettings }) {
                 checked={settings.siteWide}
                 disabled={pending}
                 onChange={(checked) =>
-                    setSettings((s) => ({ ...s, siteWide: checked }))
+                    set((s) => ({ ...s, siteWide: checked }))
                 }
             />
             <SwitchField
@@ -102,7 +111,7 @@ export function ThemeSection({ initial }: { initial: ThemeSettings }) {
                 checked={settings.overProfiles}
                 disabled={pending || !settings.siteWide}
                 onChange={(checked) =>
-                    setSettings((s) => ({ ...s, overProfiles: checked }))
+                    set((s) => ({ ...s, overProfiles: checked }))
                 }
             />
             <SwitchField
@@ -111,7 +120,7 @@ export function ThemeSection({ initial }: { initial: ThemeSettings }) {
                 checked={settings.overGames}
                 disabled={pending || !settings.siteWide}
                 onChange={(checked) =>
-                    setSettings((s) => ({ ...s, overGames: checked }))
+                    set((s) => ({ ...s, overGames: checked }))
                 }
             />
 
@@ -129,6 +138,10 @@ export function ThemeSection({ initial }: { initial: ThemeSettings }) {
                 <Button type="button" disabled={pending} onClick={save}>
                     {pending ? 'Saving…' : 'Save theme'}
                 </Button>
+                {status === 'saved' && <span role="status">Saved.</span>}
+                {status === 'error' && error && (
+                    <InlineError>{error}</InlineError>
+                )}
             </SectionFooter>
         </FormSection>
     );
