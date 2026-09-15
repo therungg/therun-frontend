@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
 import styles from './profile-ui.module.scss';
 
@@ -8,6 +9,8 @@ export interface StripLead {
     what?: string | null;
     href?: string;
     medal?: string;
+    /** Game art shown before the number. */
+    image?: string | null;
 }
 
 export interface StripTile {
@@ -30,6 +33,17 @@ export function StatStrip({
 }) {
     const leadBody = lead ? (
         <>
+            {lead.image ? (
+                <span className={styles.leadArt}>
+                    <GameImage
+                        src={lead.image}
+                        alt=""
+                        quality="large"
+                        width={45}
+                        height={60}
+                    />
+                </span>
+            ) : null}
             <span className={styles.leadValue}>{lead.value}</span>
             <span className={styles.leadText}>
                 <span className={styles.leadLabel}>{lead.label}</span>
