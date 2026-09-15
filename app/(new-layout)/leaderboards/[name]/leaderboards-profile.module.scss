@@ -781,8 +781,8 @@ $row-line: color-mix(
     font-size: dt.$font-size-xs;
 }
 
-// Pinned runs: up to six cards, three across; the one with the video spans
-// the row. Under 640px everything is one column.
+// Pinned runs: up to six cards, three across; the video run is the same size
+// with its thumbnail on top. Under 640px everything is one column.
 .pins {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -843,10 +843,6 @@ $row-line: color-mix(
     &[draggable='true'] {
         cursor: grab;
     }
-}
-
-.pinWide {
-    grid-column: 1 / -1;
 }
 
 .pinBody {
@@ -969,8 +965,8 @@ $row-line: color-mix(
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 64px;
-    height: 64px;
+    width: 48px;
+    height: 48px;
     border: 0;
     border-radius: 50%;
     background: rgba(0, 0, 0, 0.65);
@@ -979,6 +975,27 @@ $row-line: color-mix(
     &:hover,
     &:focus-visible {
         background: rgba(0, 0, 0, 0.85);
+    }
+}
+
+.videoDialogHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-md dt.$spacing-lg;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.videoDialogPlayer {
+    display: grid;
+    aspect-ratio: 16 / 9;
+    background: #000;
+
+    iframe {
+        width: 100%;
+        height: 100%;
     }
 }
 

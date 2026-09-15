@@ -8,6 +8,7 @@ import { Vod, youtubeParser } from '~src/components/run/dashboard/vod';
 import { isEmbeddableVod } from '~src/lib/vod-url';
 import { safeEncodeURI } from '~src/utils/uri';
 import type { PinRef } from '../../../../types/leaderboards-profile.types';
+import { BoardDialog } from '../../games-v2/[game]/shared/board-dialog';
 import { EntryStatus } from './entry-row';
 import {
     entrySubcategoryLabel,
@@ -32,34 +33,53 @@ import {
 
 const MEDALS: Record<number, string> = { 1: 'gold', 2: 'silver', 3: 'bronze' };
 
-function PinVideo({ vodUrl }: { vodUrl: string }) {
+/**
+ * A thumbnail the size of the card; the video itself plays in a dialog, so
+ * the showcase keeps its grid instead of one run taking over the page.
+ */
+function PinVideo({ vodUrl, title }: { vodUrl: string; title: string }) {
     const [playing, setPlaying] = useState(false);
     const youtubeId = youtubeParser(vodUrl);
     return (
-        <div className={styles.featuredVideo}>
-            {playing ? (
-                <Vod vod={vodUrl} />
-            ) : (
-                <>
-                    {youtubeId ? (
-                        <img
-                            src={`https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`}
-                            alt=""
-                            loading="lazy"
-                            className={styles.featuredThumb}
-                        />
-                    ) : null}
+        <>
+            <div className={styles.featuredVideo}>
+                {youtubeId ? (
+                    <img
+                        src={`https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`}
+                        alt=""
+                        loading="lazy"
+                        className={styles.featuredThumb}
+                    />
+                ) : null}
+                <button
+                    type="button"
+                    className={styles.featuredPlay}
+                    aria-label="Play video"
+                    onClick={() => setPlaying(true)}
+                >
+                    <PlayFill size={24} aria-hidden />
+                </button>
+            </div>
+            <BoardDialog
+                open={playing}
+                onClose={() => setPlaying(false)}
+                title={title}
+                size="xl"
+            >
+                <div className={styles.videoDialogHead}>
+                    <span>{title}</span>
                     <button
                         type="button"
-                        className={styles.featuredPlay}
-                        aria-label="Play video"
-                        onClick={() => setPlaying(true)}
-                    >
-                        <PlayFill size={32} aria-hidden />
-                    </button>
-                </>
-            )}
-        </div>
+                        className="btn-close"
+                        aria-label="Close"
+                        onClick={() => setPlaying(false)}
+                    />
+                </div>
+                <div className={styles.videoDialogPlayer}>
+                    <Vod vod={vodUrl} />
+                </div>
+            </BoardDialog>
+        </>
     );
 }
 
@@ -79,12 +99,13 @@ export function PinCard({
     const vars = entrySubcategoryLabel(entry);
     const timing = timingLabel(entry);
     return (
-        <article
-            className={video ? `${styles.pin} ${styles.pinWide}` : styles.pin}
-            data-medal={medal}
-            {...dragProps}
-        >
-            {video && entry.vodUrl ? <PinVideo vodUrl={entry.vodUrl} /> : null}
+        <article className={styles.pin} data-medal={medal} {...dragProps}>
+            {video && entry.vodUrl ? (
+                <PinVideo
+                    vodUrl={entry.vodUrl}
+                    title={`${game.game} · ${entry.category} · ${formatEntryTime(entry)}`}
+                />
+            ) : null}
             <div className={styles.pinBody}>
                 <Link
                     href={`/games/${safeEncodeURI(game.game)}`}
