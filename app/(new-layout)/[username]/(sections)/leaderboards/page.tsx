@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { getLeaderboardsProfile } from '~src/lib/leaderboards-profile';
+import { getRunnerProfileHead } from '~src/lib/runner-profile';
 import buildMetadata from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 import { plural } from '../../../leaderboards/[name]/format';
@@ -36,7 +37,11 @@ export async function generateMetadata({
 
 export default async function RunnerLeaderboardsPage({ params }: PageProps) {
     const { username } = await params;
-    const profile = await getLeaderboardsProfile(safeDecodeURI(username));
+    const name = safeDecodeURI(username);
+    const [profile, head] = await Promise.all([
+        getLeaderboardsProfile(name),
+        getRunnerProfileHead(name),
+    ]);
     if (!profile) notFound();
     const games = profile.games.map((g) => ({ ...g, theme: null }));
     // An older backend sends no layout; saving from that would wipe the
@@ -51,7 +56,12 @@ export default async function RunnerLeaderboardsPage({ params }: PageProps) {
             layout={profile.layout ?? DEFAULT_LAYOUT}
         >
             <div className={styles.page}>
-                {empty ? null : <StandingStrip profile={profile} />}
+                {empty ? null : (
+                    <StandingStrip
+                        profile={profile}
+                        saved={head?.strips?.leaderboards}
+                    />
+                )}
                 {empty ? null : (
                     <section className={styles.block}>
                         <ShowcaseHeading>

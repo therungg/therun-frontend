@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { useContext } from 'react';
 import { ChevronLeft, ChevronRight, TrophyFill } from 'react-bootstrap-icons';
 import type {
@@ -27,6 +28,8 @@ interface UserRaceProfileProps {
     categoryStatsMap: UserStats[][];
     participations: RaceParticipant[];
     initialRaces: Race[];
+    stripTiles: StripTile[];
+    stripEditor: ReactNode;
 }
 
 const PAGE = 10;
@@ -45,6 +48,8 @@ export const UserRaceProfile = ({
     categoryStatsMap,
     participations,
     initialRaces,
+    stripTiles,
+    stripEditor,
 }: UserRaceProfileProps) => {
     if (!participations || participations.length === 0 || !globalStats) {
         return <p className={ui.empty}>No races yet.</p>;
@@ -59,13 +64,6 @@ export const UserRaceProfile = ({
                 : top,
         null,
     );
-    const finishPct =
-        globalStats.totalRaces > 0
-            ? Math.round(
-                  (globalStats.totalFinishedRaces / globalStats.totalRaces) *
-                      100,
-              )
-            : 0;
 
     const lead: StripLead | null = best
         ? {
@@ -76,18 +74,15 @@ export const UserRaceProfile = ({
               href: `/races/stats/${encodeURI(splitName(best).game)}/${encodeURI(splitName(best).category)}`,
           }
         : null;
-    const tiles: StripTile[] = [
-        { value: formatCount(globalStats.totalRaces), label: 'races' },
-        {
-            value: `${finishPct}%`,
-            label: `finished (${formatCount(globalStats.totalFinishedRaces)})`,
-        },
-        { value: duration(globalStats.totalRaceTime), label: 'spent racing' },
-    ];
 
     return (
         <div className={ui.page}>
-            <StatStrip label="Race standing" lead={lead} tiles={tiles} />
+            <StatStrip
+                label="Race standing"
+                lead={lead}
+                tiles={stripTiles}
+                editor={stripEditor}
+            />
             <ProfileBlock
                 title="Recent races"
                 note={plural(participations.length, 'race', 'races')}

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 import { groupCategoryStatsByGame } from '~app/(new-layout)/[username]/(sections)/races/group-category-stats-by-game';
 import { UserRaceProfile } from '~app/(new-layout)/[username]/(sections)/races/user-race-profile';
 import {
@@ -14,6 +15,9 @@ import {
 import { getRunnerProfileHead } from '~src/lib/runner-profile';
 import buildMetadata from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
+import { racesStrip } from '../strips/races';
+import { resolveStrip } from '../strips/resolve';
+import { StripEditor } from '../strips/strip-editor';
 
 interface PageProps {
     params: Promise<{ username: string }>;
@@ -63,6 +67,19 @@ export default async function Page(props: PageProps) {
         globalStats?.categoryStats ?? [],
     );
 
+    const raceStats = globalStats?.globalStats;
+    const strip = raceStats
+        ? resolveStrip(
+              racesStrip,
+              {
+                  totalRaces: raceStats.totalRaces,
+                  totalFinishedRaces: raceStats.totalFinishedRaces,
+                  totalRaceTime: raceStats.totalRaceTime ?? null,
+              },
+              head.strips?.races,
+          )
+        : null;
+
     return (
         <UserRaceProfile
             username={username}
@@ -70,6 +87,14 @@ export default async function Page(props: PageProps) {
             categoryStatsMap={categoryStatsMap}
             participations={participations || []}
             initialRaces={initialRaces}
+            stripTiles={strip?.tiles ?? []}
+            stripEditor={
+                strip ? (
+                    <Suspense fallback={null}>
+                        <StripEditor name={head.runner.name} strip={strip} />
+                    </Suspense>
+                ) : null
+            }
         />
     );
 }

@@ -1,13 +1,17 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 import { getRunnerProfileHead, getRunnerStats } from '~src/lib/runner-profile';
 import buildMetadata from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
-import { formatCount, formatHours } from '../format';
+import { formatHours } from '../format';
 import { ProfileBlock } from '../profile-block';
 import styles from '../profile-ui.module.scss';
-import { medalOf, plural } from '../ranks';
-import { StatStrip, type StripTile } from '../stat-strip';
+import { plural } from '../ranks';
+import { StatStrip } from '../stat-strip';
+import { resolveStrip } from '../strips/resolve';
+import { statsStrip } from '../strips/stats';
+import { StripEditor } from '../strips/strip-editor';
 import { GamesPanel } from './games-panel';
 import { PlaytimeBar } from './playtime-bar';
 
@@ -43,10 +47,6 @@ export default async function RunnerStatsPage({ params }: PageProps) {
     }
     const { totals } = stats;
     const games = [...stats.games].sort((a, b) => b.playtimeMs - a.playtimeMs);
-    const finishRate =
-        totals.attempts > 0
-            ? Math.round((totals.finishedAttempts / totals.attempts) * 100)
-            : null;
     const bestRank = games.reduce<number | null>(
         (best, g) =>
             g.bestRank !== null && (best === null || g.bestRank < best)
@@ -54,21 +54,11 @@ export default async function RunnerStatsPage({ params }: PageProps) {
                 : best,
         null,
     );
-
-    const tiles: StripTile[] = [
-        { value: formatCount(totals.attempts), label: 'attempts' },
-        { value: formatCount(totals.finishedAttempts), label: 'finished runs' },
-    ];
-    if (finishRate !== null) {
-        tiles.push({ value: `${finishRate}%`, label: 'of attempts finished' });
-    }
-    if (bestRank !== null) {
-        tiles.push({
-            value: `#${bestRank}`,
-            label: 'best rank',
-            medal: medalOf(bestRank),
-        });
-    }
+    const strip = resolveStrip(
+        statsStrip,
+        { totals, bestRank },
+        head.strips?.stats,
+    );
 
     return (
         <div className={styles.page}>
@@ -79,7 +69,12 @@ export default async function RunnerStatsPage({ params }: PageProps) {
                     label: 'Played',
                     what: `${plural(totals.games, 'game', 'games')} · ${plural(totals.categories, 'category', 'categories')}`,
                 }}
-                tiles={tiles}
+                tiles={strip.tiles}
+                editor={
+                    <Suspense fallback={null}>
+                        <StripEditor name={head.runner.name} strip={strip} />
+                    </Suspense>
+                }
             />
             {games.length > 1 ? (
                 <ProfileBlock title="Where the hours went">

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 import { getUserRuns } from '~src/lib/get-user-runs';
 import {
     getRunnerActivity,
@@ -7,11 +8,13 @@ import {
 } from '~src/lib/runner-profile';
 import buildMetadata from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
-import { formatCount } from '../format';
 import { ProfileBlock } from '../profile-block';
 import ui from '../profile-ui.module.scss';
 import { plural } from '../ranks';
-import { StatStrip, type StripLead, type StripTile } from '../stat-strip';
+import { StatStrip, type StripLead } from '../stat-strip';
+import { activityStrip } from '../strips/activity';
+import { resolveStrip } from '../strips/resolve';
+import { StripEditor } from '../strips/strip-editor';
 import { DayOfWeek } from './rhythm';
 import { toSessionRows } from './session-rows';
 import { SessionsPanel } from './sessions-panel';
@@ -69,29 +72,29 @@ export default async function RunnerActivityPage({ params }: PageProps) {
                     what: null,
                 }
               : null;
-    const tiles: StripTile[] = [];
-    if (activity.hoursThisYear > 0) {
-        tiles.push({
-            value: `${formatCount(activity.hoursThisYear)} h`,
-            label: 'played this year',
-        });
-    }
-    if (attempts > 0) {
-        tiles.push({
-            value: formatCount(attempts),
-            label: 'attempts in 12 months',
-        });
-    }
-    if (activeDays > 0) {
-        tiles.push({
-            value: formatCount(activeDays),
-            label: activeDays === 1 ? 'active day' : 'active days',
-        });
-    }
+    const strip = resolveStrip(
+        activityStrip,
+        {
+            hoursThisYear: activity.hoursThisYear,
+            attempts,
+            activeDays,
+            longestStreak: streaks.longest,
+        },
+        head.strips?.activity,
+    );
 
     return (
         <div className={ui.page}>
-            <StatStrip label="Activity" lead={lead} tiles={tiles} />
+            <StatStrip
+                label="Activity"
+                lead={lead}
+                tiles={strip.tiles}
+                editor={
+                    <Suspense fallback={null}>
+                        <StripEditor name={head.runner.name} strip={strip} />
+                    </Suspense>
+                }
+            />
             {activity.days.length > 0 ? (
                 <>
                     <ProfileBlock
