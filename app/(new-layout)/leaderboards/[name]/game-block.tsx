@@ -1,9 +1,4 @@
-import {
-    ArrowDown,
-    ArrowUp,
-    ArrowUpRight,
-    ChevronRight,
-} from 'react-bootstrap-icons';
+import { ArrowDown, ArrowUp, ChevronDown } from 'react-bootstrap-icons';
 import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
 import { safeEncodeURI } from '~src/utils/uri';
@@ -11,11 +6,12 @@ import type {
     LeaderboardsProfileEntry,
     LeaderboardsProfileGame,
 } from '../../../../types/leaderboards-profile.types';
-import { EntryRow } from './entry-row';
+import { EntryRow, RankBall } from './entry-row';
+import { formatEntryTime } from './format';
 import styles from './leaderboards-profile.module.scss';
+import { entryPoints, onBiggerBoard } from './showcase-rules';
 
-const hours = (ms: number) =>
-    `${Math.round(ms / 3_600_000).toLocaleString('en-US')} h`;
+const n = (v: number) => v.toLocaleString('en-US');
 
 function groupByLevel(entries: LeaderboardsProfileEntry[]) {
     const plain = entries.filter((e) => e.level === null);
@@ -27,101 +23,125 @@ function groupByLevel(entries: LeaderboardsProfileEntry[]) {
     return { plain, levels };
 }
 
-const plural = (n: number, one: string, many: string) =>
-    `${n.toLocaleString('en-US')} ${n === 1 ? one : many}`;
+/** The game's strongest placing: the most points, the bigger board on a tie. */
+function bestOf(game: LeaderboardsProfileGame) {
+    const ranked = game.entries.filter(
+        (e) => e.status !== 'rejected' && entryPoints(e) > 0,
+    );
+    ranked.sort(
+        (a, b) => entryPoints(b) - entryPoints(a) || onBiggerBoard(a, b),
+    );
+    return ranked[0] ?? null;
+}
+
+const keyOf = (e: LeaderboardsProfileEntry) =>
+    `${e.kind}-${e.runId ?? e.manualTimeId}`;
 
 /**
- * One game in the runs panel: a group row that folds its runs away, then the
- * runs themselves. `entries` is what the selected tab shows of this game; the
- * group row always describes the whole game.
+ * One game on the shelf: art, totals and its best result, then the runs
+ * that pass the filters. The header always describes the whole game.
  */
 export function GameBlock({
     game,
     entries,
     country,
-    collapsed = false,
+    open,
+    dim = false,
     onToggle,
     onMove,
 }: {
     game: LeaderboardsProfileGame;
+    /** This game's runs that pass the filters, in display order. */
     entries: LeaderboardsProfileEntry[];
     country: string | null;
-    collapsed?: boolean;
-    onToggle?: () => void;
+    open: boolean;
+    /** Searching and nothing here matches: a quiet header, no runs. */
+    dim?: boolean;
+    onToggle: () => void;
     /** Edit mode with the runner's own order: move this game up or down. */
     onMove?: { up: (() => void) | null; down: (() => void) | null };
 }) {
     const { plain, levels } = groupByLevel(entries);
+    const boards = game.entries.length;
     const firsts = game.entries.filter((e) => e.rank === 1).length;
-    const podiums = game.entries.filter(
-        (e) => e.rank !== null && e.rank <= 3,
-    ).length;
-    const meta = [
-        plural(game.entries.length, 'board', 'boards'),
-        game.attempts !== null && game.attempts > 0
-            ? plural(game.attempts, 'attempt', 'attempts')
-            : null,
+    const hours =
         game.playtimeMs !== null && game.playtimeMs > 0
-            ? hours(game.playtimeMs)
-            : null,
-    ].filter(Boolean);
-    const standing = [
-        podiums > firsts ? plural(podiums, 'podium', 'podiums') : null,
-        game.bestRank !== null && firsts === 0
-            ? `best #${game.bestRank}`
-            : null,
-    ].filter(Boolean);
+            ? Math.round(game.playtimeMs / 3_600_000)
+            : 0;
+    const best = bestOf(game);
+    const bestTotal = best?.totalRunners ?? 0;
+    const showRows = open && !dim && entries.length > 0;
 
     return (
         <section
             id={`game-${game.gameId}`}
-            className={styles.game}
-            data-collapsed={collapsed || undefined}
+            className={styles.runsGame}
+            data-dim={dim || undefined}
         >
-            <div className={styles.gameHead}>
-                <button
-                    type="button"
-                    className={styles.gameToggle}
-                    onClick={onToggle}
-                    aria-expanded={!collapsed}
-                    disabled={!onToggle}
-                >
-                    <ChevronRight
-                        size={12}
-                        aria-hidden
-                        className={styles.gameChevron}
-                    />
+            <div className={styles.runsHead}>
+                <span className={styles.runsArt}>
                     <GameImage
                         src={game.imageUrl ?? ''}
                         alt=""
                         quality="small"
-                        width={27}
-                        height={36}
+                        width={60}
+                        height={80}
                     />
-                    <span className={styles.gameTitle}>{game.game}</span>
-                    <span className={styles.gameSummary}>
-                        {meta.join(' · ')}
-                    </span>
-                </button>
-                <span className={styles.gameStanding}>
-                    {firsts > 0 ? (
-                        <span className={styles.gameFirsts}>
-                            <span className={styles.longLabel}>
-                                {firsts === 1
-                                    ? 'First place'
-                                    : `${firsts} first places`}
+                </span>
+                <div className={styles.runsTitleBlock}>
+                    <h3 className={styles.runsTitle}>
+                        <Link
+                            href={`/games/${safeEncodeURI(game.game)}`}
+                            className={styles.runsTitleLink}
+                        >
+                            {game.game}
+                        </Link>
+                    </h3>
+                    <div className={styles.runsTotals}>
+                        <span>
+                            <b>{n(boards)}</b>{' '}
+                            {boards === 1 ? 'board' : 'boards'}
+                        </span>
+                        {game.attempts !== null && game.attempts > 0 ? (
+                            <span>
+                                <b>{n(game.attempts)}</b>{' '}
+                                {game.attempts === 1 ? 'attempt' : 'attempts'}
                             </span>
-                            <span className={styles.shortLabel}>
-                                {firsts === 1 ? '#1' : `${firsts}× #1`}
+                        ) : null}
+                        {hours > 0 ? (
+                            <span>
+                                <b>{n(hours)}</b>{' '}
+                                {hours === 1 ? 'hour' : 'hours'}
+                            </span>
+                        ) : null}
+                        {firsts > 0 ? (
+                            <span>
+                                <b className={styles.runsFirsts}>{n(firsts)}</b>{' '}
+                                {firsts === 1 ? 'first place' : 'first places'}
+                            </span>
+                        ) : null}
+                    </div>
+                </div>
+                {best ? (
+                    <div className={styles.runsBest}>
+                        <span className={styles.runsBestLine}>
+                            <RankBall rank={best.rank} />
+                            <span className={styles.runsBestTime}>
+                                {formatEntryTime(best)}
                             </span>
                         </span>
-                    ) : null}
-                    {standing.length > 0 ? (
-                        <span>{standing.join(' · ')}</span>
-                    ) : null}
-                </span>
+                        <span className={styles.runsBestWhat}>
+                            {best.level
+                                ? `${best.level}: ${best.category}`
+                                : best.category}
+                            {bestTotal > 1
+                                ? `, of ${n(bestTotal)} runners`
+                                : null}
+                        </span>
+                    </div>
+                ) : null}
                 {onMove ? (
-                    <span className={styles.gameMove}>
+                    <span className={styles.runsMove}>
                         <button
                             type="button"
                             className={styles.tab}
@@ -141,32 +161,19 @@ export function GameBlock({
                             <ArrowDown size={13} aria-hidden />
                         </button>
                     </span>
-                ) : (
-                    <Link
-                        href={`/games/${safeEncodeURI(game.game)}`}
-                        className={styles.gameLink}
-                        aria-label={`${game.game} leaderboards`}
-                        title="Open the game's leaderboards"
-                    >
-                        <ArrowUpRight size={13} aria-hidden />
-                    </Link>
-                )}
+                ) : null}
             </div>
-            {collapsed ? null : (
-                <div className={styles.entries}>
+            {showRows ? (
+                <div className={styles.runsRows}>
                     {plain.map((e) => (
-                        <EntryRow
-                            key={`${e.kind}-${e.runId ?? e.manualTimeId}`}
-                            entry={e}
-                            country={country}
-                        />
+                        <EntryRow key={keyOf(e)} entry={e} country={country} />
                     ))}
                     {[...levels.entries()].map(([level, list]) => (
-                        <div key={level} className={styles.levelGroup}>
-                            <div className={styles.levelHead}>{level}</div>
+                        <div key={level} className={styles.runsLevel}>
+                            <div className={styles.runsLevelHead}>{level}</div>
                             {list.map((e) => (
                                 <EntryRow
-                                    key={`${e.kind}-${e.runId ?? e.manualTimeId}`}
+                                    key={keyOf(e)}
                                     entry={e}
                                     country={country}
                                 />
@@ -174,7 +181,26 @@ export function GameBlock({
                         </div>
                     ))}
                 </div>
-            )}
+            ) : null}
+            {!dim && entries.length > 0 ? (
+                <button
+                    type="button"
+                    className={styles.runsToggle}
+                    aria-expanded={open}
+                    onClick={onToggle}
+                >
+                    <span>
+                        {open
+                            ? 'Hide runs'
+                            : `Show ${n(entries.length)} ${entries.length === 1 ? 'run' : 'runs'}`}
+                    </span>
+                    <ChevronDown
+                        size={10}
+                        aria-hidden
+                        className={styles.runsToggleIcon}
+                    />
+                </button>
+            ) : null}
         </section>
     );
 }

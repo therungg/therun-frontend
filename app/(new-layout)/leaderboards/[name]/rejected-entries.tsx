@@ -16,12 +16,14 @@ export async function RejectedEntries({
     const rejected = await getRejectedEntriesAsViewer(name, session.id);
     if (rejected.length === 0) return null;
     return (
-        <section className={styles.game}>
-            <div className={styles.gameTitle}>Rejected</div>
-            <div className={styles.gameSummary}>
-                Only you and the boards' moderators can see these.
+        <section className={styles.runsGame}>
+            <div className={styles.runsRejectedHead}>
+                <h3 className={styles.runsTitle}>Rejected</h3>
+                <span className={styles.runsBestWhat}>
+                    Only you and the boards' moderators can see these.
+                </span>
             </div>
-            <div className={styles.entries}>
+            <div className={styles.runsRows}>
                 {rejected.map((e) => (
                     <EntryRow
                         key={`${e.kind}-${e.runId ?? e.manualTimeId}`}

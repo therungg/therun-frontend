@@ -12,8 +12,8 @@ import styles from './leaderboards-profile.module.scss';
 import { PinnedRuns } from './pinned-runs';
 import { ProfileHeader } from './profile-header';
 import { ProfileSidebar } from './profile-sidebar';
-import { ProfileTabs } from './profile-tabs';
 import { RejectedEntries } from './rejected-entries';
+import { RunsShelf } from './runs-shelf';
 import { ShowcaseProvider } from './showcase-provider';
 import { DEFAULT_LAYOUT } from './showcase-rules';
 
@@ -66,7 +66,7 @@ export default async function LeaderboardsProfilePage({ params }: PageProps) {
                 <div className={styles.columns}>
                     <div className={styles.main}>
                         <PinnedRuns />
-                        <ProfileTabs country={profile.runner.country} />
+                        <RunsShelf country={profile.runner.country} />
                         <Suspense fallback={null}>
                             <RejectedEntries
                                 name={profile.runner.name}

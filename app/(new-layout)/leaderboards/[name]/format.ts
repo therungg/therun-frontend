@@ -39,22 +39,23 @@ export function formatProfileDate(iso: string): string {
     return Number.isNaN(date.getTime()) ? '' : utcDateFmt.format(date);
 }
 
-export function provenanceLabel(p: ProfileProvenance): string {
+/** Where a run came from, as a row label; empty when unknown. */
+export function sourceLabel(p: ProfileProvenance): string {
     switch (p) {
         case 'live':
             return 'Live on therun';
         case 'submitted':
             return 'Submitted';
         case 'mod':
-            return 'Entered by a moderator';
+            return 'Added by a mod';
         case 'self':
-            return 'Entered by the runner';
+            return 'Added by runner';
         case 'splits':
-            return 'Uploaded splits';
+            return 'Splits';
         case 'imported':
             return 'Imported';
         default:
-            return 'Unknown source';
+            return '';
     }
 }
 
@@ -85,6 +86,7 @@ export function entrySubcategoryLabel(
         LeaderboardsProfileEntry,
         'subcategoryKey' | 'category' | 'level'
     >,
+    separator = ' · ',
 ): string {
     const nameWords = new Set(
         wordTokens(`${entry.category} ${entry.level ?? ''}`),
@@ -101,5 +103,5 @@ export function entrySubcategoryLabel(
         if (!label || said(pair.slice(eq + 1)) || said(label)) continue;
         labels.push(label);
     }
-    return labels.join(' · ');
+    return labels.join(separator);
 }

@@ -8,7 +8,6 @@ import styles from './leaderboards-profile.module.scss';
 import { move, readDragIndex, writeDragIndex } from './reorder';
 import { useShowcase } from './showcase-provider';
 import {
-    COLLAPSE_AT,
     orderGames,
     SHELF_SCROLL_AT,
     type SortMode,
@@ -146,14 +145,7 @@ export function GamesShelf() {
                             type="button"
                             className={styles.shelfTile}
                             onClick={() =>
-                                unordered.length >= COLLAPSE_AT
-                                    ? setProfileUrl({
-                                          game: game.game,
-                                          hash: `game-${game.gameId}`,
-                                      })
-                                    : setProfileUrl({
-                                          hash: `game-${game.gameId}`,
-                                      })
+                                setProfileUrl({ hash: `game-${game.gameId}` })
                             }
                         >
                             {content}

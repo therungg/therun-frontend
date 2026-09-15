@@ -8,8 +8,8 @@ import { safeDecodeURI } from '~src/utils/uri';
 import { plural } from '../../../leaderboards/[name]/format';
 import { OwnerControls } from '../../../leaderboards/[name]/owner-controls';
 import { PinnedRuns } from '../../../leaderboards/[name]/pinned-runs';
-import { ProfileTabs } from '../../../leaderboards/[name]/profile-tabs';
 import { RejectedEntries } from '../../../leaderboards/[name]/rejected-entries';
+import { RunsShelf } from '../../../leaderboards/[name]/runs-shelf';
 import { ShowcaseProvider } from '../../../leaderboards/[name]/showcase-provider';
 import { DEFAULT_LAYOUT } from '../../../leaderboards/[name]/showcase-rules';
 import sectionStyles from '../sections.module.scss';
@@ -81,7 +81,7 @@ export default async function RunnerLeaderboardsPage({ params }: PageProps) {
                         <h2 className={styles.blockTitle}>All runs</h2>
                     )}
                     <div className={sectionStyles.ledger}>
-                        <ProfileTabs country={profile.runner.country} />
+                        <RunsShelf country={profile.runner.country} />
                         <Suspense fallback={null}>
                             <RejectedEntries
                                 name={profile.runner.name}

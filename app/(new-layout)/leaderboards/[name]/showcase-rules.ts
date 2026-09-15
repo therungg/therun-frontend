@@ -9,7 +9,6 @@ import type {
 } from '../../../../types/leaderboards-profile.types';
 
 export const PIN_LIMIT = 3;
-export const COLLAPSE_AT = 9;
 export const SHELF_SCROLL_AT = 12;
 
 export const DEFAULT_LAYOUT: ResolvedLeaderboardsLayout = {

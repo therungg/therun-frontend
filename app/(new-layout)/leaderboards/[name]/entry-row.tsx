@@ -10,13 +10,17 @@ import {
     entrySubcategoryLabel,
     formatEntryTime,
     formatProfileDate,
-    provenanceLabel,
+    sourceLabel,
     timingLabel,
 } from './format';
 import styles from './leaderboards-profile.module.scss';
 import { PinToggle } from './pin-toggle';
 
-const MEDALS: Record<number, string> = { 1: 'gold', 2: 'silver', 3: 'bronze' };
+const MEDALS: Record<number, string> = {
+    1: 'gold',
+    2: 'silver',
+    3: 'bronze',
+};
 
 /** Verified reads as a quiet tick, pending as a muted hourglass: most runs are one or the other. */
 export function EntryStatus({
@@ -86,6 +90,27 @@ function shortDate(iso: string): string {
     });
 }
 
+/** The placing as a ball: the number on a medal for the podium, the ordinal after it. */
+export function RankBall({
+    rank,
+    title,
+}: {
+    rank: number | null;
+    title?: string;
+}) {
+    const medal = rank !== null ? MEDALS[rank] : undefined;
+    return (
+        <span
+            className={styles.runMedal}
+            data-medal={medal}
+            data-none={rank === null || undefined}
+            title={title}
+        >
+            {rank === null ? '—' : medal ? rank : ordinal(rank)}
+        </span>
+    );
+}
+
 export function EntryRow({
     entry,
     country,
@@ -93,82 +118,51 @@ export function EntryRow({
     entry: LeaderboardsProfileEntry;
     country: string | null;
 }) {
-    // Not deployed everywhere yet — read defensively.
-    const attempts = entry.attempts ?? null;
-    const vars = entrySubcategoryLabel(entry);
+    const vars = entrySubcategoryLabel(entry, ', ');
     const timing = timingLabel(entry);
-    const provenance = provenanceLabel(entry.provenance);
-    const medal = entry.rank !== null ? MEDALS[entry.rank] : undefined;
-    const details = [
-        vars || null,
+    const source = sourceLabel(entry.provenance);
+    const total = entry.totalRunners ?? 0;
+    const placing = [
+        entry.rank !== null && total > 1
+            ? `${ordinal(entry.rank)} of ${total.toLocaleString('en-US')} runners`
+            : null,
         entry.countryRank !== null && country
             ? `#${entry.countryRank} in ${country.toUpperCase()}`
             : null,
-        entry.platform,
-        entry.emulator ? 'Emulator' : null,
-        entry.region,
-        attempts !== null && attempts > 0
-            ? `${attempts.toLocaleString('en-US')} ${attempts === 1 ? 'attempt' : 'attempts'}`
-            : null,
-    ].filter((d): d is string => !!d);
-    const total = entry.totalRunners ?? 0;
+    ].filter(Boolean);
 
     return (
-        <div className={styles.entry} data-medal={medal}>
-            <span className={styles.entryName}>
-                <span className={styles.entryCategory}>{entry.category}</span>
-                {details.length > 0 ? (
-                    <span className={styles.entryDetails}>
-                        {details.join(' · ')}
+        <div className={styles.runRow}>
+            <RankBall
+                rank={entry.rank}
+                title={placing.length > 0 ? placing.join(', ') : undefined}
+            />
+            <span className={styles.runName}>
+                <span className={styles.runCategory}>{entry.category}</span>
+                {vars ? <span className={styles.runVars}>{vars}</span> : null}
+                {total > 1 ? (
+                    <span className={styles.runOf}>
+                        of {total.toLocaleString('en-US')}
                     </span>
                 ) : null}
             </span>
-            <span
-                className={styles.entryRankCell}
-                title={
-                    entry.rank !== null && total > 1
-                        ? `${ordinal(entry.rank)} of ${total.toLocaleString('en-US')} runners`
-                        : undefined
-                }
-            >
-                <span
-                    className={
-                        entry.rank === null
-                            ? `${styles.entryRank} ${styles.entryRankNone}`
-                            : styles.entryRank
-                    }
-                >
-                    {entry.rank !== null ? ordinal(entry.rank) : '—'}
-                </span>
-            </span>
-            <span className={styles.entryTime}>
-                <span>{formatEntryTime(entry)}</span>
+            <span className={styles.runTime}>
                 {timing ? (
                     <span className={styles.entryTiming}>{timing}</span>
                 ) : null}
+                <span>{formatEntryTime(entry)}</span>
             </span>
+            <span className={styles.runSource}>{source}</span>
             <span
-                className={styles.entryDate}
+                className={styles.runDate}
                 title={
                     entry.runDate ? formatProfileDate(entry.runDate) : undefined
                 }
             >
                 {entry.runDate ? shortDate(entry.runDate) : '—'}
             </span>
-            <span className={styles.entryBadges}>
+            <span className={styles.runActions}>
                 <EntryStatus entry={entry} compact />
-                {entry.splitsHref ? (
-                    <Link
-                        href={entry.splitsHref}
-                        className={styles.entryIcon}
-                        aria-label={provenance}
-                        title={provenance}
-                    >
-                        <BarChartLineFill size={13} aria-hidden />
-                    </Link>
-                ) : (
-                    <span className={styles.entryIconSpacer} />
-                )}
                 {entry.vodUrl ? (
                     <a
                         href={entry.vodUrl}
@@ -176,12 +170,24 @@ export function EntryRow({
                         rel="noopener noreferrer"
                         aria-label="Watch the run"
                         title="Watch the run"
-                        className={styles.entryIcon}
+                        className={styles.runIcon}
                     >
                         <PlayFill size={15} aria-hidden />
                     </a>
                 ) : (
-                    <span className={styles.entryIconSpacer} />
+                    <span className={styles.runIconSpacer} />
+                )}
+                {entry.splitsHref ? (
+                    <Link
+                        href={entry.splitsHref}
+                        className={styles.runIcon}
+                        aria-label="Splits stats"
+                        title="Splits stats"
+                    >
+                        <BarChartLineFill size={13} aria-hidden />
+                    </Link>
+                ) : (
+                    <span className={styles.runIconSpacer} />
                 )}
                 <PinToggle entry={entry} />
             </span>
