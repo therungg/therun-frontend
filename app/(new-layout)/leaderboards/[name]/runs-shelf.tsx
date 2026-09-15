@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { GameBlock } from './game-block';
 import styles from './leaderboards-profile.module.scss';
-import { clearFilters, RunsFilterBar } from './runs-filter-bar';
+import { clearFilters, RunsFilterBar, setFilter } from './runs-filter-bar';
 import {
     filterFromUrl,
     isNarrowed,
@@ -48,18 +48,27 @@ export function RunsShelf({ country }: { country: string | null }) {
     const [toggled, setToggled] = useState<Map<number, boolean>>(
         () => new Map(),
     );
+    // A new search opens every game it keeps in view, and clearing it brings
+    // the default folding back: the toggles belong to one search.
+    const needle = filter.search.trim().toLowerCase();
+    const [foldedFor, setFoldedFor] = useState(needle);
+    if (foldedFor !== needle) {
+        setFoldedFor(needle);
+        setToggled(new Map());
+    }
 
     const blocks = games.map((game) => {
         const runs = runsOf(game, filter);
         const matching = runs.filter((e) => matchesEntry(game, e, filter));
         return {
             game,
-            total: runs.length,
+            runs,
             // Ordered by board size, a game's biggest boards lead it too.
             entries: byRunners ? [...matching].sort(onBiggerBoard) : matching,
         };
     });
-    const total = blocks.reduce((sum, b) => sum + b.total, 0);
+    const total = blocks.reduce((sum, b) => sum + b.runs.length, 0);
+    const anyArchived = unordered.some((g) => g.archived.length > 0);
     const shown = blocks.reduce((sum, b) => sum + b.entries.length, 0);
     // Searching keeps every game in view (quiet when nothing matches); any
     // other filter drops the games it empties. The game a `#game-<id>` hash
@@ -83,7 +92,13 @@ export function RunsShelf({ country }: { country: string | null }) {
 
     // Edit mode with the runner's own order: the full ordered list is what
     // moves, so a panel's neighbours are the games around it on that list.
-    const manual = editing && draft.gameOrder === 'manual' && mode === 'runner';
+    // Hidden games would still count as neighbours, so moving waits until
+    // nothing is filtered.
+    const manual =
+        editing &&
+        draft.gameOrder === 'manual' &&
+        mode === 'runner' &&
+        !filtered;
     const ordered = games.map((g) => g.gameId);
     const moveGame = (gameId: number, by: -1 | 1) => {
         const from = ordered.indexOf(gameId);
@@ -124,14 +139,17 @@ export function RunsShelf({ country }: { country: string | null }) {
                 {visible.map((b, i) => {
                     const id = b.game.gameId;
                     const open = toggled.get(id) ?? openByDefault(id, i);
+                    const empty = b.entries.length === 0;
                     return (
                         <GameBlock
                             key={id}
                             game={b.game}
+                            runs={b.runs}
                             entries={b.entries}
                             country={country}
                             open={open}
-                            dim={b.entries.length === 0}
+                            dim={empty && searching}
+                            unmatched={empty && !searching}
                             onToggle={() =>
                                 setToggled((m) => new Map(m).set(id, !open))
                             }
@@ -146,20 +164,31 @@ export function RunsShelf({ country }: { country: string | null }) {
                         />
                     );
                 })}
-                {shown === 0 ? (
+                {shown === 0 && filtered ? (
                     <div className={styles.runsNothing}>
-                        <span>
-                            {filtered ? 'No runs match.' : 'No runs yet.'}
-                        </span>
-                        {filtered ? (
-                            <button
-                                type="button"
-                                className={`${styles.tab} ${styles.tabActive}`}
-                                onClick={clearFilters}
-                            >
-                                Clear filters
-                            </button>
-                        ) : null}
+                        <span>No runs match.</span>
+                        <button
+                            type="button"
+                            className={`${styles.tab} ${styles.tabActive}`}
+                            onClick={clearFilters}
+                        >
+                            Clear filters
+                        </button>
+                    </div>
+                ) : null}
+                {shown === 0 && !filtered && !anyArchived ? (
+                    <div className={styles.runsNothing}>No runs yet.</div>
+                ) : null}
+                {shown === 0 && !filtered && anyArchived ? (
+                    <div className={styles.runsNothing}>
+                        <span>All runs are on archived boards.</span>
+                        <button
+                            type="button"
+                            className={`${styles.tab} ${styles.tabActive}`}
+                            onClick={() => setFilter({ archived: true })}
+                        >
+                            Include archived boards
+                        </button>
                     </div>
                 ) : null}
             </div>

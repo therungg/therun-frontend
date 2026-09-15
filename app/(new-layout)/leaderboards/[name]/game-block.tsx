@@ -24,8 +24,8 @@ function groupByLevel(entries: LeaderboardsProfileEntry[]) {
 }
 
 /** The game's strongest placing: the most points, the bigger board on a tie. */
-function bestOf(game: LeaderboardsProfileGame) {
-    const ranked = game.entries.filter(
+function bestOf(runs: LeaderboardsProfileEntry[]) {
+    const ranked = runs.filter(
         (e) => e.status !== 'rejected' && entryPoints(e) > 0,
     );
     ranked.sort(
@@ -39,36 +39,43 @@ const keyOf = (e: LeaderboardsProfileEntry) =>
 
 /**
  * One game on the shelf: art, totals and its best result, then the runs
- * that pass the filters. The header always describes the whole game.
+ * that pass the filters. The header describes every run the filters start
+ * from (archived boards included only when asked for).
  */
 export function GameBlock({
     game,
+    runs,
     entries,
     country,
     open,
     dim = false,
+    unmatched = false,
     onToggle,
     onMove,
 }: {
     game: LeaderboardsProfileGame;
+    /** Every run this game offers before filtering: what the header counts. */
+    runs: LeaderboardsProfileEntry[];
     /** This game's runs that pass the filters, in display order. */
     entries: LeaderboardsProfileEntry[];
     country: string | null;
     open: boolean;
     /** Searching and nothing here matches: a quiet header, no runs. */
     dim?: boolean;
+    /** Shown for a linked game although the filters leave it no runs. */
+    unmatched?: boolean;
     onToggle: () => void;
     /** Edit mode with the runner's own order: move this game up or down. */
     onMove?: { up: (() => void) | null; down: (() => void) | null };
 }) {
     const { plain, levels } = groupByLevel(entries);
-    const boards = game.entries.length;
-    const firsts = game.entries.filter((e) => e.rank === 1).length;
+    const boards = runs.length;
+    const firsts = runs.filter((e) => e.rank === 1).length;
     const hours =
         game.playtimeMs !== null && game.playtimeMs > 0
             ? Math.round(game.playtimeMs / 3_600_000)
             : 0;
-    const best = bestOf(game);
+    const best = bestOf(runs);
     const bestTotal = best?.totalRunners ?? 0;
     const showRows = open && !dim && entries.length > 0;
 
@@ -180,6 +187,11 @@ export function GameBlock({
                             ))}
                         </div>
                     ))}
+                </div>
+            ) : null}
+            {unmatched ? (
+                <div className={styles.runsUnmatched}>
+                    No runs here match these filters
                 </div>
             ) : null}
             {!dim && entries.length > 0 ? (

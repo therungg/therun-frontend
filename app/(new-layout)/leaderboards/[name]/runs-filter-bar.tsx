@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ChevronDown, Search, X } from 'react-bootstrap-icons';
+import { ChevronDown, X } from 'react-bootstrap-icons';
 import styles from './leaderboards-profile.module.scss';
 import {
     activeFilters,
@@ -65,16 +65,14 @@ export function RunsFilterBar({
     return (
         <div className={styles.runsFilters}>
             <div className={styles.runsFilterRow}>
-                <label className={styles.runsSearch}>
-                    <Search size={13} aria-hidden />
-                    <input
-                        type="search"
-                        value={filter.search}
-                        placeholder="Find a game or category"
-                        aria-label="Find a game or category"
-                        onChange={(e) => setFilter({ search: e.target.value })}
-                    />
-                </label>
+                <input
+                    type="search"
+                    className={styles.runsSearch}
+                    value={filter.search}
+                    placeholder="Find a game or category"
+                    aria-label="Find a game or category"
+                    onChange={(e) => setFilter({ search: e.target.value })}
+                />
                 <fieldset className={styles.runsSegments}>
                     <legend className="visually-hidden">Show</legend>
                     {SEGMENTS.map((s) => (

@@ -106,7 +106,10 @@ export function RankBall({
             data-none={rank === null || undefined}
             title={title}
         >
-            {rank === null ? '—' : medal ? rank : ordinal(rank)}
+            <span aria-hidden={title ? true : undefined}>
+                {rank === null ? '—' : medal ? rank : ordinal(rank)}
+            </span>
+            {title ? <span className="visually-hidden">{title}</span> : null}
         </span>
     );
 }
@@ -122,9 +125,17 @@ export function EntryRow({
     const timing = timingLabel(entry);
     const source = sourceLabel(entry.provenance);
     const total = entry.totalRunners ?? 0;
+    // Not deployed everywhere yet — read defensively.
+    const attempts = entry.attempts ?? null;
+    const attemptsText =
+        attempts !== null && attempts > 0
+            ? `${attempts.toLocaleString('en-US')} ${attempts === 1 ? 'attempt' : 'attempts'}`
+            : null;
     const placing = [
-        entry.rank !== null && total > 1
-            ? `${ordinal(entry.rank)} of ${total.toLocaleString('en-US')} runners`
+        entry.rank !== null
+            ? total > 1
+                ? `${ordinal(entry.rank)} of ${total.toLocaleString('en-US')} runners`
+                : ordinal(entry.rank)
             : null,
         entry.countryRank !== null && country
             ? `#${entry.countryRank} in ${country.toUpperCase()}`
@@ -144,6 +155,16 @@ export function EntryRow({
                     <span className={styles.runOf}>
                         of {total.toLocaleString('en-US')}
                     </span>
+                ) : null}
+                {attemptsText && entry.splitsHref ? (
+                    <Link
+                        href={entry.splitsHref}
+                        className={styles.runAttempts}
+                    >
+                        {attemptsText}
+                    </Link>
+                ) : attemptsText ? (
+                    <span className={styles.runAttempts}>{attemptsText}</span>
                 ) : null}
             </span>
             <span className={styles.runTime}>

@@ -1,7 +1,13 @@
 @use '../../styles/design-tokens' as dt;
 @use '../../styles/board' as board;
 
+// Medal tones for ranks, shared by the runs, the pins and the games card. They
+// mix with the surface ink, so they read on a light panel as well as a dark one.
 .page {
+    --rank-gold: #d4a73a;
+    --rank-silver: #a9b4c2;
+    --rank-bronze: #c07a45;
+
     display: grid;
     gap: dt.$spacing-xl;
     padding-block: dt.$spacing-xl;
@@ -280,11 +286,6 @@ $row-line: color-mix(
     display: grid;
     gap: dt.$spacing-lg;
     min-width: 0;
-    // Medal tones for ranks. They mix with the surface ink, so they read on a
-    // light panel as well as a dark one.
-    --rank-gold: #d4a73a;
-    --rank-silver: #a9b4c2;
-    --rank-bronze: #c07a45;
 }
 
 .runsFilters {
@@ -299,45 +300,33 @@ $row-line: color-mix(
     align-items: center;
     gap: dt.$spacing-sm dt.$spacing-md;
     min-width: 0;
+
+    // On a phone the menu spans the bar instead of hanging off the pill.
+    @container profile-main (max-width: 559.98px) {
+        position: relative;
+    }
 }
 
 .runsSearch {
-    display: flex;
-    flex: 1 1 13rem;
-    align-items: center;
-    gap: dt.$spacing-sm;
+    @include board.control-pill;
+    @include board.board-input-rules;
+    flex: 1 1 12rem;
     max-width: 20rem;
     min-width: 0;
-    margin: 0;
-    padding: dt.$spacing-xs dt.$spacing-md;
     border: 1px solid
         var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
-    border-radius: 999px;
-    background: var(--board-recess-bg, rgba(var(--bs-body-color-rgb), 0.04));
-    color: var(--bs-secondary-color);
-    transition: border-color dt.$transition-fast;
+    color: var(--bs-emphasis-color);
 
-    &:focus-within {
-        border-color: rgba(var(--bs-primary-rgb), 0.6);
-    }
-
-    svg {
-        flex: none;
-    }
-
-    input {
-        width: 100%;
-        min-width: 0;
-        padding: 0;
-        border: 0;
+    &:focus {
+        border-color: var(--board-accent, var(--bs-primary));
+        box-shadow: 0 0 0
+            3px
+            color-mix(
+                in srgb,
+                var(--board-accent, var(--bs-primary)) 15%,
+                transparent
+            );
         outline: none;
-        background: transparent;
-        color: var(--bs-emphasis-color);
-        font-size: dt.$font-size-sm;
-    }
-
-    @media (pointer: coarse) {
-        padding-block: dt.$spacing-md;
     }
 }
 
@@ -353,27 +342,26 @@ $row-line: color-mix(
 
 .runsMenu {
     position: relative;
+
+    @container profile-main (max-width: 559.98px) {
+        position: static;
+    }
 }
 
 .runsMenuPanel {
     @include board.board-surface(dt.$spacing-lg);
     position: absolute;
-    z-index: 20;
+    z-index: dt.$z-popover;
     top: calc(100% + #{dt.$spacing-sm});
     left: 0;
     display: grid;
     gap: dt.$spacing-md;
-    width: min(20rem, 80vw);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+    width: 20rem;
+    max-width: 100%;
+    box-shadow: dt.$shadow-md;
 
-    // On a phone the pill may sit near the right edge; the menu docks to the
-    // bottom of the screen instead of running off it.
     @container profile-main (max-width: 559.98px) {
-        position: fixed;
-        top: auto;
-        right: dt.$spacing-lg;
-        bottom: dt.$spacing-lg;
-        left: dt.$spacing-lg;
+        right: 0;
         width: auto;
     }
 }
@@ -717,6 +705,28 @@ $row-line: color-mix(
     overflow-wrap: anywhere;
 }
 
+.runAttempts {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+a.runAttempts:hover {
+    color: var(--bs-emphasis-color);
+}
+
+.runsUnmatched {
+    padding: dt.$spacing-md dt.$spacing-xl;
+    border-top: 1px solid $row-line;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+
+    @container profile-main (max-width: 639.98px) {
+        padding-inline: dt.$spacing-lg;
+    }
+}
+
 .runOf {
     color: var(--bs-secondary-color);
     font-size: dt.$font-size-xs;
@@ -1004,9 +1014,6 @@ $row-line: color-mix(
     // without stretching the cards beside it.
     align-items: start;
     gap: dt.$spacing-lg;
-    --rank-gold: #d4a73a;
-    --rank-silver: #a9b4c2;
-    --rank-bronze: #c07a45;
 
     @container profile-main (max-width: 959.98px) {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1237,9 +1244,6 @@ $row-line: color-mix(
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: dt.$spacing-sm;
-    --rank-gold: #d4a73a;
-    --rank-silver: #a9b4c2;
-    --rank-bronze: #c07a45;
 }
 
 .shelfScroll {

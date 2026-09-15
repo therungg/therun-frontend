@@ -145,7 +145,10 @@ export function GamesShelf() {
                             type="button"
                             className={styles.shelfTile}
                             onClick={() =>
-                                setProfileUrl({ hash: `game-${game.gameId}` })
+                                setProfileUrl({
+                                    game: '',
+                                    hash: `game-${game.gameId}`,
+                                })
                             }
                         >
                             {content}
