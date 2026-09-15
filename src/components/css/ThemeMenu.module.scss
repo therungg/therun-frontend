@@ -2,16 +2,6 @@
     position: relative;
     display: flex;
     align-items: center;
-
-    // Invisible bridge so hover survives the 4px gap to dropdown
-    &::after {
-        content: '';
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        height: 8px;
-    }
 }
 
 .trigger {

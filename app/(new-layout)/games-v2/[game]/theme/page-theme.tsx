@@ -47,7 +47,7 @@ async function ViewerTheme({
 }) {
     const session = await getSession();
     const viewer = session.username
-        ? await getThemeSettings(session.username)
+        ? await getThemeSettings(session.username).catch(() => null)
         : null;
     const pick = choosePick({ hasPage, kind, viewer });
     const page = hasPage ? { label } : null;

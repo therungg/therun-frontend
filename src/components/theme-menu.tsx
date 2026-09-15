@@ -4,7 +4,11 @@ import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useThemeOptions } from '~src/components/theme-options-store';
+import {
+    setCurrentPick,
+    useCurrentPick,
+    useThemeOptions,
+} from '~src/components/theme-options-store';
 import type { ThemePick } from '~src/lib/theme-settings';
 import styles from './css/ThemeMenu.module.scss';
 
@@ -27,7 +31,9 @@ export function ThemeMenu({ variant = 'desktop' }: ThemeMenuProps) {
     const options = useThemeOptions();
     const pathname = usePathname();
     const { resolvedTheme, setTheme } = useTheme();
-    const [pick, setPick] = useState<ThemePick>(options?.defaultPick ?? 'none');
+    // Shared across the desktop and mobile instances (theme-options-store) so
+    // a pick made in one is reflected in the other's highlight.
+    const pick = useCurrentPick();
     const [open, setOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -41,7 +47,7 @@ export function ThemeMenu({ variant = 'desktop' }: ThemeMenuProps) {
     // to decide this — the header's effects can run before the page's own.
     useEffect(() => {
         const next = options?.defaultPick ?? 'none';
-        setPick(next);
+        setCurrentPick(next);
         if (options) {
             document.documentElement.dataset.themePick = next;
         }
@@ -77,7 +83,7 @@ export function ThemeMenu({ variant = 'desktop' }: ThemeMenuProps) {
         (mode: 'light' | 'dark') => {
             document.documentElement.dataset.themePick = 'none';
             setTheme(mode);
-            setPick('none');
+            setCurrentPick('none');
             setOpen(false);
         },
         [setTheme],
@@ -85,7 +91,7 @@ export function ThemeMenu({ variant = 'desktop' }: ThemeMenuProps) {
 
     const selectPick = useCallback((next: ThemePick) => {
         document.documentElement.dataset.themePick = next;
-        setPick(next);
+        setCurrentPick(next);
         setOpen(false);
     }, []);
 
@@ -131,6 +137,8 @@ export function ThemeMenu({ variant = 'desktop' }: ThemeMenuProps) {
                     <button
                         key={item.key}
                         type="button"
+                        role="menuitemradio"
+                        aria-checked={item.current}
                         className={`${styles.mobileItem} ${item.current ? styles.mobileItemActive : ''}`}
                         onClick={item.onSelect}
                     >
@@ -163,7 +171,8 @@ export function ThemeMenu({ variant = 'desktop' }: ThemeMenuProps) {
                     <button
                         key={item.key}
                         type="button"
-                        role="menuitem"
+                        role="menuitemradio"
+                        aria-checked={item.current}
                         className={`${styles.item} ${item.current ? styles.itemActive : ''}`}
                         onClick={item.onSelect}
                     >

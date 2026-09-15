@@ -1,3 +1,7 @@
+import {
+    FormSection,
+    InlineError,
+} from '~app/(new-layout)/games-v2/[game]/manage/shared/form-kit';
 import { getSession } from '~src/actions/session.action';
 import { getUserPatreonData } from '~src/actions/user-patreon-data.action';
 import Link from '~src/components/link';
@@ -14,7 +18,9 @@ export default async function AppearancePage(props: {
     const session = await getSession();
     if (!session.id || !session.username) return null;
     const data = await getUserPatreonData({});
-    const themeSettings = await getThemeSettings(session.username);
+    const themeSettings = await getThemeSettings(session.username).catch(
+        () => null,
+    );
     const isAdmin = session.roles?.includes('admin') ?? false;
     const rawTier = isAdmin ? Number(searchParams.tier) : NaN;
     const tierOverride =
@@ -29,7 +35,15 @@ export default async function AppearancePage(props: {
             <header className={styles.paneHeader}>
                 <h1 className={styles.paneTitle}>Appearance</h1>
             </header>
-            <ThemeSection initial={themeSettings} />
+            {themeSettings ? (
+                <ThemeSection initial={themeSettings} />
+            ) : (
+                <FormSection title="Theme">
+                    <InlineError>
+                        Theme settings couldn&apos;t be loaded.
+                    </InlineError>
+                </FormSection>
+            )}
             {canCustomise ? (
                 <PatreonSettings
                     session={session}
