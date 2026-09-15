@@ -6,6 +6,7 @@ import styles from './theme.module.scss';
 import { buildThemeCss } from './theme-css';
 import { choosePick, pickScript } from './theme-pick';
 import { ThemePickSync } from './theme-pick-sync';
+import { ThemeStyle } from './theme-style';
 
 type Kind = 'profile' | 'game';
 
@@ -18,11 +19,7 @@ function ThemeLayer({
 }) {
     return (
         <>
-            <style
-                // Safe by construction: buildThemeCss interpolates only
-                // validated colors; the URL below never enters the CSS.
-                dangerouslySetInnerHTML={{ __html: buildThemeCss(theme, pick) }}
-            />
+            <ThemeStyle css={buildThemeCss(theme, pick)} />
             {theme.backgroundUrl ? (
                 <div
                     className={styles.backdrop}

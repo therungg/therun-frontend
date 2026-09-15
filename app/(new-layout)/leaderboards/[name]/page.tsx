@@ -39,11 +39,9 @@ export async function generateMetadata({
 export default async function LeaderboardsProfilePage({ params }: PageProps) {
     const { name } = await params;
     const decoded = safeDecodeURI(name);
-    const [profile, head] = await Promise.all([
-        getLeaderboardsProfile(decoded),
-        getRunnerProfileHead(decoded).catch(() => null),
-    ]);
+    const profile = await getLeaderboardsProfile(decoded);
     if (!profile) notFound();
+    const head = await getRunnerProfileHead(decoded).catch(() => null);
 
     const layout = profile.layout ?? DEFAULT_LAYOUT;
     const games = profile.games.map((g) => ({ ...g, theme: null }));
