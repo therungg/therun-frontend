@@ -26,8 +26,6 @@ import {
     inputFrom,
     isDirty,
     needsPreview,
-    PRESET_HINTS,
-    PRESET_OPTIONS,
     previewSentences,
     type SettingsForm,
     validateForm,
@@ -157,12 +155,25 @@ export function SettingsEditor({
     return (
         <div className={styles.editor}>
             <FormSection title="What this board accepts">
-                <SwitchField
-                    id={`timer-${categoryId ?? 'game'}`}
-                    label="Accept runs directly from LiveSplit"
-                    checked={form.acceptTimer}
-                    onChange={(v) => set('acceptTimer', v)}
+                <SegmentedControl
+                    label="Runs from LiveSplit"
+                    value={form.timerRuns}
+                    options={[
+                        { value: 'direct', label: 'Go straight on' },
+                        {
+                            value: 'runner_submits',
+                            label: 'Runner submits them',
+                        },
+                    ]}
+                    onChange={(v) =>
+                        set('timerRuns', v as SettingsForm['timerRuns'])
+                    }
                 />
+                <p className={styles.hint}>
+                    {form.timerRuns === 'direct'
+                        ? 'A new PB goes onto the board as soon as it syncs.'
+                        : 'A new PB is held until its runner confirms it, retimes it against their video and checks the board rules.'}
+                </p>
                 <SegmentedControl
                     label="Who can submit a time by hand"
                     value={form.manualMode}
@@ -192,14 +203,18 @@ export function SettingsEditor({
             </FormSection>
 
             <FormSection title="What's verified automatically">
-                <SegmentedControl
-                    label="Auto-verify"
-                    value={form.preset}
-                    options={PRESET_OPTIONS}
-                    onChange={(v) => set('preset', v as SettingsForm['preset'])}
+                <SwitchField
+                    id={`autoverify-${categoryId ?? 'game'}`}
+                    label="Verify runs automatically when they pass every check"
+                    checked={form.autoVerifyEnabled}
+                    onChange={(v) => set('autoVerifyEnabled', v)}
                 />
-                <p className={styles.hint}>{PRESET_HINTS[form.preset]}</p>
-                {form.preset !== 'off' && (
+                <p className={styles.hint}>
+                    {form.autoVerifyEnabled
+                        ? 'Runs that clear every dial below go on verified. Everything else reaches you.'
+                        : 'Nothing is verified automatically — every run reaches you.'}
+                </p>
+                {form.autoVerifyEnabled && (
                     <>
                         <label className={styles.field}>
                             <span className={styles.fieldLabel}>
@@ -214,11 +229,61 @@ export function SettingsEditor({
                                 }
                             />
                         </label>
-                        <SwitchField
-                            id={`live-${categoryId ?? 'game'}`}
-                            label="Require therun.gg live tracking"
-                            checked={form.requireLive}
-                            onChange={(v) => set('requireLive', v)}
+                        <label className={styles.field}>
+                            <span className={styles.fieldLabel}>
+                                Verified runs needed on this game first
+                            </span>
+                            <input
+                                className="form-control form-control-sm"
+                                inputMode="numeric"
+                                value={form.minPriorVerifiedRuns}
+                                onChange={(e) =>
+                                    set('minPriorVerifiedRuns', e.target.value)
+                                }
+                            />
+                        </label>
+                        <label className={styles.field}>
+                            <span className={styles.fieldLabel}>
+                                Largest gold beat allowed, in percent
+                            </span>
+                            <input
+                                className="form-control form-control-sm"
+                                inputMode="numeric"
+                                value={form.maxGoldBeatPct}
+                                onChange={(e) =>
+                                    set('maxGoldBeatPct', e.target.value)
+                                }
+                            />
+                        </label>
+                        <label className={styles.field}>
+                            <span className={styles.fieldLabel}>
+                                Largest PB improvement allowed, in percent
+                            </span>
+                            <input
+                                className="form-control form-control-sm"
+                                inputMode="numeric"
+                                value={form.maxPbJumpPct}
+                                onChange={(e) =>
+                                    set('maxPbJumpPct', e.target.value)
+                                }
+                            />
+                        </label>
+                        <SegmentedControl
+                            label="Live timing"
+                            value={form.liveData}
+                            options={[
+                                {
+                                    value: 'must_match',
+                                    label: 'Must match the splits',
+                                },
+                                {
+                                    value: 'uploads_off',
+                                    label: 'No live uploads',
+                                },
+                            ]}
+                            onChange={(v) =>
+                                set('liveData', v as SettingsForm['liveData'])
+                            }
                         />
                     </>
                 )}

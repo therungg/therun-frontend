@@ -10,7 +10,15 @@ export type ManualSubmissions =
     | { mode: 'account_age'; days: number } // 1-365
     | { mode: 'anyone' };
 
-export type IntakeSetting = { acceptTimer: boolean; manual: ManualSubmissions };
+/**
+ * `timerRuns` has two states, not three: refusing LiveSplit runs means the
+ * runner is asked to submit the PB themselves, so a timer run is never dropped
+ * for being one.
+ */
+export type IntakeSetting = {
+    timerRuns: 'direct' | 'runner_submits';
+    manual: ManualSubmissions;
+};
 
 export type VideoRule = {
     require: 'nothing' | 'top_n' | 'under_time' | 'everything';
@@ -19,10 +27,18 @@ export type VideoRule = {
     onMissing: 'hide' | 'flag';
 };
 
+/**
+ * The dials a board owns. There are no presets: a board starts from the
+ * defaults and its moderators move what they want, so retuning a default never
+ * shifts a board that was already configured.
+ */
 export type AutoVerifySetting = {
-    preset: 'off' | 'lenient' | 'standard' | 'strict';
+    enabled: boolean;
     neverTopN: number;
-    requireLive: boolean;
+    minPriorVerifiedRuns: number;
+    maxGoldBeatPct: number;
+    maxPbJumpPct: number;
+    liveData: 'must_match' | 'uploads_off';
 };
 
 export type SettingSource = 'category' | 'game' | 'category_import' | 'default';

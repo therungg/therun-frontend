@@ -9,52 +9,38 @@ import type {
 
 /** Numbers are held as text so a field the moderator is retyping never coerces to 0. */
 export type SettingsForm = {
-    acceptTimer: boolean;
+    timerRuns: IntakeSetting['timerRuns'];
     manualMode: IntakeSetting['manual']['mode'];
     manualDays: string;
     videoRequire: VideoRule['require'];
     videoTopN: string;
     videoTimeMs: string;
     videoOnMissing: VideoRule['onMissing'];
-    preset: AutoVerifySetting['preset'];
+    autoVerifyEnabled: boolean;
     neverTopN: string;
-    requireLive: boolean;
-};
-
-export const PRESET_OPTIONS: Array<{
-    value: AutoVerifySetting['preset'];
-    label: string;
-}> = [
-    { value: 'off', label: 'Off' },
-    { value: 'lenient', label: 'Lenient' },
-    { value: 'standard', label: 'Standard' },
-    { value: 'strict', label: 'Strict' },
-];
-
-/** Same wording as the old Auto-verify pane, which moderators already know. */
-export const PRESET_HINTS: Record<AutoVerifySetting['preset'], string> = {
-    off: 'Nothing is verified automatically.',
-    lenient:
-        'Live check when available, allows a 10% gold beat and a 15% PB jump, no prior verified runs needed.',
-    standard:
-        'Live check when available, allows a 5% gold beat and an 8% PB jump, needs 1 prior verified run.',
-    strict: 'Live tracking required, allows a 2% gold beat and a 4% PB jump, needs 3 prior verified runs.',
+    minPriorVerifiedRuns: string;
+    maxGoldBeatPct: string;
+    maxPbJumpPct: string;
+    liveData: AutoVerifySetting['liveData'];
 };
 
 export const formFrom = (e: EffectiveSettings): SettingsForm => {
     const manual = e.intake.value.manual;
     const video = e.videoRule.value;
     return {
-        acceptTimer: e.intake.value.acceptTimer,
+        timerRuns: e.intake.value.timerRuns,
         manualMode: manual.mode,
         manualDays: manual.mode === 'account_age' ? String(manual.days) : '7',
         videoRequire: video.require,
         videoTopN: String(video.topN ?? 10),
         videoTimeMs: String(video.timeMs ?? ''),
         videoOnMissing: video.onMissing,
-        preset: e.autoVerify.value.preset,
+        autoVerifyEnabled: e.autoVerify.value.enabled,
         neverTopN: String(e.autoVerify.value.neverTopN),
-        requireLive: e.autoVerify.value.requireLive,
+        minPriorVerifiedRuns: String(e.autoVerify.value.minPriorVerifiedRuns),
+        maxGoldBeatPct: String(e.autoVerify.value.maxGoldBeatPct),
+        maxPbJumpPct: String(e.autoVerify.value.maxPbJumpPct),
+        liveData: e.autoVerify.value.liveData,
     };
 };
 
@@ -81,7 +67,7 @@ export const validateForm = (f: SettingsForm): string | null => {
 };
 
 const intakeOf = (f: SettingsForm): IntakeSetting => ({
-    acceptTimer: f.acceptTimer,
+    timerRuns: f.timerRuns,
     manual:
         f.manualMode === 'account_age'
             ? { mode: 'account_age', days: int(f.manualDays)! }
@@ -94,9 +80,12 @@ const videoOf = (f: SettingsForm): VideoRule => ({
     onMissing: f.videoOnMissing,
 });
 const autoVerifyOf = (f: SettingsForm): AutoVerifySetting => ({
-    preset: f.preset,
+    enabled: f.autoVerifyEnabled,
     neverTopN: int(f.neverTopN)!,
-    requireLive: f.requireLive,
+    minPriorVerifiedRuns: int(f.minPriorVerifiedRuns)!,
+    maxGoldBeatPct: Number(f.maxGoldBeatPct),
+    maxPbJumpPct: Number(f.maxPbJumpPct),
+    liveData: f.liveData,
 });
 const same = (a: unknown, b: unknown) =>
     JSON.stringify(a) === JSON.stringify(b);
@@ -154,11 +143,10 @@ const videoWords = (v: VideoRule) => {
 export const summarize = (e: EffectiveSettings): string => {
     const parts = [
         videoWords(e.videoRule.value),
-        e.autoVerify.value.preset === 'off'
-            ? 'auto-verify off'
-            : `auto-verify ${e.autoVerify.value.preset}`,
+        e.autoVerify.value.enabled ? 'auto-verify on' : 'auto-verify off',
     ];
-    if (!e.intake.value.acceptTimer) parts.push('timer runs closed');
+    if (e.intake.value.timerRuns === 'runner_submits')
+        parts.push('runners submit their own PBs');
     if (e.intake.value.manual.mode === 'off') parts.push('no submitted times');
     return parts.join(', ');
 };
