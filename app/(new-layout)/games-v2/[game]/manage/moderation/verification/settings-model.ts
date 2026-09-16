@@ -22,7 +22,8 @@ export type SettingsForm = {
     maxGoldBeatPct: string;
     /** Seconds, as the moderator types them; sent as milliseconds. */
     maxPbJumpSeconds: string;
-    liveData: AutoVerifySetting['liveData'];
+    liveRequired: boolean;
+    liveMustMatch: boolean;
 };
 
 /** What the field shows when the board has no number to show — a response
@@ -49,7 +50,8 @@ export const formFrom = (e: EffectiveSettings): SettingsForm => {
                 ? e.autoVerify.value.maxPbJumpMs / 1000
                 : DEFAULT_PB_JUMP_SECONDS,
         ),
-        liveData: e.autoVerify.value.liveData,
+        liveRequired: e.autoVerify.value.liveRequired,
+        liveMustMatch: e.autoVerify.value.liveMustMatch,
     };
 };
 
@@ -121,7 +123,9 @@ const autoVerifyOf = (f: SettingsForm): AutoVerifySetting => ({
     minPriorVerifiedRuns: int(f.minPriorVerifiedRuns)!,
     maxGoldBeatPct: Number(f.maxGoldBeatPct),
     maxPbJumpMs: Math.round(Number(f.maxPbJumpSeconds) * 1000),
-    liveData: f.liveData,
+    liveRequired: f.liveRequired,
+    // Only meaningful with a live run to compare against.
+    liveMustMatch: f.liveRequired && f.liveMustMatch,
 });
 const same = (a: unknown, b: unknown) =>
     JSON.stringify(a) === JSON.stringify(b);

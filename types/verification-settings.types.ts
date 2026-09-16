@@ -38,7 +38,8 @@ export type AutoVerifySetting = {
     minPriorVerifiedRuns: number;
     maxGoldBeatPct: number;
     maxPbJumpMs: number;
-    liveData: 'must_match' | 'uploads_off';
+    liveRequired: boolean;
+    liveMustMatch: boolean;
 };
 
 export type SettingSource = 'category' | 'game' | 'category_import' | 'default';
