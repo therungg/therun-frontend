@@ -316,32 +316,36 @@ export function WorklistPane({
 
     // After the list reloads under the modal (the open run decided away),
     // stay on the run if it is still listed, else take the next run that
-    // survived, else close.
-    const previousRunOrder = useRef<number[]>([]);
+    // survived, else the one before it, else close. Worked out during render
+    // so the modal never renders without a run while one survives.
     const runOrderSignature = displayOrder.map((i) => i.runId).join('|');
-    useEffect(() => {
-        const previous = previousRunOrder.current;
+    const [seenRunOrder, setSeenRunOrder] = useState<{
+        signature: string;
+        runIds: number[];
+    }>({ signature: '', runIds: [] });
+    if (seenRunOrder.signature !== runOrderSignature) {
         const next = displayOrder.map((i) => i.runId);
-        previousRunOrder.current = next;
-        if (inspectRunId === null || next.includes(inspectRunId)) return;
-        const survivors = new Set(next);
-        const at = previous.indexOf(inspectRunId);
-        let landing: number | null = null;
-        if (at !== -1) {
-            for (let i = at + 1; i < previous.length; i++) {
-                if (survivors.has(previous[i])) {
-                    landing = previous[i];
-                    break;
-                }
+        setSeenRunOrder({ signature: runOrderSignature, runIds: next });
+        if (inspectRunId !== null && !next.includes(inspectRunId)) {
+            const previous = seenRunOrder.runIds;
+            const survivors = new Set(next);
+            const at = previous.indexOf(inspectRunId);
+            let landing: number | null = null;
+            if (at !== -1) {
+                landing =
+                    previous.slice(at + 1).find((id) => survivors.has(id)) ??
+                    previous
+                        .slice(0, at)
+                        .reverse()
+                        .find((id) => survivors.has(id)) ??
+                    null;
             }
+            // The open run left the queue: it was decided.
+            setDecided((d) => d + 1);
+            setInspectVerb(undefined);
+            setInspectRunId(landing);
         }
-        // The open run left the queue: it was decided.
-        bumpDecided(1);
-        setInspectVerb(undefined);
-        setInspectRunId(landing);
-        // displayOrder is rebuilt every render; the signature is its identity.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [runOrderSignature]);
+    }
 
     // When the list reloads under the keyboard (a run approved away), land on
     // the row that took its place instead of dropping the position.

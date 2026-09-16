@@ -16,6 +16,7 @@ export function parseQueueKey(e: {
     ctrlKey: boolean;
     metaKey: boolean;
     altKey: boolean;
+    shiftKey: boolean;
 }): QueueKeyAction | null {
     if (e.ctrlKey || e.metaKey || e.altKey) return null;
     switch (e.key) {
@@ -30,7 +31,8 @@ export function parseQueueKey(e: {
         case 'a':
             return 'approve';
         case 'A':
-            return 'approveGroup';
+            // Caps Lock alone must not approve a whole group.
+            return e.shiftKey ? 'approveGroup' : null;
         case 'd':
             return 'decline';
         case 'Escape':
