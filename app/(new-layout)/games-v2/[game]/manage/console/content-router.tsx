@@ -182,10 +182,14 @@ export function ContentRouter(props: ContentRouterProps) {
                     )}
                     <NeedsAttention
                         gameSlug={game.name}
+                        gameId={game.id}
                         gameDisplay={game.display}
                         items={attentionItems}
                         degradedSources={degradedSources}
                         categories={categories}
+                        boardCategories={props.boardCategories}
+                        variables={props.variables}
+                        canSiteBan={props.canSiteBan}
                         onCountChange={props.onAttentionCountChange}
                     />
                 </>

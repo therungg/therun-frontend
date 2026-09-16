@@ -17,19 +17,20 @@ import {
     ShieldCheck,
     X,
 } from 'react-bootstrap-icons';
+import { toast } from 'react-toastify';
 import chrome from '~src/components/console-chrome/console.module.scss';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import type {
+    LeaderboardEntry,
+    ResolvedCategory,
+    VariableRow,
+} from '../../../../../../../types/leaderboards.types';
 import type { FlagSeverity } from '../../../../../../../types/moderation.types';
 import { formatSubcategoryKey } from '../../../labels';
-import type {
-    BanScope,
-    ModVerb,
-    RunActionTarget,
-} from '../shared/action-model';
-import { defaultBanScopeForCategories } from '../shared/action-model';
-import { RunActionDialog } from '../shared/run-action-dialog';
+import { ModeratePanel } from '../moderate/moderate-panel';
+import type { SheetBoard, SheetSubject } from '../moderate/subject';
 import {
     type AttentionItem,
     type AttentionSource,
@@ -37,31 +38,19 @@ import {
     groupByRunner,
     parseKindFilter,
 } from './attention-model';
-import { ManualTimeVerdictRow } from './manual-time-verdict-row';
 import styles from './needs-attention.module.scss';
 import {
-    allKeysSelected,
     flattenTriageOrder,
-    intersectSelected,
     isTriageInert,
     moveSelection,
     parseTriageKey,
     queuePosition,
-    setManySelected,
-    toggleSelected,
 } from './triage-keyboard';
 
 /** data-triage-card attribute name shared between the selector and the query. */
 const TRIAGE_CARD_ATTR = 'data-triage-card';
 
-// The triage-card action buttons are named once so the whole card family
-// restyles from one place and the variants can't drift. Verdict actions
-// (approve/remove) keep the Bootstrap success/danger vocabulary per the
-// moderation verdict-action carve-out in system.md; secondary actions use
-// the board control-pill tier via this pane's own module.
 const BTN_SECONDARY = styles.quietBtn;
-const BTN_DANGER = 'btn btn-sm btn-outline-danger';
-const BTN_SUCCESS = 'btn btn-sm btn-success';
 
 const SOURCE_FILTERS: Array<{ value: SourceFilter; label: string }> = [
     { value: 'all', label: 'All' },
@@ -80,9 +69,9 @@ const KIND_CHIP_LABEL: Record<AttentionSource, string> = {
     appeal: 'Appeals',
     self_claim: 'Self-claims',
 };
-
 interface Props {
     gameSlug: string;
+    gameId: number;
     gameDisplay: string;
     items: AttentionItem[];
     /** Human-readable names of inbox sources that failed to load (e.g.
@@ -90,6 +79,10 @@ interface Props {
      * may be incomplete — never claim "All clear" while this is non-empty. */
     degradedSources: string[];
     categories: Array<{ id: number; display: string }>;
+    /** Full board rows, for the moderate modal. */
+    boardCategories: ResolvedCategory[];
+    variables: VariableRow[];
+    canSiteBan: boolean;
     /** Reports the current (unfiltered) item count upward so the sidebar
      * badge can decrement live as items get triaged. */
     onCountChange?: (count: number) => void;
@@ -146,54 +139,81 @@ function isAutoVerifyFlagReason(reason: string): boolean {
     return reason in AUTO_VERIFY_FLAG_LABEL;
 }
 
-/** An active run-action invocation against one or more items. */
-interface RunAction {
-    verb: ModVerb;
-    target: RunActionTarget;
-    affectedKeys: string[];
-    /** Initial ban-dialog scope; only meaningful when verb === 'ban'. */
-    defaultBanScope?: BanScope;
+/** What the moderate modal is open on: one item, or a runner from a group. */
+type ModerateTarget =
+    | { kind: 'item'; key: string }
+    | {
+          kind: 'runner';
+          userId: number;
+          runnerName: string;
+          categoryId: number | null;
+      };
+
+/** The board an item sits on, or null when the console does not list it. */
+function itemBoard(
+    item: AttentionItem,
+    boardCategories: ResolvedCategory[],
+): SheetBoard | null {
+    const category = boardCategories.find((c) => c.id === item.categoryId);
+    if (!category) return null;
+    return {
+        categoryId: category.id,
+        categorySlug: category.name,
+        categoryDisplay: category.display,
+        subcategoryKey: item.subcategoryKey,
+        primaryTiming: category.primaryTiming === 'gt' ? 'gt' : 'rt',
+    };
 }
 
-/** A keyboard-triggered open request for a self-claim's inline verdict row
- * (ManualTimeVerdictRow) — see the 'v'/'r' handler in NeedsAttention. */
-interface ManualTimeOpenRequest {
-    key: string;
-    verdict: 'verify' | 'reject';
-    nonce: number;
+/** An attention item as a board row; a self-claim is a manual time. */
+function itemEntry(item: AttentionItem, board: SheetBoard): LeaderboardEntry {
+    const status = item.verificationStatus;
+    return {
+        runId: item.runId,
+        manualTimeId: item.manualTimeId,
+        source: item.runId == null ? 'manual' : 'run',
+        rank: 0,
+        runnerName: item.runnerName,
+        userId: item.userId,
+        isGuest: item.userId == null,
+        time:
+            board.primaryTiming === 'gt' && item.gameTimeMs != null
+                ? item.gameTimeMs
+                : item.timeMs,
+        realTime: item.timeMs,
+        gameTime: item.gameTimeMs,
+        runDate: null,
+        vodUrl: item.vodUrl,
+        verificationStatus:
+            status === 'verified' || status === 'rejected' ? status : 'pending',
+        variables: null,
+    };
 }
 
 export function NeedsAttention({
     gameSlug,
+    gameId,
     gameDisplay,
     items: initialItems,
     degradedSources,
     categories,
+    boardCategories,
+    variables,
+    canSiteBan,
     onCountChange,
 }: Props) {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const [items, setItems] = useState<AttentionItem[]>(initialItems);
+    // A mutation in the modal refreshes the route, which sends the fresh
+    // server-computed list through this prop.
+    const items = initialItems;
     const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
     const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('any');
     const [kindFilter, setKindFilter] = useState<AttentionSource | null>(() =>
         parseKindFilter(searchParams.get('kind')),
     );
-    const [runAction, setRunAction] = useState<RunAction | null>(null);
     const [selectedKey, setSelectedKey] = useState<string | null>(null);
-    // Keyboard 'v'/'r' on a selected self-claim card wires onto that row's
-    // own verify/reject buttons (ManualTimeVerdictRow) rather than a
-    // RunActionDialog, since self-claims have no runId. `nonce` is a fresh
-    // value per keypress so the same verdict pressed twice still re-opens.
-    const [manualTimeOpen, setManualTimeOpen] =
-        useState<ManualTimeOpenRequest | null>(null);
-    // Batch checkbox selection — keys of items checked for "Approve selected"
-    // / "Remove selected…". Self-claim items (no runId) never appear here:
-    // they have no RunActionDialog path (see ManualTimeVerdictRow), so they
-    // get no checkbox at all rather than a disabled one.
-    const [selectedForBatch, setSelectedForBatch] = useState<Set<string>>(
-        new Set(),
-    );
+    const [moderate, setModerate] = useState<ModerateTarget | null>(null);
     // Runner-group disclosure state, lifted out of RunnerGroupCard (which
     // used to own it locally) so the roving keyboard selection and the
     // "{n} of {m}" queue indicator can compute the true rendered card order
@@ -211,17 +231,6 @@ export function NeedsAttention({
     useEffect(() => {
         setKindFilter(parseKindFilter(searchParams.get('kind')));
     }, [searchParams]);
-
-    // items starts from initialItems but is then mutated locally
-    // (removeKeys) as cards are triaged, so it doesn't auto-follow prop
-    // updates. router.refresh() (the degraded-source Retry buttons, and
-    // now Undo) sends a fresh server-computed list through this prop —
-    // resync so a re-added item (undo) or corrected list (retry) actually
-    // shows up, mirroring the same fix already applied to the sidebar
-    // badge count in console-shell.tsx.
-    useEffect(() => {
-        setItems(initialItems);
-    }, [initialItems]);
 
     // The sidebar badge tracks total open items, not the filtered view — so
     // narrowing by source/category/kind never makes the badge jump around,
@@ -271,19 +280,6 @@ export function NeedsAttention({
         [orderedKeys, selectedKey],
     );
 
-    // Scopes the keyboard hint to what the selected card actually supports:
-    // self-claims wire v/r onto their own verify/reject row buttons (no
-    // batch checkbox, so "x select" doesn't apply either) — see the
-    // keydown handler below.
-    const selectedItem = useMemo(
-        () => filtered.find((it) => it.key === selectedKey) ?? null,
-        [filtered, selectedKey],
-    );
-    const isSelfClaimSelected =
-        selectedItem != null &&
-        selectedItem.runId == null &&
-        selectedItem.manualTimeId != null;
-
     const toggleGroup = (userId: number) => {
         setExpandedGroups((prev) => {
             const next = new Set(prev);
@@ -293,170 +289,123 @@ export function NeedsAttention({
         });
     };
 
-    // A source/category filter can hide items that were previously checked —
-    // keep the bulk bar honest by dropping selections that fall out of view,
-    // rather than silently batch-acting on something the moderator can no
-    // longer see.
-    useEffect(() => {
-        setSelectedForBatch((prev) =>
-            intersectSelected(
-                prev,
-                filtered.map((it) => it.key),
-            ),
-        );
-    }, [filtered]);
+    // Every item in the order the cards list them, collapsed groups
+    // included: the modal's prev/next walks this.
+    const modalOrder = useMemo(() => groups.flatMap((g) => g.items), [groups]);
 
-    const selectedItems = useMemo(
-        () => filtered.filter((it) => selectedForBatch.has(it.key)),
-        [filtered, selectedForBatch],
-    );
-    const selectedRunIds = useMemo(
-        () =>
-            selectedItems
-                .map((it) => it.runId)
-                .filter((id): id is number => id != null),
-        [selectedItems],
-    );
-
-    const triggerBatchApprove = () => {
-        if (selectedRunIds.length === 0) return;
-        setRunAction({
-            verb: 'approve',
-            target: {
-                kind: 'runs',
-                runIds: selectedRunIds,
-                label: `${selectedRunIds.length} selected run${selectedRunIds.length === 1 ? '' : 's'}`,
-            },
-            affectedKeys: selectedItems.map((it) => it.key),
-        });
+    const openItem = (item: AttentionItem) => {
+        if (!itemBoard(item, boardCategories)) {
+            toast.error(
+                "This run's board isn't in this console's list. Open it from the run page.",
+            );
+            return;
+        }
+        setModerate({ kind: 'item', key: item.key });
     };
 
-    const triggerBatchRemove = () => {
-        if (selectedRunIds.length === 0) return;
-        setRunAction({
-            verb: 'remove',
-            target: {
-                kind: 'runs',
-                runIds: selectedRunIds,
-                label: `${selectedRunIds.length} selected run${selectedRunIds.length === 1 ? '' : 's'}`,
-            },
-            affectedKeys: selectedItems.map((it) => it.key),
-        });
-    };
-
-    const removeKeys = (keys: string[]) => {
-        const drop = new Set(keys);
-        // Keyboard-triggered actions remove the acted-upon card(s) — reselect
-        // the next surviving card at (or before) the same queue position so
-        // the selection ring persists instead of going dark.
-        setSelectedKey((cur) => {
-            if (cur == null || !drop.has(cur)) return cur;
-            const idx = orderedKeys.indexOf(cur);
-            for (let i = idx + 1; i < orderedKeys.length; i++) {
-                if (!drop.has(orderedKeys[i])) return orderedKeys[i];
+    // After the list reloads under the modal (the open item decided away),
+    // stay on it if it is still listed, else take the next item that
+    // survived, else the one before it, else close. Worked out during render
+    // so the modal never renders without an item while one survives.
+    const orderSignature = modalOrder.map((i) => i.key).join('|');
+    const [seenOrder, setSeenOrder] = useState<{
+        signature: string;
+        keys: string[];
+    }>({ signature: '', keys: [] });
+    if (seenOrder.signature !== orderSignature) {
+        const next = modalOrder.map((i) => i.key);
+        setSeenOrder({ signature: orderSignature, keys: next });
+        if (moderate?.kind === 'item' && !next.includes(moderate.key)) {
+            const previous = seenOrder.keys;
+            const survivors = new Set(next);
+            const at = previous.indexOf(moderate.key);
+            let landing: string | null = null;
+            if (at !== -1) {
+                landing =
+                    previous.slice(at + 1).find((k) => survivors.has(k)) ??
+                    previous
+                        .slice(0, at)
+                        .reverse()
+                        .find((k) => survivors.has(k)) ??
+                    null;
             }
-            for (let i = idx - 1; i >= 0; i--) {
-                if (!drop.has(orderedKeys[i])) return orderedKeys[i];
-            }
-            return null;
-        });
-        setItems((prev) => prev.filter((it) => !drop.has(it.key)));
-        setSelectedForBatch((prev) => setManySelected(prev, keys, false));
+            setModerate(landing ? { kind: 'item', key: landing } : null);
+        }
+    }
+
+    const modalIndex =
+        moderate?.kind === 'item'
+            ? modalOrder.findIndex((i) => i.key === moderate.key)
+            : -1;
+    const modalItem = modalIndex >= 0 ? modalOrder[modalIndex] : null;
+    const modalBoard = modalItem ? itemBoard(modalItem, boardCategories) : null;
+    const stepTo = (index: number) => {
+        const item = modalOrder[index];
+        if (item && itemBoard(item, boardCategories))
+            setModerate({ kind: 'item', key: item.key });
     };
 
-    const toggleBatchKey = (key: string) => {
-        setSelectedForBatch((prev) => toggleSelected(prev, key));
-    };
-
-    const toggleBatchKeys = (keys: string[], select: boolean) => {
-        setSelectedForBatch((prev) => setManySelected(prev, keys, select));
-    };
-
-    // Both guards below are defensive, not load-bearing: the only caller is
-    // the keydown handler, which already routes self-claims (no runId) to
-    // ManualTimeVerdictRow's own verify/reject via manualTimeOpen before
-    // ever reaching these — see isSelfClaim there.
-    const triggerApprove = (item: AttentionItem) => {
-        if (item.runId == null) return;
-        setRunAction({
-            verb: 'approve',
-            target: runsTargetFor(item),
-            affectedKeys: [item.key],
-        });
-    };
-
-    const triggerRemove = (item: AttentionItem) => {
-        if (item.runId == null) return;
-        setRunAction({
-            verb: 'remove',
-            target: runsTargetFor(item),
-            affectedKeys: [item.key],
-        });
-    };
+    let modalSubject: SheetSubject | null = null;
+    if (moderate?.kind === 'runner') {
+        modalSubject = {
+            kind: 'runner',
+            userId: moderate.userId,
+            runnerName: moderate.runnerName,
+            categoryId: moderate.categoryId,
+        };
+    } else if (modalItem && modalBoard) {
+        modalSubject = {
+            kind: 'run',
+            entry: itemEntry(modalItem, modalBoard),
+            board: modalBoard,
+        };
+    }
 
     // Fast triage: j/k (or Arrow Up/Down) move a roving selection between the
     // currently RENDERED cards (a collapsed runner group's items are simply
     // absent from the query, so they're skipped rather than requiring an
-    // auto-expand); v opens approve, r opens remove for the selected card.
-    // Inert while a dialog is open or focus sits in a form field — see
+    // auto-expand); Enter opens the moderate modal on the selected card.
+    // Inert while the modal is open or focus sits in a form field — see
     // triage-keyboard.ts for the pure decision logic.
     useEffect(() => {
         const onKeyDown = (e: KeyboardEvent) => {
-            const action = parseTriageKey(e);
-            if (!action) return;
+            // The open modal owns the keyboard.
+            if (moderate !== null) return;
             const active = document.activeElement as HTMLElement | null;
             if (
                 isTriageInert({
                     activeTag: active?.tagName ?? null,
                     isContentEditable: !!active?.isContentEditable,
-                    dialogOpen: runAction != null,
+                    dialogOpen: false,
                 })
             ) {
                 return;
             }
 
-            if (action === 'up' || action === 'down') {
-                if (orderedKeys.length === 0) return;
+            if (e.key === 'Enter') {
+                if (e.ctrlKey || e.metaKey || e.altKey) return;
+                if (selectedKey == null) return;
+                // Enter on a focused control belongs to that control.
+                if (active?.tagName === 'BUTTON' || active?.tagName === 'A')
+                    return;
+                const item = filtered.find((it) => it.key === selectedKey);
+                if (!item) return;
                 e.preventDefault();
-                setSelectedKey((cur) =>
-                    moveSelection(orderedKeys, cur, action),
-                );
+                openItem(item);
                 return;
             }
 
-            if (selectedKey == null) return;
-            const item = filtered.find((it) => it.key === selectedKey);
-            if (!item) return;
-
-            if (action === 'toggle') {
-                if (item.runId == null) return; // self-claims aren't batchable
-                e.preventDefault();
-                toggleBatchKey(selectedKey);
-                return;
-            }
-
+            const action = parseTriageKey(e);
+            if (action !== 'up' && action !== 'down') return;
+            if (orderedKeys.length === 0) return;
             e.preventDefault();
-            const isSelfClaim = item.runId == null && item.manualTimeId != null;
-            if (isSelfClaim) {
-                // No RunActionDialog path for self-claims — wire v/r onto
-                // the row's own verify/reject buttons instead (their
-                // actions map cleanly: approve≈verify, remove≈reject).
-                setManualTimeOpen({
-                    key: item.key,
-                    verdict: action === 'approve' ? 'verify' : 'reject',
-                    nonce: Date.now(),
-                });
-                return;
-            }
-            if (action === 'approve') triggerApprove(item);
-            else triggerRemove(item);
+            setSelectedKey((cur) => moveSelection(orderedKeys, cur, action));
         };
         document.addEventListener('keydown', onKeyDown);
         return () => document.removeEventListener('keydown', onKeyDown);
-        // triggerApprove/triggerRemove/toggleBatchKey close over `item`/setState,
-        // not component state beyond what's already listed — safe to omit.
+        // openItem closes over boardCategories only; safe to omit.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [runAction, selectedKey, filtered, orderedKeys]);
+    }, [moderate, selectedKey, filtered, orderedKeys]);
 
     // Keep the selection ring visibly focused and scrolled into view.
     useEffect(() => {
@@ -656,17 +605,7 @@ export function NeedsAttention({
                     )}
                     <p className={styles.hint}>
                         <kbd>j</kbd>
-                        <kbd>k</kbd> navigate ·{' '}
-                        {isSelfClaimSelected ? (
-                            <>
-                                <kbd>v</kbd> verify · <kbd>r</kbd> reject
-                            </>
-                        ) : (
-                            <>
-                                <kbd>v</kbd> approve · <kbd>r</kbd> remove ·{' '}
-                                <kbd>x</kbd> select
-                            </>
-                        )}
+                        <kbd>k</kbd> navigate · <kbd>Enter</kbd> moderate
                         {queuePos && (
                             <span className={styles.queuePosition}>
                                 {queuePos.n} of {queuePos.m}
@@ -679,16 +618,14 @@ export function NeedsAttention({
                                 <RunnerGroupCard
                                     key={`u:${g.userId}`}
                                     gameSlug={gameSlug}
-                                    gameDisplay={gameDisplay}
                                     runnerName={g.runnerName}
                                     userId={g.userId}
                                     items={g.items}
-                                    onAct={setRunAction}
-                                    onItemDone={(keys) => removeKeys(keys)}
+                                    onModerateItem={openItem}
+                                    onModerateRunner={(target) =>
+                                        setModerate(target)
+                                    }
                                     selectedKey={selectedKey}
-                                    selectedForBatch={selectedForBatch}
-                                    onToggleKey={toggleBatchKey}
-                                    onToggleKeys={toggleBatchKeys}
                                     open={
                                         g.userId != null &&
                                         expandedGroups.has(g.userId)
@@ -697,24 +634,14 @@ export function NeedsAttention({
                                         g.userId != null &&
                                         toggleGroup(g.userId)
                                     }
-                                    manualTimeOpen={manualTimeOpen}
                                 />
                             ) : (
                                 <SingleItemCard
                                     key={g.items[0].key}
                                     gameSlug={gameSlug}
-                                    gameDisplay={gameDisplay}
                                     item={g.items[0]}
-                                    onAct={setRunAction}
-                                    onDone={() => removeKeys([g.items[0].key])}
+                                    onModerate={() => openItem(g.items[0])}
                                     selected={g.items[0].key === selectedKey}
-                                    checked={selectedForBatch.has(
-                                        g.items[0].key,
-                                    )}
-                                    onToggleChecked={() =>
-                                        toggleBatchKey(g.items[0].key)
-                                    }
-                                    manualTimeOpen={manualTimeOpen}
                                 />
                             ),
                         )}
@@ -722,85 +649,45 @@ export function NeedsAttention({
                 </>
             )}
 
-            {selectedForBatch.size > 0 && (
-                <div className={styles.bulkBar}>
-                    <span className={styles.bulkCount} aria-live="polite">
-                        {selectedForBatch.size} selected
-                    </span>
-                    <div className={styles.bulkActions}>
-                        <button
-                            type="button"
-                            className={BTN_SUCCESS}
-                            onClick={triggerBatchApprove}
-                        >
-                            Approve selected
-                        </button>
-                        <button
-                            type="button"
-                            className={BTN_DANGER}
-                            onClick={triggerBatchRemove}
-                        >
-                            Remove selected…
-                        </button>
-                        <button
-                            type="button"
-                            className={BTN_SECONDARY}
-                            onClick={() => setSelectedForBatch(new Set())}
-                        >
-                            Clear
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {runAction && (
-                <RunActionDialog
-                    gameSlug={gameSlug}
-                    verb={runAction.verb}
-                    target={runAction.target}
-                    defaultBanScope={runAction.defaultBanScope}
-                    onDone={() => {
-                        removeKeys(runAction.affectedKeys);
-                        setRunAction(null);
+            {modalSubject && (
+                <ModeratePanel
+                    subject={modalSubject}
+                    context={{
+                        gameSlug,
+                        gameId,
+                        gameDisplay,
+                        categories: boardCategories,
+                        variables,
+                        canSiteBan,
                     }}
-                    onClose={() => setRunAction(null)}
-                    // Undo reverses a removal/restore — the card needs to
-                    // REAPPEAR, which removeKeys can't do (it only drops
-                    // items from local state). router.refresh() re-fetches
-                    // `items` from the server; the resync effect above
-                    // picks up the fresh prop.
-                    onUndoComplete={() => router.refresh()}
+                    mount="modal"
+                    initialTab={
+                        modalSubject.kind === 'runner' ? 'runner' : undefined
+                    }
+                    position={
+                        modalItem
+                            ? {
+                                  index: modalIndex + 1,
+                                  total: modalOrder.length,
+                              }
+                            : undefined
+                    }
+                    onClose={() => setModerate(null)}
+                    onMutated={() => router.refresh()}
+                    onPrev={
+                        modalItem && modalIndex > 0
+                            ? () => stepTo(modalIndex - 1)
+                            : undefined
+                    }
+                    onNext={
+                        modalItem && modalIndex < modalOrder.length - 1
+                            ? () => stepTo(modalIndex + 1)
+                            : undefined
+                    }
                 />
             )}
         </div>
     );
-}
-
-/** Build a single-run action target from an item — shared by the card's own
- * buttons and the keyboard triage shortcuts. */
-function runsTargetFor(item: AttentionItem): RunActionTarget {
-    const runIds = item.runId != null ? [item.runId] : [];
-    return {
-        kind: 'runs',
-        runIds,
-        label: `${item.runnerName} · ${item.categoryName}`,
-    };
-}
-
-/** Build a runner ban target from an item (caller guarantees userId != null). */
-function banTarget(
-    item: AttentionItem,
-    gameDisplay: string,
-): RunActionTarget | null {
-    if (item.userId == null || item.categoryId == null) return null;
-    return {
-        kind: 'runner',
-        runnerId: item.userId,
-        runnerName: item.runnerName,
-        categoryId: item.categoryId,
-        categoryDisplay: item.categoryName,
-        gameDisplay,
-    };
 }
 
 function SourcePills({ sources }: { sources: AttentionSource[] }) {
@@ -879,46 +766,20 @@ function ItemMeta({ item }: { item: AttentionItem }) {
         </div>
     );
 }
-
 interface SingleItemCardProps {
     gameSlug: string;
-    gameDisplay: string;
     item: AttentionItem;
-    onAct: (a: RunAction) => void;
-    onDone: () => void;
+    onModerate: () => void;
     /** Whether the keyboard triage selection ring is on this card. */
     selected?: boolean;
-    /** Whether this card is checked for batch approve/remove. Only rendered
-     * (and only meaningful) for cards with a runId — self-claims have no
-     * RunActionDialog path, so they never get a checkbox. */
-    checked?: boolean;
-    onToggleChecked?: () => void;
-    /** A keyboard 'v'/'r' open request — only applied when it targets this
-     * card's own manualTimeId (see ManualTimeVerdictRow's openVerdict). */
-    manualTimeOpen?: ManualTimeOpenRequest | null;
 }
 
 function SingleItemCard({
     gameSlug,
-    gameDisplay,
     item,
-    onAct,
-    onDone,
+    onModerate,
     selected = false,
-    checked = false,
-    onToggleChecked,
-    manualTimeOpen,
 }: SingleItemCardProps) {
-    const isSelfClaim = item.runId == null && item.manualTimeId != null;
-    const isBatchable = item.runId != null;
-    const openForThisCard =
-        manualTimeOpen?.key === item.key ? manualTimeOpen : null;
-
-    const runsTarget = runsTargetFor(item);
-
-    const act = (verb: ModVerb, target: RunActionTarget) =>
-        onAct({ verb, target, affectedKeys: [item.key] });
-
     return (
         <div
             className={clsx(
@@ -930,15 +791,6 @@ function SingleItemCard({
             tabIndex={-1}
         >
             <div className={styles.cardTop}>
-                {isBatchable && (
-                    <input
-                        type="checkbox"
-                        className={styles.checkbox}
-                        checked={checked}
-                        onChange={onToggleChecked}
-                        aria-label={`Select ${item.runnerName}'s ${item.categoryName} run for batch action`}
-                    />
-                )}
                 <span className={clsx(styles.pill, SEV_PILL[item.severity])}>
                     {item.severity}
                 </span>
@@ -966,175 +818,59 @@ function SingleItemCard({
                 </div>
             )}
 
-            {isSelfClaim && item.manualTimeId != null ? (
-                <ManualTimeVerdictRow
-                    gameSlug={gameSlug}
-                    manualTimeId={item.manualTimeId}
-                    onDone={onDone}
-                    openVerdict={openForThisCard?.verdict}
-                    openNonce={openForThisCard?.nonce}
-                />
-            ) : (
-                <div className={styles.actions}>
-                    <button
-                        type="button"
-                        className={BTN_SUCCESS}
-                        onClick={() => act('approve', runsTarget)}
+            <div className={styles.actions}>
+                <button
+                    type="button"
+                    className={BTN_SECONDARY}
+                    onClick={onModerate}
+                >
+                    Moderate
+                </button>
+                {item.userId != null && (
+                    <Link
+                        href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${item.userId}`}
+                        className={clsx(BTN_SECONDARY, styles.pushEnd)}
                     >
-                        Approve
-                    </button>
-                    <button
-                        type="button"
-                        className={BTN_DANGER}
-                        onClick={() => act('remove', runsTarget)}
-                    >
-                        Remove…
-                    </button>
-                    {item.verificationStatus === 'rejected' && (
-                        <button
-                            type="button"
-                            className={BTN_SECONDARY}
-                            onClick={() => act('restore', runsTarget)}
-                        >
-                            Restore
-                        </button>
-                    )}
-                    {item.userId != null && (
-                        <>
-                            <Link
-                                href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${item.userId}`}
-                                className={clsx(BTN_SECONDARY, styles.pushEnd)}
-                            >
-                                View runner
-                            </Link>
-                            <button
-                                type="button"
-                                className={BTN_DANGER}
-                                onClick={() => {
-                                    const t = banTarget(item, gameDisplay);
-                                    if (t) act('ban', t);
-                                }}
-                            >
-                                Ban runner…
-                            </button>
-                        </>
-                    )}
-                </div>
-            )}
+                        View runner
+                    </Link>
+                )}
+            </div>
         </div>
     );
 }
 
 interface RunnerGroupCardProps {
     gameSlug: string;
-    gameDisplay: string;
     runnerName: string;
     userId: number | null;
     items: AttentionItem[];
-    onAct: (a: RunAction) => void;
-    onItemDone: (keys: string[]) => void;
+    onModerateItem: (item: AttentionItem) => void;
+    onModerateRunner: (target: ModerateTarget) => void;
     selectedKey: string | null;
-    selectedForBatch: Set<string>;
-    onToggleKey: (key: string) => void;
-    onToggleKeys: (keys: string[], select: boolean) => void;
     /** Disclosure state, lifted to the parent — flattenTriageOrder needs to
      * know which groups are expanded to compute the true rendered card
      * order, so this can't stay local component state. */
     open: boolean;
     onToggleOpen: () => void;
-    manualTimeOpen?: ManualTimeOpenRequest | null;
 }
 
 function RunnerGroupCard({
     gameSlug,
-    gameDisplay,
     runnerName,
     userId,
     items,
-    onAct,
-    onItemDone,
+    onModerateItem,
+    onModerateRunner,
     selectedKey,
-    selectedForBatch,
-    onToggleKey,
-    onToggleKeys,
     open,
     onToggleOpen,
-    manualTimeOpen,
 }: RunnerGroupCardProps) {
-    const allKeys = items.map((it) => it.key);
-    const batchableKeys = items
-        .filter((it) => it.runId != null)
-        .map((it) => it.key);
-    const runIds = items
-        .map((it) => it.runId)
-        .filter((id): id is number => id != null);
     const firstWithCat = items.find((it) => it.categoryId != null);
-    const groupAllSelected = allKeysSelected(selectedForBatch, batchableKeys);
-
-    const banAll = () => {
-        if (
-            userId == null ||
-            !firstWithCat ||
-            firstWithCat.categoryId == null
-        ) {
-            return;
-        }
-        // The dialog's target still needs A category (the "this category"
-        // scope option acts on it) — firstWithCat's is as good as any. What
-        // matters is the DEFAULT scope: when this group's items span more
-        // than one category, "this category" would silently pick an
-        // arbitrary one of them, so default to "entire game" instead.
-        onAct({
-            verb: 'ban',
-            target: {
-                kind: 'runner',
-                runnerId: userId,
-                runnerName,
-                categoryId: firstWithCat.categoryId,
-                categoryDisplay: firstWithCat.categoryName,
-                gameDisplay,
-            },
-            affectedKeys: allKeys,
-            defaultBanScope: defaultBanScopeForCategories(
-                items.map((it) => it.categoryId),
-            ),
-        });
-    };
-
-    const removeAll = () => {
-        if (runIds.length === 0) return;
-        onAct({
-            verb: 'remove',
-            target: {
-                kind: 'runs',
-                runIds,
-                label: `${runnerName} · ${runIds.length} runs`,
-            },
-            affectedKeys: batchableKeys,
-        });
-    };
-
     const Caret = open ? ChevronDown : ChevronRight;
 
-    // No runner-trust line (verified-run count, prior rejections, account
-    // age) renders here: none of the upstream payloads (QueueItem,
-    // ModReportRow, ManualTimeRow) carry that data, and fetching it per
-    // group would be an N+1 call — see attention-model.ts groupByRunner
-    // and the Backend handoff in task-18-report-uxfixes.md.
     return (
         <div className={styles.group}>
             <div className={styles.groupHead}>
-                {batchableKeys.length > 0 && (
-                    <input
-                        type="checkbox"
-                        className={styles.checkbox}
-                        checked={groupAllSelected}
-                        onChange={() =>
-                            onToggleKeys(batchableKeys, !groupAllSelected)
-                        }
-                        aria-label={`Select all of ${runnerName}'s runs for batch action`}
-                    />
-                )}
                 <button
                     type="button"
                     className={styles.disclosure}
@@ -1158,30 +894,29 @@ function RunnerGroupCard({
                 </span>
                 <div className={clsx(styles.actions, styles.pushEnd)}>
                     {userId != null && (
-                        <Link
-                            href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${userId}`}
-                            className={BTN_SECONDARY}
-                        >
-                            View runner
-                        </Link>
-                    )}
-                    {runIds.length > 0 && (
-                        <button
-                            type="button"
-                            className={BTN_DANGER}
-                            onClick={removeAll}
-                        >
-                            Remove all
-                        </button>
-                    )}
-                    {userId != null && firstWithCat && (
-                        <button
-                            type="button"
-                            className={BTN_DANGER}
-                            onClick={banAll}
-                        >
-                            Ban runner…
-                        </button>
+                        <>
+                            <button
+                                type="button"
+                                className={BTN_SECONDARY}
+                                onClick={() =>
+                                    onModerateRunner({
+                                        kind: 'runner',
+                                        userId,
+                                        runnerName,
+                                        categoryId:
+                                            firstWithCat?.categoryId ?? null,
+                                    })
+                                }
+                            >
+                                Moderate
+                            </button>
+                            <Link
+                                href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${userId}`}
+                                className={BTN_SECONDARY}
+                            >
+                                View runner
+                            </Link>
+                        </>
                     )}
                 </div>
             </div>
@@ -1192,14 +927,9 @@ function RunnerGroupCard({
                         <SingleItemCard
                             key={it.key}
                             gameSlug={gameSlug}
-                            gameDisplay={gameDisplay}
                             item={it}
-                            onAct={onAct}
-                            onDone={() => onItemDone([it.key])}
+                            onModerate={() => onModerateItem(it)}
                             selected={it.key === selectedKey}
-                            checked={selectedForBatch.has(it.key)}
-                            onToggleChecked={() => onToggleKey(it.key)}
-                            manualTimeOpen={manualTimeOpen}
                         />
                     ))}
                 </div>
