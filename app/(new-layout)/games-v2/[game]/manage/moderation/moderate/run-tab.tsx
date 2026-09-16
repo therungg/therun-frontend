@@ -307,6 +307,7 @@ export function RunTab({
               moveSame: move.same,
               moveToName: move.toName,
               hideScope,
+              canLift: context.canSiteBan,
               fields: fieldsFor(draft.verb),
           })
         : null;
@@ -405,7 +406,13 @@ export function RunTab({
                       : { verb, reason };
         setBusy(true);
         try {
-            const res = await confirmRunVerb(gameSlug, run, board, input);
+            const res = await confirmRunVerb(
+                gameSlug,
+                run,
+                board,
+                input,
+                context.canSiteBan,
+            );
             // Errors keep the form open and usable.
             if ('error' in res) {
                 toast.error(res.error);

@@ -12,7 +12,7 @@ import styles from './hide-identity-dialog.module.scss';
 import dialogStyles from './row-action-dialogs.module.scss';
 
 /** The three scopes a game moderator can reach. Site-wide is admin-only and
- * lives on the runner panel — see the Identity card there. */
+ * lives on the moderate panel's Runner tab. */
 export type HideIdentityScope = 'run' | 'category' | 'game';
 
 interface Props {
@@ -56,7 +56,7 @@ const SCOPE_COPY: Record<
  * Anonymize is NOT a ban: the run keeps its rank, its time and its history;
  * only the public identity is replaced by a stable placeholder. It is also
  * permanent by design — the copy says so plainly rather than implying an undo
- * the moderator does not have (lifting is admin-only, from the runner panel).
+ * the moderator does not have (lifting is admin-only).
  */
 export function HideIdentityDialog(props: Props) {
     const {

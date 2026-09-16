@@ -422,6 +422,9 @@ export function ModeratePanel(props: ModeratePanelProps) {
                 context={props.context}
                 onMutated={props.onMutated}
                 onOpenRun={onOpenRun}
+                onRunnerPage={
+                    mount === 'inline' && props.subject.kind === 'runner'
+                }
                 onFormBack={onFormBack}
                 onBusyChange={onBusyChange}
                 render={wrap}

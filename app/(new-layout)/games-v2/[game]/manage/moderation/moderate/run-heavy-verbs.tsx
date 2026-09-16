@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type {
     AffectedLeaderboard,
+    AnonymizeRule,
     ModTiming,
     RejectionReasonKey,
 } from '../../../../../../../types/moderation.types';
@@ -8,6 +9,7 @@ import { MIN_ANONYMIZE_REASON, undoReason } from '../shared/action-model';
 import {
     anonymizeRunAction,
     anonymizeUserAction,
+    liftAnonymizeRuleAction,
 } from '../shared/actions/anonymize-rules.action';
 import { moveRunAction } from '../shared/actions/board-override.action';
 import {
@@ -51,6 +53,27 @@ export type ConfirmResult =
           /** Replaces the default "Verb: runner" toast text. */
           message?: string;
       };
+
+/**
+ * Lifts a hide identity rule: the inverse of Hide identity. Lifting is for
+ * site admins; the backend refuses anyone else.
+ */
+export function liftHideRule(
+    gameSlug: string,
+    rule: Pick<AnonymizeRule, 'ruleId' | 'type' | 'targetId' | 'gameId'>,
+    board: AffectedLeaderboard | null = null,
+): Promise<UndoResult> {
+    return unwrap(
+        liftAnonymizeRuleAction(gameSlug, {
+            ruleId: rule.ruleId,
+            reason: 'Undo of hide identity',
+            targetUserId: rule.type === 'user' ? rule.targetId : null,
+            runId: rule.type === 'run' ? rule.targetId : null,
+            board,
+            global: rule.type === 'user' && rule.gameId == null,
+        }),
+    );
+}
 
 const toModTiming = (t: 'rt' | 'gt'): ModTiming =>
     t === 'gt' ? 'gametime' : 'realtime';
@@ -195,6 +218,8 @@ export async function confirmRunVerb(
     run: RunRef,
     board: SheetBoard,
     input: RunConfirmInput,
+    /** Site admins can lift what Hide identity creates. */
+    canLift = false,
 ): Promise<ConfirmResult> {
     switch (input.verb) {
         case 'decline': {
@@ -330,12 +355,24 @@ export async function confirmRunVerb(
                                   : null,
                       });
             if ('error' in res) return res;
+            if (res.result.alreadyExists) {
+                return {
+                    ok: true,
+                    undo: null,
+                    message: 'Already hidden at this scope. Nothing changed.',
+                };
+            }
+            const rule = res.result.rule;
             return {
                 ok: true,
-                undo: null,
-                message: res.result.alreadyExists
-                    ? 'Already hidden at this scope. Nothing changed.'
-                    : `Hidden: now shown as ${res.result.rule.displayName}`,
+                undo: canLift
+                    ? () =>
+                          liftHideRule(gameSlug, rule, {
+                              categoryId: board.categoryId,
+                              subcategoryKey: board.subcategoryKey,
+                          })
+                    : null,
+                message: `Hidden: now shown as ${rule.displayName}`,
             };
         }
     }
@@ -357,6 +394,8 @@ export interface RunSpecArgs {
     moveSame?: boolean;
     moveToName?: string;
     hideScope?: HideScope;
+    /** Hide identity: the viewer can lift it (site admin). */
+    canLift?: boolean;
     /** Time input, board picker or scope cards, owned by the caller's state. */
     fields?: ReactNode;
 }
@@ -458,7 +497,10 @@ export function runHeavySpec(
                         : a.hideScope === 'game'
                           ? `Every run of ${a.runnerName} in ${a.gameDisplay} shows as "Anonymous runner".`
                           : `${a.runnerName}'s run shows as "Anonymous runner".`,
-                notUndoable: 'only a site admin can lift it',
+                undoHint: a.canLift
+                    ? 'Undo from the toast right after'
+                    : undefined,
+                notUndoable: a.canLift ? null : 'only a site admin can lift it',
                 reasonKeys: false,
                 minReason: MIN_ANONYMIZE_REASON,
                 actionLabel: 'Hide identity',

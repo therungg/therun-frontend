@@ -26,7 +26,7 @@ import type {
 import { MIN_ANONYMIZE_REASON } from '../action-model';
 
 /**
- * The anonymize verb, filed from the board kebab and the runner panel
+ * The anonymize verb, filed from the board kebab and the moderate panel
  * (design doc §C, mocks fig. 6/7).
  *
  * Note the file next door, `anonymize.action.ts`, is a different thing: it is

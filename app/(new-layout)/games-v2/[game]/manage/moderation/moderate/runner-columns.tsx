@@ -1,11 +1,17 @@
 'use client';
 
-import type { Ref } from 'react';
+import { type Ref, useTransition } from 'react';
+import { toast } from 'react-toastify';
 import type {
     LeaderboardEntry,
     VariableRow,
 } from '../../../../../../../types/leaderboards.types';
-import type { PublicModLogEntry } from '../../../../../../../types/moderation.types';
+import type {
+    AnonymizeRuleWithNames,
+    ManualTimeRow,
+    PublicModLogEntry,
+    UserEligibleRunRow,
+} from '../../../../../../../types/moderation.types';
 import { RunnerAvatar } from '../../../leaderboard/runner-avatar';
 import {
     publicBoardHref,
@@ -15,6 +21,7 @@ import { subcategoryLabel } from '../worklist/worklist-model';
 import { eventVerbLabel, shortAgo } from './event-row';
 import styles from './moderate-panel.module.scss';
 import { Time, type TrackRecord } from './run-columns';
+import { liftHideRule } from './run-heavy-verbs';
 import type { SheetBoard } from './subject';
 
 type RowStatus = LeaderboardEntry['verificationStatus'];
@@ -58,14 +65,23 @@ export function trackRecord(combos: RunnerCombo[]): TrackRecord {
 export const boardKey = (categoryId: number, subcategoryKey: string) =>
     `${categoryId}::${subcategoryKey}`;
 
-/** The run a combo has on its board, as the Run tab reads a subject. */
-export function comboRunSubject(
+export type OpenSubject = { entry: LeaderboardEntry; board: SheetBoard };
+
+const comboBoard = (combo: RunnerCombo): SheetBoard => ({
+    categoryId: combo.categoryId,
+    categorySlug: combo.categorySlug ?? '',
+    categoryDisplay: combo.categoryDisplay,
+    subcategoryKey: combo.subcategoryKey,
+    primaryTiming: combo.primaryTiming === 'gametime' ? 'gt' : 'rt',
+});
+
+/** One of the runner's runs on a combo, as the Run tab reads a subject. */
+export function runRowSubject(
     combo: RunnerCombo,
+    run: UserEligibleRunRow,
     userId: number,
     runnerName: string,
-): { entry: LeaderboardEntry; board: SheetBoard } | null {
-    const run = combo.board;
-    if (!run) return null;
+): OpenSubject {
     const gt = combo.primaryTiming === 'gametime';
     return {
         entry: {
@@ -82,14 +98,47 @@ export function comboRunSubject(
             verificationStatus: asStatus(run.verificationStatus),
             source: 'run',
         },
-        board: {
-            categoryId: combo.categoryId,
-            categorySlug: combo.categorySlug ?? '',
-            categoryDisplay: combo.categoryDisplay,
-            subcategoryKey: combo.subcategoryKey,
-            primaryTiming: gt ? 'gt' : 'rt',
-        },
+        board: comboBoard(combo),
     };
+}
+
+/** One of the runner's manual times, opened as a manual entry. */
+export function manualRowSubject(
+    combo: RunnerCombo,
+    manual: ManualTimeRow,
+    userId: number,
+    runnerName: string,
+): OpenSubject {
+    const gt = manual.timing === 'gametime';
+    return {
+        entry: {
+            runId: null,
+            manualTimeId: manual.id,
+            rank: 0,
+            runnerName,
+            userId,
+            isGuest: false,
+            time: manual.timeMs,
+            realTime: gt ? null : manual.timeMs,
+            gameTime: gt ? manual.timeMs : null,
+            runDate: manual.runDate ?? manual.createdAt,
+            vodUrl: manual.evidenceUrl,
+            verificationStatus: manual.verificationStatus,
+            source: 'manual',
+        },
+        board: comboBoard(combo),
+    };
+}
+
+/** The run a combo has on its board, as the Run tab reads a subject. */
+export function comboRunSubject(
+    combo: RunnerCombo,
+    userId: number,
+    runnerName: string,
+): OpenSubject | null {
+    return combo.board
+        ? runRowSubject(combo, combo.board, userId, runnerName)
+        : null;
 }
 
 const monthYear = (iso: string) =>
@@ -103,7 +152,7 @@ export function RunnerIdentity({
     gameDisplay,
     record,
     banLabel,
-    hidden,
+    hiddenLabels,
     rootRef,
 }: {
     runnerName: string;
@@ -112,7 +161,8 @@ export function RunnerIdentity({
     record: TrackRecord | null;
     /** "Banned from 16 Star", or null when not banned. Undefined while loading. */
     banLabel: string | null | undefined;
-    hidden: boolean;
+    /** "Hidden on 16 Star", "Hidden everywhere": one per live rule. */
+    hiddenLabels: string[];
     rootRef: Ref<HTMLDivElement>;
 }) {
     return (
@@ -129,13 +179,21 @@ export function RunnerIdentity({
                             {banLabel ?? 'Not banned'}
                         </span>
                     )}
+                    {hiddenLabels.map((label) => (
+                        <span
+                            key={label}
+                            className={styles.status}
+                            data-tone="neutral"
+                        >
+                            {label}
+                        </span>
+                    ))}
                 </div>
                 <div className={styles.where}>
                     {gameDisplay}
                     {record?.since
                         ? ` · first run ${monthYear(record.since)}`
                         : ''}
-                    {hidden ? ' · name hidden' : ''}
                 </div>
             </div>
             <div className={styles.idRight}>
@@ -165,6 +223,9 @@ export function RunnerLeft({
     comesOff,
     formOpen,
     runnerPage,
+    onRunnerPage,
+    userId,
+    runnerName,
     onOpenRun,
 }: {
     /** Null until the read lands. */
@@ -176,7 +237,11 @@ export function RunnerLeft({
     comesOff: ReadonlySet<string> | null;
     formOpen: boolean;
     runnerPage: string;
-    onOpenRun: (combo: RunnerCombo) => void;
+    /** Mounted on the runner page itself: every run is listed, no self link. */
+    onRunnerPage: boolean;
+    userId: number;
+    runnerName: string;
+    onOpenRun: (subject: OpenSubject) => void;
 }) {
     if (!combos || !record) return null;
     const onBoards = combos.filter((c) => c.board !== null);
@@ -233,7 +298,14 @@ export function RunnerLeft({
                                 <button
                                     type="button"
                                     className={styles.boardTime}
-                                    onClick={() => onOpenRun(combo)}
+                                    onClick={() => {
+                                        const subject = comboRunSubject(
+                                            combo,
+                                            userId,
+                                            runnerName,
+                                        );
+                                        if (subject) onOpenRun(subject);
+                                    }}
                                     disabled={formOpen}
                                     title="Open this run"
                                 >
@@ -260,7 +332,17 @@ export function RunnerLeft({
             ) : (
                 <p className={styles.quiet}>Not on any board</p>
             )}
-            {record.pending > 0 || record.declined > 0 ? (
+            {onRunnerPage ? (
+                <OffBoardRows
+                    combos={combos}
+                    gameSlug={gameSlug}
+                    variables={variables}
+                    formOpen={formOpen}
+                    userId={userId}
+                    runnerName={runnerName}
+                    onOpenRun={onOpenRun}
+                />
+            ) : record.pending > 0 || record.declined > 0 ? (
                 <div className={styles.others}>
                     <span>
                         <b>{record.pending}</b> pending
@@ -279,8 +361,164 @@ export function RunnerLeft({
     );
 }
 
+interface OffBoardRow {
+    key: string;
+    combo: RunnerCombo;
+    ms: number | null;
+    status: RowStatus;
+    manual: boolean;
+    subject: OpenSubject;
+}
+
+/** Pending, declined and manual-time rows, for the runner page's own mount. */
+function OffBoardRows({
+    combos,
+    gameSlug,
+    variables,
+    formOpen,
+    userId,
+    runnerName,
+    onOpenRun,
+}: {
+    combos: RunnerCombo[];
+    gameSlug: string;
+    variables: VariableRow[];
+    formOpen: boolean;
+    userId: number;
+    runnerName: string;
+    onOpenRun: (subject: OpenSubject) => void;
+}) {
+    const rows: OffBoardRow[] = [];
+    for (const combo of combos) {
+        const gt = combo.primaryTiming === 'gametime';
+        for (const run of combo.runs) {
+            const status = asStatus(run.verificationStatus);
+            if (status === 'verified' || run.runId === combo.board?.runId)
+                continue;
+            rows.push({
+                key: `run:${run.runId}`,
+                combo,
+                ms: gt ? run.gameTime : run.time,
+                status,
+                manual: false,
+                subject: runRowSubject(combo, run, userId, runnerName),
+            });
+        }
+        for (const m of combo.manualTimes) {
+            rows.push({
+                key: `manual:${m.id}`,
+                combo,
+                ms: m.timeMs,
+                status: m.verificationStatus,
+                manual: true,
+                subject: manualRowSubject(combo, m, userId, runnerName),
+            });
+        }
+    }
+    const order: Record<RowStatus, number> = {
+        pending: 0,
+        rejected: 1,
+        verified: 2,
+    };
+    rows.sort((a, b) => order[a.status] - order[b.status]);
+    if (rows.length === 0) return null;
+    return (
+        <>
+            <div className={styles.sectionHead}>
+                <span>Off the boards</span>
+                <span>{rows.length}</span>
+            </div>
+            <ul className={styles.boardRows}>
+                {rows.map((row) => {
+                    const sub = subcategoryLabel(row.combo, variables);
+                    const href = publicBoardHref(gameSlug, row.combo);
+                    const name = (
+                        <>
+                            <b>{row.combo.categoryDisplay}</b>
+                            {sub ? <span> · {sub}</span> : null}
+                        </>
+                    );
+                    return (
+                        <li key={row.key} className={styles.boardRow}>
+                            {href ? (
+                                <a className={styles.boardName} href={href}>
+                                    {name}
+                                </a>
+                            ) : (
+                                <span className={styles.boardName}>{name}</span>
+                            )}
+                            <span className={styles.boardRank}>
+                                {row.manual ? 'Manual' : ''}
+                            </span>
+                            <button
+                                type="button"
+                                className={styles.boardTime}
+                                onClick={() => onOpenRun(row.subject)}
+                                disabled={formOpen}
+                                title="Open this run"
+                            >
+                                <Time ms={row.ms} />
+                            </button>
+                            <span className={styles.boardStatus}>
+                                <span
+                                    className={styles.status}
+                                    data-tone={STATUS_TONE[row.status]}
+                                >
+                                    {STATUS_LABEL[row.status]}
+                                </span>
+                            </span>
+                        </li>
+                    );
+                })}
+            </ul>
+        </>
+    );
+}
+
+/** The live hide identity rule a log line created, if it is still live. */
+function liveRuleOf(
+    entry: PublicModLogEntry,
+    rules: AnonymizeRuleWithNames[],
+): AnonymizeRuleWithNames | null {
+    if (entry.action !== 'anonymize_apply' || entry.entity !== 'anonymize_rule')
+        return null;
+    if (!entry.target || !/^\d+$/.test(entry.target)) return null;
+    const ruleId = Number.parseInt(entry.target, 10);
+    return rules.find((r) => r.ruleId === ruleId && !r.liftedAt) ?? null;
+}
+
 /** One log line in the Run tab's history style: verb · by · reason · when. */
-function LogEvent({ entry }: { entry: PublicModLogEntry }) {
+function LogEvent({
+    entry,
+    liveRule,
+    gameSlug,
+    onUndone,
+}: {
+    entry: PublicModLogEntry;
+    /** Set when this line is a Hide identity whose rule the viewer can lift. */
+    liveRule: AnonymizeRuleWithNames | null;
+    gameSlug: string;
+    onUndone: () => void;
+}) {
+    const [pending, startTransition] = useTransition();
+    const undo = () => {
+        if (!liveRule) return;
+        startTransition(async () => {
+            try {
+                const res = await liftHideRule(gameSlug, liveRule);
+                if ('error' in res) {
+                    toast.error(res.error);
+                    return;
+                }
+                toast.success('Undone.');
+                onUndone();
+            } catch {
+                toast.error(
+                    "Couldn't undo. Check your connection and try again.",
+                );
+            }
+        });
+    };
     return (
         <li className={styles.event}>
             <span className={styles.eventVerb}>
@@ -297,6 +535,16 @@ function LogEvent({ entry }: { entry: PublicModLogEntry }) {
             </span>
             <span className={styles.eventWhen}>
                 <time dateTime={entry.at}>{shortAgo(entry.at)}</time>
+                {liveRule ? (
+                    <button
+                        type="button"
+                        className={styles.undo}
+                        onClick={undo}
+                        disabled={pending}
+                    >
+                        {pending ? 'Undoing…' : 'Undo'}
+                    </button>
+                ) : null}
             </span>
         </li>
     );
@@ -306,11 +554,22 @@ export function RunnerRight({
     modLog,
     modLogTotal,
     runnerPage,
+    onRunnerPage,
+    anonymizeRules,
+    canLift,
+    gameSlug,
+    onUndone,
 }: {
     /** Null until the read lands. */
     modLog: PublicModLogEntry[] | null;
     modLogTotal: number;
     runnerPage: string;
+    onRunnerPage: boolean;
+    anonymizeRules: AnonymizeRuleWithNames[];
+    /** Site admin: Hide identity lines offer Undo while their rule is live. */
+    canLift: boolean;
+    gameSlug: string;
+    onUndone: () => void;
 }) {
     if (!modLog) return null;
     return (
@@ -322,13 +581,23 @@ export function RunnerRight({
             {modLog.length > 0 ? (
                 <ul className={styles.events}>
                     {modLog.map((entry) => (
-                        <LogEvent key={entry.id} entry={entry} />
+                        <LogEvent
+                            key={entry.id}
+                            entry={entry}
+                            liveRule={
+                                canLift
+                                    ? liveRuleOf(entry, anonymizeRules)
+                                    : null
+                            }
+                            gameSlug={gameSlug}
+                            onUndone={onUndone}
+                        />
                     ))}
                 </ul>
             ) : (
                 <p className={styles.quiet}>No events yet</p>
             )}
-            {modLogTotal > modLog.length ? (
+            {modLogTotal > modLog.length && !onRunnerPage ? (
                 <a className={styles.showAll} href={runnerPage}>
                     Show all {modLogTotal}
                 </a>

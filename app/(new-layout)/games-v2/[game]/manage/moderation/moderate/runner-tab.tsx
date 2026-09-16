@@ -18,7 +18,6 @@ import {
     SubcategoryBands,
     subcategoryVariablesFor,
 } from '../../boards/subcategory-bands';
-import type { RunnerCombo } from '../runner/[userId]/runner-model';
 import { defaultBanScopeForCategories } from '../shared/action-model';
 import { previewManualTimeAction } from '../shared/actions/manual-times.action';
 import { clocksOfCategory } from '../shared/board-clocks';
@@ -35,7 +34,7 @@ import type {
 import styles from './moderate-panel.module.scss';
 import { useInitialVerb, usePanelVerbKeys, usePanelVerbs } from './panel-verbs';
 import {
-    comboRunSubject,
+    type OpenSubject,
     RunnerIdentity,
     RunnerLeft,
     RunnerRight,
@@ -82,6 +81,8 @@ export interface RunnerTabProps {
     /** Acted on once when the runner has loaded; ignored if it does not apply. */
     initialVerb?: ModerateVerb;
     onInitialVerbUsed: () => void;
+    /** Mounted inline on this runner's own page. */
+    onRunnerPage?: boolean;
 }
 
 export function RunnerTab({
@@ -96,6 +97,7 @@ export function RunnerTab({
     render,
     initialVerb,
     onInitialVerbUsed,
+    onRunnerPage = false,
 }: RunnerTabProps) {
     const { gameSlug } = context;
     const category =
@@ -108,6 +110,7 @@ export function RunnerTab({
         categoryId: category ? category.id : null,
         categoryDisplay: category?.display ?? null,
         gameDisplay: context.gameDisplay,
+        canSiteBan: context.canSiteBan,
     };
     const runnerPage = `/games-v2/${gameSlug}/manage/moderation/runner/${userId}`;
 
@@ -141,9 +144,20 @@ export function RunnerTab({
         () => (data ? trackRecord(data.combos) : null),
         [data],
     );
-    const hidden = data
-        ? data.anonymizeRules.some((r) => r.type === 'user' && !r.liftedAt)
-        : false;
+    const liveHideRules = data
+        ? data.anonymizeRules.filter((r) => r.type === 'user' && !r.liftedAt)
+        : [];
+    const hidden = liveHideRules.length > 0;
+    const hiddenLabels = liveHideRules.map((r) =>
+        r.gameId == null
+            ? 'Hidden everywhere'
+            : r.categoryId != null
+              ? `Hidden on ${
+                    context.categories.find((c) => c.id === r.categoryId)
+                        ?.display ?? 'a category'
+                }`
+              : `Hidden on ${context.gameDisplay}`,
+    );
 
     // ---- Verb state --------------------------------------------------------------
     const availability = runnerVerbs({
@@ -239,7 +253,7 @@ export function RunnerTab({
 
     // Ban: which boards the runner comes off, read again when the scope changes.
     useEffect(() => {
-        if (verb !== 'ban') {
+        if (verb !== 'ban' || scope === 'site') {
             setBanPreview(null);
             return;
         }
@@ -310,6 +324,16 @@ export function RunnerTab({
               ]
             : []),
         { value: 'game', title: context.gameDisplay, detail: 'Every board' },
+        // A permission, not an unavailable verb: absent for everyone else.
+        ...(context.canSiteBan
+            ? [
+                  {
+                      value: 'site' as const,
+                      title: 'Everywhere',
+                      detail: 'Every game on the site',
+                  },
+              ]
+            : []),
     ];
 
     const fieldsFor = (v: HeavyRunnerVerb): ReactNode => {
@@ -490,6 +514,22 @@ export function RunnerTab({
                 evidenceUrl: addVideo,
                 runDate: addDate,
             };
+        } else if (verb === 'ban') {
+            const top = data?.combos[0] ?? null;
+            const fallback = runner.categoryId ?? context.categories[0]?.id;
+            input = {
+                verb,
+                reason,
+                scope,
+                board: top
+                    ? {
+                          categoryId: top.categoryId,
+                          subcategoryKey: top.subcategoryKey,
+                      }
+                    : fallback != null
+                      ? { categoryId: fallback, subcategoryKey: '' }
+                      : null,
+            };
         } else {
             input = { verb, reason, scope };
         }
@@ -524,10 +564,9 @@ export function RunnerTab({
     });
 
     // ---- Layout --------------------------------------------------------------------
-    const openRun = (combo: RunnerCombo) => {
+    const openRun = (subject: OpenSubject) => {
         if (formOpen) return;
-        const run = comboRunSubject(combo, userId, runnerName);
-        if (run) onOpenRun(run.entry, run.board);
+        onOpenRun(subject.entry, subject.board);
     };
 
     const identity = (
@@ -538,7 +577,7 @@ export function RunnerTab({
             banLabel={
                 data ? banLabel(data.banState, context.gameDisplay) : undefined
             }
-            hidden={hidden}
+            hiddenLabels={hiddenLabels}
             rootRef={rootRef}
         />
     );
@@ -551,6 +590,9 @@ export function RunnerTab({
             comesOff={verb === 'ban' ? (banPreview?.comesOff ?? null) : null}
             formOpen={formOpen}
             runnerPage={runnerPage}
+            onRunnerPage={onRunnerPage}
+            userId={userId}
+            runnerName={runnerName}
             onOpenRun={openRun}
         />
     );
@@ -587,6 +629,11 @@ export function RunnerTab({
                           modLog={data?.modLog ?? null}
                           modLogTotal={data?.modLogTotal ?? 0}
                           runnerPage={runnerPage}
+                          onRunnerPage={onRunnerPage}
+                          anonymizeRules={data?.anonymizeRules ?? []}
+                          canLift={context.canSiteBan}
+                          gameSlug={gameSlug}
+                          onUndone={afterMutation}
                       />
                   ),
                   footer: (

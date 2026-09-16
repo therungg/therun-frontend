@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type {
+    AffectedLeaderboard,
     GameExclusionRuleRow,
     ModTiming,
     SecondaryTimeInput,
@@ -8,7 +9,14 @@ import type {
 import { deleteRuleAction } from '../rules/actions/delete-rule.action';
 import type { RunnerBanState } from '../runner/[userId]/runner-model';
 import { undoReason } from '../shared/action-model';
-import { anonymizeUserAction } from '../shared/actions/anonymize-rules.action';
+import {
+    liftSiteBanAction,
+    siteBanRunnerAction,
+} from '../shared/actions/anonymize.action';
+import {
+    anonymizeUserAction,
+    anonymizeUserGloballyAction,
+} from '../shared/actions/anonymize-rules.action';
 import {
     excludeAction,
     previewExcludeAction,
@@ -22,6 +30,7 @@ import type { HeavyFormSpec } from './heavy-form';
 import styles from './moderate-panel.module.scss';
 import {
     type ConfirmResult,
+    liftHideRule,
     MIN_REASON,
     runHeavySpec,
 } from './run-heavy-verbs';
@@ -29,7 +38,8 @@ import { unwrap } from './run-verbs';
 import { boardKey } from './runner-columns';
 
 export type HeavyRunnerVerb = 'ban' | 'hide_identity' | 'add_run';
-export type RunnerScope = 'category' | 'game';
+/** `site` is for site admins only. */
+export type RunnerScope = 'category' | 'game' | 'site';
 
 export interface RunnerRefs {
     userId: number;
@@ -38,6 +48,8 @@ export interface RunnerRefs {
     categoryId: number | null;
     categoryDisplay: string | null;
     gameDisplay: string;
+    /** Site admin: the Everywhere scope, and lifting a hidden identity. */
+    canSiteBan: boolean;
 }
 
 // ---- Ban state ----------------------------------------------------------------
@@ -82,6 +94,7 @@ export function banRuleExists(
     scope: RunnerScope,
     categoryId: number | null,
 ): boolean {
+    if (scope === 'site') return false;
     if (scope === 'game') return ban.gameRule !== null;
     return ban.categoryRules.some((r) => r.categoryId === categoryId);
 }
@@ -139,7 +152,13 @@ export async function liftBan(
 // ---- Confirm ------------------------------------------------------------------
 
 export type RunnerConfirmInput =
-    | { verb: 'ban'; reason: string; scope: RunnerScope }
+    | {
+          verb: 'ban';
+          reason: string;
+          scope: RunnerScope;
+          /** A board of the runner's, refreshed after a site ban. */
+          board: AffectedLeaderboard | null;
+      }
     | { verb: 'hide_identity'; reason: string; scope: RunnerScope }
     | {
           verb: 'add_run';
@@ -155,9 +174,11 @@ export type RunnerConfirmInput =
       };
 
 const scopeName = (runner: RunnerRefs, scope: RunnerScope) =>
-    scope === 'category' && runner.categoryDisplay
-        ? runner.categoryDisplay
-        : runner.gameDisplay;
+    scope === 'site'
+        ? 'everywhere'
+        : scope === 'category' && runner.categoryDisplay
+          ? runner.categoryDisplay
+          : runner.gameDisplay;
 
 export async function confirmRunnerVerb(
     gameSlug: string,
@@ -166,6 +187,24 @@ export async function confirmRunnerVerb(
 ): Promise<ConfirmResult> {
     switch (input.verb) {
         case 'ban': {
+            if (input.scope === 'site') {
+                const board = input.board;
+                if (!board) return { error: 'This game has no board yet.' };
+                const res = await siteBanRunnerAction(gameSlug, {
+                    username: runner.runnerName,
+                    reason: input.reason,
+                    treatment: 'exclude',
+                    board,
+                });
+                if ('error' in res) return res;
+                const banId = res.banId;
+                return {
+                    ok: true,
+                    message: `Banned: ${runner.runnerName} everywhere`,
+                    undo: () =>
+                        unwrap(liftSiteBanAction(banId, gameSlug, board)),
+                };
+            }
             const res = await excludeAction(gameSlug, {
                 rule: banRule(runner.userId, input.scope, runner.categoryId),
                 reason: input.reason,
@@ -191,19 +230,35 @@ export async function confirmRunnerVerb(
             };
         }
         case 'hide_identity': {
-            const res = await anonymizeUserAction(gameSlug, {
-                userId: runner.userId,
-                reason: input.reason,
-                categoryId:
-                    input.scope === 'category' ? runner.categoryId : null,
-            });
+            const res =
+                input.scope === 'site'
+                    ? await anonymizeUserGloballyAction(gameSlug, {
+                          userId: runner.userId,
+                          reason: input.reason,
+                      })
+                    : await anonymizeUserAction(gameSlug, {
+                          userId: runner.userId,
+                          reason: input.reason,
+                          categoryId:
+                              input.scope === 'category'
+                                  ? runner.categoryId
+                                  : null,
+                      });
             if ('error' in res) return res;
+            if (res.result.alreadyExists) {
+                return {
+                    ok: true,
+                    undo: null,
+                    message: 'Already hidden at this scope. Nothing changed.',
+                };
+            }
+            const rule = res.result.rule;
             return {
                 ok: true,
-                undo: null,
-                message: res.result.alreadyExists
-                    ? 'Already hidden at this scope. Nothing changed.'
-                    : `Hidden: now shown as ${res.result.rule.displayName}`,
+                undo: runner.canSiteBan
+                    ? () => liftHideRule(gameSlug, rule)
+                    : null,
+                message: `Hidden: now shown as ${rule.displayName}`,
             };
         }
         case 'add_run': {
@@ -270,6 +325,20 @@ export function runnerHeavySpec(
     switch (verb) {
         case 'ban': {
             const where = scopeName(runner, a.scope);
+            if (a.scope === 'site') {
+                return {
+                    verb,
+                    runnerName: runner.runnerName,
+                    whatChanges: `${runner.runnerName} is banned from every game on the site. Their runs come off every board.`,
+                    undoHint: 'Undo from the toast right after',
+                    notUndoable: null,
+                    reasonKeys: false,
+                    minReason: MIN_REASON,
+                    actionLabel: 'Ban everywhere',
+                    tone: 'danger',
+                    fields: a.fields,
+                };
+            }
             const p = a.banPreview ?? null;
             return {
                 verb,
@@ -297,17 +366,26 @@ export function runnerHeavySpec(
                 fields: a.fields,
             };
         }
-        case 'hide_identity':
-            return runHeavySpec('hide_identity', {
+        case 'hide_identity': {
+            const spec = runHeavySpec('hide_identity', {
                 runnerName: runner.runnerName,
                 isManual: false,
                 timeMs: null,
                 boardName: '',
                 categoryDisplay: runner.categoryDisplay ?? '',
                 gameDisplay: runner.gameDisplay,
-                hideScope: a.scope,
+                hideScope: a.scope === 'site' ? 'game' : a.scope,
+                canLift: runner.canSiteBan,
                 fields: a.fields,
             });
+            return a.scope === 'site'
+                ? {
+                      ...spec,
+                      whatChanges: `Every run of ${runner.runnerName} on every game shows as "Anonymous runner".`,
+                      actionLabel: 'Hide identity everywhere',
+                  }
+                : spec;
+        }
         case 'add_run':
             return {
                 verb,
