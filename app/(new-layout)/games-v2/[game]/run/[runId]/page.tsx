@@ -101,11 +101,11 @@ export default async function RunDetailPage({ params }: PageProps) {
         isMod
             ? resolveCategory(game.id)
                   .then((r) => r.categories)
-                  .catch(() => null)
+                  .catch(() => [])
             : Promise.resolve(null),
     ]);
     const modVariables =
-        isMod && session.id && modCategories
+        isMod && session.id && modCategories?.length
             ? await listCategoryVariables(
                   session.id,
                   game.id,
@@ -171,15 +171,16 @@ export default async function RunDetailPage({ params }: PageProps) {
             sessionUsername={session.username || null}
             isMod={isMod}
             modPanel={
-                isMod && modCategories ? (
+                isMod ? (
                     <RunPageMount
                         run={modRun}
+                        rank={boardStanding?.rank ?? 0}
                         provenance={provenance}
                         context={{
                             gameSlug: game.name,
                             gameId: game.id,
                             gameDisplay: game.display,
-                            categories: modCategories,
+                            categories: modCategories ?? [],
                             variables: modVariables,
                             canSiteBan: defineAbilityFor(session).can(
                                 'moderate',

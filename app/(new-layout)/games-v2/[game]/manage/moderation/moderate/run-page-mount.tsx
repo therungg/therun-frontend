@@ -100,8 +100,11 @@ export function RunPageMount({
     context,
     board,
     provenance,
+    rank,
 }: {
     run: RunDetail;
+    /** The run's place on its board; 0 when it is not the runner's entry. */
+    rank: number;
     context: SheetContext;
     board: SheetBoard;
     provenance: RunProvenance | null;
@@ -109,7 +112,7 @@ export function RunPageMount({
     const router = useRouter();
     const entry: LeaderboardEntry = {
         runId: run.runId,
-        rank: 0,
+        rank,
         runnerName: run.runnerName,
         userId: run.userId,
         isGuest: run.isGuest,
