@@ -467,3 +467,107 @@ export function runHeavySpec(
             };
     }
 }
+
+// ---- Bulk form specs ----------------------------------------------------------
+
+export type HeavyBulkVerb = 'decline' | 'remove' | 'move';
+
+export interface BulkSpecArgs {
+    boardName: string;
+    /** Entries the verb acts on. */
+    count: number;
+    /** Manual times among them (decline, remove). */
+    manualCount: number;
+    /** Decline: entries that are not pending. */
+    notPending?: number;
+    /** Remove: entries that are not approved. */
+    notApproved?: number;
+    /** Remove: approved runs already off the board. */
+    alreadyRemoved?: number;
+    /** Move: runs already on the picked board. */
+    alreadyThere?: number;
+    /** Move: manual times, which cannot move. */
+    manualSkipped?: number;
+    moveToName?: string;
+    /** Move: no board picked. */
+    noTarget?: boolean;
+    /** Board picker for move, owned by the caller's state. */
+    fields?: ReactNode;
+}
+
+const countOf = (n: number, one: string, many = `${one}s`) =>
+    `${n} ${n === 1 ? one : many}`;
+
+const skippedLine = (n: number | undefined, what: string) =>
+    n ? ` ${what}, skipped.` : '';
+
+/** The heavy form for a selection: same parts as a run, with counts and what is skipped. */
+export function bulkHeavySpec(
+    verb: HeavyBulkVerb,
+    a: BulkSpecArgs,
+): HeavyFormSpec {
+    const base = { verb, runnerName: 'Each runner' } as const;
+    const n = a.count;
+    switch (verb) {
+        case 'decline':
+            return {
+                ...base,
+                whatChanges: `${countOf(n, 'pending run')} never ${n === 1 ? 'goes' : 'go'} on ${a.boardName}.${skippedLine(a.notPending, `${countOf(a.notPending ?? 0, 'run')} not pending`)}`,
+                undoHint: a.manualCount ? undefined : 'Restore from history',
+                notUndoable: a.manualCount
+                    ? 'manual times have no restore'
+                    : null,
+                reasonKeys: true,
+                minReason: MIN_REASON,
+                actionLabel: `Decline ${countOf(n, 'run')}`,
+                tone: 'danger',
+            };
+        case 'remove':
+            return {
+                ...base,
+                whatChanges: `${countOf(n, 'approved run')} ${n === 1 ? 'comes' : 'come'} off ${a.boardName}.${a.manualCount ? ` ${countOf(a.manualCount, 'manual time')} ${a.manualCount === 1 ? 'is' : 'are'} deleted.` : ''}${skippedLine(a.notApproved, `${countOf(a.notApproved ?? 0, 'run')} not approved`)}${skippedLine(a.alreadyRemoved, `${countOf(a.alreadyRemoved ?? 0, 'run')} already removed`)}`,
+                // Remove is the quiet exclusion; only a deleted manual time
+                // reaches its runner.
+                told:
+                    a.manualCount === 0
+                        ? null
+                        : a.manualCount === n
+                          ? undefined
+                          : 'is told only when their manual time is deleted, with this reason.',
+                undoHint: a.manualCount ? undefined : 'Restore from history',
+                notUndoable: a.manualCount
+                    ? 'manual times have no restore'
+                    : null,
+                reasonKeys: false,
+                minReason: MIN_REASON,
+                actionLabel: `Remove ${countOf(n, 'run')}`,
+                tone: 'danger',
+            };
+        case 'move':
+            return {
+                ...base,
+                whatChanges: `${
+                    a.noTarget || !a.moveToName
+                        ? 'Pick a board.'
+                        : n === 0
+                          ? `Every run is already on ${a.moveToName}.`
+                          : `${countOf(n, 'run')} ${n === 1 ? 'moves' : 'move'} to ${a.moveToName}.`
+                }${
+                    n > 0
+                        ? skippedLine(
+                              a.alreadyThere,
+                              `${countOf(a.alreadyThere ?? 0, 'run')} already there`,
+                          )
+                        : ''
+                }${a.manualSkipped ? ` ${countOf(a.manualSkipped, 'manual time')} skipped.` : ''}`,
+                undoHint: 'Move them back',
+                notUndoable: null,
+                reasonKeys: false,
+                minReason: MIN_REASON,
+                actionLabel: `Move ${countOf(n, 'run')}`,
+                tone: 'primary',
+                blocked: a.noTarget || !a.moveToName || n === 0,
+                fields: a.fields,
+            };
+    }
+}

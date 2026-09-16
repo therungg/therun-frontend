@@ -17,6 +17,8 @@ export interface MoveTarget {
     reset: () => void;
     /** The picked board, or null while it is the source board or none. */
     target: AffectedLeaderboard | null;
+    /** The picked board, even when it is the source board. */
+    picked: AffectedLeaderboard | null;
     /** True while the pick is the source board (or there is no pick). */
     same: boolean;
     /** "70 Star · No emulator" for the picked board. */
@@ -114,6 +116,9 @@ export function useMoveTarget(
             setCategoryId(board.categoryId);
             setValues({});
         },
+        picked: category
+            ? { categoryId: category.id, subcategoryKey: key }
+            : null,
         target:
             category && !same
                 ? { categoryId: category.id, subcategoryKey: key }
