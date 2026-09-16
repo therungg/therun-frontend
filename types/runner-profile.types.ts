@@ -1,5 +1,6 @@
 import type { GameTheme } from '../src/lib/game-theme';
 import type {
+    GameOrder,
     LeaderboardsProfile,
     LeaderboardsProfileEntry,
 } from './leaderboards-profile.types';
@@ -42,7 +43,7 @@ export interface ProfileLayout {
     pins: ProfilePinRef[];
     videoPin: ProfilePinRef | null;
     mainGameId: number | null;
-    gameOrder: 'runners' | 'rank' | 'recent' | 'name' | 'manual';
+    gameOrder: GameOrder;
     manualGameIds: number[];
 }
 
@@ -54,7 +55,7 @@ export interface ResolvedProfileLayout {
     pins: ProfilePinRef[];
     videoPin: ProfilePinRef | null;
     mainGameId: number | null;
-    gameOrder: 'runners' | 'rank' | 'recent' | 'name' | 'manual';
+    gameOrder: GameOrder;
     manualGameIds: number[];
     /** True when the runner never saved a layout (either attribute). */
     isDefault: boolean;

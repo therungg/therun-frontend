@@ -15,6 +15,7 @@ import {
 } from './runs-filters';
 import { useShowcase } from './showcase-provider';
 import {
+    byPoints,
     mainGameOf,
     onBiggerBoard,
     orderGames,
@@ -37,8 +38,7 @@ export function RunsShelf({ country }: { country: string | null }) {
         ? (sort as SortMode)
         : 'runner';
     const games = orderGames(unordered, draft, mode);
-    const byRunners =
-        (mode === 'runner' ? draft.gameOrder : mode) === 'runners';
+    const order = mode === 'runner' ? draft.gameOrder : mode;
     const mainId = mainGameOf(unordered, draft.mainGameId)?.gameId ?? null;
     const searching = isSearching(filter);
     const filtered = searching || isNarrowed(filter) || filter.archived;
@@ -63,8 +63,13 @@ export function RunsShelf({ country }: { country: string | null }) {
         return {
             game,
             runs,
-            // Ordered by board size, a game's biggest boards lead it too.
-            entries: byRunners ? [...matching].sort(onBiggerBoard) : matching,
+            // A game's runs follow the same measure as the games themselves.
+            entries:
+                order === 'placement'
+                    ? [...matching].sort(byPoints)
+                    : order === 'runners'
+                      ? [...matching].sort(onBiggerBoard)
+                      : matching,
         };
     });
     const total = blocks.reduce((sum, b) => sum + b.runs.length, 0);

@@ -19,7 +19,14 @@ const layoutSchema = z
         mainGameId: z.number().int().positive().nullable(),
         pins: z.array(pinRef).max(3),
         videoPin: pinRef.nullable(),
-        gameOrder: z.enum(['runners', 'rank', 'recent', 'name', 'manual']),
+        gameOrder: z.enum([
+            'placement',
+            'runners',
+            'rank',
+            'recent',
+            'name',
+            'manual',
+        ]),
         manualGameIds: z.array(z.number().int().positive()).max(500),
         showActivity: z.boolean(),
     })

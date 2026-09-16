@@ -118,7 +118,13 @@ export interface LeaderboardsProfile {
 
 export type PinRef = { kind: 'run' | 'manual'; id: number };
 
-export type GameOrder = 'runners' | 'rank' | 'recent' | 'name' | 'manual';
+export type GameOrder =
+    | 'placement'
+    | 'runners'
+    | 'rank'
+    | 'recent'
+    | 'name'
+    | 'manual';
 
 /** What the runner saved. */
 export interface LeaderboardsLayout {

@@ -15,7 +15,7 @@ export const DEFAULT_LAYOUT: ResolvedLeaderboardsLayout = {
     mainGameId: null,
     pins: [],
     videoPin: null,
-    gameOrder: 'runners',
+    gameOrder: 'placement',
     manualGameIds: [],
     showActivity: true,
     isDefault: true,
@@ -85,6 +85,12 @@ export const entryPoints = (e: LeaderboardsProfileEntry) =>
         ? boardSize(e) / e.rank
         : 0;
 
+/** More placement points first, then the bigger board. */
+export const byPoints = (
+    a: LeaderboardsProfileEntry,
+    b: LeaderboardsProfileEntry,
+) => entryPoints(b) - entryPoints(a) || onBiggerBoard(a, b);
+
 /**
  * The default showcase when the runner pinned nothing: their three runs worth
  * the most points, whatever game they are in. Each category and
@@ -98,11 +104,7 @@ export function autoPins(games: LeaderboardsProfileGame[]): Pinned[] {
             all.push({ entry, game });
         }
     }
-    all.sort(
-        (a, b) =>
-            entryPoints(b.entry) - entryPoints(a.entry) ||
-            onBiggerBoard(a.entry, b.entry),
-    );
+    all.sort((a, b) => byPoints(a.entry, b.entry));
     return all.slice(0, PIN_LIMIT);
 }
 
@@ -157,6 +159,7 @@ export type SortMode = 'runner' | GameOrder | 'attempts';
 
 export const SORT_LABELS: Record<SortMode, string> = {
     runner: "Runner's order",
+    placement: 'Best placements',
     runners: 'Most runners',
     manual: "Runner's order",
     rank: 'Best rank',
@@ -209,6 +212,19 @@ export function orderGames(
             );
         case 'name':
             return list.sort(byName);
+        case 'placement': {
+            // The game's best run, as the showcase scores it: board size
+            // over rank, so the game the runner does best in leads.
+            const best = (g: LeaderboardsProfileGame) =>
+                Math.max(0, ...g.entries.map(entryPoints));
+            return list.sort(
+                (a, b) =>
+                    best(b) - best(a) ||
+                    (a.bestRank ?? Number.POSITIVE_INFINITY) -
+                        (b.bestRank ?? Number.POSITIVE_INFINITY) ||
+                    byName(a, b),
+            );
+        }
         case 'runners': {
             const biggest = (g: LeaderboardsProfileGame) =>
                 Math.max(0, ...g.entries.map(boardSize));
@@ -234,7 +250,14 @@ export function orderGames(
 export function sortOptions(
     layout: Pick<LeaderboardsLayout, 'gameOrder'>,
 ): SortMode[] {
-    const auto: SortMode[] = ['runners', 'rank', 'recent', 'attempts', 'name'];
+    const auto: SortMode[] = [
+        'placement',
+        'runners',
+        'rank',
+        'recent',
+        'attempts',
+        'name',
+    ];
     if (layout.gameOrder === 'manual') return ['runner', ...auto];
     return [layout.gameOrder, ...auto.filter((m) => m !== layout.gameOrder)];
 }
