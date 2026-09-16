@@ -9,6 +9,7 @@ import {
     formatProfileDate,
     timingLabel,
 } from '../../../leaderboards/[name]/format';
+import { byPoints } from '../../../leaderboards/[name]/showcase-rules';
 import ui from '../../(sections)/profile-ui.module.scss';
 import { medalOf } from '../../(sections)/ranks';
 import { Chapter, ChapterError } from '../chapter';
@@ -16,7 +17,7 @@ import styles from '../overview.module.scss';
 
 const SHOWN = 4;
 
-/** The runner's four best board entries. */
+/** The runner's four best board entries, by the showcase's points. */
 export async function LeaderboardsChapter({
     head,
 }: {
@@ -31,12 +32,7 @@ export async function LeaderboardsChapter({
     }
     const rows = (profile?.games ?? [])
         .flatMap((game) => game.entries.map((entry) => ({ game, entry })))
-        .sort(
-            (a, b) =>
-                (a.entry.rank ?? Number.MAX_SAFE_INTEGER) -
-                    (b.entry.rank ?? Number.MAX_SAFE_INTEGER) ||
-                (b.entry.totalRunners ?? 0) - (a.entry.totalRunners ?? 0),
-        )
+        .sort((a, b) => byPoints(a.entry, b.entry))
         .slice(0, SHOWN);
     if (rows.length === 0) return null;
 
