@@ -24,7 +24,7 @@ export async function generateMetadata({
         return buildMetadata({ description: 'Runner profile' });
     }
     return buildMetadata({
-        title: `${head.runner.name} — Splits`,
+        title: `${head.runner.name} — Downloads`,
         description: `Download ${head.runner.name}'s splits files from therun.gg.`,
     });
 }

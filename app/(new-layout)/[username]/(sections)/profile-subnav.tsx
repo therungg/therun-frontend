@@ -35,7 +35,11 @@ export function ProfileSubnav({
                   segment: 'activity',
               },
               { label: 'Races', href: `${base}/races`, segment: 'races' },
-              { label: 'Splits', href: `${base}/splits`, segment: 'splits' },
+              {
+                  label: 'Downloads',
+                  href: `${base}/splits`,
+                  segment: 'splits',
+              },
           ];
     const current = pathname.split('/')[2] ?? '';
     return (
