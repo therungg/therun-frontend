@@ -109,3 +109,70 @@
         }
     }
 }
+
+.gameTiles {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: dt.$spacing-md;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    @container overview-chapter (max-width: 720px) {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    @container overview-chapter (max-width: 420px) {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+.gameTile {
+    display: grid;
+    gap: dt.$spacing-xs;
+    min-width: 0;
+    color: inherit;
+    text-decoration: none;
+
+    &:hover .gameName {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+}
+
+.gameArt {
+    display: block;
+    aspect-ratio: 3 / 4;
+    margin-bottom: dt.$spacing-xs;
+    overflow: hidden;
+    border-radius: dt.$radius-md;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+}
+
+.gameName {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-emphasis-color);
+}
+
+.gameMeta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-xs dt.$spacing-sm;
+    min-width: 0;
+}
+
+.gameHours {
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}

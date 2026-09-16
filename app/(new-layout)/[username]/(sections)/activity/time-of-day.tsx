@@ -13,7 +13,7 @@ const noop = () => undefined;
 const subscribeNothing = () => noop;
 
 /** Minutes a timezone is ahead of UTC right now; null if Intl doesn't know it. */
-function offsetMinutes(timeZone: string, at: Date): number | null {
+export function offsetMinutes(timeZone: string, at: Date): number | null {
     try {
         const parts = new Intl.DateTimeFormat('en-US', {
             timeZone,
@@ -40,7 +40,7 @@ function offsetMinutes(timeZone: string, at: Date): number | null {
 }
 
 /** "7 PM", "11:30 AM" for minutes past midnight, wrapping at a day. */
-function clock(minutes: number): string {
+export function clock(minutes: number): string {
     const m = ((minutes % 1440) + 1440) % 1440;
     const h = Math.floor(m / 60);
     const min = m % 60;
@@ -48,7 +48,7 @@ function clock(minutes: number): string {
     return `${h12}${min ? `:${String(min).padStart(2, '0')}` : ''} ${h < 12 ? 'AM' : 'PM'}`;
 }
 
-const place = (timeZone: string) =>
+export const place = (timeZone: string) =>
     (timeZone.split('/').pop() ?? timeZone).replace(/_/g, ' ');
 
 /**

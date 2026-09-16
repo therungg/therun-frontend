@@ -5,12 +5,12 @@ import { getLeaderboardsProfile } from '~src/lib/leaderboards-profile';
 import { getRunnerProfileHead, getRunnerStats } from '~src/lib/runner-profile';
 import buildMetadata from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
-import type { RunnerStatsGame } from '../../../../../types/runner-profile.types';
 import {
     DEFAULT_LAYOUT,
     orderGames,
 } from '../../../leaderboards/[name]/showcase-rules';
 import { formatHours } from '../format';
+import { inLeaderboardsOrder } from '../game-order';
 import { ProfileBlock } from '../profile-block';
 import styles from '../profile-ui.module.scss';
 import { plural } from '../ranks';
@@ -20,21 +20,6 @@ import { statsStrip } from '../strips/stats';
 import { StripEditor } from '../strips/strip-editor';
 import { GamesPanel } from './games-panel';
 import { PlaytimeBar } from './playtime-bar';
-
-/**
- * Games in the Leaderboards tab's order, so both tabs group a runner the same
- * way. Games with no leaderboard runs follow, most played first.
- */
-function inLeaderboardsOrder(
-    games: RunnerStatsGame[],
-    order: number[],
-): RunnerStatsGame[] {
-    const pos = new Map(order.map((id, i) => [id, i]));
-    const at = (g: RunnerStatsGame) => pos.get(g.gameId) ?? order.length;
-    return [...games].sort(
-        (a, b) => at(a) - at(b) || b.playtimeMs - a.playtimeMs,
-    );
-}
 
 interface PageProps {
     params: Promise<{ username: string }>;

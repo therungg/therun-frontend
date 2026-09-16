@@ -7,6 +7,8 @@ import type {
 } from '../../../../types/runner-profile.types';
 import { ProfileShell } from '../(sections)/profile-shell';
 import { ChapterSkeleton, visibleChapters } from './chapter';
+import { ActivityChapter } from './chapters/activity';
+import { GamesChapter } from './chapters/games';
 import { HighlightsChapter } from './chapters/highlights';
 import { LeaderboardsChapter } from './chapters/leaderboards';
 import styles from './overview.module.scss';
@@ -27,6 +29,10 @@ function ChapterBody({ id, head }: { id: ChapterId; head: RunnerProfileHead }) {
             return <HighlightsChapter head={head} />;
         case 'leaderboards':
             return <LeaderboardsChapter head={head} />;
+        case 'activity':
+            return <ActivityChapter head={head} />;
+        case 'games':
+            return <GamesChapter head={head} />;
         default:
             return null;
     }

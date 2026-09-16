@@ -11,8 +11,12 @@ import { safeDecodeURI } from '~src/utils/uri';
 import { ProfileBlock } from '../profile-block';
 import ui from '../profile-ui.module.scss';
 import { plural } from '../ranks';
-import { StatStrip, type StripLead } from '../stat-strip';
-import { activityStrip } from '../strips/activity';
+import { StatStrip } from '../stat-strip';
+import {
+    activityLead,
+    activityStrip,
+    activityStripData,
+} from '../strips/activity';
 import { resolveStrip } from '../strips/resolve';
 import { StripEditor } from '../strips/strip-editor';
 import { DayOfWeek } from './rhythm';
@@ -51,37 +55,10 @@ export default async function RunnerActivityPage({ params }: PageProps) {
     const runs = (await getUserRuns(name)) ?? [];
     const sessions = toSessionRows(runs);
 
-    const { streaks } = activity;
-    const activeDays = activity.days.filter((d) => d.attempts > 0).length;
-    const attempts = activity.days.reduce((s, d) => s + d.attempts, 0);
-
-    const lead: StripLead | null =
-        streaks.current > 0
-            ? {
-                  value: plural(streaks.current, 'day', 'days'),
-                  label: 'Current streak',
-                  what:
-                      streaks.longest > streaks.current
-                          ? `Longest ${plural(streaks.longest, 'day', 'days')}`
-                          : 'Their longest yet',
-              }
-            : streaks.longest > 0
-              ? {
-                    value: plural(streaks.longest, 'day', 'days'),
-                    label: 'Longest streak',
-                    what: null,
-                }
-              : null;
-    const strip = resolveStrip(
-        activityStrip,
-        {
-            hoursThisYear: activity.hoursThisYear,
-            attempts,
-            activeDays,
-            longestStreak: streaks.longest,
-        },
-        head.strips?.activity,
-    );
+    const data = activityStripData(activity);
+    const { attempts, activeDays } = data;
+    const lead = activityLead(activity.streaks);
+    const strip = resolveStrip(activityStrip, data, head.strips?.activity);
 
     return (
         <div className={ui.page}>
