@@ -6,7 +6,6 @@ import { toast } from 'react-toastify';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { VariableRow } from '../../../../../../../types/leaderboards.types';
 import type { WaitingOnRunners } from '../../../../../../../types/worklist.types';
-import { applyVerdictsAction } from '../shared/actions/verdicts.action';
 import { nudgeRunsAction, waiveVideoAction } from './actions/worklist.action';
 import { boardLabel, remindedLabel, waitingLabel } from './worklist-model';
 import styles from './worklist-pane.module.scss';
@@ -21,42 +20,29 @@ import styles from './worklist-pane.module.scss';
  * signed into cannot be shown the submission form, so without a way for a
  * moderator to rule on a held run, those PBs would wait forever.
  */
+export type WaitingRun = WaitingOnRunners['items'][number];
+
 export function WaitingOnRunnersSection({
     gameSlug,
     waiting,
     variables,
     onChanged,
+    onAccept,
 }: {
     gameSlug: string;
     waiting: WaitingOnRunners;
     variables: VariableRow[];
     onChanged: () => void;
+    /** Opens the moderate modal on the run, approving it. */
+    onAccept: (run: WaitingRun) => void;
 }) {
     const [open, setOpen] = useState(false);
     const [busy, startBusy] = useTransition();
     const now = new Date();
     if (waiting.count === 0) return null;
 
-    const act = (runId: number, verb: 'nudge' | 'waive' | 'accept') =>
+    const act = (runId: number, verb: 'nudge' | 'waive') =>
         startBusy(async () => {
-            if (verb === 'accept') {
-                // Verifying a held run releases the hold server-side and puts it
-                // back on the board, without its runner ever having submitted.
-                const res = await applyVerdictsAction(
-                    gameSlug,
-                    'verify',
-                    [runId],
-                    'Accepted without waiting for the runner',
-                );
-                if ('error' in res) return void toast.error(res.error);
-                toast.success(
-                    res.result.affectedRunCount > 0
-                        ? 'Accepted. The run is on the board and no longer waiting.'
-                        : 'Nothing changed. This run is no longer waiting.',
-                );
-                onChanged();
-                return;
-            }
             const res =
                 verb === 'nudge'
                     ? await nudgeRunsAction(gameSlug, [runId])
@@ -156,7 +142,7 @@ export function WaitingOnRunnersSection({
                                         type="button"
                                         className={styles.verb}
                                         disabled={busy}
-                                        onClick={() => act(w.runId, 'accept')}
+                                        onClick={() => onAccept(w)}
                                     >
                                         Accept without waiting
                                     </button>

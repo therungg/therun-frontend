@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from 'react';
 import { CheckCircle } from 'react-bootstrap-icons';
 import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import type {
+    LeaderboardEntry,
     ResolvedCategory,
     VariableRow,
 } from '../../../../../../../types/leaderboards.types';
@@ -21,7 +22,7 @@ import { applyVerdictsAction } from '../shared/actions/verdicts.action';
 import { fireUndoToast } from '../shared/undo-toast';
 import { loadWorklistAction } from './actions/worklist.action';
 import { SelfClaimRow } from './self-claim-row';
-import { WaitingOnRunnersSection } from './waiting-on-runners';
+import { WaitingOnRunnersSection, type WaitingRun } from './waiting-on-runners';
 import { BatchHero, BatchRow } from './worklist-batch';
 import { focusAfterReload, parseQueueKey } from './worklist-keys';
 import {
@@ -64,6 +65,27 @@ interface Props {
     onNeedsYouChange?: (count: number) => void;
     /** Console pane switcher — "Decided runs" opens the old queue pane. */
     onNavigate: (id: NavItemId) => void;
+}
+
+/** A run waiting on its runner as a board row; the modal reads the rest. */
+function waitingEntry(
+    run: WaitingRun,
+    primaryTiming: 'rt' | 'gt',
+): LeaderboardEntry {
+    return {
+        runId: run.runId,
+        rank: 0,
+        runnerName: run.runnerName,
+        userId: run.userId,
+        isGuest: false,
+        time: run.timeMs,
+        realTime: primaryTiming === 'rt' ? run.timeMs : null,
+        gameTime: primaryTiming === 'gt' ? run.timeMs : null,
+        runDate: null,
+        vodUrl: null,
+        verificationStatus: 'pending',
+        variables: null,
+    };
 }
 
 /** A section heading with the tier's swatch; an empty urgent tier says so. */
@@ -122,6 +144,8 @@ export function WorklistPane({
     const [inspectVerb, setInspectVerb] = useState<ModerateVerb | undefined>(
         undefined,
     );
+    // A run waiting on its runner, opened on Approve ("Accept without waiting").
+    const [waitingRunId, setWaitingRunId] = useState<number | null>(null);
     const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
     // Verdicts given since the pane opened. Undo takes them back off.
     const [decided, setDecided] = useState(0);
@@ -347,6 +371,29 @@ export function WorklistPane({
         }
     }
 
+    // The waiting run leaves the list once it is accepted: close.
+    const waitingRun =
+        waitingRunId === null
+            ? null
+            : (data?.waitingOnRunners.items.find(
+                  (w) => w.runId === waitingRunId,
+              ) ?? null);
+    const waitingCategory = waitingRun
+        ? (boardCategories.find((c) => c.id === waitingRun.categoryId) ?? null)
+        : null;
+    if (waitingRunId !== null && data && !waitingRun) {
+        setWaitingRunId(null);
+    }
+    const openWaiting = (run: WaitingRun) => {
+        if (!boardCategories.some((c) => c.id === run.categoryId)) {
+            setError(
+                "This run's board isn't in this console's list. Open it from the run page.",
+            );
+            return;
+        }
+        setWaitingRunId(run.runId);
+    };
+
     // When the list reloads under the keyboard (a run approved away), land on
     // the row that took its place instead of dropping the position.
     const previousKeys = useRef<string[]>([]);
@@ -373,7 +420,7 @@ export function WorklistPane({
     useEffect(() => {
         const onKeyDown = (e: KeyboardEvent) => {
             // The open modal owns the keyboard.
-            if (inspectRunId !== null) return;
+            if (inspectRunId !== null || waitingRunId !== null) return;
             const action = parseQueueKey(e);
             if (!action) return;
             const active = document.activeElement as HTMLElement | null;
@@ -679,6 +726,7 @@ export function WorklistPane({
                         waiting={data.waitingOnRunners}
                         variables={variables}
                         onChanged={load}
+                        onAccept={openWaiting}
                     />
                 )}
             </div>
@@ -705,6 +753,37 @@ export function WorklistPane({
                         Next
                     </button>
                 </nav>
+            )}
+
+            {waitingRun && waitingCategory && (
+                <ModeratePanel
+                    subject={{
+                        kind: 'run',
+                        entry: waitingEntry(
+                            waitingRun,
+                            waitingCategory.primaryTiming,
+                        ),
+                        board: {
+                            categoryId: waitingCategory.id,
+                            categorySlug: waitingCategory.name,
+                            categoryDisplay: waitingCategory.display,
+                            subcategoryKey: waitingRun.subcategoryKey,
+                            primaryTiming: waitingCategory.primaryTiming,
+                        },
+                    }}
+                    context={{
+                        gameSlug,
+                        gameId,
+                        gameDisplay,
+                        categories: boardCategories,
+                        variables,
+                        canSiteBan,
+                    }}
+                    mount="modal"
+                    initialVerb="approve"
+                    onClose={() => setWaitingRunId(null)}
+                    onMutated={load}
+                />
             )}
 
             {inspectItem && inspectContext && (
