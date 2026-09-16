@@ -72,7 +72,7 @@ export async function loadRunSheetAction(
     }
     const [run, history] = await Promise.all([
         getRunById(runId),
-        getRunHistory(runId).catch(() => []),
+        getRunHistory(runId, session.id).catch(() => []),
     ]);
     if (!run || run.gameId !== game.id) return { error: 'Run not found' };
     const sortedHistory = [...history].sort((a, b) => b.at.localeCompare(a.at));
