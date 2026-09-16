@@ -25,6 +25,10 @@ export type SettingsForm = {
     liveData: AutoVerifySetting['liveData'];
 };
 
+/** What the field shows when the board has no number to show — a response
+ *  from before this dial existed, or one that lost the field on the way. */
+const DEFAULT_PB_JUMP_SECONDS = 60;
+
 export const formFrom = (e: EffectiveSettings): SettingsForm => {
     const manual = e.intake.value.manual;
     const video = e.videoRule.value;
@@ -40,7 +44,11 @@ export const formFrom = (e: EffectiveSettings): SettingsForm => {
         neverTopN: String(e.autoVerify.value.neverTopN),
         minPriorVerifiedRuns: String(e.autoVerify.value.minPriorVerifiedRuns),
         maxGoldBeatPct: String(e.autoVerify.value.maxGoldBeatPct),
-        maxPbJumpSeconds: String(e.autoVerify.value.maxPbJumpMs / 1000),
+        maxPbJumpSeconds: String(
+            Number.isFinite(e.autoVerify.value.maxPbJumpMs)
+                ? e.autoVerify.value.maxPbJumpMs / 1000
+                : DEFAULT_PB_JUMP_SECONDS,
+        ),
         liveData: e.autoVerify.value.liveData,
     };
 };
