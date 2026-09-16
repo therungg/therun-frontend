@@ -9,6 +9,7 @@ import type { LeaderboardEntry } from '../../../../../../../types/leaderboards.t
 import type { HistoryEvent } from '../../../../../../../types/moderation.types';
 import { relativeDate } from '../../../leaderboard/relative-date';
 import { RunnerAvatar } from '../../../leaderboard/runner-avatar';
+import type { TrackRecord } from '../runner/[userId]/runner-model';
 import { EventRow } from './event-row';
 import styles from './moderate-panel.module.scss';
 import type { RunStatus } from './run-verbs';
@@ -29,12 +30,7 @@ export function Time({ ms }: { ms: number | null }) {
     );
 }
 
-export interface TrackRecord {
-    approved: number;
-    declined: number;
-    pending: number;
-    since: string | null;
-}
+export type { TrackRecord } from '../runner/[userId]/runner-model';
 
 export function RunIdentity({
     entry,

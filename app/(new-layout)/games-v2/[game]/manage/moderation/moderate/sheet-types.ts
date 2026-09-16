@@ -22,19 +22,16 @@ export interface RunSheetSummary {
     /** Newest mark/unmark event says marked. */
     marked: boolean;
     splitCount: number;
-    finalTimeMs: number | null;
     /** 'unknown' when the run has no splits. */
     consistency: 'consistent' | 'off' | 'unknown';
     offSegments: OffSegment[];
     vodUrls: string[];
-    description: string | null;
     historyCount: number;
     /** Last five events, newest first. */
     history: HistoryEvent[];
 }
 
 export interface RunnerSheetData {
-    runnerName: string;
     combos: RunnerCombo[];
     banState: RunnerBanState;
     summary: RunnerSummary;

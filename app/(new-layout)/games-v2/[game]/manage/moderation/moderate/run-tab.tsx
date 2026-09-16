@@ -22,7 +22,7 @@ import { ScopeCards } from '../shared/run-action-parts';
 import { fireUndoToast } from '../shared/undo-toast';
 import { subcategoryLabel } from '../worklist/worklist-model';
 import {
-    loadRunnerSheetAction,
+    loadRunnerTrackRecordAction,
     loadRunSheetAction,
 } from './actions/sheet-reads.action';
 import { HeavyFormBody, HeavyFormFooter, useHeavyForm } from './heavy-form';
@@ -55,7 +55,6 @@ import {
     runVerbHandlers,
     runVerbState,
 } from './run-verbs';
-import { trackRecord } from './runner-columns';
 import type { RunSheetSummary } from './sheet-types';
 import type { SheetContext, SheetSubject } from './subject';
 import { VerbBar } from './verb-bar';
@@ -146,10 +145,10 @@ export function RunTab({
     useEffect(() => {
         if (userId == null) return;
         let cancelled = false;
-        loadRunnerSheetAction(gameSlug, userId)
+        loadRunnerTrackRecordAction(gameSlug, userId)
             .then((res) => {
                 if (cancelled || 'error' in res) return;
-                setRecord(trackRecord(res.data.combos));
+                setRecord(res.record);
             })
             .catch(() => {
                 // The line is optional: without a read it stays out.

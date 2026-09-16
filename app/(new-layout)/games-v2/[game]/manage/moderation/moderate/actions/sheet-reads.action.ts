@@ -7,7 +7,6 @@ import { listAnonymizeRules } from '~src/lib/moderation/anonymize';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { listManualTimes } from '~src/lib/moderation/manual-times';
 import {
-    getCategoryRoster,
     getUserEligibleRuns,
     listExclusionRules,
     listModActions,
@@ -31,6 +30,8 @@ import {
     buildBanState,
     buildCombos,
     buildSummary,
+    countTrackRecord,
+    type TrackRecord,
 } from '../../runner/[userId]/runner-model';
 import type {
     OffSegment,
@@ -106,9 +107,11 @@ export async function loadRunSheetAction(
     }
     const [run, history] = await Promise.all([
         getRunById(runId),
-        getRunHistory(runId, session.id).catch(() => []),
+        // Null, not empty: without the history removed and marked are unknown.
+        getRunHistory(runId, session.id).catch(() => null),
     ]);
     if (!run || run.gameId !== game.id) return { error: 'Run not found' };
+    if (!history) return { error: 'Could not load the run history.' };
     const sortedHistory = [...history].sort((a, b) => b.at.localeCompare(a.at));
     return {
         ok: true,
@@ -116,13 +119,29 @@ export async function loadRunSheetAction(
             status: run.verificationStatus,
             ...flagsFromHistory(sortedHistory),
             ...summarizeSplits(run.splits ?? []),
-            finalTimeMs: run.realTime ?? run.gameTime ?? null,
             vodUrls: run.vodUrl ? [run.vodUrl] : [],
-            description: run.description ?? null,
             historyCount: sortedHistory.length,
             history: sortedHistory.slice(0, 5),
         },
     };
+}
+
+/** The Run tab's one runner line: counts from the runner's runs on this game. */
+export async function loadRunnerTrackRecordAction(
+    gameSlug: string,
+    userId: number,
+): Promise<{ ok: true; record: TrackRecord } | Fail> {
+    const session = await getSession();
+    const game = await resolveGame(gameSlug);
+    if (!game || !canModerateGame(session, game.name)) {
+        return { error: 'Not allowed' };
+    }
+    try {
+        const rows = await getUserEligibleRuns(session.id, game.id, userId);
+        return { ok: true, record: countTrackRecord(rows) };
+    } catch {
+        return { error: 'Could not load the runner.' };
+    }
 }
 
 export async function loadRunnerSheetAction(
@@ -186,34 +205,9 @@ export async function loadRunnerSheetAction(
     const banState = buildBanState(rules, userId);
     const summary = buildSummary(combos);
 
-    // No name-by-id resolver exists in src/lib; recover the display name
-    // from whichever runner-scoped feed carries one, then fall back to a
-    // roster lookup on the runner's top board, then to a stable cosmetic
-    // label (every action keys on the numeric userId, not this string).
-    let runnerName: string | null =
-        manualTimes.find((m) => m.userId === userId)?.runnerName ??
-        (banState.gameRule ?? banState.categoryRules[0])?.targetDisplayName ??
-        null;
-    if (!runnerName && combos.length > 0) {
-        const top = combos[0];
-        const roster = await getCategoryRoster(
-            session.id,
-            game.id,
-            top.categoryId,
-            {
-                subcategoryKey: top.subcategoryKey,
-                limit: 2000,
-            },
-        ).catch(() => []);
-        runnerName =
-            roster.find((r) => r.userId === userId)?.runnerName ?? null;
-    }
-    runnerName ??= `Runner #${userId}`;
-
     return {
         ok: true,
         data: {
-            runnerName,
             combos,
             banState,
             summary,

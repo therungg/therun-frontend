@@ -14,13 +14,15 @@ import type {
 } from '../../../../../../../types/moderation.types';
 import { RunnerAvatar } from '../../../leaderboard/runner-avatar';
 import {
+    countTrackRecord,
     publicBoardHref,
     type RunnerCombo,
+    type TrackRecord,
 } from '../runner/[userId]/runner-model';
 import { subcategoryLabel } from '../worklist/worklist-model';
 import { eventVerbLabel, shortAgo } from './event-row';
 import styles from './moderate-panel.module.scss';
-import { Time, type TrackRecord } from './run-columns';
+import { Time } from './run-columns';
 import { liftHideRule } from './run-heavy-verbs';
 import type { SheetBoard } from './subject';
 
@@ -42,24 +44,8 @@ const asStatus = (s: string): RowStatus =>
     s === 'verified' || s === 'rejected' ? s : 'pending';
 
 /** Approved, declined and pending across every run the runner has on this game. */
-export function trackRecord(combos: RunnerCombo[]): TrackRecord {
-    const counts: TrackRecord = {
-        approved: 0,
-        declined: 0,
-        pending: 0,
-        since: null,
-    };
-    for (const combo of combos) {
-        for (const r of combo.runs) {
-            if (r.verificationStatus === 'verified') counts.approved++;
-            else if (r.verificationStatus === 'rejected') counts.declined++;
-            else if (r.verificationStatus === 'pending') counts.pending++;
-            if (counts.since === null || r.endedAt < counts.since)
-                counts.since = r.endedAt;
-        }
-    }
-    return counts;
-}
+export const trackRecord = (combos: RunnerCombo[]): TrackRecord =>
+    countTrackRecord(combos.flatMap((c) => c.runs));
 
 /** `${categoryId}::${subcategoryKey}`, the same key a combo carries. */
 export const boardKey = (categoryId: number, subcategoryKey: string) =>

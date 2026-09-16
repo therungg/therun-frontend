@@ -36,6 +36,34 @@ export interface RunnerCombo {
     totalRunners: number | null;
 }
 
+export interface TrackRecord {
+    approved: number;
+    declined: number;
+    pending: number;
+    /** The runner's oldest run, ISO. */
+    since: string | null;
+}
+
+/** Approved, declined and pending across a runner's runs on a game. */
+export function countTrackRecord(
+    runs: Pick<UserEligibleRunRow, 'verificationStatus' | 'endedAt'>[],
+): TrackRecord {
+    const counts: TrackRecord = {
+        approved: 0,
+        declined: 0,
+        pending: 0,
+        since: null,
+    };
+    for (const r of runs) {
+        if (r.verificationStatus === 'verified') counts.approved++;
+        else if (r.verificationStatus === 'rejected') counts.declined++;
+        else if (r.verificationStatus === 'pending') counts.pending++;
+        if (counts.since === null || r.endedAt < counts.since)
+            counts.since = r.endedAt;
+    }
+    return counts;
+}
+
 export interface RunnerBanState {
     /** Whole-game exclusion rule targeting this runner, if any. */
     gameRule: GameExclusionRuleRow | null;
