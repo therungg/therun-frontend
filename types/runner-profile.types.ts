@@ -13,21 +13,6 @@ export type ChapterId =
     | 'races'
     | 'splits';
 
-export type HeadlineId =
-    | 'firstPlaces'
-    | 'podiums'
-    | 'boards'
-    | 'bestRank'
-    | 'hours'
-    | 'attempts'
-    | 'finishedRuns'
-    | 'games'
-    | 'pbsThisYear'
-    | 'raceRating'
-    | 'races'
-    | 'currentStreak'
-    | 'longestStreak';
-
 export type StripTab = 'leaderboards' | 'stats' | 'activity' | 'races';
 
 export type ProfilePinRef =
@@ -39,7 +24,6 @@ export type ProfilePinRef =
 export interface ProfileLayout {
     chapters: ChapterId[] | null;
     hiddenChapters: ChapterId[];
-    headline: HeadlineId[] | null;
     pins: ProfilePinRef[];
     videoPin: ProfilePinRef | null;
     mainGameId: number | null;
@@ -47,11 +31,10 @@ export interface ProfileLayout {
     manualGameIds: number[];
 }
 
-/** The layout the page renders: every chapter listed, headline filled, pins checked. */
+/** The layout the page renders: every chapter listed, pins checked. */
 export interface ResolvedProfileLayout {
     chapters: ChapterId[];
     hiddenChapters: ChapterId[];
-    headline: HeadlineId[];
     pins: ProfilePinRef[];
     videoPin: ProfilePinRef | null;
     mainGameId: number | null;
@@ -59,12 +42,6 @@ export interface ResolvedProfileLayout {
     manualGameIds: number[];
     /** True when the runner never saved a layout (either attribute). */
     isDefault: boolean;
-}
-
-export interface HeadlineValue {
-    value: number;
-    /** Only for bestRank: the board the rank is on. */
-    board?: { game: string; gameSlug: string; category: string };
 }
 
 export interface TimerPb {
@@ -115,7 +92,6 @@ export interface RunnerProfileHead {
         aka?: string | null;
         runningSince: string | null;
     };
-    headline: Record<HeadlineId, HeadlineValue | null>;
     layout: ResolvedProfileLayout;
     /** Stat strip tiles per tab; null = defaults. Absent on older payloads. */
     strips?: Record<StripTab, string[] | null>;

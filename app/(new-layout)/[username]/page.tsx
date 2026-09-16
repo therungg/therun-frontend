@@ -1,6 +1,8 @@
 import { Metadata } from 'next';
 import { cacheLife } from 'next/cache';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
+import { ProfileSwitch } from '~app/(new-layout)/[username]/_overview/profile-switch';
 import { GlobalGameData } from '~app/(new-layout)/[username]/[game]/[run]/run';
 import { getRunmap } from '~app/(new-layout)/[username]/runmap.component';
 import { UserProfile } from '~app/(new-layout)/[username]/user-profile';
@@ -52,7 +54,14 @@ export default async function Page(props: PageProps) {
         }
     }
 
-    return <UserProfilePage username={username} />;
+    return (
+        <Suspense fallback={null}>
+            <ProfileSwitch
+                username={username}
+                legacy={<UserProfilePage username={username} />}
+            />
+        </Suspense>
+    );
 }
 
 async function UserProfilePage({ username }: { username: string }) {

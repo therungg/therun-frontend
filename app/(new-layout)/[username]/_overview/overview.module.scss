@@ -1,0 +1,65 @@
+@use '../../styles/design-tokens' as dt;
+
+.chapters {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: dt.$spacing-3xl;
+    min-width: 0;
+}
+
+.chapter {
+    display: grid;
+    gap: dt.$spacing-lg;
+    min-width: 0;
+    container: overview-chapter / inline-size;
+    animation: chapter-in 240ms ease-out;
+
+    @media (prefers-reduced-motion: reduce) {
+        animation: none;
+    }
+}
+
+@keyframes chapter-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.chapterHead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: dt.$spacing-sm dt.$spacing-lg;
+}
+
+.chapterTitle {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--bs-emphasis-color);
+}
+
+.seeAll {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    text-decoration: none;
+
+    &:hover {
+        color: var(--bs-emphasis-color);
+    }
+}
+
+.muted {
+    margin: 0;
+    color: var(--bs-secondary-color);
+}
+
+.skeleton {
+    border-radius: dt.$radius-md;
+    background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.035));
+}

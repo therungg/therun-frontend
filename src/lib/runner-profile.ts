@@ -24,7 +24,7 @@ async function getPart<T>(name: string, part: Part): Promise<T | null> {
     }
 }
 
-/** Identity, headline numbers, layout and chapter flags. Null when the name is nobody. */
+/** Identity, layout and chapter flags. Null when the name is nobody. */
 export async function getRunnerProfileHead(
     name: string,
 ): Promise<RunnerProfileHead | null> {
