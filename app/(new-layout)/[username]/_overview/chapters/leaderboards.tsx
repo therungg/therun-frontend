@@ -17,21 +17,33 @@ import styles from '../overview.module.scss';
 
 const SHOWN = 4;
 
-/** The runner's four best board entries, by the showcase's points. */
+/** The runner's next four best board entries after the highlights, by points. */
 export async function LeaderboardsChapter({
     head,
 }: {
     head: RunnerProfileHead;
 }) {
     const name = head.runner.name;
+    // Highlights already show these; the chapter continues below them.
+    const pinned = new Set(
+        head.pins.flatMap((p) =>
+            p.type === 'board' ? [`${p.ref.kind}-${p.ref.id}`] : [],
+        ),
+    );
     let profile: Awaited<ReturnType<typeof getRunnerBoardsTop>>;
     try {
-        profile = await getRunnerBoardsTop(name, SHOWN);
+        profile = await getRunnerBoardsTop(name, SHOWN + pinned.size);
     } catch {
         return <ChapterError id="leaderboards" name={name} />;
     }
     const rows = (profile?.games ?? [])
         .flatMap((game) => game.entries.map((entry) => ({ game, entry })))
+        .filter(
+            ({ entry }) =>
+                !pinned.has(
+                    `${entry.kind}-${entry.kind === 'run' ? entry.runId : entry.manualTimeId}`,
+                ),
+        )
         .sort((a, b) => byPoints(a.entry, b.entry))
         .slice(0, SHOWN);
     if (rows.length === 0) return null;

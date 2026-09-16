@@ -42,7 +42,7 @@ export async function SplitsChapter({ head }: { head: RunnerProfileHead }) {
     const sob = ms(mostPlayed.sumOfBests);
     const gap = pb !== null && sob !== null && pb > sob ? pb - sob : null;
 
-    const session = toSessionRows(runs)[0] ?? null;
+    const session = toSessionRows(runs).find((r) => r.attempts > 0) ?? null;
 
     // personalBestTime is an ISO string, so it sorts as text.
     const latest = runs
