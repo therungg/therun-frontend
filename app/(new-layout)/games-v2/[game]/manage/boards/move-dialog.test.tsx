@@ -13,7 +13,7 @@ import { MoveDialog, type MoveDialogProps } from './move-dialog';
 
 // vi.mock factories are hoisted above these imports, so the mock fns
 // themselves must be created through vi.hoisted rather than referenced as
-// plain outer `const`s — see adjust-dialog.test.tsx for the same pattern.
+// plain outer `const`s.
 const mocks = vi.hoisted(() => ({
     moveRunAction: vi.fn(),
     fireUndoToast: vi.fn(),

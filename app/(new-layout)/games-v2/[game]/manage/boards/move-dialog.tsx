@@ -54,8 +54,7 @@ export interface MoveDialogProps {
  * Move a run to another category/subcategory via a board override —
  * extracted from the console's `RowActions` so the public board's row menu
  * mounts the same implementation. Owns its pending state and blocks its own
- * close while the move is in flight, same contract as AdjustDialog and
- * RunnerDialog.
+ * close while the move is in flight.
  */
 export function MoveDialog({
     open,
