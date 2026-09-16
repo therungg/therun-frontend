@@ -46,7 +46,8 @@ const CHAPTER_ORDER: ChapterId[] = [
     'splits',
 ];
 
-const GUEST_CHAPTERS: ChapterId[] = ['highlights', 'leaderboards', 'games'];
+// Guests have no stats part, so no Games chapter until it can come from boards.
+const GUEST_CHAPTERS: ChapterId[] = ['highlights', 'leaderboards'];
 
 /** The chapters this page shows. */
 export function visibleChapters(head: RunnerProfileHead): ChapterId[] {
