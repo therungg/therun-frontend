@@ -65,6 +65,9 @@ interface Props {
     onToggleSelect?: (key: BoardSelectionKey, shiftKey: boolean) => void;
     /** Opens the moderate modal on this entry. Moderators only. */
     onModerate?: (entry: LeaderboardEntry) => void;
+    /** Opens the moderate modal on the Runner tab for this entry's runner.
+     * Moderators only; unused for a row with no linked account. */
+    onModerateRunner?: (userId: number, runnerName: string) => void;
     /** Curation-only additions; absent on the public board. See `RowSlots`. */
     slots?: RowSlots;
 }
@@ -106,6 +109,7 @@ export function LeaderboardRow({
     selected = false,
     onToggleSelect,
     onModerate,
+    onModerateRunner,
     slots,
 }: Props) {
     // Anonymized rows arrive already redacted from the backend: placeholder
@@ -118,6 +122,23 @@ export function LeaderboardRow({
         canManage &&
         onModerate != null &&
         (entry.runId != null || entry.manualTimeId != null);
+    // Handed to the run hover card's own Moderate button — same gate as the
+    // row's own button, since both open the same modal on the same run.
+    const moderateRun = showModerate
+        ? { label: 'Moderate', onOpen: () => onModerate?.(entry) }
+        : undefined;
+    // Handed to the user hover card's Moderate button (Runner tab). An
+    // anonymized row has no `userId` and never reaches this — no UserLink,
+    // no hover card, no button.
+    const moderatableUserId = entry.userId;
+    const moderateRunner =
+        canManage && onModerateRunner != null && moderatableUserId != null
+            ? {
+                  label: 'Moderate',
+                  onOpen: () =>
+                      onModerateRunner(moderatableUserId, entry.runnerName),
+              }
+            : undefined;
 
     const detailHref =
         entry.source === 'manual' && entry.manualTimeId != null
@@ -194,6 +215,7 @@ export function LeaderboardRow({
             displayRank={displayRank}
             standing={standing}
             values={cardValues}
+            moderate={moderateRun}
         >
             {(handlers) => (
                 <td
@@ -361,6 +383,7 @@ export function LeaderboardRow({
                                     country: entry.country,
                                     gameSlug,
                                 }}
+                                moderate={moderateRunner}
                             />
                             <CountryFlag country={entry.country} />
                         </>

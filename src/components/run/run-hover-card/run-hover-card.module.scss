@@ -373,3 +373,9 @@ $hairline: 1px solid
 .quiet {
     color: var(--bs-tertiary-color);
 }
+
+.moderateBtn {
+    @include board.control-pill;
+    font-size: dt.$font-size-2xs;
+    padding: 1px 8px;
+}

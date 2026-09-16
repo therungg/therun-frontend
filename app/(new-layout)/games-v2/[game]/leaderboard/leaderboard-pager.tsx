@@ -242,7 +242,15 @@ export function LeaderboardPager({
     // The moderate modal: open on one row (by selection key, so a refetch
     // under it hands the modal the fresh entry) or on the selection.
     const [moderating, setModerating] = useState<
-        { kind: 'run'; key: BoardSelectionKey } | { kind: 'bulk' } | null
+        | { kind: 'run'; key: BoardSelectionKey }
+        | { kind: 'bulk' }
+        | {
+              kind: 'runner';
+              userId: number;
+              runnerName: string;
+              categoryId?: number | null;
+          }
+        | null
     >(null);
     // Every category and variable of the game, which the modal's Move needs.
     // Loaded the first time a moderator opens the modal; visitors never pay.
@@ -492,7 +500,15 @@ export function LeaderboardPager({
 
     // Loads the game's categories and variables once, then opens.
     const openModerate = (
-        next: { kind: 'run'; key: BoardSelectionKey } | { kind: 'bulk' },
+        next:
+            | { kind: 'run'; key: BoardSelectionKey }
+            | { kind: 'bulk' }
+            | {
+                  kind: 'runner';
+                  userId: number;
+                  runnerName: string;
+                  categoryId?: number | null;
+              },
     ) => {
         if (!canManage) return;
         if (categoryId == null) {
@@ -519,6 +535,12 @@ export function LeaderboardPager({
         const key = entrySelectionKey(entry);
         if (key == null) return;
         openModerate({ kind: 'run', key });
+    };
+
+    // From a hover card's Moderate button — opens straight on the Runner
+    // tab (ModeratePanel defaults there for a runner subject).
+    const onModerateRunner = (userId: number, runnerName: string) => {
+        openModerate({ kind: 'runner', userId, runnerName, categoryId });
     };
 
     // ---- Bulk selection (mods only) --------------------------------------
@@ -817,6 +839,7 @@ export function LeaderboardPager({
                     onToggleSelect={toggleSelect}
                     onToggleAllVisible={toggleAllVisible}
                     onModerate={canManage ? onModerate : undefined}
+                    onModerateRunner={canManage ? onModerateRunner : undefined}
                 />
                 {/* Un-hide lives out here, not on a row: a hidden runner's row is
                 a placeholder nobody can recognise as theirs. */}
@@ -871,6 +894,22 @@ export function LeaderboardPager({
                                         kind: 'bulk',
                                         entries: selectedEntries,
                                         board: bulkBoard,
+                                    }}
+                                    context={context}
+                                    mount="modal"
+                                    onClose={() => setModerating(null)}
+                                    onMutated={boardRefresh}
+                                />
+                            );
+                        }
+                        if (moderating.kind === 'runner') {
+                            return (
+                                <ModeratePanel
+                                    subject={{
+                                        kind: 'runner',
+                                        userId: moderating.userId,
+                                        runnerName: moderating.runnerName,
+                                        categoryId: moderating.categoryId,
                                     }}
                                     context={context}
                                     mount="modal"

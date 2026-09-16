@@ -35,6 +35,10 @@ interface UserLinkProps extends ChildrenType {
      * else keeps pointing at the Stats profile.
      */
     to?: 'profile' | 'leaderboards';
+    /** Present only for a moderator who can act on this runner — forwarded
+     * to the hover card's own Moderate button. Ignored when `hoverCard` is
+     * false. */
+    moderate?: { label: string; onOpen: () => void };
 }
 
 interface UserGameLinkProps extends UserLinkProps, GameLinkProps {}
@@ -60,6 +64,7 @@ export const UserLink = ({
     hoverCard = true,
     cardContext,
     to = 'profile',
+    moderate,
 }: UserLinkProps) => {
     const { data: patreons, isLoading } = usePatreons();
 
@@ -109,7 +114,11 @@ export const UserLink = ({
     }
 
     return (
-        <HoverCardAnchor username={nameStr} context={cardContext}>
+        <HoverCardAnchor
+            username={nameStr}
+            context={cardContext}
+            moderate={moderate}
+        >
             {(handlers) => (
                 <a
                     className="overflow-hidden text-truncate"

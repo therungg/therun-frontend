@@ -28,8 +28,12 @@ export interface AnchorHandlers {
 export interface HoverAnchorProps {
     /** Rendered with the hover handlers attached. Always a single element. */
     children: (handlers: AnchorHandlers) => ReactNode;
-    /** Card content, rendered inside the positioned portal layer. */
-    card: ReactNode;
+    /**
+     * Card content, rendered inside the positioned portal layer. A function
+     * is handed this anchor's own close, so a control inside the card (the
+     * moderate button) can dismiss the hover card itself before acting.
+     */
+    card: ReactNode | ((close: () => void) => ReactNode);
     /** Fixed layer width in px (was CARD_WIDTH). */
     cardWidth: number;
 }
@@ -164,7 +168,9 @@ export function HoverAnchor({ children, card, cardWidth }: HoverAnchorProps) {
                           onPointerEnter={() => intent.cancel()}
                           onPointerLeave={() => intent.leave()}
                       >
-                          {card}
+                          {typeof card === 'function'
+                              ? card(intent.closeNow)
+                              : card}
                       </div>,
                       document.body,
                   )

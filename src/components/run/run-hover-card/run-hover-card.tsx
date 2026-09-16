@@ -34,6 +34,10 @@ export interface RunHoverCardProps {
     standing?: RunStanding;
     /** Board value columns the runner actually set, already labelled. */
     values?: { label: string; value: string }[];
+    /** Present only for a moderator who can act on this run — renders one
+     * button in the footer. The card stays read-only and session-free
+     * otherwise; the caller decides who gets to see this. */
+    moderate?: { label: string; onOpen: () => void };
 }
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -87,6 +91,7 @@ export function RunHoverCard({
     displayRank,
     standing,
     values = [],
+    moderate,
 }: RunHoverCardProps) {
     const isManual = entry.source === 'manual';
     const isRejected = entry.verificationStatus === 'rejected';
@@ -408,6 +413,15 @@ export function RunHoverCard({
                     ) : (
                         <span className={styles.quiet}>No video</span>
                     )}
+                    {moderate ? (
+                        <button
+                            type="button"
+                            className={styles.moderateBtn}
+                            onClick={moderate.onOpen}
+                        >
+                            {moderate.label}
+                        </button>
+                    ) : null}
                 </span>
             </div>
         </div>

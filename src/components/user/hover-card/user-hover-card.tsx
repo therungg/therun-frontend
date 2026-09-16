@@ -27,6 +27,10 @@ interface Props {
     username: string;
     /** What the hovered surface already knows. Painted before the fetch lands. */
     context?: UserCardContext;
+    /** Present only for a moderator who can act on this runner — renders one
+     * button in the footer. The card stays read-only and session-free
+     * otherwise; the caller decides who gets to see this. */
+    moderate?: { label: string; onOpen: () => void };
 }
 
 const SOCIAL_ICON: Record<SocialNetwork, typeof Twitch> = {
@@ -400,7 +404,7 @@ function racesLine(card: UserCardStats): string | null {
     }, finished ${Math.round(races.finishPercentage)}%`;
 }
 
-export function UserHoverCard({ username, context }: Props) {
+export function UserHoverCard({ username, context, moderate }: Props) {
     const gameSlug = context?.gameSlug;
 
     // A runner hovered earlier in the session paints instantly, with no
@@ -573,9 +577,9 @@ export function UserHoverCard({ username, context }: Props) {
                 </>
             ) : null}
 
-            {card && (card.latestPb || races) ? (
+            {(card && (card.latestPb || races)) || moderate ? (
                 <footer className={styles.foot}>
-                    {card.latestPb ? (
+                    {card?.latestPb ? (
                         <span className={styles.latest}>
                             <Trophy aria-hidden size={12} />
                             <span className={styles.latestText}>
@@ -590,6 +594,15 @@ export function UserHoverCard({ username, context }: Props) {
                     ) : null}
                     {races ? (
                         <span className={styles.races}>{races}</span>
+                    ) : null}
+                    {moderate ? (
+                        <button
+                            type="button"
+                            className={styles.moderateBtn}
+                            onClick={moderate.onOpen}
+                        >
+                            {moderate.label}
+                        </button>
                     ) : null}
                 </footer>
             ) : null}

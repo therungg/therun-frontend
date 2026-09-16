@@ -85,6 +85,9 @@ interface Props {
     onToggleAllVisible?: () => void;
     /** Opens the moderate modal on a row's entry. Moderators only. */
     onModerate?: (entry: LeaderboardEntry) => void;
+    /** Opens the moderate modal on a row's runner (Runner tab). Moderators
+     * only; a row with no linked account never calls it. */
+    onModerateRunner?: (userId: number, runnerName: string) => void;
     /** Curation-only per-row additions, forwarded to every row. */
     slots?: RowSlots;
     /** Appended inside `<tbody>` after the rows — curation's Add-runner ghost
@@ -117,6 +120,7 @@ export function LeaderboardTable({
     onToggleSelect,
     onToggleAllVisible,
     onModerate,
+    onModerateRunner,
     slots,
     tbodyFooter,
 }: Props) {
@@ -419,6 +423,7 @@ export function LeaderboardTable({
                             })()}
                             onToggleSelect={onToggleSelect}
                             onModerate={onModerate}
+                            onModerateRunner={onModerateRunner}
                             slots={slots}
                         />
                     ))}

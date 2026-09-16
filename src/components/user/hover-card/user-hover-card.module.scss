@@ -517,6 +517,13 @@ $z-hover-card: 1060;
     color: var(--bs-tertiary-color);
 }
 
+.moderateBtn {
+    @include board.control-pill;
+    align-self: flex-end;
+    font-size: dt.$font-size-2xs;
+    padding: 1px 8px;
+}
+
 // ---- Loading / empty --------------------------------------------
 .skeleton {
     display: flex;

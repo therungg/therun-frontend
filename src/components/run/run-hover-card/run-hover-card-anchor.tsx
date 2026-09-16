@@ -20,12 +20,28 @@ export interface RunHoverCardAnchorProps extends RunHoverCardProps {
 
 export function RunHoverCardAnchor({
     children,
+    moderate,
     ...cardProps
 }: RunHoverCardAnchorProps) {
     return (
         <HoverAnchor
             cardWidth={RUN_CARD_WIDTH}
-            card={<RunHoverCard {...cardProps} />}
+            card={(close) => (
+                <RunHoverCard
+                    {...cardProps}
+                    moderate={
+                        moderate
+                            ? {
+                                  label: moderate.label,
+                                  onOpen: () => {
+                                      close();
+                                      moderate.onOpen();
+                                  },
+                              }
+                            : undefined
+                    }
+                />
+            )}
         >
             {children}
         </HoverAnchor>
