@@ -10,6 +10,7 @@ import {
 import { createPortal } from 'react-dom';
 import type { LeaderboardEntry } from '../../../../../../../types/leaderboards.types';
 import { useDialogBehavior } from '../../../shared/board-dialog';
+import { BulkBody } from './bulk-body';
 import styles from './moderate-panel.module.scss';
 import { RunTab } from './run-tab';
 import { RunnerTab } from './runner-tab';
@@ -311,8 +312,6 @@ export function ModeratePanel(props: ModeratePanelProps) {
         );
     };
 
-    // Task 7 adds the remaining branch:
-    //   subject.kind === 'bulk'  -> <BulkBody ... render={wrap} />
     // Each tab owns its data and verb handlers and calls `render(layout)`; the shell wraps it.
     const wrap = (layout: PanelLayout) => (
         <>
@@ -328,7 +327,17 @@ export function ModeratePanel(props: ModeratePanelProps) {
         pageLink: null,
     };
     const content =
-        subject.kind === 'run' && tab === 'run' ? (
+        subject.kind === 'bulk' ? (
+            <BulkBody
+                key={key}
+                subject={subject}
+                context={props.context}
+                onMutated={props.onMutated}
+                onFormBack={onFormBack}
+                onBusyChange={onBusyChange}
+                render={wrap}
+            />
+        ) : subject.kind === 'run' && tab === 'run' ? (
             <RunTab
                 key={key}
                 subject={subject}
@@ -339,7 +348,7 @@ export function ModeratePanel(props: ModeratePanelProps) {
                 onBusyChange={onBusyChange}
                 render={wrap}
             />
-        ) : tab === 'runner' && runnerId !== null && subject.kind !== 'bulk' ? (
+        ) : tab === 'runner' && runnerId !== null ? (
             <RunnerTab
                 key={key}
                 userId={runnerId}

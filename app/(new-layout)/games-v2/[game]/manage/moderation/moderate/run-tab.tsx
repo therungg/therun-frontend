@@ -4,7 +4,6 @@ import {
     type ReactNode,
     useCallback,
     useEffect,
-    useMemo,
     useRef,
     useState,
 } from 'react';
@@ -12,16 +11,10 @@ import { toast } from 'react-toastify';
 import { loadRunHistoryAction } from '~src/actions/run-user-actions.action';
 import { DurationField } from '~src/components/time-input/duration-field';
 import { timingLabel } from '~src/lib/setup/board-defaults';
-import { buildSubcategoryKey } from '~src/lib/variables/keys';
 import type {
     HistoryEvent,
     RejectionReasonKey,
 } from '../../../../../../../types/moderation.types';
-import {
-    defaultCanonicalOf,
-    SubcategoryBands,
-    subcategoryVariablesFor,
-} from '../../boards/subcategory-bands';
 import { isTriageInert } from '../attention/triage-keyboard';
 import { previewManualTimeAction } from '../shared/actions/manual-times.action';
 import { ScopeCards } from '../shared/run-action-parts';
@@ -38,6 +31,7 @@ import type {
     PanelLayout,
 } from './moderate-panel';
 import styles from './moderate-panel.module.scss';
+import { useMoveTarget } from './move-target';
 import {
     RunIdentity,
     RunLeft,
@@ -216,10 +210,7 @@ export function RunTab({
     const [draft, setDraft] = useState<FormDraft | null>(null);
     const [newTimeMs, setNewTimeMs] = useState<number | null>(null);
     const [timePreviewRank, setTimePreviewRank] = useState<number | null>(null);
-    const [moveCategoryId, setMoveCategoryId] = useState<number>(
-        board.categoryId,
-    );
-    const [moveValues, setMoveValues] = useState<Record<string, string>>({});
+    const move = useMoveTarget(board, context);
     const [hideScope, setHideScope] = useState<HideScope>('run');
     const openerRef = useRef<ModerateVerb | null>(null);
     const footerRef = useRef<HTMLDivElement>(null);
@@ -289,54 +280,6 @@ export function RunTab({
         board.primaryTiming,
     ]);
 
-    // Move: the boards a run can go to, same rule as the board's Move.
-    const moveTargets = useMemo(
-        () =>
-            context.categories.filter(
-                (c) =>
-                    (!c.archived && (c.isMain ?? false)) ||
-                    c.id === board.categoryId,
-            ),
-        [context.categories, board.categoryId],
-    );
-    const moveCategory =
-        moveTargets.find((c) => c.id === moveCategoryId) ?? null;
-    const moveSubVars = useMemo(
-        () =>
-            moveCategory
-                ? subcategoryVariablesFor(moveCategory.id, context.variables)
-                : [],
-        [moveCategory, context.variables],
-    );
-    const moveKey = useMemo(
-        () =>
-            moveSubVars.length === 0
-                ? ''
-                : buildSubcategoryKey(
-                      moveSubVars.map((v) => ({
-                          name: v.nameNormalized,
-                          value:
-                              moveValues[v.nameNormalized] ??
-                              defaultCanonicalOf(v),
-                      })),
-                  ),
-        [moveSubVars, moveValues],
-    );
-    const moveSame =
-        moveCategory?.id === board.categoryId &&
-        moveKey === board.subcategoryKey;
-    const moveSub = moveCategory
-        ? subcategoryLabel(
-              { categoryId: moveCategory.id, subcategoryKey: moveKey },
-              context.variables,
-          )
-        : '';
-    const moveToName = moveCategory
-        ? moveSub
-            ? `${moveCategory.display} · ${moveSub}`
-            : moveCategory.display
-        : '';
-
     const hideOptions = (
         [
             { value: 'run', title: 'This run only' },
@@ -364,37 +307,7 @@ export function RunTab({
                     />
                 );
             case 'move':
-                return (
-                    <div className={styles.fieldStack}>
-                        <select
-                            aria-label="Board"
-                            className="form-select form-select-sm"
-                            value={moveCategoryId}
-                            onChange={(e) => {
-                                setMoveCategoryId(Number(e.target.value));
-                                setMoveValues({});
-                            }}
-                            disabled={busy}
-                        >
-                            {moveTargets.map((c) => (
-                                <option key={c.id} value={c.id}>
-                                    {c.display}
-                                </option>
-                            ))}
-                        </select>
-                        <SubcategoryBands
-                            variables={moveSubVars}
-                            selectedValues={moveValues}
-                            onSelect={(name, canonical) =>
-                                setMoveValues((prev) => ({
-                                    ...prev,
-                                    [name]: canonical,
-                                }))
-                            }
-                            idPrefix="moderate-move"
-                        />
-                    </div>
-                );
+                return move.fields(busy);
             case 'hide_identity':
                 return hideOptions.length > 1 ? (
                     <ScopeCards
@@ -421,8 +334,8 @@ export function RunTab({
               noop: draft.noop,
               newTimeMs,
               timePreviewRank,
-              moveSame: moveSame || moveCategory == null,
-              moveToName,
+              moveSame: move.same,
+              moveToName: move.toName,
               hideScope,
               fields: fieldsFor(draft.verb),
           })
@@ -432,8 +345,7 @@ export function RunTab({
     // ---- Verbs -------------------------------------------------------------------------
     const openForm = async (verb: HeavyRunVerb) => {
         setNewTimeMs(null);
-        setMoveCategoryId(board.categoryId);
-        setMoveValues({});
+        move.reset();
         setHideScope(runId != null ? 'run' : 'category');
         let noop: string | null = null;
         if ((verb === 'decline' || verb === 'remove') && runId != null) {
@@ -515,14 +427,8 @@ export function RunTab({
                     ? {
                           verb,
                           reason,
-                          target:
-                              moveCategory && !moveSame
-                                  ? {
-                                        categoryId: moveCategory.id,
-                                        subcategoryKey: moveKey,
-                                    }
-                                  : null,
-                          targetName: moveToName,
+                          target: move.target,
+                          targetName: move.toName,
                       }
                     : verb === 'hide_identity'
                       ? { verb, reason, scope: hideScope }
