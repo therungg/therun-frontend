@@ -3,7 +3,7 @@ import { getSession } from '~src/actions/session.action';
 import type { GameTheme } from '~src/lib/game-theme';
 import { getThemeSettings } from '~src/lib/theme-settings';
 import styles from './theme.module.scss';
-import { buildThemeCss } from './theme-css';
+import { buildThemeCss, type ThemePreview, themePreview } from './theme-css';
 import { allowedPicks, themeContext } from './theme-memory';
 import { choosePick, pickScript } from './theme-pick';
 import { ThemePickSync } from './theme-pick-sync';
@@ -40,19 +40,19 @@ function ThemeLayer({
 async function ViewerTheme({
     kind,
     label,
-    hasPage,
+    page,
 }: {
     kind: Kind;
     label: string;
-    hasPage: boolean;
+    page: { label: string; preview: ThemePreview } | null;
 }) {
+    const hasPage = page !== null;
     const session = await getSession();
     const viewer = session.username
         ? await getThemeSettings(session.username).catch(() => null)
         : null;
     const pick = choosePick({ hasPage, kind, viewer });
-    const page = hasPage ? { label } : null;
-    const mine = !!viewer?.theme;
+    const mine = viewer?.theme ? themePreview(viewer.theme) : null;
     const context = themeContext(kind, label);
     // A runner's background image belongs to their own profile. Worn anywhere
     // else (a board, someone else's profile) their theme keeps its colours
@@ -73,7 +73,7 @@ async function ViewerTheme({
                         pick,
                         kind,
                         context,
-                        allowedPicks(hasPage, mine),
+                        allowedPicks(hasPage, !!mine),
                     ),
                 }}
             />
@@ -105,6 +105,7 @@ export function PageTheme({
     theme: GameTheme | null;
 }) {
     const hasPage = theme !== null;
+    const page = theme ? { label, preview: themePreview(theme) } : null;
     const context = themeContext(kind, label);
     return (
         <>
@@ -124,13 +125,13 @@ export function PageTheme({
                     <ThemePickSync
                         kind={kind}
                         pick={hasPage ? 'page' : 'none'}
-                        page={hasPage ? { label } : null}
-                        mine={false}
+                        page={page}
+                        mine={null}
                         context={context}
                     />
                 }
             >
-                <ViewerTheme kind={kind} label={label} hasPage={hasPage} />
+                <ViewerTheme kind={kind} label={label} page={page} />
             </Suspense>
         </>
     );

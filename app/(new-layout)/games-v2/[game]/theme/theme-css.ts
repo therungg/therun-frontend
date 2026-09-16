@@ -113,6 +113,22 @@ function readableText(surface: Rgb): TextSet {
  * --bs-primary. Rank-metal, verify-state, and live colors stay un-themed.
  * The board owns its colors, so the result does not depend on `scheme`.
  */
+/** The three colors a theme renders with, for a small preview swatch. */
+export interface ThemePreview {
+    canvas: string;
+    panel: string;
+    accent: string;
+}
+
+export function themePreview(theme: GameTheme): ThemePreview {
+    const panel = toSurfaceTint(theme.panelColor, PANEL_MAX_L);
+    return {
+        canvas: toSurfaceTint(theme.backgroundColor, CANVAS_MAX_L),
+        panel,
+        accent: ensureAccentContrast(theme.accentColor, panel),
+    };
+}
+
 export function deriveThemeVars(
     theme: GameTheme,
     _scheme: Scheme,

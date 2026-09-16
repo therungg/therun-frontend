@@ -1,11 +1,13 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
+import type { ThemePreview } from '~app/(new-layout)/games-v2/[game]/theme/theme-css';
 import type { ThemePick } from '~src/lib/theme-settings';
 
 export interface ThemeOptions {
-    page: { label: string } | null;
-    mine: boolean;
+    page: { label: string; preview: ThemePreview } | null;
+    /** The signed-in viewer's own theme, when they have one. */
+    mine: ThemePreview | null;
     /** The pick the page opens with: remembered for this runner or game, else its default. */
     defaultPick: ThemePick;
     /** The runner or game the page belongs to, for remembering a pick. */

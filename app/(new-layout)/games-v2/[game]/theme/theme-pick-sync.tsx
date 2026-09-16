@@ -3,6 +3,7 @@
 import { useLayoutEffect } from 'react';
 import { publishThemeOptions } from '~src/components/theme-options-store';
 import type { ThemePick } from '~src/lib/theme-settings';
+import type { ThemePreview } from './theme-css';
 import { allowedPicks, rememberedPick } from './theme-memory';
 import { applyThemeScheme, holdThemeScheme } from './theme-scheme';
 
@@ -20,24 +21,28 @@ export function ThemePickSync({
 }: {
     kind: 'profile' | 'game';
     pick: ThemePick;
-    page: { label: string } | null;
-    mine: boolean;
+    page: { label: string; preview: ThemePreview } | null;
+    mine: ThemePreview | null;
     /** The runner or game this page belongs to (themeContext). */
     context: string;
 }) {
     const label = page?.label ?? null;
+    // Previews arrive as fresh objects each render; compare them by value.
+    const previews = JSON.stringify([page, mine]);
     useLayoutEffect(() => {
         const html = document.documentElement;
         const current =
-            rememberedPick(context, allowedPicks(label !== null, mine)) ?? pick;
+            rememberedPick(context, allowedPicks(label !== null, !!mine)) ??
+            pick;
         html.dataset.themePage = kind;
         html.dataset.themeDefault = pick;
         html.dataset.themePick = current;
         applyThemeScheme(current);
         const release = holdThemeScheme();
+        const [pageNow, mineNow] = JSON.parse(previews);
         publishThemeOptions({
-            page: label === null ? null : { label },
-            mine,
+            page: pageNow,
+            mine: mineNow,
             defaultPick: current,
             context,
         });
@@ -49,6 +54,6 @@ export function ThemePickSync({
             applyThemeScheme('none');
             publishThemeOptions(null);
         };
-    }, [kind, pick, label, mine, context]);
+    }, [kind, pick, label, previews, context]);
     return null;
 }

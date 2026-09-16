@@ -3,7 +3,10 @@
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
+import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Check2, ChevronDown } from 'react-bootstrap-icons';
+import type { ThemePreview } from '~app/(new-layout)/games-v2/[game]/theme/theme-css';
 import {
     allowedPicks,
     rememberedPick,
@@ -25,8 +28,44 @@ const DarkModeSlider = dynamic(() => import('./dark-mode-slider'), {
 interface ThemeMenuItem {
     key: string;
     label: string;
+    /** What the button in the top bar says while this one is on. */
+    name: string;
+    preview: ThemePreview;
     current: boolean;
     onSelect: () => void;
+}
+
+// The site's own light and dark surfaces, as a theme preview draws them.
+const LIGHT: ThemePreview = {
+    canvas: '#fbfbfb',
+    panel: '#ffffff',
+    accent: '#608c59',
+};
+const DARK: ThemePreview = {
+    canvas: '#0d0f0d',
+    panel: '#161c18',
+    accent: '#7da876',
+};
+
+/** A tiny page: the canvas, a panel on it, and the accent on the panel. */
+function Swatch({ preview }: { preview: ThemePreview }) {
+    return (
+        <span
+            className={styles.swatch}
+            style={
+                {
+                    '--swatch-canvas': preview.canvas,
+                    '--swatch-panel': preview.panel,
+                    '--swatch-accent': preview.accent,
+                } as CSSProperties
+            }
+            aria-hidden
+        >
+            <span className={styles.swatchPanel}>
+                <span className={styles.swatchAccent} />
+            </span>
+        </span>
+    );
 }
 
 interface ThemeMenuProps {
@@ -56,7 +95,7 @@ export function ThemeMenu({ variant = 'desktop' }: ThemeMenuProps) {
         const next = options
             ? (rememberedPick(
                   options.context,
-                  allowedPicks(!!options.page, options.mine),
+                  allowedPicks(!!options.page, !!options.mine),
               ) ?? options.defaultPick)
             : 'none';
         setCurrentPick(next);
@@ -126,12 +165,16 @@ export function ThemeMenu({ variant = 'desktop' }: ThemeMenuProps) {
         {
             key: 'light',
             label: 'Default light',
+            name: 'Light',
+            preview: LIGHT,
             current: pick === 'none' && resolvedTheme === 'light',
             onSelect: () => selectDefault('light'),
         },
         {
             key: 'dark',
             label: 'Default dark',
+            name: 'Dark',
+            preview: DARK,
             current: pick === 'none' && resolvedTheme === 'dark',
             onSelect: () => selectDefault('dark'),
         },
@@ -140,6 +183,8 @@ export function ThemeMenu({ variant = 'desktop' }: ThemeMenuProps) {
         items.push({
             key: 'page',
             label: `${options.page.label}'s theme`,
+            name: options.page.label,
+            preview: options.page.preview,
             current: pick === 'page',
             onSelect: () => selectPick('page'),
         });
@@ -148,10 +193,16 @@ export function ThemeMenu({ variant = 'desktop' }: ThemeMenuProps) {
         items.push({
             key: 'mine',
             label: 'My theme',
+            name: 'My theme',
+            preview: options.mine,
             current: pick === 'mine',
             onSelect: () => selectPick('mine'),
         });
     }
+
+    const current =
+        items.find((item) => item.current) ??
+        (resolvedTheme === 'light' ? items[0] : items[1]);
 
     if (variant === 'mobile') {
         return (
@@ -165,7 +216,15 @@ export function ThemeMenu({ variant = 'desktop' }: ThemeMenuProps) {
                         className={`${styles.mobileItem} ${item.current ? styles.mobileItemActive : ''}`}
                         onClick={item.onSelect}
                     >
-                        {item.label}
+                        <Swatch preview={item.preview} />
+                        <span className={styles.itemLabel}>{item.label}</span>
+                        {item.current ? (
+                            <Check2
+                                size={14}
+                                className={styles.check}
+                                aria-hidden
+                            />
+                        ) : null}
                     </button>
                 ))}
             </div>
@@ -182,8 +241,11 @@ export function ThemeMenu({ variant = 'desktop' }: ThemeMenuProps) {
                 aria-haspopup="true"
                 onClick={() => setOpen((prev) => !prev)}
                 onKeyDown={handleKeyDown}
+                aria-label={`Theme: ${current.label}`}
             >
-                Themes
+                <Swatch preview={current.preview} />
+                <span className={styles.triggerName}>{current.name}</span>
+                <ChevronDown size={10} className={styles.chevron} aria-hidden />
             </button>
             <div
                 className={`${styles.dropdown} ${open ? styles.dropdownOpen : ''}`}
@@ -199,7 +261,15 @@ export function ThemeMenu({ variant = 'desktop' }: ThemeMenuProps) {
                         className={`${styles.item} ${item.current ? styles.itemActive : ''}`}
                         onClick={item.onSelect}
                     >
-                        {item.label}
+                        <Swatch preview={item.preview} />
+                        <span className={styles.itemLabel}>{item.label}</span>
+                        {item.current ? (
+                            <Check2
+                                size={14}
+                                className={styles.check}
+                                aria-hidden
+                            />
+                        ) : null}
                     </button>
                 ))}
             </div>
