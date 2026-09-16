@@ -37,8 +37,6 @@ import type { LevelTemplate } from '../../../../../../types/levels.types';
 import type {
     BoardPolicyRow,
     LeaderboardRosterRow,
-    PreviewExcludeResult,
-    UserEligibleRunRow,
 } from '../../../../../../types/moderation.types';
 import { computeCategoryVisibility } from '../../header/category-visibility';
 import { computeDisplayRanks } from '../../leaderboard/display-rank';
@@ -49,23 +47,13 @@ import {
     timingColumnHidden,
     timingColumns,
 } from '../../leaderboard/timing-columns';
-import { BoardDialog } from '../../shared/board-dialog';
 import { reorderCategoriesAction } from '../game-tab/actions/reorder-categories.action';
 import { computeReorderChanges } from '../game-tab/reorder-changes';
 import { ModeratePanel } from '../moderation/moderate/moderate-panel';
 import type { SheetBoard } from '../moderation/moderate/subject';
 import { moveRunAction } from '../moderation/shared/actions/board-override.action';
-import { loadUserEligibleRunsAction } from '../moderation/shared/actions/eligible-runs.action';
-import {
-    excludeAction,
-    previewExcludeAction,
-} from '../moderation/shared/actions/exclude.action';
-import { markRunsAction } from '../moderation/shared/actions/marks.action';
-import { restoreRunsAction } from '../moderation/shared/actions/restore.action';
-import { fireUndoToast } from '../moderation/shared/undo-toast';
 import { updateVariableAction } from '../variables/actions/update-variable.action';
 import { AddRunnerRow } from './add-runner-row';
-import { AdjustDialog } from './adjust-dialog';
 import { BoardControls } from './board-controls';
 import styles from './board-curation.module.scss';
 import { LiveCategoryRail, LiveSubcategoryTier } from './live-category-rail';
@@ -488,27 +476,6 @@ export function BoardCuration({
         })();
     };
 
-    // The removal itself (reason category, notify toggle, preview, undo
-    // toast) happens in `RowActions`' shared Remove dialog — this only owns
-    // what happens to the row afterwards: pin the frozen snapshot and look
-    // up the next-run slip.
-    /**
-     * After a Remove lands. The dialog already asked which of the runner's
-     * times was legit and removed everything faster than it, so there is no
-     * follow-up left to hold the row on screen for — deselect and resync.
-     */
-    const handleRemoved = (row: LeaderboardRosterRow) => {
-        // A removed row can't stay in a bulk selection: a stale runId would
-        // ride along into the next bulk action.
-        setSelectedRunIds((prev) => {
-            if (!prev.has(row.runId)) return prev;
-            const next = new Set(prev);
-            next.delete(row.runId);
-            return next;
-        });
-        reload();
-    };
-
     const minMs = useMemo(() => {
         if (!category) return null;
         const policy =
@@ -574,7 +541,10 @@ export function BoardCuration({
     const [seenRunOrder, setSeenRunOrder] = useState<{
         signature: string;
         runIds: number[];
-    }>({ signature: '', runIds: [] });
+    }>(() => ({
+        signature: runOrderSignature,
+        runIds: visibleBoardRows.map(({ row }) => row.runId),
+    }));
     if (seenRunOrder.signature !== runOrderSignature) {
         const next = visibleBoardRows.map(({ row }) => row.runId);
         setSeenRunOrder({ signature: runOrderSignature, runIds: next });
@@ -733,136 +703,10 @@ export function BoardCuration({
         },
         actions: (entry) => {
             const found = entry.runId != null ? byRunId.get(entry.runId) : null;
-            if (!found || !category) return null;
-            const { row, timeMs, belowMinimum } = found;
-            return (
-                <RowActions
-                    row={row}
-                    category={category}
-                    categories={featured}
-                    variables={variables}
-                    subcategoryKey={subcategoryKey}
-                    gameSlug={game.name}
-                    timeMs={timeMs}
-                    belowMinimum={belowMinimum}
-                    onRemoved={() => handleRemoved(row)}
-                    onRemoveUndone={reload}
-                    onMutated={reload}
-                    canSiteBan={canSiteBan}
-                />
-            );
+            if (!found) return null;
+            return <RowActions row={found.row} gameSlug={game.name} />;
         },
     };
-
-    // ---- Bulk accept ----------------------------------------------------
-    const [isBulkAccepting, startBulkAccept] = useTransition();
-
-    const handleBulkAccept = () => {
-        const ids = Array.from(selectedRunIds);
-        if (ids.length === 0) return;
-        startBulkAccept(async () => {
-            const res = await markRunsAction(game.name, ids, false);
-            if ('error' in res) {
-                toast.error(res.error);
-                return;
-            }
-            clearSelection();
-            reload();
-        });
-    };
-
-    // ---- Bulk ban ---------------------------------------------------------
-    // Aggregates one `previewExcludeAction` per unique selected user (run
-    // by run — the endpoint is user-scoped, not batch) into a single sheet,
-    // then applies them sequentially against one shared reason. Guests have
-    // no persistent identity to ban and are skipped, noted in the sheet.
-    const [bulkBanOpen, setBulkBanOpen] = useState(false);
-    const [bulkBanUserIds, setBulkBanUserIds] = useState<number[]>([]);
-    const [bulkBanGuestCount, setBulkBanGuestCount] = useState(0);
-    const [bulkBanPreviews, setBulkBanPreviews] = useState<Map<
-        number,
-        PreviewExcludeResult
-    > | null>(null);
-    const [bulkBanPreviewError, setBulkBanPreviewError] = useState<
-        string | null
-    >(null);
-    const [bulkBanReason, setBulkBanReason] = useState('');
-    const [isBulkBanPreviewing, startBulkBanPreview] = useTransition();
-    const [isBulkBanning, startBulkBanning] = useTransition();
-
-    const openBulkBan = () => {
-        const selectedRows = boardRows
-            .filter((r) => selectedRunIds.has(r.row.runId))
-            .map((r) => r.row);
-        const userIds = Array.from(
-            new Set(
-                selectedRows
-                    .filter((r) => r.userId != null)
-                    .map((r) => r.userId as number),
-            ),
-        );
-        const guestCount = selectedRows.filter((r) => r.userId == null).length;
-
-        setBulkBanUserIds(userIds);
-        setBulkBanGuestCount(guestCount);
-        setBulkBanReason('');
-        setBulkBanPreviews(null);
-        setBulkBanPreviewError(null);
-        setBulkBanOpen(true);
-
-        if (userIds.length === 0) return;
-        startBulkBanPreview(async () => {
-            const results = new Map<number, PreviewExcludeResult>();
-            for (const userId of userIds) {
-                const res = await previewExcludeAction(game.name, {
-                    rule: { type: 'user', targetId: userId },
-                });
-                if ('error' in res) {
-                    setBulkBanPreviewError(res.error);
-                    return;
-                }
-                results.set(userId, res.preview);
-            }
-            setBulkBanPreviews(results);
-        });
-    };
-
-    const closeBulkBan = () => {
-        if (isBulkBanning) return;
-        setBulkBanOpen(false);
-    };
-
-    const confirmBulkBan = () => {
-        if (bulkBanUserIds.length === 0 || bulkBanReason.trim().length === 0) {
-            return;
-        }
-        const reason = bulkBanReason.trim();
-        startBulkBanning(async () => {
-            for (const userId of bulkBanUserIds) {
-                const res = await excludeAction(game.name, {
-                    rule: { type: 'user', targetId: userId },
-                    reason,
-                });
-                if ('error' in res) {
-                    toast.error(res.error);
-                    return;
-                }
-            }
-            toast.success(
-                `${bulkBanUserIds.length} runner${bulkBanUserIds.length === 1 ? '' : 's'} banned.`,
-            );
-            setBulkBanOpen(false);
-            clearSelection();
-            reload();
-        });
-    };
-
-    const bulkBanCombinedCount = bulkBanPreviews
-        ? Array.from(bulkBanPreviews.values()).reduce(
-              (sum, p) => sum + p.affectedRunCount,
-              0,
-          )
-        : 0;
 
     // Console mounts wear the console's pane anatomy; the wizard embeds the
     // same board without it. The door back to the exact public board being
@@ -1188,21 +1032,6 @@ export function BoardCuration({
                     <button
                         type="button"
                         className={styles.selectionBtn}
-                        onClick={handleBulkAccept}
-                        disabled={isBulkAccepting}
-                    >
-                        Accept
-                    </button>
-                    <button
-                        type="button"
-                        className={styles.selectionBtn}
-                        onClick={openBulkBan}
-                    >
-                        Ban…
-                    </button>
-                    <button
-                        type="button"
-                        className={styles.selectionBtn}
                         onClick={() => setBulkModerateOpen(true)}
                     >
                         Moderate {selectedEntries.length}
@@ -1356,115 +1185,6 @@ export function BoardCuration({
                         </nav>
                     )}
                 </div>
-            )}
-
-            {bulkBanOpen && (
-                <BoardDialog
-                    open
-                    onClose={closeBulkBan}
-                    labelledBy="bulk-ban-sheet-title"
-                    size="sm"
-                    closeOnBackdropClick={!isBulkBanning}
-                >
-                    <div className={styles.dialogHeader}>
-                        <h5
-                            id="bulk-ban-sheet-title"
-                            className={styles.dialogTitle}
-                        >
-                            Ban {bulkBanUserIds.length} runner
-                            {bulkBanUserIds.length === 1 ? '' : 's'}
-                        </h5>
-                        <button
-                            type="button"
-                            className="btn-close"
-                            aria-label="Close"
-                            onClick={closeBulkBan}
-                            disabled={isBulkBanning}
-                        />
-                    </div>
-                    <div className={styles.dialogBody}>
-                        {bulkBanGuestCount > 0 && (
-                            <p className={styles.moveNote}>
-                                {bulkBanGuestCount} guest
-                                {bulkBanGuestCount === 1 ? '' : 's'} selected.
-                                Guests can’t be banned and will be skipped.
-                            </p>
-                        )}
-                        {bulkBanUserIds.length === 0 ? (
-                            <p className={styles.moveNote}>
-                                No registered runners selected, so there is
-                                nothing to ban.
-                            </p>
-                        ) : (
-                            <>
-                                {isBulkBanPreviewing && (
-                                    <p className={styles.slipLoading}>
-                                        Loading preview…
-                                    </p>
-                                )}
-                                {bulkBanPreviewError && (
-                                    <div
-                                        className={styles.errorAlert}
-                                        role="alert"
-                                    >
-                                        {bulkBanPreviewError}
-                                    </div>
-                                )}
-                                {bulkBanPreviews && (
-                                    <p>
-                                        <strong>{bulkBanCombinedCount}</strong>{' '}
-                                        run
-                                        {bulkBanCombinedCount === 1 ? '' : 's'}{' '}
-                                        affected across {bulkBanUserIds.length}{' '}
-                                        runner
-                                        {bulkBanUserIds.length === 1 ? '' : 's'}
-                                        .
-                                    </p>
-                                )}
-                                <label
-                                    htmlFor="bulk-ban-reason"
-                                    className={styles.fieldLabel}
-                                >
-                                    Reason (required)
-                                </label>
-                                <textarea
-                                    id="bulk-ban-reason"
-                                    className={styles.dialogTextarea}
-                                    rows={3}
-                                    value={bulkBanReason}
-                                    onChange={(e) =>
-                                        setBulkBanReason(e.target.value)
-                                    }
-                                    disabled={isBulkBanning}
-                                />
-                            </>
-                        )}
-                    </div>
-                    <div className={styles.dialogFooter}>
-                        <button
-                            type="button"
-                            className={styles.slipAction}
-                            onClick={closeBulkBan}
-                            disabled={isBulkBanning}
-                        >
-                            Cancel
-                        </button>
-                        {bulkBanUserIds.length > 0 && (
-                            <button
-                                type="button"
-                                className={styles.confirmBtn}
-                                onClick={confirmBulkBan}
-                                disabled={
-                                    isBulkBanning ||
-                                    bulkBanReason.trim().length === 0 ||
-                                    !!bulkBanPreviewError
-                                }
-                            >
-                                {isBulkBanning ? 'Banning…' : 'Confirm ban'}
-                            </button>
-                        )}
-                    </div>
-                </BoardDialog>
             )}
         </section>
     );
