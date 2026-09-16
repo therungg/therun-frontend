@@ -13,6 +13,7 @@ import {
 } from '../../boards/subcategory-bands';
 import { previewExcludeAction } from '../shared/actions/exclude.action';
 import { previewVerdictsAction } from '../shared/actions/verdicts.action';
+import { loadRemovedRunIdsAction } from './actions/sheet-reads.action';
 import { bulkVerbs, type RunVerbState, type VerbAvailability } from './verbs';
 
 export type BulkVerb = 'approve' | 'decline' | 'remove' | 'restore' | 'move';
@@ -34,7 +35,11 @@ class PreviewError extends Error {}
 interface SelectionPreview {
     /** Approved runs still on the board: what Remove acts on. */
     onBoardIds: number[];
-    /** Approved runs already off the board: what Restore adds to the declined. */
+    /**
+     * Approved runs a moderator removed, from each run's history: what Restore
+     * adds to the declined. An approved run can also be off the board without
+     * being removed (not eligible); Restore leaves those alone.
+     */
     removedIds: number[];
     /** Distinct boards the pending and approved runs sit on. */
     boards: Set<string>;
@@ -46,8 +51,9 @@ const boardKey = (b: { categoryId: number; subcategoryKey: string }) =>
 /**
  * A bulk selection split by what each verb acts on, with the counts the bar
  * and the forms show. Removed is not on the row: the exclude preview says
- * which approved runs are still on the board. `reload()` clears it and reads
- * again; until it lands the counts that need it read as loading.
+ * which approved runs are still on the board, and the history of the rest
+ * says which of them were removed. `reload()` clears it and reads again;
+ * until it lands the counts that need it read as loading.
  */
 export function useBulkSelection(
     entries: LeaderboardEntry[],
@@ -136,9 +142,20 @@ export function useBulkSelection(
                 }
                 for (const r of res.preview.sampleRuns) onBoard.add(r.runId);
             }
+            const offBoard = approved.filter((id) => !onBoard.has(id));
+            let removedIds: number[] = [];
+            if (offBoard.length) {
+                const removed = await loadRemovedRunIdsAction(
+                    gameSlug,
+                    offBoard,
+                );
+                if ('error' in removed) throw new PreviewError(removed.error);
+                const set = new Set(removed.removedIds);
+                removedIds = offBoard.filter((id) => set.has(id));
+            }
             return {
                 onBoardIds: approved.filter((id) => onBoard.has(id)),
-                removedIds: approved.filter((id) => !onBoard.has(id)),
+                removedIds,
                 boards,
             };
         };
@@ -214,6 +231,7 @@ export function useBulkSelection(
         runs,
         manuals,
         pendingRunIds,
+        approvedRunIds,
         declinedRunIds,
         pendingManualIds,
         approvedManualIds,

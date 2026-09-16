@@ -13,13 +13,13 @@ import { applyVerdicts } from '~src/lib/moderation/verdicts';
 import type { AffectedLeaderboard } from '../../../../../../../../types/moderation.types';
 
 /**
- * Restore runs to the board: undo BOTH a quiet exclusion (include) and a loud
- * rejection (unreject) in one idempotent call. Both backend operations are
- * no-ops on a run that wasn't excluded / rejected, so calling both is safe.
+ * Restore runs to the board: include the runs that were removed and unreject
+ * the runs that were declined. The caller says which is which: include logs a
+ * row for every run it is given, removed or not, so it only gets removed runs.
  */
 export async function restoreRunsAction(
     gameSlug: string,
-    runIds: number[],
+    runs: { include: number[]; unreject: number[] },
     reason: string,
 ): Promise<{ ok: true } | { error: string }> {
     const session = await getSession();
@@ -32,24 +32,28 @@ export async function restoreRunsAction(
     }
 
     try {
-        // Undo a quiet exclusion first, then a loud rejection. Each is
-        // idempotent; surface the first ModError rather than swallowing it.
-        const includeResult = await include(session.id, game.id, {
-            runIds,
-            reason,
-        });
-        const verdictResult = await applyVerdicts(session.id, game.id, {
-            action: 'unreject',
-            runIds,
-            reason,
-        });
+        // Undo a quiet exclusion first, then a loud rejection. Surface the
+        // first ModError rather than swallowing it.
+        const includeResult = runs.include.length
+            ? await include(session.id, game.id, {
+                  runIds: runs.include,
+                  reason,
+              })
+            : null;
+        const verdictResult = runs.unreject.length
+            ? await applyVerdicts(session.id, game.id, {
+                  action: 'unreject',
+                  runIds: runs.unreject,
+                  reason,
+              })
+            : null;
 
         // Revalidate the union of boards both operations touched.
         const seen = new Set<string>();
         const affected: AffectedLeaderboard[] = [];
         for (const lb of [
-            ...includeResult.affectedLeaderboards,
-            ...verdictResult.affectedLeaderboards,
+            ...(includeResult?.affectedLeaderboards ?? []),
+            ...(verdictResult?.affectedLeaderboards ?? []),
         ]) {
             const k = `${lb.categoryId}:${lb.subcategoryKey}`;
             if (seen.has(k)) continue;
@@ -57,7 +61,7 @@ export async function restoreRunsAction(
             affected.push(lb);
         }
         await revalidateAffectedBoards(game.id, game.name, affected);
-        revalidateRunDetails(runIds);
+        revalidateRunDetails([...new Set([...runs.include, ...runs.unreject])]);
 
         return { ok: true };
     } catch (e) {

@@ -126,6 +126,44 @@ export async function loadRunSheetAction(
     };
 }
 
+const HISTORY_READS_AT_ONCE = 10;
+
+/**
+ * Which of these runs are removed: the newest direct exclude or include in
+ * each run's history, the same rule the Run tab uses. Fails as a whole when
+ * any history read fails, so Restore never guesses.
+ */
+export async function loadRemovedRunIdsAction(
+    gameSlug: string,
+    runIds: number[],
+): Promise<{ ok: true; removedIds: number[] } | Fail> {
+    const session = await getSession();
+    const game = await resolveGame(gameSlug);
+    if (!game || !canModerateGame(session, game.name)) {
+        return { error: 'Not allowed' };
+    }
+    const removedIds: number[] = [];
+    try {
+        for (let i = 0; i < runIds.length; i += HISTORY_READS_AT_ONCE) {
+            const chunk = runIds.slice(i, i + HISTORY_READS_AT_ONCE);
+            const histories = await Promise.all(
+                chunk.map((id) => getRunHistory(id, session.id)),
+            );
+            histories.forEach((history, j) => {
+                const sorted = [...history].sort((a, b) =>
+                    b.at.localeCompare(a.at),
+                );
+                if (flagsFromHistory(sorted).excluded) {
+                    removedIds.push(chunk[j]);
+                }
+            });
+        }
+    } catch {
+        return { error: 'Could not check which runs are removed.' };
+    }
+    return { ok: true, removedIds };
+}
+
 /** The Run tab's one runner line: counts from the runner's runs on this game. */
 export async function loadRunnerTrackRecordAction(
     gameSlug: string,

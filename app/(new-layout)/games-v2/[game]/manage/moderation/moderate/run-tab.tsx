@@ -371,6 +371,8 @@ export function RunTab({
                 runId,
                 manualTimeId: run.manualTimeId,
                 reason,
+                excluded: summary?.excluded,
+                status: summary?.status,
             });
             if ('error' in res) {
                 toast.error(res.error);

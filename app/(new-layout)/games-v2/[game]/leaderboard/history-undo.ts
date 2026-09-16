@@ -15,8 +15,8 @@ import type {
 export type HistoryUndoPlan =
     /** Re-verdict (verify↔unverify). */
     | { kind: 'verdict'; action: VerdictAction }
-    /** include + unreject — reverses reject verdicts and excludes. */
-    | { kind: 'restore' }
+    /** include reverses an exclude; unreject reverses a reject verdict. */
+    | { kind: 'restore'; part: 'include' | 'unreject' }
     /** Quiet exclude — reverses restores/includes/unrejects. */
     | { kind: 'exclude' }
     /** Flip the mark-for-later flag back. */
@@ -26,11 +26,11 @@ const PLAN_FOR_ACTION: Record<string, HistoryUndoPlan> = {
     verdict_verify: { kind: 'verdict', action: 'unverify' },
     'bulk-verify': { kind: 'verdict', action: 'unverify' },
     verdict_unverify: { kind: 'verdict', action: 'verify' },
-    verdict_reject: { kind: 'restore' },
-    'bulk-reject': { kind: 'restore' },
-    exclude_run: { kind: 'restore' },
-    bulk_exclude: { kind: 'restore' },
-    verdict_unreject: { kind: 'exclude' },
+    verdict_reject: { kind: 'restore', part: 'unreject' },
+    'bulk-reject': { kind: 'restore', part: 'unreject' },
+    exclude_run: { kind: 'restore', part: 'include' },
+    bulk_exclude: { kind: 'restore', part: 'include' },
+    verdict_unreject: { kind: 'verdict', action: 'reject' },
     include_run: { kind: 'exclude' },
     bulk_include: { kind: 'exclude' },
     mark_run: { kind: 'mark', marked: false },

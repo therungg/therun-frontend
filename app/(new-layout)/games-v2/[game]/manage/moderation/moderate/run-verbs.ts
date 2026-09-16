@@ -2,10 +2,10 @@ import type { LeaderboardEntry } from '../../../../../../../types/leaderboards.t
 import { UNDO_VERIFY_REASON, undoReason } from '../shared/action-model';
 import { manualTimeVerdictAction } from '../shared/actions/manual-times.action';
 import { markRunsAction } from '../shared/actions/marks.action';
-import { restoreRunsAction } from '../shared/actions/restore.action';
 import { applyVerdictsAction } from '../shared/actions/verdicts.action';
 import type { UndoResult } from '../shared/undo-toast';
 import { requestVideoAction } from '../worklist/actions/worklist.action';
+import { restoreRuns } from './run-heavy-verbs';
 import type { RunSheetSummary } from './sheet-types';
 import {
     type ModerateVerb,
@@ -104,6 +104,9 @@ export interface LightVerbContext {
     manualTimeId: number | null;
     /** Replaces the verb's default reason (Approve only). */
     reason?: string;
+    /** Restore: from the loaded summary. Removed runs are included, declined ones unrejected. */
+    excluded?: boolean;
+    status?: RunStatus;
 }
 
 export type LightVerbResult =
@@ -167,15 +170,18 @@ export const runVerbHandlers: Record<
                 ),
         };
     },
-    restore: async ({ gameSlug, runId }) => {
+    restore: async ({ gameSlug, runId, excluded, status }) => {
         if (runId == null) return { error: 'Manual times have no restore.' };
-        const res = await restoreRunsAction(
-            gameSlug,
-            [runId],
-            LIGHT_REASON.restore,
-        );
+        const runs = {
+            removed: excluded ? [runId] : [],
+            declined: status === 'rejected' ? [runId] : [],
+        };
+        if (!runs.removed.length && !runs.declined.length) {
+            return { error: 'Nothing to restore.' };
+        }
+        const res = await restoreRuns(gameSlug, runs, LIGHT_REASON.restore);
         if ('error' in res) return res;
-        return { ok: true, undo: null };
+        return { ok: true, undo: res.undo };
     },
     send_back: async ({ gameSlug, runId }) => {
         if (runId == null) return { error: NOT_FOR_MANUAL };

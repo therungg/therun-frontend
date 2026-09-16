@@ -122,7 +122,13 @@ export function EventRow({
                               reason,
                           )
                         : plan.kind === 'restore'
-                          ? await restoreRunsAction(gameSlug, [runId], reason)
+                          ? await restoreRunsAction(
+                                gameSlug,
+                                plan.part === 'include'
+                                    ? { include: [runId], unreject: [] }
+                                    : { include: [], unreject: [runId] },
+                                reason,
+                            )
                           : plan.kind === 'exclude'
                             ? await excludeAction(gameSlug, {
                                   runIds: [runId],

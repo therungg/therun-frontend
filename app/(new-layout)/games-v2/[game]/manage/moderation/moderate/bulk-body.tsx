@@ -126,8 +126,15 @@ export function BulkBody({
                         : 0,
               notPending: entries.length - counts.decline,
               notApproved:
-                  entries.length - counts.remove - sel.removedIds.length,
+                  entries.length -
+                  sel.approvedRunIds.length -
+                  sel.approvedManualIds.length,
               alreadyRemoved: sel.removedIds.length,
+              notOnBoard: sel.loaded
+                  ? sel.approvedRunIds.length -
+                    sel.onBoardIds.length -
+                    sel.removedIds.length
+                  : 0,
               alreadyThere: sel.runs.length - movable.length,
               manualSkipped: entries.length - sel.runs.length,
               moveToName: move.toName,
@@ -222,18 +229,19 @@ export function BulkBody({
     };
 
     const runRestore = async () => {
-        const ids = [...sel.declinedRunIds, ...sel.removedIds];
+        const runs = {
+            removed: sel.removedIds,
+            declined: sel.declinedRunIds,
+        };
+        const count = runs.removed.length + runs.declined.length;
         setBusy(true);
         try {
-            const res = await restoreRuns(gameSlug, ids, LIGHT_REASON.restore);
+            const res = await restoreRuns(gameSlug, runs, LIGHT_REASON.restore);
             if ('error' in res) {
                 toast.error(res.error);
                 return;
             }
-            done(
-                `${VERB_LABEL.restore}: ${plural(ids.length, 'run')}`,
-                res.undo,
-            );
+            done(`${VERB_LABEL.restore}: ${plural(count, 'run')}`, res.undo);
         } catch {
             toast.error('Something went wrong. Try again.');
         } finally {

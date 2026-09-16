@@ -106,7 +106,13 @@ export async function declineRuns(
     return {
         ok: true,
         undo: () =>
-            unwrap(restoreRunsAction(gameSlug, runIds, undoReason('reject'))),
+            unwrap(
+                restoreRunsAction(
+                    gameSlug,
+                    { include: [], unreject: runIds },
+                    undoReason('reject'),
+                ),
+            ),
     };
 }
 
@@ -121,18 +127,53 @@ export async function removeRuns(
     return {
         ok: true,
         undo: () =>
-            unwrap(restoreRunsAction(gameSlug, runIds, undoReason('remove'))),
+            unwrap(
+                restoreRunsAction(
+                    gameSlug,
+                    { include: runIds, unreject: [] },
+                    undoReason('remove'),
+                ),
+            ),
     };
 }
 
+/**
+ * Includes the removed runs and unreject the declined ones. Undo removes and
+ * declines them again, each with its own call.
+ */
 export async function restoreRuns(
     gameSlug: string,
-    runIds: number[],
+    runs: { removed: number[]; declined: number[] },
     reason: string,
 ): Promise<ConfirmResult> {
-    const res = await restoreRunsAction(gameSlug, runIds, reason);
+    const res = await restoreRunsAction(
+        gameSlug,
+        { include: runs.removed, unreject: runs.declined },
+        reason,
+    );
     if ('error' in res) return res;
-    return { ok: true, undo: null };
+    return {
+        ok: true,
+        undo: async (): Promise<UndoResult> => {
+            if (runs.removed.length) {
+                const ex = await excludeAction(gameSlug, {
+                    runIds: runs.removed,
+                    reason: undoReason('restore'),
+                });
+                if ('error' in ex) return { error: ex.error };
+            }
+            if (runs.declined.length) {
+                const re = await applyVerdictsAction(
+                    gameSlug,
+                    'reject',
+                    runs.declined,
+                    undoReason('restore'),
+                );
+                if ('error' in re) return { error: re.error };
+            }
+            return { ok: true };
+        },
+    };
 }
 
 /** One board-override call per run; each run keeps its own source subcategory. */
@@ -618,8 +659,10 @@ export interface BulkSpecArgs {
     notPending?: number;
     /** Remove: entries that are not approved. */
     notApproved?: number;
-    /** Remove: approved runs already off the board. */
+    /** Remove: approved runs a moderator already removed. */
     alreadyRemoved?: number;
+    /** Remove: approved runs off the board without being removed (not eligible). */
+    notOnBoard?: number;
     /** Move: runs already on the picked board. */
     alreadyThere?: number;
     /** Move: manual times, which cannot move. */
@@ -659,7 +702,7 @@ export function bulkHeavySpec(
         case 'remove':
             return {
                 ...base,
-                whatChanges: `${countOf(n, 'approved run')} ${n === 1 ? 'comes' : 'come'} off ${a.boardName}.${a.manualCount ? ` ${countOf(a.manualCount, 'manual time')} ${a.manualCount === 1 ? 'is' : 'are'} deleted.` : ''}${skippedLine(a.notApproved, `${countOf(a.notApproved ?? 0, 'run')} not approved`)}${skippedLine(a.alreadyRemoved, `${countOf(a.alreadyRemoved ?? 0, 'run')} already removed`)}`,
+                whatChanges: `${countOf(n, 'approved run')} ${n === 1 ? 'comes' : 'come'} off ${a.boardName}.${a.manualCount ? ` ${countOf(a.manualCount, 'manual time')} ${a.manualCount === 1 ? 'is' : 'are'} deleted.` : ''}${skippedLine(a.notApproved, `${countOf(a.notApproved ?? 0, 'run')} not approved`)}${skippedLine(a.alreadyRemoved, `${countOf(a.alreadyRemoved ?? 0, 'run')} already removed`)}${skippedLine(a.notOnBoard, `${countOf(a.notOnBoard ?? 0, 'run')} not on the board`)}`,
                 // Remove is the quiet exclusion; only a deleted manual time
                 // reaches its runner.
                 told:
