@@ -2,7 +2,7 @@
 @use '../../../styles/board' as board;
 
 // ============================================================
-// Sticky bulk action bar (mod board multi-select) — approved mock fig. 2.
+// Sticky selection strip (mod board multi-select).
 // Same frosted material as the masthead's sticky slim bar
 // (header/masthead.module.scss's .stickyBar), pinned to the viewport
 // *bottom* instead of the top since it tracks a selection made while
@@ -32,11 +32,6 @@
     color: var(--bs-emphasis-color);
 }
 
-.sub {
-    font-size: dt.$font-size-xs;
-    color: var(--bs-tertiary-color);
-}
-
 .clear {
     @include board.board-quiet-link;
 }
@@ -48,34 +43,10 @@
     margin-left: auto;
 }
 
-.sep {
-    width: 1px;
-    align-self: stretch;
-    background: rgba(var(--bs-border-color-rgb), 0.5);
-    margin-inline: 0.15rem;
-}
-
 .pill {
     @include board.control-pill;
 }
 
 .pillOn {
     @include board.control-pill-active;
-}
-
-.pillDanger {
-    color: var(--bs-danger);
-    border-color: rgba(var(--bs-danger-rgb), 0.35);
-
-    &:hover:not(:disabled) {
-        background: rgba(var(--bs-danger-rgb), 0.1);
-        color: var(--bs-danger);
-    }
-}
-
-.why {
-    font-size: dt.$font-size-2xs;
-    color: var(--bs-tertiary-color);
-    text-align: right;
-    margin-top: dt.$spacing-xs;
 }

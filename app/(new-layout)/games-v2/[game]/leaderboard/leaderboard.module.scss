@@ -514,99 +514,23 @@ tr:focus-within .reveal {
     }
 }
 
-// Moderator one-click Verify on a pending row: control-pill styled button
-// with the same coarse-pointer hit-area treatment as the row-actions kebab.
-.quickVerify {
+// The row's one way into the moderate modal.
+.moderateBtn {
     @include board.control-pill;
     display: inline-flex;
     align-items: center;
-    gap: dt.$spacing-xs;
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
     background: none;
     padding: dt.$spacing-xs dt.$spacing-md;
-    color: var(--bs-success);
 
     &:hover:not(:disabled) {
-        border-color: var(--bs-success);
+        border-color: var(--bs-primary);
     }
 
-    &:disabled {
-        opacity: 0.6;
-    }
-
-    // Touch-target pass: guarantee a ≥44px hit area.
+    // Touch-target pass: guarantee a >=44px hit area.
     @media (pointer: coarse) {
         padding: dt.$spacing-lg;
     }
-}
-
-// Unverify: Verify's mirror on already-verified rows — same pill, same slot,
-// but neutral rather than green or red: unsetting a verification sends the
-// run back to the queue, it doesn't judge it.
-.quickUnverify {
-    @include board.control-pill;
-    display: inline-flex;
-    align-items: center;
-    gap: dt.$spacing-xs;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-    background: none;
-    padding: dt.$spacing-xs dt.$spacing-md;
-    color: var(--bs-secondary-color);
-
-    &:hover:not(:disabled) {
-        border-color: var(--bs-secondary-color);
-    }
-
-    &:disabled {
-        opacity: 0.6;
-    }
-
-    // Touch-target pass: guarantee a ≥44px hit area.
-    @media (pointer: coarse) {
-        padding: dt.$spacing-lg;
-    }
-}
-
-// Direct "Moderate" affordance — the mod's primary path into the run
-// inspector, so it's a first-class filled button on the row rather than an
-// item buried in the kebab.
-// Remove is Verify's twin — same pill, same neutral resting border, same
-// hover, differing only in the colour that says which way the judgement
-// goes. Keep the two rules in step; they are one control in two directions.
-.quickRemove {
-    @include board.control-pill;
-    display: inline-flex;
-    align-items: center;
-    gap: dt.$spacing-xs;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-    background: none;
-    padding: dt.$spacing-xs dt.$spacing-md;
-    color: var(--bs-danger);
-
-    &:hover:not(:disabled) {
-        border-color: var(--bs-danger);
-    }
-
-    &:disabled {
-        opacity: 0.6;
-    }
-
-    // Touch-target pass: guarantee a ≥44px hit area.
-    @media (pointer: coarse) {
-        padding: dt.$spacing-lg;
-    }
-}
-
-// Hover-shortcut hint on the row verbs — same treatment as the drawer's
-// .verbKey (run-inspector.module.scss); keep the two in step.
-.shortcutKey {
-    font-size: 0.7rem;
-    line-height: 1;
-    padding: 0.15em 0.35em;
-    border-radius: 3px;
-    background: rgba(0, 0, 0, 0.18);
-    color: inherit;
-    opacity: 0.8;
 }
 
 // ---- Empty state (calm pattern: icon + title + action) ------

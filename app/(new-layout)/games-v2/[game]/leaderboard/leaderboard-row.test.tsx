@@ -2,19 +2,8 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
-import type { ModVerb } from '../manage/moderation/shared/action-model';
 import type { DisplayRank } from './display-rank';
 import { LeaderboardRow } from './leaderboard-row';
-
-// The two quick-verb buttons perform their own mutations through server
-// actions; this suite is about which controls a row offers to whom, so they
-// are stubbed out rather than exercised.
-vi.mock('./quick-verify-button', () => ({
-    QuickVerifyButton: () => null,
-}));
-vi.mock('./quick-unverify-button', () => ({
-    QuickUnverifyButton: () => null,
-}));
 
 const entry = (over: Partial<LeaderboardEntry> = {}): LeaderboardEntry => ({
     runId: 101,
@@ -36,8 +25,7 @@ function renderRow(props: {
     entry?: LeaderboardEntry;
     isCurrentUser: boolean;
     canManage: boolean;
-    onQuickModerate?: (e: LeaderboardEntry, verb: ModVerb) => void;
-    onBoardRefresh?: () => void;
+    onModerate?: (e: LeaderboardEntry) => void;
 }) {
     return render(
         <table>
@@ -53,11 +41,7 @@ function renderRow(props: {
                     primaryTiming="rt"
                     valueColumns={[]}
                     showMilliseconds={false}
-                    onQuickModerate={props.onQuickModerate ?? vi.fn()}
-                    onBoardRefresh={
-                        props.onBoardRefresh ??
-                        (props.canManage ? vi.fn() : undefined)
-                    }
+                    onModerate={props.onModerate}
                 />
             </tbody>
         </table>,
@@ -95,23 +79,13 @@ describe('LeaderboardRow — row is a link for everyone', () => {
     });
 });
 
-describe('LeaderboardRow — quick-remove', () => {
-    it('fires onQuickModerate with the remove verb', () => {
-        const onQuickModerate = vi.fn();
-        const own = entry();
-        renderRow({
-            entry: own,
-            isCurrentUser: false,
-            canManage: true,
-            onQuickModerate,
-            onBoardRefresh: vi.fn(),
-        });
-        screen.getByRole('button', { name: /Remove/ }).click();
-        expect(onQuickModerate).toHaveBeenCalledWith(own, 'remove');
-    });
-
+describe('LeaderboardRow — moderate', () => {
     it('is absent for a viewer who cannot manage the board', () => {
-        renderRow({ isCurrentUser: false, canManage: false });
-        expect(screen.queryByRole('button', { name: /Remove/ })).toBeNull();
+        renderRow({
+            isCurrentUser: false,
+            canManage: false,
+            onModerate: vi.fn(),
+        });
+        expect(screen.queryByRole('button', { name: /Moderate/ })).toBeNull();
     });
 });

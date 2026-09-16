@@ -6,7 +6,6 @@ import type {
     LeaderboardResponse,
 } from '../../../../../types/leaderboards.types';
 import { ClearFiltersButton } from '../filters/clear-filters-button';
-import type { ModVerb } from '../manage/moderation/shared/action-model';
 import { isSameRunner } from '../shared/is-same-runner';
 import { SubmitLink } from '../submit-dialog/submit-link';
 import { computeDisplayRanks } from './display-rank';
@@ -84,11 +83,8 @@ interface Props {
     onToggleSelect?: (key: BoardSelectionKey, shiftKey: boolean) => void;
     /** Header checkbox — toggles every currently-rendered selectable row. */
     onToggleAllVisible?: () => void;
-    /** Fires a moderation verb on a row's entry (quick-remove, etc.); the
-     * host renders the confirmation dialog for it. */
-    onQuickModerate?: (entry: LeaderboardEntry, verb: ModVerb) => void;
-    /** Board page refetch for row-level mutations (quick Verify + undo). */
-    onBoardRefresh?: () => void;
+    /** Opens the moderate modal on a row's entry. Moderators only. */
+    onModerate?: (entry: LeaderboardEntry) => void;
     /** Curation-only per-row additions, forwarded to every row. */
     slots?: RowSlots;
     /** Appended inside `<tbody>` after the rows — curation's Add-runner ghost
@@ -120,8 +116,7 @@ export function LeaderboardTable({
     selectedKeys,
     onToggleSelect,
     onToggleAllVisible,
-    onQuickModerate,
-    onBoardRefresh,
+    onModerate,
     slots,
     tbodyFooter,
 }: Props) {
@@ -423,8 +418,7 @@ export function LeaderboardTable({
                                 );
                             })()}
                             onToggleSelect={onToggleSelect}
-                            onQuickModerate={onQuickModerate}
-                            onBoardRefresh={onBoardRefresh}
+                            onModerate={onModerate}
                             slots={slots}
                         />
                     ))}

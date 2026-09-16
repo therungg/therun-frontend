@@ -9,6 +9,7 @@ import type {
     BoardFacets,
     LeaderboardEntry,
     LeaderboardResponse,
+    ResolvedCategory,
     VariableRow,
 } from '../../../../../types/leaderboards.types';
 import type { SelfAnonymizeState } from '../../../../../types/moderation.types';
@@ -23,14 +24,12 @@ import {
 } from '../filters/board-sort';
 import type { BuiltinFilterState } from '../filters/builtin-params';
 import { FiltersPopover } from '../filters/filters-popover';
-import type {
-    ModVerb,
-    RunActionTarget,
-} from '../manage/moderation/shared/action-model';
-import { RunActionDialog } from '../manage/moderation/shared/run-action-dialog';
+import { ModeratePanel } from '../manage/moderation/moderate/moderate-panel';
+import type { SheetBoard } from '../manage/moderation/moderate/subject';
 import { isSameRunner } from '../shared/is-same-runner';
 import { OwnerHideIdentityDialog } from '../shared/owner-hide-identity-dialog';
 import { buildSubcategoryKey } from '../submit/subcategory-key';
+import { loadModBoardContextAction } from './actions/load-mod-board-context.action';
 import { computeBoardRange } from './board-range';
 import { BoardBulkBar } from './bulk-bar';
 import { ExportButton } from './export-button';
@@ -240,14 +239,18 @@ export function LeaderboardPager({
     // Shift-click range-select anchor — the last row clicked without
     // shift, or the most recent shift-click's endpoint.
     const lastClickedRef = useRef<BoardSelectionKey | null>(null);
-    // Quick-moderate: the row's kebab (mod) or Manage/Remove (owner) fires
-    // this, and a shared RunActionDialog renders inline over the board. The
-    // full mod surface (verify/reject/adjust/move/etc.) now lives on the run
-    // page — this host only carries the board's quick-verify/remove path.
-    const [quickAction, setQuickAction] = useState<{
-        entry: LeaderboardEntry;
-        verb: ModVerb;
+    // The moderate modal: open on one row (by selection key, so a refetch
+    // under it hands the modal the fresh entry) or on the selection.
+    const [moderating, setModerating] = useState<
+        { kind: 'run'; key: BoardSelectionKey } | { kind: 'bulk' } | null
+    >(null);
+    // Every category and variable of the game, which the modal's Move needs.
+    // Loaded the first time a moderator opens the modal; visitors never pay.
+    const [modCtx, setModCtx] = useState<{
+        categories: ResolvedCategory[];
+        variables: VariableRow[];
     } | null>(null);
+    const [modCtxPending, startModCtx] = useTransition();
     // Board-level "you are hidden here" state, seeded server-side and
     // re-read after the dialog acts. Lives here rather than on the row
     // because a hidden runner has no recognisable row — see the prop doc.
@@ -446,96 +449,76 @@ export function LeaderboardPager({
             ...effectiveQuery,
             page: board.page,
         });
-        if (res) setBoard(res);
+        if (!res) return;
+        setBoard(res);
+        // A row that left the page (removed, moved, filtered out by its new
+        // status) leaves the selection too, so bulk counts stay honest.
+        const present = new Set(
+            res.entries
+                .map(entrySelectionKey)
+                .filter((key): key is BoardSelectionKey => key != null),
+        );
+        setSelectedKeys((prev) => {
+            const next = new Set(
+                Array.from(prev).filter((k) => present.has(k)),
+            );
+            return next.size === prev.size ? prev : next;
+        });
     };
 
     const entries = board.entries;
 
     const boardRefresh = () => startRefetch(refetchCurrentPage);
 
-    /**
-     * Is this row the signed-in visitor's own? Drives owner mode.
-     *
-     * The name match is necessary but nowhere near sufficient. `isSameRunner`
-     * is a case-insensitive string compare, and three kinds of row can carry
-     * a name that isn't the account it looks like:
-     *  - a guest submission, whose runner name is self-reported free text;
-     *  - a row with no `userId` at all (nothing to own it);
-     *  - an anonymized row, whose placeholder ("Anonymous runner #3") is a
-     *    name a real runner may legitimately have — the type explicitly
-     *    warns about this.
-     * Every owner verb is a `/v1/me/*` route resolved from the session, so a
-     * mismatch fails server-side rather than escalating, but the drawer must
-     * not open on someone else's run in the first place.
-     */
-    const isOwnEntry = (entry: LeaderboardEntry) =>
-        isSameRunner(sessionUsername, entry.runnerName) &&
-        entry.userId != null &&
-        !entry.isGuest &&
-        entry.anonymized !== true;
-
-    // Route the row's kebab (mod) / Manage-Remove (owner) into the shared
-    // quick-moderate dialog, never opening it twice at once.
-    const onQuickModerate = (entry: LeaderboardEntry, verb: ModVerb) => {
-        // Non-mods reach this only through their own row's Manage button.
-        // Re-checked here rather than trusted from the row: this callback is
-        // handed to every row, and the dialog it opens performs mutations.
-        // A non-mod's own row is allowed through as long as it carries SOME
-        // id to act on (a real run OR a set time).
-        if (
-            !canManage &&
-            (!isOwnEntry(entry) ||
-                (entry.runId == null && entry.manualTimeId == null))
-        )
-            return;
-        setQuickAction({ entry, verb });
-    };
-
-    /**
-     * Builds the shared `RunActionTarget` for a single row's quick-moderate
-     * dialog. Mirrors the drawer's own target construction exactly (see the
-     * removed RunInspector/ManualInspector) so Remove's runner-scope options
-     * ("this run" vs "every run this runner has on this board") keep
-     * working from the board too.
-     */
-    const buildQuickTarget = (entry: LeaderboardEntry): RunActionTarget => {
-        if (entry.source === 'manual' && entry.manualTimeId != null) {
-            return {
-                kind: 'runs',
-                runIds: [],
-                manualTimeIds: [entry.manualTimeId],
-                label: `${entry.runnerName}'s set time`,
-            };
-        }
-        const entrySubcategoryKey = buildSubcategoryKey(
+    const entrySubcategoryKey = (entry: LeaderboardEntry) =>
+        buildSubcategoryKey(
             Object.fromEntries(
                 Object.entries(entry.variables ?? {}).filter(([k]) =>
                     subcategoryDefKeys.includes(k),
                 ),
             ),
         );
-        const primaryMs =
-            primaryTiming === 'gt'
-                ? (entry.gameTime ?? entry.realTime)
-                : entry.realTime;
-        return {
-            kind: 'runs',
-            runIds: entry.runId != null ? [entry.runId] : [],
-            label: `${entry.runnerName}'s run`,
-            runTimeMs: primaryMs,
-            runDate: entry.runDate ?? null,
-            runner:
-                entry.userId != null && categoryId != null
-                    ? {
-                          id: entry.userId,
-                          name: entry.runnerName,
-                          categoryId,
-                          categoryDisplay,
-                          subcategoryKey: entrySubcategoryKey,
-                          primaryTiming,
-                      }
-                    : undefined,
-        };
+
+    const sheetBoard = (subKey: string): SheetBoard | null =>
+        categoryId == null
+            ? null
+            : {
+                  categoryId,
+                  categorySlug,
+                  categoryDisplay,
+                  subcategoryKey: subKey,
+                  primaryTiming: defaultTiming,
+              };
+
+    // Loads the game's categories and variables once, then opens.
+    const openModerate = (
+        next: { kind: 'run'; key: BoardSelectionKey } | { kind: 'bulk' },
+    ) => {
+        if (!canManage) return;
+        if (categoryId == null) {
+            toast.error("Could not resolve this board's category.");
+            return;
+        }
+        if (modCtx != null) {
+            setModerating(next);
+            return;
+        }
+        if (modCtxPending) return;
+        startModCtx(async () => {
+            const res = await loadModBoardContextAction(gameSlug);
+            if ('error' in res) {
+                toast.error(res.error);
+                return;
+            }
+            setModCtx({ categories: res.categories, variables: res.variables });
+            setModerating(next);
+        });
+    };
+
+    const onModerate = (entry: LeaderboardEntry) => {
+        const key = entrySelectionKey(entry);
+        if (key == null) return;
+        openModerate({ kind: 'run', key });
     };
 
     // ---- Bulk selection (mods only) --------------------------------------
@@ -584,10 +567,60 @@ export function LeaderboardPager({
 
     const clearSelection = () => setSelectedKeys(new Set());
 
-    const handleBulkMutated = () => {
-        clearSelection();
-        startRefetch(refetchCurrentPage);
-    };
+    // ---- Moderate modal ---------------------------------------------------
+    // After the page refetches under the modal (the open run removed or
+    // moved away), stay on the row if it is still listed, else take the next
+    // row that survived, else the one before it, else close. Worked out
+    // during render so the modal never renders without a row while one
+    // survives.
+    const keySignature = selectableKeys.join('|');
+    const [seenKeys, setSeenKeys] = useState<{
+        signature: string;
+        keys: BoardSelectionKey[];
+    }>({ signature: keySignature, keys: selectableKeys });
+    if (seenKeys.signature !== keySignature) {
+        setSeenKeys({ signature: keySignature, keys: selectableKeys });
+        if (
+            moderating?.kind === 'run' &&
+            !selectableKeys.includes(moderating.key)
+        ) {
+            const previous = seenKeys.keys;
+            const survivors = new Set(selectableKeys);
+            const at = previous.indexOf(moderating.key);
+            const landing =
+                at === -1
+                    ? null
+                    : (previous.slice(at + 1).find((k) => survivors.has(k)) ??
+                      previous
+                          .slice(0, at)
+                          .reverse()
+                          .find((k) => survivors.has(k)) ??
+                      null);
+            setModerating(landing ? { kind: 'run', key: landing } : null);
+        }
+    }
+
+    // An emptied selection closes its modal, so the next selection starts closed.
+    if (moderating?.kind === 'bulk' && selectedKeys.size === 0) {
+        setModerating(null);
+    }
+
+    const moderateIndex =
+        moderating?.kind === 'run'
+            ? selectableKeys.indexOf(moderating.key)
+            : -1;
+    const moderateEntry =
+        moderateIndex >= 0
+            ? (entries.find(
+                  (e) => entrySelectionKey(e) === selectableKeys[moderateIndex],
+              ) ?? null)
+            : null;
+    const selectedEntries = entries.filter((e) => {
+        const key = entrySelectionKey(e);
+        return key != null && selectedKeys.has(key);
+    });
+    const stepModerate = (index: number) =>
+        setModerating({ kind: 'run', key: selectableKeys[index] });
 
     // No verified/pending counts exist on LeaderboardResponse, so this is
     // derived from the viewed page: honest ("includes"), never a count.
@@ -783,15 +816,7 @@ export function LeaderboardPager({
                     selectedKeys={selectedKeys}
                     onToggleSelect={toggleSelect}
                     onToggleAllVisible={toggleAllVisible}
-                    // Handed to signed-in visitors too: every row gets the
-                    // callback, but only the visitor's own row renders a control
-                    // that calls it (and `onQuickModerate` re-checks anyway).
-                    onQuickModerate={
-                        canManage || sessionUsername != null
-                            ? onQuickModerate
-                            : undefined
-                    }
-                    onBoardRefresh={canManage ? boardRefresh : undefined}
+                    onModerate={canManage ? onModerate : undefined}
                 />
                 {/* Un-hide lives out here, not on a row: a hidden runner's row is
                 a placeholder nobody can recognise as theirs. */}
@@ -816,34 +841,79 @@ export function LeaderboardPager({
                         gameDisplay={gameDisplay}
                     />
                 )}
-                {/* Board's quick-verify/remove path: the shared verb form,
-                inline, over the board. The full mod surface (adjust, move,
-                evidence, stepping) lives on the run page now. */}
-                {quickAction && (
-                    <RunActionDialog
-                        gameSlug={gameSlug}
-                        verb={quickAction.verb}
-                        target={buildQuickTarget(quickAction.entry)}
-                        onClose={() => setQuickAction(null)}
-                        onDone={() => {
-                            setQuickAction(null);
-                            boardRefresh();
-                        }}
-                    />
-                )}
                 {canManage && selectedKeys.size > 0 && (
                     <BoardBulkBar
-                        gameSlug={gameSlug}
-                        categorySlug={categorySlug}
-                        canSiteBan={canSiteBan}
-                        subcategoryDefKeys={subcategoryDefKeys}
-                        entries={entries}
-                        selectedKeys={selectedKeys}
+                        count={selectedEntries.length}
                         onClear={clearSelection}
-                        onMutated={handleBulkMutated}
-                        busy={isRefetching}
+                        onModerate={() => openModerate({ kind: 'bulk' })}
+                        busy={isRefetching || modCtxPending}
                     />
                 )}
+                {canManage &&
+                    modCtx != null &&
+                    moderating != null &&
+                    (() => {
+                        const context = {
+                            gameSlug,
+                            gameId,
+                            gameDisplay,
+                            categories: modCtx.categories,
+                            variables: modCtx.variables,
+                            canSiteBan,
+                        };
+                        if (moderating.kind === 'bulk') {
+                            const bulkBoard = sheetBoard(subcategoryKey);
+                            if (!bulkBoard || selectedEntries.length === 0)
+                                return null;
+                            return (
+                                <ModeratePanel
+                                    subject={{
+                                        kind: 'bulk',
+                                        entries: selectedEntries,
+                                        board: bulkBoard,
+                                    }}
+                                    context={context}
+                                    mount="modal"
+                                    onClose={() => setModerating(null)}
+                                    onMutated={boardRefresh}
+                                />
+                            );
+                        }
+                        const runBoard = moderateEntry
+                            ? sheetBoard(entrySubcategoryKey(moderateEntry))
+                            : null;
+                        if (!moderateEntry || !runBoard) return null;
+                        return (
+                            <ModeratePanel
+                                subject={{
+                                    kind: 'run',
+                                    entry: moderateEntry,
+                                    board: runBoard,
+                                }}
+                                context={context}
+                                mount="modal"
+                                position={{
+                                    index: moderateIndex + 1,
+                                    total: selectableKeys.length,
+                                }}
+                                onClose={() => setModerating(null)}
+                                onMutated={() => {
+                                    boardRefresh();
+                                    refreshSelfHidden();
+                                }}
+                                onPrev={
+                                    moderateIndex > 0
+                                        ? () => stepModerate(moderateIndex - 1)
+                                        : undefined
+                                }
+                                onNext={
+                                    moderateIndex < selectableKeys.length - 1
+                                        ? () => stepModerate(moderateIndex + 1)
+                                        : undefined
+                                }
+                            />
+                        );
+                    })()}
                 {board.totalPages > 1 && (
                     <nav
                         className={styles.paginationBar}

@@ -45,7 +45,6 @@ import { computeDisplayRanks } from '../../leaderboard/display-rank';
 import type { RowSlots } from '../../leaderboard/leaderboard-row';
 import { LeaderboardTable } from '../../leaderboard/leaderboard-table';
 import { relativeDate } from '../../leaderboard/relative-date';
-import { RunInspector } from '../../leaderboard/run-inspector';
 import {
     timingColumnHidden,
     timingColumns,
@@ -53,7 +52,8 @@ import {
 import { BoardDialog } from '../../shared/board-dialog';
 import { reorderCategoriesAction } from '../game-tab/actions/reorder-categories.action';
 import { computeReorderChanges } from '../game-tab/reorder-changes';
-import type { ModVerb } from '../moderation/shared/action-model';
+import { ModeratePanel } from '../moderation/moderate/moderate-panel';
+import type { SheetBoard } from '../moderation/moderate/subject';
 import { moveRunAction } from '../moderation/shared/actions/board-override.action';
 import { loadUserEligibleRunsAction } from '../moderation/shared/actions/eligible-runs.action';
 import {
@@ -389,12 +389,12 @@ export function BoardCuration({
     const ascending = category?.sortAscending ?? true;
 
     const [showMarkedOnly, setShowMarkedOnly] = useState(false);
-    // Which run the inspector drawer is open on, by id rather than by entry:
+    // Which run the moderate modal is open on, by id rather than by entry:
     // a reload rebuilds the rows, and an entry captured by reference would go
-    // stale under the drawer.
+    // stale under the modal.
     const [inspectRunId, setInspectRunId] = useState<number | null>(null);
-    // Verb the drawer opens onto (a row's Remove/`x`); cleared on close/step.
-    const [inspectVerb, setInspectVerb] = useState<ModVerb | null>(null);
+    // The modal is open on the bulk selection.
+    const [bulkModerateOpen, setBulkModerateOpen] = useState(false);
     const [boardPageIndex, setBoardPageIndex] = useState(0);
 
     const { rows, total, markedTotal, loading, error, reload } = useBoardData(
@@ -562,12 +562,75 @@ export function BoardCuration({
                 rosterTimingValue(row, timingCols.secondary.key) != null,
         );
 
-    /**
-     * The moderator view a row click opens — the same drawer the public board
-     * opens, so a mod who clicks a row gets the verbs rather than a read-only
-     * page. Roster rows are always real runs, so there is no set-time
-     * inspector case to route here.
-     */
+    // After the board reloads under the modal (the open run removed or moved
+    // away), stay on the run if it is still listed, else take the next run
+    // that survived, else the one before it, else close. A run that left the
+    // board also leaves the selection, so bulk counts stay honest. Worked out
+    // during render so the modal never renders without a run while one
+    // survives.
+    const runOrderSignature = visibleBoardRows
+        .map(({ row }) => row.runId)
+        .join('|');
+    const [seenRunOrder, setSeenRunOrder] = useState<{
+        signature: string;
+        runIds: number[];
+    }>({ signature: '', runIds: [] });
+    if (seenRunOrder.signature !== runOrderSignature) {
+        const next = visibleBoardRows.map(({ row }) => row.runId);
+        setSeenRunOrder({ signature: runOrderSignature, runIds: next });
+        const survivors = new Set(next);
+        if (Array.from(selectedRunIds).some((id) => !survivors.has(id))) {
+            setSelectedRunIds(
+                new Set(
+                    Array.from(selectedRunIds).filter((id) =>
+                        survivors.has(id),
+                    ),
+                ),
+            );
+        }
+        if (inspectRunId !== null && !survivors.has(inspectRunId)) {
+            const previous = seenRunOrder.runIds;
+            const at = previous.indexOf(inspectRunId);
+            const landing =
+                at === -1
+                    ? null
+                    : (previous.slice(at + 1).find((id) => survivors.has(id)) ??
+                      previous
+                          .slice(0, at)
+                          .reverse()
+                          .find((id) => survivors.has(id)) ??
+                      null);
+            setInspectRunId(landing);
+        }
+    }
+
+    // An emptied selection closes its modal, so the next selection starts closed.
+    if (bulkModerateOpen && selectedRunIds.size === 0) {
+        setBulkModerateOpen(false);
+    }
+
+    const sheetBoard: SheetBoard | null = category
+        ? {
+              categoryId: category.id,
+              categorySlug: category.name,
+              categoryDisplay: category.display,
+              subcategoryKey,
+              primaryTiming: timing,
+          }
+        : null;
+    const sheetContext = {
+        gameSlug: game.name,
+        gameId: game.id,
+        gameDisplay: game.display,
+        categories,
+        variables,
+        canSiteBan,
+    };
+    const selectedEntries = visibleBoardRows
+        .filter(({ row }) => selectedRunIds.has(row.runId))
+        .map(({ row, rank }) => rosterEntry(row, rank));
+
+    /** The run a row's Moderate button opened. Roster rows are always real runs. */
     const inspectIndex =
         inspectRunId == null
             ? -1
@@ -1139,6 +1202,13 @@ export function BoardCuration({
                     </button>
                     <button
                         type="button"
+                        className={styles.selectionBtn}
+                        onClick={() => setBulkModerateOpen(true)}
+                    >
+                        Moderate {selectedEntries.length}
+                    </button>
+                    <button
+                        type="button"
                         className={styles.selectionClear}
                         onClick={clearSelection}
                     >
@@ -1182,11 +1252,9 @@ export function BoardCuration({
                             selectedKeys={selectedKeys}
                             onToggleSelect={handleToggleSelect}
                             onToggleAllVisible={handleToggleAllVisible}
-                            onQuickModerate={(entry, verb) => {
-                                setInspectVerb(verb ?? null);
-                                setInspectRunId(entry.runId ?? null);
-                            }}
-                            onBoardRefresh={reload}
+                            onModerate={(entry) =>
+                                setInspectRunId(entry.runId ?? null)
+                            }
                             slots={curationSlots}
                             tbodyFooter={
                                 category ? (
@@ -1202,52 +1270,57 @@ export function BoardCuration({
                             }
                         />
                     )}
-                    {inspectEntry != null && category && (
-                        <RunInspector
-                            entry={inspectEntry}
-                            gameSlug={game.name}
-                            gameId={game.id}
-                            gameDisplay={game.display}
-                            categorySlug={category.name}
-                            categoryDisplay={category.display}
-                            categoryId={category.id}
-                            requireVideo={category.requireVideo}
-                            primaryTiming={timing}
-                            subcategoryDefKeys={subcatVars.map(
-                                (v) => v.nameNormalized,
-                            )}
-                            gameTimeLabel={category.gameTimeLabel}
-                            showMilliseconds={showMilliseconds}
-                            onClose={() => {
-                                setInspectRunId(null);
-                                setInspectVerb(null);
+                    {inspectEntry != null && sheetBoard && (
+                        <ModeratePanel
+                            subject={{
+                                kind: 'run',
+                                entry: inspectEntry,
+                                board: sheetBoard,
                             }}
+                            context={sheetContext}
+                            mount="modal"
+                            position={{
+                                index: inspectIndex + 1,
+                                total: visibleBoardRows.length,
+                            }}
+                            onClose={() => setInspectRunId(null)}
                             onMutated={reload}
-                            initialVerb={inspectVerb ?? undefined}
                             onPrev={
                                 inspectIndex > 0
-                                    ? () => {
-                                          setInspectVerb(null);
+                                    ? () =>
                                           setInspectRunId(
                                               visibleBoardRows[inspectIndex - 1]
                                                   .row.runId,
-                                          );
-                                      }
+                                          )
                                     : undefined
                             }
                             onNext={
                                 inspectIndex < visibleBoardRows.length - 1
-                                    ? () => {
-                                          setInspectVerb(null);
+                                    ? () =>
                                           setInspectRunId(
                                               visibleBoardRows[inspectIndex + 1]
                                                   .row.runId,
-                                          );
-                                      }
+                                          )
                                     : undefined
                             }
                         />
                     )}
+                    {bulkModerateOpen &&
+                        inspectEntry == null &&
+                        selectedEntries.length > 0 &&
+                        sheetBoard && (
+                            <ModeratePanel
+                                subject={{
+                                    kind: 'bulk',
+                                    entries: selectedEntries,
+                                    board: sheetBoard,
+                                }}
+                                context={sheetContext}
+                                mount="modal"
+                                onClose={() => setBulkModerateOpen(false)}
+                                onMutated={reload}
+                            />
+                        )}
                     {!error && pageCount > 1 && (
                         <nav className={styles.pager} aria-label="Board pages">
                             <button
