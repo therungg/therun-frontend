@@ -26,7 +26,6 @@ import {
     findEntry,
     PIN_LIMIT,
     type Pinned,
-    pickVideoPin,
     pinKey,
     resolvePins,
     samePin,
@@ -100,12 +99,10 @@ function PinVideo({ vodUrl, title }: { vodUrl: string; title: string }) {
 
 export function PinCard({
     pin,
-    video,
     children,
     dragProps,
 }: {
     pin: Pinned;
-    video: boolean;
     children?: React.ReactNode;
     dragProps?: React.HTMLAttributes<HTMLElement>;
 }) {
@@ -115,7 +112,7 @@ export function PinCard({
     const timing = timingLabel(entry);
     return (
         <article className={styles.pin} data-medal={medal} {...dragProps}>
-            {video && entry.vodUrl ? (
+            {entry.vodUrl && isEmbeddableVod(entry.vodUrl) ? (
                 <PinVideo
                     vodUrl={entry.vodUrl}
                     title={`${game.game} · ${entry.category} · ${formatEntryTime(entry)}`}
@@ -192,9 +189,6 @@ export function PinnedRuns() {
                   .filter((p): p is Pinned => p !== null)
         : resolvePins(games, draft.pins);
     if (!editing && pins.length === 0) return null;
-    const video = showAuto ? null : pickVideoPin(pins, draft.videoPin);
-    const isVideo = (p: Pinned) =>
-        video !== null && samePin(entryRef(p.entry), entryRef(video.entry));
 
     const movePin = (from: number, to: number) =>
         setDraft((d) => ({ ...d, pins: move(d.pins, from, to) }));
@@ -204,8 +198,6 @@ export function PinnedRuns() {
             pins: d.pins.filter((p) => !samePin(p, ref)),
             videoPin: samePin(d.videoPin, ref) ? null : d.videoPin,
         }));
-    const setVideo = (ref: PinRef) =>
-        setDraft((d) => ({ ...d, videoPin: ref }));
     const addPin = (ref: PinRef) =>
         setDraft((d) => ({ ...d, pins: [...d.pins, ref] }));
 
@@ -218,7 +210,6 @@ export function PinnedRuns() {
                         <PinCard
                             key={pinKey(ref)}
                             pin={pin}
-                            video={isVideo(pin)}
                             dragProps={
                                 editing && !showAuto
                                     ? {
@@ -270,25 +261,6 @@ export function PinnedRuns() {
                                         >
                                             <ArrowDown size={14} aria-hidden />
                                         </button>
-                                        {pin.entry.vodUrl &&
-                                        isEmbeddableVod(pin.entry.vodUrl) ? (
-                                            <label
-                                                className={styles.ledgerSort}
-                                            >
-                                                <input
-                                                    type="radio"
-                                                    name="video-pin"
-                                                    checked={samePin(
-                                                        draft.videoPin,
-                                                        ref,
-                                                    )}
-                                                    onChange={() =>
-                                                        setVideo(ref)
-                                                    }
-                                                />
-                                                <span>Plays video</span>
-                                            </label>
-                                        ) : null}
                                         <button
                                             type="button"
                                             className={styles.tab}

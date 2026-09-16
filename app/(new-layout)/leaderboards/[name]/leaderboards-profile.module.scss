@@ -1010,8 +1010,8 @@ a.runAttempts:hover {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-auto-flow: dense;
-    // Each card keeps its own height: a video card makes its row taller
-    // without stretching the cards beside it.
+    // Each card keeps its own height: a card with a video is taller without
+    // stretching the cards beside it into empty panels.
     align-items: start;
     gap: dt.$spacing-lg;
 

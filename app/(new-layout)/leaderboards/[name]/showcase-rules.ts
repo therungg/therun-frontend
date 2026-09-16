@@ -1,4 +1,3 @@
-import { isEmbeddableVod } from '~src/lib/vod-url';
 import type {
     GameOrder,
     LeaderboardsLayout,
@@ -118,19 +117,6 @@ export function resolvePins(
         .filter((p): p is Pinned => p !== null)
         .slice(0, PIN_LIMIT);
     return saved.length > 0 ? saved : autoPins(games);
-}
-
-const embeddable = (p: Pinned): p is Pinned & { entry: { vodUrl: string } } =>
-    !!p.entry.vodUrl && isEmbeddableVod(p.entry.vodUrl);
-
-/** The saved video pin if it still plays, else the best pinned run that does. */
-export function pickVideoPin(
-    pins: Pinned[],
-    saved: PinRef | null,
-): Pinned | null {
-    const chosen = pins.find((p) => samePin(entryRef(p.entry), saved));
-    if (chosen && embeddable(chosen)) return chosen;
-    return pins.find(embeddable) ?? null;
 }
 
 /** Saved main game, else best rank with more attempts breaking a tie. */

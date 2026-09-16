@@ -5,12 +5,7 @@ import type {
 } from '../../../../../types/runner-profile.types';
 import pinStyles from '../../../leaderboards/[name]/leaderboards-profile.module.scss';
 import { PinCard } from '../../../leaderboards/[name]/pinned-runs';
-import {
-    entryRef,
-    type Pinned,
-    pickVideoPin,
-    samePin,
-} from '../../../leaderboards/[name]/showcase-rules';
+import type { Pinned } from '../../../leaderboards/[name]/showcase-rules';
 import { Chapter } from '../chapter';
 import styles from '../overview.module.scss';
 import { TimerPbCard } from './timer-pb-card';
@@ -32,7 +27,7 @@ const asPinned = (pin: BoardPin): Pinned => ({
     } satisfies LeaderboardsProfileGame,
 });
 
-/** The runner's pins as the backend resolved them, one playing its video. */
+/** The runner's pins as the backend resolved them; every pin with a video plays it. */
 export function HighlightsChapter({ head }: { head: RunnerProfileHead }) {
     const name = head.runner.name;
     // Level runs stay on the Leaderboards tab; the overview is full game only.
@@ -40,11 +35,6 @@ export function HighlightsChapter({ head }: { head: RunnerProfileHead }) {
         (p) => p.type !== 'board' || p.entry.level === null,
     );
     if (pins.length === 0) return null;
-    const saved = head.layout.videoPin;
-    const video = pickVideoPin(
-        pins.filter((p): p is BoardPin => p.type === 'board').map(asPinned),
-        saved && saved.kind !== 'timerPb' ? saved : null,
-    );
 
     return (
         <Chapter id="highlights" name={name}>
@@ -55,13 +45,6 @@ export function HighlightsChapter({ head }: { head: RunnerProfileHead }) {
                             <PinCard
                                 key={`${pin.ref.kind}-${pin.ref.id}`}
                                 pin={asPinned(pin)}
-                                video={
-                                    video !== null &&
-                                    samePin(
-                                        entryRef(pin.entry),
-                                        entryRef(video.entry),
-                                    )
-                                }
                             />
                         ) : (
                             <TimerPbCard
