@@ -40,6 +40,7 @@ export function StepBoards({ data }: StepProps) {
                 policies={data.policies}
                 canConfigure
                 context="wizard"
+                levelTemplates={data.levelTemplates}
             />
             <GoLiveFooter data={data} />
         </section>

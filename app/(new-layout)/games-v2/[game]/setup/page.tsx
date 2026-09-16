@@ -144,7 +144,9 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
 
     const resolvedIds = new Set(catData.categories.map((c) => c.id));
     const data: WizardData = {
-        game,
+        // The board-wide Pills / Dropdown default rides pageData, not the
+        // lookup; the Boards step's live rail needs it to match the board.
+        game: { ...game, categoryDisplayMode: catData.categoryDisplayMode },
         stats,
         categories: catData.categories,
         groups: catData.groups,
