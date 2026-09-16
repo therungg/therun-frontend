@@ -1,7 +1,7 @@
 'use client';
 
 import { type ReactNode, useId } from 'react';
-import { Check2, Dot } from 'react-bootstrap-icons';
+import { Check2, Dot, QuestionCircle } from 'react-bootstrap-icons';
 import styles from './form-kit.module.scss';
 
 /** Same doneness vocabulary as the wizard's category hub: a check when the
@@ -9,14 +9,45 @@ import styles from './form-kit.module.scss';
  * Sections where nothing can be "missing" pass neither. */
 export type SectionStatus = 'done' | 'attention';
 
+/** An explanation behind a hover/focus bubble, so a section can be a title and
+ *  its controls rather than a title, its controls and a paragraph. The bubble
+ *  stays in the DOM (opacity, not display) so aria-describedby keeps working. */
+export function HintBubble({
+    label,
+    children,
+}: {
+    label: string;
+    children: ReactNode;
+}) {
+    const id = useId();
+    return (
+        <span className={styles.hint}>
+            <button
+                type="button"
+                className={styles.hintTrigger}
+                aria-label={`What is ${label}?`}
+                aria-describedby={id}
+            >
+                <QuestionCircle size={13} aria-hidden />
+            </button>
+            <span id={id} role="tooltip" className={styles.hintBubble}>
+                {children}
+            </span>
+        </span>
+    );
+}
+
 export function FormSection({
     title,
+    titleHint,
     lede,
     actions,
     status,
     children,
 }: {
     title: string;
+    /** An explanation for the whole section, behind the title's hover bubble. */
+    titleHint?: ReactNode;
     lede?: ReactNode;
     actions?: ReactNode;
     status?: SectionStatus;
@@ -36,6 +67,7 @@ export function FormSection({
                 </span>
             )}
             {title}
+            {titleHint && <HintBubble label={title}>{titleHint}</HintBubble>}
         </h3>
     );
     return (
@@ -56,12 +88,15 @@ export function FormSection({
 
 export function SegmentedControl({
     label,
+    labelHidden = false,
     value,
     options,
     onChange,
     disabled = false,
 }: {
     label: string;
+    /** Keep the label for screen readers when a section title already says it. */
+    labelHidden?: boolean;
     value: string;
     options: Array<{ value: string; label: string; disabled?: boolean }>;
     onChange: (value: string) => void;
@@ -70,7 +105,10 @@ export function SegmentedControl({
     const labelId = useId();
     return (
         <div className={styles.segGroup}>
-            <span id={labelId} className={styles.segLabel}>
+            <span
+                id={labelId}
+                className={labelHidden ? 'visually-hidden' : styles.segLabel}
+            >
                 {label}
             </span>
             <div

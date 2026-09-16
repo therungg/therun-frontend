@@ -122,3 +122,78 @@
     @include board.board-quiet-link;
     font-size: dt.$font-size-sm;
 }
+
+/* --- Hover hints ---------------------------------------------------------
+   A section explains itself on hover rather than in a paragraph under its
+   controls: the console stays scannable and the "what does this do?" answer
+   is one hover away.                                                        */
+
+.hint {
+    position: relative;
+    display: inline-flex;
+    vertical-align: middle;
+    margin-left: dt.$spacing-xs;
+}
+
+.hintTrigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--bs-secondary-color);
+    cursor: help;
+    line-height: 1;
+    transition: color 0.12s ease;
+
+    &:hover,
+    &:focus-visible {
+        color: var(--bs-primary);
+    }
+}
+
+.hintBubble {
+    position: absolute;
+    bottom: calc(100% + #{dt.$spacing-xs});
+    left: 50%;
+    transform: translateX(-50%) translateY(2px);
+    z-index: 20;
+    width: max-content;
+    max-width: 22rem;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-md;
+    background: var(--bs-body-bg);
+    box-shadow: dt.$shadow-md;
+    color: var(--bs-body-color);
+    font-size: dt.$font-size-xs;
+    font-weight: 400;
+    letter-spacing: normal;
+    text-transform: none;
+    line-height: 1.45;
+    white-space: normal;
+    text-align: left;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+        opacity 0.12s ease,
+        transform 0.12s ease;
+
+    /* Near the left edge on a phone the bubble grows inward, not off-screen. */
+    @media (max-width: 480px) {
+        left: 0;
+        transform: translateX(0) translateY(2px);
+        max-width: min(22rem, calc(100vw - #{dt.$spacing-3xl}));
+    }
+}
+
+.hint:hover .hintBubble,
+.hintTrigger:focus-visible + .hintBubble {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+
+    @media (max-width: 480px) {
+        transform: translateX(0) translateY(0);
+    }
+}

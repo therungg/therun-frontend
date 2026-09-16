@@ -140,26 +140,22 @@ export function SettingsEditor({
 
     return (
         <div className={styles.editor}>
-            <FormSection title="What this board accepts">
+            <FormSection
+                title="Auto-submission"
+                titleHint="If turned on, a PB by a runner goes directly to the mod queue or to auto-verification. If turned off, the user has to submit the run themselves."
+            >
                 <SegmentedControl
-                    label="Should a new PB from LiveSplit go straight to auto-verify and the mods, or should its runner check and retime it first?"
+                    label="Auto-submission"
+                    labelHidden
                     value={form.timerRuns}
                     options={[
-                        { value: 'direct', label: 'Straight to verification' },
-                        {
-                            value: 'runner_submits',
-                            label: 'Its runner checks it first',
-                        },
+                        { value: 'direct', label: 'Allow' },
+                        { value: 'runner_submits', label: 'Disallow' },
                     ]}
                     onChange={(v) =>
                         set('timerRuns', v as SettingsForm['timerRuns'])
                     }
                 />
-                <p className={styles.hint}>
-                    {form.timerRuns === 'direct'
-                        ? 'A new PB reaches auto-verify as soon as it syncs, and anything that does not clear reaches you.'
-                        : 'A new PB is held until its runner confirms it, retimes it against their video and checks the board rules. Until they do it stays off the board and out of your queue.'}
-                </p>
             </FormSection>
 
             <FormSection title="What's verified automatically">
