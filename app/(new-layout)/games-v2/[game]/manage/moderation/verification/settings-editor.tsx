@@ -223,12 +223,14 @@ export function SettingsEditor({
                                 <input
                                     className={`form-control form-control-sm ${styles.dialInput}`}
                                     inputMode="decimal"
-                                    value={form.maxPbJumpPct}
+                                    value={form.maxPbJumpSeconds}
                                     onChange={(e) =>
-                                        set('maxPbJumpPct', e.target.value)
+                                        set('maxPbJumpSeconds', e.target.value)
                                     }
                                 />
-                                <span className={styles.dialSuffix}>%</span>
+                                <span className={styles.dialSuffix}>
+                                    seconds
+                                </span>
                             </label>
                             <HintBubble label="the PB improvement limit">
                                 If a run beats that runner's own PB by more than

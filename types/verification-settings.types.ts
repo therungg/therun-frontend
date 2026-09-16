@@ -37,7 +37,7 @@ export type AutoVerifySetting = {
     neverTopN: number;
     minPriorVerifiedRuns: number;
     maxGoldBeatPct: number;
-    maxPbJumpPct: number;
+    maxPbJumpMs: number;
     liveData: 'must_match' | 'uploads_off';
 };
 

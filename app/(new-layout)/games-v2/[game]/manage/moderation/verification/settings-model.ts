@@ -20,7 +20,8 @@ export type SettingsForm = {
     neverTopN: string;
     minPriorVerifiedRuns: string;
     maxGoldBeatPct: string;
-    maxPbJumpPct: string;
+    /** Seconds, as the moderator types them; sent as milliseconds. */
+    maxPbJumpSeconds: string;
     liveData: AutoVerifySetting['liveData'];
 };
 
@@ -39,13 +40,20 @@ export const formFrom = (e: EffectiveSettings): SettingsForm => {
         neverTopN: String(e.autoVerify.value.neverTopN),
         minPriorVerifiedRuns: String(e.autoVerify.value.minPriorVerifiedRuns),
         maxGoldBeatPct: String(e.autoVerify.value.maxGoldBeatPct),
-        maxPbJumpPct: String(e.autoVerify.value.maxPbJumpPct),
+        maxPbJumpSeconds: String(e.autoVerify.value.maxPbJumpMs / 1000),
         liveData: e.autoVerify.value.liveData,
     };
 };
 
 const int = (text: string): number | null =>
     /^\d+$/.test(text.trim()) ? Number(text.trim()) : null;
+
+/** Seconds a moderator typed: 0 to a day, decimals allowed, blank is not zero. */
+const secs = (v: string): boolean => {
+    if (v.trim() === '') return false;
+    const n = Number(v);
+    return Number.isFinite(n) && n >= 0 && n <= 86400;
+};
 
 /** A percentage a moderator typed: 0-100, decimals allowed, blank is not zero. */
 const pct = (v: string): boolean => {
@@ -80,8 +88,8 @@ export const validateForm = (f: SettingsForm): string | null => {
             return 'Verified runs needed first must be 0 to 100.';
         if (!pct(f.maxGoldBeatPct))
             return 'Largest gold beat must be a number from 0 to 100.';
-        if (!pct(f.maxPbJumpPct))
-            return 'Largest PB improvement must be a number from 0 to 100.';
+        if (!secs(f.maxPbJumpSeconds))
+            return 'Largest PB improvement must be a number of seconds, up to 86400.';
     }
     return null;
 };
@@ -104,7 +112,7 @@ const autoVerifyOf = (f: SettingsForm): AutoVerifySetting => ({
     neverTopN: int(f.neverTopN)!,
     minPriorVerifiedRuns: int(f.minPriorVerifiedRuns)!,
     maxGoldBeatPct: Number(f.maxGoldBeatPct),
-    maxPbJumpPct: Number(f.maxPbJumpPct),
+    maxPbJumpMs: Math.round(Number(f.maxPbJumpSeconds) * 1000),
     liveData: f.liveData,
 });
 const same = (a: unknown, b: unknown) =>
