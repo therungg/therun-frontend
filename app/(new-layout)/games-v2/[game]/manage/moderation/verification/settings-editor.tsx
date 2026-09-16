@@ -159,7 +159,7 @@ export function SettingsEditor({
                 />
             </FormSection>
 
-            <FormSection title="What needs a video">
+            <FormSection title="VOD requirement">
                 <SegmentedControl
                     label="Video required for"
                     value={form.videoRequire}
