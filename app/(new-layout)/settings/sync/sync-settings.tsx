@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import type { SrcUserSyncStatus } from 'types/src-import.types';
 import {
     FormSection,
@@ -8,14 +8,10 @@ import {
     SwitchField,
 } from '~app/(new-layout)/games-v2/[game]/manage/shared/form-kit';
 import {
-    getMySyncStatus,
     retryMySyncLookup,
     setMySyncOptOut,
 } from '~src/actions/src-import.action';
 import { Button } from '~src/components/Button/Button';
-
-const POLL_MS = 5_000;
-const POLL_LIMIT = 24;
 
 function when(iso: string | null): string {
     if (!iso) return 'never';
@@ -23,11 +19,6 @@ function when(iso: string | null): string {
 }
 
 const SOCIALS_URL = 'https://www.speedrun.com/settings/socials';
-
-/** A match is waiting or running: no account yet, no result yet. */
-function isLooking(s: SrcUserSyncStatus): boolean {
-    return !s.optOut && !s.identity && s.lookupResult === null;
-}
 
 function IdentityText({ status: s }: { status: SrcUserSyncStatus }) {
     if (s.identity) {
@@ -54,15 +45,15 @@ function IdentityText({ status: s }: { status: SrcUserSyncStatus }) {
     if (s.lookupResult === 'no-match') {
         return (
             <p>
-                We couldn't find your speedrun.com account. Link your Twitch on{' '}
+                We couldn't find your speedrun.com account. Add your Twitch
+                account to your{' '}
                 <a href={SOCIALS_URL} target="_blank" rel="noreferrer">
-                    speedrun.com
-                </a>{' '}
-                and try again.
+                    speedrun.com socials
+                </a>
+                , then check again.
             </p>
         );
     }
-    if (isLooking(s)) return <p>Looking for your speedrun.com account.</p>;
     return <p>Not linked to a speedrun.com account.</p>;
 }
 
@@ -70,24 +61,6 @@ export function SyncSettings({ initial }: { initial: SrcUserSyncStatus }) {
     const [status, setStatus] = useState(initial);
     const [error, setError] = useState<string | null>(null);
     const [pending, start] = useTransition();
-
-    // While a match runs, check back until it lands on a result.
-    const looking = isLooking(status) && status.lookupAttemptedAt !== null;
-    useEffect(() => {
-        if (!looking) return;
-        // A match normally lands in seconds; stop after two minutes rather
-        // than poll behind a long import holding the queue.
-        let polls = 0;
-        const t: ReturnType<typeof setInterval> = setInterval(async () => {
-            if (++polls > POLL_LIMIT) {
-                clearInterval(t);
-                return;
-            }
-            const r = await getMySyncStatus();
-            if (!('error' in r)) setStatus(r.status);
-        }, POLL_MS);
-        return () => clearInterval(t);
-    }, [looking]);
 
     const onRetry = () => {
         setError(null);
@@ -136,7 +109,9 @@ export function SyncSettings({ initial }: { initial: SrcUserSyncStatus }) {
                                 disabled={pending}
                                 onClick={onRetry}
                             >
-                                Try again
+                                {pending
+                                    ? 'Checking…'
+                                    : 'I set my Twitch account on speedrun.com, check again'}
                             </Button>
                         </div>
                     )}

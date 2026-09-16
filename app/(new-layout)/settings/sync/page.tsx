@@ -11,9 +11,9 @@ export default async function SyncSettingsPage() {
     const session = await getSession();
     if (!session.id || !session.username) return null;
     let res = await getMySyncStatus();
-    // Matching only happens here, never in the background: an unlinked runner
-    // with no result yet, or a failed one, gets a fresh attempt on each visit.
-    // The API holds a 5-minute cooldown, so a reload does not repeat it.
+    // Matching only happens here and from the check-again button, never in
+    // the background: an unlinked runner with no result yet, or a failed one,
+    // is matched on each visit. The API answers with the result.
     if (
         !('error' in res) &&
         !res.status.identity &&
