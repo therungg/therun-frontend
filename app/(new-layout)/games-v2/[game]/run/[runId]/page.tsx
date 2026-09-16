@@ -1,17 +1,18 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
-import { resolveGame } from '~src/lib/games-v1';
+import { resolveCategory, resolveGame } from '~src/lib/games-v1';
+import { listCategoryVariables } from '~src/lib/leaderboard-variables';
 import { getRunById, getUserRankingsByName } from '~src/lib/leaderboards-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { getRunProvenance } from '~src/lib/moderation/provenance';
 import { getRunHistory } from '~src/lib/moderation/runs';
 import { getRunByIdAsViewer } from '~src/lib/run-detail-viewer';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
+import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata from '~src/utils/metadata';
 import { formatSubcategoryKey } from '../../labels';
-import { ModProvenancePanel } from '../../run-view/mod-provenance-panel';
-import { RunVerdictControls } from '../../run-view/run-verdict-controls';
+import { RunPageMount } from '../../manage/moderation/moderate/run-page-mount';
 import { type RunBoardStanding, RunView } from '../../run-view/run-view';
 import { isSameRunner } from '../../shared/is-same-runner';
 
@@ -91,13 +92,35 @@ export default async function RunDetailPage({ params }: PageProps) {
         if (asViewer && asViewer.userId != null) run = asViewer;
     }
 
-    const [history, provenance, rankings] = await Promise.all([
+    const [history, provenance, rankings, modCategories] = await Promise.all([
         getRunHistory(runId).catch(() => []),
         isMod && session.id
             ? getRunProvenance(session.id, game.id, runId).catch(() => null)
             : Promise.resolve(null),
         getUserRankingsByName(run.runnerName).catch(() => []),
+        isMod
+            ? resolveCategory(game.id)
+                  .then((r) => r.categories)
+                  .catch(() => null)
+            : Promise.resolve(null),
     ]);
+    const modVariables =
+        isMod && session.id && modCategories
+            ? await listCategoryVariables(
+                  session.id,
+                  game.id,
+                  modCategories.map((c) => c.id),
+              ).catch(() => [])
+            : [];
+    const runCategory =
+        modCategories?.find((c) => c.id === run.categoryId) ?? null;
+    // The panel builds its own reads; keep the heavy fields off the client.
+    const {
+        splits: _splits,
+        vodReview: _vodReview,
+        autoVerifyResult: _autoVerifyResult,
+        ...modRun
+    } = run;
 
     // A hit means this run is the runner's *current* board entry for that
     // category/subcategory (getUserRankingsByName returns each category's
@@ -148,27 +171,32 @@ export default async function RunDetailPage({ params }: PageProps) {
             sessionUsername={session.username || null}
             isMod={isMod}
             modPanel={
-                isMod ? (
-                    <>
-                        <RunVerdictControls
-                            gameSlug={game.name}
-                            runId={runId}
-                            runnerName={run.runnerName}
-                            userId={run.userId ?? null}
-                            categoryId={run.categoryId}
-                            categoryDisplay={run.categoryDisplay}
-                            subcategoryKey={run.subcategoryKey ?? ''}
-                            timeMs={run.realTime ?? run.gameTime ?? null}
-                            runDate={run.runDate ?? null}
-                            verificationStatus={run.verificationStatus}
-                        />
-                        <ModProvenancePanel
-                            provenance={provenance}
-                            history={history}
-                            gameSlug={game.name}
-                            runId={runId}
-                        />
-                    </>
+                isMod && modCategories ? (
+                    <RunPageMount
+                        run={modRun}
+                        provenance={provenance}
+                        context={{
+                            gameSlug: game.name,
+                            gameId: game.id,
+                            gameDisplay: game.display,
+                            categories: modCategories,
+                            variables: modVariables,
+                            canSiteBan: defineAbilityFor(session).can(
+                                'moderate',
+                                'admins',
+                            ),
+                        }}
+                        board={{
+                            categoryId: run.categoryId,
+                            categorySlug: runCategory?.name ?? '',
+                            categoryDisplay: run.categoryDisplay,
+                            subcategoryKey: run.subcategoryKey ?? '',
+                            primaryTiming:
+                                runCategory?.primaryTiming === 'gt'
+                                    ? 'gt'
+                                    : 'rt',
+                        }}
+                    />
                 ) : undefined
             }
         />

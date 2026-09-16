@@ -72,6 +72,8 @@ export interface RunTabProps {
     /** Acted on once when the run's state has loaded; ignored if it does not apply. */
     initialVerb?: ModerateVerb;
     onInitialVerbUsed: () => void;
+    /** Rendered after the history in the right column. */
+    extra?: ReactNode;
 }
 
 interface FormDraft {
@@ -90,6 +92,7 @@ export function RunTab({
     render,
     initialVerb,
     onInitialVerbUsed,
+    extra,
 }: RunTabProps) {
     const { entry, board } = subject;
     const { gameSlug } = context;
@@ -483,17 +486,20 @@ export function RunTab({
                   identity,
                   left,
                   right: (
-                      <RunRight
-                          record={userId != null ? record : null}
-                          summary={summary}
-                          history={fullHistory ?? summary?.history ?? []}
-                          expanded={fullHistory !== null}
-                          showingAll={showingAll}
-                          onShowAll={() => void showAll()}
-                          gameSlug={gameSlug}
-                          runId={runId}
-                          onUndone={afterMutation}
-                      />
+                      <>
+                          <RunRight
+                              record={userId != null ? record : null}
+                              summary={summary}
+                              history={fullHistory ?? summary?.history ?? []}
+                              expanded={fullHistory !== null}
+                              showingAll={showingAll}
+                              onShowAll={() => void showAll()}
+                              gameSlug={gameSlug}
+                              runId={runId}
+                              onUndone={afterMutation}
+                          />
+                          {extra}
+                      </>
                   ),
                   footer: (
                       <div ref={footerRef} className={styles.contents}>

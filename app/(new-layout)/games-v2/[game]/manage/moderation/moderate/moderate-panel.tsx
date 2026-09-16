@@ -42,6 +42,8 @@ export interface ModeratePanelProps {
     onNext?: () => void;
     /** "2 of 23" when opened from a list. */
     position?: { index: number; total: number };
+    /** Extra facts at the end of the Run tab's right column (run page mount). */
+    runExtra?: ReactNode;
 }
 
 /** What a tab hands the shell. `right` and `footer` are replaced by the heavy form while one is open. */
@@ -396,6 +398,7 @@ export function ModeratePanel(props: ModeratePanelProps) {
                 context={props.context}
                 onMutated={props.onMutated}
                 onOpenRunner={() => setTab('runner')}
+                extra={props.runExtra}
                 onFormBack={onFormBack}
                 onBusyChange={onBusyChange}
                 render={wrap}
