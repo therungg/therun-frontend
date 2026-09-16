@@ -62,6 +62,8 @@
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-xl;
+    /* The dials belong to the switch above them, not next to it. */
+    margin-top: dt.$spacing-xl;
 }
 
 /* Two dials that answer the same question, kept together and apart from the

@@ -158,18 +158,20 @@ export function SettingsEditor({
                 />
             </FormSection>
 
-            <FormSection title="What's verified automatically">
-                <SwitchField
-                    id="autoverify-game"
-                    label="Verify runs automatically when they pass every check"
-                    checked={form.autoVerifyEnabled}
-                    onChange={(v) => set('autoVerifyEnabled', v)}
+            <FormSection
+                title="Auto-verification"
+                titleHint="When a run is submitted we can check whether it verifies itself: whether the splits agree with the run time and the clock, whether live timing matches, how far it beats the runner's own golds and previous PB, how many verified runs they already have here, and how high it lands. If turned off, every submission goes to the mod queue."
+            >
+                <SegmentedControl
+                    label="Auto-verification"
+                    labelHidden
+                    value={form.autoVerifyEnabled ? 'on' : 'off'}
+                    options={[
+                        { value: 'on', label: 'Turn on' },
+                        { value: 'off', label: 'Turn off' },
+                    ]}
+                    onChange={(v) => set('autoVerifyEnabled', v === 'on')}
                 />
-                <p className={styles.hint}>
-                    {form.autoVerifyEnabled
-                        ? 'Runs that clear every dial below go on verified. Everything else reaches you.'
-                        : 'Nothing is verified automatically — every run reaches you.'}
-                </p>
                 {form.autoVerifyEnabled && (
                     <div className={styles.dials}>
                         <div className={styles.dialGroup}>
