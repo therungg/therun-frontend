@@ -23,7 +23,7 @@ export type ModVerb =
 
 export type RemoveReason = 'cheating' | 'breaks_rules' | 'doesnt_belong';
 
-export interface RemoveReasonMeta {
+interface RemoveReasonMeta {
     value: RemoveReason;
     label: string;
     /** Shown under the picker so the consequence is legible. */
@@ -59,31 +59,6 @@ export function removeReasonMeta(reason: RemoveReason): RemoveReasonMeta {
 }
 
 /**
- * A loud removal is a `reject` verdict (status change, notification, appeal);
- * a quiet removal is a silent `exclude`. The notify toggle is the single switch.
- */
-export function resolveRemoveMechanism(notify: boolean): 'reject' | 'exclude' {
-    return notify ? 'reject' : 'exclude';
-}
-
-/**
- * Whether a verb has a true backend inverse — a real mutation that reverses
- * it, not a fabricated "undo" that just hides the toast. `approve` (verify)
- * is reversed by the `unverify` verdict action (verified → pending, design
- * doc §D.2) — see UNDO_VERIFY_REASON and run-action-dialog.tsx's dedicated
- * undo branch for `approve` (it does NOT go through restoreRunsAction; that
- * would fire `unreject` at an already-verified run, which the backend
- * silently no-ops). `remove` is reversed by restoreRunsAction (include +
- * unreject, whichever mechanism removal used). `restore` is reversed by
- * exclude. `ban` is reversed by deleting the exclusion rule it created — see
- * isBanUndoable for the extra condition that gates it. Every ModVerb now has
- * a true inverse.
- */
-export function hasTrueInverse(_verb: ModVerb): boolean {
-    return true;
-}
-
-/**
  * Canned, non-editable reason sent when a moderator undoes a Verify from the
  * undo toast — no reason prompt (the undo toasts never re-open a dialog),
  * but the backend still requires `reason` (min 10 chars) on every verdict.
@@ -97,22 +72,12 @@ export const UNDO_VERIFY_REASON = 'Undo of accidental verification';
  */
 export const MIN_ANONYMIZE_REASON = 10;
 
-/**
- * A ban's undo is deleting the exclusion rule it created. If the rule
- * already existed (this ban just matched a pre-existing one — see
- * CreateRuleResult.alreadyExists), deleting it would remove a rule outside
- * this action's scope, not undo this action. So it's not offered.
- */
-export function isBanUndoable(result: { alreadyExists: boolean }): boolean {
-    return !result.alreadyExists;
-}
-
 /** Audit note attached to an undo mutation. */
 export function undoReason(verb: ModVerb): string {
     return `Undo of ${verb}`;
 }
 
-export type BanScope = 'category' | 'game';
+type BanScope = 'category' | 'game';
 
 /**
  * Default ban-dialog scope for banning every item in a group (e.g. a
@@ -130,49 +95,3 @@ export function defaultBanScopeForCategories(
     );
     return distinct.size > 1 ? 'game' : 'category';
 }
-
-/** What a dialog instance acts on. `ban` requires a `runner` target; the rest require `runs`.
- *
- * `manualTimeIds` rides along on the `runs` kind for board selections that
- * include manual set times: approve/reject map to the manual-time verdict
- * endpoint, remove maps to delete. There is no preview or undo for the
- * manual portion (the backend has neither), and `restore` skips it —
- * a deleted manual time has nothing to restore to. */
-export type RunActionTarget =
-    | {
-          kind: 'runs';
-          runIds: number[];
-          manualTimeIds?: number[];
-          label: string;
-          /** The target's board time (ms on the board's primary clock) and
-           *  run date, shown on Remove's "This run" card so the question is
-           *  answerable without leaving the dialog. */
-          runTimeMs?: number | null;
-          runDate?: string | null;
-          /**
-           * Who and where, when the selection is one run by one known runner.
-           * Present only then, because it unlocks a choice that only makes
-           * sense then: Remove can ask whether the mod means this run or
-           * every run this runner has on this board. A guest (no account) or
-           * a multi-run selection leaves this absent and Remove stays
-           * per-run.
-           */
-          runner?: {
-              id: number;
-              name: string;
-              categoryId: number;
-              categoryDisplay: string;
-              /** Which board exactly — their other times are listed from it. */
-              subcategoryKey: string;
-              /** The clock this board ranks on, for ordering those times. */
-              primaryTiming: 'rt' | 'gt';
-          };
-      }
-    | {
-          kind: 'runner';
-          runnerId: number;
-          runnerName: string;
-          categoryId: number;
-          categoryDisplay: string;
-          gameDisplay: string;
-      };

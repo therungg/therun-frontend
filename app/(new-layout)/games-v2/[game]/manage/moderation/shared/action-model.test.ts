@@ -1,38 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-    defaultBanScopeForCategories,
-    hasTrueInverse,
-    isBanUndoable,
-    undoReason,
-} from './action-model';
-
-describe('hasTrueInverse', () => {
-    it('is true for approve — the unverify verdict action reverses it (design doc §D.2)', () => {
-        expect(hasTrueInverse('approve')).toBe(true);
-    });
-
-    it('is true for remove — restoreRunsAction (include + unreject) reverses it', () => {
-        expect(hasTrueInverse('remove')).toBe(true);
-    });
-
-    it('is true for restore — exclude reverses it', () => {
-        expect(hasTrueInverse('restore')).toBe(true);
-    });
-
-    it('is true for ban — deleting the created exclusion rule reverses it', () => {
-        expect(hasTrueInverse('ban')).toBe(true);
-    });
-});
-
-describe('isBanUndoable', () => {
-    it('is undoable when the ban created a new rule', () => {
-        expect(isBanUndoable({ alreadyExists: false })).toBe(true);
-    });
-
-    it("is not undoable when the ban reused a pre-existing rule — deleting it would remove something outside this action's scope", () => {
-        expect(isBanUndoable({ alreadyExists: true })).toBe(false);
-    });
-});
+import { defaultBanScopeForCategories, undoReason } from './action-model';
 
 describe('undoReason', () => {
     it('formats the audit note as "Undo of {verb}"', () => {

@@ -2,52 +2,14 @@
 @use '../../../../../styles/board' as board;
 
 // ============================================================
-// RunActionDialog — body/header/footer content for approve/remove/ban/
-// restore. Overlay + panel chrome now lives in the shared BoardDialog
-// primitive (../../../shared/board-dialog.module.scss).
-// Token-based spacing; times tabular-mono; calm depth.
+// Shared body pieces for the moderate panel's forms (ScopeCards,
+// CutoffPicker, ReasonZone in run-action-parts.tsx). Token-based spacing;
+// times tabular-mono; calm depth.
 // ============================================================
-
-// ---- Header -------------------------------------------------
-.header {
-    @include board.board-dialog-header;
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-md;
-}
-
-.title {
-    @include board.board-dialog-title;
-    flex: 1;
-}
-
-// ---- Body ---------------------------------------------------
-.body {
-    @include board.board-dialog-body;
-}
 
 // ---- Form fields --------------------------------------------
 .fieldLabel {
     @include board.board-dialog-field-label;
-}
-
-// Stands in for the per-run detail when Remove is scoped to the runner:
-// there is nothing to choose between, so the body states the consequence
-// in a sentence and lets the preview's count carry the scale.
-.scopeNote {
-    font-size: dt.$font-size-sm;
-    color: var(--bs-body-color);
-    margin-bottom: dt.$spacing-md;
-}
-
-// ---- Step context (Confirm screen, after a Decide step) -----
-.stepContext {
-    background: var(--bs-tertiary-bg);
-    border-left: 2px solid var(--bs-primary);
-    border-radius: dt.$radius-sm;
-    padding: dt.$spacing-sm dt.$spacing-md;
-    margin-bottom: dt.$spacing-lg;
-    font-size: dt.$font-size-sm;
 }
 
 // ---- Preview summary ----------------------------------------
@@ -55,43 +17,6 @@
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
     margin-bottom: dt.$spacing-md;
-}
-
-// ---- Preview table: time cells use monospace ----------------
-.timeCell {
-    @include board.mono-time;
-    text-align: right;
-    white-space: nowrap;
-}
-
-// ---- Preview list (exclude kind) ----------------------------
-.previewList {
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-    padding-left: dt.$spacing-lg;
-    margin-bottom: 0;
-
-    li {
-        margin-bottom: dt.$spacing-xs;
-    }
-}
-
-.previewTime {
-    @include board.mono-time;
-    font-size: dt.$font-size-sm;
-}
-
-// ---- Loading / error states ---------------------------------
-.previewLoading {
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-    padding: dt.$spacing-sm 0;
-}
-
-.errorAlert {
-    @include board.board-error-alert;
-    margin-top: dt.$spacing-sm;
-    margin-bottom: 0;
 }
 
 // ---- Reason textarea ----------------------------------------
@@ -107,11 +32,6 @@
 
 .reasonError {
     @include board.board-dialog-field-error;
-}
-
-// ---- Footer -------------------------------------------------
-.footer {
-    @include board.board-dialog-footer;
 }
 
 // ---- Zones ---------------------------------------------------
@@ -236,35 +156,6 @@
 }
 
 .cutoffConsequence {
-    font-size: dt.$font-size-2xs;
-    color: var(--bs-secondary-color);
-    margin: dt.$spacing-xs 0 0;
-}
-
-// ---- Remove's replacement set time ---------------------------
-// One quiet checkbox under the cutoff table; the inputs only mount while
-// it's ticked. Bootstrap sizes the inputs — this block only owns layout.
-.replaceToggle {
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-sm;
-    margin: dt.$spacing-md 0 0;
-    font-size: dt.$font-size-sm;
-    color: var(--bs-body-color);
-    cursor: pointer;
-}
-
-.replaceFields {
-    display: flex;
-    gap: dt.$spacing-sm;
-    margin-top: dt.$spacing-xs;
-
-    input {
-        max-width: 11rem;
-    }
-}
-
-.replaceHint {
     font-size: dt.$font-size-2xs;
     color: var(--bs-secondary-color);
     margin: dt.$spacing-xs 0 0;
