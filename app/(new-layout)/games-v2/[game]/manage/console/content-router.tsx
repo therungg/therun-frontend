@@ -160,8 +160,12 @@ export function ContentRouter(props: ContentRouterProps) {
             return (
                 <ModQueuePane
                     gameSlug={game.name}
+                    gameId={game.id}
                     gameDisplay={game.display}
                     categories={categories}
+                    boardCategories={props.boardCategories}
+                    variables={props.variables}
+                    canSiteBan={props.canSiteBan}
                 />
             );
         case 'auto-verify':

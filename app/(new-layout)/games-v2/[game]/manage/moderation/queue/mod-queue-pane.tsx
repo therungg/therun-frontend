@@ -7,22 +7,30 @@ import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type {
+    LeaderboardEntry,
+    ResolvedCategory,
+    VariableRow,
+} from '../../../../../../../types/leaderboards.types';
+import type {
     ModQueueItem,
     ModQueueStatus,
 } from '../../../../../../../types/moderation.types';
-import { HideIdentityDialog } from '../../../leaderboard/hide-identity-dialog';
 import { AutoVerifiedBadge } from '../../../run-view/run-badges';
 import { BackLink } from '../../../shared/back-link';
-import type { ModVerb, RunActionTarget } from '../shared/action-model';
-import { RunActionDialog } from '../shared/run-action-dialog';
+import { ModeratePanel } from '../moderate/moderate-panel';
+import type { SheetBoard } from '../moderate/subject';
 import { loadModQueueAction } from './actions/load-mod-queue.action';
 import styles from './mod-queue-pane.module.scss';
-import { QueueVodReviewDialog } from './vod-review-dialog';
 
 interface Props {
     gameSlug: string;
+    gameId: number;
     gameDisplay: string;
     categories: Array<{ id: number; display: string }>;
+    /** Full board rows, for the moderate modal. */
+    boardCategories: ResolvedCategory[];
+    variables: VariableRow[];
+    canSiteBan: boolean;
 }
 
 const PAGE_SIZE = 25;
@@ -72,7 +80,53 @@ function isRecentAutoVerify(row: ModQueueItem, now: number): boolean {
     return now - t <= SPOT_CHECK_WINDOW_MS;
 }
 
-export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
+/** The board a row sits on, or null when the console does not list it. */
+function rowBoard(
+    row: ModQueueItem,
+    boardCategories: ResolvedCategory[],
+): SheetBoard | null {
+    const category = boardCategories.find((c) => c.id === row.categoryId);
+    if (!category) return null;
+    return {
+        categoryId: category.id,
+        categorySlug: category.name,
+        categoryDisplay: category.display,
+        subcategoryKey: row.subcategoryKey,
+        primaryTiming: category.primaryTiming === 'gt' ? 'gt' : 'rt',
+    };
+}
+
+function rowEntry(row: ModQueueItem, board: SheetBoard): LeaderboardEntry {
+    const status = row.verificationStatus;
+    return {
+        runId: row.id,
+        rank: 0,
+        runnerName: row.runnerName,
+        userId: row.userId,
+        isGuest: row.isGuest,
+        time:
+            board.primaryTiming === 'gt' && row.gameTime != null
+                ? row.gameTime
+                : row.time,
+        realTime: row.time,
+        gameTime: row.gameTime,
+        runDate: row.createdAt,
+        vodUrl: row.vodUrl,
+        verificationStatus:
+            status === 'verified' || status === 'rejected' ? status : 'pending',
+        variables: row.variables,
+    };
+}
+
+export function ModQueuePane({
+    gameSlug,
+    gameId,
+    gameDisplay,
+    categories,
+    boardCategories,
+    variables,
+    canSiteBan,
+}: Props) {
     const baseHref = `/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation`;
     const boardHref = `/games-v2/${encodeURIComponent(gameSlug)}`;
 
@@ -88,13 +142,7 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
     const [rows, setRows] = useState<ModQueueItem[] | null>(null);
     const [totalItems, setTotalItems] = useState(0);
     const [error, setError] = useState<string | null>(null);
-    const [selected, setSelected] = useState<Set<number>>(new Set());
-    const [dialog, setDialog] = useState<
-        | { kind: 'action'; verb: ModVerb; target: RunActionTarget }
-        | { kind: 'hide'; row: ModQueueItem }
-        | { kind: 'vod'; row: ModQueueItem; vodUrl: string }
-        | null
-    >(null);
+    const [openRunId, setOpenRunId] = useState<number | null>(null);
     const [isLoading, startLoad] = useTransition();
     // Which slice the rows on screen actually came from. Tracked separately
     // from `status` (the picked tab) so the table and its totals can never be
@@ -124,7 +172,6 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
         const nextPage = overrides?.page ?? page;
         const nextAutoVerifyOnly = overrides?.autoVerifyOnly ?? autoVerifyOnly;
         setError(null);
-        setSelected(new Set());
         const ticket = ++requestId.current;
         startLoad(async () => {
             // The spot-check filter only makes sense over verified runs, so
@@ -183,120 +230,56 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
     }, [rows, now]);
 
     const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
-    const selectedRunIds = useMemo(() => Array.from(selected), [selected]);
-
-    // Bulk banning only makes sense when the whole selection is one account on
-    // one board — a ban rule is scoped to exactly that.
-    const banSubject = useMemo(() => {
-        if (!rows || selected.size === 0) return null;
-        const picked = rows.filter((r) => selected.has(r.id));
-        const first = picked[0];
-        if (!first || first.userId == null) return null;
-        const same = picked.every(
-            (r) =>
-                r.userId === first.userId && r.categoryId === first.categoryId,
-        );
-        if (!same) return null;
-        return {
-            userId: first.userId,
-            runnerName: first.runnerName,
-            categoryId: first.categoryId,
-            categoryDisplay: first.categoryDisplay,
-        };
-    }, [rows, selected]);
-
-    const allSelected =
-        rows != null &&
-        rows.length > 0 &&
-        rows.every((r) => selected.has(r.id));
-    const partiallySelected =
-        !allSelected && rows != null && rows.some((r) => selected.has(r.id));
-
-    const selectAllRef = useRef<HTMLInputElement>(null);
-    useEffect(() => {
-        if (selectAllRef.current) {
-            selectAllRef.current.indeterminate = partiallySelected;
+    const openRow = (row: ModQueueItem) => {
+        if (!rowBoard(row, boardCategories)) {
+            setError(
+                "This run's board isn't in this console's list. Open it from the run page.",
+            );
+            return;
         }
-    }, [partiallySelected]);
+        setOpenRunId(row.id);
+    };
 
-    const toggleAll = () => {
-        if (!rows) return;
-        setSelected((prev) => {
-            const next = new Set(prev);
-            for (const r of rows) {
-                if (allSelected) next.delete(r.id);
-                else next.add(r.id);
+    // After the table reloads under the modal (the open run decided out of
+    // this view), stay on the run if it is still listed, else take the next
+    // run that survived, else the one before it, else close. Worked out
+    // during render so the modal never renders without a run while one
+    // survives.
+    const runOrder = (rows ?? []).map((r) => r.id);
+    const runOrderSignature = runOrder.join('|');
+    const [seenRunOrder, setSeenRunOrder] = useState<{
+        signature: string;
+        runIds: number[];
+    }>({ signature: '', runIds: [] });
+    if (rows != null && seenRunOrder.signature !== runOrderSignature) {
+        setSeenRunOrder({ signature: runOrderSignature, runIds: runOrder });
+        if (openRunId !== null && !runOrder.includes(openRunId)) {
+            const previous = seenRunOrder.runIds;
+            const survivors = new Set(runOrder);
+            const at = previous.indexOf(openRunId);
+            let landing: number | null = null;
+            if (at !== -1) {
+                landing =
+                    previous.slice(at + 1).find((id) => survivors.has(id)) ??
+                    previous
+                        .slice(0, at)
+                        .reverse()
+                        .find((id) => survivors.has(id)) ??
+                    null;
             }
-            return next;
-        });
-    };
+            setOpenRunId(landing);
+        }
+    }
 
-    const toggleRow = (runId: number) => {
-        setSelected((prev) => {
-            const next = new Set(prev);
-            if (next.has(runId)) next.delete(runId);
-            else next.add(runId);
-            return next;
-        });
-    };
-
-    const openRowAction = (verb: ModVerb, row: ModQueueItem) => {
-        setDialog({
-            kind: 'action',
-            verb,
-            target: {
-                kind: 'runs',
-                runIds: [row.id],
-                label: `${row.runnerName} · ${row.categoryDisplay}`,
-                runTimeMs: row.time ?? row.gameTime,
-                runDate: row.createdAt,
-                runner:
-                    row.userId != null
-                        ? {
-                              id: row.userId,
-                              name: row.runnerName,
-                              categoryId: row.categoryId,
-                              categoryDisplay: row.categoryDisplay,
-                              subcategoryKey: row.subcategoryKey,
-                              primaryTiming: row.time != null ? 'rt' : 'gt',
-                          }
-                        : undefined,
-            },
-        });
-    };
-
-    const openBulkAction = (verb: ModVerb) => {
-        if (selectedRunIds.length === 0) return;
-        setDialog({
-            kind: 'action',
-            verb,
-            target: {
-                kind: 'runs',
-                runIds: selectedRunIds,
-                label: `${selectedRunIds.length} run${selectedRunIds.length === 1 ? '' : 's'}`,
-            },
-        });
-    };
-
-    const openBan = () => {
-        if (!banSubject) return;
-        setDialog({
-            kind: 'action',
-            verb: 'ban',
-            target: {
-                kind: 'runner',
-                runnerId: banSubject.userId,
-                runnerName: banSubject.runnerName,
-                categoryId: banSubject.categoryId,
-                categoryDisplay: banSubject.categoryDisplay,
-                gameDisplay,
-            },
-        });
-    };
-
-    const afterMutation = () => {
-        setDialog(null);
-        load();
+    const openIndex =
+        openRunId === null || rows == null
+            ? -1
+            : rows.findIndex((r) => r.id === openRunId);
+    const openItem = openIndex >= 0 && rows ? rows[openIndex] : null;
+    const openBoard = openItem ? rowBoard(openItem, boardCategories) : null;
+    const stepTo = (index: number) => {
+        const row = rows?.[index];
+        if (row && rowBoard(row, boardCategories)) setOpenRunId(row.id);
     };
 
     // While the toggle is on, the table shows verified rows regardless of
@@ -489,16 +472,6 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
                     <table className={styles.table}>
                         <thead>
                             <tr>
-                                <th style={{ width: '1%' }}>
-                                    <input
-                                        ref={selectAllRef}
-                                        type="checkbox"
-                                        className="form-check-input"
-                                        aria-label="Select every run on this page"
-                                        checked={allSelected}
-                                        onChange={toggleAll}
-                                    />
-                                </th>
                                 <th>Waiting</th>
                                 <th>Runner</th>
                                 <th>Board</th>
@@ -517,17 +490,6 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
                                         key={row.id}
                                         className={styles[`row_${tone}`]}
                                     >
-                                        <td>
-                                            <input
-                                                type="checkbox"
-                                                className="form-check-input"
-                                                aria-label={`Select ${row.runnerName}’s run`}
-                                                checked={selected.has(row.id)}
-                                                onChange={() =>
-                                                    toggleRow(row.id)
-                                                }
-                                            />
-                                        </td>
                                         <td>
                                             <span
                                                 className={
@@ -600,21 +562,16 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
                                                     }
                                                 />
                                                 {row.vodUrl ? (
-                                                    <button
-                                                        type="button"
+                                                    <a
                                                         className={
                                                             styles.vodPill
                                                         }
-                                                        onClick={() =>
-                                                            setDialog({
-                                                                kind: 'vod',
-                                                                row,
-                                                                vodUrl: row.vodUrl as string,
-                                                            })
-                                                        }
+                                                        href={row.vodUrl}
+                                                        target="_blank"
+                                                        rel="noreferrer"
                                                     >
-                                                        Review VOD
-                                                    </button>
+                                                        VOD
+                                                    </a>
                                                 ) : (
                                                     <span
                                                         className={
@@ -670,55 +627,10 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
                                             <div className={styles.rowActions}>
                                                 <button
                                                     type="button"
-                                                    className={
-                                                        styles.approveAction
-                                                    }
-                                                    onClick={() =>
-                                                        openRowAction(
-                                                            'approve',
-                                                            row,
-                                                        )
-                                                    }
-                                                >
-                                                    Approve
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    className={
-                                                        styles.removeAction
-                                                    }
-                                                    onClick={() =>
-                                                        openRowAction(
-                                                            'reject',
-                                                            row,
-                                                        )
-                                                    }
-                                                >
-                                                    Decline…
-                                                </button>
-                                                <button
-                                                    type="button"
                                                     className={styles.rowAction}
-                                                    onClick={() =>
-                                                        openRowAction(
-                                                            'remove',
-                                                            row,
-                                                        )
-                                                    }
+                                                    onClick={() => openRow(row)}
                                                 >
-                                                    Remove…
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    className={styles.rowAction}
-                                                    onClick={() =>
-                                                        setDialog({
-                                                            kind: 'hide',
-                                                            row,
-                                                        })
-                                                    }
-                                                >
-                                                    Hide identity…
+                                                    Moderate
                                                 </button>
                                                 {row.userId != null && (
                                                     <Link
@@ -772,90 +684,36 @@ export function ModQueuePane({ gameSlug, gameDisplay, categories }: Props) {
                 </div>
             )}
 
-            {selected.size > 0 && (
-                <div className={styles.bulkBar}>
-                    <span className={styles.bulkCount}>
-                        {selected.size} selected
-                    </span>
-                    {banSubject && (
-                        <button
-                            type="button"
-                            className={styles.removeAction}
-                            onClick={openBan}
-                        >
-                            Ban {banSubject.runnerName}…
-                        </button>
-                    )}
-                    <div className={styles.bulkGroup}>
-                        <button
-                            type="button"
-                            className={styles.quietAction}
-                            onClick={() => setSelected(new Set())}
-                        >
-                            Clear
-                        </button>
-                        <button
-                            type="button"
-                            className={styles.approveAction}
-                            onClick={() => openBulkAction('approve')}
-                        >
-                            Approve
-                        </button>
-                        <button
-                            type="button"
-                            className={styles.removeAction}
-                            onClick={() => openBulkAction('reject')}
-                        >
-                            Decline…
-                        </button>
-                        <button
-                            type="button"
-                            className={styles.rowAction}
-                            onClick={() => openBulkAction('remove')}
-                        >
-                            Remove…
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {dialog?.kind === 'action' && (
-                <RunActionDialog
-                    gameSlug={gameSlug}
-                    verb={dialog.verb}
-                    target={dialog.target}
-                    defaultBanScope={
-                        dialog.verb === 'ban' ? 'category' : undefined
+            {openItem && openBoard && (
+                <ModeratePanel
+                    subject={{
+                        kind: 'run',
+                        entry: rowEntry(openItem, openBoard),
+                        board: openBoard,
+                    }}
+                    context={{
+                        gameSlug,
+                        gameId,
+                        gameDisplay,
+                        categories: boardCategories,
+                        variables,
+                        canSiteBan,
+                    }}
+                    mount="modal"
+                    position={{
+                        index: openIndex + 1,
+                        total: rows?.length ?? 0,
+                    }}
+                    onClose={() => setOpenRunId(null)}
+                    onMutated={() => load()}
+                    onPrev={
+                        openIndex > 0 ? () => stepTo(openIndex - 1) : undefined
                     }
-                    onDone={afterMutation}
-                    onClose={() => setDialog(null)}
-                />
-            )}
-            {dialog?.kind === 'vod' && (
-                <QueueVodReviewDialog
-                    gameSlug={gameSlug}
-                    row={dialog.row}
-                    vodUrl={dialog.vodUrl}
-                    // A saved retime changes the row's time, so the table
-                    // behind reloads — the dialog stays open on the run the
-                    // mod is still watching.
-                    onSaved={load}
-                    onClose={() => setDialog(null)}
-                />
-            )}
-            {dialog?.kind === 'hide' && (
-                <HideIdentityDialog
-                    open
-                    gameSlug={gameSlug}
-                    gameDisplay={gameDisplay}
-                    runnerName={dialog.row.runnerName}
-                    runId={dialog.row.id}
-                    userId={dialog.row.userId}
-                    categoryId={dialog.row.categoryId}
-                    categoryDisplay={dialog.row.categoryDisplay}
-                    subcategoryKey={dialog.row.subcategoryKey}
-                    onDone={afterMutation}
-                    onClose={() => setDialog(null)}
+                    onNext={
+                        rows && openIndex < rows.length - 1
+                            ? () => stepTo(openIndex + 1)
+                            : undefined
+                    }
                 />
             )}
         </div>
