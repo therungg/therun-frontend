@@ -1,0 +1,95 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/board' as board;
+
+// Tier colours. Urgency is the only thing that gets colour here, and age
+// gets it in the wait column — nothing else is tinted.
+$tier-1: dt.$accent-red;
+$tier-2: dt.$accent-amber;
+$tier-3: color-mix(in srgb, var(--bs-body-color) 28%, transparent);
+
+.urgency {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+}
+
+.bar {
+    display: flex;
+    gap: 3px;
+    height: 0.5rem;
+}
+
+.segment {
+    flex-basis: 0;
+    min-width: 0.75rem;
+    border-radius: 2px;
+    transition: flex-grow 320ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    &[data-tier='1'] {
+        background: $tier-1;
+    }
+    &[data-tier='2'] {
+        background: $tier-2;
+    }
+    &[data-tier='3'] {
+        background: $tier-3;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        transition: none;
+    }
+}
+
+.legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs dt.$spacing-xl;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+
+    li {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 0.35ch;
+
+        &::before {
+            content: '';
+            align-self: center;
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 2px;
+            margin-right: 0.25rem;
+        }
+        &[data-tier='1']::before {
+            background: $tier-1;
+        }
+        &[data-tier='2']::before {
+            background: $tier-2;
+        }
+        &[data-tier='3']::before {
+            background: $tier-3;
+        }
+
+        // A zero recedes: no swatch colour, lighter ink.
+        &[data-empty] {
+            color: var(--bs-tertiary-color);
+
+            &::before {
+                background: rgba(var(--bs-border-color-rgb), 0.6);
+            }
+
+            .legendCount {
+                color: inherit;
+                font-weight: 400;
+            }
+        }
+    }
+}
+
+.legendCount {
+    @include board.mono-time;
+    font-weight: 600;
+}

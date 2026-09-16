@@ -6,12 +6,12 @@ import type {
     WorklistDigest,
     WorklistPage,
 } from '../../../../../../types/worklist.types';
+import { UrgencyBar } from '../moderation/worklist/urgency-bar';
 import {
     ageTone,
     boardLabel,
     boardTimeMs,
     reasonLabel,
-    TIER_COUNT_LABEL,
     waitingLabel,
 } from '../moderation/worklist/worklist-model';
 import styles from './queue-summary.module.scss';
@@ -155,14 +155,6 @@ export function QueueSummary({
     const { counts } = worklist;
     const waiting = counts.needsYou;
     const rows = nextUp(worklist, variables);
-    const segments = ([1, 2, 3] as const)
-        .map((tier) => ({
-            tier,
-            count: counts[`tier${tier}`],
-            label: TIER_COUNT_LABEL[tier],
-        }))
-        .filter((s) => s.count > 0);
-
     return (
         <section
             className={styles.summary}
@@ -194,30 +186,7 @@ export function QueueSummary({
                 )}
             </div>
 
-            {segments.length > 0 && (
-                <>
-                    <div className={styles.bar} aria-hidden>
-                        {segments.map((s) => (
-                            <span
-                                key={s.tier}
-                                className={styles.segment}
-                                data-tier={s.tier}
-                                style={{ flexGrow: s.count }}
-                            />
-                        ))}
-                    </div>
-                    <ul className={styles.legend}>
-                        {segments.map((s) => (
-                            <li key={s.tier} data-tier={s.tier}>
-                                <span className={styles.legendCount}>
-                                    {s.count.toLocaleString()}
-                                </span>{' '}
-                                {s.label}
-                            </li>
-                        ))}
-                    </ul>
-                </>
-            )}
+            <UrgencyBar counts={counts} />
 
             {rows.length > 0 && (
                 <ol className={styles.splits} aria-label="Decide these first">
