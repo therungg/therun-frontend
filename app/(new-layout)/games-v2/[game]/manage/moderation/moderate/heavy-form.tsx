@@ -37,6 +37,11 @@ export interface HeavyFormSpec {
     whatChanges: ReactNode;
     /** Who the After part names: the runner, or "Each runner" for a selection. */
     runnerName: string;
+    /**
+     * What the runner is told, ending a sentence that starts with their name,
+     * when it differs from the verb's usual line. `null` = not told.
+     */
+    told?: string | null;
     /** Where undo lives, e.g. "Restore from history". Generic line when absent. */
     undoHint?: string;
     /** Set when the preview says this cannot be undone; the reason, shown in red. */
@@ -117,7 +122,8 @@ export function HeavyFormBody({
     state: HeavyFormState;
     busy: boolean;
 }) {
-    const told = RUNNER_IS_TOLD[spec.verb];
+    const told =
+        spec.told !== undefined ? spec.told : RUNNER_IS_TOLD[spec.verb];
     const reasonRef = useRef<HTMLElement>(null);
     const fieldRef = useRef<HTMLTextAreaElement>(null);
     // Opening a form puts the cursor on its reason: the first canned key

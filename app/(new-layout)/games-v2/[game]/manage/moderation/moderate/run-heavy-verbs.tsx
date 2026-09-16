@@ -1,0 +1,469 @@
+import type { ReactNode } from 'react';
+import type {
+    AffectedLeaderboard,
+    ModTiming,
+    RejectionReasonKey,
+} from '../../../../../../../types/moderation.types';
+import { MIN_ANONYMIZE_REASON, undoReason } from '../shared/action-model';
+import {
+    anonymizeRunAction,
+    anonymizeUserAction,
+} from '../shared/actions/anonymize-rules.action';
+import { moveRunAction } from '../shared/actions/board-override.action';
+import {
+    excludeAction,
+    previewExcludeAction,
+} from '../shared/actions/exclude.action';
+import {
+    createManualTimeAction,
+    deleteManualTimeAction,
+    manualTimeVerdictAction,
+    updateManualTimeAction,
+} from '../shared/actions/manual-times.action';
+import { restoreRunsAction } from '../shared/actions/restore.action';
+import {
+    applyVerdictsAction,
+    previewVerdictsAction,
+} from '../shared/actions/verdicts.action';
+import { REJECTION_REASONS } from '../shared/rejection-reasons';
+import type { UndoResult } from '../shared/undo-toast';
+import type { HeavyFormSpec } from './heavy-form';
+import { Time } from './run-columns';
+import { unwrap } from './run-verbs';
+import type { SheetBoard } from './subject';
+
+export type HeavyRunVerb =
+    | 'decline'
+    | 'remove'
+    | 'set_time'
+    | 'move'
+    | 'hide_identity';
+export type HideScope = 'run' | 'category' | 'game';
+
+export const MIN_REASON = 10;
+
+export type ConfirmResult =
+    | { error: string }
+    | {
+          ok: true;
+          /** Null when there is no true inverse: plain toast. */
+          undo: (() => Promise<UndoResult>) | null;
+          /** Replaces the default "Verb: runner" toast text. */
+          message?: string;
+      };
+
+const toModTiming = (t: 'rt' | 'gt'): ModTiming =>
+    t === 'gt' ? 'gametime' : 'realtime';
+
+// ---- Many runs --------------------------------------------------------------
+// The run tab calls these with one id; bulk mode calls them with many.
+
+export async function declineRuns(
+    gameSlug: string,
+    runIds: number[],
+    reason: string,
+    reasonKey: RejectionReasonKey | null,
+): Promise<ConfirmResult> {
+    const res = await applyVerdictsAction(
+        gameSlug,
+        'reject',
+        runIds,
+        reason,
+        reasonKey ?? undefined,
+    );
+    if ('error' in res) return res;
+    return {
+        ok: true,
+        undo: () =>
+            unwrap(restoreRunsAction(gameSlug, runIds, undoReason('reject'))),
+    };
+}
+
+/** Quiet removal: excluded from the board, the runner is not told. */
+export async function removeRuns(
+    gameSlug: string,
+    runIds: number[],
+    reason: string,
+): Promise<ConfirmResult> {
+    const res = await excludeAction(gameSlug, { runIds, reason });
+    if ('error' in res) return res;
+    return {
+        ok: true,
+        undo: () =>
+            unwrap(restoreRunsAction(gameSlug, runIds, undoReason('remove'))),
+    };
+}
+
+export async function restoreRuns(
+    gameSlug: string,
+    runIds: number[],
+    reason: string,
+): Promise<ConfirmResult> {
+    const res = await restoreRunsAction(gameSlug, runIds, reason);
+    if ('error' in res) return res;
+    return { ok: true, undo: null };
+}
+
+/** One board-override call per run; each run keeps its own source subcategory. */
+export async function moveRuns(
+    gameSlug: string,
+    runs: { runId: number; runnerName: string; subcategoryKey: string }[],
+    sourceCategoryId: number,
+    target: AffectedLeaderboard,
+    reason: string,
+): Promise<ConfirmResult> {
+    const errors: string[] = [];
+    for (const run of runs) {
+        const source = {
+            categoryId: sourceCategoryId,
+            subcategoryKey: run.subcategoryKey,
+        };
+        const res = await moveRunAction(
+            gameSlug,
+            run.runId,
+            target,
+            [source, target],
+            reason,
+        );
+        if ('error' in res) errors.push(`${run.runnerName}: ${res.error}`);
+    }
+    if (errors.length > 0) return { error: errors.join('; ') };
+    return { ok: true, undo: null };
+}
+
+/** Before the form opens: does the verb change anything? */
+export async function previewRunVerb(
+    gameSlug: string,
+    verb: 'decline' | 'remove',
+    runIds: number[],
+): Promise<{ error: string } | { noop: string | null }> {
+    if (verb === 'decline') {
+        const res = await previewVerdictsAction(gameSlug, 'reject', runIds);
+        if ('error' in res) return res;
+        return {
+            noop:
+                res.preview.affectedRunCount === 0
+                    ? 'Nothing changes: the run is no longer pending.'
+                    : null,
+        };
+    }
+    const res = await previewExcludeAction(gameSlug, { runIds });
+    if ('error' in res) return res;
+    return {
+        noop:
+            res.preview.affectedRunCount === 0
+                ? 'Nothing changes: the run is already off the board.'
+                : null,
+    };
+}
+
+// ---- One run or manual time ---------------------------------------------------
+
+export interface RunRef {
+    runId: number | null;
+    manualTimeId: number | null;
+    userId: number | null;
+    runnerName: string;
+    isManual: boolean;
+    /** The time on the board now, primary clock. */
+    timeMs: number | null;
+}
+
+export type RunConfirmInput =
+    | {
+          verb: 'decline';
+          reason: string;
+          reasonKey: RejectionReasonKey | null;
+      }
+    | { verb: 'remove'; reason: string }
+    | { verb: 'set_time'; reason: string; timeMs: number | null }
+    | {
+          verb: 'move';
+          reason: string;
+          target: AffectedLeaderboard | null;
+          targetName: string;
+      }
+    | { verb: 'hide_identity'; reason: string; scope: HideScope };
+
+const NO_RUN = { error: 'This entry has no run behind it.' };
+const NO_MANUAL = {
+    error: 'This manual time has no id. Reload and try again.',
+};
+
+export async function confirmRunVerb(
+    gameSlug: string,
+    run: RunRef,
+    board: SheetBoard,
+    input: RunConfirmInput,
+): Promise<ConfirmResult> {
+    switch (input.verb) {
+        case 'decline': {
+            if (!run.isManual) {
+                if (run.runId == null) return NO_RUN;
+                return declineRuns(
+                    gameSlug,
+                    [run.runId],
+                    input.reason,
+                    input.reasonKey,
+                );
+            }
+            if (run.manualTimeId == null) return NO_MANUAL;
+            // A manual verdict needs written words; a key alone sends its label.
+            const label =
+                REJECTION_REASONS.find((r) => r.key === input.reasonKey)
+                    ?.label ?? '';
+            const res = await manualTimeVerdictAction(
+                gameSlug,
+                run.manualTimeId,
+                'reject',
+                input.reason.length >= MIN_REASON ? input.reason : label,
+            );
+            if ('error' in res) return res;
+            return { ok: true, undo: null };
+        }
+        case 'remove': {
+            if (!run.isManual) {
+                if (run.runId == null) return NO_RUN;
+                return removeRuns(gameSlug, [run.runId], input.reason);
+            }
+            if (run.manualTimeId == null) return NO_MANUAL;
+            const res = await deleteManualTimeAction(
+                gameSlug,
+                run.manualTimeId,
+                input.reason,
+            );
+            if ('error' in res) return res;
+            return { ok: true, undo: null };
+        }
+        case 'set_time': {
+            const timeMs = input.timeMs;
+            if (timeMs == null) return { error: 'Type the new time first.' };
+            if (run.isManual) {
+                const id = run.manualTimeId;
+                if (id == null) return NO_MANUAL;
+                const res = await updateManualTimeAction(gameSlug, id, {
+                    reason: input.reason,
+                    timeMs,
+                });
+                if ('error' in res) return res;
+                const old = run.timeMs;
+                return {
+                    ok: true,
+                    undo:
+                        old == null
+                            ? null
+                            : () =>
+                                  unwrap(
+                                      updateManualTimeAction(gameSlug, id, {
+                                          reason: 'Undo of set time',
+                                          timeMs: old,
+                                      }),
+                                  ),
+                };
+            }
+            const res = await createManualTimeAction(gameSlug, {
+                runnerRef:
+                    run.userId != null
+                        ? { userId: run.userId }
+                        : { guestName: run.runnerName },
+                categoryId: board.categoryId,
+                subcategoryKey: board.subcategoryKey,
+                timing: toModTiming(board.primaryTiming),
+                timeMs,
+                reason: input.reason,
+            });
+            if ('error' in res) return res;
+            const createdId = res.result.id;
+            return {
+                ok: true,
+                undo: () =>
+                    unwrap(
+                        deleteManualTimeAction(
+                            gameSlug,
+                            createdId,
+                            'Undo of set time',
+                        ),
+                    ),
+            };
+        }
+        case 'move': {
+            if (run.runId == null) return NO_RUN;
+            if (!input.target) return { error: 'Pick a board first.' };
+            const res = await moveRuns(
+                gameSlug,
+                [
+                    {
+                        runId: run.runId,
+                        runnerName: run.runnerName,
+                        subcategoryKey: board.subcategoryKey,
+                    },
+                ],
+                board.categoryId,
+                input.target,
+                input.reason,
+            );
+            if ('error' in res) return res;
+            return {
+                ...res,
+                message: `Moved: ${run.runnerName} to ${input.targetName}`,
+            };
+        }
+        case 'hide_identity': {
+            const res =
+                input.scope === 'run' || run.userId == null
+                    ? run.runId == null
+                        ? NO_RUN
+                        : await anonymizeRunAction(gameSlug, {
+                              runId: run.runId,
+                              reason: input.reason,
+                              board: {
+                                  categoryId: board.categoryId,
+                                  subcategoryKey: board.subcategoryKey,
+                              },
+                          })
+                    : await anonymizeUserAction(gameSlug, {
+                          userId: run.userId,
+                          reason: input.reason,
+                          categoryId:
+                              input.scope === 'category'
+                                  ? board.categoryId
+                                  : null,
+                      });
+            if ('error' in res) return res;
+            return {
+                ok: true,
+                undo: null,
+                message: res.result.alreadyExists
+                    ? 'Already hidden at this scope. Nothing changed.'
+                    : `Hidden: now shown as ${res.result.rule.displayName}`,
+            };
+        }
+    }
+}
+
+// ---- Form specs -----------------------------------------------------------------
+
+export interface RunSpecArgs {
+    runnerName: string;
+    isManual: boolean;
+    timeMs: number | null;
+    boardName: string;
+    categoryDisplay: string;
+    gameDisplay: string;
+    /** From the preview: the verb would change nothing. */
+    noop?: string | null;
+    newTimeMs?: number | null;
+    timePreviewRank?: number | null;
+    moveSame?: boolean;
+    moveToName?: string;
+    hideScope?: HideScope;
+    /** Time input, board picker or scope cards, owned by the caller's state. */
+    fields?: ReactNode;
+}
+
+export function runHeavySpec(
+    verb: HeavyRunVerb,
+    a: RunSpecArgs,
+): HeavyFormSpec {
+    const base = { verb, runnerName: a.runnerName } as const;
+    const noop = a.noop ?? null;
+    switch (verb) {
+        case 'decline':
+            return {
+                ...base,
+                whatChanges: noop ?? (
+                    <>
+                        {a.runnerName}&rsquo;s <Time ms={a.timeMs} /> never goes
+                        on {a.boardName}.
+                    </>
+                ),
+                undoHint: a.isManual ? undefined : 'Restore from history',
+                notUndoable: a.isManual ? 'manual times have no restore' : null,
+                reasonKeys: true,
+                minReason: MIN_REASON,
+                actionLabel: 'Decline run',
+                tone: 'danger',
+                blocked: noop !== null,
+            };
+        case 'remove':
+            return {
+                ...base,
+                whatChanges:
+                    noop ??
+                    (a.isManual ? (
+                        'This manual time is deleted.'
+                    ) : (
+                        <>
+                            {a.runnerName}&rsquo;s <Time ms={a.timeMs} /> comes
+                            off {a.boardName}.
+                        </>
+                    )),
+                // Remove is the quiet exclusion: nothing reaches the runner.
+                told: a.isManual ? undefined : null,
+                undoHint: a.isManual ? undefined : 'Restore from history',
+                notUndoable: a.isManual ? 'manual times have no restore' : null,
+                reasonKeys: false,
+                minReason: MIN_REASON,
+                actionLabel: 'Remove run',
+                tone: 'danger',
+                blocked: noop !== null,
+            };
+        case 'set_time':
+            return {
+                ...base,
+                whatChanges: (
+                    <>
+                        <Time ms={a.timeMs} /> becomes{' '}
+                        <Time ms={a.newTimeMs ?? null} />.
+                        {a.timePreviewRank != null
+                            ? ` Lands at #${a.timePreviewRank}.`
+                            : null}
+                    </>
+                ),
+                undoHint: 'Undo from the toast right after',
+                notUndoable: null,
+                reasonKeys: false,
+                minReason: MIN_REASON,
+                actionLabel: 'Set time',
+                tone: 'primary',
+                blocked: a.newTimeMs == null || a.newTimeMs === a.timeMs,
+                fields: a.fields,
+            };
+        case 'move':
+            return {
+                ...base,
+                whatChanges: a.moveSame ? (
+                    `${a.runnerName}'s run is on ${a.boardName}.`
+                ) : (
+                    <>
+                        {a.runnerName}&rsquo;s <Time ms={a.timeMs} /> moves from{' '}
+                        {a.boardName} to {a.moveToName}.
+                    </>
+                ),
+                undoHint: 'Move it back',
+                notUndoable: null,
+                reasonKeys: false,
+                minReason: MIN_REASON,
+                actionLabel: 'Move run',
+                tone: 'primary',
+                blocked: a.moveSame !== false || !a.moveToName,
+                fields: a.fields,
+            };
+        case 'hide_identity':
+            return {
+                ...base,
+                whatChanges:
+                    a.hideScope === 'category'
+                        ? `Every run of ${a.runnerName} on ${a.categoryDisplay} shows as "Anonymous runner".`
+                        : a.hideScope === 'game'
+                          ? `Every run of ${a.runnerName} in ${a.gameDisplay} shows as "Anonymous runner".`
+                          : `${a.runnerName}'s run shows as "Anonymous runner".`,
+                notUndoable: 'only a site admin can lift it',
+                reasonKeys: false,
+                minReason: MIN_ANONYMIZE_REASON,
+                actionLabel: 'Hide identity',
+                tone: 'danger',
+                fields: a.fields,
+            };
+    }
+}

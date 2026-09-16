@@ -16,6 +16,11 @@ export interface OffSegment {
 }
 
 export interface RunSheetSummary {
+    status: 'pending' | 'verified' | 'rejected';
+    /** Newest direct exclude/include event says removed. Ban rules do not count. */
+    excluded: boolean;
+    /** Newest mark/unmark event says marked. */
+    marked: boolean;
     splitCount: number;
     finalTimeMs: number | null;
     /** 'unknown' when the run has no splits. */

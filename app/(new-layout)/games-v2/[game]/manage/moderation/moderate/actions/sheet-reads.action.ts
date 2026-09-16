@@ -17,6 +17,7 @@ import type { RunSplit } from '../../../../../../../../types/leaderboards.types'
 import type {
     AnonymizeRuleWithNames,
     GameExclusionRuleRow,
+    HistoryEvent,
     ManualTimeRow,
     PublicModLogEntry,
     UserEligibleRunRow,
@@ -35,6 +36,32 @@ import type {
 type Fail = { error: string };
 
 const OFF_THRESHOLD_MS = 5000;
+
+// Only direct run exclusions count. A ban rule's exclusion (`exclude_via_rule`)
+// is lifted by deleting the rule, which never shows in run history.
+const EXCLUDE_ACTIONS = new Set(['exclude_run', 'bulk_exclude']);
+const INCLUDE_ACTIONS = new Set(['include_run', 'bulk_include']);
+
+/** `history` newest first; the newest event of each kind decides. */
+function flagsFromHistory(history: HistoryEvent[]): {
+    excluded: boolean;
+    marked: boolean;
+} {
+    let excluded: boolean | null = null;
+    let marked: boolean | null = null;
+    for (const e of history) {
+        if (excluded === null) {
+            if (EXCLUDE_ACTIONS.has(e.action)) excluded = true;
+            else if (INCLUDE_ACTIONS.has(e.action)) excluded = false;
+        }
+        if (marked === null) {
+            if (e.action === 'mark_run') marked = true;
+            else if (e.action === 'unmark_run') marked = false;
+        }
+        if (excluded !== null && marked !== null) break;
+    }
+    return { excluded: excluded ?? false, marked: marked ?? false };
+}
 const RUNNER_MOD_LOG_LIMIT = 5;
 
 function summarizeSplits(
@@ -79,6 +106,8 @@ export async function loadRunSheetAction(
     return {
         ok: true,
         summary: {
+            status: run.verificationStatus,
+            ...flagsFromHistory(sortedHistory),
             ...summarizeSplits(run.splits ?? []),
             finalTimeMs: run.realTime ?? run.gameTime ?? null,
             vodUrls: run.vodUrl ? [run.vodUrl] : [],
