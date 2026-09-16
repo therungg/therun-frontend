@@ -31,8 +31,8 @@ export function parseQueueKey(e: {
         case 'a':
             return 'approve';
         case 'A':
-            // Caps Lock alone must not approve a whole group.
-            return e.shiftKey ? 'approveGroup' : null;
+            // Caps Lock turns a plain `a` into 'A': that is still one run.
+            return e.shiftKey ? 'approveGroup' : 'approve';
         case 'd':
             return 'decline';
         case 'Escape':
