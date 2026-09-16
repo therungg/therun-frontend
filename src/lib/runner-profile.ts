@@ -1,4 +1,5 @@
 import { cacheLife, cacheTag } from 'next/cache';
+import type { LeaderboardsProfile } from '../../types/leaderboards-profile.types';
 import type {
     RunnerActivity,
     RunnerProfileHead,
@@ -6,7 +7,7 @@ import type {
 } from '../../types/runner-profile.types';
 import { ApiError, apiFetch } from './api-client';
 
-type Part = 'head' | 'activity' | 'stats';
+type Part = 'head' | 'activity' | 'stats' | 'boards';
 
 export const runnerProfileTag = (name: string, part?: Part) =>
     part
@@ -52,4 +53,22 @@ export async function getRunnerStats(
     cacheLife('minutes');
     cacheTag(runnerProfileTag(name), runnerProfileTag(name, 'stats'));
     return getPart<RunnerStats>(name, 'stats');
+}
+
+/** Only the runner's best `limit` board entries; the standing still counts everything. */
+export async function getRunnerBoardsTop(
+    name: string,
+    limit: number,
+): Promise<LeaderboardsProfile | null> {
+    'use cache';
+    cacheLife('minutes');
+    cacheTag(runnerProfileTag(name), runnerProfileTag(name, 'boards'));
+    try {
+        return await apiFetch<LeaderboardsProfile>(
+            `/users/global/${encodeURIComponent(name)}?part=boards&limit=${limit}`,
+        );
+    } catch (e) {
+        if (e instanceof ApiError && e.status === 404) return null;
+        throw e;
+    }
 }

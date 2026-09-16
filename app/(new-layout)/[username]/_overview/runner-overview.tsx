@@ -7,6 +7,8 @@ import type {
 } from '../../../../types/runner-profile.types';
 import { ProfileShell } from '../(sections)/profile-shell';
 import { ChapterSkeleton, visibleChapters } from './chapter';
+import { HighlightsChapter } from './chapters/highlights';
+import { LeaderboardsChapter } from './chapters/leaderboards';
 import styles from './overview.module.scss';
 
 /** Skeleton heights match each chapter's glance at desktop width. */
@@ -19,14 +21,12 @@ const SKELETON_HEIGHT: Record<ChapterId, number> = {
     splits: 220,
 };
 
-function ChapterBody({
-    id,
-    head: _head,
-}: {
-    id: ChapterId;
-    head: RunnerProfileHead;
-}) {
+function ChapterBody({ id, head }: { id: ChapterId; head: RunnerProfileHead }) {
     switch (id) {
+        case 'highlights':
+            return <HighlightsChapter head={head} />;
+        case 'leaderboards':
+            return <LeaderboardsChapter head={head} />;
         default:
             return null;
     }

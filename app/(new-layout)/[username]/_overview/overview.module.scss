@@ -1,6 +1,11 @@
 @use '../../styles/design-tokens' as dt;
 
 .chapters {
+    // Medal tones, as on the section pages.
+    --rank-gold: #d4a73a;
+    --rank-silver: #a9b4c2;
+    --rank-bronze: #c07a45;
+
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: dt.$spacing-3xl;
@@ -62,4 +67,45 @@
 .skeleton {
     border-radius: dt.$radius-md;
     background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.035));
+}
+
+// The pin grid's breakpoints read the width of this box.
+.highlights {
+    container: profile-main / inline-size;
+    min-width: 0;
+}
+
+.boards {
+    --cols: 3.5rem minmax(0, 1fr) minmax(4.5rem, auto) minmax(6rem, auto)
+        minmax(6.5rem, auto);
+
+    @container profile-block (max-width: 759.98px) {
+        --cols: 3rem minmax(0, 1fr) auto;
+    }
+}
+
+.boardName {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    min-width: 0;
+    padding-block: dt.$spacing-xs;
+
+    img {
+        flex: none;
+        width: 27px;
+        height: 36px;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+
+    a {
+        color: inherit;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+    }
 }
