@@ -5,12 +5,26 @@ export interface SrcMatchSuggestion {
     alsoMatches: number;
 }
 
+export interface SrcMatchPb {
+    categoryId: number;
+    /** categories.display */
+    category: string;
+    /** '' for none, else "Name=Value|Name=Value", e.g. "Platform=PC|Glitches=No". */
+    subcategoryKey: string;
+    /** ms, on the clock the category ranks by */
+    timeMs: number;
+    timing: 'realtime' | 'gametime';
+    /** 1-based position on that board */
+    rank: number;
+}
+
 export interface SrcMatchRow {
     userId: number;
     username: string;
     queued: number;
     suggestions: SrcMatchSuggestion[];
     state: 'sure' | 'contested' | 'none';
+    pbs: SrcMatchPb[];
 }
 
 export interface SrcMatchList {

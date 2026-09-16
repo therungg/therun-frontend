@@ -4,9 +4,11 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
 import Link from '~src/components/link';
 import { SRC_MATCH_BATCH } from '~src/lib/moderation/src-matches';
+import { formatTimeMs } from '~src/lib/run-view/time-format';
 import type {
     SrcMatchLink,
     SrcMatchLinkResult,
+    SrcMatchPb,
     SrcMatchRow,
 } from '../../../../../../types/src-matches.types';
 import {
@@ -48,6 +50,21 @@ const failMessage = (
         default:
             return 'Could not link.';
     }
+};
+
+const pbValues = (subcategoryKey: string) =>
+    subcategoryKey
+        .split('|')
+        .filter(Boolean)
+        .map((pair) => pair.slice(pair.indexOf('=') + 1))
+        .join(', ');
+
+const pbLine = (pb: SrcMatchPb) => {
+    const values = pbValues(pb.subcategoryKey);
+    const time = formatTimeMs(pb.timeMs);
+    return `${pb.category}${values ? ` (${values})` : ''} ${time}${
+        pb.timing === 'gametime' ? ' IGT' : ''
+    } #${pb.rank}`;
 };
 
 const pickedSuggestion = (r: RowState) =>
@@ -361,6 +378,17 @@ function MatchRow({
                 >
                     {row.username}
                 </Link>
+                {row.pbs.length > 0 && (
+                    <ul className={styles.pbs}>
+                        {row.pbs.map((pb, i) => (
+                            <li
+                                key={`${pb.categoryId}:${pb.subcategoryKey}:${i}`}
+                            >
+                                {pbLine(pb)}
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </td>
             <td className={styles.num}>{row.queued}</td>
             <td>

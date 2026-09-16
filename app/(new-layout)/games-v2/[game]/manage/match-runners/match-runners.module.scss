@@ -54,6 +54,14 @@
     font-weight: 600;
 }
 
+.pbs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
 .rowError {
     margin-top: dt.$spacing-xs;
     font-size: dt.$font-size-xs;
