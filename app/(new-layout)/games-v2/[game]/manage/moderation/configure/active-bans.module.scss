@@ -92,48 +92,6 @@
     }
 }
 
-// ---- Inline lift form (expanded row) -------------------------
-.liftRow {
-    td {
-        background: color-mix(
-            in srgb,
-            var(--bs-body-bg) 94%,
-            #{dt.$accent-red} 6%
-        );
-        border-left: 3px solid dt.$accent-red;
-    }
-}
-
-.liftForm {
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-sm;
-    padding: dt.$spacing-sm 0;
-    max-width: 32rem;
-}
-
-.liftLabel {
-    @include board.board-eyebrow;
-}
-
-.liftTextarea {
-    @include board.board-dialog-textarea;
-}
-
-.liftActions {
-    display: flex;
-    gap: dt.$spacing-sm;
-    justify-content: flex-end;
-}
-
-.cancelBtn {
-    @include board.control-pill;
-}
-
-.confirmBtn {
-    @include board.board-dialog-btn-danger;
-}
-
 // ---- Loading / empty / error states -------------------------
 .loading {
     display: flex;

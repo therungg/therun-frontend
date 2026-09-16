@@ -215,28 +215,6 @@
     font-size: dt.$font-size-xs;
 }
 
-.approveAction {
-    @include board.control-pill;
-    font-size: dt.$font-size-xs;
-    color: var(--bs-primary);
-
-    &:hover {
-        background: rgba(var(--bs-primary-rgb), 0.12);
-        color: var(--bs-primary);
-    }
-}
-
-.removeAction {
-    @include board.control-pill;
-    font-size: dt.$font-size-xs;
-    color: dt.$accent-red;
-
-    &:hover {
-        background: color-mix(in srgb, #{dt.$accent-red} 14%, transparent);
-        color: dt.$accent-red-light;
-    }
-}
-
 .pager {
     display: flex;
     align-items: center;
@@ -260,33 +238,6 @@
 
 .emptyIcon {
     @include board.board-empty-icon;
-}
-
-// The one glass surface this view is allowed: a sticky bar over scrolled rows.
-.bulkBar {
-    @include board.board-glass;
-    position: sticky;
-    bottom: 0;
-    z-index: dt.$z-sticky;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: dt.$spacing-sm;
-    padding: dt.$spacing-sm dt.$spacing-md;
-    margin-top: dt.$spacing-md;
-    border-radius: dt.$radius-md;
-}
-
-.bulkCount {
-    @include board.mono-time;
-    font-weight: 700;
-    margin-right: dt.$spacing-sm;
-}
-
-.bulkGroup {
-    display: flex;
-    gap: dt.$spacing-sm;
-    margin-left: auto;
 }
 
 // Rows still belonging to the tab you just left, while its replacement

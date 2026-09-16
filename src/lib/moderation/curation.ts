@@ -17,10 +17,10 @@ export function markRuns(
 /**
  * `SetBoardOverrideInput.reason` is required by the backend
  * (board-mod-unified-log) whenever `target` is set (a real move) — min 10
- * characters, enforced server-side and mirrored client-side in
- * MoveDialog/BulkMoveDialog. Clearing an override (`target: null`, e.g. the
- * "moved here" tag's ×) keeps its prior shape — a bare `null` body — since
- * the breaking change is scoped to the SET path.
+ * characters, enforced server-side and mirrored client-side in MoveDialog.
+ * Clearing an override (`target: null`, e.g. the "moved here" tag's ×) keeps
+ * its prior shape — a bare `null` body — since the breaking change is
+ * scoped to the SET path.
  */
 export function setBoardOverride(
     sessionId: string,

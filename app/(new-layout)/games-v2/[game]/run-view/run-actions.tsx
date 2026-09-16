@@ -90,8 +90,7 @@ export function RunActions({
     // success can change. See the render guard below.
     const [hideIdentityOpen, setHideIdentityOpen] = useState(false);
     // Move's category picker needs the game's board context (categories +
-    // variable defs) — loaded lazily on first click, same pattern as the
-    // board drawer's mod dialogs (run-inspector.tsx), so a run page view
+    // variable defs) — loaded lazily on first click, so a run page view
     // that never opens Move never pays for it.
     const [moveCtx, setMoveCtx] = useState<MoveContext | null>(null);
     const [ctxPending, startCtxLoad] = useTransition();
@@ -103,8 +102,7 @@ export function RunActions({
         if (moveCtx != null) {
             // Cached from an earlier click. If the run's own category never
             // resolved (see below), it never will from this same cache —
-            // say so every time rather than silently doing nothing, same
-            // shape as run-inspector.tsx's openModDialog.
+            // say so every time rather than silently doing nothing.
             if (moveCategory == null) {
                 toast.error("Could not resolve this run's category.");
                 return;

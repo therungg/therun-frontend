@@ -673,7 +673,7 @@ function OtherRunPicker({
 
 /**
  * BoardDialog chrome around the form, for hosts that want the wizard as a
- * modal rather than inline (mirrors RunActionDialog around RunActionForm).
+ * modal rather than inline.
  */
 export function OwnerRemoveDialog(props: OwnerRemoveFormProps) {
     const closeRef = useRef<HTMLButtonElement>(null);

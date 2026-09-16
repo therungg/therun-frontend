@@ -31,7 +31,7 @@ vi.mock('next/navigation', () => ({
 // The dialogs the two new buttons open have their own suites (move-dialog.test.tsx,
 // owner-hide-identity-dialog.test.tsx) — here they are stubs so the
 // assertions are about which controls RunActions offers and whether it
-// opens the right one, same pattern as run-inspector-owner.test.tsx.
+// opens the right one.
 vi.mock('../manage/boards/move-dialog', () => ({
     MoveDialog: (props: { open: boolean }) =>
         props.open ? <div data-testid="move-dialog" /> : null,

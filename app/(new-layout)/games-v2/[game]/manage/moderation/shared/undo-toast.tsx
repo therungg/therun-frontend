@@ -66,7 +66,7 @@ function UndoToast({
  * Fires a success toast with a 10s-live Undo action. Clicking it runs
  * `undo`, surfaces the result, then hands control back to `onUndone` so the
  * caller's list/card reflects the reversal. The round-1 UndoToast pattern —
- * shared by run-action-dialog.tsx's approve/remove/restore/ban flows and
+ * shared by the moderate panel's approve/remove/restore/ban flows and
  * categories-table.tsx's Featured/Archived visibility toggles.
  */
 export function fireUndoToast(

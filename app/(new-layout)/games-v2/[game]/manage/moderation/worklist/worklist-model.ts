@@ -161,9 +161,9 @@ export const trackRecordLine = (
 };
 
 /**
- * What RunInspector needs to draw this run. The worklist is not a board, so
- * `rank` is the would-be rank and variables are unknown here — the inspector
- * loads the runner's own runs and history itself.
+ * What the moderate panel needs to draw this run. The worklist is not a
+ * board, so `rank` is the would-be rank and variables are unknown here — the
+ * panel loads the runner's own runs and history itself.
  */
 export const toInspectorEntry = (item: WorklistItem): LeaderboardEntry => ({
     runId: item.runId,
