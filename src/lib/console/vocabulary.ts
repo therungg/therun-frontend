@@ -24,6 +24,7 @@ export type ConceptId =
     | 'moderators'
     | 'reassign'
     | 'import'
+    | 'match-runners'
     | 'variables'
     | 'subcategories'
     | 'filters'
@@ -53,6 +54,7 @@ export const CONCEPT_LABEL: Record<ConceptId, string> = {
     moderators: 'Moderators',
     reassign: 'Merge games & categories',
     import: 'Import from speedrun.com',
+    'match-runners': 'Match runners',
     variables: 'Subcategories & filters',
     subcategories: 'Subcategories',
     filters: 'Filters',
@@ -98,6 +100,7 @@ export const TILE_CONCEPT_IDS = [
     'moderators',
     'reassign',
     'import',
+    'match-runners',
 ] as const;
 
 export type TileConceptId = (typeof TILE_CONCEPT_IDS)[number];
@@ -187,6 +190,10 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
         action: 'Bring the board over from speedrun.com',
         blurb: 'Fetch categories, filters, runs and players from speedrun.com and review them before anything is written.',
     },
+    'match-runners': {
+        action: 'Match runners to speedrun.com',
+        blurb: 'Link runners to their speedrun.com profiles so their verified runs leave the queue.',
+    },
 };
 
 /**
@@ -205,6 +212,7 @@ export const STEP_CONCEPTS: Record<SetupStepId, ConceptId[]> = {
     'category-setup': ['categories'],
     variables: ['subcategories', 'filters'],
     verification: ['auto-verify'],
+    'match-runners': ['match-runners'],
     boards: ['boards'],
 };
 
@@ -226,6 +234,7 @@ const BOARD_PANES: ReadonlySet<ConceptId> = new Set<ConceptId>([
     'moderators',
     'reassign',
     'import',
+    'match-runners',
 ]);
 
 /**

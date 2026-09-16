@@ -20,6 +20,7 @@ import {
     ListUl,
     Palette,
     PatchCheck,
+    PersonCheck,
     PersonX,
     ShieldLock,
     Speedometer2,
@@ -53,4 +54,5 @@ export const NAV_ICON: Record<NavItemId, IconType> = {
     moderators: ShieldLock,
     reassign: ArrowLeftRight,
     import: CloudDownload,
+    'match-runners': PersonCheck,
 };

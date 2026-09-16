@@ -27,6 +27,7 @@ import { BoardCuration } from '../boards/board-curation';
 import { GameTab } from '../game-tab/game-tab';
 import type { ReorderChange } from '../game-tab/reorder-changes';
 import { LevelsPane } from '../levels/levels-pane';
+import { MatchRunnersPane } from '../match-runners/match-runners-pane';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import { ModApplicationsCard } from '../moderation/attention/mod-applications-card';
 import { NeedsAttention } from '../moderation/attention/needs-attention';
@@ -336,6 +337,8 @@ export function ContentRouter(props: ContentRouterProps) {
                     isAdmin={props.canSiteBan}
                 />
             );
+        case 'match-runners':
+            return <MatchRunnersPane gameSlug={game.name} />;
         case null:
             return (
                 <BoardOverview

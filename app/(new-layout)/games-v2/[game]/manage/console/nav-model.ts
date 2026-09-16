@@ -26,7 +26,8 @@ export type NavItemId =
     | 'boards'
     | 'moderators'
     | 'reassign'
-    | 'import';
+    | 'import'
+    | 'match-runners';
 
 export type NavGroupId = 'overview' | 'moderate' | 'structure' | 'game';
 
@@ -105,6 +106,7 @@ const ALL_GROUPS: NavGroup[] = [
             { id: 'theme', label: CONCEPT_LABEL.theme },
             { id: 'moderators', label: CONCEPT_LABEL.moderators },
             { id: 'import', label: CONCEPT_LABEL.import },
+            { id: 'match-runners', label: CONCEPT_LABEL['match-runners'] },
             { id: 'reassign', label: CONCEPT_LABEL.reassign },
         ],
     },
@@ -150,6 +152,7 @@ function itemVisible(
     // `flags.canModerate || flags.canConfigure`.
     if (itemId === 'boards') return false;
     if (itemId === 'import') return flags.canConfigure || flags.canModerate;
+    if (itemId === 'match-runners') return flags.canModerate;
     return flags.canConfigure;
 }
 

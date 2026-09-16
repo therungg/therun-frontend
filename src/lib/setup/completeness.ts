@@ -12,6 +12,7 @@ export type SetupStepId =
     | 'category-setup'
     | 'variables'
     | 'verification'
+    | 'match-runners'
     | 'boards';
 
 export type SetupStepStatus = 'done' | 'todo' | 'warning' | 'blocker';
@@ -84,6 +85,7 @@ export const SETUP_STEP_ORDER: SetupStepId[] = [
     'category-setup',
     'variables',
     'verification',
+    'match-runners',
     'boards',
 ];
 
@@ -306,6 +308,12 @@ export function computeCompleteness(
               }
             : { step: 'verification', status: 'todo', summary: 'Not set yet' },
     );
+
+    steps.push({
+        step: 'match-runners',
+        status: 'done',
+        summary: 'Optional',
+    });
 
     steps.push(
         input.configured

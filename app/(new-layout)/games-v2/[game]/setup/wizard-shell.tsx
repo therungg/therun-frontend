@@ -21,6 +21,7 @@ import { StepDetails } from './steps/step-details';
 import { StepGroups } from './steps/step-groups';
 import { StepImport } from './steps/step-import';
 import { StepLevels } from './steps/step-levels';
+import { StepMatchRunners } from './steps/step-match-runners';
 import { StepVariables } from './steps/step-variables';
 import { StepVerification } from './steps/step-verification';
 import type { WizardData } from './types';
@@ -137,9 +138,10 @@ export function WizardShell({ data, initialStep }: Props) {
                 // lands (e.g. after a save), so stale local state can't hide
                 // behind fresher server data.
                 //
-                // 'import', 'category-setup', 'variables', 'levels' and 'boards' key on
-                // `step` alone, with no renderedAt: they own long-lived
-                // interactive state (the import sections' job polling, an open
+                // 'import', 'category-setup', 'variables', 'levels', 'boards'
+                // and 'match-runners' key on `step` alone, with no renderedAt:
+                // they own long-lived interactive state (the import sections'
+                // job polling, an open
                 // variable form, staged subcategory toggles,
                 // BoardCuration's
                 // pendingRemovals/selectedRunIds/reorder mode, the
@@ -156,7 +158,8 @@ export function WizardShell({ data, initialStep }: Props) {
                     step === 'category-setup' ||
                     step === 'variables' ||
                     step === 'levels' ||
-                    step === 'boards'
+                    step === 'boards' ||
+                    step === 'match-runners'
                         ? step
                         : `${step}-${data.renderedAt}`
                 }
@@ -255,6 +258,14 @@ function CurrentStep({
         case 'verification':
             return (
                 <StepVerification
+                    data={data}
+                    onAdvance={onAdvance}
+                    onBack={onBack}
+                />
+            );
+        case 'match-runners':
+            return (
+                <StepMatchRunners
                     data={data}
                     onAdvance={onAdvance}
                     onBack={onBack}
