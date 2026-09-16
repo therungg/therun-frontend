@@ -92,7 +92,6 @@ export function StepVerification({ data, onAdvance }: StepProps) {
             <SettingsEditor
                 key={view.configured ? 'saved' : 'new'}
                 gameSlug={gameSlug}
-                categoryId={null}
                 effective={view.game}
                 enforced={view.enforced}
                 configured={view.configured}

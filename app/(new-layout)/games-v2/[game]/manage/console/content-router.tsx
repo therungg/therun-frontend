@@ -167,7 +167,6 @@ export function ContentRouter(props: ContentRouterProps) {
                 <VerificationPane
                     gameSlug={game.name}
                     gameDisplay={game.display}
-                    categories={categories}
                 />
             );
         case 'attention':

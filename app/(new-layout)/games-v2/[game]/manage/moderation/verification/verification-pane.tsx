@@ -5,25 +5,18 @@ import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import type { VerificationSettingsView } from '../../../../../../../types/verification-settings.types';
 import { BackLink } from '../../../shared/back-link';
 import { InlineError } from '../../shared/form-kit';
-import {
-    loadVerificationSettingsAction,
-    saveVerificationSettingsAction,
-} from './actions/verification-settings.action';
+import { loadVerificationSettingsAction } from './actions/verification-settings.action';
 import { OverruleSummary } from './overrule-summary';
 import { SettingsEditor } from './settings-editor';
-import { summarize } from './settings-model';
-import styles from './verification-pane.module.scss';
 
 interface Props {
     gameSlug: string;
     gameDisplay: string;
-    categories: Array<{ id: number; display: string }>;
 }
 
-export function VerificationPane({ gameSlug, gameDisplay, categories }: Props) {
+export function VerificationPane({ gameSlug, gameDisplay }: Props) {
     const [view, setView] = useState<VerificationSettingsView | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const [open, setOpen] = useState<number | null>(null);
     const [version, setVersion] = useState(0);
     const [, startLoad] = useTransition();
     const requestId = useRef(0);
@@ -50,22 +43,6 @@ export function VerificationPane({ gameSlug, gameDisplay, categories }: Props) {
         setVersion((v) => v + 1);
     };
 
-    const removeOverride = async (categoryId: number) => {
-        const res = await saveVerificationSettingsAction(gameSlug, {
-            categoryId,
-            intake: null,
-            videoRule: null,
-            autoVerify: null,
-        });
-        if ('error' in res) {
-            setError(res.error);
-            return;
-        }
-        setError(null);
-        saved(res.view);
-        setOpen(null);
-    };
-
     const boardHref = `/games-v2/${encodeURIComponent(gameSlug)}`;
 
     return (
@@ -85,82 +62,15 @@ export function VerificationPane({ gameSlug, gameDisplay, categories }: Props) {
 
             {view && (
                 <>
-                    <section className={styles.block}>
-                        <h3 className={styles.blockTitle}>Every category</h3>
-                        <OverruleSummary overrules={view.overrules} />
-                        <SettingsEditor
-                            key={`game:${version}`}
-                            gameSlug={gameSlug}
-                            categoryId={null}
-                            effective={view.game}
-                            enforced={view.enforced}
-                            configured={view.configured}
-                            onSaved={saved}
-                        />
-                    </section>
-
-                    <section className={styles.block}>
-                        <h3 className={styles.blockTitle}>
-                            Categories that are different
-                        </h3>
-                        <ul className={styles.categories}>
-                            {view.categories.map((c) => {
-                                const isOpen = open === c.categoryId;
-                                return (
-                                    <li
-                                        key={c.categoryId}
-                                        className={styles.category}
-                                    >
-                                        <button
-                                            type="button"
-                                            className={styles.categoryHead}
-                                            aria-expanded={isOpen}
-                                            onClick={() =>
-                                                setOpen(
-                                                    isOpen
-                                                        ? null
-                                                        : c.categoryId,
-                                                )
-                                            }
-                                        >
-                                            <span
-                                                className={styles.categoryName}
-                                            >
-                                                {c.display}
-                                            </span>
-                                            <span
-                                                className={
-                                                    styles.categorySummary
-                                                }
-                                            >
-                                                {c.overridden.length === 0
-                                                    ? 'Same as the game'
-                                                    : summarize(c.effective)}
-                                            </span>
-                                        </button>
-                                        {isOpen && (
-                                            <SettingsEditor
-                                                key={`cat:${c.categoryId}:${version}`}
-                                                gameSlug={gameSlug}
-                                                categoryId={c.categoryId}
-                                                effective={c.effective}
-                                                enforced={view.enforced}
-                                                onSaved={saved}
-                                                onRemoveOverride={
-                                                    c.overridden.length > 0
-                                                        ? () =>
-                                                              removeOverride(
-                                                                  c.categoryId,
-                                                              )
-                                                        : undefined
-                                                }
-                                            />
-                                        )}
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                    </section>
+                    <OverruleSummary overrules={view.overrules} />
+                    <SettingsEditor
+                        key={`game:${version}`}
+                        gameSlug={gameSlug}
+                        effective={view.game}
+                        enforced={view.enforced}
+                        configured={view.configured}
+                        onSaved={saved}
+                    />
                 </>
             )}
         </div>

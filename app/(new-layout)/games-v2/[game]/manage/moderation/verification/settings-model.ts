@@ -146,33 +146,6 @@ export const needsPreview = (input: SaveSettingsInput) =>
 
 export const canPreview = (input: SaveSettingsInput) => needsPreview(input);
 
-const videoWords = (v: VideoRule) => {
-    switch (v.require) {
-        case 'nothing':
-            return 'no video required';
-        case 'everything':
-            return 'video required for every run';
-        case 'top_n':
-            return `video required for the top ${v.topN}`;
-        case 'under_time':
-            return 'video required under a time';
-    }
-};
-
-/** One line describing a category's settings, for the collapsed override row. */
-export const summarize = (e: EffectiveSettings): string => {
-    const parts = [
-        videoWords(e.videoRule.value),
-        e.autoVerify.value.enabled
-            ? `auto-verify on, never the top ${e.autoVerify.value.neverTopN}`
-            : 'auto-verify off',
-    ];
-    if (e.intake.value.timerRuns === 'runner_submits')
-        parts.push('runners submit their own PBs');
-    if (e.intake.value.manual.mode === 'off') parts.push('no submitted times');
-    return parts.join(', ');
-};
-
 /** What a preview means, as sentences, most consequential first. */
 export const previewSentences = (
     p: SettingsPreview,

@@ -33,26 +33,20 @@ import {
 
 interface Props {
     gameSlug: string;
-    /** null edits the game default. */
-    categoryId: number | null;
     effective: EffectiveSettings;
     enforced: boolean;
-    /** Game editor only: whether any setting has been saved for this game.
-     *  When false, the defaults can be saved as they stand. */
+    /** Whether any setting has been saved for this game. When false, the
+     *  defaults can be saved as they stand. */
     configured?: boolean;
     onSaved: (view: VerificationSettingsView) => void;
-    /** Category editors only: drop every override and inherit the game again. */
-    onRemoveOverride?: () => Promise<void>;
 }
 
 export function SettingsEditor({
     gameSlug,
-    categoryId,
     effective,
     enforced,
     configured,
     onSaved,
-    onRemoveOverride,
 }: Props) {
     const original = formFrom(effective);
     const [form, setForm] = useState<SettingsForm>(original);
@@ -61,8 +55,6 @@ export function SettingsEditor({
     const [error, setError] = useState<string | null>(null);
     const [isPreviewing, startPreview] = useTransition();
     const [isSaving, startSave] = useTransition();
-    const [confirmRemove, setConfirmRemove] = useState(false);
-    const [isRemoving, startRemove] = useTransition();
 
     // A slow preview response for a form the moderator has since changed
     // again must not land on top of the newer form. Each preview call takes
@@ -88,13 +80,12 @@ export function SettingsEditor({
     // Nothing saved for the game yet and the form untouched: saving writes
     // the defaults as they stand, so a moderator who agrees with them isn't
     // stuck. Unchanged values act on nothing, so no preview is needed.
-    const acceptDefaults =
-        categoryId === null && configured === false && !dirty && !invalid;
+    const acceptDefaults = configured === false && !dirty && !invalid;
     const input = invalid
         ? null
         : acceptDefaults
-          ? fullInputFrom(form, categoryId)
-          : inputFrom(form, original, categoryId);
+          ? fullInputFrom(form, null)
+          : inputFrom(form, original, null);
     const mustPreview =
         input !== null && !acceptDefaults && needsPreview(input);
     const offerPreview = input !== null && !acceptDefaults && canPreview(input);
@@ -102,8 +93,7 @@ export function SettingsEditor({
         (dirty || acceptDefaults) &&
         !invalid &&
         (!mustPreview || preview !== null) &&
-        !isSaving &&
-        !isRemoving;
+        !isSaving;
 
     const runPreview = () => {
         if (!input) return;
@@ -135,11 +125,7 @@ export function SettingsEditor({
                 setError(res.error);
                 return;
             }
-            toast.success(
-                categoryId === null
-                    ? 'Game settings saved.'
-                    : 'Category settings saved.',
-            );
+            toast.success('Settings saved.');
             setPreview(null);
             setApplyToExisting(false);
             onSaved(res.view);
@@ -156,13 +142,13 @@ export function SettingsEditor({
         <div className={styles.editor}>
             <FormSection title="What this board accepts">
                 <SegmentedControl
-                    label="Runs from LiveSplit"
+                    label="Should a new PB from LiveSplit go straight to auto-verify and the mods, or should its runner check and retime it first?"
                     value={form.timerRuns}
                     options={[
-                        { value: 'direct', label: 'Go straight on' },
+                        { value: 'direct', label: 'Straight to verification' },
                         {
                             value: 'runner_submits',
-                            label: 'Runner submits them',
+                            label: 'Its runner checks it first',
                         },
                     ]}
                     onChange={(v) =>
@@ -171,40 +157,14 @@ export function SettingsEditor({
                 />
                 <p className={styles.hint}>
                     {form.timerRuns === 'direct'
-                        ? 'A new PB goes onto the board as soon as it syncs.'
-                        : 'A new PB is held until its runner confirms it, retimes it against their video and checks the board rules.'}
+                        ? 'A new PB reaches auto-verify as soon as it syncs, and anything that does not clear reaches you.'
+                        : 'A new PB is held until its runner confirms it, retimes it against their video and checks the board rules. Until they do it stays off the board and out of your queue.'}
                 </p>
-                <SegmentedControl
-                    label="Who can submit a time by hand"
-                    value={form.manualMode}
-                    options={[
-                        { value: 'anyone', label: 'Anyone' },
-                        { value: 'account_age', label: 'Older accounts' },
-                        { value: 'trusted', label: 'Trusted runners' },
-                        { value: 'off', label: 'Nobody' },
-                    ]}
-                    onChange={(v) =>
-                        set('manualMode', v as SettingsForm['manualMode'])
-                    }
-                />
-                {form.manualMode === 'account_age' && (
-                    <label className={styles.field}>
-                        <span className={styles.fieldLabel}>
-                            Account at least this many days old
-                        </span>
-                        <input
-                            className="form-control form-control-sm"
-                            inputMode="numeric"
-                            value={form.manualDays}
-                            onChange={(e) => set('manualDays', e.target.value)}
-                        />
-                    </label>
-                )}
             </FormSection>
 
             <FormSection title="What's verified automatically">
                 <SwitchField
-                    id={`autoverify-${categoryId ?? 'game'}`}
+                    id="autoverify-game"
                     label="Verify runs automatically when they pass every check"
                     checked={form.autoVerifyEnabled}
                     onChange={(v) => set('autoVerifyEnabled', v)}
@@ -391,7 +351,7 @@ export function SettingsEditor({
                     </ul>
                     {offerApply && (
                         <SwitchField
-                            id={`apply-${categoryId ?? 'game'}`}
+                            id="apply-game"
                             label="Also apply the video rule to runs already on the board"
                             checked={applyToExisting}
                             onChange={setApplyToExisting}
@@ -412,44 +372,6 @@ export function SettingsEditor({
             )}
 
             <SectionFooter>
-                {onRemoveOverride &&
-                    (confirmRemove ? (
-                        <>
-                            <span className={styles.hint}>
-                                Remove this board's overrides?
-                            </span>
-                            <button
-                                type="button"
-                                className="btn btn-sm btn-outline-danger"
-                                onClick={() =>
-                                    startRemove(async () => {
-                                        await onRemoveOverride();
-                                        setConfirmRemove(false);
-                                    })
-                                }
-                                disabled={isRemoving || isSaving}
-                            >
-                                {isRemoving ? 'Removing…' : 'Remove'}
-                            </button>
-                            <button
-                                type="button"
-                                className="btn btn-sm btn-link"
-                                onClick={() => setConfirmRemove(false)}
-                                disabled={isRemoving}
-                            >
-                                Cancel
-                            </button>
-                        </>
-                    ) : (
-                        <button
-                            type="button"
-                            className="btn btn-sm btn-link"
-                            onClick={() => setConfirmRemove(true)}
-                            disabled={isSaving}
-                        >
-                            Use the game default
-                        </button>
-                    ))}
                 <button
                     type="button"
                     className="btn btn-sm btn-outline-secondary"
