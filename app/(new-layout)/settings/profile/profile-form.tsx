@@ -208,7 +208,8 @@ export function ProfileForm({ initial }: { initial: UserData }) {
 
             <aside className={styles.previewCol}>
                 <ProfilePreview
-                    username={initial.username}
+                    // The API names the account `user`; `username` is never set.
+                    username={initial.user}
                     picture={initial.picture}
                     form={form}
                 />
