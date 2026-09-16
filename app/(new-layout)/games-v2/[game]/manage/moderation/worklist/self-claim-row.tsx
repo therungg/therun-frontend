@@ -7,6 +7,7 @@ import { ManualTimeVerdictRow } from '../attention/manual-time-verdict-row';
 import {
     ageTone,
     boardLabel,
+    claimQueueKey,
     trackRecordLine,
     waitingLabel,
 } from './worklist-model';
@@ -22,18 +23,25 @@ export function SelfClaimRow({
     gameSlug,
     variables,
     now,
+    focused = false,
     onDone,
 }: {
     claim: WorklistSelfClaim;
     gameSlug: string;
     variables: VariableRow[];
     now: Date;
+    focused?: boolean;
     onDone: () => void;
 }) {
     const tone = ageTone(claim.createdAt, now);
     const record = trackRecordLine(claim.trackRecord);
     return (
-        <li className={`${styles.row} ${styles[`row_${tone}`]}`}>
+        <li
+            className={`${styles.row} ${styles[`row_${tone}`] ?? ''}`}
+            data-queue-key={claimQueueKey(claim)}
+            data-focused={focused || undefined}
+            tabIndex={-1}
+        >
             <div className={styles.rowMain}>
                 <span
                     className={`${styles.age} ${styles[`age_${tone}`]}`}

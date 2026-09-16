@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useTransition } from 'react';
+import { CheckCircle } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import type {
@@ -17,6 +18,7 @@ import { RunInspector } from '../../../leaderboard/run-inspector';
 import { BackLink } from '../../../shared/back-link';
 import { subcategoryVariablesFor } from '../../boards/subcategory-bands';
 import type { NavItemId } from '../../console/nav-model';
+import { isTriageInert, moveSelection } from '../attention/triage-keyboard';
 import type { ModVerb, RunActionTarget } from '../shared/action-model';
 import { applyVerdictsAction } from '../shared/actions/verdicts.action';
 import { RunActionDialog } from '../shared/run-action-dialog';
@@ -27,16 +29,20 @@ import {
 } from './actions/worklist.action';
 import { SelfClaimRow } from './self-claim-row';
 import { WaitingOnRunnersSection } from './waiting-on-runners';
-import { WorklistBatchCard } from './worklist-batch';
+import { BatchHero, BatchRow } from './worklist-batch';
+import { focusAfterReload, parseQueueKey } from './worklist-keys';
 import {
+    batchQueueKey,
     boardLabel,
+    claimQueueKey,
     inspectorBoard,
-    TIER_COUNT_LABEL,
+    runQueueKey,
     TIER_TITLE,
     toInspectorEntry,
 } from './worklist-model';
 import styles from './worklist-pane.module.scss';
 import { WorklistRow } from './worklist-row';
+import { WorklistStatus } from './worklist-status';
 
 const PAGE_SIZE = 25;
 const APPROVE_REASON = 'Approved. No issues found.';
@@ -96,6 +102,36 @@ const targetFor = (
             : undefined,
 });
 
+/** A section heading with the tier's swatch; an empty urgent tier says so. */
+function SectionHead({
+    title,
+    tier,
+    count,
+}: {
+    title: string;
+    tier: 1 | 2 | 3 | null;
+    count: number;
+}) {
+    return (
+        <header
+            className={styles.sectionHead}
+            data-tier={tier ?? undefined}
+            data-empty={count === 0 || undefined}
+        >
+            <h3 className={styles.sectionTitle}>{title}</h3>
+            {count === 0 ? (
+                <span className={styles.sectionClear}>
+                    <CheckCircle aria-hidden /> None
+                </span>
+            ) : (
+                <span className={styles.sectionCount}>
+                    {count.toLocaleString()}
+                </span>
+            )}
+        </header>
+    );
+}
+
 export function WorklistPane({
     gameSlug,
     gameId,
@@ -117,6 +153,15 @@ export function WorklistPane({
     const [dialog, setDialog] = useState<Dialog | null>(null);
     const [now, setNow] = useState(() => new Date());
     const [inspectRunId, setInspectRunId] = useState<number | null>(null);
+    const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
+    // Verdicts given since the pane opened. Undo takes them back off.
+    const [decided, setDecided] = useState(0);
+    // The row the keyboard is on, as a queue key (see worklist-model).
+    const [focusKey, setFocusKey] = useState<string | null>(null);
+    // Only move DOM focus and scroll when the keyboard moved the row — a
+    // click inside a row must keep focus on the button it clicked.
+    const keyboardDriven = useRef(false);
+    const rootRef = useRef<HTMLDivElement>(null);
 
     // A slow response for a filter or page the moderator already left must
     // not paint the current one. Each load takes a ticket; only the newest writes.
@@ -145,6 +190,8 @@ export function WorklistPane({
     // load reads the current filter and page; the rule is off project-wide anyway
     useEffect(load, [gameSlug, categoryId, page]);
 
+    const bumpDecided = (n: number) => setDecided((d) => Math.max(0, d + n));
+
     const approve = async (item: WorklistItem) => {
         setBusyRunId(item.runId);
         const res = await applyVerdictsAction(
@@ -158,6 +205,7 @@ export function WorklistPane({
             setError(res.error);
             return;
         }
+        bumpDecided(1);
         fireUndoToast(
             `Approved ${item.runnerName}'s run.`,
             () =>
@@ -167,7 +215,10 @@ export function WorklistPane({
                     [item.runId],
                     UNDO_APPROVE_REASON,
                 ),
-            load,
+            () => {
+                bumpDecided(-1);
+                load();
+            },
         );
         load();
     };
@@ -180,11 +231,12 @@ export function WorklistPane({
             setError(res.error);
             return;
         }
-        if (res.count > 0)
+        if (res.count > 0) {
+            bumpDecided(1);
             toast.success(
                 `Asked ${item.runnerName} for a video. The run is off the board until they add one.`,
             );
-        else
+        } else
             toast.info(
                 'Nothing changed. The run already has a video, is no longer pending, or is already off the board.',
             );
@@ -215,6 +267,7 @@ export function WorklistPane({
             doneChunks.push(runIds);
         }
         setBusyBatchKey(null);
+        bumpDecided(affectedRunCount);
         if (failure) {
             setError(failure);
             if (doneChunks.length > 0) load();
@@ -234,12 +287,28 @@ export function WorklistPane({
                 }
                 return { ok: true };
             },
-            load,
+            () => {
+                bumpDecided(-affectedRunCount);
+                load();
+            },
         );
         load();
     };
 
+    const toggleBatch = (batch: WorklistBatch) =>
+        setExpanded((cur) => {
+            const next = new Set(cur);
+            if (next.has(batch.key)) next.delete(batch.key);
+            else next.add(batch.key);
+            return next;
+        });
+
     const items = data?.items ?? [];
+    const batches = data?.batches ?? [];
+    const hero = batches.find((b) => b.kind === 'known_runner') ?? null;
+    const runnerBatches = batches.filter((b) => b !== hero);
+    const selfClaims = page === 1 ? (data?.selfClaims ?? []) : [];
+    const tierItems = (tier: 1 | 2 | 3) => items.filter((i) => i.tier === tier);
     const totalPages = data
         ? Math.max(1, Math.ceil(data.totalItems / PAGE_SIZE))
         : 1;
@@ -247,12 +316,27 @@ export function WorklistPane({
 
     const boardHref = `/games-v2/${encodeURIComponent(gameSlug)}`;
 
-    // The order the moderator sees: batch members first (Task 6 renders them
-    // above the tiers), then the tiered rows. Prev/next in the inspector walks this.
+    // The order rows render in: urgent tiers, the hero batch, runner batches,
+    // then the routine rows that didn't group. The inspector's prev/next walks
+    // the runs; the keyboard walks everything, batches included.
+    const orderedBatches = hero ? [hero, ...runnerBatches] : runnerBatches;
     const displayOrder: WorklistItem[] = [
-        ...(data?.batches.flatMap((b) => b.items) ?? []),
-        ...items,
+        ...tierItems(1),
+        ...tierItems(2),
+        ...orderedBatches.flatMap((b) => b.items),
+        ...tierItems(3),
     ];
+    const queueKeys: string[] = [
+        ...tierItems(1).map(runQueueKey),
+        ...selfClaims.map(claimQueueKey),
+        ...tierItems(2).map(runQueueKey),
+        ...orderedBatches.flatMap((b) => [
+            batchQueueKey(b),
+            ...(expanded.has(b.key) ? b.items.map(runQueueKey) : []),
+        ]),
+        ...tierItems(3).map(runQueueKey),
+    ];
+
     const inspectIndex =
         inspectRunId === null
             ? -1
@@ -272,8 +356,223 @@ export function WorklistPane({
         setInspectRunId(item.runId);
     };
 
+    // When the list reloads under the keyboard (a run approved away), land on
+    // the row that took its place instead of dropping the position.
+    const previousKeys = useRef<string[]>([]);
+    const queueKeySignature = queueKeys.join('|');
+    useEffect(() => {
+        setFocusKey((cur) =>
+            focusAfterReload(previousKeys.current, queueKeys, cur),
+        );
+        previousKeys.current = queueKeys;
+        // queueKeys is rebuilt every render; the signature is its identity.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [queueKeySignature]);
+
+    useEffect(() => {
+        if (!focusKey || !keyboardDriven.current) return;
+        const el = rootRef.current?.querySelector<HTMLElement>(
+            `[data-queue-key="${CSS.escape(focusKey)}"]`,
+        );
+        if (!el) return;
+        el.focus({ preventScroll: true });
+        el.scrollIntoView({ block: 'nearest' });
+    }, [focusKey]);
+
+    useEffect(() => {
+        const onKeyDown = (e: KeyboardEvent) => {
+            const action = parseQueueKey(e);
+            if (!action) return;
+            const active = document.activeElement as HTMLElement | null;
+            if (
+                isTriageInert({
+                    activeTag: active?.tagName ?? null,
+                    isContentEditable: !!active?.isContentEditable,
+                    dialogOpen: dialog !== null || inspectRunId !== null,
+                })
+            )
+                return;
+
+            if (action === 'down' || action === 'up') {
+                // Arrows scroll the page until the moderator has picked a row.
+                if (e.key.startsWith('Arrow') && focusKey === null) return;
+                if (queueKeys.length === 0) return;
+                e.preventDefault();
+                keyboardDriven.current = true;
+                setFocusKey(moveSelection(queueKeys, focusKey, action));
+                return;
+            }
+            if (action === 'clear') {
+                setFocusKey(null);
+                return;
+            }
+            if (focusKey === null) return;
+
+            const [kind, id] = [
+                focusKey.slice(0, focusKey.indexOf(':')),
+                focusKey.slice(focusKey.indexOf(':') + 1),
+            ];
+            const batch =
+                kind === 'batch'
+                    ? (batches.find((b) => b.key === id) ?? null)
+                    : null;
+            const item =
+                kind === 'run'
+                    ? (displayOrder.find((i) => i.runId === Number(id)) ?? null)
+                    : null;
+
+            // Enter on a focused control belongs to that control.
+            if (
+                action === 'open' &&
+                active &&
+                active.dataset.queueKey === undefined &&
+                (active.tagName === 'BUTTON' || active.tagName === 'A')
+            )
+                return;
+
+            keyboardDriven.current = true;
+            if (action === 'open') {
+                if (batch) {
+                    e.preventDefault();
+                    toggleBatch(batch);
+                } else if (item) {
+                    e.preventDefault();
+                    openInspector(item);
+                }
+                return;
+            }
+            if (action === 'approveGroup') {
+                if (batch && busyBatchKey === null) {
+                    e.preventDefault();
+                    void approveBatch(batch);
+                }
+                return;
+            }
+            if (!item) return;
+            if (action === 'approve') {
+                if (
+                    busyRunId !== null ||
+                    item.verificationStatus === 'verified'
+                )
+                    return;
+                e.preventDefault();
+                void approve(item);
+            } else if (action === 'decline') {
+                e.preventDefault();
+                setDialog({
+                    kind: 'action',
+                    verb: 'reject',
+                    target: targetFor(item, variables),
+                });
+            }
+        };
+        document.addEventListener('keydown', onKeyDown);
+        return () => document.removeEventListener('keydown', onKeyDown);
+    });
+
+    // Clicking or tabbing into a row puts the keyboard there too.
+    const followPointer = (target: EventTarget) => {
+        const row = (target as HTMLElement).closest?.<HTMLElement>(
+            '[data-queue-key]',
+        );
+        if (row?.dataset.queueKey) setFocusKey(row.dataset.queueKey);
+    };
+
+    const rowHandlers = {
+        onApprove: approve,
+        onVerb: (it: WorklistItem, verb: ModVerb) =>
+            setDialog({
+                kind: 'action',
+                verb,
+                target: targetFor(it, variables),
+            }),
+        onHideIdentity: (it: WorklistItem) =>
+            setDialog({ kind: 'hide', item: it }),
+        onInspect: openInspector,
+        onRequestVideo: requestVideo,
+    };
+
+    const renderRun = (item: WorklistItem) => (
+        <WorklistRow
+            key={item.runId}
+            item={item}
+            variables={variables}
+            now={now}
+            busy={busyRunId === item.runId}
+            focused={focusKey === runQueueKey(item)}
+            {...rowHandlers}
+        />
+    );
+
+    const batchProps = (batch: WorklistBatch) => ({
+        batch,
+        variables,
+        now,
+        busy: busyBatchKey === batch.key,
+        expanded: expanded.has(batch.key),
+        focusedKey: focusKey,
+        onToggle: toggleBatch,
+        onApproveAll: approveBatch,
+        ...rowHandlers,
+    });
+
+    const urgentTier = (tier: 1 | 2) => {
+        if (!data || nothing) return null;
+        const inTier = tierItems(tier);
+        const claims = tier === 1 ? selfClaims : [];
+        const count = data.counts[`tier${tier}`];
+        // A tier with runs on other pages shows nothing here; an empty tier
+        // still shows its heading on page 1, so its absence reads as news.
+        if (inTier.length === 0 && claims.length === 0)
+            return count === 0 && page === 1 ? (
+                <section className={styles.section}>
+                    <SectionHead
+                        title={TIER_TITLE[tier]}
+                        tier={tier}
+                        count={0}
+                    />
+                </section>
+            ) : null;
+        return (
+            <section className={styles.section}>
+                <SectionHead
+                    title={TIER_TITLE[tier]}
+                    tier={tier}
+                    count={count}
+                />
+                <ul className={styles.rows}>
+                    {inTier.map(renderRun)}
+                    {claims.map((claim) => (
+                        <SelfClaimRow
+                            key={claimQueueKey(claim)}
+                            claim={claim}
+                            gameSlug={gameSlug}
+                            variables={variables}
+                            now={now}
+                            focused={focusKey === claimQueueKey(claim)}
+                            onDone={() => {
+                                bumpDecided(1);
+                                load();
+                            }}
+                        />
+                    ))}
+                </ul>
+            </section>
+        );
+    };
+
+    const routine = tierItems(3);
+
     return (
-        <div className={consoleStyles.surface}>
+        <div
+            ref={rootRef}
+            className={consoleStyles.surface}
+            onPointerDown={(e) => {
+                keyboardDriven.current = false;
+                followPointer(e.target);
+            }}
+            onFocusCapture={(e) => followPointer(e.target)}
+        >
             <div className={consoleStyles.paneHeader}>
                 <div>
                     <div className={consoleStyles.paneEyebrow}>Queue</div>
@@ -290,51 +589,46 @@ export function WorklistPane({
                     <BackLink href={boardHref} label="Back to leaderboard" />
                 </div>
             </div>
-            <p className={consoleStyles.paneLede}>
-                Runs that need a decision from you, most urgent first. Reports
-                and appeals come first, then runs where a wrong call would show
-                on the board, then everything routine.
-            </p>
 
             <div className={styles.toolbar}>
-                <label className={styles.boardPicker}>
-                    <span>Board</span>
-                    <select
-                        className="form-select form-select-sm"
-                        value={categoryId ?? ''}
-                        onChange={(e) => {
-                            setPage(1);
-                            setCategoryId(
-                                e.target.value === ''
-                                    ? undefined
-                                    : Number(e.target.value),
-                            );
-                        }}
-                    >
-                        <option value="">All boards</option>
-                        {(data?.boards ?? []).map((c) => (
-                            <option key={c.id} value={c.id}>
-                                {c.display}
-                            </option>
-                        ))}
-                    </select>
-                </label>
-                {data && (
-                    <div className={styles.counts} aria-live="polite">
-                        <span>
-                            <strong>{data.counts.needsYou}</strong> need you
-                        </span>
-                        <span>
-                            {data.counts.tier1} {TIER_COUNT_LABEL[1]}
-                        </span>
-                        <span>
-                            {data.counts.tier2} {TIER_COUNT_LABEL[2]}
-                        </span>
-                        <span>
-                            {data.counts.tier3} {TIER_COUNT_LABEL[3]}
-                        </span>
-                    </div>
-                )}
+                <select
+                    className={`form-select form-select-sm ${styles.boardSelect}`}
+                    aria-label="Board"
+                    value={categoryId ?? ''}
+                    onChange={(e) => {
+                        setPage(1);
+                        setCategoryId(
+                            e.target.value === ''
+                                ? undefined
+                                : Number(e.target.value),
+                        );
+                    }}
+                >
+                    <option value="">All boards</option>
+                    {(data?.boards ?? []).map((c) => (
+                        <option key={c.id} value={c.id}>
+                            {c.display}
+                        </option>
+                    ))}
+                </select>
+                <ul className={styles.keys} aria-label="Keyboard shortcuts">
+                    <li>
+                        <kbd className={styles.kbd}>j</kbd>
+                        <kbd className={styles.kbd}>k</kbd> move
+                    </li>
+                    <li>
+                        <kbd className={styles.kbd}>Enter</kbd> open
+                    </li>
+                    <li>
+                        <kbd className={styles.kbd}>v</kbd> approve
+                    </li>
+                    <li>
+                        <kbd className={styles.kbd}>d</kbd> decline
+                    </li>
+                    <li>
+                        <kbd className={styles.kbd}>⇧V</kbd> approve a group
+                    </li>
+                </ul>
             </div>
 
             {error && (
@@ -349,102 +643,71 @@ export function WorklistPane({
                 </div>
             )}
 
-            {nothing && <p className={styles.empty}>Nothing needs you.</p>}
-
-            {data && data.batches.length > 0 && (
-                <section className={styles.tier}>
-                    <h3 className={styles.tierTitle}>Routine, grouped</h3>
-                    {data.batches.map((batch) => (
-                        <WorklistBatchCard
-                            variables={variables}
-                            key={batch.key}
-                            batch={batch}
-                            now={now}
-                            busy={busyBatchKey === batch.key}
-                            onApproveAll={approveBatch}
-                            onApprove={approve}
-                            onVerb={(it, verb) =>
-                                setDialog({
-                                    kind: 'action',
-                                    verb,
-                                    target: targetFor(it, variables),
-                                })
-                            }
-                            onHideIdentity={(it) =>
-                                setDialog({ kind: 'hide', item: it })
-                            }
-                            onInspect={openInspector}
-                            onRequestVideo={requestVideo}
-                        />
-                    ))}
-                </section>
+            {data ? (
+                <WorklistStatus page={data} decided={decided} />
+            ) : (
+                !error && <div className={styles.skeleton} aria-busy />
             )}
 
-            {([1, 2, 3] as const).map((tier) => {
-                const inTier = items.filter((i) => i.tier === tier);
-                // Self-claims are tier 1 but not paged: they show on page 1 only.
-                const claims =
-                    tier === 1 && page === 1 ? (data?.selfClaims ?? []) : [];
-                if (inTier.length === 0 && claims.length === 0) return null;
-                return (
-                    <section
-                        key={tier}
-                        className={styles.tier}
-                        aria-busy={isLoading}
-                    >
-                        <h3 className={styles.tierTitle}>{TIER_TITLE[tier]}</h3>
+            <div className={styles.list} aria-busy={isLoading}>
+                {urgentTier(1)}
+                {urgentTier(2)}
+
+                {hero && (
+                    <section className={styles.section}>
+                        <BatchHero {...batchProps(hero)} />
+                    </section>
+                )}
+
+                {runnerBatches.length > 0 && (
+                    <section className={styles.section}>
+                        <SectionHead
+                            title="Grouped by runner"
+                            tier={3}
+                            count={runnerBatches.reduce(
+                                (n, b) => n + b.runIds.length,
+                                0,
+                            )}
+                        />
                         <ul className={styles.rows}>
-                            {inTier.map((item) => (
-                                <WorklistRow
-                                    variables={variables}
-                                    key={item.runId}
-                                    item={item}
-                                    now={now}
-                                    busy={busyRunId === item.runId}
-                                    onApprove={approve}
-                                    onVerb={(it, verb) =>
-                                        setDialog({
-                                            kind: 'action',
-                                            verb,
-                                            target: targetFor(it, variables),
-                                        })
-                                    }
-                                    onHideIdentity={(it) =>
-                                        setDialog({ kind: 'hide', item: it })
-                                    }
-                                    onInspect={openInspector}
-                                    onRequestVideo={requestVideo}
-                                />
-                            ))}
-                            {claims.map((claim) => (
-                                <SelfClaimRow
-                                    key={`claim:${claim.manualTimeId}`}
-                                    claim={claim}
-                                    gameSlug={gameSlug}
-                                    variables={variables}
-                                    now={now}
-                                    onDone={load}
+                            {runnerBatches.map((batch) => (
+                                <BatchRow
+                                    key={batch.key}
+                                    {...batchProps(batch)}
                                 />
                             ))}
                         </ul>
                     </section>
-                );
-            })}
+                )}
 
-            {data && page === 1 && (
-                <WaitingOnRunnersSection
-                    gameSlug={gameSlug}
-                    waiting={data.waitingOnRunners}
-                    variables={variables}
-                    onChanged={load}
-                />
-            )}
+                {routine.length > 0 && (
+                    <section className={styles.section}>
+                        <SectionHead
+                            title={TIER_TITLE[3]}
+                            tier={3}
+                            count={routine.length}
+                        />
+                        <ul className={styles.rows}>
+                            {routine.map(renderRun)}
+                        </ul>
+                    </section>
+                )}
+
+                {data && page === 1 && (
+                    <WaitingOnRunnersSection
+                        gameSlug={gameSlug}
+                        waiting={data.waitingOnRunners}
+                        variables={variables}
+                        onChanged={load}
+                    />
+                )}
+            </div>
 
             {data && totalPages > 1 && (
                 <nav className={styles.pager} aria-label="Worklist pages">
                     <button
                         type="button"
-                        className="btn btn-sm btn-outline-secondary"
+                        className={styles.verb}
                         disabled={page <= 1 || isLoading}
                         onClick={() => setPage((p) => p - 1)}
                     >
@@ -455,7 +718,7 @@ export function WorklistPane({
                     </span>
                     <button
                         type="button"
-                        className="btn btn-sm btn-outline-secondary"
+                        className={styles.verb}
                         disabled={page >= totalPages || isLoading}
                         onClick={() => setPage((p) => p + 1)}
                     >
@@ -473,11 +736,16 @@ export function WorklistPane({
                         dialog.verb === 'ban' ? 'category' : undefined
                     }
                     onDone={() => {
+                        // Every target this pane opens is one run.
+                        bumpDecided(1);
                         setDialog(null);
                         load();
                     }}
                     onClose={() => setDialog(null)}
-                    onUndoComplete={load}
+                    onUndoComplete={() => {
+                        bumpDecided(-1);
+                        load();
+                    }}
                 />
             )}
             {dialog?.kind === 'hide' && dialog.item.userId !== null && (

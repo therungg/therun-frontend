@@ -4,6 +4,7 @@ import type {
     VariableRow,
 } from '../../../../../../../types/leaderboards.types';
 import type {
+    WorklistBatch,
     WorklistItem,
     WorklistReason,
     WorklistTier,
@@ -60,8 +61,8 @@ export const reasonLabel = (r: WorklistReason): string =>
     REASON_LABEL[r.reason] ?? r.reason;
 
 export const TIER_TITLE: Record<WorklistTier, string> = {
-    1: 'Reports, appeals and self-claimed times',
-    2: 'Failed checks and unknown runners near the top',
+    1: 'Reports, appeals and self-claims',
+    2: 'Failed checks and new runners near the top',
     3: 'Routine',
 };
 
@@ -193,3 +194,51 @@ export const inspectorBoard = (
     if (!category) return null;
     return { category, primaryTiming: category.primaryTiming };
 };
+
+/** The label without its leading count — the count is drawn on its own. */
+export const batchLabelWithoutCount = (batch: WorklistBatch): string =>
+    batch.label.replace(new RegExp(`^${batch.runIds.length}\\s+`), '');
+
+export type BatchSummary = {
+    /** Distinct board labels, in the order the runs list them. */
+    boards: string[];
+    /** Earliest waitingSince across the batch. */
+    oldest: string | null;
+    /** Runs that already carry a video. */
+    withVideo: number;
+};
+
+/** What a moderator needs to approve a batch without opening it. */
+export const batchSummary = (
+    batch: WorklistBatch,
+    variables: VariableRow[],
+): BatchSummary => {
+    const boards: string[] = [];
+    let oldest: string | null = null;
+    let withVideo = 0;
+    for (const item of batch.items) {
+        const label = boardLabel(item, variables);
+        if (!boards.includes(label)) boards.push(label);
+        if (oldest === null || item.waitingSince < oldest)
+            oldest = item.waitingSince;
+        if (item.vodUrl) withVideo++;
+    }
+    return { boards, oldest, withVideo };
+};
+
+/** "Any%, 16 Star" or "Any%, 16 Star +3". */
+export const shortBoardList = (boards: string[], shown = 2): string =>
+    boards.length <= shown
+        ? boards.join(', ')
+        : `${boards.slice(0, shown).join(', ')} +${boards.length - shown}`;
+
+// ---- Keyboard order ---------------------------------------------------
+// Every row the keyboard can land on has one key, also written to the row as
+// data-queue-key so the pane can scroll it into view.
+
+export const runQueueKey = (item: Pick<WorklistItem, 'runId'>): string =>
+    `run:${item.runId}`;
+export const batchQueueKey = (batch: Pick<WorklistBatch, 'key'>): string =>
+    `batch:${batch.key}`;
+export const claimQueueKey = (claim: { manualTimeId: number }): string =>
+    `claim:${claim.manualTimeId}`;

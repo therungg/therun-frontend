@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { ChevronRight } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { VariableRow } from '../../../../../../../types/leaderboards.types';
@@ -89,13 +90,18 @@ export function WaitingOnRunnersSection({
               : `${waiting.count} runs are waiting on their runners`;
 
     return (
-        <section className={styles.tier}>
+        <section className={styles.section}>
             <button
                 type="button"
-                className={styles.batchToggle}
+                className={styles.quietToggle}
                 aria-expanded={open}
                 onClick={() => setOpen((v) => !v)}
             >
+                <ChevronRight
+                    className={styles.chevron}
+                    data-open={open || undefined}
+                    aria-hidden
+                />
                 {heading}
             </button>
             {open && (
@@ -139,7 +145,7 @@ export function WaitingOnRunnersSection({
                             <div className={styles.verbs}>
                                 <button
                                     type="button"
-                                    className="btn btn-sm btn-outline-secondary"
+                                    className={styles.verb}
                                     disabled={busy}
                                     onClick={() => act(w.runId, 'nudge')}
                                 >
@@ -148,7 +154,7 @@ export function WaitingOnRunnersSection({
                                 {w.waitingFor === 'submission' ? (
                                     <button
                                         type="button"
-                                        className="btn btn-sm btn-outline-secondary"
+                                        className={styles.verb}
                                         disabled={busy}
                                         onClick={() => act(w.runId, 'accept')}
                                     >
@@ -157,7 +163,7 @@ export function WaitingOnRunnersSection({
                                 ) : (
                                     <button
                                         type="button"
-                                        className="btn btn-sm btn-outline-secondary"
+                                        className={styles.verb}
                                         disabled={busy}
                                         onClick={() => act(w.runId, 'waive')}
                                     >

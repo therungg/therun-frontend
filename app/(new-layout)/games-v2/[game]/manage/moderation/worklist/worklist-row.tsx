@@ -13,6 +13,7 @@ import {
     boardTimeMs,
     deltaLabel,
     reasonLabel,
+    runQueueKey,
     trackRecordLine,
     waitingLabel,
 } from './worklist-model';
@@ -22,6 +23,7 @@ export function WorklistRow({
     item,
     now,
     busy,
+    focused = false,
     onApprove,
     onVerb,
     onHideIdentity,
@@ -34,6 +36,8 @@ export function WorklistRow({
     variables: VariableRow[];
     now: Date;
     busy: boolean;
+    /** The keyboard is on this row: show its keys on the verbs. */
+    focused?: boolean;
     onApprove: (item: WorklistItem) => void;
     onVerb: (item: WorklistItem, verb: ModVerb) => void;
     onHideIdentity: (item: WorklistItem) => void;
@@ -48,7 +52,12 @@ export function WorklistRow({
     const hasChecks = item.autoVerifyResult != null;
 
     return (
-        <li className={`${styles.row} ${styles[`row_${tone}`]}`}>
+        <li
+            className={`${styles.row} ${styles[`row_${tone}`] ?? ''}`}
+            data-queue-key={runQueueKey(item)}
+            data-focused={focused || undefined}
+            tabIndex={-1}
+        >
             <button
                 type="button"
                 className={styles.rowMain}
@@ -112,24 +121,26 @@ export function WorklistRow({
             <div className={styles.verbs}>
                 <button
                     type="button"
-                    className="btn btn-sm btn-primary"
+                    className={styles.verbApprove}
                     disabled={busy || item.verificationStatus === 'verified'}
                     onClick={() => onApprove(item)}
                 >
                     Approve
+                    {focused && <kbd className={styles.kbd}>v</kbd>}
                 </button>
                 <button
                     type="button"
-                    className="btn btn-sm btn-outline-secondary"
+                    className={styles.verb}
                     disabled={busy}
                     onClick={() => onVerb(item, 'reject')}
                 >
                     Decline
+                    {focused && <kbd className={styles.kbd}>d</kbd>}
                 </button>
                 <div className={styles.more}>
                     <button
                         type="button"
-                        className="btn btn-sm btn-outline-secondary"
+                        className={styles.verb}
                         disabled={busy}
                         aria-haspopup="menu"
                         aria-expanded={menuOpen}

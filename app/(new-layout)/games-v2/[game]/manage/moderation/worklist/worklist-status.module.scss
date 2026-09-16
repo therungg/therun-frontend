@@ -1,0 +1,69 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/board' as board;
+
+// Same anatomy as the overview's queue summary: one loud number in the
+// timer face, the urgency bar under it, nothing else tinted.
+.status {
+    @include board.board-surface(dt.$spacing-xl dt.$spacing-2xl);
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-lg;
+    margin-bottom: dt.$spacing-xl;
+}
+
+.head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: dt.$spacing-md dt.$spacing-xl;
+}
+
+.headline {
+    margin: 0;
+    font-size: dt.$font-size-2xl;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.1;
+    display: flex;
+    align-items: baseline;
+    gap: 0.4ch;
+
+    .status[data-state='clear'] & {
+        font-size: dt.$font-size-xl;
+        color: var(--bs-secondary-color);
+        font-weight: 500;
+    }
+}
+
+.count {
+    @include board.mono-time;
+    font-size: dt.$font-size-hero-time;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 0.9;
+}
+
+.clear {
+    margin: dt.$spacing-sm 0 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.decided {
+    margin: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.decidedCount {
+    @include board.mono-time;
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+}
+
+@media (max-width: 720px) {
+    .count {
+        font-size: dt.$font-size-display;
+    }
+}
