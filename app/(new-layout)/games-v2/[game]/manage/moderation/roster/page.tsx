@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
+import { listCategoryVariables } from '~src/lib/leaderboard-variables';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
+import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata from '~src/utils/metadata';
 import { loadConsoleChrome } from '../../console/load-chrome';
 import { SubrouteChrome } from '../../console/subroute-chrome';
@@ -43,7 +45,16 @@ export default async function RosterPage({ params, searchParams }: Props) {
             ? parsed
             : (categories[0]?.id ?? null);
 
-    const chrome = await loadConsoleChrome(session, game);
+    const [chrome, variables] = await Promise.all([
+        loadConsoleChrome(session, game),
+        categories.length
+            ? listCategoryVariables(
+                  session.id,
+                  game.id,
+                  categories.map((c) => c.id),
+              ).catch(() => [])
+            : Promise.resolve([]),
+    ]);
 
     return (
         <SubrouteChrome
@@ -56,11 +67,11 @@ export default async function RosterPage({ params, searchParams }: Props) {
         >
             <RosterView
                 gameSlug={game.name}
+                gameId={game.id}
                 gameDisplay={game.display}
-                categories={categories.map((c) => ({
-                    id: c.id,
-                    display: c.display,
-                }))}
+                categories={categories}
+                variables={variables}
+                canSiteBan={defineAbilityFor(session).can('moderate', 'admins')}
                 initialCategoryId={selectedCategoryId}
             />
         </SubrouteChrome>

@@ -13,6 +13,11 @@ import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type {
+    LeaderboardEntry,
+    ResolvedCategory,
+    VariableRow,
+} from '../../../../../../../types/leaderboards.types';
+import type {
     LeaderboardRosterRow,
     RosterFilter,
 } from '../../../../../../../types/moderation.types';
@@ -21,9 +26,8 @@ import {
     VerificationBadge,
 } from '../../../run-view/run-badges';
 import { BackLink } from '../../../shared/back-link';
-import type { ModVerb, RunActionTarget } from '../shared/action-model';
-import { ManualTimeDialog } from '../shared/manual-time-dialog';
-import { RunActionDialog } from '../shared/run-action-dialog';
+import { ModeratePanel } from '../moderate/moderate-panel';
+import type { SheetBoard } from '../moderate/subject';
 import { loadRosterAction } from './actions/load-roster.action';
 import {
     nextRosterSort,
@@ -39,9 +43,37 @@ type BoardFilter = 'any' | 'on' | 'off';
 
 interface Props {
     gameSlug: string;
+    gameId: number;
     gameDisplay: string;
-    categories: Array<{ id: number; display: string }>;
+    categories: ResolvedCategory[];
+    variables: VariableRow[];
+    canSiteBan: boolean;
     initialCategoryId: number | null;
+}
+
+function rowEntry(
+    row: LeaderboardRosterRow,
+    board: SheetBoard,
+): LeaderboardEntry {
+    const status = row.verificationStatus;
+    return {
+        runId: row.runId,
+        rank: row.boardRank ?? 0,
+        runnerName: row.runnerName,
+        userId: row.userId,
+        isGuest: row.userId == null,
+        time:
+            board.primaryTiming === 'gt' && row.gameTime != null
+                ? row.gameTime
+                : row.time,
+        realTime: row.time,
+        gameTime: row.gameTime,
+        runDate: row.endedAt,
+        vodUrl: row.vodUrl,
+        verificationStatus:
+            status === 'verified' || status === 'rejected' ? status : 'pending',
+        variables: null,
+    };
 }
 
 /** Whether a roster row currently appears on either board (RT or GT). */
@@ -94,8 +126,11 @@ function SortableTh({
 
 export function RosterView({
     gameSlug,
+    gameId,
     gameDisplay,
     categories,
+    variables,
+    canSiteBan,
     initialCategoryId,
 }: Props) {
     const router = useRouter();
@@ -114,18 +149,15 @@ export function RosterView({
 
     const [rows, setRows] = useState<LeaderboardRosterRow[] | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const [selected, setSelected] = useState<Set<number>>(new Set());
-    const [dialog, setDialog] = useState<
-        | { kind: 'action'; verb: ModVerb; target: RunActionTarget }
-        | { kind: 'manual'; row: LeaderboardRosterRow }
-        | null
-    >(null);
+    // The category the rows on screen came from.
+    const [loadedCategoryId, setLoadedCategoryId] = useState<number | null>(
+        null,
+    );
+    const [openRunId, setOpenRunId] = useState<number | null>(null);
     const [isLoading, startLoad] = useTransition();
     // Client-side only — sorts already-loaded rows, no round trip. `null` is
     // the default/unsorted state (backend load order, unchanged).
     const [sort, setSort] = useState<RosterSortState | null>(null);
-
-    const selectedRunIds = useMemo(() => Array.from(selected), [selected]);
 
     // "On board" is a client-side filter — the backend roster endpoint has no
     // such query param. Account-age and faster-than-WR% filters are NOT added
@@ -147,25 +179,6 @@ export function RosterView({
         setSort((prev) => nextRosterSort(prev, key));
     };
 
-    // If every selected run belongs to the same registered user, surface a ban
-    // affordance: a standing user-exclusion rule covers future runs too.
-    const banSubject = useMemo(() => {
-        if (!rows || selected.size < 2) return null;
-        const picked = rows.filter((r) => selected.has(r.runId));
-        const first = picked[0]?.userId;
-        if (first == null) return null;
-        const allSameUser = picked.every((r) => r.userId === first);
-        if (!allSameUser) return null;
-        return {
-            userId: first,
-            runnerName: picked[0]?.runnerName ?? 'this runner',
-            count: picked.length,
-        };
-    }, [rows, selected]);
-
-    const categoryDisplay =
-        categories.find((c) => c.id === categoryId)?.display ?? 'this category';
-
     // Overrides let a <select>'s onChange fire the load in the same tick it
     // sets state — reading the just-picked value directly rather than the
     // (not-yet-updated) state closure.
@@ -180,7 +193,6 @@ export function RosterView({
             overrides?.verificationStatus ?? verificationStatus;
         const vod = overrides?.hasVod ?? hasVod;
         setError(null);
-        setSelected(new Set());
         const filter: RosterFilter = {
             subcategoryKey: subcategoryKey.trim() || undefined,
             verificationStatus:
@@ -196,6 +208,7 @@ export function RosterView({
                 return;
             }
             setRows(res.rows);
+            setLoadedCategoryId(cat);
         });
     };
 
@@ -225,86 +238,56 @@ export function RosterView({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [subcategoryKey, runnerName]);
 
-    const allSelected =
-        visibleRows != null &&
-        visibleRows.length > 0 &&
-        visibleRows.every((r) => selected.has(r.runId));
+    const loadedCategory =
+        categories.find((c) => c.id === loadedCategoryId) ?? null;
+    const boardFor = (row: LeaderboardRosterRow): SheetBoard | null =>
+        loadedCategory
+            ? {
+                  categoryId: loadedCategory.id,
+                  categorySlug: loadedCategory.name,
+                  categoryDisplay: loadedCategory.display,
+                  subcategoryKey: row.subcategoryKey,
+                  primaryTiming:
+                      loadedCategory.primaryTiming === 'gt' ? 'gt' : 'rt',
+              }
+            : null;
 
-    const partiallySelected =
-        !allSelected &&
-        visibleRows != null &&
-        visibleRows.some((r) => selected.has(r.runId));
-
-    // `indeterminate` isn't a JSX attribute, so drive it off the ref: the
-    // Select-all box shows the standard dash when only some visible rows are
-    // picked, instead of reading as fully unchecked.
-    const selectAllRef = useRef<HTMLInputElement>(null);
-    useEffect(() => {
-        if (selectAllRef.current) {
-            selectAllRef.current.indeterminate = partiallySelected;
+    // After the table reloads under the modal (the open run filtered out),
+    // stay on the run if it is still listed, else take the next run that
+    // survived, else the one before it, else close. Worked out during render
+    // so the modal never renders without a run while one survives.
+    const runOrder = (sortedRows ?? []).map((r) => r.runId);
+    const runOrderSignature = runOrder.join('|');
+    const [seenRunOrder, setSeenRunOrder] = useState<{
+        signature: string;
+        runIds: number[];
+    }>({ signature: '', runIds: [] });
+    if (sortedRows != null && seenRunOrder.signature !== runOrderSignature) {
+        setSeenRunOrder({ signature: runOrderSignature, runIds: runOrder });
+        if (openRunId !== null && !runOrder.includes(openRunId)) {
+            const previous = seenRunOrder.runIds;
+            const survivors = new Set(runOrder);
+            const at = previous.indexOf(openRunId);
+            let landing: number | null = null;
+            if (at !== -1) {
+                landing =
+                    previous.slice(at + 1).find((id) => survivors.has(id)) ??
+                    previous
+                        .slice(0, at)
+                        .reverse()
+                        .find((id) => survivors.has(id)) ??
+                    null;
+            }
+            setOpenRunId(landing);
         }
-    }, [partiallySelected]);
+    }
 
-    const toggleAll = () => {
-        if (!visibleRows) return;
-        if (allSelected) {
-            setSelected((prev) => {
-                const next = new Set(prev);
-                for (const r of visibleRows) next.delete(r.runId);
-                return next;
-            });
-        } else {
-            setSelected((prev) => {
-                const next = new Set(prev);
-                for (const r of visibleRows) next.add(r.runId);
-                return next;
-            });
-        }
-    };
-
-    const toggleRow = (runId: number) => {
-        setSelected((prev) => {
-            const next = new Set(prev);
-            if (next.has(runId)) next.delete(runId);
-            else next.add(runId);
-            return next;
-        });
-    };
-
-    const openRunsAction = (verb: ModVerb) => {
-        if (selectedRunIds.length === 0) return;
-        setDialog({
-            kind: 'action',
-            verb,
-            target: {
-                kind: 'runs',
-                runIds: selectedRunIds,
-                label: `${selectedRunIds.length} runs`,
-            },
-        });
-    };
-
-    const openBan = () => {
-        if (!banSubject || categoryId == null) return;
-        setDialog({
-            kind: 'action',
-            verb: 'ban',
-            target: {
-                kind: 'runner',
-                runnerId: banSubject.userId,
-                runnerName: banSubject.runnerName,
-                categoryId,
-                categoryDisplay,
-                gameDisplay,
-            },
-        });
-    };
-
-    const afterMutation = () => {
-        setDialog(null);
-        setSelected(new Set());
-        handleLoad();
-    };
+    const openIndex =
+        openRunId === null || sortedRows == null
+            ? -1
+            : sortedRows.findIndex((r) => r.runId === openRunId);
+    const openRow = openIndex >= 0 && sortedRows ? sortedRows[openIndex] : null;
+    const openBoard = openRow ? boardFor(openRow) : null;
 
     return (
         <div>
@@ -318,8 +301,7 @@ export function RosterView({
                 </div>
             </div>
             <p className={consoleStyles.paneLede}>
-                Every run on a {gameDisplay} board: filter, sort, and act in
-                bulk.
+                Every run on a {gameDisplay} board: filter, sort, and moderate.
             </p>
 
             <div className={styles.filters}>
@@ -495,16 +477,6 @@ export function RosterView({
                             <table className={styles.table}>
                                 <thead>
                                     <tr>
-                                        <th style={{ width: '1%' }}>
-                                            <input
-                                                ref={selectAllRef}
-                                                type="checkbox"
-                                                className="form-check-input"
-                                                aria-label="Select all"
-                                                checked={allSelected}
-                                                onChange={toggleAll}
-                                            />
-                                        </th>
                                         <SortableTh
                                             label="Runner"
                                             sortKey="runner"
@@ -543,19 +515,6 @@ export function RosterView({
                                         const isGuest = row.userId == null;
                                         return (
                                             <tr key={row.runId}>
-                                                <td>
-                                                    <input
-                                                        type="checkbox"
-                                                        className="form-check-input"
-                                                        aria-label={`Select run ${row.runId}`}
-                                                        checked={selected.has(
-                                                            row.runId,
-                                                        )}
-                                                        onChange={() =>
-                                                            toggleRow(row.runId)
-                                                        }
-                                                    />
-                                                </td>
                                                 <td>
                                                     {isGuest ? (
                                                         <span>
@@ -678,13 +637,12 @@ export function RosterView({
                                                                 styles.rowAction
                                                             }
                                                             onClick={() =>
-                                                                setDialog({
-                                                                    kind: 'manual',
-                                                                    row,
-                                                                })
+                                                                setOpenRunId(
+                                                                    row.runId,
+                                                                )
                                                             }
                                                         >
-                                                            Set time
+                                                            Moderate
                                                         </button>
                                                         {!isGuest &&
                                                             row.userId !=
@@ -715,82 +673,40 @@ export function RosterView({
                 </div>
             )}
 
-            {selected.size > 0 && (
-                <div className={styles.bulkBar}>
-                    <span className={styles.bulkCount}>
-                        {selected.size} selected
-                    </span>
-                    {banSubject && (
-                        <button
-                            type="button"
-                            className={styles.removeAction}
-                            onClick={openBan}
-                        >
-                            Ban {banSubject.runnerName} instead…
-                        </button>
-                    )}
-                    <div className={styles.bulkGroup}>
-                        <button
-                            type="button"
-                            className={styles.quietAction}
-                            onClick={() => setSelected(new Set())}
-                        >
-                            Clear
-                        </button>
-                        <button
-                            type="button"
-                            className={styles.approveAction}
-                            onClick={() => openRunsAction('approve')}
-                        >
-                            Approve
-                        </button>
-                        <button
-                            type="button"
-                            className={styles.removeAction}
-                            onClick={() => openRunsAction('remove')}
-                        >
-                            Remove…
-                        </button>
-                        <button
-                            type="button"
-                            className={styles.quietAction}
-                            onClick={() => openRunsAction('restore')}
-                        >
-                            Restore
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {dialog?.kind === 'action' && (
-                <RunActionDialog
-                    gameSlug={gameSlug}
-                    verb={dialog.verb}
-                    target={dialog.target}
-                    defaultBanScope={
-                        dialog.verb === 'ban' ? 'category' : undefined
-                    }
-                    onDone={afterMutation}
-                    onClose={() => setDialog(null)}
-                />
-            )}
-            {dialog?.kind === 'manual' && categoryId != null && (
-                <ManualTimeDialog
-                    gameSlug={gameSlug}
-                    runnerRef={
-                        dialog.row.userId != null
-                            ? { userId: dialog.row.userId }
-                            : { guestName: dialog.row.runnerName }
-                    }
-                    runnerLabel={dialog.row.runnerName}
-                    categoryId={categoryId}
-                    categoryLabel={categoryDisplay}
-                    subcategoryKey={dialog.row.subcategoryKey}
-                    onDone={() => {
-                        setDialog(null);
-                        handleLoad();
+            {openRow && openBoard && (
+                <ModeratePanel
+                    subject={{
+                        kind: 'run',
+                        entry: rowEntry(openRow, openBoard),
+                        board: openBoard,
                     }}
-                    onClose={() => setDialog(null)}
+                    context={{
+                        gameSlug,
+                        gameId,
+                        gameDisplay,
+                        categories,
+                        variables,
+                        canSiteBan,
+                    }}
+                    mount="modal"
+                    position={{
+                        index: openIndex + 1,
+                        total: sortedRows?.length ?? 0,
+                    }}
+                    onClose={() => setOpenRunId(null)}
+                    onMutated={() => handleLoad()}
+                    onPrev={
+                        openIndex > 0 && sortedRows
+                            ? () =>
+                                  setOpenRunId(sortedRows[openIndex - 1].runId)
+                            : undefined
+                    }
+                    onNext={
+                        sortedRows && openIndex < sortedRows.length - 1
+                            ? () =>
+                                  setOpenRunId(sortedRows[openIndex + 1].runId)
+                            : undefined
+                    }
                 />
             )}
         </div>
