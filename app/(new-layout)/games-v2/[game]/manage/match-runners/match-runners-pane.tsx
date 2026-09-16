@@ -100,7 +100,12 @@ export function MatchRunnersPane({ gameSlug }: { gameSlug: string }) {
     useEffect(() => {
         const ticket = ++requestId.current;
         startLoad(async () => {
-            const res = await loadSrcMatchesAction(gameSlug);
+            let res: Awaited<ReturnType<typeof loadSrcMatchesAction>>;
+            try {
+                res = await loadSrcMatchesAction(gameSlug);
+            } catch {
+                res = { error: 'Could not load runners.' };
+            }
             if (ticket !== requestId.current) return;
             if ('error' in res) {
                 setLoadError(res.error);
@@ -147,49 +152,57 @@ export function MatchRunnersPane({ gameSlug }: { gameSlug: string }) {
         let merged = 0;
         let stopped = false;
 
-        for (let i = 0; i < links.length; i += SRC_MATCH_BATCH) {
-            const chunk = links.slice(i, i + SRC_MATCH_BATCH);
-            const res = await linkSrcMatchesAction(gameSlug, chunk);
-            if ('error' in res) {
-                setLinkError(res.error);
-                stopped = true;
-                break;
-            }
-            const byUser = new Map(res.results.map((r) => [r.userId, r]));
-            for (const r of res.results) {
-                if (r.ok) {
-                    linked += 1;
-                    merged += r.mergedRuns;
+        try {
+            for (let i = 0; i < links.length; i += SRC_MATCH_BATCH) {
+                const chunk = links.slice(i, i + SRC_MATCH_BATCH);
+                let res: Awaited<ReturnType<typeof linkSrcMatchesAction>>;
+                try {
+                    res = await linkSrcMatchesAction(gameSlug, chunk);
+                } catch {
+                    res = { error: 'Could not link runners.' };
                 }
+                if ('error' in res) {
+                    setLinkError(res.error);
+                    stopped = true;
+                    break;
+                }
+                const byUser = new Map(res.results.map((r) => [r.userId, r]));
+                for (const r of res.results) {
+                    if (r.ok) {
+                        linked += 1;
+                        merged += r.mergedRuns;
+                    }
+                }
+                setRows((rs) =>
+                    rs
+                        ? rs.flatMap((r) => {
+                              const result = byUser.get(r.row.userId);
+                              if (!result) return [r];
+                              if (result.ok || result.code === 'already-set') {
+                                  return [];
+                              }
+                              return [
+                                  {
+                                      ...r,
+                                      // 'error' may be a link the server ran out
+                                      // of time for, so it stays ticked to retry.
+                                      ticked:
+                                          result.code === 'error' && r.ticked,
+                                      error: failMessage(result.code),
+                                  },
+                              ];
+                          })
+                        : rs,
+                );
+                setProgress({
+                    done: Math.min(i + chunk.length, links.length),
+                    total: links.length,
+                });
             }
-            setRows((rs) =>
-                rs
-                    ? rs.flatMap((r) => {
-                          const result = byUser.get(r.row.userId);
-                          if (!result) return [r];
-                          if (result.ok || result.code === 'already-set') {
-                              return [];
-                          }
-                          return [
-                              {
-                                  ...r,
-                                  // 'error' may be a link the server ran out
-                                  // of time for, so it stays ticked to retry.
-                                  ticked: result.code === 'error' && r.ticked,
-                                  error: failMessage(result.code),
-                              },
-                          ];
-                      })
-                    : rs,
-            );
-            setProgress({
-                done: Math.min(i + chunk.length, links.length),
-                total: links.length,
-            });
+        } finally {
+            setLinking(false);
+            setProgress(null);
         }
-
-        setLinking(false);
-        setProgress(null);
         if (linked > 0) {
             setDoneMessage(
                 `Linked ${plural(linked, 'runner', 'runners')}, ${plural(merged, 'run', 'runs')} verified from speedrun.com.`,
