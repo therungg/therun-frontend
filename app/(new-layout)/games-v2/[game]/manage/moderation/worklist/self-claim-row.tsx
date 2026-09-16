@@ -3,7 +3,6 @@
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { VariableRow } from '../../../../../../../types/leaderboards.types';
 import type { WorklistSelfClaim } from '../../../../../../../types/worklist.types';
-import { ManualTimeVerdictRow } from '../attention/manual-time-verdict-row';
 import {
     ageTone,
     boardLabel,
@@ -16,22 +15,20 @@ import styles from './worklist-pane.module.scss';
 /**
  * A time a runner typed in themselves. There is no run behind it, so no
  * inspector and no splits: the evidence link and the runner's note are what a
- * moderator has, and the decision is verify or reject.
+ * moderator has. Moderate opens the modal on the claim.
  */
 export function SelfClaimRow({
     claim,
-    gameSlug,
     variables,
     now,
     focused = false,
-    onDone,
+    onModerate,
 }: {
     claim: WorklistSelfClaim;
-    gameSlug: string;
     variables: VariableRow[];
     now: Date;
     focused?: boolean;
-    onDone: () => void;
+    onModerate: (claim: WorklistSelfClaim) => void;
 }) {
     const tone = ageTone(claim.createdAt, now);
     const record = trackRecordLine(claim.trackRecord);
@@ -102,11 +99,13 @@ export function SelfClaimRow({
             </div>
 
             <div className={styles.verbs}>
-                <ManualTimeVerdictRow
-                    gameSlug={gameSlug}
-                    manualTimeId={claim.manualTimeId}
-                    onDone={onDone}
-                />
+                <button
+                    type="button"
+                    className={styles.verb}
+                    onClick={() => onModerate(claim)}
+                >
+                    Moderate
+                </button>
             </div>
         </li>
     );

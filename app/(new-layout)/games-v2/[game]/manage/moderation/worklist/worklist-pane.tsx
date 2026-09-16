@@ -12,6 +12,7 @@ import type {
     WorklistBatch,
     WorklistItem,
     WorklistPage,
+    WorklistSelfClaim,
 } from '../../../../../../../types/worklist.types';
 import { BackLink } from '../../../shared/back-link';
 import type { NavItemId } from '../../console/nav-model';
@@ -88,6 +89,26 @@ function waitingEntry(
     };
 }
 
+/** A self-claimed time as a manual board row. */
+function claimEntry(claim: WorklistSelfClaim): LeaderboardEntry {
+    return {
+        runId: null,
+        manualTimeId: claim.manualTimeId,
+        source: 'manual',
+        rank: 0,
+        runnerName: claim.runnerName,
+        userId: claim.userId,
+        isGuest: claim.isGuest,
+        time: claim.timeMs,
+        realTime: claim.timing === 'realtime' ? claim.timeMs : null,
+        gameTime: claim.timing === 'gametime' ? claim.timeMs : null,
+        runDate: claim.runDate,
+        vodUrl: claim.evidenceUrl,
+        verificationStatus: 'pending',
+        variables: null,
+    };
+}
+
 /** A section heading with the tier's swatch; an empty urgent tier says so. */
 function SectionHead({
     title,
@@ -146,6 +167,8 @@ export function WorklistPane({
     );
     // A run waiting on its runner, opened on Approve ("Accept without waiting").
     const [waitingRunId, setWaitingRunId] = useState<number | null>(null);
+    // A runner's self-claimed time, opened from its row.
+    const [claimId, setClaimId] = useState<number | null>(null);
     const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
     // Verdicts given since the pane opened. Undo takes them back off.
     const [decided, setDecided] = useState(0);
@@ -384,6 +407,29 @@ export function WorklistPane({
     if (waitingRunId !== null && data && !waitingRun) {
         setWaitingRunId(null);
     }
+    // The claim leaves the list once it has a verdict: close.
+    const openClaim =
+        claimId === null
+            ? null
+            : (selfClaims.find((c) => c.manualTimeId === claimId) ?? null);
+    const claimCategory = openClaim
+        ? (boardCategories.find((c) => c.id === openClaim.categoryId) ?? null)
+        : null;
+    if (claimId !== null && data && !openClaim) {
+        // The open claim left the queue: it was decided.
+        setDecided((d) => d + 1);
+        setClaimId(null);
+    }
+    const moderateClaim = (claim: WorklistSelfClaim) => {
+        if (!boardCategories.some((c) => c.id === claim.categoryId)) {
+            setError(
+                "This claim's board isn't in this console's list. Open it from the board.",
+            );
+            return;
+        }
+        setClaimId(claim.manualTimeId);
+    };
+
     const openWaiting = (run: WaitingRun) => {
         if (!boardCategories.some((c) => c.id === run.categoryId)) {
             setError(
@@ -420,7 +466,12 @@ export function WorklistPane({
     useEffect(() => {
         const onKeyDown = (e: KeyboardEvent) => {
             // The open modal owns the keyboard.
-            if (inspectRunId !== null || waitingRunId !== null) return;
+            if (
+                inspectRunId !== null ||
+                waitingRunId !== null ||
+                claimId !== null
+            )
+                return;
             const action = parseQueueKey(e);
             if (!action) return;
             const active = document.activeElement as HTMLElement | null;
@@ -573,14 +624,10 @@ export function WorklistPane({
                         <SelfClaimRow
                             key={claimQueueKey(claim)}
                             claim={claim}
-                            gameSlug={gameSlug}
                             variables={variables}
                             now={now}
                             focused={focusKey === claimQueueKey(claim)}
-                            onDone={() => {
-                                bumpDecided(1);
-                                load();
-                            }}
+                            onModerate={moderateClaim}
                         />
                     ))}
                 </ul>
@@ -753,6 +800,33 @@ export function WorklistPane({
                         Next
                     </button>
                 </nav>
+            )}
+
+            {openClaim && claimCategory && (
+                <ModeratePanel
+                    subject={{
+                        kind: 'run',
+                        entry: claimEntry(openClaim),
+                        board: {
+                            categoryId: claimCategory.id,
+                            categorySlug: claimCategory.name,
+                            categoryDisplay: claimCategory.display,
+                            subcategoryKey: openClaim.subcategoryKey,
+                            primaryTiming: claimCategory.primaryTiming,
+                        },
+                    }}
+                    context={{
+                        gameSlug,
+                        gameId,
+                        gameDisplay,
+                        categories: boardCategories,
+                        variables,
+                        canSiteBan,
+                    }}
+                    mount="modal"
+                    onClose={() => setClaimId(null)}
+                    onMutated={load}
+                />
             )}
 
             {waitingRun && waitingCategory && (
