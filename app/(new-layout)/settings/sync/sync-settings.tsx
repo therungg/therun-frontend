@@ -62,7 +62,16 @@ function IdentityText({ status: s }: { status: SrcUserSyncStatus }) {
         );
     }
     if (isLooking(s)) return <p>Looking for your speedrun.com account.</p>;
-    return <p>Not linked to a speedrun.com account yet.</p>;
+    return (
+        <p>
+            Not linked to a speedrun.com account yet. We find it through the
+            Twitch link on your{' '}
+            <a href={SOCIALS_URL} target="_blank" rel="noreferrer">
+                speedrun.com profile
+            </a>
+            , so add yours there.
+        </p>
+    );
 }
 
 export function SyncSettings({ initial }: { initial: SrcUserSyncStatus }) {
@@ -120,6 +129,7 @@ export function SyncSettings({ initial }: { initial: SrcUserSyncStatus }) {
                 {error && <InlineError>{error}</InlineError>}
                 <IdentityText status={status} />
                 {status.lookupResult === 'no-match' &&
+                    status.syncEnabled &&
                     !status.identity &&
                     !status.optOut && (
                         <div>
