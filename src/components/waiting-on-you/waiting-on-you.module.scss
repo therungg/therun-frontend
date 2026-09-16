@@ -1,0 +1,96 @@
+@use '../../../app/(new-layout)/styles/design-tokens' as dt;
+@use '../../../app/(new-layout)/styles/board' as board;
+
+// Amber is the board's "needs you" tone (board-pill severity language).
+.banner {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-md dt.$spacing-lg;
+    border: 1px solid color-mix(in srgb, dt.$accent-amber 45%, transparent);
+    border-radius: dt.$radius-lg;
+    background: color-mix(in srgb, dt.$accent-amber 10%, var(--bs-body-bg));
+    color: var(--bs-emphasis-color);
+    font-size: dt.$font-size-sm;
+    text-decoration: none;
+
+    svg {
+        flex: none;
+        color: dt.$accent-amber;
+    }
+
+    &:hover .bannerAction {
+        text-decoration: underline;
+    }
+}
+
+.bannerText {
+    font-weight: 600;
+    min-width: 0;
+}
+
+.bannerAction {
+    margin-left: auto;
+    color: var(--bs-primary);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.field {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    min-width: 0;
+
+    :global(.form-control) {
+        @include board.board-input-rules;
+        flex: 1 1 16rem;
+        min-width: 0;
+    }
+}
+
+.error {
+    flex-basis: 100%;
+    margin: 0;
+    color: var(--bs-danger);
+    font-size: dt.$font-size-xs;
+}
+
+.fixed {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    margin: 0;
+    color: var(--bs-success);
+    font-size: dt.$font-size-sm;
+}
+
+// A run's own "needs a video" line: under a profile entry, or above a board.
+.needsVideo {
+    display: grid;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-md dt.$spacing-lg;
+    border-left: 3px solid dt.$accent-amber;
+    background: color-mix(in srgb, dt.$accent-amber 7%, transparent);
+    min-width: 0;
+}
+
+.needsVideoHead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: dt.$spacing-xs dt.$spacing-md;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-emphasis-color);
+}
+
+.needsVideoTime {
+    @include board.mono-time;
+    font-weight: 600;
+}
+
+.needsVideoRule {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+}

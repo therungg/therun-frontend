@@ -4,10 +4,13 @@ import { z } from 'zod';
 import { type ActionResult, mapApiError } from '~src/lib/action-result';
 import {
     getPbSubmission,
-    listHeldPbs,
+    listWaitingOnRunner,
     submitPb,
 } from '~src/lib/pb-submissions';
-import type { HeldPb, PbSubmissionForm } from '../../types/pb-submission.types';
+import type {
+    PbSubmissionForm,
+    WaitingRun,
+} from '../../types/pb-submission.types';
 import { getSession } from './session.action';
 
 const submitSchema = z.object({
@@ -19,14 +22,33 @@ const submitSchema = z.object({
     variables: z.record(z.string(), z.unknown()).optional(),
 });
 
-/** PBs waiting on the signed-in runner, oldest ask first. */
-export async function loadHeldPbsAction(): Promise<
-    ({ ok: true } & { held: HeldPb[] }) | { ok: false; error: string }
+/**
+ * Everything waiting on the signed-in runner: runs that need a video and PBs
+ * held until they submit them. With `forName`, only when the viewer is that
+ * runner, so a profile never shows someone else's list.
+ */
+export async function loadWaitingOnYouAction(
+    forName?: string,
+): Promise<
+    | { ok: true; username: string | null; runs: WaitingRun[] }
+    | { ok: false; error: string }
 > {
     const session = await getSession();
-    if (!session?.id) return { ok: false, error: 'You must be signed in.' };
+    if (!session?.id || !session.username) {
+        return { ok: true, username: null, runs: [] };
+    }
+    if (
+        forName !== undefined &&
+        forName.toLowerCase() !== session.username.toLowerCase()
+    ) {
+        return { ok: true, username: session.username, runs: [] };
+    }
     try {
-        return { ok: true, held: await listHeldPbs(session.id) };
+        return {
+            ok: true,
+            username: session.username,
+            runs: await listWaitingOnRunner(session.id),
+        };
     } catch (e) {
         const failed = mapApiError(e);
         return failed.ok

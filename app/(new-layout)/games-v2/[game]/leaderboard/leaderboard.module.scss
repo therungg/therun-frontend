@@ -956,3 +956,10 @@ tr:focus-within .reveal {
     box-shadow: 0 0 0 1px
         color-mix(in srgb, var(--bs-body-color) 15%, transparent);
 }
+
+// The signed-in runner's own runs waiting on them, above the board.
+.waitingNotice {
+    display: grid;
+    gap: dt.$spacing-sm;
+    margin-bottom: dt.$spacing-md;
+}

@@ -1,18 +1,6 @@
 // Mirrors src/api/me/pb-submission.ts on the backend. Field names and casing are
 // exactly what it reads and writes — do not "fix" them.
 
-/** One PB a board is holding until its runner submits it. */
-export interface HeldPb {
-    runId: number;
-    gameId: number;
-    categoryId: number;
-    categoryDisplay: string | null;
-    subcategoryKey: string;
-    timeMs: number;
-    gameTimeMs: number | null;
-    heldAt: string;
-}
-
 /** Everything the submission form needs for one held run. */
 export interface PbSubmissionForm {
     runId: number;
@@ -42,4 +30,35 @@ export interface PbSubmissionInput {
     vodUrl?: string;
     variables?: Record<string, unknown>;
     vodReview?: unknown;
+}
+
+/** Mirrors VideoRule in the backend's verification-settings/types.ts. */
+export interface VideoRule {
+    require: 'nothing' | 'top_n' | 'under_time' | 'everything';
+    topN?: number;
+    timeMs?: number;
+    onMissing: 'hide' | 'flag';
+}
+
+/**
+ * One run waiting on its runner, from `GET /v1/me/pb-submissions?include=video`.
+ * `video`: off its board until the runner adds a video.
+ * `submit`: held until the runner submits it.
+ */
+export interface WaitingRun {
+    kind: 'video' | 'submit';
+    runId: number;
+    gameId: number;
+    gameSlug: string | null;
+    gameDisplay: string | null;
+    gameImage: string | null;
+    categoryId: number;
+    categoryDisplay: string | null;
+    subcategoryKey: string;
+    timeMs: number;
+    gameTimeMs: number | null;
+    /** When it started waiting: the run's end for `video`, the hold for `submit`. */
+    since: string;
+    wouldBeRank: number;
+    videoRule: VideoRule;
 }

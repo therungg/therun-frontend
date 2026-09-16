@@ -84,6 +84,8 @@ export function describe(n: NotificationRow): string {
                 ? `Your ${subject} needs a video before it goes on the board.`
                 : 'One of your runs needs a video before it goes on the board.';
         }
+        case 'pb_awaiting_submission':
+            return 'A new personal best is waiting for you to submit it.';
         case 'run_video_waived': {
             const subject = runSubject(gameDisplay, categoryDisplay);
             return subject
@@ -93,4 +95,21 @@ export function describe(n: NotificationRow): string {
         default:
             return 'You have a new notification.';
     }
+}
+
+/**
+ * Where clicking a notification takes the runner: the place they can act on
+ * it. Only for notifications that ask something of them; the rest stay plain.
+ */
+export function hrefFor(
+    n: NotificationRow,
+    username: string | null,
+): string | null {
+    const runId = n.payload?.runId;
+    if (typeof runId !== 'number') return null;
+    if (n.type === 'pb_awaiting_submission') return `/submissions/${runId}`;
+    if (n.type === 'run_needs_video' && username) {
+        return `/${encodeURIComponent(username)}/submissions?run=${runId}`;
+    }
+    return null;
 }

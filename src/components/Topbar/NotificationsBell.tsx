@@ -7,14 +7,17 @@ import {
     readAllNotificationsAction,
     readNotificationAction,
 } from '~src/actions/notifications.action';
+import Link from '~src/components/link';
+import { useSession } from '~src/components/session-provider';
 import type { NotificationRow } from '../../../types/moderation.types';
-import { describe } from './notification-copy';
+import { describe, hrefFor } from './notification-copy';
 
 export function NotificationsBell() {
     const [open, setOpen] = useState(false);
     const [items, setItems] = useState<NotificationRow[]>([]);
     const [loading, setLoading] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
+    const { username } = useSession();
 
     const refresh = useCallback(async () => {
         setLoading(true);
@@ -127,6 +130,7 @@ export function NotificationsBell() {
                             </li>
                         )}
                         {items.map((n) => {
+                            const href = hrefFor(n, username || null);
                             const content = (
                                 <div className="d-flex gap-2">
                                     {!n.readAt && (
@@ -150,14 +154,28 @@ export function NotificationsBell() {
                                     key={n.id}
                                     className={`list-group-item small ${n.readAt ? '' : 'bg-light-subtle'}`}
                                     style={{
-                                        cursor: n.readAt
-                                            ? 'default'
-                                            : 'pointer',
+                                        cursor:
+                                            n.readAt && !href
+                                                ? 'default'
+                                                : 'pointer',
                                     }}
                                 >
-                                    <div onClick={() => handleRead(n)}>
-                                        {content}
-                                    </div>
+                                    {href ? (
+                                        <Link
+                                            href={href}
+                                            className="text-reset text-decoration-none d-block"
+                                            onClick={() => {
+                                                handleRead(n);
+                                                setOpen(false);
+                                            }}
+                                        >
+                                            {content}
+                                        </Link>
+                                    ) : (
+                                        <div onClick={() => handleRead(n)}>
+                                            {content}
+                                        </div>
+                                    )}
                                 </li>
                             );
                         })}

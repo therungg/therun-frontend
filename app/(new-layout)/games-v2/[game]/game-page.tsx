@@ -18,6 +18,7 @@ import { CategoryBandHeader } from './header/category-band-header';
 import { GameHero } from './header/game-hero';
 import mastheadStyles from './header/masthead.module.scss';
 import { formatSubcategoryKey, type LabelVariableDef } from './labels';
+import { BoardWaitingNotice } from './leaderboard/board-waiting-notice';
 import { LeaderboardPager } from './leaderboard/leaderboard-pager';
 import { ModerationLogView } from './leaderboard/moderation/moderation-log-view';
 import { Sidebar } from './sidebar/sidebar';
@@ -228,101 +229,123 @@ export function GamePage({
                                             defs={data.variables}
                                         />
                                     ) : (
-                                        <LeaderboardPager
-                                            key={`${data.selectedCategory.id}|${subcategoryKey}|${JSON.stringify(data.activeFilters.varFilters)}|${data.activeFilters.combined}|${data.activeFilters.verified}|${JSON.stringify(data.activeFilters.builtins)}`}
-                                            initial={data.leaderboard}
-                                            query={{
-                                                gameSlug: data.game.name,
-                                                categorySlug:
-                                                    data.selectedCategory.name,
-                                                timing: data.activeFilters
-                                                    .timing,
-                                                subcategoryValues:
+                                        <>
+                                            <BoardWaitingNotice
+                                                gameId={data.game.id}
+                                                categoryId={
+                                                    data.selectedCategory.id
+                                                }
+                                                subcategoryKey={subcategoryKey}
+                                            />
+                                            <LeaderboardPager
+                                                key={`${data.selectedCategory.id}|${subcategoryKey}|${JSON.stringify(data.activeFilters.varFilters)}|${data.activeFilters.combined}|${data.activeFilters.verified}|${JSON.stringify(data.activeFilters.builtins)}`}
+                                                initial={data.leaderboard}
+                                                query={{
+                                                    gameSlug: data.game.name,
+                                                    categorySlug:
+                                                        data.selectedCategory
+                                                            .name,
+                                                    timing: data.activeFilters
+                                                        .timing,
+                                                    subcategoryValues:
+                                                        data.activeFilters
+                                                            .subcategoryValues,
+                                                    combined:
+                                                        data.activeFilters
+                                                            .combined,
+                                                    varFilters:
+                                                        data.activeFilters
+                                                            .varFilters,
+                                                    verified:
+                                                        data.activeFilters
+                                                            .verified,
+                                                    video:
+                                                        data.activeFilters
+                                                            .builtins.video ??
+                                                        undefined,
+                                                    from:
+                                                        data.activeFilters
+                                                            .builtins.from ??
+                                                        undefined,
+                                                    to:
+                                                        data.activeFilters
+                                                            .builtins.to ??
+                                                        undefined,
+                                                    country:
+                                                        data.activeFilters
+                                                            .builtins.country ??
+                                                        undefined,
+                                                    pageSize:
+                                                        data.activeFilters
+                                                            .pageSize,
+                                                    sort: data.activeFilters
+                                                        .sort,
+                                                    dir: data.activeFilters.dir,
+                                                }}
+                                                sessionUsername={
+                                                    data.sessionUsername
+                                                }
+                                                canManage={canManageRuns}
+                                                canSiteBan={canSiteBan}
+                                                gameSlug={data.game.name}
+                                                gameId={data.game.id}
+                                                gameDisplay={data.game.display}
+                                                selfHidden={selfHidden}
+                                                variableKeys={variableKeys}
+                                                // The clock actually ranking this
+                                                // render, not the category's
+                                                // configured one: the table
+                                                // derives column order and the
+                                                // "Ranked" tag from this, so a
+                                                // ?timing= override moves both.
+                                                primaryTiming={
+                                                    data.activeFilters.timing
+                                                }
+                                                defaultTiming={
+                                                    data.selectedCategory
+                                                        .primaryTiming
+                                                }
+                                                gameTimeLabel={
+                                                    data.selectedCategory
+                                                        .gameTimeLabel ?? 'igt'
+                                                }
+                                                filtersActive={filtersActive}
+                                                showMilliseconds={
+                                                    showMilliseconds
+                                                }
+                                                categorySlug={
+                                                    data.selectedCategory.name
+                                                }
+                                                categoryDisplay={
+                                                    data.selectedCategory
+                                                        .display
+                                                }
+                                                categoryId={
+                                                    data.selectedCategory.id
+                                                }
+                                                requireVideo={
+                                                    data.selectedCategory
+                                                        .requireVideo ?? false
+                                                }
+                                                subcategoryKey={subcategoryKey}
+                                                subcategoryDefKeys={
+                                                    subcategoryDefKeys
+                                                }
+                                                rtaFallback={
+                                                    data.selectedCategory
+                                                        .rtaFallback ?? false
+                                                }
+                                                variableDefs={data.variables}
+                                                selectedVarFilters={
                                                     data.activeFilters
-                                                        .subcategoryValues,
-                                                combined:
-                                                    data.activeFilters.combined,
-                                                varFilters:
-                                                    data.activeFilters
-                                                        .varFilters,
-                                                verified:
-                                                    data.activeFilters.verified,
-                                                video:
+                                                        .varFilters
+                                                }
+                                                builtins={
                                                     data.activeFilters.builtins
-                                                        .video ?? undefined,
-                                                from:
-                                                    data.activeFilters.builtins
-                                                        .from ?? undefined,
-                                                to:
-                                                    data.activeFilters.builtins
-                                                        .to ?? undefined,
-                                                country:
-                                                    data.activeFilters.builtins
-                                                        .country ?? undefined,
-                                                pageSize:
-                                                    data.activeFilters.pageSize,
-                                                sort: data.activeFilters.sort,
-                                                dir: data.activeFilters.dir,
-                                            }}
-                                            sessionUsername={
-                                                data.sessionUsername
-                                            }
-                                            canManage={canManageRuns}
-                                            canSiteBan={canSiteBan}
-                                            gameSlug={data.game.name}
-                                            gameId={data.game.id}
-                                            gameDisplay={data.game.display}
-                                            selfHidden={selfHidden}
-                                            variableKeys={variableKeys}
-                                            // The clock actually ranking this
-                                            // render, not the category's
-                                            // configured one: the table
-                                            // derives column order and the
-                                            // "Ranked" tag from this, so a
-                                            // ?timing= override moves both.
-                                            primaryTiming={
-                                                data.activeFilters.timing
-                                            }
-                                            defaultTiming={
-                                                data.selectedCategory
-                                                    .primaryTiming
-                                            }
-                                            gameTimeLabel={
-                                                data.selectedCategory
-                                                    .gameTimeLabel ?? 'igt'
-                                            }
-                                            filtersActive={filtersActive}
-                                            showMilliseconds={showMilliseconds}
-                                            categorySlug={
-                                                data.selectedCategory.name
-                                            }
-                                            categoryDisplay={
-                                                data.selectedCategory.display
-                                            }
-                                            categoryId={
-                                                data.selectedCategory.id
-                                            }
-                                            requireVideo={
-                                                data.selectedCategory
-                                                    .requireVideo ?? false
-                                            }
-                                            subcategoryKey={subcategoryKey}
-                                            subcategoryDefKeys={
-                                                subcategoryDefKeys
-                                            }
-                                            rtaFallback={
-                                                data.selectedCategory
-                                                    .rtaFallback ?? false
-                                            }
-                                            variableDefs={data.variables}
-                                            selectedVarFilters={
-                                                data.activeFilters.varFilters
-                                            }
-                                            builtins={
-                                                data.activeFilters.builtins
-                                            }
-                                            facets={data.facets}
-                                        />
+                                                }
+                                                facets={data.facets}
+                                            />
+                                        </>
                                     )}
                                 </>
                             )}

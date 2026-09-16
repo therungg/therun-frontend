@@ -242,6 +242,17 @@
     }
 }
 
+.navCount {
+    margin-left: dt.$spacing-xs;
+    padding: 0 0.4rem;
+    border-radius: 999px;
+    background: dt.$accent-amber;
+    color: #1a1a1a;
+    font-family: dt.$font-mono;
+    font-size: dt.$font-size-2xs;
+    font-weight: 600;
+}
+
 .navLinkActive {
     color: var(--bs-emphasis-color);
     font-weight: 500;

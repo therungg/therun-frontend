@@ -1,11 +1,14 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
+import { WaitingBanner } from '~src/components/waiting-on-you/waiting-banner';
+import { WaitingOnYouProvider } from '~src/components/waiting-on-you/waiting-on-you-provider';
 import { getLeaderboardsProfile } from '~src/lib/leaderboards-profile';
 import { getRunnerProfileHead } from '~src/lib/runner-profile';
 import buildMetadata from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 import { plural } from '../../../leaderboards/[name]/format';
+import { NeedsVideoEntries } from '../../../leaderboards/[name]/needs-video-entries';
 import { OwnerControls } from '../../../leaderboards/[name]/owner-controls';
 import { PinnedRuns } from '../../../leaderboards/[name]/pinned-runs';
 import { RejectedEntries } from '../../../leaderboards/[name]/rejected-entries';
@@ -55,43 +58,49 @@ export default async function RunnerLeaderboardsPage({ params }: PageProps) {
             games={games}
             layout={profile.layout ?? DEFAULT_LAYOUT}
         >
-            <div className={styles.page}>
-                {empty ? null : (
-                    <StandingStrip
-                        profile={profile}
-                        saved={head?.strips?.leaderboards}
-                    />
-                )}
-                {empty ? null : (
+            <WaitingOnYouProvider forName={profile.runner.name}>
+                <div className={styles.page}>
+                    <WaitingBanner />
+                    {empty ? null : (
+                        <StandingStrip
+                            profile={profile}
+                            saved={head?.strips?.leaderboards}
+                        />
+                    )}
+                    {empty ? null : (
+                        <section className={styles.block}>
+                            <ShowcaseHeading>
+                                {canCustomize ? (
+                                    <Suspense fallback={null}>
+                                        <OwnerControls
+                                            name={profile.runner.name}
+                                        />
+                                    </Suspense>
+                                ) : null}
+                            </ShowcaseHeading>
+                            <div className={sectionStyles.ledger}>
+                                <PinnedRuns />
+                            </div>
+                        </section>
+                    )}
                     <section className={styles.block}>
-                        <ShowcaseHeading>
-                            {canCustomize ? (
-                                <Suspense fallback={null}>
-                                    <OwnerControls name={profile.runner.name} />
-                                </Suspense>
-                            ) : null}
-                        </ShowcaseHeading>
+                        {empty ? null : (
+                            <h2 className={styles.blockTitle}>All runs</h2>
+                        )}
                         <div className={sectionStyles.ledger}>
-                            <PinnedRuns />
+                            <RunsShelf country={profile.runner.country} />
+                            <NeedsVideoEntries />
+                            <Suspense fallback={null}>
+                                <RejectedEntries
+                                    name={profile.runner.name}
+                                    country={profile.runner.country}
+                                />
+                            </Suspense>
                         </div>
                     </section>
-                )}
-                <section className={styles.block}>
-                    {empty ? null : (
-                        <h2 className={styles.blockTitle}>All runs</h2>
-                    )}
-                    <div className={sectionStyles.ledger}>
-                        <RunsShelf country={profile.runner.country} />
-                        <Suspense fallback={null}>
-                            <RejectedEntries
-                                name={profile.runner.name}
-                                country={profile.runner.country}
-                            />
-                        </Suspense>
-                    </div>
-                </section>
-                {canCustomize ? <SectionEditBar /> : null}
-            </div>
+                    {canCustomize ? <SectionEditBar /> : null}
+                </div>
+            </WaitingOnYouProvider>
         </ShowcaseProvider>
     );
 }

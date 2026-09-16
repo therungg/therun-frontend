@@ -1,0 +1,132 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+.page {
+    display: grid;
+    gap: dt.$spacing-xl;
+    padding-block: dt.$spacing-xl;
+}
+
+.group {
+    @include board.board-surface(0);
+    display: grid;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.groupHead {
+    display: grid;
+    gap: dt.$spacing-xs;
+    padding: dt.$spacing-lg dt.$spacing-xl;
+}
+
+.groupTitle {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+    margin: 0;
+    font-size: dt.$font-size-md;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.count {
+    @include board.board-section-count;
+}
+
+.groupLede {
+    margin: 0;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.empty {
+    margin: 0;
+    padding: dt.$spacing-xl;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.rows {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) minmax(0, 22rem);
+    align-items: center;
+    gap: dt.$spacing-md dt.$spacing-lg;
+    padding: dt.$spacing-md dt.$spacing-xl;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    scroll-margin-top: 6rem;
+
+    // Arrived here from a notification about this run.
+    &[data-target] {
+        box-shadow: inset 3px 0 0 dt.$accent-amber;
+        background: color-mix(in srgb, dt.$accent-amber 7%, transparent);
+    }
+
+    @media (max-width: 719.98px) {
+        grid-template-columns: 36px minmax(0, 1fr);
+
+        .fix {
+            grid-column: 1 / -1;
+        }
+    }
+}
+
+.art {
+    width: 36px;
+    height: 48px;
+    border-radius: dt.$radius-sm;
+    object-fit: cover;
+    background: rgba(var(--bs-secondary-rgb), 0.15);
+}
+
+.what {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.game {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+}
+
+.board {
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    overflow-wrap: anywhere;
+}
+
+.meta {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.time {
+    @include board.mono-time;
+}
+
+.rule {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+}
+
+.fix {
+    display: flex;
+    justify-content: flex-end;
+    min-width: 0;
+
+    > * {
+        flex: 1;
+    }
+
+    > a {
+        flex: none;
+    }
+}
