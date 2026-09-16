@@ -54,12 +54,12 @@ export default async function Page(props: PageProps) {
         }
     }
 
+    // The cached page paints while the session is checked, so visitors who
+    // stay on it never see a blank profile.
+    const legacy = <UserProfilePage username={username} />;
     return (
-        <Suspense fallback={null}>
-            <ProfileSwitch
-                username={username}
-                legacy={<UserProfilePage username={username} />}
-            />
+        <Suspense fallback={legacy}>
+            <ProfileSwitch username={username} legacy={legacy} />
         </Suspense>
     );
 }
