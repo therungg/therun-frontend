@@ -640,8 +640,6 @@ export function RunnerTab({
                       <RunnerRight
                           modLog={data?.modLog ?? null}
                           modLogTotal={data?.modLogTotal ?? 0}
-                          gameSlug={gameSlug}
-                          categories={context.categories}
                           runnerPage={runnerPage}
                       />
                   ),

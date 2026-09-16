@@ -10,7 +10,12 @@ import {
     getCategoryRoster,
     getUserEligibleRuns,
     listExclusionRules,
+    listModActions,
 } from '~src/lib/moderation/mass-mgmt';
+import {
+    buildAnonymizeIndex,
+    buildModeratorFeed,
+} from '~src/lib/moderation/mod-feed';
 import { getPublicModLog } from '~src/lib/moderation/public-mod-log';
 import { getRunHistory } from '~src/lib/moderation/runs';
 import type { RunSplit } from '../../../../../../../../types/leaderboards.types';
@@ -63,6 +68,8 @@ function flagsFromHistory(history: HistoryEvent[]): {
     return { excluded: excluded ?? false, marked: marked ?? false };
 }
 const RUNNER_MOD_LOG_LIMIT = 5;
+// The authed feed is time-windowed; the backend caps it at a year.
+const RUNNER_MOD_FEED_DAYS = 365;
 
 function summarizeSplits(
     splits: RunSplit[],
@@ -128,38 +135,52 @@ export async function loadRunnerSheetAction(
         return { error: 'Not allowed' };
     }
 
-    const [rows, manualTimes, rules, anonymizeRules, modLog, resolvedCats] =
-        await Promise.all([
-            getUserEligibleRuns(session.id, game.id, userId).catch(
-                () => [] as UserEligibleRunRow[],
-            ),
-            listManualTimes(session.id, game.id, { userId }).catch(
-                () => [] as ManualTimeRow[],
-            ),
-            listExclusionRules(session.id, game.id).catch(
-                () => [] as GameExclusionRuleRow[],
-            ),
-            listAnonymizeRules(session.id, game.id, {
-                targetUserId: userId,
-                includeGlobal: true,
-                includeLifted: true,
-            }).catch(() => [] as AnonymizeRuleWithNames[]),
-            getPublicModLog({
-                gameId: game.id,
-                targetUserId: userId,
-                limit: RUNNER_MOD_LOG_LIMIT,
-            }).catch(
-                () =>
-                    ({
-                        items: [] as PublicModLogEntry[],
-                        total: 0,
-                        limit: RUNNER_MOD_LOG_LIMIT,
-                        offset: 0,
-                        hasMore: false,
-                    }) as const,
-            ),
-            resolveCategory(game.id),
-        ]);
+    const [
+        rows,
+        manualTimes,
+        rules,
+        anonymizeRules,
+        modLog,
+        modActions,
+        resolvedCats,
+    ] = await Promise.all([
+        getUserEligibleRuns(session.id, game.id, userId).catch(
+            () => [] as UserEligibleRunRow[],
+        ),
+        listManualTimes(session.id, game.id, { userId }).catch(
+            () => [] as ManualTimeRow[],
+        ),
+        listExclusionRules(session.id, game.id).catch(
+            () => [] as GameExclusionRuleRow[],
+        ),
+        listAnonymizeRules(session.id, game.id, {
+            targetUserId: userId,
+            includeGlobal: true,
+            includeLifted: true,
+        }).catch(() => [] as AnonymizeRuleWithNames[]),
+        getPublicModLog({
+            gameId: game.id,
+            targetUserId: userId,
+            limit: RUNNER_MOD_LOG_LIMIT,
+        }).catch(
+            () =>
+                ({
+                    items: [] as PublicModLogEntry[],
+                    total: 0,
+                    limit: RUNNER_MOD_LOG_LIMIT,
+                    offset: 0,
+                    hasMore: false,
+                }) as const,
+        ),
+        // The same slice with real names: the public feed shows a
+        // placeholder for a hidden runner. Null falls back to public rows.
+        listModActions(session.id, game.id, {
+            days: RUNNER_MOD_FEED_DAYS,
+            limit: RUNNER_MOD_LOG_LIMIT,
+            targetUserId: userId,
+        }).catch(() => null),
+        resolveCategory(game.id),
+    ]);
 
     const combos = buildCombos(rows, manualTimes, resolvedCats.categories);
     const banState = buildBanState(rules, userId);
@@ -197,7 +218,12 @@ export async function loadRunnerSheetAction(
             banState,
             summary,
             anonymizeRules,
-            modLog: modLog.items,
+            modLog: modActions
+                ? buildModeratorFeed(
+                      modActions,
+                      buildAnonymizeIndex(anonymizeRules),
+                  )
+                : modLog.items,
             modLogTotal: modLog.total,
         },
     };

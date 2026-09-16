@@ -139,8 +139,12 @@ export function ModeratePanel(props: ModeratePanelProps) {
         ? 'run'
         : (props.initialTab ?? (subject.kind === 'runner' ? 'runner' : 'run'));
     const onOpenRun = useCallback(
-        (entry: LeaderboardEntry, board: SheetBoard) =>
-            setSubjectOverride({ kind: 'run', entry, board }),
+        (entry: LeaderboardEntry, board: SheetBoard) => {
+            setSubjectOverride({ kind: 'run', entry, board });
+            // The subject key may not change (the run the panel opened on,
+            // or one already open), so the reset effect cannot be relied on.
+            setTab('run');
+        },
         [],
     );
     const [tab, setTab] = useState<PanelTab>(defaultTab);

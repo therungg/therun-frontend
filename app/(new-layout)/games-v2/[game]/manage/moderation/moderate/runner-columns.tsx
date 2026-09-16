@@ -3,18 +3,16 @@
 import type { Ref } from 'react';
 import type {
     LeaderboardEntry,
-    ResolvedCategory,
     VariableRow,
 } from '../../../../../../../types/leaderboards.types';
 import type { PublicModLogEntry } from '../../../../../../../types/moderation.types';
-import { LogRow } from '../../../leaderboard/moderation/moderation-log-view';
-import logStyles from '../../../leaderboard/moderation/moderation-log-view.module.scss';
 import { RunnerAvatar } from '../../../leaderboard/runner-avatar';
 import {
     publicBoardHref,
     type RunnerCombo,
 } from '../runner/[userId]/runner-model';
 import { subcategoryLabel } from '../worklist/worklist-model';
+import { eventVerbLabel, shortAgo } from './event-row';
 import styles from './moderate-panel.module.scss';
 import { Time, type TrackRecord } from './run-columns';
 import type { SheetBoard } from './subject';
@@ -190,7 +188,9 @@ export function RunnerLeft({
             <div className={styles.sectionHead}>
                 <span>On the boards</span>
                 <span>
-                    {comesOff ? `${hitCount} come off` : onBoards.length}
+                    {comesOff
+                        ? `${hitCount} ${hitCount === 1 ? 'comes' : 'come'} off`
+                        : onBoards.length}
                 </span>
             </div>
             {onBoards.length > 0 ? (
@@ -279,18 +279,37 @@ export function RunnerLeft({
     );
 }
 
+/** One log line in the Run tab's history style: verb · by · reason · when. */
+function LogEvent({ entry }: { entry: PublicModLogEntry }) {
+    return (
+        <li className={styles.event}>
+            <span className={styles.eventVerb}>
+                {eventVerbLabel(entry.action)}
+            </span>
+            <span className={styles.eventBy}>
+                {entry.actor.username}
+                {entry.reason ? (
+                    <>
+                        {' · '}
+                        <q>{entry.reason}</q>
+                    </>
+                ) : null}
+            </span>
+            <span className={styles.eventWhen}>
+                <time dateTime={entry.at}>{shortAgo(entry.at)}</time>
+            </span>
+        </li>
+    );
+}
+
 export function RunnerRight({
     modLog,
     modLogTotal,
-    gameSlug,
-    categories,
     runnerPage,
 }: {
     /** Null until the read lands. */
     modLog: PublicModLogEntry[] | null;
     modLogTotal: number;
-    gameSlug: string;
-    categories: ResolvedCategory[];
     runnerPage: string;
 }) {
     if (!modLog) return null;
@@ -301,14 +320,9 @@ export function RunnerRight({
                 <span>{modLogTotal}</span>
             </div>
             {modLog.length > 0 ? (
-                <ul className={logStyles.log}>
+                <ul className={styles.events}>
                     {modLog.map((entry) => (
-                        <LogRow
-                            key={entry.id}
-                            entry={entry}
-                            gameSlug={gameSlug}
-                            categories={categories}
-                        />
+                        <LogEvent key={entry.id} entry={entry} />
                     ))}
                 </ul>
             ) : (
