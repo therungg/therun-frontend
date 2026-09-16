@@ -5,17 +5,40 @@ import type { RejectionReasonKey } from '../../../../../../../types/moderation.t
 import { ReasonKeyPicker } from '../shared/reason-key-picker';
 import { ReasonZone } from '../shared/run-action-parts';
 import styles from './moderate-panel.module.scss';
-import {
-    type ModerateVerb,
-    VERB_EFFECT,
-    VERB_LABEL,
-    VERB_RUNNER_SEES,
-} from './verbs';
+import { type ModerateVerb, VERB_EFFECT, VERB_LABEL } from './verbs';
+
+/**
+ * What the runner is told, as the end of a sentence that starts with their
+ * name. Mirrors `VERB_RUNNER_SEES` in the moderator's voice; `null` means the
+ * runner is not told.
+ */
+const RUNNER_IS_TOLD: Record<ModerateVerb, string | null> = {
+    approve: 'is told the run was approved.',
+    decline: 'is told the run was declined, with this reason.',
+    remove: 'is told the run was removed, with this reason.',
+    restore: 'is told the run is back on the board.',
+    send_back: 'is told the run is pending again.',
+    ask_video: 'is asked to add a video.',
+    set_time: 'is told the time was corrected, with this reason.',
+    retime: 'is told the time was corrected, with this reason.',
+    move: 'is told the run moved to another board.',
+    reassign: 'and the new runner are told the run changed owner.',
+    hide_identity: 'is told their name is hidden on this game.',
+    mark: null,
+    note: null,
+    add_run: 'is told a run was added for them.',
+    ban: 'is told they were removed from this board or game, with this reason.',
+    lift_ban: 'is told they are back on this game.',
+};
 
 export interface HeavyFormSpec {
     verb: ModerateVerb;
     /** Part 1. One sentence with the real numbers, from the caller's preview. */
     whatChanges: ReactNode;
+    /** Who the After part names: the runner, or "Each runner" for a selection. */
+    runnerName: string;
+    /** Where undo lives, e.g. "Restore from history". Generic line when absent. */
+    undoHint?: string;
     /** Set when the preview says this cannot be undone; the reason, shown in red. */
     notUndoable: string | null;
     /** Decline uses canned keys plus an optional note. Everything else is free text. */
@@ -90,7 +113,7 @@ export function HeavyFormBody({
     state: HeavyFormState;
     busy: boolean;
 }) {
-    const runnerSees = VERB_RUNNER_SEES[spec.verb];
+    const told = RUNNER_IS_TOLD[spec.verb];
     const reasonRef = useRef<HTMLElement>(null);
     const fieldRef = useRef<HTMLTextAreaElement>(null);
     // Opening a form puts the cursor on its reason: the first canned key
@@ -141,11 +164,11 @@ export function HeavyFormBody({
                     <div className={styles.tells}>
                         <p className={styles.tell}>
                             <BellIcon />
-                            {runnerSees ? (
-                                <q>{runnerSees}</q>
-                            ) : (
-                                <span>The runner is not told.</span>
-                            )}
+                            <span>
+                                {told
+                                    ? `${spec.runnerName} ${told}`
+                                    : `${spec.runnerName} is not told.`}
+                            </span>
                         </p>
                         {spec.notUndoable ? (
                             <p className={styles.tellWarn}>
@@ -158,7 +181,11 @@ export function HeavyFormBody({
                         ) : (
                             <p className={styles.tell}>
                                 <UndoIcon />
-                                <span>Can be undone from history.</span>
+                                <span>
+                                    {spec.undoHint
+                                        ? `Can be undone: ${spec.undoHint}.`
+                                        : 'Can be undone from history.'}
+                                </span>
                             </p>
                         )}
                     </div>

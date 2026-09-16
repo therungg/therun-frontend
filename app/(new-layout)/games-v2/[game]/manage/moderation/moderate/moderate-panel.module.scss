@@ -612,9 +612,10 @@ $ring: 2px solid rgba(var(--bs-primary-rgb), 0.5);
     text-wrap: pretty;
 }
 
-// The shared reason pieces carry their own labels and dialog spacing. Here
-// the part label names the section, so theirs are kept for screen readers
-// only, and the canned keys read as one row of chips.
+// The shared reason pieces carry their own labels, helper lines and dialog
+// spacing. Here the part label names the section, so their labels are kept
+// for screen readers only, helper lines are hidden, and the canned keys read
+// as one row of chips.
 .reasonPart {
     > fieldset {
         display: flex;
@@ -666,6 +667,12 @@ $ring: 2px solid rgba(var(--bs-primary-rgb), 0.5);
 
         > label {
             @extend %sr-only;
+        }
+
+        // Requirement hint and shortfall line: the action button stays
+        // disabled until the reason is long enough, so neither is shown.
+        > div {
+            display: none;
         }
 
         textarea {

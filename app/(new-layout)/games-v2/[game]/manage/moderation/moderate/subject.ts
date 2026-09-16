@@ -30,3 +30,26 @@ export interface SheetContext {
     variables: VariableRow[];
     canSiteBan: boolean;
 }
+
+function entryKey(entry: LeaderboardEntry): string {
+    if (entry.runId != null) return String(entry.runId);
+    if (entry.manualTimeId != null) return `manual:${entry.manualTimeId}`;
+    return `row:${entry.userId ?? entry.runnerName}:${entry.time ?? ''}`;
+}
+
+/**
+ * Stable identity for a subject. The panel resets its tab and any open form
+ * only when this changes, never on a new object for the same subject (a
+ * parent re-render or a refresh after a mutation). Tabs render with
+ * `key={subjectKey(subject)}` so their own state follows the same rule.
+ */
+export function subjectKey(subject: SheetSubject): string {
+    switch (subject.kind) {
+        case 'run':
+            return `run:${entryKey(subject.entry)}`;
+        case 'runner':
+            return `runner:${subject.userId}`;
+        case 'bulk':
+            return `bulk:${subject.entries.map(entryKey).sort().join(',')}`;
+    }
+}

@@ -1,10 +1,16 @@
 'use client';
 
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import {
+    type ReactNode,
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+} from 'react';
 import { createPortal } from 'react-dom';
 import { useDialogBehavior } from '../../../shared/board-dialog';
 import styles from './moderate-panel.module.scss';
-import type { SheetContext, SheetSubject } from './subject';
+import { type SheetContext, type SheetSubject, subjectKey } from './subject';
 
 export type PanelMount = 'modal' | 'inline';
 export type PanelTab = 'run' | 'runner';
@@ -33,10 +39,23 @@ export interface PanelLayout {
 }
 
 /**
- * Tabs report an open heavy form with the function that backs out of it, and
- * `null` once it closes. The shell uses it for Esc and to lock navigation.
+ * How a tab tells the shell a heavy form is open. Stable for the panel's
+ * lifetime, so it is safe in effect deps.
+ *
+ * Contract for tabs:
+ * - Call it with the form's Back function when the form opens.
+ * - Call it with `null` on Back, after a successful confirm, and in the
+ *   effect cleanup of whatever opened the form (unmount, subject change).
+ * - The registered function must do nothing while the form is busy; the
+ *   shell also ignores Esc entirely while `onBusyChange(true)` is reported.
+ *
+ * The shell uses the registration for Esc (Back instead of close) and to
+ * lock tabs, prev/next and the page link while the form is open.
  */
 export type FormBackHandler = (back: (() => void) | null) => void;
+
+/** A tab reports a mutation in flight; Esc does nothing until it settles. Stable. */
+export type BusyHandler = (busy: boolean) => void;
 
 export function PanelFrame({
     layout,
@@ -103,6 +122,7 @@ export function ModeratePanel(props: ModeratePanelProps) {
     const [tab, setTab] = useState<PanelTab>(defaultTab);
     const [formOpen, setFormOpen] = useState(false);
     const formBackRef = useRef<(() => void) | null>(null);
+    const busyRef = useRef(false);
     const panelRef = useRef<HTMLDivElement>(null);
     // The portal target does not exist during SSR.
     const [mounted, setMounted] = useState(false);
@@ -110,14 +130,19 @@ export function ModeratePanel(props: ModeratePanelProps) {
         setMounted(true);
     }, []);
 
-    // Tasks hand this to the tab as `onFormBack`.
-    const _onFormBack: FormBackHandler = (back) => {
+    // Tasks 5 to 7 hand these to the tab as `onFormBack` and `onBusyChange`.
+    const _onFormBack = useCallback<FormBackHandler>((back) => {
         formBackRef.current = back;
         setFormOpen(back !== null);
-    };
+    }, []);
+    const _onBusyChange = useCallback<BusyHandler>((busy) => {
+        busyRef.current = busy;
+    }, []);
 
     // Esc is Back while a heavy form is open, and closes the modal otherwise.
+    // Nothing while a mutation is in flight.
     const onEscape = () => {
+        if (busyRef.current) return;
         if (formBackRef.current) {
             formBackRef.current();
             return;
@@ -137,6 +162,7 @@ export function ModeratePanel(props: ModeratePanelProps) {
         if (mount !== 'inline' || !formOpen) return;
         const onKeyDown = (e: KeyboardEvent) => {
             if (e.key !== 'Escape') return;
+            if (busyRef.current) return;
             if (!panelRef.current?.contains(document.activeElement)) return;
             formBackRef.current?.();
         };
@@ -144,11 +170,15 @@ export function ModeratePanel(props: ModeratePanelProps) {
         return () => document.removeEventListener('keydown', onKeyDown);
     }, [mount, formOpen]);
 
+    // Reset only when the subject really changes, not on a new object for the
+    // same run or runner. Tabs render with `key={subjectKey(subject)}`.
+    const key = subjectKey(subject);
     useEffect(() => {
         setTab(defaultTab);
         formBackRef.current = null;
+        busyRef.current = false;
         setFormOpen(false);
-    }, [subject, defaultTab]);
+    }, [key]);
 
     const runnerId =
         subject.kind === 'run'
@@ -255,8 +285,8 @@ export function ModeratePanel(props: ModeratePanelProps) {
 
     // Tasks 5 to 7 replace `layout` with the active tab's output:
     //   subject.kind === 'bulk'  -> <BulkBody ... render={(layout) => ...} />
-    //   tab === 'run'            -> <RunTab ... onFormBack={_onFormBack} render={(layout) => ...} />
-    //   tab === 'runner'         -> <RunnerTab ... onFormBack={_onFormBack} render={(layout) => ...} />
+    //   tab === 'run'            -> <RunTab key={subjectKey(subject)} ... onFormBack={_onFormBack} onBusyChange={_onBusyChange} render={(layout) => ...} />
+    //   tab === 'runner'         -> <RunnerTab key={subjectKey(subject)} ... onFormBack={_onFormBack} onBusyChange={_onBusyChange} render={(layout) => ...} />
     // Each tab owns its data and verb handlers and calls `render(layout)`; the shell below wraps it.
     const wrap = (layout: PanelLayout) => (
         <>
