@@ -35,7 +35,7 @@ export async function generateMetadata({
         return buildMetadata({ description: 'Runner profile' });
     }
     return buildMetadata({
-        title: `${head.runner.name} — Stats`,
+        title: `${head.runner.name} — Runs`,
         description: `${head.runner.name}'s games, personal bests and attempts on therun.gg.`,
     });
 }

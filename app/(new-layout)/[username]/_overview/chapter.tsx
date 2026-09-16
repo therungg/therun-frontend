@@ -31,7 +31,7 @@ const SEE_ALL_LABEL: Record<ChapterId, string> = {
     highlights: 'See all leaderboards',
     leaderboards: 'See all leaderboards',
     activity: 'See all activity',
-    games: 'See all stats',
+    games: 'See all runs',
     races: 'See all races',
     splits: 'See all downloads',
 };

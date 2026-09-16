@@ -28,7 +28,7 @@ export function ProfileSubnav({
                   href: `${base}/leaderboards`,
                   segment: 'leaderboards',
               },
-              { label: 'Stats', href: `${base}/stats`, segment: 'stats' },
+              { label: 'Runs', href: `${base}/stats`, segment: 'stats' },
               {
                   label: 'Activity',
                   href: `${base}/activity`,
