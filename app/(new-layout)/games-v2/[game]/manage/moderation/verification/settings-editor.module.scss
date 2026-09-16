@@ -26,13 +26,6 @@
     color: var(--bs-secondary-color);
 }
 
-.notice {
-    @include board.board-surface(dt.$spacing-md dt.$spacing-lg);
-    margin: 0;
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-}
-
 .preview {
     @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
     border-left: 3px solid dt.$accent-amber;

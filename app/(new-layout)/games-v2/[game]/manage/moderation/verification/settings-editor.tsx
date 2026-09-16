@@ -351,15 +351,6 @@ export function SettingsEditor({
 
             <InlineError>{error ?? (dirty ? invalid : null)}</InlineError>
 
-            {!enforced && (
-                <p className={styles.notice} role="status">
-                    Saved settings are not active yet: video rules, closing
-                    timer runs, limits on submitted times and automatic trust
-                    are not enforced. Auto-verify, the review window and
-                    reopening timer runs apply as soon as you save.
-                </p>
-            )}
-
             <SectionFooter>
                 {mustPreview && !preview && dirty && !invalid && (
                     <span className={styles.footerHint}>
@@ -396,11 +387,7 @@ export function SettingsEditor({
                     onClick={save}
                     disabled={!canSave}
                 >
-                    {isSaving
-                        ? 'Saving…'
-                        : acceptDefaults
-                          ? 'Use these settings'
-                          : 'Save'}
+                    {isSaving ? 'Saving…' : 'Save'}
                 </button>
             </SectionFooter>
         </div>
