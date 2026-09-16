@@ -11,6 +11,8 @@ import { ActivityChapter } from './chapters/activity';
 import { GamesChapter } from './chapters/games';
 import { HighlightsChapter } from './chapters/highlights';
 import { LeaderboardsChapter } from './chapters/leaderboards';
+import { RacesChapter } from './chapters/races';
+import { SplitsChapter } from './chapters/splits';
 import styles from './overview.module.scss';
 
 /** Skeleton heights match each chapter's glance at desktop width. */
@@ -33,8 +35,10 @@ function ChapterBody({ id, head }: { id: ChapterId; head: RunnerProfileHead }) {
             return <ActivityChapter head={head} />;
         case 'games':
             return <GamesChapter head={head} />;
-        default:
-            return null;
+        case 'races':
+            return <RacesChapter head={head} />;
+        case 'splits':
+            return <SplitsChapter head={head} />;
     }
 }
 

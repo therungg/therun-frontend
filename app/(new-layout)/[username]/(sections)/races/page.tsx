@@ -15,7 +15,7 @@ import {
 import { getRunnerProfileHead } from '~src/lib/runner-profile';
 import buildMetadata from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
-import { racesStrip } from '../strips/races';
+import { racesStrip, racesStripData } from '../strips/races';
 import { resolveStrip } from '../strips/resolve';
 import { StripEditor } from '../strips/strip-editor';
 
@@ -71,11 +71,7 @@ export default async function Page(props: PageProps) {
     const strip = raceStats
         ? resolveStrip(
               racesStrip,
-              {
-                  totalRaces: raceStats.totalRaces,
-                  totalFinishedRaces: raceStats.totalFinishedRaces,
-                  totalRaceTime: raceStats.totalRaceTime ?? null,
-              },
+              racesStripData(raceStats),
               head.strips?.races,
           )
         : null;

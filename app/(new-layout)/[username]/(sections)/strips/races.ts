@@ -1,4 +1,7 @@
+import type { UserStats } from '~app/(new-layout)/races/races.types';
 import { formatCount } from '../format';
+import { medalOf, ordinal } from '../ranks';
+import type { StripLead } from '../stat-strip';
 import type { StripCatalog } from './resolve';
 
 export interface RacesStripData {
@@ -55,3 +58,39 @@ export const racesStrip: StripCatalog<RacesStripData> = {
     ],
     defaults: () => ['races', 'finishRate', 'raceTime'],
 };
+
+/** The strip's numbers, from the runner's race stats. */
+export function racesStripData(stats: UserStats): RacesStripData {
+    return {
+        totalRaces: stats.totalRaces,
+        totalFinishedRaces: stats.totalFinishedRaces,
+        totalRaceTime: stats.totalRaceTime ?? null,
+    };
+}
+
+/** "Game#Category" race stat keys split apart. */
+export const raceStatName = (s: UserStats) => {
+    const [game, category] = s.displayValue.split('#');
+    return { game, category: category ?? '' };
+};
+
+/** The runner's best rating across categories; null when they have none. */
+export function racesLead(categoryStats: UserStats[]): StripLead | null {
+    const best = categoryStats.reduce<UserStats | null>(
+        (top, s) =>
+            s.rankings[0]?.score &&
+            (!top || s.rankings[0].score > top.rankings[0].score)
+                ? s
+                : top,
+        null,
+    );
+    if (!best) return null;
+    const { game, category } = raceStatName(best);
+    return {
+        value: formatCount(best.rankings[0].score),
+        label: `Best rating · ${ordinal(best.rankings[0].rank + 1)} on the ladder`,
+        what: `${game} · ${category}`,
+        medal: medalOf(best.rankings[0].rank + 1),
+        href: `/races/stats/${encodeURI(game)}/${encodeURI(category)}`,
+    };
+}

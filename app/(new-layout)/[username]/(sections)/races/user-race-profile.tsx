@@ -19,7 +19,8 @@ import { ProfileBlock } from '../profile-block';
 import { ProfileGroup } from '../profile-group';
 import ui from '../profile-ui.module.scss';
 import { medalOf, ordinal, plural } from '../ranks';
-import { StatStrip, type StripLead, type StripTile } from '../stat-strip';
+import { StatStrip, type StripTile } from '../stat-strip';
+import { raceStatName, racesLead } from '../strips/races';
 import type { ResolvedStrip } from '../strips/resolve';
 import styles from './races.module.scss';
 
@@ -39,11 +40,6 @@ const PAGE = 10;
 const duration = (ms: number | null | undefined) =>
     ms ? getFormattedString(String(ms)) : '—';
 
-const splitName = (s: UserStats) => {
-    const [game, category] = s.displayValue.split('#');
-    return { game, category: category ?? '' };
-};
-
 export const UserRaceProfile = ({
     username,
     globalStats,
@@ -58,25 +54,7 @@ export const UserRaceProfile = ({
         return <p className={ui.empty}>No races yet.</p>;
     }
 
-    const all = categoryStatsMap.flat();
-    const best = all.reduce<UserStats | null>(
-        (top, s) =>
-            s.rankings[0]?.score &&
-            (!top || s.rankings[0].score > top.rankings[0].score)
-                ? s
-                : top,
-        null,
-    );
-
-    const lead: StripLead | null = best
-        ? {
-              value: formatCount(best.rankings[0].score),
-              label: `Best rating · ${ordinal(best.rankings[0].rank + 1)} on the ladder`,
-              what: `${splitName(best).game} · ${splitName(best).category}`,
-              medal: medalOf(best.rankings[0].rank + 1),
-              href: `/races/stats/${encodeURI(splitName(best).game)}/${encodeURI(splitName(best).category)}`,
-          }
-        : null;
+    const lead = racesLead(categoryStatsMap.flat());
 
     return (
         <div className={ui.page}>
@@ -103,7 +81,7 @@ export const UserRaceProfile = ({
                 <ProfileBlock title="By game" note="Most time raced first">
                     <div className={`${styles.byGame} ${ui.panelList}`}>
                         {categoryStatsMap.map((cats, i) => {
-                            const game = splitName(cats[0]).game;
+                            const game = raceStatName(cats[0]).game;
                             const races = cats.reduce(
                                 (n, c) => n + c.totalRaces,
                                 0,
@@ -176,7 +154,7 @@ function Ladder({ rank }: { rank: number }) {
 }
 
 function CategoryRow({ stat }: { stat: UserStats }) {
-    const { game, category } = splitName(stat);
+    const { game, category } = raceStatName(stat);
     const [mmr, time] = stat.rankings;
     return (
         <a
@@ -231,13 +209,7 @@ function RecentRaces({
 
     return (
         <div className={`${ui.panel} ${styles.recent}`}>
-            <div className={`${ui.colHead} ${ui.rowFlush}`} aria-hidden>
-                <span>Race</span>
-                <span>Result</span>
-                <span className={ui.end}>Time</span>
-                <span className={ui.optional}>Winner</span>
-                <span className={`${ui.end} ${ui.optional}`}>When</span>
-            </div>
+            <RaceColHead />
             {pagination.data.map((race) => (
                 <RaceRow
                     key={race.raceId}
@@ -273,7 +245,20 @@ function RecentRaces({
     );
 }
 
-function RaceRow({
+export function RaceColHead() {
+    return (
+        <div className={`${ui.colHead} ${ui.rowFlush}`} aria-hidden>
+            <span>Race</span>
+            <span>Result</span>
+            <span className={ui.end}>Time</span>
+            <span className={ui.optional}>Winner</span>
+            <span className={`${ui.end} ${ui.optional}`}>When</span>
+        </div>
+    );
+}
+
+/** One race the runner was in: result, time, winner, when. */
+export function RaceRow({
     race,
     username,
     participation,

@@ -176,3 +176,60 @@
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
 }
+
+.splitsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: dt.$spacing-md;
+
+    @container overview-chapter (max-width: 720px) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.splitsCard {
+    gap: dt.$spacing-xs;
+    color: inherit;
+    text-decoration: none;
+
+    &:hover .cardTitle {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+}
+
+.cardLabel {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.cardTitle {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.cardValue {
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.sobBar {
+    display: block;
+    height: 4px;
+    margin-block: dt.$spacing-xs;
+    border-radius: 2px;
+    background: rgba(var(--bs-emphasis-color-rgb), 0.08);
+
+    > span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--board-accent, var(--bs-primary));
+    }
+}
