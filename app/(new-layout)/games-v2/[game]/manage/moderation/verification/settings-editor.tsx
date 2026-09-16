@@ -161,7 +161,8 @@ export function SettingsEditor({
 
             <FormSection title="VOD requirement">
                 <SegmentedControl
-                    label="Video required for"
+                    label="VOD required for"
+                    labelHidden
                     value={form.videoRequire}
                     options={[
                         { value: 'nothing', label: 'Nothing' },
@@ -174,34 +175,43 @@ export function SettingsEditor({
                     }
                 />
                 {form.videoRequire === 'top_n' && (
-                    <label className={styles.field}>
-                        <span className={styles.fieldLabel}>
-                            How many top runs
-                        </span>
-                        <input
-                            className="form-control form-control-sm"
-                            inputMode="numeric"
-                            value={form.videoTopN}
-                            onChange={(e) => set('videoTopN', e.target.value)}
-                        />
-                    </label>
+                    <div className={styles.dial}>
+                        <label className={styles.dialLabel}>
+                            <span>A VOD is needed for the top</span>
+                            <input
+                                className={`form-control form-control-sm ${styles.dialInput}`}
+                                inputMode="numeric"
+                                value={form.videoTopN}
+                                onChange={(e) =>
+                                    set('videoTopN', e.target.value)
+                                }
+                            />
+                            <span>runs</span>
+                        </label>
+                    </div>
                 )}
                 {form.videoRequire === 'under_time' && (
-                    <label className={styles.field}>
-                        <span className={styles.fieldLabel}>
-                            Under this time, in milliseconds
-                        </span>
-                        <input
-                            className="form-control form-control-sm"
-                            inputMode="numeric"
-                            value={form.videoTimeMs}
-                            onChange={(e) => set('videoTimeMs', e.target.value)}
-                        />
-                    </label>
+                    <div className={styles.dial}>
+                        <label className={styles.dialLabel}>
+                            <span>A VOD is needed for runs under</span>
+                            <input
+                                className={`form-control form-control-sm ${styles.dialInput} ${styles.dialWide}`}
+                                inputMode="numeric"
+                                value={form.videoTime}
+                                onChange={(e) =>
+                                    set('videoTime', e.target.value)
+                                }
+                            />
+                        </label>
+                        <HintBubble label="the time">
+                            Type it the way a time is written: 30:00 for half an
+                            hour, 1:29:59 for an hour and a half.
+                        </HintBubble>
+                    </div>
                 )}
                 {form.videoRequire !== 'nothing' && (
                     <SegmentedControl
-                        label="When a run has no video"
+                        label="When a run has no VOD"
                         hint="Asking the runner keeps the run off the board until they add one. The mod queue keeps it on the board while you look."
                         value={form.videoOnMissing}
                         options={[
@@ -302,13 +312,20 @@ export function SettingsEditor({
                                 yet.
                             </HintBubble>
                         </div>
-                        <SwitchField
-                            id="live-required"
-                            label="Only auto-verify if the run was timed with therun.gg LiveSplit"
-                            hint="A live run only matches when it finished at the same moment with the same time, so this is what ties a submitted run to one that was watched happening."
-                            checked={form.liveRequired}
-                            onChange={(v) => set('liveRequired', v)}
-                        />
+                        <div className={styles.dial}>
+                            <SwitchField
+                                id="live-required"
+                                label="Only auto-verify if the run was timed with therun.gg LiveSplit"
+                                checked={form.liveRequired}
+                                onChange={(v) => set('liveRequired', v)}
+                            />
+                            <HintBubble label="the live requirement">
+                                A live run only matches when it started and
+                                finished at the same moments, so this is what
+                                ties a submitted run to one that was watched
+                                happening.
+                            </HintBubble>
+                        </div>
                     </div>
                 )}
             </FormSection>
@@ -344,6 +361,11 @@ export function SettingsEditor({
             )}
 
             <SectionFooter>
+                {mustPreview && !preview && dirty && !invalid && (
+                    <span className={styles.footerHint}>
+                        Preview before saving.
+                    </span>
+                )}
                 <button
                     type="button"
                     className="btn btn-sm btn-outline-secondary"
@@ -381,9 +403,6 @@ export function SettingsEditor({
                           : 'Save'}
                 </button>
             </SectionFooter>
-            {mustPreview && !preview && dirty && !invalid && (
-                <p className={styles.hint}>Preview before saving.</p>
-            )}
         </div>
     );
 }

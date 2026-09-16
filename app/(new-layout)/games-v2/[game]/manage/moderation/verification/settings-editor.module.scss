@@ -84,6 +84,11 @@
     margin: 0;
 }
 
+/* The duration field holds "1:29:59", which the number boxes cannot. */
+.dialWide {
+    width: 7rem;
+}
+
 .dialInput {
     width: 4.5rem;
     text-align: center;
@@ -96,4 +101,11 @@
     font-size: dt.$font-size-md;
     color: var(--bs-secondary-color);
     margin-left: -#{dt.$spacing-xs};
+}
+
+/* Sits with the buttons it is about, not orphaned under the card. */
+.footerHint {
+    margin-right: auto;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
 }

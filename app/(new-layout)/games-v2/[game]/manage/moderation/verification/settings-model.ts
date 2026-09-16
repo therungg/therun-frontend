@@ -14,7 +14,8 @@ export type SettingsForm = {
     manualDays: string;
     videoRequire: VideoRule['require'];
     videoTopN: string;
-    videoTimeMs: string;
+    /** A duration as typed, "30:00"; sent as milliseconds. */
+    videoTime: string;
     videoOnMissing: VideoRule['onMissing'];
     autoVerifyEnabled: boolean;
     neverTopN: string;
@@ -41,7 +42,7 @@ export const formFrom = (e: EffectiveSettings): SettingsForm => {
         manualDays: manual.mode === 'account_age' ? String(manual.days) : '7',
         videoRequire: video.require,
         videoTopN: String(video.topN ?? 10),
-        videoTimeMs: String(video.timeMs ?? ''),
+        videoTime: video.timeMs ? formatDuration(video.timeMs) : '',
         videoOnMissing: video.onMissing,
         autoVerifyEnabled: e.autoVerify.value.enabled,
         neverTopN: String(e.autoVerify.value.neverTopN),
@@ -59,6 +60,38 @@ export const formFrom = (e: EffectiveSettings): SettingsForm => {
 
 const int = (text: string): number | null =>
     /^\d+$/.test(text.trim()) ? Number(text.trim()) : null;
+
+/** "30:00", "1:29:59" or "95.5" seconds -> milliseconds; null when unreadable. */
+export const parseDuration = (text: string): number | null => {
+    const t = text.trim();
+    if (t === '') return null;
+    const parts = t.split(':');
+    if (parts.length > 3) return null;
+    let seconds = 0;
+    for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
+        // Only the last part carries a decimal; only the first may pass 59, so
+        // "90:00" is an hour and a half and "1:90" is a typo.
+        const last = i === parts.length - 1;
+        if (!(last ? /^\d+(\.\d+)?$/ : /^\d{1,2}$/).test(part)) return null;
+        const n = Number(part);
+        if (i > 0 && n >= 60) return null;
+        seconds = seconds * 60 + n;
+    }
+    return Math.round(seconds * 1000);
+};
+
+/** Milliseconds -> "30:00", the way the field wants them typed back. */
+export const formatDuration = (ms: number): string => {
+    const total = Math.round(ms / 1000);
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const seconds = total % 60;
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return hours > 0
+        ? `${hours}:${pad(minutes)}:${pad(seconds)}`
+        : `${minutes}:${pad(seconds)}`;
+};
 
 /** Seconds a moderator typed: 0 to a day, decimals allowed, blank is not zero. */
 const secs = (v: string): boolean => {
@@ -86,8 +119,8 @@ export const validateForm = (f: SettingsForm): string | null => {
         !(int(f.videoTopN) && int(f.videoTopN)! <= 1000)
     )
         return 'Top N for video must be 1 to 1000.';
-    if (f.videoRequire === 'under_time' && !int(f.videoTimeMs))
-        return 'Enter the time under which a video is required.';
+    if (f.videoRequire === 'under_time' && !parseDuration(f.videoTime))
+        return 'Enter the time under which a video is required, as 30:00 or 1:29:59.';
     if (int(f.neverTopN) === null || int(f.neverTopN)! > 1000)
         return 'Never auto-verify the top must be 0 to 1000.';
     // Only worth checking the rest when they are actually in use; an untouched
@@ -116,7 +149,9 @@ const intakeOf = (f: SettingsForm): IntakeSetting => ({
 const videoOf = (f: SettingsForm): VideoRule => ({
     require: f.videoRequire,
     ...(f.videoRequire === 'top_n' ? { topN: int(f.videoTopN)! } : {}),
-    ...(f.videoRequire === 'under_time' ? { timeMs: int(f.videoTimeMs)! } : {}),
+    ...(f.videoRequire === 'under_time'
+        ? { timeMs: parseDuration(f.videoTime)! }
+        : {}),
     onMissing: f.videoOnMissing,
 });
 const autoVerifyOf = (f: SettingsForm): AutoVerifySetting => ({
