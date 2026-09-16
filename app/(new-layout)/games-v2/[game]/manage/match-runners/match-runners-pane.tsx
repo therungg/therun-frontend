@@ -74,7 +74,7 @@ const initialRow = (row: SrcMatchRow, prev?: RowState): RowState => {
         row,
         picked,
         typed: prev?.typed ?? '',
-        ticked: prev ? false : row.state === 'sure',
+        ticked: prev ? prev.ticked : row.state === 'sure',
         error: prev?.error ?? null,
     };
 };
@@ -109,11 +109,10 @@ export function MatchRunnersPane({ gameSlug }: { gameSlug: string }) {
             setLoadError(null);
             setImported(res.list.imported);
             setRows((current) => {
-                // Rows that failed to link keep what was entered and why.
+                // Rows already on screen keep what the moderator ticked,
+                // picked and typed; only new rows take the defaults.
                 const prev = new Map(
-                    (current ?? [])
-                        .filter((r) => r.error)
-                        .map((r) => [r.row.userId, r]),
+                    (current ?? []).map((r) => [r.row.userId, r]),
                 );
                 return res.list.rows.map((row) =>
                     initialRow(row, prev.get(row.userId)),
@@ -174,7 +173,9 @@ export function MatchRunnersPane({ gameSlug }: { gameSlug: string }) {
                           return [
                               {
                                   ...r,
-                                  ticked: false,
+                                  // 'error' may be a link the server ran out
+                                  // of time for, so it stays ticked to retry.
+                                  ticked: result.code === 'error' && r.ticked,
                                   error: failMessage(result.code),
                               },
                           ];

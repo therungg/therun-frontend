@@ -6,7 +6,7 @@ import type {
 import { meFetch } from './mod-fetch';
 
 /** Server caps a POST at this many links. */
-export const SRC_MATCH_BATCH = 10;
+export const SRC_MATCH_BATCH = 5;
 
 const base = (gameId: number) => `/v1/leaderboards/games/${gameId}/src-matches`;
 
