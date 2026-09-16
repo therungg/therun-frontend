@@ -8,8 +8,8 @@ import {
     CLEARED,
     filterToUrl,
     type RunsFilter,
-    SCOPES,
     SEGMENTS,
+    toggleScope,
 } from './runs-filters';
 import { SORT_LABELS, type SortMode } from './showcase-rules';
 import { setProfileUrl } from './url-state';
@@ -30,6 +30,7 @@ export function RunsFilterBar({
     total,
     platforms,
     years,
+    levels,
     sort,
 }: {
     filter: RunsFilter;
@@ -37,6 +38,8 @@ export function RunsFilterBar({
     total: number;
     platforms: string[];
     years: string[];
+    /** Whether the runner has both full game and level runs to choose between. */
+    levels: boolean;
     /** The sort select, when there is more than one game to order. */
     sort: { options: SortMode[]; current: SortMode } | null;
 }) {
@@ -87,6 +90,40 @@ export function RunsFilterBar({
                         </button>
                     ))}
                 </fieldset>
+                {levels ? (
+                    <fieldset className={styles.runsSegments}>
+                        <legend className="visually-hidden">Boards</legend>
+                        {(
+                            [
+                                { id: 'full', label: 'Full game' },
+                                { id: 'levels', label: 'Levels' },
+                            ] as const
+                        ).map((s) => {
+                            const on =
+                                s.id === 'full'
+                                    ? filter.scope !== 'levels'
+                                    : filter.scope !== 'full';
+                            return (
+                                <button
+                                    key={s.id}
+                                    type="button"
+                                    className={pill(on)}
+                                    aria-pressed={on}
+                                    onClick={() =>
+                                        setFilter({
+                                            scope: toggleScope(
+                                                filter.scope,
+                                                s.id,
+                                            ),
+                                        })
+                                    }
+                                >
+                                    {s.label}
+                                </button>
+                            );
+                        })}
+                    </fieldset>
+                ) : null}
                 {sort ? (
                     <label className={styles.ledgerSort}>
                         <span className="visually-hidden">Sort</span>
@@ -137,25 +174,6 @@ export function RunsFilterBar({
                                 />
                                 Only runs with a video
                             </label>
-                            <fieldset className={styles.runsMenuGroup}>
-                                <legend>Boards</legend>
-                                {SCOPES.map((s) => (
-                                    <label
-                                        key={s.id}
-                                        className={styles.runsMenuCheck}
-                                    >
-                                        <input
-                                            type="radio"
-                                            name="runs-scope"
-                                            checked={filter.scope === s.id}
-                                            onChange={() =>
-                                                setFilter({ scope: s.id })
-                                            }
-                                        />
-                                        {s.label}
-                                    </label>
-                                ))}
-                            </fieldset>
                             {platforms.length > 0 ? (
                                 <fieldset className={styles.runsMenuGroup}>
                                     <legend>Platform</legend>

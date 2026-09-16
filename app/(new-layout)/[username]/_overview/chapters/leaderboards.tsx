@@ -40,6 +40,7 @@ export async function LeaderboardsChapter({
         .flatMap((game) => game.entries.map((entry) => ({ game, entry })))
         .filter(
             ({ entry }) =>
+                entry.level === null &&
                 !pinned.has(
                     `${entry.kind}-${entry.kind === 'run' ? entry.runId : entry.manualTimeId}`,
                 ),

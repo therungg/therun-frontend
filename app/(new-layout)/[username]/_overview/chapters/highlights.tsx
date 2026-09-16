@@ -35,12 +35,14 @@ const asPinned = (pin: BoardPin): Pinned => ({
 /** The runner's pins as the backend resolved them, one playing its video. */
 export function HighlightsChapter({ head }: { head: RunnerProfileHead }) {
     const name = head.runner.name;
-    if (head.pins.length === 0) return null;
+    // Level runs stay on the Leaderboards tab; the overview is full game only.
+    const pins = head.pins.filter(
+        (p) => p.type !== 'board' || p.entry.level === null,
+    );
+    if (pins.length === 0) return null;
     const saved = head.layout.videoPin;
     const video = pickVideoPin(
-        head.pins
-            .filter((p): p is BoardPin => p.type === 'board')
-            .map(asPinned),
+        pins.filter((p): p is BoardPin => p.type === 'board').map(asPinned),
         saved && saved.kind !== 'timerPb' ? saved : null,
     );
 
@@ -48,7 +50,7 @@ export function HighlightsChapter({ head }: { head: RunnerProfileHead }) {
         <Chapter id="highlights" name={name}>
             <div className={styles.highlights}>
                 <div className={pinStyles.pins}>
-                    {head.pins.map((pin) =>
+                    {pins.map((pin) =>
                         pin.type === 'board' ? (
                             <PinCard
                                 key={`${pin.ref.kind}-${pin.ref.id}`}

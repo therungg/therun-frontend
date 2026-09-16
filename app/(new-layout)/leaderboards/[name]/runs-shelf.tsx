@@ -32,7 +32,15 @@ export function RunsShelf({ country }: { country: string | null }) {
     const { games: unordered, draft, editing, setDraft } = useShowcase();
     const url = useProfileUrl();
     const { hash, sort } = url;
-    const filter = filterFromUrl(url);
+    const fromUrl = filterFromUrl(url);
+    const all = unordered.flatMap((g) => [...g.entries, ...g.archived]);
+    const hasFull = all.some((e) => e.level === null);
+    const hasLevels = all.some((e) => e.level !== null);
+    // A runner with only level runs sees them without asking.
+    const filter =
+        !hasFull && fromUrl.scope === 'full'
+            ? { ...fromUrl, scope: 'any' as const }
+            : fromUrl;
     const options = sortOptions(draft);
     const mode = (options as string[]).includes(sort)
         ? (sort as SortMode)
@@ -41,7 +49,8 @@ export function RunsShelf({ country }: { country: string | null }) {
     const order = mode === 'runner' ? draft.gameOrder : mode;
     const mainId = mainGameOf(unordered, draft.mainGameId)?.gameId ?? null;
     const searching = isSearching(filter);
-    const filtered = searching || isNarrowed(filter) || filter.archived;
+    // Judged on the URL: the levels-only fallback above is not a filter.
+    const filtered = searching || isNarrowed(fromUrl) || filter.archived;
     const hashId = hash.startsWith('game-') ? Number(hash.slice(5)) : null;
 
     // Games the viewer opened or closed, over each game's default.
@@ -129,6 +138,7 @@ export function RunsShelf({ country }: { country: string | null }) {
                 total={total}
                 platforms={platformOptions(unordered)}
                 years={yearOptions(unordered)}
+                levels={hasFull && hasLevels}
                 sort={
                     unordered.length > 1
                         ? {

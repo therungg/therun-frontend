@@ -26,11 +26,23 @@ export const SEGMENTS: { id: RunsSegment; label: string }[] = [
     { id: 'pending', label: 'Pending' },
 ];
 
-export const SCOPES: { id: RunsScope; label: string }[] = [
-    { id: 'any', label: 'Full game and levels' },
-    { id: 'full', label: 'Full game' },
-    { id: 'levels', label: 'Levels' },
-];
+/** Full game runs show by default; levels are one click away. */
+export const DEFAULT_SCOPE: RunsScope = 'full';
+
+/** The scope after turning full game or levels on or off; one stays on. */
+export function toggleScope(
+    scope: RunsScope,
+    part: 'full' | 'levels',
+): RunsScope {
+    const full = scope !== 'levels';
+    const levels = scope !== 'full';
+    const nextFull = part === 'full' ? !full : full;
+    const nextLevels = part === 'levels' ? !levels : levels;
+    if (nextFull && nextLevels) return 'any';
+    if (nextLevels) return 'levels';
+    if (nextFull) return 'full';
+    return scope;
+}
 
 const oneOf = <T extends string>(value: string, ids: T[], fallback: T): T =>
     (ids as string[]).includes(value) ? (value as T) : fallback;
@@ -44,11 +56,7 @@ export function filterFromUrl(url: ProfileUrl): RunsFilter {
             'all',
         ),
         video: url.video === '1',
-        scope: oneOf(
-            url.scope,
-            SCOPES.map((s) => s.id),
-            'any',
-        ),
+        scope: oneOf(url.scope, ['any', 'full', 'levels'], DEFAULT_SCOPE),
         platform: url.platform,
         since: /^\d{4}$/.test(url.since) ? url.since : '',
         archived: url.archived === '1',
@@ -61,7 +69,9 @@ export function filterToUrl(f: Partial<RunsFilter>): Partial<ProfileUrl> {
     if (f.search !== undefined) parts.game = f.search;
     if (f.show !== undefined) parts.show = f.show === 'all' ? '' : f.show;
     if (f.video !== undefined) parts.video = f.video ? '1' : '';
-    if (f.scope !== undefined) parts.scope = f.scope === 'any' ? '' : f.scope;
+    if (f.scope !== undefined) {
+        parts.scope = f.scope === DEFAULT_SCOPE ? '' : f.scope;
+    }
     if (f.platform !== undefined) parts.platform = f.platform;
     if (f.since !== undefined) parts.since = f.since;
     if (f.archived !== undefined) parts.archived = f.archived ? '1' : '';
@@ -72,7 +82,7 @@ export const CLEARED: RunsFilter = {
     search: '',
     show: 'all',
     video: false,
-    scope: 'any',
+    scope: DEFAULT_SCOPE,
     platform: '',
     since: '',
     archived: false,
@@ -86,7 +96,7 @@ export const isSearching = (f: RunsFilter) => needleOf(f) !== '';
 export const isNarrowed = (f: RunsFilter) =>
     f.show !== 'all' ||
     f.video ||
-    f.scope !== 'any' ||
+    f.scope !== DEFAULT_SCOPE ||
     f.platform !== '' ||
     f.since !== '';
 
@@ -160,12 +170,6 @@ export function activeFilters(
         });
     }
     if (f.video) pills.push({ clear: { video: false }, label: 'Has video' });
-    if (f.scope !== 'any') {
-        pills.push({
-            clear: { scope: 'any' },
-            label: f.scope === 'full' ? 'Full game' : 'Levels',
-        });
-    }
     if (f.platform) pills.push({ clear: { platform: '' }, label: f.platform });
     if (f.since)
         pills.push({ clear: { since: '' }, label: `Since ${f.since}` });
