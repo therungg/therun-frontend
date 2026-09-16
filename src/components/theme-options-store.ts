@@ -6,7 +6,10 @@ import type { ThemePick } from '~src/lib/theme-settings';
 export interface ThemeOptions {
     page: { label: string } | null;
     mine: boolean;
+    /** The pick the page opens with: remembered for this runner or game, else its default. */
     defaultPick: ThemePick;
+    /** The runner or game the page belongs to, for remembering a pick. */
+    context: string;
 }
 
 let options: ThemeOptions | null = null;

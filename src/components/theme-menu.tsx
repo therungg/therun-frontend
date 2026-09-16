@@ -4,6 +4,11 @@ import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+    allowedPicks,
+    rememberedPick,
+    rememberPick,
+} from '~app/(new-layout)/games-v2/[game]/theme/theme-memory';
 import { applyThemeScheme } from '~app/(new-layout)/games-v2/[game]/theme/theme-scheme';
 import {
     setCurrentPick,
@@ -47,7 +52,13 @@ export function ThemeMenu({ variant = 'desktop' }: ThemeMenuProps) {
     // options, so options alone can miss a navigation). Never read the DOM
     // to decide this — the header's effects can run before the page's own.
     useEffect(() => {
-        const next = options?.defaultPick ?? 'none';
+        // A pick the visitor made for this runner or game holds across its tabs.
+        const next = options
+            ? (rememberedPick(
+                  options.context,
+                  allowedPicks(!!options.page, options.mine),
+              ) ?? options.defaultPick)
+            : 'none';
         setCurrentPick(next);
         if (options) {
             document.documentElement.dataset.themePick = next;
@@ -90,17 +101,22 @@ export function ThemeMenu({ variant = 'desktop' }: ThemeMenuProps) {
             document.documentElement.style.colorScheme = mode;
             setTheme(mode);
             setCurrentPick('none');
+            if (options) rememberPick(options.context, 'none');
             setOpen(false);
         },
-        [setTheme],
+        [setTheme, options],
     );
 
-    const selectPick = useCallback((next: ThemePick) => {
-        document.documentElement.dataset.themePick = next;
-        applyThemeScheme(next);
-        setCurrentPick(next);
-        setOpen(false);
-    }, []);
+    const selectPick = useCallback(
+        (next: ThemePick) => {
+            document.documentElement.dataset.themePick = next;
+            applyThemeScheme(next);
+            setCurrentPick(next);
+            if (options) rememberPick(options.context, next);
+            setOpen(false);
+        },
+        [options],
+    );
 
     if (!mounted || !options || (!options.page && !options.mine)) {
         return <DarkModeSlider />;

@@ -1,5 +1,6 @@
 import type { GameTheme } from '~src/lib/game-theme';
 import type { ThemePick, ThemeSettings } from '~src/lib/theme-settings';
+import { THEME_PICKS_KEY } from './theme-memory';
 
 export type { ThemePick };
 
@@ -22,15 +23,22 @@ export function choosePick({
     return 'none';
 }
 
-/** Inline script body setting the pick attributes before paint. Values are from a closed set. */
-export function pickScript(pick: ThemePick, kind: 'profile' | 'game'): string {
+/**
+ * Inline script body setting the pick attributes before paint. The visitor's
+ * remembered pick for this runner or game (theme-memory.ts) wins over `pick`
+ * when it is one of `allowed`. Values are JSON-encoded.
+ */
+export function pickScript(
+    pick: ThemePick,
+    kind: 'profile' | 'game',
+    context: string,
+    allowed: ThemePick[],
+): string {
     // A theme runs on the dark color mode (see theme-scheme.ts); 'none' leaves
-    // the mode next-themes already set from the visitor's choice.
-    const dark =
-        pick === 'none'
-            ? ''
-            : "h.setAttribute('data-bs-theme','dark');h.style.colorScheme='dark';";
-    return `(function(h){h.dataset.themePage=${JSON.stringify(kind)};h.dataset.themeDefault=${JSON.stringify(pick)};h.dataset.themePick=${JSON.stringify(pick)};${dark}})(document.documentElement);`;
+    // the mode next-themes already set from the visitor's choice. `<` is
+    // escaped so a runner or game name can never close the script tag.
+    const js = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
+    return `(function(h){var p=${js(pick)};try{var s=JSON.parse(localStorage.getItem(${js(THEME_PICKS_KEY)})||'{}')[${js(context)}];if(${js(allowed)}.indexOf(s)>=0)p=s}catch(e){}h.dataset.themePage=${js(kind)};h.dataset.themeDefault=${js(pick)};h.dataset.themePick=p;if(p!=='none'){h.setAttribute('data-bs-theme','dark');h.style.colorScheme='dark'}})(document.documentElement);`;
 }
 
 /**

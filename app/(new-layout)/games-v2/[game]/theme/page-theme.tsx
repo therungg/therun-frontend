@@ -4,6 +4,7 @@ import type { GameTheme } from '~src/lib/game-theme';
 import { getThemeSettings } from '~src/lib/theme-settings';
 import styles from './theme.module.scss';
 import { buildThemeCss } from './theme-css';
+import { allowedPicks, themeContext } from './theme-memory';
 import { choosePick, pickScript } from './theme-pick';
 import { ThemePickSync } from './theme-pick-sync';
 import { ThemeStyle } from './theme-style';
@@ -52,6 +53,7 @@ async function ViewerTheme({
     const pick = choosePick({ hasPage, kind, viewer });
     const page = hasPage ? { label } : null;
     const mine = !!viewer?.theme;
+    const context = themeContext(kind, label);
     // A runner's background image belongs to their own profile. Worn anywhere
     // else (a board, someone else's profile) their theme keeps its colours
     // but drops the image, and panels go opaque as they do without one.
@@ -65,12 +67,23 @@ async function ViewerTheme({
     return (
         <>
             {mineTheme ? <ThemeLayer theme={mineTheme} pick="mine" /> : null}
-            {pick !== (hasPage ? 'page' : 'none') ? (
-                <script
-                    dangerouslySetInnerHTML={{ __html: pickScript(pick, kind) }}
-                />
-            ) : null}
-            <ThemePickSync kind={kind} pick={pick} page={page} mine={mine} />
+            <script
+                dangerouslySetInnerHTML={{
+                    __html: pickScript(
+                        pick,
+                        kind,
+                        context,
+                        allowedPicks(hasPage, mine),
+                    ),
+                }}
+            />
+            <ThemePickSync
+                kind={kind}
+                pick={pick}
+                page={page}
+                mine={mine}
+                context={context}
+            />
         </>
     );
 }
@@ -92,12 +105,18 @@ export function PageTheme({
     theme: GameTheme | null;
 }) {
     const hasPage = theme !== null;
+    const context = themeContext(kind, label);
     return (
         <>
             {theme ? <ThemeLayer theme={theme} pick="page" /> : null}
             <script
                 dangerouslySetInnerHTML={{
-                    __html: pickScript(hasPage ? 'page' : 'none', kind),
+                    __html: pickScript(
+                        hasPage ? 'page' : 'none',
+                        kind,
+                        context,
+                        allowedPicks(hasPage, false),
+                    ),
                 }}
             />
             <Suspense
@@ -107,6 +126,7 @@ export function PageTheme({
                         pick={hasPage ? 'page' : 'none'}
                         page={hasPage ? { label } : null}
                         mine={false}
+                        context={context}
                     />
                 }
             >
