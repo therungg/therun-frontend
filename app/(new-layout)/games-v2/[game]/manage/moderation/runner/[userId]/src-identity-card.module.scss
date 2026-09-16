@@ -1,0 +1,44 @@
+@use '../../../../../../styles/design-tokens' as dt;
+@use '../../../../../../styles/board' as board;
+
+.card {
+    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
+    margin-bottom: dt.$spacing-lg;
+}
+
+.title {
+    @include board.board-eyebrow;
+    font-weight: 700;
+    margin: 0 0 dt.$spacing-md;
+}
+
+.linked {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm dt.$spacing-lg;
+    margin: 0;
+}
+
+.note {
+    margin: 0 0 dt.$spacing-md;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.linked .note {
+    margin: 0;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    max-width: 30rem;
+}
+
+.error {
+    margin: dt.$spacing-md 0 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-danger);
+}

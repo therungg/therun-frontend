@@ -45,6 +45,7 @@ import {
     type RunnerSummary,
 } from './runner-model';
 import styles from './runner-view.module.scss';
+import { SrcIdentityCard } from './src-identity-card';
 
 interface Props {
     gameSlug: string;
@@ -934,6 +935,12 @@ export function RunnerView({
                             </button>
                         </div>
                     </div>
+
+                    <SrcIdentityCard
+                        gameSlug={gameSlug}
+                        userId={userId}
+                        runnerName={runnerName}
+                    />
 
                     <div className={styles.sideCard}>
                         <div className={styles.sideCardHead}>Identity</div>
