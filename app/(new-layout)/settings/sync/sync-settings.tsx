@@ -15,6 +15,7 @@ import {
 import { Button } from '~src/components/Button/Button';
 
 const POLL_MS = 5_000;
+const POLL_LIMIT = 24;
 
 function when(iso: string | null): string {
     if (!iso) return 'never';
@@ -61,18 +62,8 @@ function IdentityText({ status: s }: { status: SrcUserSyncStatus }) {
             </p>
         );
     }
-    return (
-        <p>
-            {isLooking(s)
-                ? 'Looking for your speedrun.com account.'
-                : 'Not linked to a speedrun.com account yet.'}{' '}
-            We find it through the Twitch link on your{' '}
-            <a href={SOCIALS_URL} target="_blank" rel="noreferrer">
-                speedrun.com profile
-            </a>
-            , so add yours there.
-        </p>
-    );
+    if (isLooking(s)) return <p>Looking for your speedrun.com account.</p>;
+    return <p>Not linked to a speedrun.com account.</p>;
 }
 
 export function SyncSettings({ initial }: { initial: SrcUserSyncStatus }) {
@@ -81,12 +72,17 @@ export function SyncSettings({ initial }: { initial: SrcUserSyncStatus }) {
     const [pending, start] = useTransition();
 
     // While a match runs, check back until it lands on a result.
-    // Only once an attempt is stamped: an account still waiting its turn in
-    // the background pass can wait days, not worth polling for.
     const looking = isLooking(status) && status.lookupAttemptedAt !== null;
     useEffect(() => {
         if (!looking) return;
-        const t = setInterval(async () => {
+        // A match normally lands in seconds; stop after two minutes rather
+        // than poll behind a long import holding the queue.
+        let polls = 0;
+        const t: ReturnType<typeof setInterval> = setInterval(async () => {
+            if (++polls > POLL_LIMIT) {
+                clearInterval(t);
+                return;
+            }
             const r = await getMySyncStatus();
             if (!('error' in r)) setStatus(r.status);
         }, POLL_MS);
