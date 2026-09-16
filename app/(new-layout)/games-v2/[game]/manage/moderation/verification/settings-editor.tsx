@@ -188,9 +188,9 @@ export function SettingsEditor({
                                 />
                             </label>
                             <HintBubble label="the top runs rule">
-                                A run landing this high always reaches you,
-                                however clean it looks. Set it to 0 to turn that
-                                off.
+                                A run landing in the top this many never
+                                auto-verifies — it always goes to the mod queue.
+                                Set it to 0 to turn that off.
                             </HintBubble>
                         </div>
                         <div className={styles.dial}>
@@ -210,30 +210,11 @@ export function SettingsEditor({
                                 <span>verified runs on this game first</span>
                             </label>
                             <HintBubble label="verified runs needed first">
-                                Runs verified by you, or already verified when
-                                they were imported, count toward this. Ones this
-                                setting cleared itself do not, so nobody builds
-                                a record on its own say-so.
-                            </HintBubble>
-                        </div>
-                        <div className={styles.dial}>
-                            <label className={styles.dialLabel}>
-                                <span>A split may beat their own best by</span>
-                                <input
-                                    className={`form-control form-control-sm ${styles.dialInput}`}
-                                    inputMode="decimal"
-                                    value={form.maxGoldBeatPct}
-                                    onChange={(e) =>
-                                        set('maxGoldBeatPct', e.target.value)
-                                    }
-                                />
-                                <span className={styles.dialSuffix}>%</span>
-                            </label>
-                            <HintBubble label="the gold beat limit">
-                                Compares a runner only to their own history, so
-                                it is not checked for someone with no runs on
-                                this board yet. Lower numbers send you more
-                                runs.
+                                Never auto-verify a runner until a mod has
+                                verified this many of their runs on this game
+                                before. Runs that arrived already verified from
+                                an import count too; ones this setting cleared
+                                itself do not.
                             </HintBubble>
                         </div>
                         <div className={styles.dial}>
@@ -250,10 +231,11 @@ export function SettingsEditor({
                                 <span className={styles.dialSuffix}>%</span>
                             </label>
                             <HintBubble label="the PB improvement limit">
-                                Compares the run to that runner's own previous
-                                PB, so it is not checked for someone with no
-                                runs on this board yet. Lower numbers send you
-                                more runs.
+                                If a run beats that runner's own PB by more than
+                                this it is worth a look, so it goes to the mod
+                                queue instead of verifying itself. It is not
+                                checked for someone with no runs on this board
+                                yet.
                             </HintBubble>
                         </div>
                         <SegmentedControl
