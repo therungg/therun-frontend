@@ -56,27 +56,15 @@
    A dial is a number with a meaning, not a form field: a moderator reads
    "never auto-verify the top 10", not a label stacked over a box. Setting them
    inline keeps the number the loudest thing on the line, sizes the input to
-   what it holds, and lets two groups of two replace four identical rows.      */
+   what it holds, and puts the caveat behind a hover bubble instead of a
+   paragraph under every pair.                                                */
 
 .dials {
     display: flex;
     flex-direction: column;
-    gap: dt.$spacing-xl;
+    gap: dt.$spacing-md;
     /* The dials belong to the switch above them, not next to it. */
     margin-top: dt.$spacing-xl;
-}
-
-/* Two dials that answer the same question, kept together and apart from the
-   next pair by a hairline rather than another heading. */
-.dialGroup {
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-md;
-
-    & + & {
-        padding-top: dt.$spacing-xl;
-        border-top: 1px solid var(--bs-border-color);
-    }
 }
 
 .dial {
@@ -84,9 +72,16 @@
     /* Centre, not baseline: a bordered control has padding of its own, and
        baseline-aligning it against plain text sits the box visibly high. */
     align-items: center;
+    gap: dt.$spacing-sm;
+}
+
+.dialLabel {
+    display: flex;
+    align-items: center;
     flex-wrap: wrap;
     gap: dt.$spacing-sm;
     font-size: dt.$font-size-sm;
+    margin: 0;
 }
 
 .dialInput {
@@ -103,9 +98,3 @@
     margin-left: -#{dt.$spacing-xs};
 }
 
-/* One note per group, not per dial — four stacked hints read as a wall. */
-.dialNote {
-    margin: 0;
-    font-size: dt.$font-size-xs;
-    color: var(--bs-secondary-color);
-}

@@ -89,6 +89,7 @@ export function FormSection({
 export function SegmentedControl({
     label,
     labelHidden = false,
+    hint,
     value,
     options,
     onChange,
@@ -97,6 +98,8 @@ export function SegmentedControl({
     label: string;
     /** Keep the label for screen readers when a section title already says it. */
     labelHidden?: boolean;
+    /** An explanation behind a hover bubble beside the label. */
+    hint?: ReactNode;
     value: string;
     options: Array<{ value: string; label: string; disabled?: boolean }>;
     onChange: (value: string) => void;
@@ -110,6 +113,7 @@ export function SegmentedControl({
                 className={labelHidden ? 'visually-hidden' : styles.segLabel}
             >
                 {label}
+                {hint && <HintBubble label={label}>{hint}</HintBubble>}
             </span>
             <div
                 className={styles.segmented}

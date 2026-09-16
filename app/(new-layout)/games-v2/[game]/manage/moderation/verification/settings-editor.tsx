@@ -9,6 +9,7 @@ import type {
 } from '../../../../../../../types/verification-settings.types';
 import {
     FormSection,
+    HintBubble,
     InlineError,
     SectionFooter,
     SegmentedControl,
@@ -174,8 +175,8 @@ export function SettingsEditor({
                 />
                 {form.autoVerifyEnabled && (
                     <div className={styles.dials}>
-                        <div className={styles.dialGroup}>
-                            <label className={styles.dial}>
+                        <div className={styles.dial}>
+                            <label className={styles.dialLabel}>
                                 <span>Never auto-verify the top</span>
                                 <input
                                     className={`form-control form-control-sm ${styles.dialInput}`}
@@ -186,7 +187,14 @@ export function SettingsEditor({
                                     }
                                 />
                             </label>
-                            <label className={styles.dial}>
+                            <HintBubble label="the top runs rule">
+                                A run landing this high always reaches you,
+                                however clean it looks. Set it to 0 to turn that
+                                off.
+                            </HintBubble>
+                        </div>
+                        <div className={styles.dial}>
+                            <label className={styles.dialLabel}>
                                 <span>A runner needs</span>
                                 <input
                                     className={`form-control form-control-sm ${styles.dialInput}`}
@@ -201,18 +209,15 @@ export function SettingsEditor({
                                 />
                                 <span>verified runs on this game first</span>
                             </label>
-                            <p className={styles.dialNote}>
-                                A run landing inside the top always reaches you,
-                                however clean it looks — set it to 0 to turn
-                                that off. Runs verified by you or by
-                                speedrun.com count toward the second; ones this
-                                setting cleared do not, so nobody builds a
-                                record on its own say-so.
-                            </p>
+                            <HintBubble label="verified runs needed first">
+                                Runs verified by you, or already verified when
+                                they were imported, count toward this. Ones this
+                                setting cleared itself do not, so nobody builds
+                                a record on its own say-so.
+                            </HintBubble>
                         </div>
-
-                        <div className={styles.dialGroup}>
-                            <label className={styles.dial}>
+                        <div className={styles.dial}>
+                            <label className={styles.dialLabel}>
                                 <span>A split may beat their own best by</span>
                                 <input
                                     className={`form-control form-control-sm ${styles.dialInput}`}
@@ -224,7 +229,15 @@ export function SettingsEditor({
                                 />
                                 <span className={styles.dialSuffix}>%</span>
                             </label>
-                            <label className={styles.dial}>
+                            <HintBubble label="the gold beat limit">
+                                Compares a runner only to their own history, so
+                                it is not checked for someone with no runs on
+                                this board yet. Lower numbers send you more
+                                runs.
+                            </HintBubble>
+                        </div>
+                        <div className={styles.dial}>
+                            <label className={styles.dialLabel}>
                                 <span>A run may beat their own PB by</span>
                                 <input
                                     className={`form-control form-control-sm ${styles.dialInput}`}
@@ -236,41 +249,35 @@ export function SettingsEditor({
                                 />
                                 <span className={styles.dialSuffix}>%</span>
                             </label>
-                            <p className={styles.dialNote}>
-                                Both compare a runner only to their own history,
-                                so neither is checked for someone with no runs
-                                on this board yet. Lower numbers send you more
-                                runs.
-                            </p>
+                            <HintBubble label="the PB improvement limit">
+                                Compares the run to that runner's own previous
+                                PB, so it is not checked for someone with no
+                                runs on this board yet. Lower numbers send you
+                                more runs.
+                            </HintBubble>
                         </div>
-
-                        <div className={styles.dialGroup}>
-                            <SegmentedControl
-                                label="Live timing"
-                                value={form.liveData}
-                                options={[
-                                    {
-                                        value: 'must_match',
-                                        label: 'Must match the splits',
-                                    },
-                                    {
-                                        value: 'uploads_off',
-                                        label: 'No live uploads',
-                                    },
-                                ]}
-                                onChange={(v) =>
-                                    set(
-                                        'liveData',
-                                        v as SettingsForm['liveData'],
-                                    )
-                                }
-                            />
-                            <p className={styles.dialNote}>
-                                {form.liveData === 'must_match'
+                        <SegmentedControl
+                            label="Live timing"
+                            hint={
+                                form.liveData === 'must_match'
                                     ? 'A run whose live timing disagrees with its splits reaches you. One with no live run at all is not judged either way.'
-                                    : 'This board ignores live timing entirely.'}
-                            </p>
-                        </div>
+                                    : 'This board ignores live timing entirely.'
+                            }
+                            value={form.liveData}
+                            options={[
+                                {
+                                    value: 'must_match',
+                                    label: 'Must match the splits',
+                                },
+                                {
+                                    value: 'uploads_off',
+                                    label: 'No live uploads',
+                                },
+                            ]}
+                            onChange={(v) =>
+                                set('liveData', v as SettingsForm['liveData'])
+                            }
+                        />
                     </div>
                 )}
             </FormSection>
