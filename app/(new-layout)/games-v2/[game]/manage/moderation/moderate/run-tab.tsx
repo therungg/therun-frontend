@@ -59,6 +59,7 @@ import {
     runVerbHandlers,
     runVerbState,
 } from './run-verbs';
+import { trackRecord } from './runner-columns';
 import type { RunSheetSummary } from './sheet-types';
 import type { SheetContext, SheetSubject } from './subject';
 import { VerbBar } from './verb-bar';
@@ -144,25 +145,7 @@ export function RunTab({
         loadRunnerSheetAction(gameSlug, userId)
             .then((res) => {
                 if (cancelled || 'error' in res) return;
-                const counts: TrackRecord = {
-                    approved: 0,
-                    declined: 0,
-                    pending: 0,
-                    since: null,
-                };
-                for (const combo of res.data.combos) {
-                    for (const r of combo.runs) {
-                        if (r.verificationStatus === 'verified')
-                            counts.approved++;
-                        else if (r.verificationStatus === 'rejected')
-                            counts.declined++;
-                        else if (r.verificationStatus === 'pending')
-                            counts.pending++;
-                        if (counts.since === null || r.endedAt < counts.since)
-                            counts.since = r.endedAt;
-                    }
-                }
-                setRecord(counts);
+                setRecord(trackRecord(res.data.combos));
             })
             .catch(() => {
                 // The line is optional: without a read it stays out.

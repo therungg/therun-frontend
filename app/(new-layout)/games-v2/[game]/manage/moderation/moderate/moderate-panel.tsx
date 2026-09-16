@@ -8,10 +8,17 @@ import {
     useState,
 } from 'react';
 import { createPortal } from 'react-dom';
+import type { LeaderboardEntry } from '../../../../../../../types/leaderboards.types';
 import { useDialogBehavior } from '../../../shared/board-dialog';
 import styles from './moderate-panel.module.scss';
 import { RunTab } from './run-tab';
-import { type SheetContext, type SheetSubject, subjectKey } from './subject';
+import { RunnerTab } from './runner-tab';
+import {
+    type SheetBoard,
+    type SheetContext,
+    type SheetSubject,
+    subjectKey,
+} from './subject';
 
 export type PanelMount = 'modal' | 'inline';
 export type PanelTab = 'run' | 'runner';
@@ -117,9 +124,25 @@ function CloseIcon() {
 }
 
 export function ModeratePanel(props: ModeratePanelProps) {
-    const { subject, mount } = props;
-    const defaultTab: PanelTab =
-        props.initialTab ?? (subject.kind === 'runner' ? 'runner' : 'run');
+    const { mount } = props;
+    // A run opened from the Runner tab replaces the subject until the caller
+    // hands the panel a different one.
+    const [subjectOverride, setSubjectOverride] = useState<SheetSubject | null>(
+        null,
+    );
+    const propsKey = subjectKey(props.subject);
+    useEffect(() => {
+        setSubjectOverride(null);
+    }, [propsKey]);
+    const subject = subjectOverride ?? props.subject;
+    const defaultTab: PanelTab = subjectOverride
+        ? 'run'
+        : (props.initialTab ?? (subject.kind === 'runner' ? 'runner' : 'run'));
+    const onOpenRun = useCallback(
+        (entry: LeaderboardEntry, board: SheetBoard) =>
+            setSubjectOverride({ kind: 'run', entry, board }),
+        [],
+    );
     const [tab, setTab] = useState<PanelTab>(defaultTab);
     const [formOpen, setFormOpen] = useState(false);
     const formBackRef = useRef<(() => void) | null>(null);
@@ -284,9 +307,8 @@ export function ModeratePanel(props: ModeratePanelProps) {
         );
     };
 
-    // Tasks 6 and 7 add the remaining branches:
+    // Task 7 adds the remaining branch:
     //   subject.kind === 'bulk'  -> <BulkBody ... render={wrap} />
-    //   tab === 'runner'         -> <RunnerTab key={subjectKey(subject)} ... onFormBack={onFormBack} onBusyChange={onBusyChange} render={wrap} />
     // Each tab owns its data and verb handlers and calls `render(layout)`; the shell wraps it.
     const wrap = (layout: PanelLayout) => (
         <>
@@ -309,6 +331,27 @@ export function ModeratePanel(props: ModeratePanelProps) {
                 context={props.context}
                 onMutated={props.onMutated}
                 onOpenRunner={() => setTab('runner')}
+                onFormBack={onFormBack}
+                onBusyChange={onBusyChange}
+                render={wrap}
+            />
+        ) : tab === 'runner' && runnerId !== null && subject.kind !== 'bulk' ? (
+            <RunnerTab
+                key={key}
+                userId={runnerId}
+                runnerName={
+                    subject.kind === 'run'
+                        ? subject.entry.runnerName
+                        : subject.runnerName
+                }
+                categoryId={
+                    subject.kind === 'run'
+                        ? subject.board.categoryId
+                        : (subject.categoryId ?? null)
+                }
+                context={props.context}
+                onMutated={props.onMutated}
+                onOpenRun={onOpenRun}
                 onFormBack={onFormBack}
                 onBusyChange={onBusyChange}
                 render={wrap}
