@@ -1,0 +1,406 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState, useTransition } from 'react';
+import Link from '~src/components/link';
+import { SRC_MATCH_BATCH } from '~src/lib/moderation/src-matches';
+import type {
+    SrcMatchLink,
+    SrcMatchLinkResult,
+    SrcMatchRow,
+} from '../../../../../../types/src-matches.types';
+import {
+    linkSrcMatchesAction,
+    loadSrcMatchesAction,
+} from './actions/src-matches.action';
+import styles from './match-runners.module.scss';
+
+interface RowState {
+    row: SrcMatchRow;
+    /** srcUserId of the chosen suggestion. */
+    picked: string | null;
+    /** speedrun.com name typed for a row without suggestions. */
+    typed: string;
+    ticked: boolean;
+    error: string | null;
+}
+
+const plural = (n: number, one: string, many: string) =>
+    `${n} ${n === 1 ? one : many}`;
+
+// A pasted profile link becomes the name at the end of it.
+const cleanName = (value: string) =>
+    value
+        .trim()
+        .replace(/^https?:\/\/(www\.)?speedrun\.com\/(users\/)?/i, '')
+        .replace(/[/?#].*$/, '');
+
+const failMessage = (
+    code: Extract<SrcMatchLinkResult, { ok: false }>['code'],
+) => {
+    switch (code) {
+        case 'already-linked':
+            return 'That profile is linked to another runner.';
+        case 'src-not-found':
+            return 'Not found on speedrun.com.';
+        case 'already-set':
+            return 'Already has a profile.';
+        default:
+            return 'Could not link.';
+    }
+};
+
+const pickedSuggestion = (r: RowState) =>
+    r.picked
+        ? r.row.suggestions.find((s) => s.srcUserId === r.picked)
+        : undefined;
+
+const toLink = (r: RowState): SrcMatchLink | null => {
+    if (r.row.state === 'none') {
+        const srcName = cleanName(r.typed);
+        return srcName ? { userId: r.row.userId, srcName } : null;
+    }
+    return r.picked ? { userId: r.row.userId, srcUserId: r.picked } : null;
+};
+
+const initialRow = (row: SrcMatchRow, prev?: RowState): RowState => {
+    const picked =
+        prev?.picked && row.suggestions.some((s) => s.srcUserId === prev.picked)
+            ? prev.picked
+            : row.state === 'sure'
+              ? (row.suggestions[0]?.srcUserId ?? null)
+              : null;
+    return {
+        row,
+        picked,
+        typed: prev?.typed ?? '',
+        ticked: prev ? false : row.state === 'sure',
+        error: prev?.error ?? null,
+    };
+};
+
+export function MatchRunnersPane({ gameSlug }: { gameSlug: string }) {
+    const router = useRouter();
+    const [rows, setRows] = useState<RowState[] | null>(null);
+    const [imported, setImported] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
+    const [attempt, setAttempt] = useState(0);
+    const [isLoading, startLoad] = useTransition();
+    const requestId = useRef(0);
+
+    const [linking, setLinking] = useState(false);
+    const [progress, setProgress] = useState<{
+        done: number;
+        total: number;
+    } | null>(null);
+    const [linkError, setLinkError] = useState<string | null>(null);
+    const [doneMessage, setDoneMessage] = useState<string | null>(null);
+
+    // attempt re-runs the load on retry and after linking
+    useEffect(() => {
+        const ticket = ++requestId.current;
+        startLoad(async () => {
+            const res = await loadSrcMatchesAction(gameSlug);
+            if (ticket !== requestId.current) return;
+            if ('error' in res) {
+                setLoadError(res.error);
+                return;
+            }
+            setLoadError(null);
+            setImported(res.list.imported);
+            setRows((current) => {
+                // Rows that failed to link keep what was entered and why.
+                const prev = new Map(
+                    (current ?? [])
+                        .filter((r) => r.error)
+                        .map((r) => [r.row.userId, r]),
+                );
+                return res.list.rows.map((row) =>
+                    initialRow(row, prev.get(row.userId)),
+                );
+            });
+        });
+    }, [gameSlug, attempt]);
+
+    const update = (userId: number, patch: Partial<RowState>) =>
+        setRows((rs) =>
+            rs
+                ? rs.map((r) =>
+                      r.row.userId === userId ? { ...r, ...patch } : r,
+                  )
+                : rs,
+        );
+
+    const linkTicked = async () => {
+        if (!rows || linking) return;
+        const links = rows
+            .filter((r) => r.ticked)
+            .map(toLink)
+            .filter((l): l is SrcMatchLink => l !== null);
+        if (links.length === 0) return;
+
+        setLinking(true);
+        setLinkError(null);
+        setDoneMessage(null);
+        setProgress({ done: 0, total: links.length });
+
+        let linked = 0;
+        let merged = 0;
+        let stopped = false;
+
+        for (let i = 0; i < links.length; i += SRC_MATCH_BATCH) {
+            const chunk = links.slice(i, i + SRC_MATCH_BATCH);
+            const res = await linkSrcMatchesAction(gameSlug, chunk);
+            if ('error' in res) {
+                setLinkError(res.error);
+                stopped = true;
+                break;
+            }
+            const byUser = new Map(res.results.map((r) => [r.userId, r]));
+            for (const r of res.results) {
+                if (r.ok) {
+                    linked += 1;
+                    merged += r.mergedRuns;
+                }
+            }
+            setRows((rs) =>
+                rs
+                    ? rs.flatMap((r) => {
+                          const result = byUser.get(r.row.userId);
+                          if (!result) return [r];
+                          if (result.ok || result.code === 'already-set') {
+                              return [];
+                          }
+                          return [
+                              {
+                                  ...r,
+                                  ticked: false,
+                                  error: failMessage(result.code),
+                              },
+                          ];
+                      })
+                    : rs,
+            );
+            setProgress({
+                done: Math.min(i + chunk.length, links.length),
+                total: links.length,
+            });
+        }
+
+        setLinking(false);
+        setProgress(null);
+        if (linked > 0) {
+            setDoneMessage(
+                `Linked ${plural(linked, 'runner', 'runners')}, ${plural(merged, 'run', 'runs')} verified from speedrun.com.`,
+            );
+        }
+        if (!stopped || linked > 0) {
+            setAttempt((n) => n + 1);
+            router.refresh();
+        }
+    };
+
+    if (loadError && !rows) {
+        return (
+            <div>
+                <p role="alert">{loadError}</p>
+                <button
+                    type="button"
+                    className="btn btn-sm btn-outline-secondary"
+                    onClick={() => setAttempt((n) => n + 1)}
+                    disabled={isLoading}
+                >
+                    {isLoading ? 'Trying again…' : 'Try again'}
+                </button>
+            </div>
+        );
+    }
+
+    if (!rows) return <p className={styles.note}>Loading…</p>;
+
+    const ticked = rows.filter((r) => r.ticked && toLink(r));
+    const clears = ticked.reduce(
+        (sum, r) => sum + (pickedSuggestion(r)?.clears ?? 0),
+        0,
+    );
+
+    return (
+        <div>
+            {!imported && (
+                <p className={styles.note}>Import from speedrun.com first.</p>
+            )}
+            {doneMessage && (
+                <p className={styles.note} role="status">
+                    {doneMessage}
+                </p>
+            )}
+            {linkError && (
+                <div className={styles.errorAlert} role="alert">
+                    {linkError}
+                </div>
+            )}
+            {loadError && (
+                <div className={styles.errorAlert} role="alert">
+                    {loadError}{' '}
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={() => setAttempt((n) => n + 1)}
+                        disabled={isLoading}
+                    >
+                        {isLoading ? 'Trying again…' : 'Try again'}
+                    </button>
+                </div>
+            )}
+            {rows.length === 0 ? (
+                imported && (
+                    <p className={styles.note}>
+                        Every runner with queued runs is matched.
+                    </p>
+                )
+            ) : (
+                <>
+                    <div className={styles.bar}>
+                        <span>
+                            {progress
+                                ? `Linked ${progress.done} of ${progress.total}`
+                                : `${plural(ticked.length, 'runner', 'runners')} ticked, ${plural(clears, 'queued run', 'queued runs')} cleared`}
+                        </span>
+                        <button
+                            type="button"
+                            className="btn btn-primary btn-sm"
+                            disabled={linking || ticked.length === 0}
+                            onClick={linkTicked}
+                        >
+                            Link ticked runners
+                        </button>
+                    </div>
+                    <div className="table-responsive">
+                        <table className={styles.table}>
+                            <thead>
+                                <tr>
+                                    <th style={{ width: '1%' }}>
+                                        <span className="visually-hidden">
+                                            Link
+                                        </span>
+                                    </th>
+                                    <th>Runner</th>
+                                    <th className={styles.right}>Queued</th>
+                                    <th>speedrun.com</th>
+                                    <th className={styles.right}>Clears</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {rows.map((r) => (
+                                    <MatchRow
+                                        key={r.row.userId}
+                                        state={r}
+                                        gameSlug={gameSlug}
+                                        disabled={linking}
+                                        onChange={(patch) =>
+                                            update(r.row.userId, patch)
+                                        }
+                                    />
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </>
+            )}
+        </div>
+    );
+}
+
+function MatchRow({
+    state,
+    gameSlug,
+    disabled,
+    onChange,
+}: {
+    state: RowState;
+    gameSlug: string;
+    disabled: boolean;
+    onChange: (patch: Partial<RowState>) => void;
+}) {
+    const { row } = state;
+    const suggestion = pickedSuggestion(state);
+    const canLink = toLink(state) !== null;
+
+    return (
+        <tr>
+            <td>
+                <input
+                    type="checkbox"
+                    className="form-check-input"
+                    checked={state.ticked && canLink}
+                    disabled={disabled || !canLink}
+                    onChange={(e) => onChange({ ticked: e.target.checked })}
+                    aria-label={`Link ${row.username}`}
+                />
+            </td>
+            <td>
+                <Link
+                    className={styles.runner}
+                    href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${row.userId}`}
+                >
+                    {row.username}
+                </Link>
+            </td>
+            <td className={styles.num}>{row.queued}</td>
+            <td>
+                {row.state === 'sure' && suggestion?.srcName}
+                {row.state === 'contested' && (
+                    <select
+                        className="form-select form-select-sm"
+                        value={state.picked ?? ''}
+                        disabled={disabled}
+                        aria-label={`speedrun.com profile for ${row.username}`}
+                        onChange={(e) => {
+                            const picked = e.target.value || null;
+                            onChange({
+                                picked,
+                                ticked: picked !== null,
+                                error: null,
+                            });
+                        }}
+                    >
+                        <option value="" />
+                        {row.suggestions.map((s) => (
+                            <option key={s.srcUserId} value={s.srcUserId}>
+                                {`${s.srcName} (clears ${s.clears})${
+                                    s.alsoMatches > 0
+                                        ? ` — also matches ${plural(s.alsoMatches, 'other runner', 'other runners')}`
+                                        : ''
+                                }`}
+                            </option>
+                        ))}
+                    </select>
+                )}
+                {row.state === 'none' && (
+                    <input
+                        type="text"
+                        className="form-control form-control-sm"
+                        value={state.typed}
+                        disabled={disabled}
+                        placeholder="speedrun.com name"
+                        aria-label={`speedrun.com name for ${row.username}`}
+                        onChange={(e) => {
+                            const typed = e.target.value;
+                            onChange({
+                                typed,
+                                ticked: cleanName(typed) !== '',
+                                error: null,
+                            });
+                        }}
+                    />
+                )}
+                {state.error && (
+                    <div className={styles.rowError}>{state.error}</div>
+                )}
+            </td>
+            <td className={styles.num}>
+                {row.state === 'none' ? '–' : (suggestion?.clears ?? '–')}
+            </td>
+        </tr>
+    );
+}

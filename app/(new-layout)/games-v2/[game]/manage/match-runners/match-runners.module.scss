@@ -1,0 +1,61 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/board' as board;
+
+// Same table as Browse runs, so the list reads like the rest of the console.
+
+.bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: dt.$spacing-md;
+    margin-bottom: dt.$spacing-md;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.note {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin-bottom: dt.$spacing-md;
+}
+
+.errorAlert {
+    @include board.board-error-alert;
+    margin-bottom: dt.$spacing-md;
+}
+
+.table {
+    @include board.board-table;
+
+    :global(.form-check-input),
+    :global(.form-control),
+    :global(.form-select) {
+        @include board.board-input-rules;
+    }
+
+    :global(.form-control),
+    :global(.form-select) {
+        max-width: 18rem;
+    }
+
+    thead th.right {
+        text-align: right;
+    }
+}
+
+.num {
+    @include board.mono-time;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.runner {
+    font-weight: 600;
+}
+
+.rowError {
+    margin-top: dt.$spacing-xs;
+    font-size: dt.$font-size-xs;
+    color: dt.$accent-red;
+}
