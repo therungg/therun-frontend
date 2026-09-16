@@ -53,7 +53,6 @@ const NEEDS_RUN: ReadonlySet<ModerateVerb> = new Set([
     'mark',
     'restore',
     'hide_identity',
-    'retime',
 ]);
 
 /**
@@ -63,7 +62,7 @@ const NEEDS_RUN: ReadonlySet<ModerateVerb> = new Set([
  */
 export function runTabVerbs(
     state: RunVerbState,
-    opts: { summaryLoaded: boolean },
+    opts: { summaryLoaded: boolean; statusKnown?: boolean },
 ): VerbAvailability[] {
     const off = (verb: ModerateVerb, reason: string): VerbAvailability => ({
         verb,
@@ -75,7 +74,12 @@ export function runTabVerbs(
         if (state.isManual) {
             return NEEDS_RUN.has(a.verb) ? off(a.verb, NOT_FOR_MANUAL) : a;
         }
-        if (!opts.summaryLoaded && NEEDS_SUMMARY.has(a.verb)) {
+        if (
+            !opts.summaryLoaded &&
+            (NEEDS_SUMMARY.has(a.verb) ||
+                (opts.statusKnown === false &&
+                    (a.verb === 'approve' || a.verb === 'decline')))
+        ) {
             return off(a.verb, 'Loading');
         }
         if (a.verb === 'set_time' && state.status === 'pending') {
@@ -89,6 +93,8 @@ export interface LightVerbContext {
     gameSlug: string;
     runId: number | null;
     manualTimeId: number | null;
+    /** Replaces the verb's default reason (Approve only). */
+    reason?: string;
 }
 
 export type LightVerbResult =
@@ -119,14 +125,14 @@ export const runVerbHandlers: Record<
     LightVerb,
     (ctx: LightVerbContext) => Promise<LightVerbResult>
 > = {
-    approve: async ({ gameSlug, runId, manualTimeId }) => {
+    approve: async ({ gameSlug, runId, manualTimeId, reason }) => {
         if (runId == null) {
             if (manualTimeId == null) return { error: 'Nothing to approve.' };
             const res = await manualTimeVerdictAction(
                 gameSlug,
                 manualTimeId,
                 'verify',
-                LIGHT_REASON.approve,
+                reason ?? LIGHT_REASON.approve,
             );
             if ('error' in res) return res;
             // A manual verdict has no unverify.
@@ -136,7 +142,7 @@ export const runVerbHandlers: Record<
             gameSlug,
             'verify',
             [runId],
-            LIGHT_REASON.approve,
+            reason ?? LIGHT_REASON.approve,
         );
         if ('error' in res) return res;
         return {

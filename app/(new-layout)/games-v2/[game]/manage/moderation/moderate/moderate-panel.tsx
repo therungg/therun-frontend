@@ -36,6 +36,8 @@ export interface ModeratePanelProps {
      * verb runs. Ignored when the verb does not apply to the subject.
      */
     initialVerb?: ModerateVerb;
+    /** Replaces the default reason when `initialVerb` is Approve. */
+    initialVerbReason?: string;
     onClose?: () => void;
     onMutated: () => void;
     onPrev?: () => void;
@@ -399,6 +401,9 @@ export function ModeratePanel(props: ModeratePanelProps) {
                 onMutated={props.onMutated}
                 onOpenRunner={() => setTab('runner')}
                 extra={props.runExtra}
+                initialVerbReason={
+                    initialVerb ? props.initialVerbReason : undefined
+                }
                 onFormBack={onFormBack}
                 onBusyChange={onBusyChange}
                 render={wrap}

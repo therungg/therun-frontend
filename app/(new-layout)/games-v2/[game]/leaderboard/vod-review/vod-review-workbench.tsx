@@ -55,6 +55,8 @@ export interface VodReviewWorkbenchProps {
     };
     onChange?: (patch: VodReviewPatch | null) => void;
     onSaved?: (patch: VodReviewPatch | null, appliedMs?: number) => void;
+    /** Hides Save markers / Apply retime: the host confirms the retime itself. */
+    hideActions?: boolean;
     playerFactory?: PlayerFactory;
 }
 
@@ -83,6 +85,7 @@ export function VodReviewWorkbench({
     initial,
     onChange,
     onSaved,
+    hideActions = false,
     playerFactory,
 }: VodReviewWorkbenchProps) {
     const isMod = mode === 'mod';
@@ -535,24 +538,26 @@ export function VodReviewWorkbench({
                         start/end read the player's clock either way.
                     </p>
                     {error && <p className="text-danger small mb-0">{error}</p>}
-                    <div className={styles.footer}>
-                        <button
-                            type="button"
-                            className="btn btn-primary"
-                            disabled={isPending || markers.length === 0}
-                            onClick={() => save()}
-                        >
-                            {isPending ? 'Saving…' : 'Save markers'}
-                        </button>
-                        <button
-                            type="button"
-                            className="btn btn-outline-primary"
-                            disabled={isPending || !canApply}
-                            onClick={() => retimed != null && save(retimed)}
-                        >
-                            Apply retime
-                        </button>
-                    </div>
+                    {hideActions ? null : (
+                        <div className={styles.footer}>
+                            <button
+                                type="button"
+                                className="btn btn-primary"
+                                disabled={isPending || markers.length === 0}
+                                onClick={() => save()}
+                            >
+                                {isPending ? 'Saving…' : 'Save markers'}
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-outline-primary"
+                                disabled={isPending || !canApply}
+                                onClick={() => retimed != null && save(retimed)}
+                            >
+                                Apply retime
+                            </button>
+                        </div>
+                    )}
                 </>
             )}
         </div>

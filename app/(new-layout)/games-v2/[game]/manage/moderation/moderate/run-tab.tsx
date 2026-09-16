@@ -11,10 +11,12 @@ import { toast } from 'react-toastify';
 import { loadRunHistoryAction } from '~src/actions/run-user-actions.action';
 import { DurationField } from '~src/components/time-input/duration-field';
 import { timingLabel } from '~src/lib/setup/board-defaults';
+import type { VodReviewPatch } from '../../../../../../../types/leaderboards.types';
 import type {
     HistoryEvent,
     RejectionReasonKey,
 } from '../../../../../../../types/moderation.types';
+import { ReviewVodPanel } from '../../../leaderboard/vod-review/review-vod-panel';
 import { previewManualTimeAction } from '../shared/actions/manual-times.action';
 import { ScopeCards } from '../shared/run-action-parts';
 import { fireUndoToast } from '../shared/undo-toast';
@@ -71,6 +73,8 @@ export interface RunTabProps {
     render: (layout: PanelLayout) => ReactNode;
     /** Acted on once when the run's state has loaded; ignored if it does not apply. */
     initialVerb?: ModerateVerb;
+    /** Replaces the default reason when the initial verb is Approve. */
+    initialVerbReason?: string;
     onInitialVerbUsed: () => void;
     /** Rendered after the history in the right column. */
     extra?: ReactNode;
@@ -91,6 +95,7 @@ export function RunTab({
     onBusyChange,
     render,
     initialVerb,
+    initialVerbReason,
     onInitialVerbUsed,
     extra,
 }: RunTabProps) {
@@ -180,6 +185,7 @@ export function RunTab({
     const verbState = runVerbState(entry, summary, { inScope: true });
     const availability = runTabVerbs(verbState, {
         summaryLoaded: summary !== null,
+        statusKnown: subject.statusKnown,
     });
     const isEnabled = (verb: ModerateVerb) =>
         availability.some((a) => a.verb === verb && a.enabled);
@@ -201,6 +207,12 @@ export function RunTab({
     const [timePreviewRank, setTimePreviewRank] = useState<number | null>(null);
     const move = useMoveTarget(board, context);
     const [hideScope, setHideScope] = useState<HideScope>('run');
+    // Retime: the review's markers and what it compares against.
+    const [reviewPatch, setReviewPatch] = useState<VodReviewPatch | null>(null);
+    const [reviewInfo, setReviewInfo] = useState<{
+        realTimeMs: number | null;
+        timing: 'realtime' | 'gametime';
+    } | null>(null);
 
     const formOpen = draft !== null;
     const { busy, busyRef, setBusy, back, openerRef, footerRef, rootRef } =
@@ -308,6 +320,10 @@ export function RunTab({
               moveToName: move.toName,
               hideScope,
               canLift: context.canSiteBan,
+              retimeFromMs: reviewInfo?.realTimeMs ?? null,
+              retimeToMs: reviewPatch?.retimedMs ?? null,
+              retimeLoaded: reviewInfo !== null,
+              retimeGameTime: reviewInfo?.timing === 'gametime',
               fields: fieldsFor(draft.verb),
           })
         : null;
@@ -316,6 +332,8 @@ export function RunTab({
     // ---- Verbs -------------------------------------------------------------------------
     const openForm = async (verb: HeavyRunVerb) => {
         setNewTimeMs(null);
+        setReviewPatch(null);
+        setReviewInfo(null);
         move.reset();
         setHideScope(runId != null ? 'run' : 'category');
         let noop: string | null = null;
@@ -341,6 +359,7 @@ export function RunTab({
 
     const runLight = async (
         verb: 'approve' | 'restore' | 'send_back' | 'ask_video' | 'mark',
+        reason?: string,
     ) => {
         setBusy(true);
         try {
@@ -348,6 +367,7 @@ export function RunTab({
                 gameSlug,
                 runId,
                 manualTimeId: run.manualTimeId,
+                reason,
             });
             if ('error' in res) {
                 toast.error(res.error);
@@ -364,10 +384,10 @@ export function RunTab({
         }
     };
 
-    const handle = (verb: ModerateVerb) => {
+    const handle = (verb: ModerateVerb, reason?: string) => {
         if (busyRef.current || draft !== null || !isEnabled(verb)) return;
         if (isLightRunVerb(verb)) {
-            void runLight(verb);
+            void runLight(verb, reason);
             return;
         }
         switch (verb) {
@@ -376,6 +396,7 @@ export function RunTab({
             case 'set_time':
             case 'move':
             case 'hide_identity':
+            case 'retime':
                 void openForm(verb);
                 return;
             default:
@@ -403,7 +424,14 @@ export function RunTab({
                       }
                     : verb === 'hide_identity'
                       ? { verb, reason, scope: hideScope }
-                      : { verb, reason };
+                      : verb === 'retime'
+                        ? {
+                              verb,
+                              reason,
+                              patch: reviewPatch,
+                              gameId: context.gameId,
+                          }
+                        : { verb, reason };
         setBusy(true);
         try {
             const res = await confirmRunVerb(
@@ -436,7 +464,8 @@ export function RunTab({
     useInitialVerb({
         verb: initialVerb,
         ready: summary !== null || runId == null,
-        handle,
+        handle: (verb) =>
+            handle(verb, verb === 'approve' ? initialVerbReason : undefined),
         onUsed: onInitialVerbUsed,
     });
 
@@ -455,15 +484,33 @@ export function RunTab({
             rootRef={rootRef}
         />
     );
-    const left = (
-        <RunLeft
-            vodUrl={
-                summary ? (summary.vodUrls[0] ?? null) : (entry.vodUrl ?? null)
-            }
-            summary={summary}
-            runPage={runPage}
-        />
-    );
+    const vodUrl = summary
+        ? (summary.vodUrls[0] ?? null)
+        : (entry.vodUrl ?? null);
+    const reviewTarget =
+        run.isManual && run.manualTimeId != null
+            ? {
+                  kind: 'manual' as const,
+                  manualTimeId: run.manualTimeId,
+                  gameId: context.gameId,
+              }
+            : runId != null
+              ? { kind: 'run' as const, runId }
+              : null;
+    const left =
+        draft?.verb === 'retime' && vodUrl && reviewTarget ? (
+            <ReviewVodPanel
+                url={vodUrl}
+                target={reviewTarget}
+                gameSlug={gameSlug}
+                onSaved={afterMutation}
+                onChange={setReviewPatch}
+                onLoaded={setReviewInfo}
+                hideActions
+            />
+        ) : (
+            <RunLeft vodUrl={vodUrl} summary={summary} runPage={runPage} />
+        );
 
     const layout: PanelLayout =
         spec && draft

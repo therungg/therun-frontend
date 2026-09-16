@@ -13,7 +13,16 @@ export interface SheetBoard {
 }
 
 export type SheetSubject =
-    | { kind: 'run'; entry: LeaderboardEntry; board: SheetBoard }
+    | {
+          kind: 'run';
+          entry: LeaderboardEntry;
+          board: SheetBoard;
+          /**
+           * False when the launcher does not know the run's status: Approve
+           * and Decline wait for the run's summary. Defaults to true.
+           */
+          statusKnown?: boolean;
+      }
     | {
           kind: 'runner';
           userId: number;

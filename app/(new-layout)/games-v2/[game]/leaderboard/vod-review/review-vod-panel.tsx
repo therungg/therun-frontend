@@ -19,11 +19,20 @@ export function ReviewVodPanel({
     gameSlug,
     onSaved,
     onChange,
+    onLoaded,
+    hideActions,
 }: {
     url: string;
     target: VodReviewTarget;
     gameSlug: string;
     onSaved: () => void;
+    /** The submitted real time and the entry's clock, once the review loads. */
+    onLoaded?: (info: {
+        realTimeMs: number | null;
+        timing: 'realtime' | 'gametime';
+    }) => void;
+    /** Hides the workbench's own save buttons. */
+    hideActions?: boolean;
     /** Live marker/retime state, for a summary rendered elsewhere (the
      *  drawer's "reviewing" card while the workbench lives in the pane). */
     onChange?: (patch: VodReviewPatch | null) => void;
@@ -44,6 +53,8 @@ export function ReviewVodPanel({
         let cancelled = false;
         loadVodReviewAction(target).then((res) => {
             if (cancelled) return;
+            if (!('error' in res))
+                onLoaded?.({ realTimeMs: res.realTimeMs, timing: res.timing });
             setState(
                 'error' in res
                     ? { status: 'error', error: res.error }
@@ -86,6 +97,7 @@ export function ReviewVodPanel({
             }}
             onSaved={onSaved}
             onChange={onChange}
+            hideActions={hideActions}
         />
     );
 }

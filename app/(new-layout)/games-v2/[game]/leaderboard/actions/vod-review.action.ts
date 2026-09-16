@@ -82,7 +82,8 @@ export async function saveVodReviewAction(
     gameSlug: string,
     target: VodReviewTarget,
     patch: VodReviewPatch | null,
-    opts: { applyRetimeMs?: number } = {},
+    /** `reason`: the moderator's words, kept ahead of the frame line. */
+    opts: { applyRetimeMs?: number; reason?: string } = {},
 ): Promise<{ ok: true } | Fail> {
     const session = await getSession();
     if (!session?.username || !session.id) return { error: 'Not signed in.' };
@@ -95,7 +96,9 @@ export async function saveVodReviewAction(
         patch === null
             ? CLEAR_REASON
             : opts.applyRetimeMs != null
-              ? retimeReason(patch)
+              ? opts.reason
+                  ? `${opts.reason} ${retimeReason(patch)}`
+                  : retimeReason(patch)
               : SAVE_REASON;
     try {
         if (target.kind === 'run') {

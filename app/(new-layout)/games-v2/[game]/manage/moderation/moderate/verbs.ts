@@ -112,7 +112,6 @@ export const VERB_KEY: Partial<Record<ModerateVerb, string>> = {
 export const NOT_BUILT: ReadonlySet<ModerateVerb> = new Set([
     'note',
     'reassign',
-    'retime',
 ]);
 
 export const RUN_BAR: ModerateVerb[] = [

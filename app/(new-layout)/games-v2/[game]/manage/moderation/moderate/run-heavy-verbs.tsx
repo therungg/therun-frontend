@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react';
+import type { VodReviewPatch } from '../../../../../../../types/leaderboards.types';
 import type {
     AffectedLeaderboard,
     AnonymizeRule,
     ModTiming,
     RejectionReasonKey,
 } from '../../../../../../../types/moderation.types';
+import { saveVodReviewAction } from '../../../leaderboard/actions/vod-review.action';
 import { MIN_ANONYMIZE_REASON, undoReason } from '../shared/action-model';
 import {
     anonymizeRunAction,
@@ -39,7 +41,8 @@ export type HeavyRunVerb =
     | 'remove'
     | 'set_time'
     | 'move'
-    | 'hide_identity';
+    | 'hide_identity'
+    | 'retime';
 export type HideScope = 'run' | 'category' | 'game';
 
 export const MIN_REASON = 10;
@@ -206,7 +209,14 @@ export type RunConfirmInput =
           target: AffectedLeaderboard | null;
           targetName: string;
       }
-    | { verb: 'hide_identity'; reason: string; scope: HideScope };
+    | { verb: 'hide_identity'; reason: string; scope: HideScope }
+    | {
+          verb: 'retime';
+          reason: string;
+          /** The review's markers; `retimedMs` is the new time. */
+          patch: VodReviewPatch | null;
+          gameId: number;
+      };
 
 const NO_RUN = { error: 'This entry has no run behind it.' };
 const NO_MANUAL = {
@@ -333,6 +343,31 @@ export async function confirmRunVerb(
                 message: `Moved: ${run.runnerName} to ${input.targetName}`,
             };
         }
+        case 'retime': {
+            const newMs = input.patch?.retimedMs ?? null;
+            if (!input.patch || newMs == null)
+                return { error: 'Set the start and end on the video first.' };
+            const target = run.isManual
+                ? run.manualTimeId == null
+                    ? null
+                    : {
+                          kind: 'manual' as const,
+                          manualTimeId: run.manualTimeId,
+                          gameId: input.gameId,
+                      }
+                : run.runId == null
+                  ? null
+                  : { kind: 'run' as const, runId: run.runId };
+            if (!target) return run.isManual ? NO_MANUAL : NO_RUN;
+            const res = await saveVodReviewAction(
+                gameSlug,
+                target,
+                input.patch,
+                { applyRetimeMs: newMs, reason: input.reason },
+            );
+            if ('error' in res) return res;
+            return { ok: true, undo: null };
+        }
         case 'hide_identity': {
             const res =
                 input.scope === 'run' || run.userId == null
@@ -396,6 +431,14 @@ export interface RunSpecArgs {
     hideScope?: HideScope;
     /** Hide identity: the viewer can lift it (site admin). */
     canLift?: boolean;
+    /** Retime: the submitted real time the review compares against. */
+    retimeFromMs?: number | null;
+    /** Retime: the time from the review's start and end markers. */
+    retimeToMs?: number | null;
+    /** Retime: the review has loaded; false until then. */
+    retimeLoaded?: boolean;
+    /** Retime: the entry keeps game time, which a real-time retime cannot replace. */
+    retimeGameTime?: boolean;
     /** Time input, board picker or scope cards, owned by the caller's state. */
     fields?: ReactNode;
 }
@@ -488,6 +531,38 @@ export function runHeavySpec(
                 blocked: a.moveSame !== false || !a.moveToName,
                 fields: a.fields,
             };
+        case 'retime': {
+            const to = a.retimeToMs ?? null;
+            const from = a.retimeFromMs ?? null;
+            return {
+                ...base,
+                whatChanges: !a.retimeLoaded ? (
+                    'Loading the video review.'
+                ) : a.retimeGameTime ? (
+                    "This entry is game time. A retime from the video is real time and can't replace it."
+                ) : to == null ? (
+                    'Set the start and end on the video.'
+                ) : to === from ? (
+                    <>
+                        The video gives <Time ms={to} />, the same time.
+                    </>
+                ) : (
+                    <>
+                        <Time ms={from} /> becomes <Time ms={to} />.
+                    </>
+                ),
+                notUndoable: 'set the time again to change it',
+                reasonKeys: false,
+                minReason: MIN_REASON,
+                actionLabel: 'Retime run',
+                tone: 'primary',
+                blocked:
+                    !a.retimeLoaded ||
+                    !!a.retimeGameTime ||
+                    to == null ||
+                    to === from,
+            };
+        }
         case 'hide_identity':
             return {
                 ...base,
