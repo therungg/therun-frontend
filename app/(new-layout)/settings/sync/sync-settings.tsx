@@ -23,9 +23,9 @@ function when(iso: string | null): string {
 
 const SOCIALS_URL = 'https://www.speedrun.com/settings/socials';
 
-/** A match is queued or running: no account yet, no result yet. */
+/** A match is waiting or running: no account yet, no result yet. */
 function isLooking(s: SrcUserSyncStatus): boolean {
-    return s.syncEnabled && !s.optOut && !s.identity && s.lookupResult === null;
+    return !s.optOut && !s.identity && s.lookupResult === null;
 }
 
 function IdentityText({ status: s }: { status: SrcUserSyncStatus }) {
@@ -61,11 +61,12 @@ function IdentityText({ status: s }: { status: SrcUserSyncStatus }) {
             </p>
         );
     }
-    if (isLooking(s)) return <p>Looking for your speedrun.com account.</p>;
     return (
         <p>
-            Not linked to a speedrun.com account yet. We find it through the
-            Twitch link on your{' '}
+            {isLooking(s)
+                ? 'Looking for your speedrun.com account.'
+                : 'Not linked to a speedrun.com account yet.'}{' '}
+            We find it through the Twitch link on your{' '}
             <a href={SOCIALS_URL} target="_blank" rel="noreferrer">
                 speedrun.com profile
             </a>
@@ -80,7 +81,9 @@ export function SyncSettings({ initial }: { initial: SrcUserSyncStatus }) {
     const [pending, start] = useTransition();
 
     // While a match runs, check back until it lands on a result.
-    const looking = isLooking(status);
+    // Only once an attempt is stamped: an account still waiting its turn in
+    // the background pass can wait days, not worth polling for.
+    const looking = isLooking(status) && status.lookupAttemptedAt !== null;
     useEffect(() => {
         if (!looking) return;
         const t = setInterval(async () => {
@@ -129,7 +132,6 @@ export function SyncSettings({ initial }: { initial: SrcUserSyncStatus }) {
                 {error && <InlineError>{error}</InlineError>}
                 <IdentityText status={status} />
                 {status.lookupResult === 'no-match' &&
-                    status.syncEnabled &&
                     !status.identity &&
                     !status.optOut && (
                         <div>
