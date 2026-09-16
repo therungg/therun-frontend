@@ -97,18 +97,3 @@
     color: var(--bs-secondary-color);
     margin-left: -#{dt.$spacing-xs};
 }
-
-
-/* The second live switch only qualifies the first, so it sits under it and
-   indented rather than as a sibling demand. */
-.liveGroup {
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-md;
-}
-
-.liveNested {
-    padding-left: dt.$spacing-xl;
-    border-left: 1px solid var(--bs-border-color);
-    margin-left: dt.$spacing-xs;
-}

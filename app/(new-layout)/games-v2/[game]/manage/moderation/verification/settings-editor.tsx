@@ -240,27 +240,13 @@ export function SettingsEditor({
                                 yet.
                             </HintBubble>
                         </div>
-                        <div className={styles.liveGroup}>
-                            <SwitchField
-                                id="live-required"
-                                label="Only auto-verify if the run was timed with therun.gg LiveSplit"
-                                checked={form.liveRequired}
-                                onChange={(v) => set('liveRequired', v)}
-                            />
-                            {form.liveRequired && (
-                                <div className={styles.liveNested}>
-                                    <SwitchField
-                                        id="live-must-match"
-                                        label="Only auto-verify if the live run agrees with the run that was uploaded"
-                                        hint="Same number of splits, and each split reaching the site no sooner than the splits file says it could."
-                                        checked={form.liveMustMatch}
-                                        onChange={(v) =>
-                                            set('liveMustMatch', v)
-                                        }
-                                    />
-                                </div>
-                            )}
-                        </div>
+                        <SwitchField
+                            id="live-required"
+                            label="Only auto-verify if the run was timed with therun.gg LiveSplit"
+                            hint="A live run only matches when it finished at the same moment with the same time, so this is what ties a submitted run to one that was watched happening."
+                            checked={form.liveRequired}
+                            onChange={(v) => set('liveRequired', v)}
+                        />
                     </div>
                 )}
             </FormSection>

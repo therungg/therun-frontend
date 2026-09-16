@@ -23,6 +23,8 @@ export type SettingsForm = {
     /** Seconds, as the moderator types them; sent as milliseconds. */
     maxPbJumpSeconds: string;
     liveRequired: boolean;
+    /** Carried, not offered: the console asks only that a run was live, and a
+     *  board's saved value rides through a save untouched. */
     liveMustMatch: boolean;
 };
 
@@ -124,7 +126,8 @@ const autoVerifyOf = (f: SettingsForm): AutoVerifySetting => ({
     maxGoldBeatPct: Number(f.maxGoldBeatPct),
     maxPbJumpMs: Math.round(Number(f.maxPbJumpSeconds) * 1000),
     liveRequired: f.liveRequired,
-    // Only meaningful with a live run to compare against.
+    // Only meaningful with a live run to compare against, so turning the
+    // requirement off turns this off with it.
     liveMustMatch: f.liveRequired && f.liveMustMatch,
 });
 const same = (a: unknown, b: unknown) =>
