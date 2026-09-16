@@ -25,6 +25,12 @@ interface RowState {
     typed: string;
     ticked: boolean;
     error: string | null;
+    /** Set when an admin can move the profile off its current holder. */
+    overrideOffer: {
+        linkedTo: { userId: number; username: string } | null;
+    } | null;
+    /** True while this row's own override link is in flight. */
+    overriding: boolean;
 }
 
 const plural = (n: number, one: string, many: string) =>
@@ -37,12 +43,12 @@ const cleanName = (value: string) =>
         .replace(/^https?:\/\/(www\.)?speedrun\.com\/(users\/)?/i, '')
         .replace(/[/?#].*$/, '');
 
-const failMessage = (
-    code: Extract<SrcMatchLinkResult, { ok: false }>['code'],
-) => {
-    switch (code) {
+const failMessage = (result: Extract<SrcMatchLinkResult, { ok: false }>) => {
+    switch (result.code) {
         case 'already-linked':
-            return 'That profile is linked to another runner.';
+            return result.canOverride
+                ? `Already linked to ${result.linkedTo?.username ?? 'another runner'}.`
+                : 'That profile is linked to another runner.';
         case 'src-not-found':
             return 'Not found on speedrun.com.';
         case 'already-set':
@@ -51,6 +57,13 @@ const failMessage = (
             return 'Could not link.';
     }
 };
+
+const overrideOfferFor = (
+    result: Extract<SrcMatchLinkResult, { ok: false }>,
+) =>
+    result.code === 'already-linked' && result.canOverride
+        ? { linkedTo: result.linkedTo }
+        : null;
 
 const pbValues = (subcategoryKey: string) =>
     subcategoryKey
@@ -93,6 +106,8 @@ const initialRow = (row: SrcMatchRow, prev?: RowState): RowState => {
         typed: prev?.typed ?? '',
         ticked: prev ? prev.ticked : row.state === 'sure',
         error: prev?.error ?? null,
+        overrideOffer: prev?.overrideOffer ?? null,
+        overriding: false,
     };
 };
 
@@ -207,7 +222,8 @@ export function MatchRunnersPane({ gameSlug }: { gameSlug: string }) {
                                       // of time for, so it stays ticked to retry.
                                       ticked:
                                           result.code === 'error' && r.ticked,
-                                      error: failMessage(result.code),
+                                      error: failMessage(result),
+                                      overrideOffer: overrideOfferFor(result),
                                   },
                               ];
                           })
@@ -230,6 +246,68 @@ export function MatchRunnersPane({ gameSlug }: { gameSlug: string }) {
         if (!stopped || linked > 0) {
             setAttempt((n) => n + 1);
             router.refresh();
+        }
+    };
+
+    const overrideRow = async (r: RowState) => {
+        const link = toLink(r);
+        if (!link || linking || r.overriding) return;
+        const name = r.overrideOffer?.linkedTo?.username ?? 'that runner';
+        if (
+            !window.confirm(
+                `Remove this speedrun.com profile from ${name} and link it to ${r.row.username}? Their runs stay with them.`,
+            )
+        ) {
+            return;
+        }
+
+        update(r.row.userId, { overriding: true, error: null });
+        try {
+            let res: Awaited<ReturnType<typeof linkSrcMatchesAction>>;
+            try {
+                res = await linkSrcMatchesAction(gameSlug, [
+                    { ...link, override: true },
+                ]);
+            } catch {
+                res = { error: 'Could not link runners.' };
+            }
+            if ('error' in res) {
+                update(r.row.userId, { overriding: false, error: res.error });
+                return;
+            }
+            const result = res.results[0];
+            if (!result) {
+                update(r.row.userId, {
+                    overriding: false,
+                    error: 'Could not link.',
+                });
+                return;
+            }
+            if (result.ok) {
+                setDoneMessage(
+                    `Linked ${plural(1, 'runner', 'runners')}, ${plural(
+                        result.mergedRuns,
+                        'run',
+                        'runs',
+                    )} verified from speedrun.com.`,
+                );
+                setRows((rs) =>
+                    rs ? rs.filter((x) => x.row.userId !== r.row.userId) : rs,
+                );
+                setAttempt((n) => n + 1);
+                router.refresh();
+                return;
+            }
+            update(r.row.userId, {
+                overriding: false,
+                error: failMessage(result),
+                overrideOffer: overrideOfferFor(result),
+            });
+        } catch {
+            update(r.row.userId, {
+                overriding: false,
+                error: 'Could not link.',
+            });
         }
     };
 
@@ -333,6 +411,7 @@ export function MatchRunnersPane({ gameSlug }: { gameSlug: string }) {
                                         onChange={(patch) =>
                                             update(r.row.userId, patch)
                                         }
+                                        onOverride={() => overrideRow(r)}
                                     />
                                 ))}
                             </tbody>
@@ -349,11 +428,13 @@ function MatchRow({
     gameSlug,
     disabled,
     onChange,
+    onOverride,
 }: {
     state: RowState;
     gameSlug: string;
     disabled: boolean;
     onChange: (patch: Partial<RowState>) => void;
+    onOverride: () => void;
 }) {
     const { row } = state;
     const suggestion = pickedSuggestion(state);
@@ -439,7 +520,19 @@ function MatchRow({
                     />
                 )}
                 {state.error && (
-                    <div className={styles.rowError}>{state.error}</div>
+                    <div className={styles.rowError}>
+                        {state.error}
+                        {state.overrideOffer && (
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-outline-secondary ms-2"
+                                disabled={disabled || state.overriding}
+                                onClick={onOverride}
+                            >
+                                {state.overriding ? 'Moving…' : 'Move it here'}
+                            </button>
+                        )}
+                    </div>
                 )}
             </td>
             <td className={styles.num}>

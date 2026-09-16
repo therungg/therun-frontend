@@ -36,6 +36,7 @@ export interface SrcMatchLink {
     userId: number;
     srcUserId?: string;
     srcName?: string;
+    override?: boolean;
 }
 
 export type SrcMatchLinkResult =
@@ -49,10 +50,16 @@ export type SrcMatchLinkResult =
     | {
           userId: number;
           ok: false;
+          code: 'already-linked';
+          linkedTo: { userId: number; username: string } | null;
+          canOverride: boolean;
+      }
+    | {
+          userId: number;
+          ok: false;
           code:
               | 'user-not-found'
               | 'src-not-found'
-              | 'already-linked'
               | 'already-set'
               | 'not-on-game'
               | 'error';
