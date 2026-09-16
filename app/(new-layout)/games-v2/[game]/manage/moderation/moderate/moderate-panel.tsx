@@ -10,6 +10,7 @@ import {
 import { createPortal } from 'react-dom';
 import { useDialogBehavior } from '../../../shared/board-dialog';
 import styles from './moderate-panel.module.scss';
+import { RunTab } from './run-tab';
 import { type SheetContext, type SheetSubject, subjectKey } from './subject';
 
 export type PanelMount = 'modal' | 'inline';
@@ -130,12 +131,12 @@ export function ModeratePanel(props: ModeratePanelProps) {
         setMounted(true);
     }, []);
 
-    // Tasks 5 to 7 hand these to the tab as `onFormBack` and `onBusyChange`.
-    const _onFormBack = useCallback<FormBackHandler>((back) => {
+    // Handed to the tab as `onFormBack` and `onBusyChange`.
+    const onFormBack = useCallback<FormBackHandler>((back) => {
         formBackRef.current = back;
         setFormOpen(back !== null);
     }, []);
-    const _onBusyChange = useCallback<BusyHandler>((busy) => {
+    const onBusyChange = useCallback<BusyHandler>((busy) => {
         busyRef.current = busy;
     }, []);
 
@@ -283,11 +284,10 @@ export function ModeratePanel(props: ModeratePanelProps) {
         );
     };
 
-    // Tasks 5 to 7 replace `layout` with the active tab's output:
-    //   subject.kind === 'bulk'  -> <BulkBody ... render={(layout) => ...} />
-    //   tab === 'run'            -> <RunTab key={subjectKey(subject)} ... onFormBack={_onFormBack} onBusyChange={_onBusyChange} render={(layout) => ...} />
-    //   tab === 'runner'         -> <RunnerTab key={subjectKey(subject)} ... onFormBack={_onFormBack} onBusyChange={_onBusyChange} render={(layout) => ...} />
-    // Each tab owns its data and verb handlers and calls `render(layout)`; the shell below wraps it.
+    // Tasks 6 and 7 add the remaining branches:
+    //   subject.kind === 'bulk'  -> <BulkBody ... render={wrap} />
+    //   tab === 'runner'         -> <RunnerTab key={subjectKey(subject)} ... onFormBack={onFormBack} onBusyChange={onBusyChange} render={wrap} />
+    // Each tab owns its data and verb handlers and calls `render(layout)`; the shell wraps it.
     const wrap = (layout: PanelLayout) => (
         <>
             {topBar(layout.pageLink)}
@@ -301,7 +301,21 @@ export function ModeratePanel(props: ModeratePanelProps) {
         footer: null,
         pageLink: null,
     };
-    const content = wrap(empty);
+    const content =
+        subject.kind === 'run' && tab === 'run' ? (
+            <RunTab
+                key={key}
+                subject={subject}
+                context={props.context}
+                onMutated={props.onMutated}
+                onOpenRunner={() => setTab('runner')}
+                onFormBack={onFormBack}
+                onBusyChange={onBusyChange}
+                render={wrap}
+            />
+        ) : (
+            wrap(empty)
+        );
 
     const box = (
         <div

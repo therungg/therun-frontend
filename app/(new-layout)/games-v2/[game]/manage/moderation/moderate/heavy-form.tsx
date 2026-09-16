@@ -50,6 +50,8 @@ export interface HeavyFormSpec {
     tone: 'danger' | 'primary';
     /** Scope cards for ban/hide identity, board picker for move, time input for set time. */
     fields?: ReactNode;
+    /** Set while the fields are not filled in (no time typed, same board picked). Holds the action button. */
+    blocked?: boolean;
 }
 
 export interface HeavyFormState {
@@ -71,7 +73,9 @@ export function useHeavyForm(spec: HeavyFormSpec | null): HeavyFormState {
     }, [verb]);
     const ready = spec
         ? spec.reasonKeys
-            ? reasonKey !== null
+            ? reasonKey !== null &&
+              // "Other" is not a reason on its own: it needs the words.
+              (reasonKey !== 'other' || reason.trim().length >= spec.minReason)
             : reason.trim().length >= spec.minReason
         : false;
     return { reason, setReason, reasonKey, setReasonKey, ready };
@@ -227,7 +231,9 @@ export function HeavyFormFooter(props: {
                         ? styles.primary
                         : styles.danger
                 }
-                disabled={!props.state.ready || props.busy}
+                disabled={
+                    !props.state.ready || props.busy || props.spec.blocked
+                }
                 onClick={() =>
                     props.onConfirm(
                         props.state.reason.trim(),

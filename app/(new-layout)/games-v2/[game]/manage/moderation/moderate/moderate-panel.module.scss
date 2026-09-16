@@ -718,3 +718,334 @@ $ring: 2px solid rgba(var(--bs-primary-rgb), 0.5);
     height: 1rem;
     margin-top: 2px;
 }
+
+// ---- Run tab: identity row ----------------------------------
+.mono {
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+}
+
+.idLeft {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    min-width: 0;
+}
+
+.idRight {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.375rem;
+}
+
+.who {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    flex-wrap: wrap;
+}
+
+%who-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--bs-emphasis-color);
+}
+
+.whoName {
+    @extend %who-name;
+    padding: 0;
+    border: 0;
+    border-bottom: 1px dashed $line-strong;
+    background: none;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+        color: var(--bs-primary);
+        border-bottom-color: var(--bs-primary);
+    }
+
+    &:disabled {
+        cursor: default;
+    }
+
+    &:focus-visible {
+        outline: $ring;
+        outline-offset: 2px;
+    }
+}
+
+.whoNameStatic {
+    @extend %who-name;
+}
+
+.status {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 2px 9px;
+    border-radius: 999px;
+
+    &[data-tone='pending'] {
+        background: color-mix(in srgb, #{dt.$accent-amber} 16%, transparent);
+        color: dt.$accent-amber;
+    }
+
+    &[data-tone='approved'] {
+        background: rgba(var(--bs-primary-rgb), 0.12);
+        color: var(--bs-primary);
+    }
+
+    &[data-tone='declined'] {
+        background: color-mix(in srgb, #{dt.$accent-red} 12%, transparent);
+        color: dt.$accent-red;
+    }
+
+    &[data-tone='neutral'] {
+        background: $tint;
+        color: var(--bs-secondary-color);
+    }
+}
+
+.where {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+
+    b {
+        color: var(--bs-emphasis-color);
+        font-weight: 600;
+    }
+}
+
+.bigTime {
+    @include board.mono-time;
+    font-size: 2rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1;
+}
+
+.facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem 0.875rem;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+
+    .mono {
+        color: var(--bs-emphasis-color);
+        font-weight: 600;
+    }
+}
+
+// ---- Run tab: columns ---------------------------------------
+.video {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: dt.$radius-md;
+    overflow: hidden;
+    background: #000;
+
+    > div {
+        height: 100%;
+    }
+
+    iframe {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border: 0;
+    }
+}
+
+.vodLink,
+.noVideo {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    min-height: 4rem;
+    padding: dt.$spacing-md;
+    border-radius: dt.$radius-md;
+    background: $tint;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.noVideo {
+    justify-content: center;
+}
+
+.vodLink {
+    color: var(--bs-primary);
+    text-decoration: none;
+
+    span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &:hover span {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
+    &:focus-visible {
+        outline: $ring;
+        outline-offset: 1px;
+    }
+}
+
+.splitsLine {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    font-size: dt.$font-size-sm;
+}
+
+.off {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: dt.$accent-amber;
+    font-weight: 500;
+
+    &::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+        flex-shrink: 0;
+    }
+}
+
+.link {
+    font-size: dt.$font-size-sm;
+    font-weight: 500;
+    color: var(--bs-primary);
+    text-decoration: none;
+    white-space: nowrap;
+
+    &:hover {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
+    &:focus-visible {
+        outline: $ring;
+        outline-offset: 1px;
+    }
+}
+
+.record {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem dt.$spacing-lg;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+
+    b {
+        @include board.mono-time;
+        font-weight: 600;
+    }
+
+    [data-bad] b {
+        color: dt.$accent-red;
+    }
+}
+
+.events {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.event {
+    display: grid;
+    grid-template-columns: 6.875rem minmax(0, 1fr) auto;
+    gap: dt.$spacing-md;
+    align-items: baseline;
+    padding: 0.4375rem 0;
+    border-bottom: 1px solid $line;
+    font-size: dt.$font-size-sm;
+
+    &:last-child {
+        border-bottom: 0;
+    }
+}
+
+.eventVerb {
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.eventBy {
+    min-width: 0;
+    color: var(--bs-secondary-color);
+    overflow-wrap: anywhere;
+
+    q {
+        color: var(--bs-emphasis-color);
+        quotes: '\201C' '\201D';
+    }
+}
+
+.eventWhen {
+    display: flex;
+    align-items: baseline;
+    gap: 0.625rem;
+    font-family: dt.$font-mono;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    white-space: nowrap;
+}
+
+.undo {
+    padding: 0;
+    border: 0;
+    background: none;
+    font-family: var(--bs-body-font-family);
+    font-size: dt.$font-size-xs;
+    font-weight: 500;
+    color: var(--bs-primary);
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
+    &:disabled {
+        color: var(--bs-tertiary-color);
+        cursor: default;
+    }
+
+    &:focus-visible {
+        outline: $ring;
+        outline-offset: 1px;
+    }
+}
+
+.quiet {
+    margin: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-tertiary-color);
+}
+
+.fieldStack {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+// Wraps the verb bar so focus can find its buttons; takes no box.
+.contents {
+    display: contents;
+}
