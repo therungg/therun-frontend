@@ -451,6 +451,10 @@ export interface SrcUserSyncStatus {
         verifiedAt: string | null;
     } | null;
     lookupResult: SrcLookupResult | null;
+    /** Last time a match was tried. With a null result, one is still running. */
+    lookupAttemptedAt: string | null;
+    /** Whether background syncing, and so the match, is switched on. */
+    syncEnabled: boolean;
     lastJob: {
         id: number;
         status: 'queued' | 'running' | 'done' | 'failed';

@@ -106,6 +106,24 @@ export async function getMySyncStatus(): Promise<SyncStatusResult> {
     }
 }
 
+/**
+ * Match the caller's speedrun.com account again, after they linked their
+ * Twitch there. Inside the cooldown it answers with the current status.
+ */
+export async function retryMySyncLookup(): Promise<SyncStatusResult> {
+    const session = await getSession();
+    if (!session?.id) return { error: 'You must be signed in.' };
+    try {
+        const status = await apiFetch<SrcUserSyncStatus>(`${ME_SYNC}/lookup`, {
+            sessionId: session.id,
+            method: 'POST',
+        });
+        return { status };
+    } catch (e) {
+        return toError(e);
+    }
+}
+
 /** Toggle the automatic sync of the caller's speedrun.com runs. */
 export async function setMySyncOptOut(
     optOut: boolean,
