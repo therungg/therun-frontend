@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { CheckCircle, Dash } from 'react-bootstrap-icons';
+import { toast } from 'react-toastify';
 import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
@@ -189,6 +190,7 @@ export function ModQueuePane({
             if ('error' in res) {
                 setError(res.error);
                 setRows(null);
+                setOpenRunId(null);
                 setTotalItems(0);
                 return;
             }
@@ -232,7 +234,7 @@ export function ModQueuePane({
     const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
     const openRow = (row: ModQueueItem) => {
         if (!rowBoard(row, boardCategories)) {
-            setError(
+            toast.error(
                 "This run's board isn't in this console's list. Open it from the run page.",
             );
             return;

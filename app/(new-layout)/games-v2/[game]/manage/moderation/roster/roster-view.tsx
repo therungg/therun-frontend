@@ -51,6 +51,12 @@ interface Props {
     initialCategoryId: number | null;
 }
 
+const isKnownStatus = (
+    s: string,
+): s is LeaderboardEntry['verificationStatus'] =>
+    s === 'pending' || s === 'verified' || s === 'rejected';
+
+/** Status falls back to pending; the subject says when that is a guess. */
 function rowEntry(
     row: LeaderboardRosterRow,
     board: SheetBoard,
@@ -70,8 +76,7 @@ function rowEntry(
         gameTime: row.gameTime,
         runDate: row.endedAt,
         vodUrl: row.vodUrl,
-        verificationStatus:
-            status === 'verified' || status === 'rejected' ? status : 'pending',
+        verificationStatus: isKnownStatus(status) ? status : 'pending',
         variables: null,
     };
 }
@@ -205,6 +210,7 @@ export function RosterView({
             if ('error' in res) {
                 setError(res.error);
                 setRows(null);
+                setOpenRunId(null);
                 return;
             }
             setRows(res.rows);
@@ -679,6 +685,7 @@ export function RosterView({
                         kind: 'run',
                         entry: rowEntry(openRow, openBoard),
                         board: openBoard,
+                        statusKnown: isKnownStatus(openRow.verificationStatus),
                     }}
                     context={{
                         gameSlug,

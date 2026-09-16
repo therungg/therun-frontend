@@ -90,25 +90,35 @@ export default async function GameRunManagePage({ params }: Props) {
                 rank={rank}
                 provenance={provenance}
                 history={history}
-                context={{
-                    gameSlug: game.name,
-                    gameId: game.id,
-                    gameDisplay: game.display,
-                    categories,
-                    variables,
-                    canSiteBan: defineAbilityFor(session).can(
-                        'moderate',
-                        'admins',
-                    ),
-                }}
-                board={{
-                    categoryId: run.categoryId,
-                    categorySlug: runCategory?.name ?? '',
-                    categoryDisplay: run.categoryDisplay,
-                    subcategoryKey: run.subcategoryKey ?? '',
-                    primaryTiming:
-                        runCategory?.primaryTiming === 'gt' ? 'gt' : 'rt',
-                }}
+                // A run whose board doesn't resolve gets no panel: its verbs
+                // need the board.
+                panel={
+                    runCategory
+                        ? {
+                              context: {
+                                  gameSlug: game.name,
+                                  gameId: game.id,
+                                  gameDisplay: game.display,
+                                  categories,
+                                  variables,
+                                  canSiteBan: defineAbilityFor(session).can(
+                                      'moderate',
+                                      'admins',
+                                  ),
+                              },
+                              board: {
+                                  categoryId: run.categoryId,
+                                  categorySlug: runCategory.name,
+                                  categoryDisplay: run.categoryDisplay,
+                                  subcategoryKey: run.subcategoryKey ?? '',
+                                  primaryTiming:
+                                      runCategory.primaryTiming === 'gt'
+                                          ? 'gt'
+                                          : 'rt',
+                              },
+                          }
+                        : null
+                }
             />
         </SubrouteChrome>
     );

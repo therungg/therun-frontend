@@ -855,6 +855,7 @@ export function WorklistPane({
                     }}
                     mount="modal"
                     initialVerb="approve"
+                    initialVerbReason="Accepted without waiting for the runner"
                     onClose={() => setWaitingRunId(null)}
                     onMutated={load}
                 />

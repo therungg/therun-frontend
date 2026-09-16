@@ -24,8 +24,8 @@ interface Props {
     rank: number;
     provenance: RunProvenance | null;
     history: HistoryEvent[];
-    context: SheetContext;
-    board: SheetBoard;
+    /** Null when the run's board doesn't resolve. */
+    panel: { context: SheetContext; board: SheetBoard } | null;
 }
 
 export function ManageRunPage({
@@ -34,8 +34,7 @@ export function ManageRunPage({
     rank,
     provenance,
     history,
-    context,
-    board,
+    panel,
 }: Props) {
     return (
         <div>
@@ -88,13 +87,15 @@ export function ManageRunPage({
                 </small>
             </div>
 
-            <RunPageMount
-                run={run}
-                rank={rank}
-                provenance={provenance}
-                context={context}
-                board={board}
-            />
+            {panel ? (
+                <RunPageMount
+                    run={run}
+                    rank={rank}
+                    provenance={provenance}
+                    context={panel.context}
+                    board={panel.board}
+                />
+            ) : null}
 
             <div className="mb-3">
                 <ModProvenancePanel

@@ -165,7 +165,13 @@ function itemBoard(
     };
 }
 
-/** An attention item as a board row; a self-claim is a manual time. */
+const isKnownStatus = (
+    s: string | null,
+): s is LeaderboardEntry['verificationStatus'] =>
+    s === 'pending' || s === 'verified' || s === 'rejected';
+
+/** An attention item as a board row; a self-claim is a manual time. Status
+ * falls back to pending; the subject says when that is a guess. */
 function itemEntry(item: AttentionItem, board: SheetBoard): LeaderboardEntry {
     const status = item.verificationStatus;
     return {
@@ -184,8 +190,7 @@ function itemEntry(item: AttentionItem, board: SheetBoard): LeaderboardEntry {
         gameTime: item.gameTimeMs,
         runDate: null,
         vodUrl: item.vodUrl,
-        verificationStatus:
-            status === 'verified' || status === 'rejected' ? status : 'pending',
+        verificationStatus: isKnownStatus(status) ? status : 'pending',
         variables: null,
     };
 }
@@ -358,6 +363,11 @@ export function NeedsAttention({
             kind: 'run',
             entry: itemEntry(modalItem, modalBoard),
             board: modalBoard,
+            // A self-claim is pending by definition; a run's status may be
+            // missing from the attention payload.
+            statusKnown:
+                modalItem.runId == null ||
+                isKnownStatus(modalItem.verificationStatus),
         };
     }
 
