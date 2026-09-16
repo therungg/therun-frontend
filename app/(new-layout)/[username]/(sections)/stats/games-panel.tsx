@@ -26,7 +26,7 @@ export function GamesPanel({
     username: string;
 }) {
     return (
-        <div className={`${styles.games} ${styles.gameList}`}>
+        <div className={`${styles.games} ${ui.panelList}`}>
             {games.map((game, i) => (
                 <div key={game.gameId} className={ui.panel}>
                     <ProfileGroup
@@ -44,7 +44,7 @@ export function GamesPanel({
                         }
                     >
                         <div
-                            className={`${ui.colHead} ${styles.gameColHead}`}
+                            className={`${ui.colHead} ${ui.groupColHead}`}
                             aria-hidden
                         >
                             <span>Category</span>

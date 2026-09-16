@@ -101,19 +101,7 @@ export const UserRaceProfile = ({
             </ProfileBlock>
             {categoryStatsMap.length > 0 ? (
                 <ProfileBlock title="By game" note="Most time raced first">
-                    <div className={`${ui.panel} ${styles.byGame}`}>
-                        <div className={ui.colHead} aria-hidden>
-                            <span>Category</span>
-                            <span className={ui.end}>Races</span>
-                            <span className={`${ui.end} ${ui.optional}`}>
-                                Finished
-                            </span>
-                            <span className={`${ui.end} ${ui.optional}`}>
-                                Time raced
-                            </span>
-                            <span className={ui.end}>Rating</span>
-                            <span className={ui.end}>Best time</span>
-                        </div>
+                    <div className={`${styles.byGame} ${ui.panelList}`}>
                         {categoryStatsMap.map((cats, i) => {
                             const game = splitName(cats[0]).game;
                             const races = cats.reduce(
@@ -121,23 +109,54 @@ export const UserRaceProfile = ({
                                 0,
                             );
                             return (
-                                <ProfileGroup
-                                    key={game}
-                                    title={game}
-                                    imageUrl={
-                                        cats[0].image &&
-                                        cats[0].image !== 'noimage'
-                                            ? cats[0].image
-                                            : null
-                                    }
-                                    meta={plural(races, 'race', 'races')}
-                                    defaultOpen={i < 5}
-                                    collapsible={categoryStatsMap.length > 1}
-                                >
-                                    {cats.map((c) => (
-                                        <CategoryRow key={c.value} stat={c} />
-                                    ))}
-                                </ProfileGroup>
+                                <div key={game} className={ui.panel}>
+                                    <ProfileGroup
+                                        title={game}
+                                        imageUrl={
+                                            cats[0].image &&
+                                            cats[0].image !== 'noimage'
+                                                ? cats[0].image
+                                                : null
+                                        }
+                                        meta={plural(races, 'race', 'races')}
+                                        defaultOpen={i < 5}
+                                        collapsible={
+                                            categoryStatsMap.length > 1
+                                        }
+                                    >
+                                        <div
+                                            className={`${ui.colHead} ${ui.groupColHead}`}
+                                            aria-hidden
+                                        >
+                                            <span>Category</span>
+                                            <span className={ui.end}>
+                                                Races
+                                            </span>
+                                            <span
+                                                className={`${ui.end} ${ui.optional}`}
+                                            >
+                                                Finished
+                                            </span>
+                                            <span
+                                                className={`${ui.end} ${ui.optional}`}
+                                            >
+                                                Time raced
+                                            </span>
+                                            <span className={ui.end}>
+                                                Rating
+                                            </span>
+                                            <span className={ui.end}>
+                                                Best time
+                                            </span>
+                                        </div>
+                                        {cats.map((c) => (
+                                            <CategoryRow
+                                                key={c.value}
+                                                stat={c}
+                                            />
+                                        ))}
+                                    </ProfileGroup>
+                                </div>
                             );
                         })}
                     </div>

@@ -305,6 +305,18 @@ $row-line: color-mix(in srgb, #{$border} 70%, transparent);
     min-width: 0;
 }
 
+// One panel per game, as on the Leaderboards tab.
+.panelList {
+    display: grid;
+    gap: dt.$spacing-md;
+    min-width: 0;
+}
+
+// A column header under a group's head, inside that group's own panel.
+.groupColHead {
+    border-top: 1px solid $border;
+}
+
 .card {
     @include board.board-surface(dt.$spacing-xl);
     display: grid;

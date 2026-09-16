@@ -9,17 +9,6 @@
     }
 }
 
-// One panel per game, as on the Leaderboards tab.
-.gameList {
-    display: grid;
-    gap: dt.$spacing-md;
-    min-width: 0;
-}
-
-.gameColHead {
-    border-top: 1px solid
-        var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
-}
 
 // Six game tones, then a neutral for everything else. Muted enough to sit
 // on the panel without shouting, distinct enough to match the legend.
