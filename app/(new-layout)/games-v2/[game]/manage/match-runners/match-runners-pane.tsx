@@ -112,14 +112,16 @@ export function MatchRunnersPane({ gameSlug }: { gameSlug: string }) {
                 return;
             }
             setLoadError(null);
-            setImported(res.list.imported);
+            // A const, so the narrowed list reaches the updater below.
+            const { list } = res;
+            setImported(list.imported);
             setRows((current) => {
                 // Rows already on screen keep what the moderator ticked,
                 // picked and typed; only new rows take the defaults.
                 const prev = new Map(
                     (current ?? []).map((r) => [r.row.userId, r]),
                 );
-                return res.list.rows.map((row) =>
+                return list.rows.map((row) =>
                     initialRow(row, prev.get(row.userId)),
                 );
             });
