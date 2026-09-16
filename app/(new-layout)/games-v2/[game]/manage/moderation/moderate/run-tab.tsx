@@ -15,7 +15,6 @@ import type {
     HistoryEvent,
     RejectionReasonKey,
 } from '../../../../../../../types/moderation.types';
-import { isTriageInert } from '../attention/triage-keyboard';
 import { previewManualTimeAction } from '../shared/actions/manual-times.action';
 import { ScopeCards } from '../shared/run-action-parts';
 import { fireUndoToast } from '../shared/undo-toast';
@@ -32,6 +31,7 @@ import type {
 } from './moderate-panel';
 import styles from './moderate-panel.module.scss';
 import { useMoveTarget } from './move-target';
+import { usePanelVerbKeys, usePanelVerbs } from './panel-verbs';
 import {
     RunIdentity,
     RunLeft,
@@ -57,13 +57,7 @@ import { trackRecord } from './runner-columns';
 import type { RunSheetSummary } from './sheet-types';
 import type { SheetContext, SheetSubject } from './subject';
 import { VerbBar } from './verb-bar';
-import {
-    type ModerateVerb,
-    RUN_BAR,
-    RUN_MORE,
-    VERB_LABEL,
-    verbFromKey,
-} from './verbs';
+import { type ModerateVerb, RUN_BAR, RUN_MORE, VERB_LABEL } from './verbs';
 
 export interface RunTabProps {
     subject: Extract<SheetSubject, { kind: 'run' }>;
@@ -182,19 +176,6 @@ export function RunTab({
     const isEnabled = (verb: ModerateVerb) =>
         availability.some((a) => a.verb === verb && a.enabled);
 
-    // ---- Busy -------------------------------------------------------------------
-    const [busy, setBusyState] = useState(false);
-    const busyRef = useRef(false);
-    const setBusy = useCallback(
-        (b: boolean) => {
-            busyRef.current = b;
-            setBusyState(b);
-            onBusyChange(b);
-        },
-        [onBusyChange],
-    );
-    useEffect(() => () => onBusyChange(false), [onBusyChange]);
-
     // ---- Board words -----------------------------------------------------------
     const category = context.categories.find((c) => c.id === board.categoryId);
     const sub = subcategoryLabel(
@@ -212,34 +193,15 @@ export function RunTab({
     const [timePreviewRank, setTimePreviewRank] = useState<number | null>(null);
     const move = useMoveTarget(board, context);
     const [hideScope, setHideScope] = useState<HideScope>('run');
-    const openerRef = useRef<ModerateVerb | null>(null);
-    const footerRef = useRef<HTMLDivElement>(null);
-    const rootRef = useRef<HTMLDivElement>(null);
-
-    const back = useCallback(() => {
-        if (busyRef.current) return;
-        setDraft(null);
-    }, []);
 
     const formOpen = draft !== null;
-    useEffect(() => {
-        if (!formOpen) return;
-        onFormBack(back);
-        return () => onFormBack(null);
-    }, [formOpen, onFormBack, back]);
-
-    // After Back or a confirm, focus returns to the verb that opened the form
-    // (or to More, when the verb lives in the menu).
-    useEffect(() => {
-        if (formOpen || !openerRef.current) return;
-        const verb = openerRef.current;
-        openerRef.current = null;
-        const root = footerRef.current;
-        const target =
-            root?.querySelector<HTMLElement>(`[data-verb="${verb}"]`) ??
-            root?.querySelector<HTMLElement>('[data-more]');
-        target?.focus();
-    }, [formOpen]);
+    const { busy, busyRef, setBusy, back, openerRef, footerRef, rootRef } =
+        usePanelVerbs({
+            formOpen,
+            closeForm: () => setDraft(null),
+            onFormBack,
+            onBusyChange,
+        });
 
     // Set time: where the new time lands, once one is typed.
     useEffect(() => {
@@ -455,40 +417,7 @@ export function RunTab({
     };
 
     // ---- Keys ----------------------------------------------------------------------------
-    const handleRef = useRef(handle);
-    const formOpenRef = useRef(formOpen);
-    useEffect(() => {
-        handleRef.current = handle;
-        formOpenRef.current = formOpen;
-    });
-    useEffect(() => {
-        const onKeyDown = (e: KeyboardEvent) => {
-            if (e.defaultPrevented || e.repeat) return;
-            if (e.metaKey || e.ctrlKey || e.altKey) return;
-            const active = document.activeElement as HTMLElement | null;
-            if (
-                isTriageInert({
-                    activeTag: active?.tagName ?? null,
-                    isContentEditable: active?.isContentEditable ?? false,
-                    dialogOpen: formOpenRef.current || busyRef.current,
-                })
-            )
-                return;
-            // Inline on a page, keys act only while focus is in the panel.
-            const panel = rootRef.current?.closest('[data-mount]');
-            if (
-                panel?.getAttribute('data-mount') !== 'modal' &&
-                !panel?.contains(active)
-            )
-                return;
-            const verb = verbFromKey(e.key);
-            if (!verb) return;
-            e.preventDefault();
-            handleRef.current(verb);
-        };
-        document.addEventListener('keydown', onKeyDown);
-        return () => document.removeEventListener('keydown', onKeyDown);
-    }, []);
+    usePanelVerbKeys({ handle, formOpen, busyRef, rootRef });
 
     // ---- Layout ----------------------------------------------------------------------------
     const runPage = runId != null ? `/games-v2/${gameSlug}/run/${runId}` : null;

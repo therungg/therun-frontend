@@ -18,7 +18,6 @@ import {
     SubcategoryBands,
     subcategoryVariablesFor,
 } from '../../boards/subcategory-bands';
-import { isTriageInert } from '../attention/triage-keyboard';
 import type { RunnerCombo } from '../runner/[userId]/runner-model';
 import { defaultBanScopeForCategories } from '../shared/action-model';
 import { previewManualTimeAction } from '../shared/actions/manual-times.action';
@@ -34,6 +33,7 @@ import type {
     PanelLayout,
 } from './moderate-panel';
 import styles from './moderate-panel.module.scss';
+import { usePanelVerbKeys, usePanelVerbs } from './panel-verbs';
 import {
     comboRunSubject,
     RunnerIdentity,
@@ -64,7 +64,6 @@ import {
     RUNNER_BAR,
     RUNNER_MORE,
     runnerVerbs,
-    verbFromKey,
 } from './verbs';
 
 export interface RunnerTabProps {
@@ -154,19 +153,6 @@ export function RunnerTab({
     const isEnabled = (verb: ModerateVerb) =>
         availability.some((a) => a.verb === verb && a.enabled);
 
-    // ---- Busy ------------------------------------------------------------------
-    const [busy, setBusyState] = useState(false);
-    const busyRef = useRef(false);
-    const setBusy = useCallback(
-        (b: boolean) => {
-            busyRef.current = b;
-            setBusyState(b);
-            onBusyChange(b);
-        },
-        [onBusyChange],
-    );
-    useEffect(() => () => onBusyChange(false), [onBusyChange]);
-
     // ---- Heavy form --------------------------------------------------------------
     const [verb, setVerb] = useState<HeavyRunnerVerb | null>(null);
     const initialScope: RunnerScope =
@@ -175,9 +161,6 @@ export function RunnerTab({
             : defaultBanScopeForCategories([runner.categoryId]);
     const [scope, setScope] = useState<RunnerScope>(initialScope);
     const [banPreview, setBanPreview] = useState<BanPreview | null>(null);
-    const openerRef = useRef<ModerateVerb | null>(null);
-    const footerRef = useRef<HTMLDivElement>(null);
-    const rootRef = useRef<HTMLDivElement>(null);
 
     // Add run
     const addTargets = useMemo(
@@ -240,29 +223,14 @@ export function RunnerTab({
     const addBlocked =
         !addCategory || addTimeMs == null || !(addTimes?.ok ?? false);
 
-    const back = useCallback(() => {
-        if (busyRef.current) return;
-        setVerb(null);
-    }, []);
-
     const formOpen = verb !== null;
-    useEffect(() => {
-        if (!formOpen) return;
-        onFormBack(back);
-        return () => onFormBack(null);
-    }, [formOpen, onFormBack, back]);
-
-    // After Back or a confirm, focus returns to the verb that opened the form.
-    useEffect(() => {
-        if (formOpen || !openerRef.current) return;
-        const opener = openerRef.current;
-        openerRef.current = null;
-        const root = footerRef.current;
-        const target =
-            root?.querySelector<HTMLElement>(`[data-verb="${opener}"]`) ??
-            root?.querySelector<HTMLElement>('[data-more]');
-        target?.focus();
-    }, [formOpen]);
+    const { busy, busyRef, setBusy, back, openerRef, footerRef, rootRef } =
+        usePanelVerbs({
+            formOpen,
+            closeForm: () => setVerb(null),
+            onFormBack,
+            onBusyChange,
+        });
 
     // Ban: which boards the runner comes off, read again when the scope changes.
     useEffect(() => {
@@ -542,40 +510,7 @@ export function RunnerTab({
     };
 
     // ---- Keys --------------------------------------------------------------------
-    const handleRef = useRef(handle);
-    const formOpenRef = useRef(formOpen);
-    useEffect(() => {
-        handleRef.current = handle;
-        formOpenRef.current = formOpen;
-    });
-    useEffect(() => {
-        const onKeyDown = (e: KeyboardEvent) => {
-            if (e.defaultPrevented || e.repeat) return;
-            if (e.metaKey || e.ctrlKey || e.altKey) return;
-            const active = document.activeElement as HTMLElement | null;
-            if (
-                isTriageInert({
-                    activeTag: active?.tagName ?? null,
-                    isContentEditable: active?.isContentEditable ?? false,
-                    dialogOpen: formOpenRef.current || busyRef.current,
-                })
-            )
-                return;
-            // Inline on a page, keys act only while focus is in the panel.
-            const panel = rootRef.current?.closest('[data-mount]');
-            if (
-                panel?.getAttribute('data-mount') !== 'modal' &&
-                !panel?.contains(active)
-            )
-                return;
-            const v = verbFromKey(e.key);
-            if (!v) return;
-            e.preventDefault();
-            handleRef.current(v);
-        };
-        document.addEventListener('keydown', onKeyDown);
-        return () => document.removeEventListener('keydown', onKeyDown);
-    }, []);
+    usePanelVerbKeys({ handle, formOpen, busyRef, rootRef });
 
     // ---- Layout --------------------------------------------------------------------
     const openRun = (combo: RunnerCombo) => {
