@@ -5,6 +5,10 @@ import { resolveGame } from '~src/lib/games-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { ModError } from '~src/lib/moderation/mod-fetch';
 import {
+    revalidateBoardsForRuleScope,
+    revalidateRunDetails,
+} from '~src/lib/moderation/revalidate-boards';
+import {
     getWorklist,
     getWorklistDigest,
     nudgeRuns,
@@ -21,7 +25,7 @@ type Fail = { error: string };
 
 async function requireMod(
     gameSlug: string,
-): Promise<{ sessionId: string; gameId: number } | Fail> {
+): Promise<{ sessionId: string; gameId: number; gameName: string } | Fail> {
     const session = await getSession();
     if (!session?.username || !session.id) return { error: 'Not signed in.' };
     const game = await resolveGame(gameSlug);
@@ -29,7 +33,7 @@ async function requireMod(
     if (!canModerateGame(session, game.name)) {
         return { error: 'Not authorized to moderate this game.' };
     }
-    return { sessionId: session.id, gameId: game.id };
+    return { sessionId: session.id, gameId: game.id, gameName: game.name };
 }
 
 function fail(e: unknown, fallback: string): Fail {
@@ -76,11 +80,12 @@ export async function requestVideoAction(
     const g = await requireMod(gameSlug);
     if ('error' in g) return g;
     try {
-        return {
-            ok: true,
-            count: (await requestVideo(g.sessionId, g.gameId, runIds))
-                .requested,
-        };
+        const { requested } = await requestVideo(g.sessionId, g.gameId, runIds);
+        // The run leaves the board until a video lands. The response names no
+        // boards, so every board of the game is cleared.
+        await revalidateBoardsForRuleScope(g.gameId, g.gameName, null);
+        revalidateRunDetails(runIds);
+        return { ok: true, count: requested };
     } catch (e) {
         return fail(e, 'Failed to ask for a video.');
     }
@@ -109,10 +114,13 @@ export async function waiveVideoAction(
     const g = await requireMod(gameSlug);
     if ('error' in g) return g;
     try {
-        return {
-            ok: true,
-            count: (await waiveVideo(g.sessionId, g.gameId, runIds)).waived,
-        };
+        const { waived } = await waiveVideo(g.sessionId, g.gameId, runIds);
+        // The run is back on the board as pending.
+        if (waived > 0) {
+            await revalidateBoardsForRuleScope(g.gameId, g.gameName, null);
+            revalidateRunDetails(runIds);
+        }
+        return { ok: true, count: waived };
     } catch (e) {
         return fail(e, 'Failed to accept without a video.');
     }

@@ -236,6 +236,10 @@ export async function confirmRunVerb(
     /** Site admins can lift what Hide identity creates. */
     canLift = false,
 ): Promise<ConfirmResult> {
+    const boardRef: AffectedLeaderboard = {
+        categoryId: board.categoryId,
+        subcategoryKey: board.subcategoryKey,
+    };
     switch (input.verb) {
         case 'decline': {
             if (!run.isManual) {
@@ -281,10 +285,12 @@ export async function confirmRunVerb(
             if (run.isManual) {
                 const id = run.manualTimeId;
                 if (id == null) return NO_MANUAL;
-                const res = await updateManualTimeAction(gameSlug, id, {
-                    reason: input.reason,
-                    timeMs,
-                });
+                const res = await updateManualTimeAction(
+                    gameSlug,
+                    id,
+                    { reason: input.reason, timeMs },
+                    boardRef,
+                );
                 if ('error' in res) return res;
                 const old = run.timeMs;
                 return {
@@ -294,10 +300,15 @@ export async function confirmRunVerb(
                             ? null
                             : () =>
                                   unwrap(
-                                      updateManualTimeAction(gameSlug, id, {
-                                          reason: 'Undo of set time',
-                                          timeMs: old,
-                                      }),
+                                      updateManualTimeAction(
+                                          gameSlug,
+                                          id,
+                                          {
+                                              reason: 'Undo of set time',
+                                              timeMs: old,
+                                          },
+                                          boardRef,
+                                      ),
                                   ),
                 };
             }
@@ -368,7 +379,7 @@ export async function confirmRunVerb(
                 gameSlug,
                 target,
                 input.patch,
-                { applyRetimeMs: newMs, reason: input.reason },
+                { applyRetimeMs: newMs, reason: input.reason, board: boardRef },
             );
             if ('error' in res) return res;
             return { ok: true, undo: null };

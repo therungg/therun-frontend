@@ -14,10 +14,12 @@ import {
 import { ModError } from '~src/lib/moderation/mod-fetch';
 import {
     revalidateAffectedBoards,
+    revalidateBoardsForRuleScope,
     revalidateRunDetails,
 } from '~src/lib/moderation/revalidate-boards';
 import type { VodReviewPatch } from '../../../../../../../../types/leaderboards.types';
 import type {
+    AffectedLeaderboard,
     CreateManualTimeResult,
     ManualTimeFilter,
     ManualTimePreviewInput,
@@ -117,11 +119,18 @@ export async function updateManualTimeAction(
         evidenceUrl?: string | null;
         runDate?: string | null;
     },
+    /** The manual time's board. Without it every board of the game is cleared. */
+    board?: AffectedLeaderboard,
 ): Promise<{ ok: true } | Fail> {
     const g = await requireMod(gameSlug);
     if ('error' in g) return g;
     try {
         await updateManualTime(g.sessionId, g.gameId, id, input);
+        if (board) {
+            await revalidateAffectedBoards(g.gameId, g.gameName, [board]);
+        } else {
+            await revalidateBoardsForRuleScope(g.gameId, g.gameName, null);
+        }
         revalidateRunDetails([], [id]);
         return { ok: true };
     } catch (e) {

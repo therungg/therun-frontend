@@ -5,7 +5,11 @@ import { resolveGame } from '~src/lib/games-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { updateManualTime } from '~src/lib/moderation/manual-times';
 import { ModError } from '~src/lib/moderation/mod-fetch';
-import { revalidateRunDetails } from '~src/lib/moderation/revalidate-boards';
+import {
+    revalidateAffectedBoards,
+    revalidateBoardsForRuleScope,
+    revalidateRunDetails,
+} from '~src/lib/moderation/revalidate-boards';
 import { editRun } from '~src/lib/moderation/run-edit';
 import {
     getManualTimeByIdAsViewer,
@@ -16,6 +20,7 @@ import type {
     VodReview,
     VodReviewPatch,
 } from '../../../../../../types/leaderboards.types';
+import type { AffectedLeaderboard } from '../../../../../../types/moderation.types';
 
 type Fail = { error: string };
 
@@ -81,8 +86,16 @@ export async function saveVodReviewAction(
     gameSlug: string,
     target: VodReviewTarget,
     patch: VodReviewPatch | null,
-    /** `reason`: the moderator's words, kept ahead of the frame line. */
-    opts: { applyRetimeMs?: number; reason?: string } = {},
+    /**
+     * `reason`: the moderator's words, kept ahead of the frame line.
+     * `board`: the entry's board, cleared after a retime; without it every
+     * board of the game is.
+     */
+    opts: {
+        applyRetimeMs?: number;
+        reason?: string;
+        board?: AffectedLeaderboard;
+    } = {},
 ): Promise<{ ok: true } | Fail> {
     const session = await getSession();
     if (!session?.username || !session.id) return { error: 'Not signed in.' };
@@ -127,6 +140,14 @@ export async function saveVodReviewAction(
     } catch (e) {
         if (e instanceof ModError) return { error: e.message };
         return { error: 'Could not save the review. Please try again.' };
+    }
+    // A retime changes the time on the board; markers alone do not.
+    if (opts.applyRetimeMs != null) {
+        if (opts.board) {
+            await revalidateAffectedBoards(game.id, game.name, [opts.board]);
+        } else {
+            await revalidateBoardsForRuleScope(game.id, game.name, null);
+        }
     }
     return { ok: true };
 }

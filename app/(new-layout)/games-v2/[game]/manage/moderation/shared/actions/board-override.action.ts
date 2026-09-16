@@ -5,7 +5,10 @@ import { resolveGame } from '~src/lib/games-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { setBoardOverride } from '~src/lib/moderation/curation';
 import { ModError } from '~src/lib/moderation/mod-fetch';
-import { revalidateAffectedBoards } from '~src/lib/moderation/revalidate-boards';
+import {
+    revalidateAffectedBoards,
+    revalidateRunDetails,
+} from '~src/lib/moderation/revalidate-boards';
 import type { AffectedLeaderboard } from '../../../../../../../../types/moderation.types';
 
 /**
@@ -41,6 +44,7 @@ export async function moveRunAction(
     try {
         await setBoardOverride(session.id, game.id, runId, target, reason);
         await revalidateAffectedBoards(game.id, game.name, affected);
+        revalidateRunDetails([runId]);
         return { ok: true };
     } catch (e) {
         if (e instanceof ModError) return { error: e.message };
