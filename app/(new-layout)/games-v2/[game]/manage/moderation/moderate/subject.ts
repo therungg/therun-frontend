@@ -12,6 +12,14 @@ export interface SheetBoard {
     primaryTiming: 'rt' | 'gt';
 }
 
+/** Whether a raw status string is one `LeaderboardEntry['verificationStatus']`
+ *  recognizes — a launcher's source data (attention items, roster rows) can
+ *  carry other values (or none), which callers fall back to 'pending' for. */
+export const isKnownStatus = (
+    s: string | null | undefined,
+): s is LeaderboardEntry['verificationStatus'] =>
+    s === 'pending' || s === 'verified' || s === 'rejected';
+
 export type SheetSubject =
     | {
           kind: 'run';

@@ -117,6 +117,7 @@ export function RunTab({
     // The summary is the truth for status, removed, marked and videos. It is
     // read again after every mutation and every undo.
     const [summary, setSummary] = useState<RunSheetSummary | null>(null);
+    const [summaryFailed, setSummaryFailed] = useState(false);
     const [fullHistory, setFullHistory] = useState<HistoryEvent[] | null>(null);
     const [record, setRecord] = useState<TrackRecord | null>(null);
     const loadSeq = useRef(0);
@@ -130,8 +131,10 @@ export function RunTab({
         if (seq !== loadSeq.current) return;
         if ('error' in res) {
             toast.error(res.error);
+            setSummaryFailed(true);
             return;
         }
+        setSummaryFailed(false);
         setSummary(res.summary);
         setFullHistory(null);
     }, [gameSlug, runId]);
@@ -186,6 +189,7 @@ export function RunTab({
     const availability = runTabVerbs(verbState, {
         summaryLoaded: summary !== null,
         statusKnown: subject.statusKnown,
+        summaryFailed,
     });
     const isEnabled = (verb: ModerateVerb) =>
         availability.some((a) => a.verb === verb && a.enabled);
@@ -503,7 +507,6 @@ export function RunTab({
                 url={vodUrl}
                 target={reviewTarget}
                 gameSlug={gameSlug}
-                onSaved={afterMutation}
                 onChange={setReviewPatch}
                 onLoaded={setReviewInfo}
                 hideActions

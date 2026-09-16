@@ -25,7 +25,7 @@ export function ReviewVodPanel({
     url: string;
     target: VodReviewTarget;
     gameSlug: string;
-    onSaved: () => void;
+    onSaved?: () => void;
     /** The submitted real time and the entry's clock, once the review loads. */
     onLoaded?: (info: {
         realTimeMs: number | null;

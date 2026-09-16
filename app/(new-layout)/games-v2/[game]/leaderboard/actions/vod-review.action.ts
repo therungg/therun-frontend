@@ -1,6 +1,5 @@
 'use server';
 
-import { revalidateTag } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
 import { resolveGame } from '~src/lib/games-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
@@ -97,7 +96,7 @@ export async function saveVodReviewAction(
             ? CLEAR_REASON
             : opts.applyRetimeMs != null
               ? opts.reason
-                  ? `${opts.reason} ${retimeReason(patch)}`
+                  ? `${opts.reason}${opts.reason.trimEnd().endsWith('.') ? '' : '.'} ${retimeReason(patch)}`
                   : retimeReason(patch)
               : SAVE_REASON;
     try {
@@ -123,7 +122,7 @@ export async function saveVodReviewAction(
                     reason,
                 },
             );
-            revalidateTag(`manual-time:${target.manualTimeId}`, 'minutes');
+            revalidateRunDetails([], [target.manualTimeId]);
         }
     } catch (e) {
         if (e instanceof ModError) return { error: e.message };

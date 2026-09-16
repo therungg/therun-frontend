@@ -30,7 +30,11 @@ import type {
 import type { FlagSeverity } from '../../../../../../../types/moderation.types';
 import { formatSubcategoryKey } from '../../../labels';
 import { ModeratePanel } from '../moderate/moderate-panel';
-import type { SheetBoard, SheetSubject } from '../moderate/subject';
+import {
+    isKnownStatus,
+    type SheetBoard,
+    type SheetSubject,
+} from '../moderate/subject';
 import {
     type AttentionItem,
     type AttentionSource,
@@ -164,11 +168,6 @@ function itemBoard(
         primaryTiming: category.primaryTiming === 'gt' ? 'gt' : 'rt',
     };
 }
-
-const isKnownStatus = (
-    s: string | null,
-): s is LeaderboardEntry['verificationStatus'] =>
-    s === 'pending' || s === 'verified' || s === 'rejected';
 
 /** An attention item as a board row; a self-claim is a manual time. Status
  * falls back to pending; the subject says when that is a guess. */

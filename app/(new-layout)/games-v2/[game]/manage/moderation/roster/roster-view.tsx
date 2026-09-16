@@ -27,7 +27,7 @@ import {
 } from '../../../run-view/run-badges';
 import { BackLink } from '../../../shared/back-link';
 import { ModeratePanel } from '../moderate/moderate-panel';
-import type { SheetBoard } from '../moderate/subject';
+import { isKnownStatus, type SheetBoard } from '../moderate/subject';
 import { loadRosterAction } from './actions/load-roster.action';
 import {
     nextRosterSort,
@@ -50,11 +50,6 @@ interface Props {
     canSiteBan: boolean;
     initialCategoryId: number | null;
 }
-
-const isKnownStatus = (
-    s: string,
-): s is LeaderboardEntry['verificationStatus'] =>
-    s === 'pending' || s === 'verified' || s === 'rejected';
 
 /** Status falls back to pending; the subject says when that is a guess. */
 function rowEntry(

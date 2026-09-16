@@ -62,7 +62,13 @@ const NEEDS_RUN: ReadonlySet<ModerateVerb> = new Set([
  */
 export function runTabVerbs(
     state: RunVerbState,
-    opts: { summaryLoaded: boolean; statusKnown?: boolean },
+    opts: {
+        summaryLoaded: boolean;
+        statusKnown?: boolean;
+        /** The summary read failed and there is nothing in flight to
+         *  retry it — 'Loading' would be a lie forever. */
+        summaryFailed?: boolean;
+    },
 ): VerbAvailability[] {
     const off = (verb: ModerateVerb, reason: string): VerbAvailability => ({
         verb,
@@ -80,7 +86,10 @@ export function runTabVerbs(
                 (opts.statusKnown === false &&
                     (a.verb === 'approve' || a.verb === 'decline')))
         ) {
-            return off(a.verb, 'Loading');
+            return off(
+                a.verb,
+                opts.summaryFailed ? "Couldn't load, reopen" : 'Loading',
+            );
         }
         if (a.verb === 'set_time' && state.status === 'pending') {
             return off(a.verb, 'Approve or decline first');
