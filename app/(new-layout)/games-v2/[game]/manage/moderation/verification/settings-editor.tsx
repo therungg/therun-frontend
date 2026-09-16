@@ -159,6 +159,68 @@ export function SettingsEditor({
                 />
             </FormSection>
 
+            <FormSection title="What needs a video">
+                <SegmentedControl
+                    label="Video required for"
+                    value={form.videoRequire}
+                    options={[
+                        { value: 'nothing', label: 'Nothing' },
+                        { value: 'top_n', label: 'The top runs' },
+                        { value: 'under_time', label: 'Runs under a time' },
+                        { value: 'everything', label: 'Every run' },
+                    ]}
+                    onChange={(v) =>
+                        set('videoRequire', v as SettingsForm['videoRequire'])
+                    }
+                />
+                {form.videoRequire === 'top_n' && (
+                    <label className={styles.field}>
+                        <span className={styles.fieldLabel}>
+                            How many top runs
+                        </span>
+                        <input
+                            className="form-control form-control-sm"
+                            inputMode="numeric"
+                            value={form.videoTopN}
+                            onChange={(e) => set('videoTopN', e.target.value)}
+                        />
+                    </label>
+                )}
+                {form.videoRequire === 'under_time' && (
+                    <label className={styles.field}>
+                        <span className={styles.fieldLabel}>
+                            Under this time, in milliseconds
+                        </span>
+                        <input
+                            className="form-control form-control-sm"
+                            inputMode="numeric"
+                            value={form.videoTimeMs}
+                            onChange={(e) => set('videoTimeMs', e.target.value)}
+                        />
+                    </label>
+                )}
+                {form.videoRequire !== 'nothing' && (
+                    <SegmentedControl
+                        label="When a run has no video"
+                        hint="Asking the runner keeps the run off the board until they add one. The mod queue keeps it on the board while you look."
+                        value={form.videoOnMissing}
+                        options={[
+                            {
+                                value: 'hide',
+                                label: 'Ask the runner to submit it first',
+                            },
+                            { value: 'flag', label: 'Put it in the mod queue' },
+                        ]}
+                        onChange={(v) =>
+                            set(
+                                'videoOnMissing',
+                                v as SettingsForm['videoOnMissing'],
+                            )
+                        }
+                    />
+                )}
+            </FormSection>
+
             <FormSection
                 title="Auto-verification"
                 titleHint="When a run is submitted we can check whether it verifies itself: whether the splits agree with the run time and the clock, whether live timing matches, how far it beats the runner's own golds and previous PB, how many verified runs they already have here, and how high it lands. If turned off, every submission goes to the mod queue."
@@ -248,70 +310,6 @@ export function SettingsEditor({
                             onChange={(v) => set('liveRequired', v)}
                         />
                     </div>
-                )}
-            </FormSection>
-
-            <FormSection title="What needs a video">
-                <SegmentedControl
-                    label="Video required for"
-                    value={form.videoRequire}
-                    options={[
-                        { value: 'nothing', label: 'Nothing' },
-                        { value: 'top_n', label: 'The top runs' },
-                        { value: 'under_time', label: 'Runs under a time' },
-                        { value: 'everything', label: 'Every run' },
-                    ]}
-                    onChange={(v) =>
-                        set('videoRequire', v as SettingsForm['videoRequire'])
-                    }
-                />
-                {form.videoRequire === 'top_n' && (
-                    <label className={styles.field}>
-                        <span className={styles.fieldLabel}>
-                            How many top runs
-                        </span>
-                        <input
-                            className="form-control form-control-sm"
-                            inputMode="numeric"
-                            value={form.videoTopN}
-                            onChange={(e) => set('videoTopN', e.target.value)}
-                        />
-                    </label>
-                )}
-                {form.videoRequire === 'under_time' && (
-                    <label className={styles.field}>
-                        <span className={styles.fieldLabel}>
-                            Under this time, in milliseconds
-                        </span>
-                        <input
-                            className="form-control form-control-sm"
-                            inputMode="numeric"
-                            value={form.videoTimeMs}
-                            onChange={(e) => set('videoTimeMs', e.target.value)}
-                        />
-                    </label>
-                )}
-                {form.videoRequire !== 'nothing' && (
-                    <SegmentedControl
-                        label="When a run has no video"
-                        value={form.videoOnMissing}
-                        options={[
-                            {
-                                value: 'hide',
-                                label: 'Keep it off the board and ask the runner',
-                            },
-                            {
-                                value: 'flag',
-                                label: 'Keep it on the board and show it in the mod queue',
-                            },
-                        ]}
-                        onChange={(v) =>
-                            set(
-                                'videoOnMissing',
-                                v as SettingsForm['videoOnMissing'],
-                            )
-                        }
-                    />
                 )}
             </FormSection>
 
