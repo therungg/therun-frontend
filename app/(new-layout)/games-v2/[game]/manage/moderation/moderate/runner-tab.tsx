@@ -33,7 +33,7 @@ import type {
     PanelLayout,
 } from './moderate-panel';
 import styles from './moderate-panel.module.scss';
-import { usePanelVerbKeys, usePanelVerbs } from './panel-verbs';
+import { useInitialVerb, usePanelVerbKeys, usePanelVerbs } from './panel-verbs';
 import {
     comboRunSubject,
     RunnerIdentity,
@@ -79,6 +79,9 @@ export interface RunnerTabProps {
     onFormBack: FormBackHandler;
     onBusyChange: BusyHandler;
     render: (layout: PanelLayout) => ReactNode;
+    /** Acted on once when the runner has loaded; ignored if it does not apply. */
+    initialVerb?: ModerateVerb;
+    onInitialVerbUsed: () => void;
 }
 
 export function RunnerTab({
@@ -91,6 +94,8 @@ export function RunnerTab({
     onFormBack,
     onBusyChange,
     render,
+    initialVerb,
+    onInitialVerbUsed,
 }: RunnerTabProps) {
     const { gameSlug } = context;
     const category =
@@ -511,6 +516,12 @@ export function RunnerTab({
 
     // ---- Keys --------------------------------------------------------------------
     usePanelVerbKeys({ handle, formOpen, busyRef, rootRef });
+    useInitialVerb({
+        verb: initialVerb,
+        ready: data !== null,
+        handle,
+        onUsed: onInitialVerbUsed,
+    });
 
     // ---- Layout --------------------------------------------------------------------
     const openRun = (combo: RunnerCombo) => {

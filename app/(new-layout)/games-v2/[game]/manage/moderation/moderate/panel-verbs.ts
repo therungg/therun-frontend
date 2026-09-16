@@ -117,3 +117,34 @@ export function usePanelVerbKeys({
         return () => document.removeEventListener('keydown', onKeyDown);
     }, [busyRef, rootRef]);
 }
+
+/**
+ * The verb the caller opened the panel with. Acts once, as soon as the body
+ * can tell whether the verb applies: a heavy verb opens its form, a light one
+ * runs. `handle` ignores a verb that does not apply.
+ */
+export function useInitialVerb({
+    verb,
+    ready,
+    handle,
+    onUsed,
+}: {
+    verb: ModerateVerb | undefined;
+    /** The body's read has landed, so availability is real. */
+    ready: boolean;
+    handle: (verb: ModerateVerb) => void;
+    /** Tells the shell the verb is spent, so a remount does not repeat it. */
+    onUsed: () => void;
+}) {
+    const handleRef = useRef(handle);
+    useEffect(() => {
+        handleRef.current = handle;
+    });
+    const doneRef = useRef(false);
+    useEffect(() => {
+        if (!verb || !ready || doneRef.current) return;
+        doneRef.current = true;
+        onUsed();
+        handleRef.current(verb);
+    }, [verb, ready, onUsed]);
+}

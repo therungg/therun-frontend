@@ -19,7 +19,7 @@ import type {
 } from './moderate-panel';
 import styles from './moderate-panel.module.scss';
 import { useMoveTarget } from './move-target';
-import { usePanelVerbKeys, usePanelVerbs } from './panel-verbs';
+import { useInitialVerb, usePanelVerbKeys, usePanelVerbs } from './panel-verbs';
 import {
     bulkHeavySpec,
     type ConfirmResult,
@@ -45,6 +45,9 @@ export interface BulkBodyProps {
     onBusyChange: BusyHandler;
     /** The shell's wrapper. The body builds a `PanelLayout` and returns `render(layout)`. */
     render: (layout: PanelLayout) => ReactNode;
+    /** Acted on once when the selection has loaded; ignored if it does not apply. */
+    initialVerb?: ModerateVerb;
+    onInitialVerbUsed: () => void;
 }
 
 /** Runner chips shown before the rest collapse into "+N". */
@@ -60,6 +63,8 @@ export function BulkBody({
     onFormBack,
     onBusyChange,
     render,
+    initialVerb,
+    onInitialVerbUsed,
 }: BulkBodyProps) {
     const { entries, board } = subject;
     const { gameSlug } = context;
@@ -335,6 +340,12 @@ export function BulkBody({
     };
 
     usePanelVerbKeys({ handle, formOpen, busyRef, rootRef });
+    useInitialVerb({
+        verb: initialVerb,
+        ready: sel.loaded,
+        handle,
+        onUsed: onInitialVerbUsed,
+    });
 
     // ---- Layout ------------------------------------------------------------------------
     const runners = new Map<string, LeaderboardEntry>();

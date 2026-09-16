@@ -1,6 +1,6 @@
-// Keyboard decisions for the queue. The same letters as the run inspector
-// (j/k to step, v to verify) so a moderator's hands don't change when the
-// drawer opens. DOM wiring lives in worklist-pane.tsx.
+// Keyboard decisions for the queue. The same letters as the moderate modal
+// (a to approve, d to decline) so a moderator's hands don't change when it
+// opens. DOM wiring lives in worklist-pane.tsx.
 
 export type QueueKeyAction =
     | 'down'
@@ -27,9 +27,9 @@ export function parseQueueKey(e: {
             return 'up';
         case 'Enter':
             return 'open';
-        case 'v':
+        case 'a':
             return 'approve';
-        case 'V':
+        case 'A':
             return 'approveGroup';
         case 'd':
             return 'decline';
@@ -42,7 +42,7 @@ export function parseQueueKey(e: {
 
 /**
  * Where the keyboard lands after the list reloads. Stays put if the row is
- * still there; otherwise takes the next row that survived, so pressing `v`
+ * still there; otherwise takes the next row that survived, so pressing `a`
  * down a list approves one run after another without touching `j`. Falls
  * back to the nearest earlier survivor at the end of the list.
  */

@@ -6,7 +6,6 @@ import type {
     WorklistBatch,
     WorklistItem,
 } from '../../../../../../../types/worklist.types';
-import type { ModVerb } from '../shared/action-model';
 import {
     ageTone,
     batchLabelWithoutCount,
@@ -21,10 +20,7 @@ import { WorklistRow } from './worklist-row';
 
 type RowHandlers = {
     onApprove: (item: WorklistItem) => void;
-    onVerb: (item: WorklistItem, verb: ModVerb) => void;
-    onHideIdentity: (item: WorklistItem) => void;
     onInspect: (item: WorklistItem) => void;
-    onRequestVideo?: (item: WorklistItem) => void;
 };
 
 type BatchProps = RowHandlers & {
@@ -46,10 +42,7 @@ function Members({
     busy,
     focusedKey,
     onApprove,
-    onVerb,
-    onHideIdentity,
     onInspect,
-    onRequestVideo,
 }: BatchProps) {
     return (
         <ul className={styles.members}>
@@ -62,10 +55,7 @@ function Members({
                     busy={busy}
                     focused={focusedKey === runQueueKey(item)}
                     onApprove={onApprove}
-                    onVerb={onVerb}
-                    onHideIdentity={onHideIdentity}
                     onInspect={onInspect}
-                    onRequestVideo={onRequestVideo}
                 />
             ))}
         </ul>
@@ -120,7 +110,7 @@ export function BatchHero(props: BatchProps) {
                     onClick={() => onApproveAll(batch)}
                 >
                     {busy ? 'Approving…' : `Approve all ${count}`}
-                    {focused && <kbd className={styles.kbd}>⇧V</kbd>}
+                    {focused && <kbd className={styles.kbd}>⇧A</kbd>}
                 </button>
             </div>
             <ul className={styles.facts}>
@@ -228,7 +218,7 @@ export function BatchRow(props: BatchProps) {
                     onClick={() => onApproveAll(batch)}
                 >
                     {busy ? 'Approving…' : `Approve ${count}`}
-                    {focused && <kbd className={styles.kbd}>⇧V</kbd>}
+                    {focused && <kbd className={styles.kbd}>⇧A</kbd>}
                 </button>
             </div>
             {expanded && <Members {...props} />}

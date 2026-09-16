@@ -10,6 +10,7 @@ import {
 import { createPortal } from 'react-dom';
 import type { LeaderboardEntry } from '../../../../../../../types/leaderboards.types';
 import { useDialogBehavior } from '../../../shared/board-dialog';
+import { isTriageInert } from '../attention/triage-keyboard';
 import { BulkBody } from './bulk-body';
 import styles from './moderate-panel.module.scss';
 import { RunTab } from './run-tab';
@@ -20,6 +21,7 @@ import {
     type SheetSubject,
     subjectKey,
 } from './subject';
+import type { ModerateVerb } from './verbs';
 
 export type PanelMount = 'modal' | 'inline';
 export type PanelTab = 'run' | 'runner';
@@ -29,6 +31,11 @@ export interface ModeratePanelProps {
     context: SheetContext;
     mount: PanelMount;
     initialTab?: PanelTab;
+    /**
+     * Acted on once when the panel opens: a heavy verb opens its form, a light
+     * verb runs. Ignored when the verb does not apply to the subject.
+     */
+    initialVerb?: ModerateVerb;
     onClose?: () => void;
     onMutated: () => void;
     onPrev?: () => void;
@@ -149,6 +156,19 @@ export function ModeratePanel(props: ModeratePanelProps) {
         [],
     );
     const [tab, setTab] = useState<PanelTab>(defaultTab);
+    // The caller's verb belongs to the caller's subject. Spent once used, so
+    // switching tabs or opening another run never repeats it.
+    const verbToken = props.initialVerb
+        ? `${propsKey}:${props.initialVerb}`
+        : null;
+    const [spentVerbToken, setSpentVerbToken] = useState<string | null>(null);
+    const initialVerb =
+        verbToken !== null && verbToken !== spentVerbToken && !subjectOverride
+            ? props.initialVerb
+            : undefined;
+    const onInitialVerbUsed = useCallback(() => {
+        setSpentVerbToken(verbToken);
+    }, [verbToken]);
     const [formOpen, setFormOpen] = useState(false);
     const formBackRef = useRef<(() => void) | null>(null);
     const busyRef = useRef(false);
@@ -184,6 +204,36 @@ export function ModeratePanel(props: ModeratePanelProps) {
         onClose: onEscape,
         panelRef,
     });
+
+    // j and k step through the caller's list without closing the modal.
+    const stepRef = useRef({ prev: props.onPrev, next: props.onNext });
+    useEffect(() => {
+        stepRef.current = { prev: props.onPrev, next: props.onNext };
+    });
+    useEffect(() => {
+        if (mount !== 'modal' || formOpen) return;
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (e.defaultPrevented || e.repeat) return;
+            if (e.metaKey || e.ctrlKey || e.altKey) return;
+            if (e.key !== 'j' && e.key !== 'k') return;
+            const active = document.activeElement as HTMLElement | null;
+            if (
+                isTriageInert({
+                    activeTag: active?.tagName ?? null,
+                    isContentEditable: active?.isContentEditable ?? false,
+                    dialogOpen: busyRef.current,
+                })
+            )
+                return;
+            const step =
+                e.key === 'j' ? stepRef.current.next : stepRef.current.prev;
+            if (!step) return;
+            e.preventDefault();
+            step();
+        };
+        document.addEventListener('keydown', onKeyDown);
+        return () => document.removeEventListener('keydown', onKeyDown);
+    }, [mount, formOpen]);
 
     // Inline there is nothing to close, but Esc still backs out of a form
     // while focus is inside the panel.
@@ -336,6 +386,8 @@ export function ModeratePanel(props: ModeratePanelProps) {
                 onFormBack={onFormBack}
                 onBusyChange={onBusyChange}
                 render={wrap}
+                initialVerb={initialVerb}
+                onInitialVerbUsed={onInitialVerbUsed}
             />
         ) : subject.kind === 'run' && tab === 'run' ? (
             <RunTab
@@ -347,6 +399,8 @@ export function ModeratePanel(props: ModeratePanelProps) {
                 onFormBack={onFormBack}
                 onBusyChange={onBusyChange}
                 render={wrap}
+                initialVerb={initialVerb}
+                onInitialVerbUsed={onInitialVerbUsed}
             />
         ) : tab === 'runner' && runnerId !== null ? (
             <RunnerTab
@@ -368,6 +422,8 @@ export function ModeratePanel(props: ModeratePanelProps) {
                 onFormBack={onFormBack}
                 onBusyChange={onBusyChange}
                 render={wrap}
+                initialVerb={initialVerb}
+                onInitialVerbUsed={onInitialVerbUsed}
             />
         ) : (
             wrap(empty)

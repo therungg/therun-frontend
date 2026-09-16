@@ -292,34 +292,6 @@ $hairline: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
     @include board.control-pill-active;
 }
 
-.more {
-    position: relative;
-}
-
-.menu {
-    position: absolute;
-    right: 0;
-    top: calc(100% + #{dt.$spacing-xs});
-    z-index: 5;
-    display: flex;
-    flex-direction: column;
-    min-width: 11rem;
-    padding: dt.$spacing-xs;
-    background: var(
-        --board-surface-bg,
-        color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-secondary-bg) 8%)
-    );
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
-    border-radius: dt.$radius-md;
-    box-shadow: dt.$shadow-md;
-
-    button {
-        @include board.control-pill;
-        justify-content: flex-start;
-        width: 100%;
-    }
-}
-
 .checks {
     grid-area: checks;
 }

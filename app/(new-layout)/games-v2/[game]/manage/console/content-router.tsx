@@ -151,6 +151,7 @@ export function ContentRouter(props: ContentRouterProps) {
                     categories={categories}
                     boardCategories={props.boardCategories}
                     variables={props.variables}
+                    canSiteBan={props.canSiteBan}
                     onNeedsYouChange={props.onQueueCountChange}
                     onNavigate={onNavigate}
                 />

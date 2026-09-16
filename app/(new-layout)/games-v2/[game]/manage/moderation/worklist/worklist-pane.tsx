@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { CheckCircle } from 'react-bootstrap-icons';
-import { toast } from 'react-toastify';
 import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import type {
     ResolvedCategory,
@@ -13,27 +12,20 @@ import type {
     WorklistItem,
     WorklistPage,
 } from '../../../../../../../types/worklist.types';
-import { HideIdentityDialog } from '../../../leaderboard/hide-identity-dialog';
-import { RunInspector } from '../../../leaderboard/run-inspector';
 import { BackLink } from '../../../shared/back-link';
-import { subcategoryVariablesFor } from '../../boards/subcategory-bands';
 import type { NavItemId } from '../../console/nav-model';
 import { isTriageInert, moveSelection } from '../attention/triage-keyboard';
-import type { ModVerb, RunActionTarget } from '../shared/action-model';
+import { ModeratePanel } from '../moderate/moderate-panel';
+import type { ModerateVerb } from '../moderate/verbs';
 import { applyVerdictsAction } from '../shared/actions/verdicts.action';
-import { RunActionDialog } from '../shared/run-action-dialog';
 import { fireUndoToast } from '../shared/undo-toast';
-import {
-    loadWorklistAction,
-    requestVideoAction,
-} from './actions/worklist.action';
+import { loadWorklistAction } from './actions/worklist.action';
 import { SelfClaimRow } from './self-claim-row';
 import { WaitingOnRunnersSection } from './waiting-on-runners';
 import { BatchHero, BatchRow } from './worklist-batch';
 import { focusAfterReload, parseQueueKey } from './worklist-keys';
 import {
     batchQueueKey,
-    boardLabel,
     claimQueueKey,
     inspectorBoard,
     runQueueKey,
@@ -59,48 +51,20 @@ function chunk<T>(items: T[], size: number): T[][] {
 
 interface Props {
     gameSlug: string;
-    /** ResolvedCategory carries no gameId; the inspector needs it for its
-     * `/v1/me/*` owner verbs. */
+    /** ResolvedCategory carries no gameId; the moderate modal needs it for
+     * its `/v1/me/*` owner verbs. */
     gameId: number;
     gameDisplay: string;
     categories: Array<{ id: number; display: string }>;
     boardCategories: ResolvedCategory[];
     variables: VariableRow[];
+    /** Site-wide ban scope in the moderate modal. */
+    canSiteBan: boolean;
     /** Live count for the sidebar badge. */
     onNeedsYouChange?: (count: number) => void;
     /** Console pane switcher — "Decided runs" opens the old queue pane. */
     onNavigate: (id: NavItemId) => void;
 }
-
-type Dialog =
-    | { kind: 'action'; verb: ModVerb; target: RunActionTarget }
-    | { kind: 'hide'; item: WorklistItem };
-
-const targetFor = (
-    item: WorklistItem,
-    variables: VariableRow[],
-): RunActionTarget => ({
-    kind: 'runs',
-    runIds: [item.runId],
-    label: `${item.runnerName} · ${boardLabel(item, variables)}`,
-    runTimeMs:
-        item.primaryTiming === 'gametime' && item.gameTime !== null
-            ? item.gameTime
-            : item.time,
-    runDate: item.endedAt,
-    runner:
-        item.userId !== null
-            ? {
-                  id: item.userId,
-                  name: item.runnerName,
-                  categoryId: item.categoryId,
-                  categoryDisplay: item.categoryDisplay,
-                  subcategoryKey: item.subcategoryKey,
-                  primaryTiming:
-                      item.primaryTiming === 'gametime' ? 'gt' : 'rt',
-              }
-            : undefined,
-});
 
 /** A section heading with the tier's swatch; an empty urgent tier says so. */
 function SectionHead({
@@ -140,6 +104,7 @@ export function WorklistPane({
     // boards the worklist covers, which the backend returns with the list.
     boardCategories,
     variables,
+    canSiteBan,
     onNeedsYouChange,
     onNavigate,
 }: Props) {
@@ -150,9 +115,13 @@ export function WorklistPane({
     const [isLoading, startLoad] = useTransition();
     const [busyRunId, setBusyRunId] = useState<number | null>(null);
     const [busyBatchKey, setBusyBatchKey] = useState<string | null>(null);
-    const [dialog, setDialog] = useState<Dialog | null>(null);
     const [now, setNow] = useState(() => new Date());
     const [inspectRunId, setInspectRunId] = useState<number | null>(null);
+    // The verb the modal opens with (`d` on a row opens Decline). Spent on
+    // the run it was opened for; stepping to another run clears it.
+    const [inspectVerb, setInspectVerb] = useState<ModerateVerb | undefined>(
+        undefined,
+    );
     const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
     // Verdicts given since the pane opened. Undo takes them back off.
     const [decided, setDecided] = useState(0);
@@ -220,26 +189,6 @@ export function WorklistPane({
                 load();
             },
         );
-        load();
-    };
-
-    const requestVideo = async (item: WorklistItem) => {
-        setBusyRunId(item.runId);
-        const res = await requestVideoAction(gameSlug, [item.runId]);
-        setBusyRunId(null);
-        if ('error' in res) {
-            setError(res.error);
-            return;
-        }
-        if (res.count > 0) {
-            bumpDecided(1);
-            toast.success(
-                `Asked ${item.runnerName} for a video. The run is off the board until they add one.`,
-            );
-        } else
-            toast.info(
-                'Nothing changed. The run already has a video, is no longer pending, or is already off the board.',
-            );
         load();
     };
 
@@ -317,7 +266,7 @@ export function WorklistPane({
     const boardHref = `/games-v2/${encodeURIComponent(gameSlug)}`;
 
     // The order rows render in: urgent tiers, the hero batch, runner batches,
-    // then the routine rows that didn't group. The inspector's prev/next walks
+    // then the routine rows that didn't group. The modal's prev/next walks
     // the runs; the keyboard walks everything, batches included.
     const orderedBatches = hero ? [hero, ...runnerBatches] : runnerBatches;
     const displayOrder: WorklistItem[] = [
@@ -346,15 +295,53 @@ export function WorklistPane({
         ? inspectorBoard(inspectItem, boardCategories)
         : null;
 
-    const openInspector = (item: WorklistItem) => {
+    const openInspector = (item: WorklistItem, verb?: ModerateVerb) => {
         if (!inspectorBoard(item, boardCategories)) {
             setError(
                 "This run's board isn't in this console's list. Open it from the run page.",
             );
             return;
         }
+        setInspectVerb(verb);
         setInspectRunId(item.runId);
     };
+    const stepInspector = (runId: number) => {
+        setInspectVerb(undefined);
+        setInspectRunId(runId);
+    };
+    const closeInspector = () => {
+        setInspectVerb(undefined);
+        setInspectRunId(null);
+    };
+
+    // After the list reloads under the modal (the open run decided away),
+    // stay on the run if it is still listed, else take the next run that
+    // survived, else close.
+    const previousRunOrder = useRef<number[]>([]);
+    const runOrderSignature = displayOrder.map((i) => i.runId).join('|');
+    useEffect(() => {
+        const previous = previousRunOrder.current;
+        const next = displayOrder.map((i) => i.runId);
+        previousRunOrder.current = next;
+        if (inspectRunId === null || next.includes(inspectRunId)) return;
+        const survivors = new Set(next);
+        const at = previous.indexOf(inspectRunId);
+        let landing: number | null = null;
+        if (at !== -1) {
+            for (let i = at + 1; i < previous.length; i++) {
+                if (survivors.has(previous[i])) {
+                    landing = previous[i];
+                    break;
+                }
+            }
+        }
+        // The open run left the queue: it was decided.
+        bumpDecided(1);
+        setInspectVerb(undefined);
+        setInspectRunId(landing);
+        // displayOrder is rebuilt every render; the signature is its identity.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [runOrderSignature]);
 
     // When the list reloads under the keyboard (a run approved away), land on
     // the row that took its place instead of dropping the position.
@@ -381,6 +368,8 @@ export function WorklistPane({
 
     useEffect(() => {
         const onKeyDown = (e: KeyboardEvent) => {
+            // The open modal owns the keyboard.
+            if (inspectRunId !== null) return;
             const action = parseQueueKey(e);
             if (!action) return;
             const active = document.activeElement as HTMLElement | null;
@@ -388,7 +377,7 @@ export function WorklistPane({
                 isTriageInert({
                     activeTag: active?.tagName ?? null,
                     isContentEditable: !!active?.isContentEditable,
-                    dialogOpen: dialog !== null || inspectRunId !== null,
+                    dialogOpen: false,
                 })
             )
                 return;
@@ -459,11 +448,7 @@ export function WorklistPane({
                 void approve(item);
             } else if (action === 'decline') {
                 e.preventDefault();
-                setDialog({
-                    kind: 'action',
-                    verb: 'reject',
-                    target: targetFor(item, variables),
-                });
+                openInspector(item, 'decline');
             }
         };
         document.addEventListener('keydown', onKeyDown);
@@ -480,16 +465,7 @@ export function WorklistPane({
 
     const rowHandlers = {
         onApprove: approve,
-        onVerb: (it: WorklistItem, verb: ModVerb) =>
-            setDialog({
-                kind: 'action',
-                verb,
-                target: targetFor(it, variables),
-            }),
-        onHideIdentity: (it: WorklistItem) =>
-            setDialog({ kind: 'hide', item: it }),
-        onInspect: openInspector,
-        onRequestVideo: requestVideo,
+        onInspect: (item: WorklistItem) => openInspector(item),
     };
 
     const renderRun = (item: WorklistItem) => (
@@ -620,13 +596,13 @@ export function WorklistPane({
                         <kbd className={styles.kbd}>Enter</kbd> open
                     </li>
                     <li>
-                        <kbd className={styles.kbd}>v</kbd> approve
+                        <kbd className={styles.kbd}>a</kbd> approve
                     </li>
                     <li>
                         <kbd className={styles.kbd}>d</kbd> decline
                     </li>
                     <li>
-                        <kbd className={styles.kbd}>⇧V</kbd> approve a group
+                        <kbd className={styles.kbd}>⇧A</kbd> approve a group
                     </li>
                 </ul>
             </div>
@@ -727,71 +703,42 @@ export function WorklistPane({
                 </nav>
             )}
 
-            {dialog?.kind === 'action' && (
-                <RunActionDialog
-                    gameSlug={gameSlug}
-                    verb={dialog.verb}
-                    target={dialog.target}
-                    defaultBanScope={
-                        dialog.verb === 'ban' ? 'category' : undefined
-                    }
-                    onDone={() => {
-                        // Every target this pane opens is one run.
-                        bumpDecided(1);
-                        setDialog(null);
-                        load();
-                    }}
-                    onClose={() => setDialog(null)}
-                    onUndoComplete={() => {
-                        bumpDecided(-1);
-                        load();
-                    }}
-                />
-            )}
-            {dialog?.kind === 'hide' && dialog.item.userId !== null && (
-                <HideIdentityDialog
-                    open
-                    onClose={() => setDialog(null)}
-                    onDone={() => {
-                        setDialog(null);
-                        load();
-                    }}
-                    gameSlug={gameSlug}
-                    gameDisplay={gameDisplay}
-                    runnerName={dialog.item.runnerName}
-                    runId={dialog.item.runId}
-                    userId={dialog.item.userId}
-                    categoryId={dialog.item.categoryId}
-                    categoryDisplay={dialog.item.categoryDisplay}
-                    subcategoryKey={dialog.item.subcategoryKey}
-                />
-            )}
             {inspectItem && inspectContext && (
-                <RunInspector
-                    entry={toInspectorEntry(inspectItem)}
-                    gameSlug={gameSlug}
-                    gameId={gameId}
-                    gameDisplay={gameDisplay}
-                    categorySlug={inspectContext.category.name}
-                    categoryDisplay={inspectContext.category.display}
-                    categoryId={inspectContext.category.id}
-                    requireVideo={inspectContext.category.requireVideo}
-                    primaryTiming={inspectContext.primaryTiming}
-                    rtaFallback={inspectContext.category.rtaFallback}
-                    subcategoryDefKeys={subcategoryVariablesFor(
-                        inspectContext.category.id,
+                <ModeratePanel
+                    subject={{
+                        kind: 'run',
+                        entry: toInspectorEntry(inspectItem),
+                        board: {
+                            categoryId: inspectContext.category.id,
+                            categorySlug: inspectContext.category.name,
+                            categoryDisplay: inspectContext.category.display,
+                            subcategoryKey: inspectItem.subcategoryKey,
+                            primaryTiming: inspectContext.primaryTiming,
+                        },
+                    }}
+                    context={{
+                        gameSlug,
+                        gameId,
+                        gameDisplay,
+                        categories: boardCategories,
                         variables,
-                    ).map((v) => v.nameNormalized)}
-                    gameTimeLabel={inspectContext.category.gameTimeLabel}
-                    showMilliseconds={
-                        inspectContext.category.showMilliseconds ?? true
-                    }
-                    onClose={() => setInspectRunId(null)}
-                    onMutated={load}
+                        canSiteBan,
+                    }}
+                    mount="modal"
+                    initialVerb={inspectVerb}
+                    position={{
+                        index: inspectIndex + 1,
+                        total: displayOrder.length,
+                    }}
+                    onClose={closeInspector}
+                    onMutated={() => {
+                        setInspectVerb(undefined);
+                        load();
+                    }}
                     onPrev={
                         inspectIndex > 0
                             ? () =>
-                                  setInspectRunId(
+                                  stepInspector(
                                       displayOrder[inspectIndex - 1].runId,
                                   )
                             : undefined
@@ -799,7 +746,7 @@ export function WorklistPane({
                     onNext={
                         inspectIndex < displayOrder.length - 1
                             ? () =>
-                                  setInspectRunId(
+                                  stepInspector(
                                       displayOrder[inspectIndex + 1].runId,
                                   )
                             : undefined

@@ -6,7 +6,6 @@ import type { VariableRow } from '../../../../../../../types/leaderboards.types'
 import type { AutoVerifyResult } from '../../../../../../../types/moderation.types';
 import type { WorklistItem } from '../../../../../../../types/worklist.types';
 import { AutoVerifyBreakdown } from '../../../run-view/run-badges';
-import type { ModVerb } from '../shared/action-model';
 import {
     ageTone,
     boardLabel,
@@ -25,10 +24,7 @@ export function WorklistRow({
     busy,
     focused = false,
     onApprove,
-    onVerb,
-    onHideIdentity,
     onInspect,
-    onRequestVideo,
     variables,
 }: {
     item: WorklistItem;
@@ -39,13 +35,10 @@ export function WorklistRow({
     /** The keyboard is on this row: show its keys on the verbs. */
     focused?: boolean;
     onApprove: (item: WorklistItem) => void;
-    onVerb: (item: WorklistItem, verb: ModVerb) => void;
-    onHideIdentity: (item: WorklistItem) => void;
+    /** Opens the moderate modal on this run. */
     onInspect: (item: WorklistItem) => void;
-    onRequestVideo?: (item: WorklistItem) => void;
 }) {
     const [showChecks, setShowChecks] = useState(false);
-    const [menuOpen, setMenuOpen] = useState(false);
     const tone = ageTone(item.waitingSince, now);
     const delta = deltaLabel(item);
     const record = trackRecordLine(item.trackRecord);
@@ -126,81 +119,17 @@ export function WorklistRow({
                     onClick={() => onApprove(item)}
                 >
                     Approve
-                    {focused && <kbd className={styles.kbd}>v</kbd>}
+                    {focused && <kbd className={styles.kbd}>a</kbd>}
                 </button>
                 <button
                     type="button"
                     className={styles.verb}
                     disabled={busy}
-                    onClick={() => onVerb(item, 'reject')}
+                    onClick={() => onInspect(item)}
                 >
-                    Decline
-                    {focused && <kbd className={styles.kbd}>d</kbd>}
+                    Moderate
+                    {focused && <kbd className={styles.kbd}>Enter</kbd>}
                 </button>
-                <div className={styles.more}>
-                    <button
-                        type="button"
-                        className={styles.verb}
-                        disabled={busy}
-                        aria-haspopup="menu"
-                        aria-expanded={menuOpen}
-                        onClick={() => setMenuOpen((v) => !v)}
-                    >
-                        More
-                    </button>
-                    {menuOpen && (
-                        <div className={styles.menu} role="menu">
-                            {!item.vodUrl &&
-                                item.userId !== null &&
-                                onRequestVideo && (
-                                    <button
-                                        type="button"
-                                        role="menuitem"
-                                        onClick={() => {
-                                            setMenuOpen(false);
-                                            onRequestVideo(item);
-                                        }}
-                                    >
-                                        Ask for a video
-                                    </button>
-                                )}
-                            <button
-                                type="button"
-                                role="menuitem"
-                                onClick={() => {
-                                    setMenuOpen(false);
-                                    onVerb(item, 'remove');
-                                }}
-                            >
-                                Remove
-                            </button>
-                            {item.userId !== null && (
-                                <button
-                                    type="button"
-                                    role="menuitem"
-                                    onClick={() => {
-                                        setMenuOpen(false);
-                                        onVerb(item, 'ban');
-                                    }}
-                                >
-                                    Ban runner
-                                </button>
-                            )}
-                            {item.userId !== null && (
-                                <button
-                                    type="button"
-                                    role="menuitem"
-                                    onClick={() => {
-                                        setMenuOpen(false);
-                                        onHideIdentity(item);
-                                    }}
-                                >
-                                    Hide identity
-                                </button>
-                            )}
-                        </div>
-                    )}
-                </div>
             </div>
 
             {showChecks && hasChecks && (

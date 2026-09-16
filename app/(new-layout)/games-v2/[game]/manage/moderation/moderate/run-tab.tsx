@@ -31,7 +31,7 @@ import type {
 } from './moderate-panel';
 import styles from './moderate-panel.module.scss';
 import { useMoveTarget } from './move-target';
-import { usePanelVerbKeys, usePanelVerbs } from './panel-verbs';
+import { useInitialVerb, usePanelVerbKeys, usePanelVerbs } from './panel-verbs';
 import {
     RunIdentity,
     RunLeft,
@@ -69,6 +69,9 @@ export interface RunTabProps {
     onBusyChange: BusyHandler;
     /** The shell's wrapper. The tab builds a `PanelLayout` and returns `render(layout)`. */
     render: (layout: PanelLayout) => ReactNode;
+    /** Acted on once when the run's state has loaded; ignored if it does not apply. */
+    initialVerb?: ModerateVerb;
+    onInitialVerbUsed: () => void;
 }
 
 interface FormDraft {
@@ -85,6 +88,8 @@ export function RunTab({
     onFormBack,
     onBusyChange,
     render,
+    initialVerb,
+    onInitialVerbUsed,
 }: RunTabProps) {
     const { entry, board } = subject;
     const { gameSlug } = context;
@@ -418,6 +423,12 @@ export function RunTab({
 
     // ---- Keys ----------------------------------------------------------------------------
     usePanelVerbKeys({ handle, formOpen, busyRef, rootRef });
+    useInitialVerb({
+        verb: initialVerb,
+        ready: summary !== null || runId == null,
+        handle,
+        onUsed: onInitialVerbUsed,
+    });
 
     // ---- Layout ----------------------------------------------------------------------------
     const runPage = runId != null ? `/games-v2/${gameSlug}/run/${runId}` : null;
