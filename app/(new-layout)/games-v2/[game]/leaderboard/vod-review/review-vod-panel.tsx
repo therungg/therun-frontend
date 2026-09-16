@@ -33,8 +33,8 @@ export function ReviewVodPanel({
     }) => void;
     /** Hides the workbench's own save buttons. */
     hideActions?: boolean;
-    /** Live marker/retime state, for a summary rendered elsewhere (the
-     *  drawer's "reviewing" card while the workbench lives in the pane). */
+    /** Live marker/retime state, for a form rendered beside it (the
+     *  moderate panel's Retime form). */
     onChange?: (patch: VodReviewPatch | null) => void;
 }) {
     const [state, setState] = useState<

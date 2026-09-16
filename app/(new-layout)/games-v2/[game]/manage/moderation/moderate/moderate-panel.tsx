@@ -188,8 +188,11 @@ export function ModeratePanel(props: ModeratePanelProps) {
         formBackRef.current = back;
         setFormOpen(back !== null);
     }, []);
-    const onBusyChange = useCallback<BusyHandler>((busy) => {
-        busyRef.current = busy;
+    // Mirrors busyRef for rendering: Previous and Next wait for a mutation.
+    const [busy, setBusy] = useState(false);
+    const onBusyChange = useCallback<BusyHandler>((b) => {
+        busyRef.current = b;
+        setBusy(b);
     }, []);
 
     // Esc is Back while a heavy form is open, and closes the modal otherwise.
@@ -260,6 +263,7 @@ export function ModeratePanel(props: ModeratePanelProps) {
         setTab(defaultTab);
         formBackRef.current = null;
         busyRef.current = false;
+        setBusy(false);
         setFormOpen(false);
     }, [key]);
 
@@ -319,7 +323,7 @@ export function ModeratePanel(props: ModeratePanelProps) {
                                     className={styles.iconBtn}
                                     aria-label="Previous run"
                                     onClick={props.onPrev}
-                                    disabled={!props.onPrev}
+                                    disabled={!props.onPrev || busy}
                                 >
                                     <ChevronIcon dir="left" />
                                 </button>
@@ -333,7 +337,7 @@ export function ModeratePanel(props: ModeratePanelProps) {
                                     className={styles.iconBtn}
                                     aria-label="Next run"
                                     onClick={props.onNext}
-                                    disabled={!props.onNext}
+                                    disabled={!props.onNext || busy}
                                 >
                                     <ChevronIcon dir="right" />
                                 </button>

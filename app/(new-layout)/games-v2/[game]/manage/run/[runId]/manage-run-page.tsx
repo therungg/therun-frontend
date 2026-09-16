@@ -91,7 +91,8 @@ export function ManageRunPage({
                 <RunPageMount
                     run={run}
                     rank={rank}
-                    provenance={provenance}
+                    // The provenance panel below shows the origin in full.
+                    provenance={null}
                     context={panel.context}
                     board={panel.board}
                 />

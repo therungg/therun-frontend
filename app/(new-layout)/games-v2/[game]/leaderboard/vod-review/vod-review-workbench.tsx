@@ -107,7 +107,7 @@ export function VodReviewWorkbench({
     const ready = player.status === 'ready';
 
     // Streams every change up: the runner's set-time form (runner mode) and
-    // the drawer's "reviewing" summary card (mod mode, workbench in the pane).
+    // the moderate panel's Retime form (mod mode).
     useEffect(() => {
         if (!onChange) return;
         onChange(markers.length ? toPatch(fps, markers) : null);

@@ -54,7 +54,7 @@ interface UseDialogBehaviorOptions {
  * Focus trap + autofocus + focus-restore + Escape-to-close + background
  * scroll lock for an overlay panel. Presentation-agnostic — used by
  * `BoardDialog` for its centered chrome, and directly by overlays with a
- * different presentation (e.g. a slide-in drawer) that still need the same
+ * different presentation (e.g. the moderate panel) that still need the same
  * accessibility behavior.
  */
 export function useDialogBehavior({
@@ -147,9 +147,9 @@ interface BoardDialogProps {
 }
 
 /**
- * Shared board dialog primitive — overlay + panel chrome extracted from the
- * moderation `RunActionDialog`, with real focus management: trap, autofocus,
- * restore-on-close, Escape-to-close, and background scroll lock.
+ * Shared board dialog primitive — overlay + panel chrome with real focus
+ * management: trap, autofocus, restore-on-close, Escape-to-close, and
+ * background scroll lock.
  */
 export function BoardDialog({
     open,

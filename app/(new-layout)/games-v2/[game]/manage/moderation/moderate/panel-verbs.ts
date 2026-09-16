@@ -108,7 +108,10 @@ export function usePanelVerbKeys({
                 !panel?.contains(active)
             )
                 return;
-            const verb = verbFromKey(e.key);
+            // Caps Lock turns a plain letter uppercase: still that verb.
+            const key =
+                !e.shiftKey && e.key.length === 1 ? e.key.toLowerCase() : e.key;
+            const verb = verbFromKey(key);
             if (!verb) return;
             e.preventDefault();
             handleRef.current(verb);

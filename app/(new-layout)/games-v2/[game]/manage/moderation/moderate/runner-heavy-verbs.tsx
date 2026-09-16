@@ -305,6 +305,8 @@ export interface RunnerSpecArgs {
     scope: RunnerScope;
     /** Ban: null while the preview loads. */
     banPreview?: BanPreview | null;
+    /** Ban: the preview failed; reads it again. */
+    onRetryBanPreview?: (() => void) | null;
     /** Ban: a rule at this scope already exists. */
     banRuleExists?: boolean;
     /** Add run: the board picked, "16 Star · No emulator". */
@@ -349,6 +351,17 @@ export function runnerHeavySpec(
                         <Mono n={p.runs} /> run{p.runs === 1 ? '' : 's'} come
                         {p.runs === 1 ? 's' : ''} off <Mono n={p.boards} />{' '}
                         board{p.boards === 1 ? '' : 's'}.
+                    </>
+                ) : a.onRetryBanPreview ? (
+                    <>
+                        Couldn&rsquo;t count the runs.{' '}
+                        <button
+                            type="button"
+                            className={styles.undo}
+                            onClick={a.onRetryBanPreview}
+                        >
+                            Try again
+                        </button>
                     </>
                 ) : (
                     '…'

@@ -19,7 +19,7 @@ import type {
 import { AutoVerifiedBadge } from '../../../run-view/run-badges';
 import { BackLink } from '../../../shared/back-link';
 import { ModeratePanel } from '../moderate/moderate-panel';
-import type { SheetBoard } from '../moderate/subject';
+import { isKnownStatus, type SheetBoard } from '../moderate/subject';
 import { loadModQueueAction } from './actions/load-mod-queue.action';
 import styles from './mod-queue-pane.module.scss';
 
@@ -692,6 +692,7 @@ export function ModQueuePane({
                         kind: 'run',
                         entry: rowEntry(openItem, openBoard),
                         board: openBoard,
+                        statusKnown: isKnownStatus(openItem.verificationStatus),
                     }}
                     context={{
                         gameSlug,

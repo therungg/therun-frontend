@@ -19,9 +19,9 @@ export function reviewingSummary(patch: VodReviewPatch | null): string {
 }
 
 /**
- * Stands in for the embedded player in the inspector drawer while the review
- * workbench is open in the companion pane: says the review is live, mirrors
- * its markers/retime, and offers the way back.
+ * Stands in for an embedded player while the review workbench is open
+ * elsewhere: says the review is live, mirrors its markers/retime, and offers
+ * the way back.
  */
 export function ReviewingCard({
     url,

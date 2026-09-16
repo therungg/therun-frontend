@@ -181,6 +181,8 @@ export function RunnerTab({
             : defaultBanScopeForCategories([runner.categoryId]);
     const [scope, setScope] = useState<RunnerScope>(initialScope);
     const [banPreview, setBanPreview] = useState<BanPreview | null>(null);
+    const [banPreviewFailed, setBanPreviewFailed] = useState(false);
+    const [banPreviewTry, setBanPreviewTry] = useState(0);
 
     // Add run
     const addTargets = useMemo(
@@ -254,6 +256,7 @@ export function RunnerTab({
 
     // Ban: which boards the runner comes off, read again when the scope changes.
     useEffect(() => {
+        setBanPreviewFailed(false);
         if (verb !== 'ban' || scope === 'site') {
             setBanPreview(null);
             return;
@@ -265,17 +268,20 @@ export function RunnerTab({
                 if (cancelled) return;
                 if ('error' in res) {
                     toast.error(res.error);
+                    setBanPreviewFailed(true);
                     return;
                 }
                 setBanPreview(res.preview);
             })
             .catch(() => {
-                if (!cancelled) toast.error('Could not preview the ban.');
+                if (cancelled) return;
+                toast.error('Could not preview the ban.');
+                setBanPreviewFailed(true);
             });
         return () => {
             cancelled = true;
         };
-    }, [verb, scope, gameSlug, userId, runner.categoryId]);
+    }, [verb, scope, gameSlug, userId, runner.categoryId, banPreviewTry]);
 
     // Add run: where the time lands, once one is typed.
     useEffect(() => {
@@ -425,6 +431,10 @@ export function RunnerTab({
               runner,
               scope,
               banPreview,
+              onRetryBanPreview:
+                  banPreviewFailed && !busy
+                      ? () => setBanPreviewTry((t) => t + 1)
+                      : null,
               banRuleExists: data
                   ? banRuleExists(data.banState, scope, runner.categoryId)
                   : false,
