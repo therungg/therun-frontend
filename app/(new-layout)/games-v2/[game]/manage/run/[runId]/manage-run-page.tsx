@@ -2,23 +2,41 @@
 
 import { UserLink } from '~src/components/links/links';
 import type {
+    ResolvedGame,
+    RunDetail,
+} from '../../../../../../../types/leaderboards.types';
+import type {
     HistoryEvent,
     RunProvenance,
 } from '../../../../../../../types/moderation.types';
 import { ModProvenancePanel } from '../../../run-view/mod-provenance-panel';
 import { BackLink } from '../../../shared/back-link';
-import { RunCard } from './run-card';
-import type { ManageRunData } from './types';
+import { RunPageMount } from '../../moderation/moderate/run-page-mount';
+import type {
+    SheetBoard,
+    SheetContext,
+} from '../../moderation/moderate/subject';
 
 interface Props {
-    data: ManageRunData;
+    game: ResolvedGame;
+    run: RunDetail;
+    /** The run's place on its board; 0 when it is not the runner's entry. */
+    rank: number;
     provenance: RunProvenance | null;
     history: HistoryEvent[];
+    context: SheetContext;
+    board: SheetBoard;
 }
 
-export function ManageRunPage({ data, provenance, history }: Props) {
-    const { game, run } = data;
-
+export function ManageRunPage({
+    game,
+    run,
+    rank,
+    provenance,
+    history,
+    context,
+    board,
+}: Props) {
     return (
         <div>
             <header className="d-flex align-items-center gap-3 mb-3">
@@ -70,6 +88,14 @@ export function ManageRunPage({ data, provenance, history }: Props) {
                 </small>
             </div>
 
+            <RunPageMount
+                run={run}
+                rank={rank}
+                provenance={provenance}
+                context={context}
+                board={board}
+            />
+
             <div className="mb-3">
                 <ModProvenancePanel
                     provenance={provenance}
@@ -79,8 +105,6 @@ export function ManageRunPage({ data, provenance, history }: Props) {
                     showConsoleLink={false}
                 />
             </div>
-
-            <RunCard run={run} gameSlug={game.name} />
         </div>
     );
 }
