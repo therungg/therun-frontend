@@ -9,9 +9,7 @@ export function ShowcaseHeading({ children }: { children: ReactNode }) {
     const { draft, editing } = useShowcase();
     const auto = draft.pins.length === 0;
     const note = !editing
-        ? auto
-            ? 'Best placements, weighted by board size'
-            : null
+        ? null
         : auto
           ? 'Automatic picks. Pin these, or pin any run from the list below.'
           : 'Up to 3 runs. Drag cards to reorder.';
