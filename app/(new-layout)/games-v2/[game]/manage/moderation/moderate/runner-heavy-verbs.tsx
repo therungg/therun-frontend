@@ -36,6 +36,7 @@ import {
 } from './run-heavy-verbs';
 import { unwrap } from './run-verbs';
 import { boardKey } from './runner-columns';
+import { VERB_LABEL } from './verbs';
 
 export type HeavyRunnerVerb = 'ban' | 'hide_identity' | 'add_run';
 /** `site` is for site admins only. */
@@ -200,7 +201,7 @@ export async function confirmRunnerVerb(
                 const banId = res.banId;
                 return {
                     ok: true,
-                    message: `Banned: ${runner.runnerName} everywhere`,
+                    message: `${VERB_LABEL.ban}: ${runner.runnerName} everywhere`,
                     undo: () =>
                         unwrap(liftSiteBanAction(banId, gameSlug, board)),
                 };
@@ -222,7 +223,7 @@ export async function confirmRunnerVerb(
             const ruleId = res.result.ruleId;
             return {
                 ok: true,
-                message: `Banned: ${runner.runnerName} from ${scopeName(runner, input.scope)}`,
+                message: `${VERB_LABEL.ban}: ${runner.runnerName} from ${scopeName(runner, input.scope)}`,
                 undo: () =>
                     unwrap(
                         deleteRuleAction(gameSlug, ruleId, undoReason('ban')),
@@ -258,7 +259,7 @@ export async function confirmRunnerVerb(
                 undo: runner.canSiteBan
                     ? () => liftHideRule(gameSlug, rule)
                     : null,
-                message: `Hidden: now shown as ${rule.displayName}`,
+                message: `${VERB_LABEL.hide_identity}: ${runner.runnerName} now shown as ${rule.displayName}`,
             };
         }
         case 'add_run': {
@@ -280,7 +281,7 @@ export async function confirmRunnerVerb(
             );
             return {
                 ok: true,
-                message: `Run added: ${runner.runnerName} on ${input.boardName}`,
+                message: `${VERB_LABEL.add_run}: ${runner.runnerName} on ${input.boardName}`,
                 undo: async (): Promise<UndoResult> => {
                     for (const id of ids) {
                         const del = await deleteManualTimeAction(
@@ -352,7 +353,6 @@ export function runnerHeavySpec(
                 ) : (
                     '…'
                 ),
-                told: `is told they were removed from ${where}, with this reason.`,
                 undoHint: 'Lift ban',
                 notUndoable: a.banRuleExists
                     ? 'a ban rule with this scope already exists. Lift it with Lift ban instead.'

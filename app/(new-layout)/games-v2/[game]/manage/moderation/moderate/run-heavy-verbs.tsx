@@ -35,6 +35,7 @@ import type { HeavyFormSpec } from './heavy-form';
 import { Time } from './run-columns';
 import { unwrap } from './run-verbs';
 import type { SheetBoard } from './subject';
+import { VERB_LABEL } from './verbs';
 
 export type HeavyRunVerb =
     | 'decline'
@@ -46,6 +47,10 @@ export type HeavyRunVerb =
 export type HideScope = 'run' | 'category' | 'game';
 
 export const MIN_REASON = 10;
+
+/** A declined manual time can be approved again, never made pending again. */
+const MANUAL_DECLINE_UNDO =
+    'a declined manual time can be approved later, not made pending again';
 
 export type ConfirmResult =
     | { error: string }
@@ -340,7 +345,7 @@ export async function confirmRunVerb(
             if ('error' in res) return res;
             return {
                 ...res,
-                message: `Moved: ${run.runnerName} to ${input.targetName}`,
+                message: `${VERB_LABEL.move}: ${run.runnerName} to ${input.targetName}`,
             };
         }
         case 'retime': {
@@ -407,7 +412,7 @@ export async function confirmRunVerb(
                               subcategoryKey: board.subcategoryKey,
                           })
                     : null,
-                message: `Hidden: now shown as ${rule.displayName}`,
+                message: `${VERB_LABEL.hide_identity}: ${run.runnerName} now shown as ${rule.displayName}`,
             };
         }
     }
@@ -460,7 +465,7 @@ export function runHeavySpec(
                     </>
                 ),
                 undoHint: a.isManual ? undefined : 'Restore from history',
-                notUndoable: a.isManual ? 'manual times have no restore' : null,
+                notUndoable: a.isManual ? MANUAL_DECLINE_UNDO : null,
                 reasonKeys: true,
                 minReason: MIN_REASON,
                 actionLabel: 'Decline run',
@@ -502,6 +507,9 @@ export function runHeavySpec(
                             : null}
                     </>
                 ),
+                // On a run it files a manual time, which notifies; correcting
+                // a manual time does not.
+                told: a.isManual ? null : undefined,
                 undoHint: 'Undo from the toast right after',
                 notUndoable: null,
                 reasonKeys: false,
@@ -631,9 +639,7 @@ export function bulkHeavySpec(
                 ...base,
                 whatChanges: `${countOf(n, 'pending run')} never ${n === 1 ? 'goes' : 'go'} on ${a.boardName}.${skippedLine(a.notPending, `${countOf(a.notPending ?? 0, 'run')} not pending`)}`,
                 undoHint: a.manualCount ? undefined : 'Restore from history',
-                notUndoable: a.manualCount
-                    ? 'manual times have no restore'
-                    : null,
+                notUndoable: a.manualCount ? MANUAL_DECLINE_UNDO : null,
                 reasonKeys: true,
                 minReason: MIN_REASON,
                 actionLabel: `Decline ${countOf(n, 'run')}`,

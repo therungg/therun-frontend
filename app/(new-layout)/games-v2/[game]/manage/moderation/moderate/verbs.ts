@@ -79,24 +79,24 @@ export const VERB_EFFECT: Record<ModerateVerb, string> = {
     lift_ban: 'Their runs come back.',
 };
 
-/** What the runner is told. `null` = nothing. */
+/** What the runner is told. `null` = nothing: the backend sends no notification. */
 export const VERB_RUNNER_SEES: Record<ModerateVerb, string | null> = {
     approve: 'Your run was approved.',
     decline: 'Your run was declined, with the reason.',
-    remove: 'Your run was removed, with the reason.',
+    remove: null,
     restore: 'Your run is back on the board.',
     send_back: 'Your run is pending again.',
     ask_video: 'A moderator asked for a video.',
     set_time: 'Your time was corrected, with the reason.',
-    retime: 'Your time was corrected, with the reason.',
-    move: 'Your run was moved to another board.',
+    retime: null,
+    move: null,
     reassign: 'Both runners: the run changed owner.',
-    hide_identity: 'Your name is hidden on this game.',
+    hide_identity: null,
     mark: null,
     note: null,
     add_run: 'A run was added for you.',
-    ban: 'You were removed from this board or game, with the reason.',
-    lift_ban: 'You are back on this game.',
+    ban: null,
+    lift_ban: null,
 };
 
 export const VERB_KEY: Partial<Record<ModerateVerb, string>> = {

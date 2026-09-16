@@ -18,7 +18,7 @@ import { BackLink } from '../../../shared/back-link';
 import type { NavItemId } from '../../console/nav-model';
 import { isTriageInert, moveSelection } from '../attention/triage-keyboard';
 import { ModeratePanel } from '../moderate/moderate-panel';
-import type { ModerateVerb } from '../moderate/verbs';
+import { type ModerateVerb, VERB_LABEL } from '../moderate/verbs';
 import { applyVerdictsAction } from '../shared/actions/verdicts.action';
 import { fireUndoToast } from '../shared/undo-toast';
 import { loadWorklistAction } from './actions/worklist.action';
@@ -223,7 +223,7 @@ export function WorklistPane({
         }
         bumpDecided(1);
         fireUndoToast(
-            `Approved ${item.runnerName}'s run.`,
+            `${VERB_LABEL.approve}: ${item.runnerName}`,
             () =>
                 applyVerdictsAction(
                     gameSlug,
@@ -270,7 +270,7 @@ export function WorklistPane({
             return;
         }
         fireUndoToast(
-            `Approved ${affectedRunCount} runs.`,
+            `${VERB_LABEL.approve}: ${affectedRunCount} ${affectedRunCount === 1 ? 'run' : 'runs'}`,
             async () => {
                 for (const runIds of doneChunks) {
                     const res = await applyVerdictsAction(

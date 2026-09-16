@@ -63,6 +63,7 @@ import {
     RUNNER_BAR,
     RUNNER_MORE,
     runnerVerbs,
+    VERB_LABEL,
 } from './verbs';
 
 export interface RunnerTabProps {
@@ -465,7 +466,7 @@ export function RunnerTab({
                 return;
             }
             toast.success(
-                `Ban lifted: ${runnerName} on ${rule.categoryName ?? context.gameDisplay}`,
+                `${VERB_LABEL.lift_ban}: ${runnerName} on ${rule.categoryName ?? context.gameDisplay}`,
             );
             afterMutation();
         } catch {
@@ -543,7 +544,7 @@ export function RunnerTab({
             }
             onFormBack(null);
             setVerb(null);
-            const message = res.message ?? runnerName;
+            const message = res.message ?? `${VERB_LABEL[verb]}: ${runnerName}`;
             if (res.undo) fireUndoToast(message, res.undo, afterMutation);
             else toast.success(message);
             afterMutation();

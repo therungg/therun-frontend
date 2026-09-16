@@ -9,26 +9,28 @@ import { type ModerateVerb, VERB_EFFECT, VERB_LABEL } from './verbs';
 
 /**
  * What the runner is told, as the end of a sentence that starts with their
- * name. Mirrors `VERB_RUNNER_SEES` in the moderator's voice; `null` means the
- * runner is not told.
+ * name. Follows what the backend actually notifies: verdicts, manual time
+ * create, verdict and delete, and a video request. `null` means the runner
+ * is not told.
  */
 const RUNNER_IS_TOLD: Record<ModerateVerb, string | null> = {
     approve: 'is told the run was approved.',
     decline: 'is told the run was declined, with this reason.',
-    remove: 'is told the run was removed, with this reason.',
+    remove: null,
     restore: 'is told the run is back on the board.',
     send_back: 'is told the run is pending again.',
     ask_video: 'is asked to add a video.',
+    // Files a manual time, which notifies. Correcting a manual time does not.
     set_time: 'is told the time was corrected, with this reason.',
-    retime: 'is told the time was corrected, with this reason.',
-    move: 'is told the run moved to another board.',
+    retime: null,
+    move: null,
     reassign: 'and the new runner are told the run changed owner.',
-    hide_identity: 'is told their name is hidden on this game.',
+    hide_identity: null,
     mark: null,
     note: null,
     add_run: 'is told a run was added for them.',
-    ban: 'is told they were removed from this board or game, with this reason.',
-    lift_ban: 'is told they are back on this game.',
+    ban: null,
+    lift_ban: null,
 };
 
 export interface HeavyFormSpec {

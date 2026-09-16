@@ -311,7 +311,7 @@ export function BulkBody({
                     picked,
                     reason,
                 );
-                message = `Moved: ${plural(movable.length, 'run')} to ${move.toName}`;
+                message = `${VERB_LABEL.move}: ${plural(movable.length, 'run')} to ${move.toName}`;
             }
             // Errors keep the form open and usable.
             if (runRes && 'error' in runRes) {
