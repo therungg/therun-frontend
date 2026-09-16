@@ -1,177 +1,148 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ShieldCheck } from 'react-bootstrap-icons';
-import { toast } from 'react-toastify';
 import chrome from '~src/components/console-chrome/console.module.scss';
 import { UserLink } from '~src/components/links/links';
+import type {
+    ResolvedCategory,
+    VariableRow,
+} from '../../../../../../../types/leaderboards.types';
 import type { GameExclusionRuleRow } from '../../../../../../../types/moderation.types';
-import { deleteRuleAction } from '../rules/actions/delete-rule.action';
+import { ModeratePanel } from '../moderate/moderate-panel';
 import { loadBansAction } from './actions/standards.action';
 import styles from './active-bans.module.scss';
 
 interface Props {
     gameSlug: string;
+    gameId: number;
+    gameDisplay: string;
+    /** Full board rows, for the moderate modal. */
+    boardCategories: ResolvedCategory[];
+    variables: VariableRow[];
+    canSiteBan: boolean;
 }
 
-const MIN_REASON = 10;
-
 function BanRow({
-    gameSlug,
     rule,
-    onLifted,
+    onModerate,
 }: {
-    gameSlug: string;
     rule: GameExclusionRuleRow;
-    onLifted: (ruleId: number) => void;
+    onModerate: (ruleId: number) => void;
 }) {
-    const [expanded, setExpanded] = useState(false);
-    const [reason, setReason] = useState('');
-    const [error, setError] = useState<string | null>(null);
-    const [isPending, startTransition] = useTransition();
-
-    const reasonOk = reason.trim().length >= MIN_REASON;
-
-    const handleLift = () => {
-        if (!reasonOk) return;
-        setError(null);
-        startTransition(async () => {
-            const res = await deleteRuleAction(
-                gameSlug,
-                rule.ruleId,
-                reason.trim(),
-            );
-            if ('error' in res) {
-                setError(res.error);
-                return;
-            }
-            const n = res.result.reinstatedRunCount;
-            toast.success(
-                `Ban lifted — ${n} run${n === 1 ? '' : 's'} reinstated.`,
-            );
-            onLifted(rule.ruleId);
-        });
-    };
-
     return (
-        <>
-            <tr className={styles.row}>
-                <td className={styles.runnerCell}>
-                    <span className={styles.runner}>
-                        <UserLink
-                            username={rule.targetDisplayName}
-                            to="leaderboards"
-                        />
+        <tr className={styles.row}>
+            <td className={styles.runnerCell}>
+                <span className={styles.runner}>
+                    <UserLink
+                        username={rule.targetDisplayName}
+                        to="leaderboards"
+                    />
+                </span>
+                {rule.reason && (
+                    <span className={styles.banReason}>{rule.reason}</span>
+                )}
+            </td>
+            <td>
+                {rule.categoryName ? (
+                    <span className={styles.scopePill}>
+                        {rule.categoryName}
                     </span>
-                    {rule.reason && (
-                        <span className={styles.banReason}>{rule.reason}</span>
-                    )}
-                </td>
-                <td>
-                    {rule.categoryName ? (
-                        <span className={styles.scopePill}>
-                            {rule.categoryName}
-                        </span>
-                    ) : (
-                        <span className={styles.scopePillGame}>Whole game</span>
-                    )}
-                </td>
-                <td className={styles.byCell}>{rule.excludedByName}</td>
-                <td className={styles.dateCell}>
-                    {new Date(rule.createdAt).toLocaleDateString()}
-                </td>
-                <td className={styles.actionCell}>
-                    {!expanded && (
-                        <button
-                            type="button"
-                            className={styles.liftBtn}
-                            onClick={() => {
-                                setExpanded(true);
-                                setError(null);
-                            }}
-                        >
-                            Lift ban
-                        </button>
-                    )}
-                </td>
-            </tr>
-            {expanded && (
-                <tr className={styles.liftRow}>
-                    <td colSpan={5}>
-                        <div className={styles.liftForm}>
-                            <label
-                                htmlFor={`lift-reason-${rule.ruleId}`}
-                                className={styles.liftLabel}
-                            >
-                                Reason for lifting (min {MIN_REASON} characters)
-                            </label>
-                            <textarea
-                                id={`lift-reason-${rule.ruleId}`}
-                                className={styles.liftTextarea}
-                                rows={2}
-                                value={reason}
-                                onChange={(e) => setReason(e.target.value)}
-                                disabled={isPending}
-                            />
-                            {error && (
-                                <div className={styles.errorAlert} role="alert">
-                                    {error}
-                                </div>
-                            )}
-                            <div className={styles.liftActions}>
-                                <button
-                                    type="button"
-                                    className={styles.cancelBtn}
-                                    onClick={() => {
-                                        setExpanded(false);
-                                        setReason('');
-                                        setError(null);
-                                    }}
-                                    disabled={isPending}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="button"
-                                    className={styles.confirmBtn}
-                                    onClick={handleLift}
-                                    disabled={isPending || !reasonOk}
-                                >
-                                    {isPending ? 'Lifting…' : 'Confirm lift'}
-                                </button>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-            )}
-        </>
+                ) : (
+                    <span className={styles.scopePillGame}>Whole game</span>
+                )}
+            </td>
+            <td className={styles.byCell}>{rule.excludedByName}</td>
+            <td className={styles.dateCell}>
+                {new Date(rule.createdAt).toLocaleDateString()}
+            </td>
+            <td className={styles.actionCell}>
+                <button
+                    type="button"
+                    className={styles.liftBtn}
+                    onClick={() => onModerate(rule.ruleId)}
+                >
+                    Moderate
+                </button>
+            </td>
+        </tr>
     );
 }
 
-export function ActiveBans({ gameSlug }: Props) {
+export function ActiveBans({
+    gameSlug,
+    gameId,
+    gameDisplay,
+    boardCategories,
+    variables,
+    canSiteBan,
+}: Props) {
     const [rules, setRules] = useState<GameExclusionRuleRow[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [openRuleId, setOpenRuleId] = useState<number | null>(null);
+    // A slow response must not paint over a newer one.
+    const requestId = useRef(0);
 
-    useEffect(() => {
-        let cancelled = false;
-        setLoading(true);
+    const load = () => {
+        const ticket = ++requestId.current;
         loadBansAction(gameSlug).then((res) => {
-            if (cancelled) return;
+            if (ticket !== requestId.current) return;
             if ('error' in res) {
                 setError(res.error);
             } else {
+                setError(null);
                 setRules(res.rules);
             }
             setLoading(false);
         });
+    };
+
+    useEffect(() => {
+        setLoading(true);
+        load();
         return () => {
-            cancelled = true;
+            requestId.current++;
         };
+        // load reads only gameSlug
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [gameSlug]);
 
-    const onLifted = (ruleId: number) =>
-        setRules((prev) => prev.filter((r) => r.ruleId !== ruleId));
+    // After the list reloads under the modal (the open ban lifted), stay on
+    // the rule if it is still listed, else take the next rule that survived,
+    // else the one before it, else close. Worked out during render so the
+    // modal never renders without a rule while one survives.
+    const ruleOrder = rules.map((r) => r.ruleId);
+    const ruleOrderSignature = ruleOrder.join('|');
+    const [seenRuleOrder, setSeenRuleOrder] = useState<{
+        signature: string;
+        ruleIds: number[];
+    }>({ signature: '', ruleIds: [] });
+    if (seenRuleOrder.signature !== ruleOrderSignature) {
+        setSeenRuleOrder({ signature: ruleOrderSignature, ruleIds: ruleOrder });
+        if (openRuleId !== null && !ruleOrder.includes(openRuleId)) {
+            const previous = seenRuleOrder.ruleIds;
+            const survivors = new Set(ruleOrder);
+            const at = previous.indexOf(openRuleId);
+            let landing: number | null = null;
+            if (at !== -1) {
+                landing =
+                    previous.slice(at + 1).find((id) => survivors.has(id)) ??
+                    previous
+                        .slice(0, at)
+                        .reverse()
+                        .find((id) => survivors.has(id)) ??
+                    null;
+            }
+            setOpenRuleId(landing);
+        }
+    }
+
+    const openIndex =
+        openRuleId === null
+            ? -1
+            : rules.findIndex((r) => r.ruleId === openRuleId);
+    const openRule = openIndex >= 0 ? rules[openIndex] : null;
 
     return (
         <section className={styles.section}>
@@ -236,14 +207,50 @@ export function ActiveBans({ gameSlug }: Props) {
                             {rules.map((rule) => (
                                 <BanRow
                                     key={rule.ruleId}
-                                    gameSlug={gameSlug}
                                     rule={rule}
-                                    onLifted={onLifted}
+                                    onModerate={setOpenRuleId}
                                 />
                             ))}
                         </tbody>
                     </table>
                 </div>
+            )}
+
+            {openRule && (
+                <ModeratePanel
+                    subject={{
+                        kind: 'runner',
+                        userId: openRule.targetId,
+                        runnerName: openRule.targetDisplayName,
+                        categoryId: openRule.categoryId,
+                    }}
+                    context={{
+                        gameSlug,
+                        gameId,
+                        gameDisplay,
+                        categories: boardCategories,
+                        variables,
+                        canSiteBan,
+                    }}
+                    mount="modal"
+                    initialTab="runner"
+                    position={{
+                        index: openIndex + 1,
+                        total: rules.length,
+                    }}
+                    onClose={() => setOpenRuleId(null)}
+                    onMutated={load}
+                    onPrev={
+                        openIndex > 0
+                            ? () => setOpenRuleId(rules[openIndex - 1].ruleId)
+                            : undefined
+                    }
+                    onNext={
+                        openIndex < rules.length - 1
+                            ? () => setOpenRuleId(rules[openIndex + 1].ruleId)
+                            : undefined
+                    }
+                />
             )}
         </section>
     );

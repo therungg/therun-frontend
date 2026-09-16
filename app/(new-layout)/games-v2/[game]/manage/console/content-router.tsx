@@ -199,7 +199,16 @@ export function ContentRouter(props: ContentRouterProps) {
                 </>
             );
         case 'bans':
-            return <ActiveBans gameSlug={game.name} />;
+            return (
+                <ActiveBans
+                    gameSlug={game.name}
+                    gameId={game.id}
+                    gameDisplay={game.display}
+                    boardCategories={props.boardCategories}
+                    variables={props.variables}
+                    canSiteBan={props.canSiteBan}
+                />
+            );
         case 'categories':
             return (
                 <CategoriesPane
