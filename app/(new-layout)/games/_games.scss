@@ -137,6 +137,94 @@
     &[aria-pressed='true'] { @include board.control-pill-active; }
 }
 
+.live-games-rail {
+    margin-bottom: dt.$spacing-xl;
+}
+
+.live-games-rail-track {
+    display: flex;
+    gap: dt.$spacing-md;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: dt.$spacing-xs;
+    // Keep the horizontal scroller from ever widening the page itself.
+    max-width: 100%;
+}
+
+.live-game-tile {
+    display: block;
+    flex: 0 0 auto;
+    width: 96px;
+    text-decoration: none;
+    color: inherit;
+
+    &:hover,
+    &:focus-visible {
+        text-decoration: none;
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+
+    &:hover .live-game-tile-art,
+    &:focus-visible .live-game-tile-art {
+        transform: translateY(-2px);
+        box-shadow: dt.$shadow-md;
+        border-color: rgba(var(--bs-primary-rgb), 0.4);
+    }
+
+    &:hover .live-game-tile-name,
+    &:focus-visible .live-game-tile-name { color: var(--bs-primary); }
+}
+
+.live-game-tile-art {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    border-radius: 0.6rem;
+    overflow: hidden;
+    background: var(--bs-secondary-bg);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.12);
+    box-shadow: dt.$shadow-sm;
+    transition: transform dt.$transition-base, box-shadow dt.$transition-base,
+        border-color dt.$transition-base;
+
+    img { width: 100%; height: 100%; object-fit: cover; }
+}
+
+.live-game-tile-dot {
+    position: absolute;
+    top: 0.35rem;
+    left: 0.35rem;
+    z-index: 2;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--bs-danger);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+.live-game-tile-meta { padding: 0.45rem 0.1rem 0; }
+
+.live-game-tile-name {
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    line-height: 1.25;
+    margin-bottom: 0.1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.live-game-tile-count {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+    font-family: dt.$font-mono;
+}
+
 .games-grid-head {
     display: flex;
     align-items: center;
