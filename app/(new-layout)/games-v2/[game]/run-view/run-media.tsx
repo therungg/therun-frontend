@@ -17,13 +17,6 @@ type MediaApi = { seekToSplit: ((index: number) => void) | null };
 const MediaContext = createContext<MediaApi>({ seekToSplit: null });
 export const useRunMedia = () => useContext(MediaContext);
 
-export function hasMedia(model: RunViewModel): boolean {
-    return (
-        (model.vodUrl != null && isEmbeddableVod(model.vodUrl)) ||
-        model.splits.length > 0
-    );
-}
-
 function VodPlayer({
     url,
     model,

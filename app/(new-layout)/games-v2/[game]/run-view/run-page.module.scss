@@ -407,7 +407,7 @@
 }
 
 // Slot wrappers whose block rendered nothing must not take a gap.
-[data-slot]:empty {
+.grid [data-slot]:empty {
     display: none;
 }
 
@@ -444,7 +444,7 @@
 }
 
 // Board slice and superseded note share one slot.
-[data-slot='board'] {
+.grid [data-slot='board'] {
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-lg;
