@@ -183,7 +183,7 @@ export function RunView({
                         <Link href={claimHref}>submit a corrected claim</Link>.
                     </p>
                 )}
-                <RunMediaProvider model={model}>
+                <RunMediaProvider>
                     <div
                         className={`${pageStyles.grid} ${media ? '' : pageStyles.gridBare}`}
                     >

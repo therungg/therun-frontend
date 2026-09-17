@@ -20,7 +20,11 @@ export function RunnerCard({ model }: { model: RunViewModel }) {
                     e.subcategoryKey === model.subcategoryKey
                 ),
         )
-        .sort((a, b) => (a.rank ?? Infinity) - (b.rank ?? Infinity))
+        .sort(
+            (a, b) =>
+                (a.rank ?? Number.MAX_SAFE_INTEGER) -
+                (b.rank ?? Number.MAX_SAFE_INTEGER),
+        )
         .slice(0, MAX_ENTRIES);
 
     return (

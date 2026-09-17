@@ -20,6 +20,8 @@ export interface EvidenceEditorProps {
     };
     onSaveVod: (url: string | null) => Promise<SaveResult>;
     onSaveDescription: (text: string | null) => Promise<SaveResult>;
+    /** False where a player is already on the page: show the link instead. */
+    showPlayer?: boolean;
 }
 
 /**
@@ -34,6 +36,7 @@ export function EvidenceEditor({
     perms,
     onSaveVod,
     onSaveDescription,
+    showPlayer = true,
 }: EvidenceEditorProps) {
     return (
         <div className={styles.evidenceEditor}>
@@ -41,6 +44,7 @@ export function EvidenceEditor({
                 vodUrl={vodUrl}
                 canEdit={perms.canEditVod}
                 onSaveVod={onSaveVod}
+                showPlayer={showPlayer}
             />
             <DescriptionBlock
                 description={description}
@@ -58,10 +62,12 @@ function VodBlock({
     vodUrl,
     canEdit,
     onSaveVod,
+    showPlayer,
 }: {
     vodUrl: string | null;
     canEdit: boolean;
     onSaveVod: EvidenceEditorProps['onSaveVod'];
+    showPlayer: boolean;
 }) {
     // What we last saved, held locally so the block updates the instant the
     // callback resolves rather than waiting on a refetch from the caller.
@@ -190,7 +196,7 @@ function VodBlock({
 
     return (
         <div className={styles.vodSection}>
-            {isEmbeddableVod(url) ? (
+            {showPlayer && isEmbeddableVod(url) ? (
                 <div className={styles.vodFrame}>
                     <Vod vod={url} />
                 </div>
@@ -203,7 +209,9 @@ function VodBlock({
                 >
                     <BoxArrowUpRight size={14} aria-hidden />
                     <span>
-                        Video attached, opens on another host
+                        {isEmbeddableVod(url)
+                            ? 'Video attached'
+                            : 'Video attached, opens on another host'}
                         <span className={styles.vodUrl}>{url}</span>
                     </span>
                 </a>

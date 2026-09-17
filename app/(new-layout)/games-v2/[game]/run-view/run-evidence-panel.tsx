@@ -7,8 +7,7 @@ import {
 import { attachVodAction } from '../leaderboard/actions/attach-vod.action';
 import { updateManualTimeAction } from '../manage/moderation/shared/actions/manual-times.action';
 import { EvidenceEditor } from '../shared/evidence-editor';
-import { isSameRunner } from '../shared/is-same-runner';
-import { evidencePermissions } from '../shared/use-evidence-permissions';
+import { effectiveEvidencePerms } from './evidence-perms';
 import type { RunViewModel } from './run-view';
 
 type SaveResult = { ok: true } | { error: string };
@@ -32,44 +31,18 @@ export function RunEvidencePanel({
     model,
     sessionUsername,
     isMod,
+    showPlayer = true,
 }: {
     model: RunViewModel;
     sessionUsername: string | null;
     isMod: boolean;
+    showPlayer?: boolean;
 }) {
-    const isOwner =
-        isSameRunner(sessionUsername, model.runnerName) &&
-        !model.isGuest &&
-        model.userId != null;
-
-    const perms = evidencePermissions({
-        isOwner,
+    const { isOwner, ...effectivePerms } = effectiveEvidencePerms(
+        model,
+        sessionUsername,
         isMod,
-        verificationStatus: model.verificationStatus,
-        descriptionRevoked: model.descriptionRevoked ?? false,
-    });
-
-    // A mod who isn't the owner can only be wired to a save path that (a)
-    // exists and (b) has everything it needs from this page's model. Runs
-    // need a board slug+key (only ever known when this run's category
-    // resolved and it has board context); manual times need nothing extra.
-    // Neither mod action supports description, so that half stays locked
-    // regardless.
-    const modVodWireable =
-        isMod &&
-        !isOwner &&
-        (model.kind === 'manual' ||
-            (model.kind === 'run' &&
-                model.boardContext != null &&
-                model.categorySlug != null));
-    const effectivePerms =
-        isMod && !isOwner
-            ? {
-                  ...perms,
-                  canEditVod: perms.canEditVod && modVodWireable,
-                  canEditDescription: false,
-              }
-            : perms;
+    );
 
     const onSaveVod = async (url: string | null): Promise<SaveResult> => {
         if (isOwner) {
@@ -118,6 +91,7 @@ export function RunEvidencePanel({
             vodUrl={model.vodUrl}
             description={model.description}
             perms={effectivePerms}
+            showPlayer={showPlayer}
             onSaveVod={onSaveVod}
             onSaveDescription={onSaveDescription}
         />

@@ -63,13 +63,7 @@ const SeekSetterContext = createContext<(s: MediaApi['seekToSplit']) => void>(
     () => {},
 );
 
-export function RunMediaProvider({
-    model,
-    children,
-}: {
-    model: RunViewModel;
-    children: React.ReactNode;
-}) {
+export function RunMediaProvider({ children }: { children: React.ReactNode }) {
     const [seekToSplit, setSeek] = useState<MediaApi['seekToSplit']>(null);
     // Stable identity so VodPlayer's effect doesn't re-run every render.
     const [publish] = useState(

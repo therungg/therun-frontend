@@ -1,8 +1,9 @@
 import type React from 'react';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { formatRunDate } from '~src/lib/format-run-date';
-import { isSameRunner } from '../shared/is-same-runner';
+import { isEmbeddableVod } from '~src/lib/vod-url';
 import { EvidenceDialog } from './evidence-dialog';
+import { effectiveEvidencePerms } from './evidence-perms';
 import { RunActions } from './run-actions';
 import { formatGap } from './run-format';
 import styles from './run-page.module.scss';
@@ -34,11 +35,8 @@ export function RunStatStrip({
 }) {
     const stats = model.timerStats;
     const sob = stats?.sumOfBests ?? null;
-    const isOwner =
-        isSameRunner(sessionUsername, model.runnerName) &&
-        !model.isGuest &&
-        model.userId != null;
-    const canEditEvidence = isOwner || isMod;
+    const perms = effectiveEvidencePerms(model, sessionUsername, isMod);
+    const canEditEvidence = perms.canEditVod || perms.canEditDescription;
 
     return (
         <div className={styles.strip}>
@@ -84,13 +82,20 @@ export function RunStatStrip({
                     )}
                 </Cell>
             )}
+            {model.vodUrl && !isEmbeddableVod(model.vodUrl) && (
+                <Cell label="Video">
+                    <a href={model.vodUrl} target="_blank" rel="noreferrer">
+                        Link
+                    </a>
+                </Cell>
+            )}
             <div className={styles.stripActions}>
                 {canEditEvidence && model.vodUrl && (
                     <EvidenceDialog
                         model={model}
                         sessionUsername={sessionUsername}
                         isMod={isMod}
-                        label="Edit video"
+                        label="Edit"
                     />
                 )}
                 <RunActions model={model} sessionUsername={sessionUsername} />

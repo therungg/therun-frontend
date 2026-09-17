@@ -1,6 +1,8 @@
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { parseSubcategoryKey } from '~src/lib/run-view/parse-subcategory-key';
+import { normalizeVariableName } from '~src/lib/variables/keys';
 import { formatSubcategoryKey } from '../labels';
 import { CountryFlag } from '../leaderboard/country-flag';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
@@ -22,26 +24,20 @@ export function RunHero({
     const primaryTime = model.realTime ?? model.gameTime;
     const subcategoryLabel = formatSubcategoryKey(model.subcategoryKey);
     const ctx = model.boardContext;
-    // Only show a pill for a variable value the subcategory label doesn't
-    // already carry. Compare case-insensitively against each label part and
-    // each raw value in the key ("name=value" pairs).
-    const covered = new Set(
-        [...subcategoryLabel.split(' · '), ...model.subcategoryKey.split('|')]
-            .map((part) => {
-                const eq = part.indexOf('=');
-                return (eq >= 0 ? part.slice(eq + 1) : part)
-                    .trim()
-                    .toLowerCase();
-            })
-            .filter(Boolean),
+    // Subcategory variables are already in the crumb label; pill the rest.
+    // Both the key's names and `variables`' keys are `nameNormalized`.
+    const subcategoryNames = new Set(
+        parseSubcategoryKey(model.subcategoryKey).map((p) =>
+            normalizeVariableName(p.name),
+        ),
     );
-    const variableValues = Object.values(model.variables).filter(
-        (v) => !covered.has(v.trim().toLowerCase()),
+    const variablePills = Object.entries(model.variables).filter(
+        ([name]) => !subcategoryNames.has(normalizeVariableName(name)),
     );
 
     return (
         <header className={styles.hero}>
-            <nav className={styles.crumb}>
+            <nav aria-label="Breadcrumb" className={styles.crumb}>
                 <Link href={gameHref} className={styles.crumbGame}>
                     {model.game.image && (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -62,9 +58,9 @@ export function RunHero({
                         <Link href={boardHref}>{subcategoryLabel}</Link>
                     </>
                 )}
-                {variableValues.map((v) => (
-                    <span key={v} className={styles.varPill}>
-                        {v}
+                {variablePills.map(([name, value]) => (
+                    <span key={name} className={styles.varPill}>
+                        {value}
                     </span>
                 ))}
             </nav>

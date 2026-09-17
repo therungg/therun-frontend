@@ -44,6 +44,7 @@ export function EvidenceDialog({
                         model={model}
                         sessionUsername={sessionUsername}
                         isMod={isMod}
+                        showPlayer={false}
                     />
                 </div>
             </BoardDialog>
