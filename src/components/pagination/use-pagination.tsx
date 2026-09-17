@@ -32,21 +32,35 @@ function usePagination<T>(
         debounce = 400;
     }
 
+    // Stable string form of `params` for cache keys and the effect below.
+    // Call sites pass an inline object literal, a fresh reference every
+    // render, so anything keyed or watched on `params` itself would never
+    // hit the cache / would refetch every render. When params is undefined
+    // (generic-fetcher, races-fetcher, leaderboard-fetcher today) this is
+    // '', which keeps their cache keys byte-identical to before.
+    const paramsKey = params ? JSON.stringify(params) : '';
+    const buildKey = (page: number, query: string) =>
+        paramsKey ? `${page}-${query}-${paramsKey}` : `${page}-${query}`;
+
     const [data, setData] = useState<{ [key: string]: PaginatedData<T> }>({
-        '1-': initialData,
+        [buildKey(1, '')]: initialData,
     });
     const [currentData, setCurrentData] = useState(initialData);
     const [isLoading, setIsLoading] = useState(false);
 
-    const { search, currentPage } = useContext(PaginationContext);
+    const { search, currentPage, setCurrentPage } =
+        useContext(PaginationContext);
     const [debouncedSearch] = useDebounceValue(search, debounce);
 
     const fetchData = useCallback(
         async (page: number, query: string) => {
             setIsLoading(true);
 
-            if (data[`${currentPage}-${query}`]) {
-                setCurrentData(data[`${currentPage}-${query}`]);
+            const readKey = buildKey(currentPage, query);
+            const writeKey = buildKey(page, query);
+
+            if (data[readKey]) {
+                setCurrentData(data[readKey]);
             } else {
                 const result = await fetchPage(
                     page,
@@ -59,12 +73,12 @@ function usePagination<T>(
 
                 setData((prevData) => ({
                     ...prevData,
-                    [`${page}-${query}`]: result,
+                    [writeKey]: result,
                 }));
             }
             setIsLoading(false);
         },
-        [currentPage, data, fetchPage, fullData, pageSize, params],
+        [currentPage, data, fetchPage, fullData, pageSize, params, paramsKey],
     );
 
     useEffect(() => {
@@ -76,12 +90,24 @@ function usePagination<T>(
     }, [currentPage]);
 
     useEffect(() => {
-        if (data[`${currentPage}-${search}`]) {
+        if (data[buildKey(currentPage, search)]) {
             fetchData(currentPage, search);
         } else {
             setIsLoading(true);
         }
     }, [search]);
+
+    // A sort/filter change riding in `params` invalidates the current page
+    // of results just as much as a search or page change does — refetch and
+    // land back on page 1. Guard on the serialized string, not on `params`
+    // object identity, since a new literal is passed in on every render.
+    useEffect(() => {
+        fetchData(1, search);
+        if (currentPage !== 1) {
+            setCurrentPage(1);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [paramsKey]);
 
     return {
         data: currentData.items,

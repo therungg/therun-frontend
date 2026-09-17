@@ -1,4 +1,5 @@
 @use '../styles/design-tokens' as dt;
+@use '../styles/board' as board;
 
 .games-grid {
     display: grid;
@@ -121,4 +122,33 @@
 // categories only on pointer devices and let the tile stand on art + name.
 @media (hover: none) {
     .game-tile-peek { display: none; }
+}
+
+.games-sort-rail {
+    display: flex;
+    gap: 0.15rem;
+    flex-wrap: wrap;
+    margin-left: auto;
+}
+
+.games-sort-pill {
+    @include board.control-pill;
+
+    &[aria-pressed='true'] { @include board.control-pill-active; }
+}
+
+.games-grid-head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin: 0 0 0.9rem;
+
+    h2 {
+        font-size: dt.$font-size-md;
+        font-weight: dt.$heading-font-weight;
+        letter-spacing: dt.$heading-letter-spacing;
+        margin: 0;
+        color: var(--bs-emphasis-color);
+    }
 }
