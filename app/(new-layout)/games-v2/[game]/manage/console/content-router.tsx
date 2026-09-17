@@ -198,8 +198,24 @@ export function ContentRouter(props: ContentRouterProps) {
                         />
                     )}
                     {props.attentionPending ? (
-                        <div className={styles.surface}>
-                            <div className={styles.skeleton} aria-busy />
+                        // Same anatomy as the loaded pane — the heading is
+                        // there from the start, only the list is waiting.
+                        <div>
+                            <header className={styles.paneHeader}>
+                                <div>
+                                    <div className={styles.paneEyebrow}>
+                                        Queue
+                                    </div>
+                                    <h2 className={styles.paneTitle}>
+                                        Needs attention
+                                    </h2>
+                                </div>
+                            </header>
+                            <div
+                                className={styles.skeleton}
+                                aria-busy
+                                aria-label="Loading what needs attention"
+                            />
                         </div>
                     ) : (
                         <NeedsAttention
