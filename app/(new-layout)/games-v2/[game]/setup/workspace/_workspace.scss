@@ -1,0 +1,164 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/board' as board;
+
+// ============================================================
+// Setup workspace vocabulary: the List, Groups, Settings and
+// Subcategories & filters screens share one set of panel heads,
+// quiet tables and secondary actions. Everything composes the
+// board vocabulary (_board.scss) and theme vars, so dark, light
+// and themed boards all follow.
+// ============================================================
+
+// Cells sit a little looser than the dense board table: 10px vertical.
+$cell-pad-y: calc(#{dt.$spacing-sm} + 2px);
+$divider: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+
+// ---- Panel heading ------------------------------------------
+// Sentence-case title with a muted hint beside it.
+@mixin panel-head {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs dt.$spacing-md;
+    min-width: 0;
+}
+
+@mixin panel-title {
+    margin: 0;
+    font-size: dt.$font-size-base;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+@mixin panel-hint {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+// ---- Quiet table --------------------------------------------
+// Apply inside a board-table: sentence-case muted column labels and a
+// divider under the header and between every row.
+@mixin quiet-table {
+    thead th {
+        font-size: dt.$font-size-xs;
+        font-weight: 600;
+        text-transform: none;
+        letter-spacing: normal;
+        color: var(--bs-secondary-color);
+        padding: dt.$spacing-sm dt.$spacing-md;
+        border-bottom: $divider;
+    }
+
+    tbody td {
+        padding: $cell-pad-y dt.$spacing-md;
+        border-bottom: $divider;
+    }
+}
+
+// Group band inside a table body (Main / Miscellaneous): a quiet section
+// label on a divider. Apply to the band's <tr>, on a single class selector.
+@mixin group-band {
+    th {
+        @include board.board-eyebrow;
+        padding: dt.$spacing-lg dt.$spacing-md dt.$spacing-xs;
+        color: var(--bs-tertiary-color);
+        text-align: left;
+        border-bottom: $divider;
+    }
+
+    // A label, not a row of data: hovering it highlights nothing. Doubled
+    // class so it outranks board-table's `tbody tr:hover`.
+    &#{&}:hover {
+        background: transparent;
+    }
+}
+
+// ---- Secondary action ---------------------------------------
+// Outlined create button ("New category", "New group", "Add a filter").
+// The filled primary is kept for a step's one commit action.
+@mixin secondary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: dt.$spacing-xs;
+    flex-shrink: 0;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.9);
+    border-radius: dt.$radius-md;
+    background: rgba(var(--bs-body-color-rgb), 0.05);
+    color: var(--bs-emphasis-color);
+    font: inherit;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color dt.$transition-fast,
+        border-color dt.$transition-fast;
+
+    &:hover:not(:disabled) {
+        background: rgba(var(--bs-body-color-rgb), 0.1);
+        border-color: rgba(var(--bs-primary-rgb), 0.6);
+    }
+
+    &:focus-visible {
+        outline: 0;
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.3);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
+
+    @media (pointer: coarse) {
+        min-height: 44px;
+    }
+}
+
+// ---- Step buttons -------------------------------------------
+// Reorder arrows: hidden at rest, shown when the pointer is over the row or
+// focus is inside it (so keyboard users still reach them), and always shown on
+// touch. `$row` is the element that counts as the row (a <tr>, a card <li>).
+@mixin step-btn($row: 'tr', $size: 1.25rem) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: $size;
+    height: $size;
+    padding: 0;
+    border: 0;
+    border-radius: dt.$radius-md;
+    background: transparent;
+    color: var(--bs-secondary-color);
+    opacity: 0;
+    transition: opacity dt.$transition-fast;
+
+    #{$row}:hover &,
+    #{$row}:focus-within & {
+        opacity: 1;
+    }
+
+    #{$row}:hover &:disabled,
+    #{$row}:focus-within &:disabled {
+        opacity: 0.3;
+    }
+
+    @media (hover: none) {
+        opacity: 1;
+
+        &:disabled {
+            opacity: 0.3;
+        }
+    }
+
+    &:hover:not(:disabled) {
+        background: rgba(var(--bs-primary-rgb), 0.08);
+        color: var(--bs-emphasis-color);
+    }
+
+    &:focus-visible {
+        opacity: 1;
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+}

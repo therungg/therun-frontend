@@ -1,10 +1,6 @@
 @use '../../../../styles/design-tokens' as dt;
 @use '../../../../styles/board' as board;
-
-// Rows and cells on this screen sit a little looser than the dense board
-// table: 10px of vertical padding per cell.
-$cell-pad-y: calc(#{dt.$spacing-sm} + 2px);
-$divider: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+@use 'workspace' as ws;
 
 .wrap {
     display: flex;
@@ -14,23 +10,15 @@ $divider: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
 
 // ---- Panel heading (shared by both panels) ------------------
 .panelHead {
-    display: flex;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: dt.$spacing-xs dt.$spacing-md;
-    min-width: 0;
+    @include ws.panel-head;
 }
 
 .panelTitle {
-    margin: 0;
-    font-size: dt.$font-size-base;
-    font-weight: 600;
-    color: var(--bs-emphasis-color);
+    @include ws.panel-title;
 }
 
 .panelHint {
-    font-size: dt.$font-size-xs;
-    color: var(--bs-secondary-color);
+    @include ws.panel-hint;
 }
 
 // ---- From runs ----------------------------------------------
@@ -137,36 +125,8 @@ $divider: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
 
 // Secondary tier: outlined, not the filled primary.
 .newAction {
-    display: inline-flex;
-    align-items: center;
-    gap: dt.$spacing-xs;
-    flex-shrink: 0;
+    @include ws.secondary-btn;
     margin-left: auto;
-    padding: dt.$spacing-sm dt.$spacing-md;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.9);
-    border-radius: dt.$radius-md;
-    background: rgba(var(--bs-body-color-rgb), 0.05);
-    color: var(--bs-emphasis-color);
-    font-size: dt.$font-size-sm;
-    font-weight: 600;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: background-color dt.$transition-fast,
-        border-color dt.$transition-fast;
-
-    &:hover:not(:disabled) {
-        background: rgba(var(--bs-body-color-rgb), 0.1);
-        border-color: rgba(var(--bs-primary-rgb), 0.6);
-    }
-
-    &:focus-visible {
-        outline: 0;
-        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.3);
-    }
-
-    @media (pointer: coarse) {
-        min-height: 44px;
-    }
 }
 
 .empty {
@@ -184,15 +144,7 @@ $divider: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
     width: 100%;
 
     // Sentence-case, quiet column labels instead of the board eyebrow.
-    thead th {
-        font-size: dt.$font-size-xs;
-        font-weight: 600;
-        text-transform: none;
-        letter-spacing: normal;
-        color: var(--bs-secondary-color);
-        padding: dt.$spacing-sm dt.$spacing-md;
-        border-bottom: $divider;
-    }
+    @include ws.quiet-table;
 
     // The mixin left-aligns every header; numeric and action columns follow
     // their cells instead.
@@ -202,26 +154,13 @@ $divider: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
     }
 
     tbody td {
-        padding: $cell-pad-y dt.$spacing-md;
-        border-bottom: $divider;
         white-space: nowrap;
     }
 }
 
 // Group band (Main / Miscellaneous): a quiet section label on a divider.
 .groupRow {
-    th {
-        @include board.board-eyebrow;
-        padding: dt.$spacing-lg dt.$spacing-md dt.$spacing-xs;
-        color: var(--bs-tertiary-color);
-        text-align: left;
-        border-bottom: $divider;
-    }
-
-}
-
-.table .groupRow:hover {
-    background: transparent;
+    @include ws.group-band;
 }
 
 .rowDragging {
@@ -247,47 +186,7 @@ $divider: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
 // Only the grip shows at rest; the step buttons come up on row hover or when
 // focus is inside the row, so keyboard users still reach them.
 .orderBtn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.25rem;
-    height: 1.25rem;
-    padding: 0;
-    border: 0;
-    border-radius: dt.$radius-md;
-    background: transparent;
-    color: var(--bs-secondary-color);
-    opacity: 0;
-    transition: opacity dt.$transition-fast;
-
-    tr:hover &,
-    tr:focus-within & {
-        opacity: 1;
-    }
-
-    tr:hover &:disabled,
-    tr:focus-within &:disabled {
-        opacity: 0.3;
-    }
-
-    // No hover on touch: keep them visible.
-    @media (hover: none) {
-        opacity: 1;
-
-        &:disabled {
-            opacity: 0.3;
-        }
-    }
-
-    &:hover:not(:disabled) {
-        background: rgba(var(--bs-primary-rgb), 0.08);
-        color: var(--bs-emphasis-color);
-    }
-
-    &:focus-visible {
-        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
-        outline-offset: 1px;
-    }
+    @include ws.step-btn('tr');
 }
 
 // Name takes the flexible width; every other column is sized to content.
