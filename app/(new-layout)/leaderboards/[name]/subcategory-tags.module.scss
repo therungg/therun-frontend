@@ -1,0 +1,35 @@
+@use '../../styles/design-tokens' as dt;
+
+/* Sits on a baseline row next to the category name, so the tags align with it. */
+.tags {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 3px;
+    min-width: 0;
+}
+
+/*
+ * A subcategory value is what the runner chose to run, not a note about the
+ * run: it carries the board's accent, held at a tint that stays under the
+ * category name it qualifies. Values are proper nouns ("Luigi", "Night
+ * Flight"), so the tag never upper-cases them.
+ */
+.tag {
+    --tag-accent: var(--board-accent, var(--bs-primary));
+
+    display: inline-block;
+    max-width: 100%;
+    padding: 0.05rem 0.4rem;
+    border: 1px solid
+        color-mix(in srgb, var(--tag-accent) 30%, transparent);
+    border-radius: dt.$radius-sm;
+    background: color-mix(in srgb, var(--tag-accent) 12%, transparent);
+    color: color-mix(in srgb, var(--tag-accent) 55%, var(--bs-emphasis-color));
+    font-size: dt.$font-size-2xs;
+    font-weight: 600;
+    line-height: 1.5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

@@ -12,7 +12,6 @@ import { BoardDialog } from '../../games-v2/[game]/shared/board-dialog';
 import { EntryStatus } from './entry-row';
 import {
     entryHref,
-    entrySubcategoryLabel,
     formatEntryTime,
     formatProfileDate,
     gameRefOf,
@@ -33,6 +32,7 @@ import {
     resolvePins,
     samePin,
 } from './showcase-rules';
+import { SubcategoryTags } from './subcategory-tags';
 
 const MEDALS: Record<number, string> = { 1: 'gold', 2: 'silver', 3: 'bronze' };
 
@@ -114,7 +114,6 @@ export function PinCard({
 }) {
     const { entry, game } = pin;
     const medal = entry.rank !== null ? MEDALS[entry.rank] : undefined;
-    const vars = entrySubcategoryLabel(entry);
     const timing = timingLabel(entry);
     const gameRef = gameRefOf(game);
     const href = entryHref(gameRef, entry);
@@ -175,10 +174,8 @@ export function PinCard({
                         ) : (
                             entry.category
                         )}
-                        {entry.level ? ` · ${entry.level}` : ''}
-                        {vars ? (
-                            <span className={styles.pinVars}> · {vars}</span>
-                        ) : null}
+                        {entry.level ? ` · ${entry.level}` : ''}{' '}
+                        <SubcategoryTags entry={entry} />
                     </span>
                 </div>
             </div>
