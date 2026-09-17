@@ -29,6 +29,7 @@ const job = (over: Partial<SrcImportJob>): SrcImportJob => ({
     createdAt: '2026-09-03T10:00:00Z',
     commitStatus: null,
     commitPhase: null,
+    commitError: null,
     importedRunsCount: 0,
     importSkippedCount: 0,
     configAppliedAt: null,

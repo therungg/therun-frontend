@@ -271,7 +271,8 @@ export function ImportSection({
                 job &&
                 failed && (
                     <p className={styles.error}>
-                        Import failed: {job.error ?? 'unknown error'}
+                        Import failed:{' '}
+                        {job.commitError ?? job.error ?? 'unknown error'}
                     </p>
                 )
             )}

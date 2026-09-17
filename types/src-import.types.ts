@@ -46,6 +46,8 @@ export interface SrcImportJob {
     // ---- commit phase (docs/frontend-guide-src-import.md "Commit phase") ----
     commitStatus: SrcImportCommitStatus | null;
     commitPhase: SrcImportCommitPhase | null;
+    /** Why the commit phase stopped. `error` only ever covers staging. */
+    commitError: string | null;
     importedRunsCount: number;
     importSkippedCount: number;
     configAppliedAt: string | null;

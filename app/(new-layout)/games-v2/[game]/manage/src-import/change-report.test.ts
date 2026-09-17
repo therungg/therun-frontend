@@ -27,6 +27,7 @@ const base: SrcImportJob = {
     createdAt: '2026-09-03T10:00:00Z',
     commitStatus: 'applied',
     commitPhase: 'config',
+    commitError: null,
     importedRunsCount: 0,
     importSkippedCount: 0,
     configAppliedAt: '2026-09-03T10:01:00Z',
