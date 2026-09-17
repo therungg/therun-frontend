@@ -13,8 +13,8 @@ export interface CategorySeed {
  * timing (primary clock AND the step-1 time-columns choice), so a category
  * that's never been touched doesn't land on the board with no timing. Rules
  * are authored per category, so nothing is seeded there. Pure so the
- * `'rt'|'gt'|null` -> `'realtime'|'gametime'` mapping (feature-on transition in
- * step-categories.tsx) is testable without rendering the step.
+ * `'rt'|'gt'|null` -> `'realtime'|'gametime'` mapping (feature-on transition on
+ * the categories list) is testable without rendering a screen.
  */
 export function buildCategorySeed(
     metadata: Pick<

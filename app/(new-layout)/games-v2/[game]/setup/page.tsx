@@ -105,12 +105,16 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         catData.categories.map((c) => c.id),
     );
 
+    // Full-game categories only: level boards are counted by the Levels step,
+    // and the category screens never show them.
+    const fullGame = splitLevelBoards(
+        catData.categories,
+        catData.groups,
+    ).fullGame;
+    const fullGameIds = new Set(fullGame.map((c) => c.id));
+
     const completeness = computeCompleteness({
-        // Full-game categories only: level boards are counted by the Levels
-        // step, and the category steps never show them.
-        categories: categoryFactsFromResolved(
-            splitLevelBoards(catData.categories, catData.groups).fullGame,
-        ),
+        categories: categoryFactsFromResolved(fullGame),
         policyCount: policies.length,
         requireVideoAnywhere: catData.categories.some(
             (c) => !c.archived && c.requireVideo,
@@ -135,12 +139,7 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         verificationConfigured,
         // Full-game variables only; a level's variables belong to Levels.
         ...variableFactsFromRows(
-            variables.filter((v) =>
-                splitLevelBoards(
-                    catData.categories,
-                    catData.groups,
-                ).fullGame.some((c) => c.id === v.categoryId),
-            ),
+            variables.filter((v) => fullGameIds.has(v.categoryId)),
         ),
         srcImport: {
             linked: settingsJob !== null,

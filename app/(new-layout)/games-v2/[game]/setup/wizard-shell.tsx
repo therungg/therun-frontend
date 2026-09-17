@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useRef } from 'react';
 import Link from '~src/components/link';
 import { consoleLocationForStep } from '~src/lib/console/vocabulary';
 import { boardPulse } from '~src/lib/setup/board-pulse';
@@ -49,6 +50,26 @@ export function WizardShell({ data, initialLocation }: Props) {
             data.groups,
         ) ?? initialLocation;
     const { step, sub } = location;
+
+    // A bare /setup lands on the first unfinished screen, but that answer
+    // moves as the moderator works: every write re-renders the page with a
+    // fresh `initialLocation`. Write the landing spot into the URL once, so a
+    // later write can't move them to another screen mid-edit.
+    const pinned = useRef(false);
+    useEffect(() => {
+        if (pinned.current) return;
+        pinned.current = true;
+        if (searchParams.get('step')) return;
+        const cat = searchParams.get('cat');
+        router.replace(
+            setupHref(
+                data.game.name,
+                initialLocation,
+                cat ? { cat } : undefined,
+            ),
+            { scroll: false },
+        );
+    }, [data.game.name, initialLocation, router, searchParams]);
     const meta = setupStepMeta(step);
     const next = adjacentLocation(location, 1);
     const prev = adjacentLocation(location, -1);

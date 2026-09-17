@@ -51,7 +51,7 @@ export interface CompletenessInput {
     hasTheme?: boolean;
     /**
      * Distinct subcategory / filter variable names on the board, for the
-     * variables step's summary. Optional — an empty board has none, and the
+     * Categories step's summary. Optional — an empty board has none, and the
      * step never blocks on them.
      */
     subcategoryVariableCount?: number;
@@ -93,7 +93,7 @@ export const SETUP_STEP_ORDER: SetupStepId[] = [
 
 /**
  * Distinct subcategory/filter variable names from the per-category variable
- * rows, for the variables step summary. Rows repeat a logical variable once per
+ * rows, for the Categories step summary. Rows repeat a logical variable once per
  * category, so dedupe by nameNormalized within each role.
  */
 export function variableFactsFromRows(variables: VariableRow[]): {

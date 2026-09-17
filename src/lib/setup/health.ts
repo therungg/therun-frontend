@@ -1,6 +1,10 @@
 // Ongoing board quality signal — the post-setup sibling of completeness.ts.
 // Pure module: consumed by the console health card and, later, discovery ranking.
-import type { BoardCompleteness, SetupStepId } from './completeness';
+import type {
+    BoardCompleteness,
+    SetupStepId,
+    SetupStepState,
+} from './completeness';
 
 export type HealthGrade = 'healthy' | 'needs-attention' | 'at-risk';
 
@@ -29,6 +33,12 @@ const STEP_PANE: Partial<Record<SetupStepId, string>> = {
     levels: 'levels',
 };
 
+// The groups blocker lives on the console's own Groups pane, not the index.
+function paneFor(step: SetupStepState): string | null {
+    if (step.step === 'categories' && step.sub === 'groups') return 'groups';
+    return STEP_PANE[step.step] ?? null;
+}
+
 // The stale-triage line ("N triage items waiting more than a week") is gone
 // with the Needs attention pane it deep-linked into — health is currently
 // setup-completeness only.
@@ -42,13 +52,13 @@ export function computeBoardHealth(input: {
             items.push({
                 severity: 'blocker',
                 label: step.summary,
-                pane: STEP_PANE[step.step] ?? null,
+                pane: paneFor(step),
             });
         } else if (step.status === 'warning') {
             items.push({
                 severity: 'warning',
                 label: step.summary,
-                pane: STEP_PANE[step.step] ?? null,
+                pane: paneFor(step),
             });
         }
     }

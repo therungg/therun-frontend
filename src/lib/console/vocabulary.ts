@@ -198,10 +198,10 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
 };
 
 /**
- * Which console concepts a wizard step covers. Two steps are multi-concept:
- * step 1 carries the board-wide timing and rules-template defaults alongside
- * the game's own details, and step 4 is every per-category setting on one
- * screen. The console reaches the per-category ones from the category index.
+ * Which console concepts a wizard step covers. Game details is multi-concept:
+ * it carries the board-wide timing and rules-template defaults alongside the
+ * game's own details. Categories and Levels cover their screens (list, groups,
+ * settings, subcategories & filters) through their own panes.
  */
 export const STEP_CONCEPTS: Record<SetupStepId, ConceptId[]> = {
     import: ['import'],
