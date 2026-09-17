@@ -6,6 +6,7 @@ import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type { CategoryConfigRow } from '~src/lib/console/category-rows';
 import type { BoardCompleteness } from '~src/lib/setup/completeness';
 import type { BoardHealth } from '~src/lib/setup/health';
+import { workspacePaneOf } from '~src/lib/setup/workspace';
 import type {
     BoardClaimRequest,
     GameModerator,
@@ -22,11 +23,7 @@ import type {
     WorklistDigest,
     WorklistPage,
 } from '../../../../../../types/worklist.types';
-import { VariablesGrid } from '../../setup/steps/variables/variables-grid';
 import { BoardCuration } from '../boards/board-curation';
-import { GameTab } from '../game-tab/game-tab';
-import type { ReorderChange } from '../game-tab/reorder-changes';
-import { LevelsPane } from '../levels/levels-pane';
 import { MatchRunnersPane } from '../match-runners/match-runners-pane';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import { ModApplicationsCard } from '../moderation/attention/mod-applications-card';
@@ -38,12 +35,12 @@ import { WorklistPane } from '../moderation/worklist/worklist-pane';
 import { BoardOverview } from '../overview/board-overview';
 import { ReassignPane } from '../reassignments/reassign-pane';
 import { SrcImportPane } from '../src-import/src-import-pane';
-import { CategoriesPane } from './categories-pane';
 import type { GameDetailsData } from './game-details-pane';
 import { GameDetailsPane } from './game-details-pane';
 import { ModeratorsPane } from './moderators-pane';
 import type { NavGroup, NavItemId } from './nav-model';
 import { ThemePane } from './theme-pane';
+import { WorkspacePane } from './workspace-pane';
 
 export interface ContentRouterProps {
     activeItem: NavItemId | null;
@@ -98,18 +95,6 @@ export interface ContentRouterProps {
     canModerate: boolean;
     /** Live worklist count from the pane, forwarded to the sidebar badge. */
     onQueueCountChange?: (count: number) => void;
-    onGroupsChange: (g: ManageGroup[]) => void;
-    onRowChange: (
-        categoryId: number,
-        patch: { isMain?: boolean; active?: boolean },
-    ) => void;
-    onRowGroupChange: (
-        categoryId: number,
-        groupId: number | null,
-        groupName: string | null,
-    ) => void;
-    onRowsReorder: (changes: ReorderChange[]) => void;
-    onRowAdd: (row: ManageCategoryRow) => void;
     onEditCategory: (categoryId: number) => void;
 }
 
@@ -141,6 +126,22 @@ export function ContentRouter(props: ContentRouterProps) {
         moderators,
         onNavigate,
     } = props;
+
+    const workspace = workspacePaneOf(activeItem);
+    if (workspace) {
+        return (
+            <WorkspacePane
+                kind={workspace.kind}
+                sub={workspace.sub}
+                game={game}
+                categories={props.boardCategories}
+                groups={props.boardGroups}
+                variables={props.variables}
+                policies={props.policies}
+                metadata={props.gameDetails?.metadata ?? null}
+            />
+        );
+    }
 
     switch (activeItem) {
         case 'mod-queue':
@@ -210,75 +211,6 @@ export function ContentRouter(props: ContentRouterProps) {
                     canSiteBan={props.canSiteBan}
                 />
             );
-        case 'categories':
-            return (
-                <CategoriesPane
-                    game={game}
-                    categories={props.boardCategories}
-                    groups={props.boardGroups}
-                    policies={props.policies}
-                    variables={props.variables}
-                    metadata={props.gameDetails?.metadata ?? null}
-                />
-            );
-        case 'groups':
-            return (
-                <GameTab
-                    game={game}
-                    rows={props.rows}
-                    groups={props.groups}
-                    boardCategories={props.boardCategories}
-                    boardGroups={props.boardGroups}
-                    onGroupsChange={props.onGroupsChange}
-                    onRowGroupChange={props.onRowGroupChange}
-                />
-            );
-        case 'levels':
-        case 'level-categories':
-            // Level categories are the subcategories table inside the Levels
-            // pane; the old id survives as a deep link to the same pane (see
-            // hiddenLandingIds in nav-model.ts).
-            return (
-                <LevelsPane
-                    game={game}
-                    categories={props.boardCategories}
-                    groups={props.boardGroups}
-                    policies={props.policies}
-                    variables={props.variables}
-                    metadata={props.gameDetails?.metadata ?? null}
-                />
-            );
-        case 'subcategories':
-        case 'filters': {
-            // Two tabs over one grid: a board's splits and its filters are
-            // managed independently, so each is its own page. The grid still
-            // owns the writes — `only` picks which of its two sections is on
-            // screen.
-            const role =
-                activeItem === 'subcategories' ? 'subcategory' : 'filter';
-            return (
-                <div className={styles.surface}>
-                    <div className={styles.paneHeader}>
-                        <div>
-                            <div className={styles.paneEyebrow}>Structure</div>
-                            <h2 className={styles.paneTitle}>
-                                {activeItem === 'subcategories'
-                                    ? 'Subcategories'
-                                    : 'Filters'}
-                            </h2>
-                        </div>
-                    </div>
-                    <VariablesGrid
-                        game={game}
-                        kind="categories"
-                        categories={props.boardCategories}
-                        variables={props.variables}
-                        groups={props.boardGroups}
-                        only={role}
-                    />
-                </div>
-            );
-        }
         case 'boards':
             return (
                 <BoardCuration

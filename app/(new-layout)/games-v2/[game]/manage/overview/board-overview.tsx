@@ -5,7 +5,11 @@ import chrome from '~src/components/console-chrome/console.module.scss';
 import { NAV_ICON } from '~src/components/console-chrome/nav-icons';
 import Link from '~src/components/link';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
-import { CONCEPT_TILE } from '~src/lib/console/vocabulary';
+import {
+    CONCEPT_LABEL,
+    CONCEPT_TILE,
+    type ConceptId,
+} from '~src/lib/console/vocabulary';
 import { splitLevelBoards } from '~src/lib/levels/display';
 import type { BoardCompleteness } from '~src/lib/setup/completeness';
 import type { BoardHealth } from '~src/lib/setup/health';
@@ -39,7 +43,7 @@ function lastLine(job: SrcImportJob | null): string {
 // can reach becomes a quiet destination link so nothing is unreachable from
 // the front door.
 const FEATURED_ON_DASHBOARD = new Set<NavItemId>([
-    'categories',
+    'categories/list',
     'moderators',
     'import',
     'setup',
@@ -253,7 +257,7 @@ export function BoardOverview({
                         <button
                             type="button"
                             className={styles.cardLink}
-                            onClick={() => onNavigate('categories')}
+                            onClick={() => onNavigate('categories/list')}
                         >
                             Manage
                         </button>
@@ -329,7 +333,9 @@ export function BoardOverview({
                                     <button
                                         type="button"
                                         className={styles.tableFootLink}
-                                        onClick={() => onNavigate('categories')}
+                                        onClick={() =>
+                                            onNavigate('categories/list')
+                                        }
                                     >
                                         See all categories
                                     </button>
@@ -448,7 +454,9 @@ export function BoardOverview({
                                 onClick={() => onNavigate(item.id)}
                             >
                                 <Icon size={14} aria-hidden />
-                                {item.label}
+                                {item.id in CONCEPT_LABEL
+                                    ? CONCEPT_LABEL[item.id as ConceptId]
+                                    : item.label}
                             </button>
                         );
                     })}

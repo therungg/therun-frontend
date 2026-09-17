@@ -7,6 +7,7 @@ import { listCategoryVariables } from '~src/lib/leaderboard-variables';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { listPolicies } from '~src/lib/moderation/policies';
 import { normalizeSlug } from '~src/lib/normalize-slug';
+import { kindOfCategory } from '~src/lib/setup/workspace';
 import buildMetadata from '~src/utils/metadata';
 import type { ResolvedCategory } from '../../../../../../../types/leaderboards.types';
 import type { LevelTemplate } from '../../../../../../../types/levels.types';
@@ -47,7 +48,9 @@ export default async function CategoryDetailPage({ params }: Props) {
     if (!game) notFound();
     if (!canModerateGame(session, game.name)) notFound();
 
-    const { categories, levelTemplates } = await resolveCategory(game.id);
+    const { categories, groups, levelTemplates } = await resolveCategory(
+        game.id,
+    );
 
     const categoryId = Number.parseInt(rawId, 10);
     if (!Number.isFinite(categoryId)) notFound();
@@ -60,6 +63,12 @@ export default async function CategoryDetailPage({ params }: Props) {
         categories.find((c) => c.id === categoryId) ??
         (template ? templateAsCategory(template) : undefined);
     if (!category) notFound();
+
+    // A template row is not in `categories`; it belongs to Levels until the
+    // templates are gone.
+    const kind = template
+        ? 'levels'
+        : (kindOfCategory(categoryId, categories, groups) ?? 'categories');
 
     const chrome = await loadConsoleChrome(session, game);
 
@@ -93,11 +102,12 @@ export default async function CategoryDetailPage({ params }: Props) {
             attentionCount={chrome.attentionCount}
             badgeDegraded={chrome.degradedSources.length > 0}
             moderatedGamesCount={chrome.moderatedGamesCount}
-            activeItem="categories"
+            activeItem={`${kind}/settings`}
         >
             <CategoryDetail
                 game={game}
                 category={category}
+                kind={kind}
                 canConfigure={chrome.flags.canConfigure}
                 canModerate={chrome.flags.canModerate}
                 canEditStandards={chrome.flags.canEditStandards}

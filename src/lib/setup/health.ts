@@ -1,10 +1,6 @@
 // Ongoing board quality signal — the post-setup sibling of completeness.ts.
 // Pure module: consumed by the console health card and, later, discovery ranking.
-import type {
-    BoardCompleteness,
-    SetupStepId,
-    SetupStepState,
-} from './completeness';
+import type { BoardCompleteness, SetupStepState } from './completeness';
 
 export type HealthGrade = 'healthy' | 'needs-attention' | 'at-risk';
 
@@ -20,23 +16,14 @@ export interface BoardHealth {
     items: HealthItem[];
 }
 
-// Board-wide steps point at the category index, not at one arbitrary
-// category. `timing` and `rules` used to be per-category panes, so a
-// board-wide warning deep-linked to whichever category happened to be
-// selected in the sidebar picker — which no longer exists.
-// `boards` is deliberately absent: its step status is only ever done/todo, so
-// it never reaches this map, and the curation pane it would name does not
-// exist yet. An unmapped step degrades to plain text, not a broken link.
-const STEP_PANE: Partial<Record<SetupStepId, string>> = {
-    details: 'game-details',
-    categories: 'categories',
-    levels: 'levels',
-};
-
-// The groups blocker lives on the console's own Groups pane, not the index.
+// Board-wide steps point at a page, never at one arbitrary category. A
+// Categories or Levels status carries the screen that fixes it.
 function paneFor(step: SetupStepState): string | null {
-    if (step.step === 'categories' && step.sub === 'groups') return 'groups';
-    return STEP_PANE[step.step] ?? null;
+    if (step.step === 'details') return 'game-details';
+    if (step.step === 'categories' || step.step === 'levels') {
+        return `${step.step}/${step.sub ?? 'list'}`;
+    }
+    return null;
 }
 
 // The stale-triage line ("N triage items waiting more than a week") is gone

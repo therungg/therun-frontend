@@ -2,7 +2,10 @@
 
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'react-bootstrap-icons';
-import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
+import {
+    WORKSPACE_KIND_LABEL,
+    type WorkspaceKind,
+} from '~src/lib/setup/workspace';
 import { formatCount, formatHours } from '~src/utils/format-stats';
 import type {
     ResolvedCategory,
@@ -15,6 +18,7 @@ import styles from './category-detail.module.scss';
 interface Props {
     game: ResolvedGame;
     category: ResolvedCategory;
+    kind: WorkspaceKind;
     canConfigure: boolean;
     canModerate: boolean;
     canEditStandards: boolean;
@@ -31,6 +35,7 @@ interface Props {
 export function CategoryDetail({
     game,
     category,
+    kind,
     canConfigure,
     canModerate,
     canEditStandards,
@@ -44,9 +49,12 @@ export function CategoryDetail({
     return (
         <div className={styles.wrap}>
             <header className={styles.header}>
-                <Link href={`${base}?pane=categories`} className={styles.back}>
+                <Link
+                    href={`${base}?pane=${kind}/settings`}
+                    className={styles.back}
+                >
                     <ChevronLeft size={12} aria-hidden="true" />{' '}
-                    {CONCEPT_LABEL.categories}
+                    {WORKSPACE_KIND_LABEL[kind]}
                 </Link>
                 <h1 className={styles.title}>{category.display}</h1>
                 <CategoryStats category={category} />
@@ -76,6 +84,7 @@ export function CategoryDetail({
                 canEditStandards={canEditStandards}
                 copySources={copySources}
                 context="console"
+                kind={kind}
             />
         </div>
     );

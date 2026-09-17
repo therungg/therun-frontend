@@ -8,10 +8,8 @@ import {
     CloudDownload,
     Collection,
     Controller,
-    Diagram3,
     ExclamationTriangle,
     Flag,
-    Funnel,
     Grid3x3,
     type Icon as IconType,
     Layers,
@@ -23,6 +21,7 @@ import {
     PersonCheck,
     PersonX,
     ShieldLock,
+    Sliders,
     Speedometer2,
     Trophy,
 } from 'react-bootstrap-icons';
@@ -41,15 +40,14 @@ export const NAV_ICON: Record<NavItemId, IconType> = {
     setup: ListCheck,
     'game-details': Controller,
     theme: Palette,
-    categories: ListUl,
-    groups: Collection,
-    // Stacked levels, and the template that fans out across them.
-    levels: Layers,
-    'level-categories': Diagram3,
-    // A grid, because that is literally the surface: categories down, options
-    // across.
-    subcategories: Grid3x3,
-    filters: Funnel,
+    'categories/list': ListUl,
+    'categories/groups': Collection,
+    'categories/settings': Sliders,
+    // A grid, because that is literally the surface: rows down, options across.
+    'categories/subcategories': Grid3x3,
+    'levels/list': Layers,
+    'levels/settings': Sliders,
+    'levels/subcategories': Grid3x3,
     boards: Trophy,
     moderators: ShieldLock,
     reassign: ArrowLeftRight,

@@ -4,7 +4,12 @@
 // can't drift apart again (they had: "Game details" vs "Details & metadata",
 // "Categories" vs "Categories & visibility").
 import type { SetupStepId } from '../setup/completeness';
-import type { WorkspaceSubId } from '../setup/workspace';
+import {
+    WORKSPACE_KIND_LABEL,
+    type WorkspacePaneId,
+    type WorkspaceSubId,
+    workspaceScreen,
+} from '../setup/workspace';
 
 export type ConceptId =
     | 'overview'
@@ -18,23 +23,18 @@ export type ConceptId =
     | 'setup'
     | 'game-details'
     | 'theme'
-    | 'categories'
-    | 'groups'
-    | 'levels'
-    | 'level-categories'
     | 'moderators'
     | 'reassign'
     | 'import'
     | 'match-runners'
     | 'variables'
-    | 'subcategories'
-    | 'filters'
     | 'combinations'
     | 'timing'
     | 'standards'
     | 'rules'
     | 'category-settings'
-    | 'boards';
+    | 'boards'
+    | WorkspacePaneId;
 
 export const CONCEPT_LABEL: Record<ConceptId, string> = {
     overview: 'Overview',
@@ -48,23 +48,24 @@ export const CONCEPT_LABEL: Record<ConceptId, string> = {
     setup: 'Setup wizard',
     'game-details': 'Game details',
     theme: 'Theme',
-    categories: 'Categories',
-    groups: 'Category groups',
-    levels: 'Levels',
-    'level-categories': 'Level categories',
     moderators: 'Moderators',
     reassign: 'Merge games & categories',
     import: 'Import from speedrun.com',
     'match-runners': 'Match runners',
     variables: 'Subcategories & filters',
-    subcategories: 'Subcategories',
-    filters: 'Filters',
     combinations: 'Sub-boards',
     timing: 'Timing',
     standards: 'Minimum time',
     rules: 'Rules',
     'category-settings': 'Settings',
     boards: 'Boards',
+    'categories/list': 'Categories',
+    'categories/groups': 'Category groups',
+    'categories/settings': 'Category settings',
+    'categories/subcategories': 'Subcategories & filters',
+    'levels/list': 'Levels',
+    'levels/settings': 'Level settings',
+    'levels/subcategories': 'Level subcategories & filters',
 };
 
 export function conceptLabel(id: ConceptId): string {
@@ -91,12 +92,13 @@ export const TILE_CONCEPT_IDS = [
     'setup',
     'game-details',
     'theme',
-    'categories',
-    'groups',
-    'levels',
-    'level-categories',
-    'subcategories',
-    'filters',
+    'categories/list',
+    'categories/groups',
+    'categories/settings',
+    'categories/subcategories',
+    'levels/list',
+    'levels/settings',
+    'levels/subcategories',
     'boards',
     'moderators',
     'reassign',
@@ -151,29 +153,33 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
         action: 'Customize the board’s look',
         blurb: 'Pick a color and an optional background image for this board.',
     },
-    categories: {
-        action: 'Configure categories',
-        blurb: 'Browse the categories on this board and open any one to configure it.',
+    'categories/list': {
+        action: 'Choose what is on the board',
+        blurb: 'Add the categories runners submit to, make new ones, and set their order.',
     },
-    groups: {
+    'categories/groups': {
         action: 'Sort categories into groups',
         blurb: 'Bundle related categories so the leaderboard reads in a sensible order.',
     },
-    levels: {
+    'categories/settings': {
+        action: 'Configure categories',
+        blurb: 'Timing, minimum time, rules and milliseconds for every category.',
+    },
+    'categories/subcategories': {
+        action: 'Split and narrow the boards',
+        blurb: 'Subcategories turn a category into several leaderboards; filters narrow one down.',
+    },
+    'levels/list': {
         action: 'Set up individual levels',
-        blurb: 'List the levels; every level category appears on each one.',
+        blurb: 'List the levels; each one is its own board on the Levels dropdown.',
     },
-    'level-categories': {
-        action: 'Define the level categories',
-        blurb: 'The categories and subcategories every level gets — edit once, applied everywhere.',
+    'levels/settings': {
+        action: 'Configure levels',
+        blurb: 'Timing, minimum time, rules and milliseconds for every level.',
     },
-    subcategories: {
-        action: 'Split the boards',
-        blurb: 'Turn a category into several leaderboards — Platform, Region, Glitches — each with its own record.',
-    },
-    filters: {
-        action: 'Narrow the boards',
-        blurb: 'Let runners narrow a leaderboard by something a run carries, without splitting it into more boards.',
+    'levels/subcategories': {
+        action: 'Split and narrow the level boards',
+        blurb: 'Subcategories and filters for levels, set per level.',
     },
     boards: {
         action: 'Curate the boards',
@@ -208,8 +214,8 @@ export const STEP_CONCEPTS: Record<SetupStepId, ConceptId[]> = {
     // The URL slug lives inside the Game details pane, not beside it.
     details: ['game-details', 'timing', 'rules'],
     theme: ['theme'],
-    categories: ['categories'],
-    levels: ['levels'],
+    categories: ['categories/list'],
+    levels: ['levels/list'],
     verification: ['auto-verify'],
     'match-runners': ['match-runners'],
     boards: ['boards'],
@@ -225,10 +231,13 @@ export interface ConsoleLocation {
 const BOARD_PANES: ReadonlySet<ConceptId> = new Set<ConceptId>([
     'game-details',
     'theme',
-    'categories',
-    'groups',
-    'levels',
-    'level-categories',
+    'categories/list',
+    'categories/groups',
+    'categories/settings',
+    'categories/subcategories',
+    'levels/list',
+    'levels/settings',
+    'levels/subcategories',
     'boards',
     'auto-verify',
     'moderators',
@@ -238,14 +247,23 @@ const BOARD_PANES: ReadonlySet<ConceptId> = new Set<ConceptId>([
 ]);
 
 /**
- * Where a wizard step's work lives once setup is done. Board-level steps point
- * at their own pane; per-category steps point at the index rather than at one
- * arbitrary category — which is what health.ts's STEP_PANE used to get wrong.
+ * Where a wizard step's work lives once setup is done. Categories and Levels
+ * point at the page for the screen; other board-level steps point at their
+ * own pane; per-category concepts point at the settings page rather than at
+ * one arbitrary category.
  */
 export function consoleLocationForStep(
     step: SetupStepId,
-    _sub: WorkspaceSubId | null = null,
+    sub: WorkspaceSubId | null = null,
 ): ConsoleLocation | null {
+    if (step === 'categories' || step === 'levels') {
+        const screen = workspaceScreen(step, sub ?? 'list');
+        if (!screen) return null;
+        return {
+            crumb: `${WORKSPACE_KIND_LABEL[step]} ▸ ${screen.label}`,
+            pane: `${step}/${screen.id}`,
+        };
+    }
     const concepts = STEP_CONCEPTS[step];
     if (concepts.length === 0) return null;
     const first = concepts[0];
@@ -253,7 +271,7 @@ export function consoleLocationForStep(
         return { crumb: CONCEPT_LABEL[first], pane: first };
     }
     return {
-        crumb: `${CONCEPT_LABEL.categories} ▸ ${CONCEPT_LABEL[first]}`,
-        pane: 'categories',
+        crumb: `${CONCEPT_LABEL['categories/settings']} ▸ ${CONCEPT_LABEL[first]}`,
+        pane: 'categories/settings',
     };
 }

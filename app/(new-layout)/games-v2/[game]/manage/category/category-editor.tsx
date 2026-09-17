@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from '~src/components/link';
 import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
+import type { WorkspaceKind } from '~src/lib/setup/workspace';
 import type {
     ResolvedCategory,
     ResolvedGame,
@@ -29,6 +30,9 @@ interface Props {
     canModerate: boolean;
     canEditStandards: boolean;
     context: 'console' | 'wizard';
+    /** Whether this is a category or a level — picks the Subcategories &
+     *  filters page the structure link points at. */
+    kind: WorkspaceKind;
     /** All featured categories + game variables/policies, for the "Copy
      *  from…" control. Omitted callers simply don't get the control — it
      *  renders only when this is provided AND the moderator can configure. */
@@ -40,8 +44,8 @@ interface Props {
  * needs to be presentable (timing, rules, minimum, settings).
  *
  * Structure — subcategories, filters and the sub-boards they produce — is NOT
- * a section here any more. It moved to the console's `variables` pane, which
- * is the wizard's grid: every featured category at once, so the place where
+ * a section here any more. It moved to the console's Subcategories & filters
+ * page, which is the wizard's grid: every category of a kind at once, so the place where
  * two categories disagree is visible instead of being something you find by
  * opening them one at a time. Two editors over the same rows is also two
  * full-replace upsert paths, and each one that forgets a field drops it.
@@ -64,6 +68,7 @@ export function CategoryEditor({
     canModerate,
     canEditStandards,
     context,
+    kind,
     copySources,
 }: Props) {
     const visible = useMemo(
@@ -210,7 +215,7 @@ export function CategoryEditor({
                             <Link
                                 href={`/games-v2/${encodeURIComponent(
                                     game.name,
-                                )}/manage?pane=variables`}
+                                )}/manage?pane=${kind}/subcategories`}
                             >
                                 {CONCEPT_LABEL.variables}
                             </Link>{' '}

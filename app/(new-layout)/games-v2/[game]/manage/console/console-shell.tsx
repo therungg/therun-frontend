@@ -10,7 +10,6 @@ import Link from '~src/components/link';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type { CategoryConfigRow } from '~src/lib/console/category-rows';
 import { legacyPaneRedirect } from '~src/lib/console/legacy-panes';
-import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 import type { BoardCompleteness } from '~src/lib/setup/completeness';
 import type { BoardHealth } from '~src/lib/setup/health';
 import type {
@@ -30,7 +29,6 @@ import type {
     WorklistPage,
 } from '../../../../../../types/worklist.types';
 import { BackLink } from '../../shared/back-link';
-import type { ReorderChange } from '../game-tab/reorder-changes';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import { HistoryDrawer } from '../moderation/configure/history-drawer';
 import { ContentRouter } from './content-router';
@@ -60,8 +58,8 @@ export interface ConsoleShellProps {
     categoryConfig: CategoryConfigRow[];
     initialGroups: ManageGroup[];
     /** Board-order groups for the Boards pane (category-grouping sections) —
-     * distinct from `initialGroups`, the ManageGroup shape the index/GameTab
-     * use. Comes free from the same `resolveCategory` call as `categories`. */
+     * distinct from `initialGroups`, the ManageGroup shape the overview
+     * uses. Comes free from the same `resolveCategory` call as `categories`. */
     boardGroups: ResolvedGroup[];
     /** Variables + policies for the Boards pane — loaded whenever a viewer
      * can reach it (canModerate || canConfigure), not gated on canConfigure
@@ -249,9 +247,10 @@ export function ConsoleShell({
         }
     }, [activeItem, game.id]);
 
-    const [rows, setRows] = useState<ManageCategoryRow[]>(initialRows);
-    const [manageGroups, setManageGroups] =
-        useState<ManageGroup[]>(initialGroups);
+    // Server data for the overview; the workspace pages refresh the route
+    // after every write, so these stay current without local copies.
+    const rows = initialRows;
+    const manageGroups = initialGroups;
     const [historyOpen, setHistoryOpen] = useState(false);
 
     // The browser tab title stays the plain page name — it doesn't track
@@ -282,27 +281,6 @@ export function ConsoleShell({
             setHistoryOpen(true);
         }
     }, [searchParams]);
-
-    const applyRowPatch = useCallback(
-        (categoryId: number, patch: { isMain?: boolean }) => {
-            setRows((rs) =>
-                rs.map((r) => (r.id === categoryId ? { ...r, ...patch } : r)),
-            );
-        },
-        [],
-    );
-
-    const applyRowsReorder = useCallback((changes: ReorderChange[]) => {
-        if (changes.length === 0) return;
-        const byId = new Map(changes.map((c) => [c.categoryId, c.sortOrder]));
-        setRows((rs) =>
-            rs.map((r) =>
-                byId.has(r.id)
-                    ? { ...r, sortOrder: byId.get(r.id) as number }
-                    : r,
-            ),
-        );
-    }, []);
 
     // History is a quick-reference overlay, not a destination pane. Setup
     // always leaves the console for its dedicated route.
@@ -359,12 +337,7 @@ export function ConsoleShell({
             .flatMap((g) => g.items)
             .find((it) => it.id === activeItem);
         if (item) return item.label;
-        // `level-categories` is a hidden landing pane (deep-linkable but
-        // merged into the Levels pane's tab, so it never appears in
-        // `groups`) — label it directly.
-        if (activeItem === 'level-categories')
-            return CONCEPT_LABEL['level-categories'];
-        // `queue-history` is likewise a hidden landing pane — it never
+        // `queue-history` is a hidden landing pane — it never
         // appears in `groups` (see hiddenLandingIds in nav-model.ts).
         if (activeItem === 'queue-history') return 'Decided runs';
         return 'Admin console';
@@ -461,19 +434,6 @@ export function ConsoleShell({
                     worklist={worklist}
                     canModerate={flags.canModerate}
                     onQueueCountChange={setLiveQueueCount}
-                    onGroupsChange={setManageGroups}
-                    onRowChange={applyRowPatch}
-                    onRowsReorder={applyRowsReorder}
-                    onRowAdd={(row) => setRows((rs) => [...rs, row])}
-                    onRowGroupChange={(categoryId, groupId, groupName) =>
-                        setRows((rs) =>
-                            rs.map((r) =>
-                                r.id === categoryId
-                                    ? { ...r, groupId, groupName }
-                                    : r,
-                            ),
-                        )
-                    }
                     onEditCategory={(id) => {
                         // A deliberate jump to one category's configuration.
                         // That is now its own route rather than a pane +

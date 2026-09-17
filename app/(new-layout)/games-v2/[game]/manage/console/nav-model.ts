@@ -3,6 +3,13 @@
 
 // Import kept first so the labels below can't drift from the wizard's.
 import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
+import {
+    WORKSPACE_KIND_LABEL,
+    type WorkspaceKind,
+    type WorkspacePaneId,
+    workspacePaneId,
+    workspaceScreens,
+} from '~src/lib/setup/workspace';
 
 export type NavItemId =
     | 'overview'
@@ -17,19 +24,20 @@ export type NavItemId =
     | 'setup'
     | 'game-details'
     | 'theme'
-    | 'categories'
-    | 'groups'
-    | 'levels'
-    | 'level-categories'
-    | 'subcategories'
-    | 'filters'
+    | WorkspacePaneId
     | 'boards'
     | 'moderators'
     | 'reassign'
     | 'import'
     | 'match-runners';
 
-export type NavGroupId = 'overview' | 'moderate' | 'structure' | 'game';
+export type NavGroupId =
+    | 'overview'
+    | 'moderate'
+    | 'categories'
+    | 'levels'
+    | 'structure'
+    | 'game';
 
 export interface NavItem {
     id: NavItemId;
@@ -65,6 +73,13 @@ export interface NavFlags {
 // more — Setup leaves the console and History is an overlay, so both live in
 // the utility footer (buildFooterNav) where their different behavior is
 // visually honest.
+function workspaceNavItems(kind: WorkspaceKind): NavItem[] {
+    return workspaceScreens(kind).map((s) => ({
+        id: workspacePaneId(kind, s.id),
+        label: s.label,
+    }));
+}
+
 const ALL_GROUPS: NavGroup[] = [
     {
         id: 'overview',
@@ -81,22 +96,22 @@ const ALL_GROUPS: NavGroup[] = [
             { id: 'auto-verify', label: CONCEPT_LABEL['auto-verify'] },
         ],
     },
+    // The wizard's Categories and Levels steps, one page per screen, in the
+    // order the wizard walks them.
+    {
+        id: 'categories',
+        label: WORKSPACE_KIND_LABEL.categories,
+        items: workspaceNavItems('categories'),
+    },
+    {
+        id: 'levels',
+        label: WORKSPACE_KIND_LABEL.levels,
+        items: workspaceNavItems('levels'),
+    },
     {
         id: 'structure',
         label: 'Structure',
-        // In the order a board is built: what the boards are (categories,
-        // and levels — which are categories), how each splits, what filters
-        // it, and only then how the rail arranges them into groups.
-        items: [
-            { id: 'boards', label: CONCEPT_LABEL.boards },
-            { id: 'categories', label: CONCEPT_LABEL.categories },
-            // One item now: the level categories (templates) are a tab inside
-            // the Levels pane. ?pane=level-categories still deep-links there.
-            { id: 'levels', label: CONCEPT_LABEL.levels },
-            { id: 'subcategories', label: CONCEPT_LABEL.subcategories },
-            { id: 'filters', label: CONCEPT_LABEL.filters },
-            { id: 'groups', label: CONCEPT_LABEL.groups },
-        ],
+        items: [{ id: 'boards', label: CONCEPT_LABEL.boards }],
     },
     {
         id: 'game',
@@ -122,11 +137,10 @@ function anyConsoleAccess(flags: NavFlags): boolean {
 }
 
 /**
- * The category index is reachable by ANY moderator, because Minimum time is —
- * that used to be the `standards` carve-out here. Now that the six
- * per-category panes are sections on one detail screen, the gating moved to
- * section level (category-detail.tsx): a moderator who cannot configure sees
- * the index and Minimum time, and nothing else.
+ * The Categories and Levels settings pages are reachable by ANY moderator,
+ * because Minimum time is — that used to be the `standards` carve-out here.
+ * The gating inside them is per section (category-detail.tsx): a moderator
+ * who cannot configure sees Minimum time, and nothing else.
  */
 function itemVisible(
     groupId: NavGroupId,
@@ -145,7 +159,10 @@ function itemVisible(
         itemId === 'auto-verify'
     )
         return flags.canModerate;
-    if (itemId === 'categories') return flags.canConfigure || flags.canModerate;
+    // Settings holds Minimum time, which any moderator may set.
+    if (itemId === 'categories/settings' || itemId === 'levels/settings') {
+        return flags.canConfigure || flags.canModerate;
+    }
     // Boards is pulled from the console for now. Hiding it here also drops
     // the `?pane=boards` deep link (resolveInitialPane only accepts visible
     // ids) and the board-overview rail card. Restore by returning
@@ -234,17 +251,12 @@ export function isLandingPaneId(
  * now but every `?pane=attention` / `?pane=bans` link still opens them.
  * `queue-history` is the old Mod queue pane, kept reachable for decided
  * runs (Approved / Declined) and the auto-verify spot check now that
- * `mod-queue` itself opens the worklist. `level-categories` merged into
- * the Levels pane but stays deep-linkable — it lands on the Levels pane's
- * templates tab (see content-router.tsx).
+ * `mod-queue` itself opens the worklist.
  */
 function hiddenLandingIds(flags: NavFlags): NavItemId[] {
-    return [
-        ...(flags.canModerate
-            ? (['attention', 'bans', 'queue-history'] as NavItemId[])
-            : []),
-        ...(flags.canConfigure ? (['level-categories'] as NavItemId[]) : []),
-    ];
+    return flags.canModerate
+        ? (['attention', 'bans', 'queue-history'] as NavItemId[])
+        : [];
 }
 
 /**
