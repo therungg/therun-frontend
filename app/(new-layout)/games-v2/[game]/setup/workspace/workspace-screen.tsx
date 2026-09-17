@@ -9,7 +9,6 @@ import type {
     VariableRow,
 } from '../../../../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
-import { LegacyLevelSubcategories } from '../../manage/levels/legacy-level-subcategories';
 import { CategoryMatrix } from '../steps/matrix/category-matrix';
 import { VariablesGrid } from '../steps/variables/variables-grid';
 import { BoardList } from './board-list';
@@ -77,16 +76,14 @@ export function WorkspaceScreen({
                 />
             );
         case 'subcategories':
-            return kind === 'categories' ? (
+            return (
                 <VariablesGrid
-                    kind="categories"
+                    kind={kind}
                     game={game}
                     categories={categories}
                     variables={variables}
                     groups={groups}
                 />
-            ) : (
-                <LegacyLevelSubcategories game={game} />
             );
     }
 }

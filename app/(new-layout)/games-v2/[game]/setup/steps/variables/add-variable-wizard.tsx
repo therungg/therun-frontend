@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import type { CategoryVariableSuggestion } from '~src/lib/leaderboard-variables';
+import type { WorkspaceKind } from '~src/lib/setup/workspace';
 import { SECTION, type VariableRoleId } from '~src/lib/variables/language';
 import type {
     ResolvedCategory,
@@ -38,6 +39,7 @@ function parseOptions(raw: string): string[][] {
 }
 
 interface Props {
+    kind: WorkspaceKind;
     role: VariableRoleId;
     busy: boolean;
     takenNames: Set<string>;
@@ -75,6 +77,7 @@ interface Props {
  * on an empty table.
  */
 export function AddVariableWizard({
+    kind,
     role,
     busy,
     takenNames,
@@ -190,6 +193,7 @@ export function AddVariableWizard({
             {step === 'suggestions' && (
                 <>
                     <VariableSuggestions
+                        kind={kind}
                         suggestions={suggestions}
                         loading={suggestionsLoading}
                         error={suggestionsError}

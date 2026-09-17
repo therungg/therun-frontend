@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { Check, GripVertical } from 'react-bootstrap-icons';
 import type { CategoryVariableSuggestion } from '~src/lib/leaderboard-variables';
+import type { WorkspaceKind } from '~src/lib/setup/workspace';
 import { normalizeVariableName } from '~src/lib/variables/keys';
 import type { VariableRoleId } from '~src/lib/variables/language';
 import {
@@ -24,6 +25,7 @@ export interface SuggestionAddPrefill {
 }
 
 interface Props {
+    kind: WorkspaceKind;
     suggestions: CategoryVariableSuggestion[];
     loading: boolean;
     error: string | null;
@@ -52,6 +54,7 @@ function nameList(names: string[], cap = 3): string {
  * form this opens (owned by the grid, so this stays presentational).
  */
 export function VariableSuggestions({
+    kind,
     suggestions,
     loading,
     error,
@@ -109,8 +112,9 @@ export function VariableSuggestions({
             <section className={styles.panel}>
                 <h3 className={styles.title}>From runs</h3>
                 <p className={styles.muted}>
-                    No variable is set by enough runners in any featured
-                    category yet. Add subcategories and filters below by hand.
+                    No variable is set by enough runners in any{' '}
+                    {kind === 'levels' ? 'level' : 'category'} yet. Add
+                    subcategories and filters below by hand.
                 </p>
             </section>
         );

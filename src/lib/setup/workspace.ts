@@ -70,7 +70,7 @@ const SCREENS: Record<WorkspaceKind, WorkspaceScreenMeta[]> = {
             id: 'list',
             label: 'List',
             title: 'Does this game have individual levels?',
-            lede: 'Each level is its own board, picked from the Levels dropdown on the leaderboard.',
+            lede: 'Each level is its own board, picked from the Levels dropdown on the leaderboard. A new level starts with the subcategories and filters of the last level in the list.',
         },
         {
             id: 'settings',

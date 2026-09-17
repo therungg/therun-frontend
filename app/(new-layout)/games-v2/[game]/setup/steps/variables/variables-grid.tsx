@@ -938,6 +938,7 @@ export function VariablesGrid({
     }
 
     const sectionProps = (role: VariableRoleId) => ({
+        kind,
         role,
         game: game,
         categories: mains,
@@ -1112,6 +1113,7 @@ export function VariablesGrid({
                 configuring. Adding one opens the section's add form pre-filled;
                 it also drives the manual-add warning below. */}
             <VariableSuggestions
+                kind={kind}
                 suggestions={suggestions}
                 loading={suggestionsLoading}
                 error={suggestionsError}
@@ -1174,6 +1176,7 @@ export function VariablesGrid({
 const NEW_KEY = '__new__';
 
 interface SectionProps {
+    kind: WorkspaceKind;
     role: VariableRoleId;
     game: ResolvedGame;
     groups: VariableGroup[];
@@ -1244,6 +1247,7 @@ interface SectionProps {
 }
 
 function VariableSection({
+    kind,
     role,
     game,
     groups,
@@ -1340,6 +1344,7 @@ function VariableSection({
 
     const addScreen = (
         <AddVariableWizard
+            kind={kind}
             role={role}
             busy={busy}
             takenNames={takenNames}
@@ -1434,7 +1439,11 @@ function VariableSection({
                                         : 'Filter'}
                                 </th>
                                 <th>Values</th>
-                                <th>On categories</th>
+                                <th>
+                                    {kind === 'levels'
+                                        ? 'On levels'
+                                        : 'On categories'}
+                                </th>
                                 <th className={styles.listActionsHead}>
                                     <span className="visually-hidden">
                                         Actions
@@ -1565,7 +1574,9 @@ function VariableSection({
                     </p>
                     <p className={styles.emptyNote}>
                         {role === 'subcategory'
-                            ? 'Every featured category is a single leaderboard. Add a subcategory group when a category is really several leaderboards (Platform, Region, Glitches), each with its own record.'
+                            ? kind === 'levels'
+                                ? 'Every level is a single leaderboard. Add a subcategory group when a level is really several leaderboards (Platform, Region, Glitches), each with its own record.'
+                                : 'Every category is a single leaderboard. Add a subcategory group when a category is really several leaderboards (Platform, Region, Glitches), each with its own record.'
                             : 'Add a filter when runners should be able to narrow a leaderboard by something the run carries, without it becoming a subcategory.'}
                     </p>
                 </div>
