@@ -139,7 +139,10 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
                                 {wr.anonymized ? (
                                     wr.runnerName
                                 ) : (
-                                    <UserLink username={wr.runnerName} />
+                                    <UserLink
+                                        username={wr.runnerName}
+                                        to="leaderboards"
+                                    />
                                 )}
                             </span>
                             {!wr.anonymized && (
@@ -202,7 +205,10 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
                                     {p.anonymized ? (
                                         p.runnerName
                                     ) : (
-                                        <UserLink username={p.runnerName} />
+                                        <UserLink
+                                            username={p.runnerName}
+                                            to="leaderboards"
+                                        />
                                     )}
                                 </span>
                                 <span className={styles.podiumTime}>

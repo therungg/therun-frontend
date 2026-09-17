@@ -193,6 +193,7 @@ export function StandingsTable({ gameSlug, rows, columns }: Props) {
                                                         username={
                                                             row.runner.name
                                                         }
+                                                        to="leaderboards"
                                                     />
                                                 )}
                                             </span>

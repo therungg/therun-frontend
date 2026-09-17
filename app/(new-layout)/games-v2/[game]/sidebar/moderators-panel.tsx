@@ -25,7 +25,11 @@ export function ModeratorsPanel({
                 {shown.map((m) => (
                     <li key={m.assignmentId} className={styles.row}>
                         <span className={styles.rowUser}>
-                            <UserLink username={m.username} url={undefined} />
+                            <UserLink
+                                username={m.username}
+                                url={undefined}
+                                to="leaderboards"
+                            />
                         </span>
                         {m.role === 'game-admin' && (
                             <span className={styles.rowMeta}>admin</span>

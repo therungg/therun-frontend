@@ -142,6 +142,7 @@ export function TopRunnersTable({ allTime, d90, d30 }: Props) {
                                     <UserLink
                                         username={r.username}
                                         url={undefined}
+                                        to="leaderboards"
                                     />
                                 </span>
                                 <span className={numClass('playtime')}>

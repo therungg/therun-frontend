@@ -16,15 +16,23 @@ import { NameAsPatreon } from '~src/components/patreon/patreon-name';
 import { useSessionActions } from '~src/components/session-provider';
 import { TwitchLoginButton } from '~src/components/twitch/TwitchLoginButton';
 import { BunnyIcon } from '~src/icons/bunny-icon';
+import { runnerProfileHref } from '~src/lib/runner-profile-href';
 import styles from './UserMenu.module.scss';
 
 interface UserMenuProps {
     username?: string;
     picture?: string;
     sessionError?: string | null;
+    /** Signed-in user moderates at least one game: adds the Moderation entry. */
+    moderatesGames?: boolean;
 }
 
-export function UserMenu({ username, picture, sessionError }: UserMenuProps) {
+export function UserMenu({
+    username,
+    picture,
+    sessionError,
+    moderatesGames = false,
+}: UserMenuProps) {
     const router = useRouter();
     const { clear: clearSession } = useSessionActions();
     const [open, setOpen] = useState(false);
@@ -120,13 +128,23 @@ export function UserMenu({ username, picture, sessionError }: UserMenuProps) {
                     Profile
                 </Link>
                 <Link
-                    href={`/leaderboards/${encodeURIComponent(username ?? '')}`}
+                    href={runnerProfileHref(username)}
                     className={styles.item}
                     role="menuitem"
                     onClick={() => setOpen(false)}
                 >
                     Leaderboards profile
                 </Link>
+                {moderatesGames && (
+                    <Link
+                        href="/games-v2/manage"
+                        className={styles.item}
+                        role="menuitem"
+                        onClick={() => setOpen(false)}
+                    >
+                        Moderation
+                    </Link>
+                )}
                 <Link
                     href="/settings"
                     className={styles.item}

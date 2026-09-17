@@ -132,6 +132,7 @@ function Record({
                             <UserLink
                                 username={wr.runnerName}
                                 url={undefined}
+                                to="leaderboards"
                                 hoverCard={!wr.isGuest}
                                 cardContext={{
                                     rank: 1,

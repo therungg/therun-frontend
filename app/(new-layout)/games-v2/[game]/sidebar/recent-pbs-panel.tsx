@@ -3,6 +3,7 @@ import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { buildRunHref } from '~src/lib/board-url';
 import { formatRunDate } from '~src/lib/format-run-date';
+import { runnerProfileHref } from '~src/lib/runner-profile-href';
 import type {
     RecentPb,
     ResolvedCategory,
@@ -87,6 +88,7 @@ export function RecentPbsPanel({ pbs, gameSlug, categories }: Props) {
                                     <UserLink
                                         username={p.username}
                                         url={undefined}
+                                        to="leaderboards"
                                     />
                                 </span>
                                 <span className={styles.pbTime}>
@@ -112,7 +114,7 @@ export function RecentPbsPanel({ pbs, gameSlug, categories }: Props) {
                                                       gameSlug,
                                                       p.runId,
                                                   )
-                                                : `/${p.username}`
+                                                : runnerProfileHref(p.username)
                                         }
                                     >
                                         <DurationToFormatted

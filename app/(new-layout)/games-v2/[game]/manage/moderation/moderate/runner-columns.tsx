@@ -2,6 +2,7 @@
 
 import { type Ref, useTransition } from 'react';
 import { toast } from 'react-toastify';
+import { runnerProfileHref } from '~src/lib/runner-profile-href';
 import type {
     LeaderboardEntry,
     VariableRow,
@@ -174,6 +175,16 @@ export function RunnerIdentity({
                             {label}
                         </span>
                     ))}
+                    {/* The runner page falls back to "Runner #<id>" when no
+                    feed carries the name; there is no profile to link then. */}
+                    {/^Runner #\d+$/.test(runnerName) ? null : (
+                        <a
+                            className={styles.pageLink}
+                            href={runnerProfileHref(runnerName)}
+                        >
+                            Public profile
+                        </a>
+                    )}
                 </div>
                 <div className={styles.where}>
                     {gameDisplay}

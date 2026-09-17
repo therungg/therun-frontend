@@ -18,12 +18,14 @@ interface TopbarUtilitiesProps {
     username?: string;
     picture?: string;
     sessionError?: string | null;
+    moderatesGames?: boolean;
 }
 
 export function TopbarUtilities({
     username,
     picture,
     sessionError,
+    moderatesGames = false,
 }: TopbarUtilitiesProps) {
     return (
         <>
@@ -38,6 +40,7 @@ export function TopbarUtilities({
                 username={username}
                 picture={picture}
                 sessionError={sessionError}
+                moderatesGames={moderatesGames}
             />
         </>
     );

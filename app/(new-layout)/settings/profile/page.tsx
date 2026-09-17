@@ -1,6 +1,7 @@
 import { getSession } from '~src/actions/session.action';
 import Link from '~src/components/link';
 import { getGlobalUser } from '~src/lib/get-global-user';
+import { runnerProfileHref } from '~src/lib/runner-profile-href';
 import buildMetadata from '~src/utils/metadata';
 import styles from '../settings.module.scss';
 import { ProfileForm } from './profile-form';
@@ -19,9 +20,7 @@ export default async function ProfileSettingsPage() {
             </header>
             <ProfileForm initial={userData} />
             <p className={styles.paneNote}>
-                <Link
-                    href={`/leaderboards/${encodeURIComponent(session.username)}?edit=1`}
-                >
+                <Link href={`${runnerProfileHref(session.username)}?edit=1`}>
                     Arrange your Leaderboards profile
                 </Link>
             </p>

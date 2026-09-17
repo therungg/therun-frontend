@@ -1,6 +1,7 @@
 'use client';
 import { ReactNode } from 'react';
 import Link from '~src/components/link';
+import { runnerProfileHref } from '~src/lib/runner-profile-href';
 import { safeEncodeURI } from '~src/utils/uri';
 import type { UserCardContext } from '../../../types/user-card.types';
 import PatreonName from '../patreon/patreon-name';
@@ -31,8 +32,8 @@ interface UserLinkProps extends ChildrenType {
     cardContext?: UserCardContext;
     /**
      * Which profile this link should point at. Board contexts (rows, run
-     * pages, mod tooling) opt into the leaderboards profile; everything
-     * else keeps pointing at the Stats profile.
+     * pages, mod tooling, menus) opt into the leaderboards profile at
+     * `/<name>/leaderboards`; everything else keeps pointing at `/<name>`.
      */
     to?: 'profile' | 'leaderboards';
     /** Present only for a moderator who can act on this runner — forwarded
@@ -76,7 +77,7 @@ export const UserLink = ({
     const nameStr = username.replace('/', '');
 
     if (url === '') {
-        url = to === 'leaderboards' ? `/leaderboards${username}` : username;
+        url = to === 'leaderboards' ? runnerProfileHref(nameStr) : username;
     }
 
     let displayNode: React.ReactNode = nameStr;

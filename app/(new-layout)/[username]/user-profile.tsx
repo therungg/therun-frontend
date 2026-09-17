@@ -25,6 +25,7 @@ import Stats from '~src/components/user/stats';
 import { Userform } from '~src/components/user/userform';
 import { useLiveRunsWebsocket } from '~src/components/websocket/use-reconnect-websocket';
 import type { UserData } from '~src/lib/get-session-data';
+import { runnerProfileHref } from '~src/lib/runner-profile-href';
 
 export interface UserPageProps {
     runs: Run[];
@@ -237,9 +238,7 @@ export const UserProfile = ({
                                             </>
                                         ) : null}
                                     </span>
-                                    <Link
-                                        href={`/leaderboards/${encodeURIComponent(username)}`}
-                                    >
+                                    <Link href={runnerProfileHref(username)}>
                                         Leaderboards profile →
                                     </Link>
                                 </div>

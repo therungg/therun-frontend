@@ -24,7 +24,7 @@ interface TopbarProps {
 }
 
 export const Topbar = ({ featuredPatrons }: Partial<TopbarProps>) => {
-    const { username, picture, sessionError } = useSession();
+    const { username, picture, sessionError, moderatedGames } = useSession();
     const pathname = usePathname();
 
     // Helper for admin items rendered via children
@@ -65,6 +65,7 @@ export const Topbar = ({ featuredPatrons }: Partial<TopbarProps>) => {
                     username={username}
                     picture={picture}
                     sessionError={sessionError}
+                    moderatesGames={(moderatedGames?.length ?? 0) > 0}
                 />
             </div>
 
