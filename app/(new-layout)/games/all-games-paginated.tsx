@@ -1,6 +1,6 @@
 'use client';
 import { useRouter, useSearchParams } from 'next/navigation';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { GameTile } from '~app/(new-layout)/games/game-tile.component';
 import {
     Game,
@@ -21,6 +21,10 @@ export interface GamesProps {
 
 const SORTS: GameSort[] = ['trending', 'runners', 'pbs', 'playtime'];
 
+// The URL is the single source of truth for sort — there is no local React
+// state that can fall out of sync with it. An absent or unrecognised `sort`
+// param always resolves to 'trending' here, before the value ever reaches
+// usePagination's cache key or the fetcher.
 function sortFromParams(params: URLSearchParams): GameSort {
     const raw = params.get('sort');
     return (SORTS as string[]).includes(raw ?? '')
@@ -38,9 +42,7 @@ export const AllGamesPaginated: React.FunctionComponent<GamesProps> = ({
 }) => {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const [sort, setSortState] = React.useState<GameSort>(() =>
-        sortFromParams(searchParams),
-    );
+    const sort = sortFromParams(searchParams);
 
     const pagination = usePagination<Game>(
         gamePagination,
@@ -52,17 +54,8 @@ export const AllGamesPaginated: React.FunctionComponent<GamesProps> = ({
         },
     );
 
-    // Keep local state in sync with the URL for back/forward navigation —
-    // our own writes go through router.replace too, so this just confirms
-    // what setSort already set in the common case.
-    useEffect(() => {
-        setSortState(sortFromParams(searchParams));
-    }, [searchParams]);
-
     const setSort = useCallback(
         (next: GameSort) => {
-            setSortState(next);
-
             const params = new URLSearchParams(searchParams.toString());
             if (next === 'trending') {
                 params.delete('sort');
@@ -70,7 +63,13 @@ export const AllGamesPaginated: React.FunctionComponent<GamesProps> = ({
                 params.set('sort', next);
             }
             const qs = params.toString();
-            router.replace(`/games${qs ? `?${qs}` : ''}`, { scroll: false });
+            // A sort change is a user-visible view change, not a URL
+            // correction — push a history entry so back/forward step
+            // through the sorts the user actually picked. (Was
+            // router.replace, which collapses every sort into one history
+            // entry; back then had nothing but pre-/games history to land
+            // on.)
+            router.push(`/games${qs ? `?${qs}` : ''}`, { scroll: false });
         },
         [router, searchParams],
     );

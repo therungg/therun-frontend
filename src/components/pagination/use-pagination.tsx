@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useDebounceValue } from 'usehooks-ts';
 import { genericFetcher } from '~src/components/pagination/fetchers/generic-fetcher';
 import { paginateArray } from '~src/components/pagination/paginate-array';
@@ -33,12 +33,19 @@ function usePagination<T>(
     }
 
     // Stable string form of `params` for cache keys and the effect below.
-    // Call sites pass an inline object literal, a fresh reference every
-    // render, so anything keyed or watched on `params` itself would never
-    // hit the cache / would refetch every render. When params is undefined
-    // (generic-fetcher, races-fetcher, leaderboard-fetcher today) this is
-    // '', which keeps their cache keys byte-identical to before.
-    const paramsKey = params ? JSON.stringify(params) : '';
+    // Some call sites (e.g. games sort) pass an inline object literal, a
+    // fresh reference every render, so anything keyed or watched on
+    // `params` itself would never hit the cache / would refetch every
+    // render. Other call sites (e.g. race participations) pass a large,
+    // stable array prop — memoize on `params` identity so those only pay
+    // the JSON.stringify cost when the value actually changes, not on
+    // every render. When params is undefined (generic-fetcher,
+    // races-fetcher's siblings, leaderboard-fetcher today) this is '',
+    // which keeps their cache keys byte-identical to before.
+    const paramsKey = useMemo(
+        () => (params ? JSON.stringify(params) : ''),
+        [params],
+    );
     const buildKey = (page: number, query: string) =>
         paramsKey ? `${page}-${query}-${paramsKey}` : `${page}-${query}`;
 
