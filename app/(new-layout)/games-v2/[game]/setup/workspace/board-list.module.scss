@@ -111,6 +111,13 @@
 .table {
     @include board.board-table;
     width: 100%;
+
+    // The mixin left-aligns every header; numeric and action columns follow
+    // their cells instead.
+    thead th.num,
+    thead th.colActions {
+        text-align: right;
+    }
 }
 
 .groupRow th {
