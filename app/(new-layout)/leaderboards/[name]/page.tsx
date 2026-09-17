@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { getSession } from '~src/actions/session.action';
-import { boardsVisibleFor } from '~src/lib/boards-visible';
+import { canSeeBoards } from '~src/lib/board-access';
 import { getLeaderboardsProfile } from '~src/lib/leaderboards-profile';
 import { getRunnerProfileHead } from '~src/lib/runner-profile';
 import buildMetadata, { getUserProfilePhoto } from '~src/utils/metadata';
@@ -51,7 +51,7 @@ export default async function LeaderboardsProfilePage({ params }: PageProps) {
     const layout = profile.layout ?? DEFAULT_LAYOUT;
     const games = profile.games.map((g) => ({ ...g, theme: null }));
     const canCustomize = profile.layout !== undefined;
-    const boardsVisible = boardsVisibleFor(session);
+    const boardsVisible = canSeeBoards(session);
 
     return (
         <ShowcaseProvider

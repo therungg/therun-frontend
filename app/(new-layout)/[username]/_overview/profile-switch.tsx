@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { getSession } from '~src/actions/session.action';
-import { boardsVisibleFor } from '~src/lib/boards-visible';
+import { canSeeBoards } from '~src/lib/board-access';
 import { safeDecodeURI } from '~src/utils/uri';
 import { RunnerOverview } from './runner-overview';
 
@@ -23,7 +23,7 @@ export async function ProfileSwitch({
     return (
         <RunnerOverview
             name={safeDecodeURI(username)}
-            boardsVisible={boardsVisibleFor(session)}
+            boardsVisible={canSeeBoards(session)}
         />
     );
 }
