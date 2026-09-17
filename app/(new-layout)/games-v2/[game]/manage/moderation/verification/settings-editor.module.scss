@@ -96,9 +96,3 @@
     margin-left: -#{dt.$spacing-xs};
 }
 
-/* Sits with the buttons it is about, not orphaned under the card. */
-.footerHint {
-    margin-right: auto;
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-}

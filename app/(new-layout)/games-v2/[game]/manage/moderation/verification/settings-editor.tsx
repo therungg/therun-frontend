@@ -26,7 +26,6 @@ import {
     fullInputFrom,
     inputFrom,
     isDirty,
-    needsPreview,
     previewSentences,
     type SettingsForm,
     validateForm,
@@ -80,21 +79,17 @@ export function SettingsEditor({
     const dirty = isDirty(form, original);
     // Nothing saved for the game yet and the form untouched: saving writes
     // the defaults as they stand, so a moderator who agrees with them isn't
-    // stuck. Unchanged values act on nothing, so no preview is needed.
+    // stuck.
     const acceptDefaults = configured === false && !dirty && !invalid;
     const input = invalid
         ? null
         : acceptDefaults
           ? fullInputFrom(form, null)
           : inputFrom(form, original, null);
-    const mustPreview =
-        input !== null && !acceptDefaults && needsPreview(input);
+    // Preview is optional: it shows what a change would touch, but saving
+    // never waits on it.
     const offerPreview = input !== null && !acceptDefaults && canPreview(input);
-    const canSave =
-        (dirty || acceptDefaults) &&
-        !invalid &&
-        (!mustPreview || preview !== null) &&
-        !isSaving;
+    const canSave = (dirty || acceptDefaults) && !invalid && !isSaving;
 
     const runPreview = () => {
         if (!input) return;
@@ -352,11 +347,6 @@ export function SettingsEditor({
             <InlineError>{error ?? (dirty ? invalid : null)}</InlineError>
 
             <SectionFooter>
-                {mustPreview && !preview && dirty && !invalid && (
-                    <span className={styles.footerHint}>
-                        Preview before saving.
-                    </span>
-                )}
                 <button
                     type="button"
                     className="btn btn-sm btn-outline-secondary"

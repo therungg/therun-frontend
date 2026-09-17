@@ -196,13 +196,11 @@ export const fullInputFrom = (
 export const isDirty = (f: SettingsForm, original: SettingsForm) =>
     !same(f, original);
 
-/** A change that hides runs, closes intake or changes automation must be previewed first. */
-export const needsPreview = (input: SaveSettingsInput) =>
+/** A change that can hide runs, close intake or change automation has something to preview. */
+export const canPreview = (input: SaveSettingsInput) =>
     input.videoRule !== undefined ||
     input.autoVerify !== undefined ||
     input.intake !== undefined;
-
-export const canPreview = (input: SaveSettingsInput) => needsPreview(input);
 
 /** What a preview means, as sentences, most consequential first. */
 export const previewSentences = (
