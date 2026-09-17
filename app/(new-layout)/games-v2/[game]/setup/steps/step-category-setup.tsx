@@ -50,10 +50,12 @@ export function StepCategorySetup({ data, onAdvance }: StepProps) {
                 </div>
             ) : (
                 <CategoryMatrix
+                    kind="categories"
                     game={data.game}
-                    categories={fullGame}
+                    categories={data.categories}
                     groups={data.groups}
                     policies={data.policies}
+                    variables={data.variables}
                     initialOpenCategoryId={catId}
                 />
             )}

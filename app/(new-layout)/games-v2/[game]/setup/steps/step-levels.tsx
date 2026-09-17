@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { LevelsPane } from '../../manage/levels/levels-pane';
 import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
@@ -12,8 +11,6 @@ import { StepHeader } from './step-header';
  * level lands in the table and in the rail's count.
  */
 export function StepLevels({ data, onAdvance }: StepProps) {
-    const router = useRouter();
-
     return (
         <section>
             <StepHeader
@@ -21,15 +18,12 @@ export function StepLevels({ data, onAdvance }: StepProps) {
                 title="Does this game have individual levels?"
             />
             <LevelsPane
-                gameId={data.game.id}
-                gameSlug={data.game.name}
                 game={data.game}
-                rows={data.manageRows}
-                groups={data.manageGroups}
-                boardCategories={data.categories}
+                categories={data.categories}
+                groups={data.groups}
                 policies={data.policies}
                 variables={data.variables}
-                onChanged={() => router.refresh()}
+                metadata={data.metadata}
             />
             <button
                 type="button"

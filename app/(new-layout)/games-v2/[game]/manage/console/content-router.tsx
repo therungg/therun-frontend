@@ -214,18 +214,11 @@ export function ContentRouter(props: ContentRouterProps) {
             return (
                 <CategoriesPane
                     game={game}
-                    rows={props.rows}
-                    groups={props.groups}
-                    boardCategories={props.boardCategories}
+                    categories={props.boardCategories}
+                    groups={props.boardGroups}
                     policies={props.policies}
                     variables={props.variables}
-                    metadata={props.gameDetails?.metadata}
-                    onRowChange={props.onRowChange}
-                    onRowGroupChange={props.onRowGroupChange}
-                    onRowsReorder={props.onRowsReorder}
-                    onRowAdd={props.onRowAdd}
-                    onGroupsChange={props.onGroupsChange}
-                    onEditCategory={props.onEditCategory}
+                    metadata={props.gameDetails?.metadata ?? null}
                 />
             );
         case 'groups':
@@ -247,15 +240,12 @@ export function ContentRouter(props: ContentRouterProps) {
             // hiddenLandingIds in nav-model.ts).
             return (
                 <LevelsPane
-                    gameId={game.id}
-                    gameSlug={game.name}
                     game={game}
-                    rows={props.rows}
-                    groups={props.groups}
-                    boardCategories={props.boardCategories}
+                    categories={props.boardCategories}
+                    groups={props.boardGroups}
                     policies={props.policies}
                     variables={props.variables}
-                    onEditCategory={props.onEditCategory}
+                    metadata={props.gameDetails?.metadata ?? null}
                 />
             );
         case 'subcategories':
