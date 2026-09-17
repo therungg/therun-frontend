@@ -40,6 +40,7 @@ import {
     sidebarActiveItem as deriveSidebarActiveItem,
     type NavFlags,
     type NavItemId,
+    navItemLongLabel,
     resolveInitialPane,
 } from './nav-model';
 
@@ -336,7 +337,7 @@ export function ConsoleShell({
         const item = groups
             .flatMap((g) => g.items)
             .find((it) => it.id === activeItem);
-        if (item) return item.label;
+        if (item) return navItemLongLabel(item);
         // `queue-history` is a hidden landing pane — it never
         // appears in `groups` (see hiddenLandingIds in nav-model.ts).
         if (activeItem === 'queue-history') return 'Decided runs';
@@ -351,9 +352,8 @@ export function ConsoleShell({
             skipFocusRef.current = false;
             return;
         }
-        // preventScroll: a section-anchor scroll inside the new pane (e.g.
-        // GameTab's own scrollIntoView) shouldn't get clobbered back to the
-        // top by this focus call — see game-tab.tsx.
+        // preventScroll: a section-anchor scroll inside the new pane shouldn't
+        // get clobbered back to the top by this focus call.
         paneHeadingRef.current?.focus({ preventScroll: true });
     }, [activeItem]);
 

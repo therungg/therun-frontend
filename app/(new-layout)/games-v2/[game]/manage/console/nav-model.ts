@@ -8,6 +8,7 @@ import {
     type WorkspaceKind,
     type WorkspacePaneId,
     workspacePaneId,
+    workspacePaneOf,
     workspaceScreens,
 } from '~src/lib/setup/workspace';
 
@@ -173,6 +174,28 @@ function itemVisible(
     return flags.canConfigure;
 }
 
+/**
+ * The nav item's full name. Workspace items read "List" or "Settings" under
+ * their sidebar heading; anywhere else they need the long label.
+ */
+export function navItemLongLabel(item: NavItem): string {
+    return item.id in CONCEPT_LABEL
+        ? CONCEPT_LABEL[item.id as keyof typeof CONCEPT_LABEL]
+        : item.label;
+}
+
+/**
+ * The first page of a kind this viewer can open, or null. A moderator who
+ * cannot configure sees only Settings, so a link to "Categories" must not
+ * assume the List page.
+ */
+export function firstWorkspacePane(
+    groups: NavGroup[],
+    kind: WorkspaceKind,
+): NavItemId | null {
+    return groups.find((g) => g.id === kind)?.items[0]?.id ?? null;
+}
+
 /** Returns only the groups/items the viewer may use; drops empty groups. */
 export function buildNav(flags: NavFlags): NavGroup[] {
     return ALL_GROUPS.map((g) => ({
@@ -262,7 +285,9 @@ function hiddenLandingIds(flags: NavFlags): NavItemId[] {
 /**
  * Resolves which pane the console lands on: a valid `?pane=` deep link wins,
  * and anything else lands on the tile grid (`null`) — the console's front
- * door. There is no default pane and no stored-pane restore any more; see
+ * door. A Categories or Levels page the viewer cannot open lands on the first
+ * page of that kind they can, so old links and redirects never dead-end.
+ * There is no default pane and no stored-pane restore any more; see
  * docs/superpowers/specs/2026-07-29-console-tile-grid-design.md.
  */
 export function resolveInitialPane(
@@ -274,5 +299,7 @@ export function resolveInitialPane(
         ...groups.flatMap((g) => g.items).map((it) => it.id),
         ...hiddenLandingIds(flags),
     ];
-    return isLandingPaneId(requestedPane, visible) ? requestedPane : null;
+    if (isLandingPaneId(requestedPane, visible)) return requestedPane;
+    const workspace = workspacePaneOf(requestedPane);
+    return workspace ? firstWorkspacePane(groups, workspace.kind) : null;
 }

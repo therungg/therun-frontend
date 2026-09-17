@@ -5,11 +5,7 @@ import chrome from '~src/components/console-chrome/console.module.scss';
 import { NAV_ICON } from '~src/components/console-chrome/nav-icons';
 import Link from '~src/components/link';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
-import {
-    CONCEPT_LABEL,
-    CONCEPT_TILE,
-    type ConceptId,
-} from '~src/lib/console/vocabulary';
+import { CONCEPT_TILE } from '~src/lib/console/vocabulary';
 import { splitLevelBoards } from '~src/lib/levels/display';
 import type { BoardCompleteness } from '~src/lib/setup/completeness';
 import type { BoardHealth } from '~src/lib/setup/health';
@@ -24,7 +20,12 @@ import type {
     WorklistPage,
 } from '../../../../../../types/worklist.types';
 import { BoardHealthCard } from '../console/board-health-card';
-import type { NavGroup, NavItemId } from '../console/nav-model';
+import {
+    firstWorkspacePane,
+    type NavGroup,
+    type NavItemId,
+    navItemLongLabel,
+} from '../console/nav-model';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import { isSettled } from '../src-import/use-src-import-job';
 import styles from './board-overview.module.scss';
@@ -122,6 +123,8 @@ export function BoardOverview({
         ...topRows.map((r) => r.totalFinishedAttemptCount),
     );
 
+    // A moderator who cannot configure has Settings but not List.
+    const categoriesPane = firstWorkspacePane(navGroups, 'categories');
     const navIds = new Set(navGroups.flatMap((g) => g.items.map((i) => i.id)));
     const showImport = navIds.has('import');
     // Same settle rule the import pane polls on — a resync is not done at
@@ -254,13 +257,15 @@ export function BoardOverview({
                         <span className={styles.cardCount}>
                             {stats.featured}
                         </span>
-                        <button
-                            type="button"
-                            className={styles.cardLink}
-                            onClick={() => onNavigate('categories/list')}
-                        >
-                            Manage
-                        </button>
+                        {categoriesPane && (
+                            <button
+                                type="button"
+                                className={styles.cardLink}
+                                onClick={() => onNavigate(categoriesPane)}
+                            >
+                                Manage
+                            </button>
+                        )}
                     </header>
                     {topRows.length === 0 ? (
                         <div className={styles.cardEmpty}>
@@ -327,14 +332,14 @@ export function BoardOverview({
                                     ))}
                                 </tbody>
                             </table>
-                            {remaining > 0 && (
+                            {remaining > 0 && categoriesPane && (
                                 <div className={styles.tableFoot}>
                                     + {remaining} more featured ·{' '}
                                     <button
                                         type="button"
                                         className={styles.tableFootLink}
                                         onClick={() =>
-                                            onNavigate('categories/list')
+                                            onNavigate(categoriesPane)
                                         }
                                     >
                                         See all categories
@@ -454,9 +459,7 @@ export function BoardOverview({
                                 onClick={() => onNavigate(item.id)}
                             >
                                 <Icon size={14} aria-hidden />
-                                {item.id in CONCEPT_LABEL
-                                    ? CONCEPT_LABEL[item.id as ConceptId]
-                                    : item.label}
+                                {navItemLongLabel(item)}
                             </button>
                         );
                     })}

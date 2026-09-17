@@ -219,8 +219,9 @@ export function CategoryEditor({
                             >
                                 {CONCEPT_LABEL.variables}
                             </Link>{' '}
-                            are set for every featured category at once, not per
-                            category.
+                            {kind === 'levels'
+                                ? 'are set for every level at once, not per level.'
+                                : 'are set for every featured category at once, not per category.'}
                         </p>
                     )}
                 </div>

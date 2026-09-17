@@ -1,6 +1,7 @@
 // Ongoing board quality signal — the post-setup sibling of completeness.ts.
 // Pure module: consumed by the console health card and, later, discovery ranking.
 import type { BoardCompleteness, SetupStepState } from './completeness';
+import { isWorkspaceSub } from './workspace';
 
 export type HealthGrade = 'healthy' | 'needs-attention' | 'at-risk';
 
@@ -21,7 +22,8 @@ export interface BoardHealth {
 function paneFor(step: SetupStepState): string | null {
     if (step.step === 'details') return 'game-details';
     if (step.step === 'categories' || step.step === 'levels') {
-        return `${step.step}/${step.sub ?? 'list'}`;
+        const sub = isWorkspaceSub(step.step, step.sub) ? step.sub : 'list';
+        return `${step.step}/${sub}`;
     }
     return null;
 }

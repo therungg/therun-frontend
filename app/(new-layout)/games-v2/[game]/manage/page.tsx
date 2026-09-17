@@ -96,7 +96,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
     const sessionId = session.id;
     // `boardGroups` is the same ResolvedGroup[] the wizard's BoardCuration
     // uses — comes free from this call, distinct from `groups` below
-    // (ManageGroup[], fetched separately for the index/GameTab).
+    // (ManageGroup[], fetched separately for the overview).
     const { categories, groups: boardGroups } = await resolveCategory(game.id);
     const categoryById = new Map(categories.map((c) => [c.id, c.display]));
     const categoryName = (id: number) =>
