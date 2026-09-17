@@ -74,7 +74,7 @@ export function GamesShelf() {
                                 <GameImage
                                     src={game.imageUrl ?? ''}
                                     alt=""
-                                    quality="small"
+                                    quality="medium"
                                     width={48}
                                     height={64}
                                 />

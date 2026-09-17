@@ -8,16 +8,17 @@ declare type SafeNumber = number | `${number}`;
 
 type Quality = 'small' | 'medium' | 'large' | 'sd' | 'hd';
 
-type IgdbQualityString =
-    | 'cover_small'
-    | 'logo_med'
-    | 'cover_big'
-    | '720p'
-    | '1080p';
+type IgdbQualityString = 'cover_small' | 'cover_big' | '720p' | '1080p';
 
+/**
+ * Game art is 3:4 cover art, so the steps are IGDB's cover sizes: small is
+ * 90x128 and only holds up under ~45 CSS px, cover_big is 264x374. `medium`
+ * used to ask for `logo_med`, a 284x160 landscape *logo* crop — every cover
+ * drawn at that step came back squashed and upscaled.
+ */
 const qualityMap: Record<Quality, IgdbQualityString> = {
     small: 'cover_small',
-    medium: 'logo_med',
+    medium: 'cover_big',
     large: 'cover_big',
     sd: '720p',
     hd: '1080p',
