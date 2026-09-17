@@ -42,7 +42,7 @@ function Proposal({
     onConfirm: () => void;
     onDismiss: () => void;
 }) {
-    if (!s.proposal) return null;
+    if (!s.proposal || s.identity) return null;
     return (
         <div className={styles.proposal}>
             <p>These runs match speedrun.com user {s.proposal.srcUsername}.</p>
