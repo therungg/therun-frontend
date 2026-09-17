@@ -1,0 +1,152 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+// ============================================================
+// Run page: hero, stat strip, media, context column, footer.
+// Theme vars come from PageTheme (same as the board).
+// ============================================================
+
+.pill {
+    @include board.control-pill;
+}
+
+.muted {
+    color: var(--bs-secondary-color);
+}
+
+// --- hero --------------------------------------------------------------
+
+.hero {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+.crumb {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-xs dt.$spacing-sm;
+    color: var(--bs-secondary-color);
+    font-size: 0.875rem;
+
+    a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    a:hover {
+        color: var(--bs-emphasis-color);
+    }
+}
+
+.crumbGame {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+
+    img {
+        border-radius: 4px;
+        object-fit: cover;
+    }
+}
+
+.crumbSep {
+    opacity: 0.5;
+}
+
+.varPill {
+    padding: 0 dt.$spacing-sm;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 999px;
+    font-size: 0.75rem;
+}
+
+.timeRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: dt.$spacing-md;
+}
+
+.time {
+    margin: 0;
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    color: var(--bs-emphasis-color);
+}
+
+.timeGold {
+    color: dt.$accent-gold;
+}
+
+.rank {
+    color: var(--bs-secondary-color);
+    text-decoration: none;
+
+    strong {
+        color: var(--bs-emphasis-color);
+    }
+}
+
+.notRanked {
+    @include board.control-pill;
+}
+
+.runner {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    font-size: 1.125rem;
+}
+
+// --- stat strip ----------------------------------------------------------
+
+.strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: dt.$spacing-md dt.$spacing-lg;
+    padding: dt.$spacing-md 0;
+    border-top: 1px solid var(--bs-border-color);
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.cellLabel {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--bs-tertiary-color);
+}
+
+.cellValue {
+    font-variant-numeric: tabular-nums;
+}
+
+.stripActions {
+    display: flex;
+    gap: dt.$spacing-sm;
+    margin-left: auto;
+}
+
+// --- evidence dialog -------------------------------------------------
+
+.evidenceDialogHeader {
+    @include board.board-dialog-header;
+}
+
+.evidenceDialogTitle {
+    @include board.board-dialog-title;
+}
+
+.evidenceDialogBody {
+    @include board.board-dialog-body;
+}
