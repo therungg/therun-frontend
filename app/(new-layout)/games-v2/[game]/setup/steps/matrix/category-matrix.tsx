@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
-import { ChevronRight } from 'react-bootstrap-icons';
+import { ChevronRight, Collection } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import { assignCategoryGroupAction } from '~src/actions/category-group/assign-category-group.action';
 import Link from '~src/components/link';
@@ -56,6 +56,8 @@ interface Props {
     variables: VariableRow[];
     /** Category whose rules open on mount, from a `?cat=<id>` deep link. */
     initialOpenCategoryId?: number | null;
+    /** Opens the List screen, where boards are added. */
+    onGoToList?: () => void;
 }
 
 /**
@@ -120,6 +122,7 @@ export function CategoryMatrix({
     policies,
     initialOpenCategoryId,
     variables,
+    onGoToList,
 }: Props) {
     const router = useRouter();
     // Rules are the one thing here that needs room, so they are the one thing
@@ -237,6 +240,39 @@ export function CategoryMatrix({
     // span this, so it has to count what is actually drawn.
     const columnCount =
         (showsRtaColumns ? 7 : 5) + (showGroupColumn ? 1 : 0) + 2;
+
+    // Nothing on the board means nothing to set: say where boards come from
+    // instead of drawing a header-only table.
+    if (mains.length === 0) {
+        return (
+            <div className={styles.empty}>
+                <Collection
+                    size={24}
+                    className={styles.emptyIcon}
+                    aria-hidden
+                />
+                <p className={styles.emptyTitle}>
+                    {isLevels
+                        ? 'No levels yet'
+                        : 'No categories on the board yet'}
+                </p>
+                <p className={styles.emptyNote}>
+                    {isLevels
+                        ? 'Add a level in List, then set its timing, minimum and rules here.'
+                        : 'Add categories in List, then set their timing, minimum and rules here.'}
+                </p>
+                {onGoToList && (
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={onGoToList}
+                    >
+                        Go to List
+                    </button>
+                )}
+            </div>
+        );
+    }
 
     return (
         <div className={styles.panel}>

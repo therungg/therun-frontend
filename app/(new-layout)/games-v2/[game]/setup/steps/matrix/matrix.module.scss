@@ -20,6 +20,27 @@
     @include board.board-section-head;
 }
 
+// Same empty state the subcategories grid draws for a board with no rows.
+.empty {
+    @include board.board-surface(dt.$spacing-xl);
+    @include board.board-empty;
+}
+
+.emptyTitle {
+    @include board.board-empty-title;
+}
+
+.emptyIcon {
+    @include board.board-empty-icon;
+}
+
+.emptyNote {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    max-width: 34rem;
+    margin: 0;
+}
+
 .headTitle {
     @include board.board-eyebrow;
 }

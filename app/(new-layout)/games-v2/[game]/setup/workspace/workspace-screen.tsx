@@ -26,6 +26,8 @@ export interface WorkspaceScreenProps {
     metadata: GameMetadata | null;
     /** `?cat=<id>`: open that category's rules on the Settings screen. */
     initialOpenCategoryId?: number | null;
+    /** Moves to this kind's List screen (an empty Settings screen offers it). */
+    onGoToList?: () => void;
 }
 
 /** The one screen body both the wizard and the console render. */
@@ -39,6 +41,7 @@ export function WorkspaceScreen({
     policies,
     metadata,
     initialOpenCategoryId = null,
+    onGoToList,
 }: WorkspaceScreenProps) {
     switch (sub) {
         case 'list':
@@ -70,6 +73,7 @@ export function WorkspaceScreen({
                     policies={policies}
                     variables={variables}
                     initialOpenCategoryId={initialOpenCategoryId}
+                    onGoToList={onGoToList}
                 />
             );
         case 'subcategories':

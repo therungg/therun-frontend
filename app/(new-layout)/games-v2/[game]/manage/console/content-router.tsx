@@ -131,6 +131,7 @@ export function ContentRouter(props: ContentRouterProps) {
     if (workspace) {
         return (
             <WorkspacePane
+                key={activeItem}
                 kind={workspace.kind}
                 sub={workspace.sub}
                 game={game}
@@ -139,6 +140,7 @@ export function ContentRouter(props: ContentRouterProps) {
                 variables={props.variables}
                 policies={props.policies}
                 metadata={props.gameDetails?.metadata ?? null}
+                onGoToList={() => onNavigate(`${workspace.kind}/list`)}
             />
         );
     }
