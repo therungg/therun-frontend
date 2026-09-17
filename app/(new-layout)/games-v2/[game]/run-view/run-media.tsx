@@ -9,7 +9,6 @@ import {
 import { useVodPlayer } from '../leaderboard/vod-review/use-vod-player';
 import styles from './run-page.module.scss';
 import type { RunViewModel } from './run-view';
-import { SplitChart } from './split-chart';
 
 const DEFAULT_FPS = 30;
 
@@ -88,13 +87,6 @@ export function RunMediaSlot({ model }: { model: RunViewModel }) {
                     model={model}
                     onSeekReady={setSeek}
                 />
-            </div>
-        );
-    }
-    if (model.splits.length > 0) {
-        return (
-            <div className={styles.media}>
-                <SplitChart splits={model.splits} />
             </div>
         );
     }

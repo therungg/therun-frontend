@@ -24,10 +24,13 @@ import {
     SelfRunVerdictDialog,
     useSelfRunVerdict,
 } from '../shared/self-run-verdict';
+import styles from './run-page.module.scss';
 import type { RunViewModel } from './run-view';
 
-// The default action-button style on this surface. Extracted so the run-page
-// mod buttons stay visually in lockstep — one edit restyles the whole row.
+// The action row's button style. Extracted so the run-page buttons stay
+// visually in lockstep — one edit restyles the whole row.
+const BTN_ACTION = styles.action;
+// Dialog footer buttons keep the dialog's own Bootstrap styling.
 const BTN_SECONDARY = 'btn btn-sm btn-outline-secondary';
 
 type ModalKind = 'report' | 'appeal' | null;
@@ -221,18 +224,14 @@ export function RunActions({
 
     return (
         <>
-            <div className="d-flex flex-wrap gap-2">
-                <button
-                    type="button"
-                    className={BTN_SECONDARY}
-                    onClick={copyLink}
-                >
+            <div className={styles.actions}>
+                <button type="button" className={BTN_ACTION} onClick={copyLink}>
                     Copy link
                 </button>
                 {canReport && (
                     <button
                         type="button"
-                        className={BTN_SECONDARY}
+                        className={BTN_ACTION}
                         onClick={() => setModal('report')}
                     >
                         Report run
@@ -241,21 +240,21 @@ export function RunActions({
                 {canAppeal && (
                     <button
                         type="button"
-                        className={BTN_SECONDARY}
+                        className={BTN_ACTION}
                         onClick={() => setModal('appeal')}
                     >
                         Appeal rejection
                     </button>
                 )}
                 {isOwnRun && (
-                    <Link href={correctHref} className={BTN_SECONDARY}>
+                    <Link href={correctHref} className={BTN_ACTION}>
                         Correct this time…
                     </Link>
                 )}
                 {canMove && (
                     <button
                         type="button"
-                        className={BTN_SECONDARY}
+                        className={BTN_ACTION}
                         onClick={openMove}
                         disabled={ctxPending}
                     >
@@ -265,7 +264,7 @@ export function RunActions({
                 {canOwnerModerate && (
                     <button
                         type="button"
-                        className={BTN_SECONDARY}
+                        className={BTN_ACTION}
                         onClick={() => setHideIdentityOpen(true)}
                     >
                         Hide my identity…
@@ -274,7 +273,7 @@ export function RunActions({
                 {canHide && (
                     <button
                         type="button"
-                        className="btn btn-sm btn-outline-danger"
+                        className={`${BTN_ACTION} ${styles.actionDanger}`}
                         onClick={() =>
                             selfVerdict.requestVerdict(model.id, 'reject')
                         }
@@ -285,7 +284,7 @@ export function RunActions({
                 {canRestore && (
                     <button
                         type="button"
-                        className={BTN_SECONDARY}
+                        className={BTN_ACTION}
                         onClick={() =>
                             selfVerdict.requestVerdict(model.id, 'unreject')
                         }

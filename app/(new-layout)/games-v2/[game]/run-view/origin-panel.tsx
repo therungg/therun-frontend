@@ -1,4 +1,5 @@
 import Link from '~src/components/link';
+import { formatBoardDate } from '~src/lib/format-run-date';
 import { originSummary } from '~src/lib/run-view/origin-summary';
 import { srcRunUrl } from '~src/lib/src-links';
 import { safeEncodeURI } from '~src/utils/uri';
@@ -25,11 +26,7 @@ export function OriginPanel({ model }: { model: RunViewModel }) {
                     Self-reported · unverified
                 </span>
             )}
-            <span>
-                {ingestedAt
-                    ? `Added ${new Date(ingestedAt).toLocaleDateString()}`
-                    : 'Added date unknown'}
-            </span>
+            {ingestedAt && <span>Added {formatBoardDate(ingestedAt)}</span>}
             {srcRunId && (
                 <a href={srcRunUrl(srcRunId)} target="_blank" rel="noreferrer">
                     View on speedrun.com

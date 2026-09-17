@@ -1,11 +1,10 @@
 import type React from 'react';
 import { DurationToFormatted } from '~src/components/util/datetime';
-import { formatRunDate } from '~src/lib/format-run-date';
+import { formatBoardDate } from '~src/lib/format-run-date';
 import { isEmbeddableVod } from '~src/lib/vod-url';
 import { EvidenceDialog } from './evidence-dialog';
 import { effectiveEvidencePerms } from './evidence-perms';
-import { RunActions } from './run-actions';
-import { formatGap } from './run-format';
+import { formatDelta } from './run-format';
 import styles from './run-page.module.scss';
 import type { RunViewModel } from './run-view';
 
@@ -37,35 +36,45 @@ export function RunStatStrip({
     const sob = stats?.sumOfBests ?? null;
     const perms = effectiveEvidencePerms(model, sessionUsername, isMod);
     const canEditEvidence = perms.canEditVod || perms.canEditDescription;
+    // One clock is already the hero's time; the cells only earn a place when
+    // there are two to tell apart.
+    const bothClocks = model.realTime != null && model.gameTime != null;
+    const timesave =
+        sob != null && model.realTime != null && sob < model.realTime
+            ? model.realTime - sob
+            : null;
 
     return (
         <div className={styles.strip}>
-            {model.realTime != null && (
+            {bothClocks && model.realTime != null && (
                 <Cell label="RTA">
                     <DurationToFormatted duration={model.realTime} withMillis />
                 </Cell>
             )}
-            {model.gameTime != null && (
+            {bothClocks && model.gameTime != null && (
                 <Cell label={model.gameTimeLabel === 'lrt' ? 'LRT' : 'IGT'}>
                     <DurationToFormatted duration={model.gameTime} withMillis />
                 </Cell>
             )}
             {model.runDate && (
-                <Cell label="Date">{formatRunDate(model.runDate)}</Cell>
+                <Cell label="Date">{formatBoardDate(model.runDate)}</Cell>
             )}
             {stats?.attemptCount != null && (
                 <Cell label="Attempts">
-                    {stats.attemptCount.toLocaleString()}
-                    {stats.finishedAttemptCount != null &&
-                        ` (${stats.finishedAttemptCount.toLocaleString()} finished)`}
+                    {stats.finishedAttemptCount != null
+                        ? `${stats.finishedAttemptCount.toLocaleString()} of ${stats.attemptCount.toLocaleString()} finished`
+                        : stats.attemptCount.toLocaleString()}
                 </Cell>
             )}
             {sob != null && model.realTime != null && (
                 <Cell label="Sum of best">
-                    <DurationToFormatted duration={sob} withMillis />{' '}
-                    <span className={styles.muted}>
-                        {formatGap(sob - model.realTime)}
-                    </span>
+                    <DurationToFormatted duration={sob} withMillis />
+                    {timesave != null && (
+                        <span className={styles.muted}>
+                            {' '}
+                            · {formatDelta(timesave)} possible timesave
+                        </span>
+                    )}
                 </Cell>
             )}
             {!model.vodUrl && (
@@ -89,17 +98,16 @@ export function RunStatStrip({
                     </a>
                 </Cell>
             )}
-            <div className={styles.stripActions}>
-                {canEditEvidence && model.vodUrl && (
+            {canEditEvidence && model.vodUrl && (
+                <div className={styles.stripActions}>
                     <EvidenceDialog
                         model={model}
                         sessionUsername={sessionUsername}
                         isMod={isMod}
                         label="Edit"
                     />
-                )}
-                <RunActions model={model} sessionUsername={sessionUsername} />
-            </div>
+                </div>
+            )}
         </div>
     );
 }

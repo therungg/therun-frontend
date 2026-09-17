@@ -348,6 +348,20 @@ export interface RunDetail {
     country?: string | null;
     /** Null when rejected, superseded or unranked. Absent on older deploys. */
     boardContext?: BoardContext | null;
+    /** Runner's profile picture; null for guests and hidden runners. Absent on older deploys. */
+    picture?: string | null;
+    /** The adjacent board run (directly above, or #2 when this run is #1)
+     * for split comparison. Absent on older deploys. */
+    comparison?: RunComparison | null;
+}
+
+export interface RunComparison {
+    runId: number;
+    rank: number;
+    runnerName: string;
+    picture: string | null;
+    /** Only sent when segment count and names match this run's splits. */
+    splits: RunSplit[];
 }
 
 export interface RunTimerStats {
@@ -556,6 +570,8 @@ export interface RunnerGameEntry {
     source: 'run' | 'manual';
     runId?: number;
     manualTimeId?: number;
+    /** The category is featured (categories.is_main). Absent on older deploys. */
+    isMain?: boolean;
 }
 
 export type RunnerEntriesResult =
@@ -608,6 +624,8 @@ export interface RunSplit {
      *  a VOD is real footage, so frame anchoring always uses `splitTimeMs`. */
     gameSplitTimeMs: number | null;
     segmentCount: number;
+    /** The runner's best time for this segment, ms. Absent on older deploys. */
+    bestSegmentMs?: number | null;
 }
 
 /** What a client sends: one author's markers + fps. `null` clears (mod only). */

@@ -5,6 +5,7 @@ import { buildBoardHref, buildSubmitHref } from '~src/lib/board-url';
 import type {
     BoardContext,
     ResolvedGame,
+    RunComparison,
     RunnerGameEntry,
     RunOrigin,
     RunOriginRef,
@@ -89,6 +90,11 @@ export interface RunViewModel {
     /** The runner's current entries in this game (runner card, superseded
      * note). */
     runnerEntries: RunnerGameEntry[];
+    /** Runner's profile picture; null for guests, hidden runners and manual
+     * times. */
+    picture: string | null;
+    /** The adjacent board run for split comparison; null on manual times. */
+    comparison: RunComparison | null;
 }
 
 export function RunView({
@@ -171,6 +177,7 @@ export function RunView({
                     gameHref={gameHref}
                     boardHref={boardHref}
                     isTombstone={isTombstone}
+                    sessionUsername={sessionUsername}
                 />
                 <RunStatStrip
                     model={model}
@@ -189,7 +196,10 @@ export function RunView({
                     >
                         {media && (
                             <div className={pageStyles.main}>
-                                <div data-slot="media">
+                                <div
+                                    data-slot="media"
+                                    className={pageStyles.mediaSurface}
+                                >
                                     <RunMediaSlot model={model} />
                                 </div>
                                 {showDescription && model.description && (
@@ -199,28 +209,40 @@ export function RunView({
                                         />
                                     </div>
                                 )}
-                                <div data-slot="splits">
-                                    <SplitsTable
-                                        splits={model.splits}
-                                        gameTimeLabel={model.gameTimeLabel}
-                                    />
-                                </div>
                             </div>
                         )}
                         <aside className={pageStyles.side}>
-                            <div data-slot="board">
+                            <div
+                                data-slot="board"
+                                className={pageStyles.surface}
+                            >
                                 {!isTombstone && <BoardSlice model={model} />}
                                 <SupersededNote model={model} />
                             </div>
-                            <div data-slot="runner">
+                            <div
+                                data-slot="runner"
+                                className={pageStyles.surface}
+                            >
                                 <RunnerCard model={model} />
                             </div>
                         </aside>
                         {!media && showDescription && model.description && (
-                            <div className={pageStyles.bareDescription}>
+                            <div
+                                data-slot="description"
+                                className={pageStyles.bareDescription}
+                            >
                                 <DescriptionBlock text={model.description} />
                             </div>
                         )}
+                        <div
+                            data-slot="splits"
+                            className={`${pageStyles.surface} ${pageStyles.wide}`}
+                        >
+                            <SplitsTable
+                                splits={model.splits}
+                                gameTimeLabel={model.gameTimeLabel}
+                            />
+                        </div>
                     </div>
                 </RunMediaProvider>
                 <VerificationFooter

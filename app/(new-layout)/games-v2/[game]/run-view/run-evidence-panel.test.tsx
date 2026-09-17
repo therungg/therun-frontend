@@ -63,6 +63,8 @@ const baseModel = (over: Partial<RunViewModel> = {}): RunViewModel => ({
     timerStats: null,
     splits: [],
     vodReview: null,
+    picture: null,
+    comparison: null,
     runnerEntries: [],
     ...over,
 });

@@ -122,6 +122,8 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
                     timerStats: null,
                     splits: [],
                     vodReview: null,
+                    picture: null,
+                    comparison: null,
                     runnerEntries: [],
                 }}
                 history={[]}

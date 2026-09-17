@@ -170,6 +170,8 @@ export default async function RunDetailPage({ params }: PageProps) {
                     timerStats: run.timerStats ?? null,
                     splits: run.splits ?? [],
                     vodReview: run.vodReview ?? null,
+                    picture: run.picture ?? null,
+                    comparison: run.comparison ?? null,
                     runnerEntries:
                         runnerEntries?.status === 'found'
                             ? runnerEntries.entries
