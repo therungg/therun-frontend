@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Download } from 'react-bootstrap-icons';
 import { exportLeaderboard } from '../actions/export-board.action';
 import {
@@ -11,6 +11,7 @@ import gamePageStyles from '../game-page.module.scss';
 import mastheadStyles from '../header/masthead.module.scss';
 import { buildGameCsv, type ExportedBoard } from '../leaderboard/export-csv';
 import leaderboardStyles from '../leaderboard/leaderboard.module.scss';
+import { PopoverLayer } from '../shared/popover-layer';
 import { usePopoverFocus } from '../shared/use-popover-focus';
 
 interface Props {
@@ -48,16 +49,9 @@ export function ExportAllButton({ gameSlug }: Props) {
     const panelRef = useRef<HTMLDivElement>(null);
 
     const close = () => setOpen(false);
+    // Escape + focus trap here; PopoverLayer owns placement and the
+    // outside-click, which has to account for the portaled panel.
     usePopoverFocus({ open, onClose: close, panelRef });
-
-    useEffect(() => {
-        if (!open) return;
-        const onDown = (e: MouseEvent) => {
-            if (!rootRef.current?.contains(e.target as Node)) close();
-        };
-        document.addEventListener('mousedown', onDown);
-        return () => document.removeEventListener('mousedown', onDown);
-    }, [open]);
 
     const download = (content: string, filename: string, mime: string) => {
         const url = URL.createObjectURL(new Blob([content], { type: mime }));
@@ -208,7 +202,12 @@ export function ExportAllButton({ gameSlug }: Props) {
                 <Download size={13} aria-hidden />
                 Export all
             </button>
-            {open && (
+            <PopoverLayer
+                open={open}
+                anchorRef={rootRef}
+                onClose={close}
+                themed
+            >
                 <div
                     ref={panelRef}
                     className={gamePageStyles.popoverPanel}
@@ -244,7 +243,7 @@ export function ExportAllButton({ gameSlug }: Props) {
                         )}
                     </div>
                 </div>
-            )}
+            </PopoverLayer>
         </div>
     );
 }

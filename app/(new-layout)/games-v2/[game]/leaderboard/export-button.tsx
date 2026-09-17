@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Download } from 'react-bootstrap-icons';
 import type { LeaderboardQuery } from '~src/lib/leaderboards-v1';
 import { exportLeaderboard } from '../actions/export-board.action';
 import gamePageStyles from '../game-page.module.scss';
 import mastheadStyles from '../header/masthead.module.scss';
+import { PopoverLayer } from '../shared/popover-layer';
 import { usePopoverFocus } from '../shared/use-popover-focus';
 import { buildLeaderboardCsv } from './export-csv';
 import styles from './leaderboard.module.scss';
@@ -41,16 +42,9 @@ export function ExportButton({
     const panelRef = useRef<HTMLDivElement>(null);
 
     const close = () => setOpen(false);
+    // Escape + focus trap here; PopoverLayer owns placement and the
+    // outside-click, which has to account for the portaled panel.
     usePopoverFocus({ open, onClose: close, panelRef });
-
-    useEffect(() => {
-        if (!open) return;
-        const onDown = (e: MouseEvent) => {
-            if (!rootRef.current?.contains(e.target as Node)) close();
-        };
-        document.addEventListener('mousedown', onDown);
-        return () => document.removeEventListener('mousedown', onDown);
-    }, [open]);
 
     const download = (content: string, filename: string, mime: string) => {
         const url = URL.createObjectURL(new Blob([content], { type: mime }));
@@ -111,7 +105,12 @@ export function ExportButton({
                 <Download size={13} aria-hidden />
                 Export
             </button>
-            {open && (
+            <PopoverLayer
+                open={open}
+                anchorRef={rootRef}
+                onClose={close}
+                themed
+            >
                 <div
                     ref={panelRef}
                     className={gamePageStyles.popoverPanel}
@@ -149,7 +148,7 @@ export function ExportButton({
                         )}
                     </div>
                 </div>
-            )}
+            </PopoverLayer>
         </div>
     );
 }

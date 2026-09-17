@@ -9,16 +9,18 @@
 // generic popover, and stacking two CSS-module classes that both declare
 // min-width/padding/background at equal specificity would leave the winner
 // to stylesheet insertion order. Same mixins and tokens, one class.
+//
+// Positioned by `PopoverLayer`, which portals it to <body>: the board block
+// around the trigger has `overflow: hidden` for its rounded corners, and a
+// sheet this size was clipped by it on all but the longest boards.
 .panel {
     @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
-    position: absolute;
-    right: 0;
-    top: calc(100% + #{dt.$spacing-xs});
-    z-index: dt.$z-popover;
     background: var(--board-surface-bg, var(--bs-body-bg));
     box-shadow: dt.$shadow-md;
     min-width: 34rem;
     max-width: min(38rem, calc(100vw - 2rem));
+    max-height: var(--popover-max-height, none);
+    overflow-y: auto;
     @include board.board-overlay-enter(rise);
 }
 

@@ -452,12 +452,14 @@ $ring: 2px solid rgba(var(--bs-primary-rgb), 0.5);
     margin-left: auto;
 }
 
+// Positioned by `PopoverLayer`, which portals it to <body>. As an absolute
+// child of the verb bar it was clipped by the panel's own `overflow: hidden`
+// — the menu opens upward from a bar at the bottom of the panel, so it only
+// ever had the panel's height to grow into and the top rows were cut off.
 .moreMenu {
-    position: absolute;
-    right: 0;
-    bottom: calc(100% + 0.375rem);
-    z-index: dt.$z-popover;
     width: 15.625rem;
+    max-height: var(--popover-max-height, none);
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     padding: 0.375rem;

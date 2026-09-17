@@ -5,15 +5,17 @@
     position: relative;
 }
 
+// Positioned by `PopoverLayer`, which portals it to <body>: the board block
+// around the trigger has `overflow: hidden` for its rounded corners and used
+// to cut this panel off at its edge. This class is the surface only — the
+// layer owns left/top/z-index.
 .popoverPanel {
     @include board.board-surface(dt.$spacing-md dt.$spacing-lg);
-    position: absolute;
-    right: 0;
-    top: calc(100% + #{dt.$spacing-xs});
-    z-index: dt.$z-popover;
     background: var(--board-surface-bg, var(--bs-body-bg));
     box-shadow: dt.$shadow-md;
     min-width: 16rem;
+    max-height: var(--popover-max-height, none);
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-sm;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Sliders } from 'react-bootstrap-icons';
 import type {
     BoardFacets,
@@ -8,6 +8,7 @@ import type {
 } from '../../../../../types/leaderboards.types';
 import styles from '../game-page.module.scss';
 import mastheadStyles from '../header/masthead.module.scss';
+import { PopoverLayer } from '../shared/popover-layer';
 import { usePopoverFocus } from '../shared/use-popover-focus';
 import { BUILTIN_PARAM_KEYS, type BuiltinFilterState } from './builtin-params';
 import {
@@ -62,17 +63,9 @@ export function FiltersPopover({
         setOpen(true);
     };
     const close = () => setOpen(false);
+    // Escape and Tab-trap from usePopoverFocus; placement and outside-click
+    // from PopoverLayer, which knows where the portaled panel ended up.
     usePopoverFocus({ open, onClose: close, panelRef });
-
-    // Outside-click closes too; Escape and Tab-trap come from usePopoverFocus.
-    useEffect(() => {
-        if (!open) return;
-        const onDown = (e: MouseEvent) => {
-            if (!rootRef.current?.contains(e.target as Node)) close();
-        };
-        document.addEventListener('mousedown', onDown);
-        return () => document.removeEventListener('mousedown', onDown);
-    }, [open]);
 
     const onApply = () => {
         applyFilters(draft, variableKeys);
@@ -106,7 +99,12 @@ export function FiltersPopover({
                     <span className={styles.filterCount}>{count}</span>
                 )}
             </button>
-            {open && (
+            <PopoverLayer
+                open={open}
+                anchorRef={rootRef}
+                onClose={close}
+                themed
+            >
                 <div
                     ref={panelRef}
                     className={panelStyles.panel}
@@ -125,7 +123,7 @@ export function FiltersPopover({
                         isPending={isPending}
                     />
                 </div>
-            )}
+            </PopoverLayer>
         </div>
     );
 }

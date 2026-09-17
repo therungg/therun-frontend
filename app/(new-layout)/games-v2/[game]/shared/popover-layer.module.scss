@@ -1,0 +1,19 @@
+@use '../../../styles/design-tokens' as dt;
+
+// A popover anchored to a trigger used to be a `position: absolute` child of
+// that trigger, which meant the panel that held the trigger decided how far
+// the popover could reach: a panel with `overflow: hidden` (for its rounded
+// corners) or its own scroller cut the menu off at its edge. The layer is
+// portaled to <body> and positioned against the trigger's viewport rect, so
+// the menu can leave the panel that holds it.
+//
+// No width: a fixed box with no width shrink-wraps its content, so the panel
+// inside keeps deciding its own min/max width exactly as it did when it was
+// the positioned element.
+//
+// Above `$z-dialog`, because a popover opened from inside a dialog (the
+// moderate panel's More menu) has to paint over it.
+.layer {
+    position: fixed;
+    z-index: dt.$z-dialog + 1;
+}

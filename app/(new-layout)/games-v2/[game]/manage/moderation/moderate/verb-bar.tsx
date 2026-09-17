@@ -1,6 +1,7 @@
 'use client';
 
 import { type KeyboardEvent, useEffect, useId, useRef, useState } from 'react';
+import { PopoverLayer } from '../../../shared/popover-layer';
 import styles from './moderate-panel.module.scss';
 import {
     type ModerateVerb,
@@ -42,7 +43,7 @@ export function VerbBar({
 }: Props) {
     const byVerb = new Map(availability.map((a) => [a.verb, a]));
     const [menuOpen, setMenuOpen] = useState(false);
-    const wrapRef = useRef<HTMLDivElement>(null);
+    const moreRef = useRef<HTMLDivElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
     const triggerRef = useRef<HTMLButtonElement>(null);
     const menuId = useId();
@@ -52,9 +53,11 @@ export function VerbBar({
     const barVerbs = visible(bar);
     const moreVerbs = visible(more);
 
-    // Escape and outside clicks close the menu. Escape listens on window in
-    // the capture phase so it runs before the dialog's own Escape handler on
-    // document, and stops there: closing the menu must not close the modal.
+    // Escape closes the menu. It listens on window in the capture phase so it
+    // runs before the dialog's own Escape handler on document, and stops
+    // there: closing the menu must not close the modal. Outside-click closing
+    // belongs to `PopoverLayer` — the menu is portaled out of this bar, so
+    // "outside" has to mean outside the trigger AND the portaled panel.
     useEffect(() => {
         if (!menuOpen) return;
         const onKey = (e: globalThis.KeyboardEvent) => {
@@ -64,17 +67,8 @@ export function VerbBar({
             setMenuOpen(false);
             triggerRef.current?.focus();
         };
-        const onPointer = (e: MouseEvent) => {
-            if (!wrapRef.current?.contains(e.target as Node)) {
-                setMenuOpen(false);
-            }
-        };
         window.addEventListener('keydown', onKey, true);
-        document.addEventListener('mousedown', onPointer);
-        return () => {
-            window.removeEventListener('keydown', onKey, true);
-            document.removeEventListener('mousedown', onPointer);
-        };
+        return () => window.removeEventListener('keydown', onKey, true);
     }, [menuOpen]);
 
     useEffect(() => {
@@ -138,10 +132,10 @@ export function VerbBar({
     };
 
     return (
-        <div ref={wrapRef} className={styles.bar}>
+        <div className={styles.bar}>
             {barVerbs.map(renderBarVerb)}
             {moreVerbs.length ? (
-                <div className={styles.more}>
+                <div ref={moreRef} className={styles.more}>
                     <button
                         ref={triggerRef}
                         type="button"
@@ -157,7 +151,14 @@ export function VerbBar({
                         More
                         <Chevron up={menuOpen} />
                     </button>
-                    {menuOpen ? (
+                    <PopoverLayer
+                        open={menuOpen}
+                        anchorRef={moreRef}
+                        onClose={() => setMenuOpen(false)}
+                        align="end"
+                        side="top"
+                        gap={6}
+                    >
                         <div
                             ref={menuRef}
                             id={menuId}
@@ -207,7 +208,7 @@ export function VerbBar({
                                 ];
                             })}
                         </div>
-                    ) : null}
+                    </PopoverLayer>
                 </div>
             ) : null}
         </div>
