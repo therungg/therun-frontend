@@ -1032,32 +1032,44 @@ a.runAttempts:hover {
     font-size: dt.$font-size-xs;
 }
 
-// Pinned runs: up to three cards, three across; the video run is the same size
-// with its thumbnail on top. Under 640px everything is one column.
+// Pinned runs: up to three cards, three across. The card with a video is taller
+// than the rest, so the cards flow down the columns instead of sitting in rows —
+// a short card is followed by the next one rather than by a hole.
 .pins {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-auto-flow: dense;
-    // Each card keeps its own height: a card with a video is taller without
-    // stretching the cards beside it into empty panels.
-    align-items: start;
-    gap: dt.$spacing-lg;
+    columns: 3;
+    column-gap: dt.$spacing-lg;
+
+    > * {
+        break-inside: avoid;
+        -webkit-column-break-inside: avoid;
+        margin-bottom: dt.$spacing-lg;
+    }
 
     @container profile-main (max-width: 959.98px) {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        columns: 2;
+    }
+
+    @container profile-main (max-width: 767.98px) {
+        columns: 1;
     }
 
     // Phones swipe through the showcase instead of scrolling past the cards.
     @container profile-main (max-width: 559.98px) {
-        grid-template-columns: none;
+        columns: auto;
+        display: grid;
         grid-auto-flow: column;
         grid-auto-columns: 86%;
+        // Each card keeps its own height: the one with a video is taller
+        // without stretching the cards beside it into empty panels.
+        align-items: start;
+        gap: dt.$spacing-lg;
         overflow-x: auto;
         scroll-snap-type: x mandatory;
         scrollbar-width: none;
         padding-bottom: 2px;
 
         > * {
+            margin-bottom: 0;
             scroll-snap-align: start;
         }
     }
