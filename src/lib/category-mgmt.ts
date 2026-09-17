@@ -2,6 +2,7 @@
 
 import type { CategoryDisplayMode } from '../../types/leaderboards.types';
 import { apiFetch } from './api-client';
+import { loadGamePageData } from './game-page-data';
 
 export type PrimaryTiming = 'realtime' | 'gametime';
 
@@ -75,9 +76,9 @@ function asDisplayMode(
 }
 
 async function loadPageData(gameId: number): Promise<GamePageData> {
-    const data = await apiFetch<GamePageData | undefined>(
-        `/v1/games/${gameId}`,
-    );
+    // Shared with the other readers of this endpoint, so a page that needs
+    // two slices of it pays for one request.
+    const data = (await loadGamePageData(gameId)) as GamePageData | undefined;
     return data ?? {};
 }
 

@@ -3,6 +3,7 @@
 import { cacheLife, cacheTag } from 'next/cache';
 import type { CategoryDisplayMode } from '../../types/leaderboards.types';
 import { apiFetch } from './api-client';
+import { loadGamePageData } from './game-page-data';
 import { type GameTheme, parseGameTheme } from './game-theme';
 
 export interface GameLink {
@@ -23,9 +24,9 @@ interface GamePageData {
 export async function getGameIdentifiers(
     gameId: number,
 ): Promise<GameIdentifiers> {
-    const data = await apiFetch<GamePageData | undefined>(
-        `/v1/games/${gameId}`,
-    );
+    // The same endpoint the category catalog reads — shared, so a page that
+    // wants both slices doesn't fetch the payload twice.
+    const data = (await loadGamePageData(gameId)) as GamePageData | undefined;
     return {
         slug: data?.game?.slug ?? null,
     };

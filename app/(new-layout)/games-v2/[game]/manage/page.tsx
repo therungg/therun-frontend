@@ -38,10 +38,20 @@ import type {
 } from '../../../../../types/board-claims.types';
 import type { VariableRow } from '../../../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../../../types/moderation.types';
+import type {
+    WorklistDigest,
+    WorklistPage,
+} from '../../../../../types/worklist.types';
 import { ConsoleShell } from './console/console-shell';
 import type { GameDetailsData } from './console/game-details-pane';
+import { streamWithin } from './console/stream-budget';
 import { loadModDoorClaim, ModDoor } from './mod-door';
-import { loadAttention } from './moderation/attention/load-attention';
+import {
+    ATTENTION_UNAVAILABLE,
+    loadAttention,
+} from './moderation/attention/load-attention';
+
+export const maxDuration = 60;
 
 interface Props {
     params: Promise<{ game: string }>;
@@ -108,36 +118,95 @@ export default async function GameAdminConsolePage({ params }: Props) {
     // promises go straight to the console, which streams them in behind
     // Suspense so the rest of the page renders at the speed of the cheap
     // calls below.
+    // `streamWithin` is what makes that safe: it turns a throw or a call
+    // slower than the budget into the same "didn't load" value the catch
+    // fallbacks always produced, so the stream finishes and the skeletons
+    // resolve into something honest instead of spinning to `maxDuration`.
     const worklistPromise = canModerate
-        ? getWorklist(sessionId, game.id, { pageSize: 5 }).catch(() => null)
+        ? streamWithin<WorklistPage | null>(
+              () => getWorklist(sessionId, game.id, { pageSize: 5 }),
+              null,
+          )
         : Promise.resolve(null);
     const digestPromise = canModerate
-        ? getWorklistDigest(sessionId, game.id, 7).catch(() => null)
+        ? streamWithin<WorklistDigest | null>(
+              () => getWorklistDigest(sessionId, game.id, 7),
+              null,
+          )
         : Promise.resolve(null);
     // Flags, reports and self-claims: the Needs attention inbox and its
     // sidebar badge. `loadAttention` keeps each source's failure visible
     // instead of erroring the page.
-    const attentionPromise = loadAttention(sessionId, game.id, categoryName);
+    const attentionPromise = streamWithin(
+        () => loadAttention(sessionId, game.id, categoryName),
+        ATTENTION_UNAVAILABLE,
+    );
 
-    const [identifiers, catalog, syncJob, settingsJob, runsJob] =
-        await Promise.all([
-            getGameIdentifiers(game.id).catch(() => ({
-                slug: null,
-            })),
-            // Rows and groups both come off pageData — one load, not two.
-            loadConsoleCatalog(game.id).catch(() => ({
-                rows: [],
-                groups: [],
-            })),
-            // The board's latest import job — feeds the overview's Import &
-            // sync card. Best-effort: a failure just renders the "no import"
-            // state.
-            getSrcImportJob(sessionId, game.id).catch(() => null),
-            // Per-kind latest jobs — the overview's import card shows one
-            // "last import" line for settings and one for runs.
-            getSrcImportJob(sessionId, game.id, 'settings').catch(() => null),
-            getSrcImportJob(sessionId, game.id, 'resync').catch(() => null),
-        ]);
+    // Everything the page itself waits for, in one round. Each of these
+    // depends on nothing but the session, the game and the category list
+    // resolved above, so staging them — as this page did, in four sequential
+    // rounds — only added round trips. Permission-gated entries resolve to
+    // their empty value rather than being skipped, so the tuple keeps its
+    // shape. Every call keeps its own best-effort fallback.
+    const [
+        identifiers,
+        catalog,
+        syncJob,
+        settingsJob,
+        runsJob,
+        modApplications,
+        variables,
+        policies,
+        gameMods,
+        metadata,
+        verificationConfigured,
+    ] = await Promise.all([
+        getGameIdentifiers(game.id).catch(() => ({
+            slug: null,
+        })),
+        // Rows and groups both come off pageData — one load, not two.
+        loadConsoleCatalog(game.id).catch(() => ({
+            rows: [],
+            groups: [],
+        })),
+        // The board's latest import job — feeds the overview's Import &
+        // sync card. Best-effort: a failure just renders the "no import"
+        // state.
+        getSrcImportJob(sessionId, game.id).catch(() => null),
+        // Per-kind latest jobs — the overview's import card shows one
+        // "last import" line for settings and one for runs.
+        getSrcImportJob(sessionId, game.id, 'settings').catch(() => null),
+        getSrcImportJob(sessionId, game.id, 'resync').catch(() => null),
+        canEditMods
+            ? listGameBoardClaims(sessionId, game.id).catch(
+                  (): BoardClaimRequest[] => [],
+              )
+            : Promise.resolve<BoardClaimRequest[]>([]),
+        // Variables + policies feed the index matrix (configure-only) AND the
+        // Boards pane — fetched unconditionally because a viewer who can do
+        // neither never reaches this far (see the ModDoor return above), so a
+        // moderator without configure still gets the real board.
+        listCategoryVariables(
+            sessionId,
+            game.id,
+            categories.map((c) => c.id),
+        ).catch((): VariableRow[] => []),
+        listPolicies(sessionId, game.id).catch((): BoardPolicyRow[] => []),
+        canConfigure
+            ? listGameModerators(game.id).catch((): GameModerator[] => [])
+            : Promise.resolve<GameModerator[]>([]),
+        canConfigure
+            ? getGameMetadata(game.id).catch(() => null)
+            : Promise.resolve(null),
+        // Gated on canModerate, not canConfigure — the backend's
+        // verification-settings route checks verify-reject-run, the same
+        // permission canModerateGame mirrors.
+        canConfigure && canModerate
+            ? getVerificationSettings(sessionId, game.id)
+                  .then((v) => v.configured)
+                  .catch(() => false)
+            : Promise.resolve(false),
+    ]);
     const { rows: rawRows, groups } = catalog;
 
     const statsById = new Map(categories.map((c) => [c.id, c]));
@@ -160,56 +229,20 @@ export default async function GameAdminConsolePage({ params }: Props) {
         // keeping the below-floor junk it is meant to remove.
         .filter((r) => keepConsoleRow(r.id, resolvedIds));
 
-    let modApplications: BoardClaimRequest[] = [];
-    if (canEditMods) {
-        modApplications = await listGameBoardClaims(sessionId, game.id).catch(
-            () => [],
-        );
-    }
-
     // The checklist card links into the configure-gated setup wizard, so only
     // compute it for viewers who can actually configure the board.
     let setupCompleteness: BoardCompleteness | null = null;
     let boardHealth: BoardHealth | null = null;
     let gameDetails: GameDetailsData | null = null;
-    let moderators: GameModerator[] = [];
-    // Variables + policies feed the index matrix (configure-only) AND the
-    // Boards pane (canModerate || canConfigure) — fetched here, once, so a
-    // moderator without configure still gets the real board, not an empty one.
-    let variables: VariableRow[] = [];
-    let policies: BoardPolicyRow[] = [];
-    if (canModerate || canConfigure) {
-        [variables, policies] = await Promise.all([
-            // Category-scoped only: one list call per category, merged flat.
-            listCategoryVariables(
-                sessionId,
-                game.id,
-                categories.map((c) => c.id),
-            ).catch(() => []),
-            listPolicies(sessionId, game.id).catch(() => []),
-        ]);
-    }
+    const moderators: GameModerator[] = gameMods;
     // The index matrix needs variables + policies whether or not metadata
-    // loads, so they are fetched above rather than inside the metadata branch.
+    // loads, so they are read here rather than inside the metadata branch.
     let categoryConfig: CategoryConfigRow[] = buildCategoryRows({
         categories,
         policies: [],
         variables: [],
     });
     if (canConfigure) {
-        const [gameMods, metadata, verificationConfigured] = await Promise.all([
-            listGameModerators(game.id).catch(() => []),
-            getGameMetadata(game.id).catch(() => null),
-            // Gated on canModerate, not canConfigure — the backend's
-            // verification-settings route checks verify-reject-run, the same
-            // permission canModerateGame mirrors.
-            canModerate
-                ? getVerificationSettings(sessionId, game.id)
-                      .then((v) => v.configured)
-                      .catch(() => false)
-                : Promise.resolve(false),
-        ]);
-        moderators = gameMods;
         categoryConfig = buildCategoryRows({ categories, policies, variables });
         if (metadata) {
             setupCompleteness = computeCompleteness(

@@ -87,21 +87,44 @@ export async function listGameVariables(
     return unwrapVariableArray(parsed);
 }
 
-/**
- * Every variable row for a set of categories, in one batched call
- * (`?categoryIds=1,2,3`). Used to be one request per category — for games
- * with hundreds of categories that fanned out into hundreds of concurrent
- * Lambda invocations, each opening its own Postgres pool, and blew through
- * the connection cap. A failed fetch contributes nothing rather than
- * failing the whole read; callers use this for overviews (console matrix,
- * wizard hub, copy sources) where a partial list beats an error page.
- */
-export async function listCategoryVariables(
+/** Query-string budget per request, in characters of joined ids. Measured
+ * against the production gateway: a request URI is refused with 414 at about
+ * 16.4KB, so 6,000 characters of ids plus the base URL sits at roughly a
+ * third of the ceiling. It also keeps every game seen so far to one request
+ * (game 1, the widest board, joins its ids into ~4.4KB). */
+const MAX_IDS_QUERY_CHARS = 6_000;
+/** How many batches are in flight at once. The batched endpoint exists
+ * because one request per category once exhausted the Postgres connection
+ * cap — batches are far fewer, but the fan-out still stays small. */
+const BATCH_CONCURRENCY = 4;
+
+/** Split ids into groups whose joined query string stays inside the budget. */
+function batchCategoryIds(
+    categoryIds: number[],
+    maxChars: number = MAX_IDS_QUERY_CHARS,
+): number[][] {
+    const batches: number[][] = [];
+    let current: number[] = [];
+    let chars = 0;
+    for (const id of categoryIds) {
+        const cost = String(id).length + 1; // the id plus its separator
+        if (current.length > 0 && chars + cost > maxChars) {
+            batches.push(current);
+            current = [];
+            chars = 0;
+        }
+        current.push(id);
+        chars += cost;
+    }
+    if (current.length > 0) batches.push(current);
+    return batches;
+}
+
+async function fetchVariableBatch(
     sessionId: string,
     gameId: number,
     categoryIds: number[],
 ): Promise<VariableRow[]> {
-    if (categoryIds.length === 0) return [];
     const BASE_URL = process.env.NEXT_PUBLIC_DATA_URL;
     const qs = `?categoryIds=${categoryIds.map(encodeURIComponent).join(',')}`;
     const url = `${BASE_URL}${basePath(gameId)}${qs}`;
@@ -110,12 +133,58 @@ export async function listCategoryVariables(
             headers: { Authorization: `Bearer ${sessionId}` },
         });
         const text = await res.text();
-        if (!res.ok) return [];
+        if (!res.ok) {
+            console.error(
+                `${basePath(gameId)} batch of ${categoryIds.length} categories failed: ${res.status} ${text.slice(0, 200)}`,
+            );
+            return [];
+        }
         if (!text) return [];
         return unwrapVariableArray(JSON.parse(text));
-    } catch {
+    } catch (e) {
+        console.error(
+            `${basePath(gameId)} batch of ${categoryIds.length} categories threw:`,
+            e,
+        );
         return [];
     }
+}
+
+/**
+ * Every variable row for a set of categories, in batched calls
+ * (`?categoryIds=1,2,3`). Used to be one request per category — for games
+ * with hundreds of categories that fanned out into hundreds of concurrent
+ * Lambda invocations, each opening its own Postgres pool, and blew through
+ * the connection cap.
+ *
+ * It then went the other way: every id in one query string, unbounded. Past
+ * roughly 16KB of URL the gateway answers 414 before the request reaches the
+ * Lambda, and the swallowed failure would render the console matrix with no
+ * variables at all. So the ids are split into batches that fit, run a few at
+ * a time, and merged.
+ *
+ * A failed batch contributes nothing rather than failing the whole read —
+ * callers use this for overviews (console matrix, wizard hub, copy sources)
+ * where a partial list beats an error page — but it is logged rather than
+ * silently dropped.
+ */
+export async function listCategoryVariables(
+    sessionId: string,
+    gameId: number,
+    categoryIds: number[],
+): Promise<VariableRow[]> {
+    if (categoryIds.length === 0) return [];
+    const batches = batchCategoryIds(categoryIds);
+    const rows: VariableRow[] = [];
+    for (let i = 0; i < batches.length; i += BATCH_CONCURRENCY) {
+        const wave = await Promise.all(
+            batches
+                .slice(i, i + BATCH_CONCURRENCY)
+                .map((ids) => fetchVariableBatch(sessionId, gameId, ids)),
+        );
+        for (const batch of wave) rows.push(...batch);
+    }
+    return rows;
 }
 
 // POST and PUT both call the same upsert handler keyed by
