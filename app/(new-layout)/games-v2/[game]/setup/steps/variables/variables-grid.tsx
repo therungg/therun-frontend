@@ -20,7 +20,11 @@ import {
     subBoardCount,
     type VariableGroup,
 } from '~src/lib/setup/variable-view';
-import { boardsOfKind, type WorkspaceKind } from '~src/lib/setup/workspace';
+import {
+    boardNoun,
+    boardsOfKind,
+    type WorkspaceKind,
+} from '~src/lib/setup/workspace';
 import type { VariablePreview } from '~src/lib/variables/consequences';
 import { describeConsequences } from '~src/lib/variables/consequences';
 import {
@@ -1125,6 +1129,7 @@ export function VariablesGrid({
             {pendingAdd && (
                 <AddVariableForm
                     key={`${pendingAdd.role}:${pendingAdd.name}`}
+                    kind={kind}
                     role={pendingAdd.role}
                     busy={isBusy}
                     takenNames={takenNames}
@@ -1302,6 +1307,7 @@ function VariableSection({
     const renderPalette = (group: VariableGroup) => (
         <VariablePalette
             key={group.nameNormalized}
+            kind={kind}
             group={group}
             role={role}
             categories={categories}
@@ -1403,7 +1409,9 @@ function VariableSection({
 
         return (
             <section className={styles.zone}>
-                <p className={styles.zoneBlurb}>{copy.blurb}</p>
+                <p className={styles.zoneBlurb}>
+                    {copy.blurb(boardNoun(kind))}
+                </p>
 
                 {role === 'filter' && (
                     <div className={styles.builtIns}>
@@ -1439,11 +1447,7 @@ function VariableSection({
                                         : 'Filter'}
                                 </th>
                                 <th>Values</th>
-                                <th>
-                                    {kind === 'levels'
-                                        ? 'On levels'
-                                        : 'On categories'}
-                                </th>
+                                <th>On {boardNoun(kind, 2)}</th>
                                 <th className={styles.listActionsHead}>
                                     <span className="visually-hidden">
                                         Actions
@@ -1534,7 +1538,7 @@ function VariableSection({
                         : `${groups.length} added`}
                 </span>
             </div>
-            <p className={styles.zoneBlurb}>{copy.blurb}</p>
+            <p className={styles.zoneBlurb}>{copy.blurb(boardNoun(kind))}</p>
 
             {role === 'filter' && (
                 <div className={styles.builtIns}>
@@ -1574,9 +1578,7 @@ function VariableSection({
                     </p>
                     <p className={styles.emptyNote}>
                         {role === 'subcategory'
-                            ? kind === 'levels'
-                                ? 'Every level is a single leaderboard. Add a subcategory group when a level is really several leaderboards (Platform, Region, Glitches), each with its own record.'
-                                : 'Every category is a single leaderboard. Add a subcategory group when a category is really several leaderboards (Platform, Region, Glitches), each with its own record.'
+                            ? `Every ${boardNoun(kind)} is a single leaderboard. Add a subcategory group when a ${boardNoun(kind)} is really several leaderboards (Platform, Region, Glitches), each with its own record.`
                             : 'Add a filter when runners should be able to narrow a leaderboard by something the run carries, without it becoming a subcategory.'}
                     </p>
                 </div>
@@ -1584,6 +1586,7 @@ function VariableSection({
                 groups.map((group) => (
                     <VariablePalette
                         key={group.nameNormalized}
+                        kind={kind}
                         group={group}
                         role={role}
                         categories={categories}
@@ -1629,6 +1632,7 @@ function VariableSection({
 
             {adding ? (
                 <AddVariableForm
+                    kind={kind}
                     role={role}
                     busy={busy}
                     takenNames={takenNames}

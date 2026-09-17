@@ -33,8 +33,9 @@ export const SECTION: Record<
     {
         /** Section heading. */
         title: string;
-        /** One line under the heading — what this section does. */
-        blurb: string;
+        /** One line under the heading — what this section does, given what
+         *  one board is called ("category", "level"). */
+        blurb: (board: string) => string;
         /** Label on the section's add button. */
         add: string;
         /** Singular noun for one entry in this section. */
@@ -45,14 +46,16 @@ export const SECTION: Record<
 > = {
     subcategory: {
         title: 'Subcategories',
-        blurb: 'Split up a category into different subcategories. Each subcategory is its own leaderboard with its own record.',
+        blurb: (board) =>
+            `Split up a ${board} into different subcategories. Each subcategory is its own leaderboard with its own record.`,
         add: 'Add a subcategory group',
         noun: 'subcategory group',
         options: 'Subcategory options',
     },
     filter: {
         title: 'Filters',
-        blurb: 'Runners narrow a leaderboard with these. Filters do not create subcategories and do not affect records.',
+        blurb: () =>
+            'Runners narrow a leaderboard with these. Filters do not create subcategories and do not affect records.',
         add: 'Add a filter',
         noun: 'filter',
         options: 'Filter options',

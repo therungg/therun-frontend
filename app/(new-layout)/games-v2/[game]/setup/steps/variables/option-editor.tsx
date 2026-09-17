@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ArrowLeft, ArrowRight } from 'react-bootstrap-icons';
 import type { BoardBucket } from '~src/lib/setup/variable-view';
+import { boardNoun, type WorkspaceKind } from '~src/lib/setup/workspace';
 import { SECTION, type VariableRoleId } from '~src/lib/variables/language';
 import styles from './variables-grid.module.scss';
 
@@ -23,6 +24,7 @@ import styles from './variables-grid.module.scss';
  * because there is nothing yet to move or remove.
  */
 export function OptionEditor({
+    kind,
     bucket,
     index,
     total,
@@ -33,6 +35,7 @@ export function OptionEditor({
     onCancel,
     onApply,
 }: {
+    kind: WorkspaceKind;
     bucket: BoardBucket;
     index: number;
     total: number;
@@ -149,7 +152,7 @@ export function OptionEditor({
                                 )
                             }
                         >
-                            Remove from every category
+                            Remove from every {boardNoun(kind)}
                         </button>
                     </>
                 )}

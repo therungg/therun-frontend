@@ -13,6 +13,21 @@ import { splitLevelBoards } from '../levels/display';
  */
 export type WorkspaceKind = 'categories' | 'levels';
 
+/**
+ * What one board of this kind is called in running copy: "category" or
+ * "level", plural unless `n` is 1, capitalised for the start of a label.
+ */
+export function boardNoun(
+    kind: WorkspaceKind,
+    n = 1,
+    capitalised = false,
+): string {
+    const singular = kind === 'levels' ? 'level' : 'category';
+    const plural = kind === 'levels' ? 'levels' : 'categories';
+    const noun = n === 1 ? singular : plural;
+    return capitalised ? noun[0].toUpperCase() + noun.slice(1) : noun;
+}
+
 export type WorkspaceSubId = 'list' | 'groups' | 'settings' | 'subcategories';
 
 /** A console pane id: `?pane=<kind>/<sub>`. */

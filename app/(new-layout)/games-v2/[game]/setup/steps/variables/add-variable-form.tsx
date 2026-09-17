@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { boardNoun, type WorkspaceKind } from '~src/lib/setup/workspace';
 import {
     BUILT_IN_FILTERS,
     SECTION,
@@ -15,6 +16,7 @@ import styles from './variables-grid.module.scss';
  * that question, so the form only collects a name and the options.
  */
 export function AddVariableForm({
+    kind,
     role,
     busy,
     takenNames,
@@ -26,6 +28,7 @@ export function AddVariableForm({
     onCancel,
     onCreate,
 }: {
+    kind: WorkspaceKind;
     role: VariableRoleId;
     busy: boolean;
     takenNames: Set<string>;
@@ -209,7 +212,7 @@ export function AddVariableForm({
             <div className={styles.addField}>
                 <span className={styles.addLabel}>
                     Add to which{' '}
-                    {role === 'subcategory' ? 'boards' : 'categories'}
+                    {role === 'subcategory' ? 'boards' : boardNoun(kind, 2)}
                 </span>
                 <div className={styles.addCategories}>
                     {categories.map((c) => (
@@ -253,15 +256,15 @@ export function AddVariableForm({
             <p className={styles.addNote}>
                 {role === 'subcategory'
                     ? options.length > 1
-                        ? `Each of the ${selectedIds.length} selected ${
-                              selectedIds.length === 1
-                                  ? 'category is'
-                                  : 'categories are'
-                          } multiplied by ${options.length}: every one splits into ${options.length} subcategories with their own records.`
+                        ? `Each of the ${selectedIds.length} selected ${boardNoun(
+                              kind,
+                              selectedIds.length,
+                          )} ${selectedIds.length === 1 ? 'is' : 'are'} multiplied by ${options.length}: every one splits into ${options.length} subcategories with their own records.`
                         : 'A subcategory group needs at least two options to split anything.'
-                    : `Added to ${selectedIds.length} ${
-                          selectedIds.length === 1 ? 'category' : 'categories'
-                      }. No subcategories, no effect on records.`}
+                    : `Added to ${selectedIds.length} ${boardNoun(
+                          kind,
+                          selectedIds.length,
+                      )}. No subcategories, no effect on records.`}
             </p>
 
             <div className={styles.addActions}>

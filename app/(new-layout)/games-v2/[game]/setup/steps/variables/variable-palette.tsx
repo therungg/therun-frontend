@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { CaretDownFill, Pencil, Plus } from 'react-bootstrap-icons';
 import type { BoardBucket, VariableGroup } from '~src/lib/setup/variable-view';
 import { driftSides } from '~src/lib/setup/variable-view';
+import { boardNoun, type WorkspaceKind } from '~src/lib/setup/workspace';
 import {
     conversionLabel,
     conversionNote,
@@ -38,6 +39,7 @@ function noteOf(group: VariableGroup): string | null {
  * grid file is now the axis and the sections around it.
  */
 export function VariablePalette({
+    kind,
     group,
     role,
     categories,
@@ -66,6 +68,7 @@ export function VariablePalette({
     onShowValue,
     takenNames,
 }: {
+    kind: WorkspaceKind;
     group: VariableGroup;
     role: VariableRoleId;
     categories: ResolvedCategory[];
@@ -253,7 +256,7 @@ export function VariablePalette({
                 <div className={styles.deleteBanner}>
                     <span className={styles.deleteWarning}>
                         Delete {group.name} from all {onCount}{' '}
-                        {onCount === 1 ? 'category' : 'categories'}?
+                        {boardNoun(kind, onCount)}?
                         {role === 'subcategory' &&
                             ' Their subcategories collapse back into one leaderboard each.'}
                     </span>
@@ -331,7 +334,7 @@ export function VariablePalette({
                                     className={styles.defaultSelect}
                                     value={sharedDefault}
                                     disabled={busy}
-                                    aria-label={`Where a run with no ${group.name} goes, on all ${carriers.length} categories`}
+                                    aria-label={`Where a run with no ${group.name} goes, on all ${carriers.length} ${boardNoun(kind, carriers.length)}`}
                                     onChange={(e) =>
                                         onDefaultAll(e.target.value)
                                     }
@@ -373,10 +376,8 @@ export function VariablePalette({
                         <div className={styles.gridSummary}>
                             <span className={styles.gridSummaryText}>
                                 On all {categories.length}{' '}
-                                {categories.length === 1
-                                    ? 'category'
-                                    : 'categories'}{' '}
-                                · {group.buckets.length}{' '}
+                                {boardNoun(kind, categories.length)} ·{' '}
+                                {group.buckets.length}{' '}
                                 {SECTION[role].options.toLowerCase()}
                             </span>
                             <button
@@ -396,7 +397,7 @@ export function VariablePalette({
                                 <thead>
                                     <tr>
                                         <th className={styles.corner}>
-                                            Category
+                                            {boardNoun(kind, 1, true)}
                                         </th>
                                         {/* The option's own column header is how
                                         you edit the option. Same rule as the
@@ -503,6 +504,7 @@ export function VariablePalette({
                                         <tr className={styles.editorRow}>
                                             <td colSpan={columnCount}>
                                                 <OptionEditor
+                                                    kind={kind}
                                                     bucket={editingBucket}
                                                     index={group.buckets.indexOf(
                                                         editingBucket,
@@ -527,6 +529,7 @@ export function VariablePalette({
                                         <tr className={styles.editorRow}>
                                             <td colSpan={columnCount}>
                                                 <OptionEditor
+                                                    kind={kind}
                                                     bucket={NEW_BUCKET}
                                                     index={group.buckets.length}
                                                     total={
@@ -577,12 +580,14 @@ export function VariablePalette({
                                                         checked={allOn}
                                                         indeterminate={someOn}
                                                         disabled={busy}
-                                                        ariaLabel={`Toggle every option on every category for ${group.name}`}
+                                                        ariaLabel={`Toggle every option on every ${boardNoun(kind)} for ${group.name}`}
                                                         onChange={(on) =>
                                                             onToggleAll(on)
                                                         }
                                                     />
-                                                    <span>All categories</span>
+                                                    <span>
+                                                        All {boardNoun(kind, 2)}
+                                                    </span>
                                                 </span>
                                             </th>
                                             {group.buckets.map((bucket) => (
@@ -601,7 +606,7 @@ export function VariablePalette({
                                                             ) > 0
                                                         }
                                                         disabled={busy}
-                                                        ariaLabel={`Toggle ${bucket.label} on every category`}
+                                                        ariaLabel={`Toggle ${bucket.label} on every ${boardNoun(kind)}`}
                                                         onChange={(on) =>
                                                             onToggleColumn(
                                                                 bucket.key,
@@ -832,9 +837,9 @@ export function VariablePalette({
                         above the grid carries this and the column is gone. */}
                     {showsDefaultColumn && (
                         <p className={styles.gridNote}>
-                            These categories want different answers for a run
-                            that doesn&rsquo;t set this, so each one names its
-                            own.
+                            These {boardNoun(kind, 2)} want different answers
+                            for a run that doesn&rsquo;t set this, so each one
+                            names its own.
                         </p>
                     )}
 
@@ -875,8 +880,7 @@ export function VariablePalette({
                     {role === 'subcategory' && pendingCount > 0 && (
                         <div className={styles.pendingBar}>
                             <span className={styles.pendingLabel}>
-                                {pendingCount}{' '}
-                                {pendingCount === 1 ? 'category' : 'categories'}{' '}
+                                {pendingCount} {boardNoun(kind, pendingCount)}{' '}
                                 changed, not applied yet
                             </span>
                             <span className={styles.pendingSpacer} />

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import type { CategoryVariableSuggestion } from '~src/lib/leaderboard-variables';
-import type { WorkspaceKind } from '~src/lib/setup/workspace';
+import { boardNoun, type WorkspaceKind } from '~src/lib/setup/workspace';
 import { SECTION, type VariableRoleId } from '~src/lib/variables/language';
 import type {
     ResolvedCategory,
@@ -309,7 +309,7 @@ export function AddVariableWizard({
                         <p className={styles.wizardNote}>
                             {options.length} values
                             {role === 'subcategory'
-                                ? ` — every category this is added to becomes ${options.length} leaderboards.`
+                                ? ` — every ${boardNoun(kind)} this is added to becomes ${options.length} leaderboards.`
                                 : '.'}
                         </p>
                     )}
@@ -351,7 +351,7 @@ export function AddVariableWizard({
             {step === 'categories' && (
                 <div className={styles.wizardBody}>
                     <p className={styles.wizardNote}>
-                        Which categories carry this {noun}?
+                        Which {boardNoun(kind, 2)} carry this {noun}?
                     </p>
                     <div className={styles.wizardChoices}>
                         {categories.map((c) => (

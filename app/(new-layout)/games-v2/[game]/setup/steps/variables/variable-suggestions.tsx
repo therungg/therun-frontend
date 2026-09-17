@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { Check, GripVertical } from 'react-bootstrap-icons';
 import type { CategoryVariableSuggestion } from '~src/lib/leaderboard-variables';
-import type { WorkspaceKind } from '~src/lib/setup/workspace';
+import { boardNoun, type WorkspaceKind } from '~src/lib/setup/workspace';
 import { normalizeVariableName } from '~src/lib/variables/keys';
 import type { VariableRoleId } from '~src/lib/variables/language';
 import {
@@ -113,8 +113,8 @@ export function VariableSuggestions({
                 <h3 className={styles.title}>From runs</h3>
                 <p className={styles.muted}>
                     No variable is set by enough runners in any{' '}
-                    {kind === 'levels' ? 'level' : 'category'} yet. Add
-                    subcategories and filters below by hand.
+                    {boardNoun(kind)} yet. Add subcategories and filters below
+                    by hand.
                 </p>
             </section>
         );
@@ -128,7 +128,7 @@ export function VariableSuggestions({
             <div className={styles.head}>
                 <h3 className={styles.title}>From runs</h3>
                 <span className={styles.headHint}>
-                    Values runners fill in, per category
+                    Values runners fill in, per {boardNoun(kind)}
                     {anyMergeable &&
                         ' · drag a value onto another to merge their spellings'}
                 </span>
@@ -136,6 +136,7 @@ export function VariableSuggestions({
             <ul className={styles.list}>
                 {suggestions.map((s) => (
                     <SuggestionCard
+                        kind={kind}
                         key={s.variable}
                         suggestion={s}
                         existing={
@@ -153,6 +154,7 @@ export function VariableSuggestions({
 }
 
 interface CardProps {
+    kind: WorkspaceKind;
     suggestion: CategoryVariableSuggestion;
     existing: { role: VariableRoleId; categoryId: number }[];
     catName: (id: number) => string;
@@ -160,6 +162,7 @@ interface CardProps {
 }
 
 function SuggestionCard({
+    kind,
     suggestion: s,
     existing,
     catName,
@@ -189,9 +192,7 @@ function SuggestionCard({
     const hi = Math.max(...pcts);
     const shareText = lo === hi ? `${hi}%` : `${lo}–${hi}%`;
     const n = s.relevantCategoryIds.length;
-    const relevance = `Relevant in ${n} ${
-        n === 1 ? 'category' : 'categories'
-    } · ${shareText} of runners`;
+    const relevance = `Relevant in ${n} ${boardNoun(kind, n)} · ${shareText} of runners`;
 
     const state =
         existing.length === 0
