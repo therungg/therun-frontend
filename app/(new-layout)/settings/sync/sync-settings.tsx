@@ -49,6 +49,7 @@ function Proposal({
             <table className={styles.evidenceTable}>
                 <thead>
                     <tr>
+                        <th>Run</th>
                         <th>Your time</th>
                         <th>speedrun.com</th>
                     </tr>
@@ -56,6 +57,13 @@ function Proposal({
                 <tbody>
                     {s.proposal.evidence.map((e) => (
                         <tr key={e.srcRunId}>
+                            <td>
+                                {e.gameName || e.categoryName
+                                    ? [e.gameName, e.categoryName]
+                                          .filter(Boolean)
+                                          .join(' · ')
+                                    : 'Deleted run'}
+                            </td>
                             <td>{time(e.timeMs)}</td>
                             <td>{time(e.srcTimeMs)}</td>
                         </tr>

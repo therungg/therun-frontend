@@ -454,6 +454,9 @@ export interface SrcIdentityEvidence {
     srcRunId: string;
     timeMs: number;
     srcTimeMs: number;
+    /** Null when the run no longer exists (deleted between proposing and viewing). */
+    gameName: string | null;
+    categoryName: string | null;
 }
 
 export interface SrcUserSyncStatus {

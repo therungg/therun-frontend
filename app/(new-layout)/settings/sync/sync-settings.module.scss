@@ -14,7 +14,7 @@
         text-align: right;
     }
 
-    td {
+    td:not(:first-child) {
         @include board.mono-time;
     }
 }
