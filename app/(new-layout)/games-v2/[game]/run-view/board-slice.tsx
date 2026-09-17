@@ -28,13 +28,17 @@ function Row({
     const body = (
         <>
             <span className={styles.sliceRank}>#{r.rank}</span>
-            <CountryFlag country={r.country} />
-            <RunnerAvatar
-                name={r.runnerName}
-                picture={r.picture}
-                size="xs"
-                anonymous={r.anonymized === true}
-            />
+            <span className={styles.sliceFlag}>
+                <CountryFlag country={r.country} />
+            </span>
+            <span className={styles.sliceAvatar}>
+                <RunnerAvatar
+                    name={r.runnerName}
+                    picture={r.picture}
+                    size="xs"
+                    anonymous={r.anonymized === true}
+                />
+            </span>
             <span className={styles.sliceName}>{r.runnerName}</span>
             <span className={styles.sliceTime}>{formatTimeMs(r.time)}</span>
             <span className={styles.sliceGap}>
@@ -93,8 +97,12 @@ export function BoardSlice({ model }: { model: RunViewModel }) {
                 ))}
                 <div className={`${styles.sliceRow} ${styles.sliceSelf}`}>
                     <span className={styles.sliceRank}>#{ctx.rank}</span>
-                    <CountryFlag country={model.country} />
-                    <RunnerAvatar name={model.runnerName} size="xs" />
+                    <span className={styles.sliceFlag}>
+                        <CountryFlag country={model.country} />
+                    </span>
+                    <span className={styles.sliceAvatar}>
+                        <RunnerAvatar name={model.runnerName} size="xs" />
+                    </span>
                     <span className={styles.sliceName}>{model.runnerName}</span>
                     <span className={styles.sliceTime}>
                         {formatTimeMs(selfTime)}

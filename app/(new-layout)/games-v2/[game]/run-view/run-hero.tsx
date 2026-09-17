@@ -22,12 +22,21 @@ export function RunHero({
     const primaryTime = model.realTime ?? model.gameTime;
     const subcategoryLabel = formatSubcategoryKey(model.subcategoryKey);
     const ctx = model.boardContext;
-    // formatSubcategoryKey already spells out every variable in
-    // subcategoryKey as "name=value" pairs joined by " · " — only show a
-    // separate pill for a variable whose value isn't already covered there
-    // (e.g. a non-subcategory variable like a runner-chosen platform).
+    // Only show a pill for a variable value the subcategory label doesn't
+    // already carry. Compare case-insensitively against each label part and
+    // each raw value in the key ("name=value" pairs).
+    const covered = new Set(
+        [...subcategoryLabel.split(' · '), ...model.subcategoryKey.split('|')]
+            .map((part) => {
+                const eq = part.indexOf('=');
+                return (eq >= 0 ? part.slice(eq + 1) : part)
+                    .trim()
+                    .toLowerCase();
+            })
+            .filter(Boolean),
+    );
     const variableValues = Object.values(model.variables).filter(
-        (v) => !subcategoryLabel || !subcategoryLabel.includes(v),
+        (v) => !covered.has(v.trim().toLowerCase()),
     );
 
     return (
