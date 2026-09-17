@@ -91,12 +91,19 @@ $row-line: color-mix(in srgb, #{$border} 70%, transparent);
 
 // ---- Stat strip ----------------------------------------------------------
 
+// The section's opening numbers sit on their own slim panel, in the same
+// language as the header above them, so they never float loose on the canvas.
 .strip {
+    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
     display: flex;
     flex-wrap: wrap;
     align-items: stretch;
     gap: dt.$spacing-lg dt.$spacing-3xl;
     min-width: 0;
+
+    @media (max-width: 575.98px) {
+        padding: dt.$spacing-lg;
+    }
 }
 
 .lead {
@@ -214,9 +221,13 @@ $row-line: color-mix(in srgb, #{$border} 70%, transparent);
     margin-left: auto;
 }
 
+// The picker opens inside the strip's own panel, so it recesses into it
+// rather than stacking a second panel on top of one.
 .stripPanel {
-    @include board.board-surface(dt.$spacing-lg);
     flex-basis: 100%;
+    padding: dt.$spacing-lg;
+    border-radius: dt.$radius-md;
+    background: var(--board-recess-bg, rgba(var(--bs-body-color-rgb), 0.03));
     display: grid;
     gap: dt.$spacing-md;
 }

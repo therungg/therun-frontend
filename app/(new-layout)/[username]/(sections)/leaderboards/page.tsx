@@ -70,6 +70,7 @@ export default async function RunnerLeaderboardsPage({ params }: PageProps) {
                                 profile={profile}
                                 saved={head?.strips?.leaderboards}
                                 boardsVisible={boardsVisible}
+                                canCustomize={canCustomize}
                             />
                         )}
                         {empty ? null : (

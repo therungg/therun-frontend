@@ -14,7 +14,14 @@ import { setStripDraft } from './strip-draft-store';
  * Leaderboards tab in Customize mode it is always open and saves with the
  * showcase; everywhere else it opens from the pencil and saves itself.
  */
-export function StripPicker({ strip }: { strip: ResolvedStrip }) {
+export function StripPicker({
+    strip,
+    hidePencil,
+}: {
+    strip: ResolvedStrip;
+    /** The page already has a Customize button that opens this picker. */
+    hidePencil?: boolean;
+}) {
     const router = useRouter();
     const showcase = useShowcaseOptional();
     const inCustomize = strip.tab === 'leaderboards' && !!showcase?.editing;
@@ -67,6 +74,7 @@ export function StripPicker({ strip }: { strip: ResolvedStrip }) {
     };
 
     if (!inCustomize && !open) {
+        if (hidePencil) return null;
         return (
             <button
                 type="button"

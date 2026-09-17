@@ -249,9 +249,10 @@
 
 .navLink {
     position: relative;
-    padding-block: dt.$spacing-md;
-    color: var(--bs-secondary-color);
-    font-size: dt.$font-size-sm;
+    padding-block: dt.$spacing-lg;
+    color: var(--bs-body-color);
+    font-size: dt.$font-size-md;
+    font-weight: 500;
     white-space: nowrap;
     text-decoration: none;
 
@@ -262,7 +263,7 @@
 
 .navLinkActive {
     color: var(--bs-emphasis-color);
-    font-weight: 500;
+    font-weight: 600;
 
     &::after {
         content: '';

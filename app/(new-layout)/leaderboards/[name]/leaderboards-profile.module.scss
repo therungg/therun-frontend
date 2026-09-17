@@ -288,10 +288,16 @@ $row-line: color-mix(
     min-width: 0;
 }
 
+// The filters recess into the page rather than sitting on a card of their own,
+// so they stay readable over a themed background without competing with the
+// panels of runs below them.
 .runsFilters {
     display: grid;
     gap: dt.$spacing-sm;
     min-width: 0;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border-radius: dt.$radius-lg;
+    background: var(--board-recess-bg, rgba(var(--bs-body-color-rgb), 0.04));
 }
 
 .runsFilterRow {
@@ -1018,7 +1024,7 @@ a.runAttempts:hover {
 .gameListName {
     font-weight: 600;
     color: var(--bs-emphasis-color);
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
 }
 
 .gameListLine {
@@ -1261,10 +1267,11 @@ a.runAttempts:hover {
     }
 }
 
-// Shelf: art tiles with a medal badge, two across in the sidebar.
+// Shelf: art tiles with a medal badge, one per row — at the sidebar's width
+// two columns broke game names mid-word.
 .shelf {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     gap: dt.$spacing-sm;
 }
 

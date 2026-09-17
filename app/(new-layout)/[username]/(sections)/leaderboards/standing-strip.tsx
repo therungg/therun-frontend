@@ -19,11 +19,14 @@ export function StandingStrip({
     profile,
     saved,
     boardsVisible,
+    canCustomize,
 }: {
     profile: LeaderboardsProfile;
     saved: string[] | null | undefined;
     /** Whether the best result may link to its board. */
     boardsVisible: boolean;
+    /** Whether the page shows a Customize button, which opens the picker too. */
+    canCustomize: boolean;
 }) {
     // The lead is the showcase's own first pick: the run worth the most
     // placement points, not simply the lowest rank number.
@@ -69,7 +72,11 @@ export function StandingStrip({
             editor={
                 profile.runner.userId !== null ? (
                     <Suspense fallback={null}>
-                        <StripEditor name={profile.runner.name} strip={strip} />
+                        <StripEditor
+                            name={profile.runner.name}
+                            strip={strip}
+                            hidePencil={canCustomize}
+                        />
                     </Suspense>
                 ) : null
             }
