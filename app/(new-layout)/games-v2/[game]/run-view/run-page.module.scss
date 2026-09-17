@@ -19,7 +19,7 @@
 .hero {
     display: flex;
     flex-direction: column;
-    gap: dt.$spacing-sm;
+    gap: dt.$spacing-md;
 }
 
 .crumb {
@@ -28,7 +28,7 @@
     align-items: center;
     gap: dt.$spacing-xs dt.$spacing-sm;
     color: var(--bs-secondary-color);
-    font-size: 0.875rem;
+    font-size: dt.$font-size-sm;
 
     a {
         color: inherit;
@@ -44,6 +44,7 @@
     display: inline-flex;
     align-items: center;
     gap: dt.$spacing-sm;
+    font-weight: 600;
 
     img {
         border-radius: 4px;
@@ -59,21 +60,66 @@
     padding: 0 dt.$spacing-sm;
     border: 1px solid var(--bs-border-color);
     border-radius: 999px;
-    font-size: 0.75rem;
+    font-size: dt.$font-size-2xs;
+}
+
+// "World record" chip + "1.204 ahead of #2", above the time it crowns.
+.record {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-xs dt.$spacing-md;
+    margin-top: dt.$spacing-xs;
+}
+
+.recordChip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.7rem;
+    border: 1px solid color-mix(in srgb, #{dt.$accent-gold} 55%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, #{dt.$accent-gold} 16%, transparent);
+    color: dt.$accent-gold;
+    font-size: dt.$font-size-2xs;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    white-space: nowrap;
+
+    &:hover {
+        background: color-mix(in srgb, #{dt.$accent-gold} 26%, transparent);
+        color: dt.$accent-gold;
+    }
+}
+
+.recordLead {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+    white-space: nowrap;
+
+    strong {
+        font-family: dt.$font-mono;
+        font-variant-numeric: tabular-nums;
+        color: var(--bs-emphasis-color);
+        font-weight: 700;
+    }
 }
 
 .timeRow {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
-    gap: dt.$spacing-md;
+    gap: dt.$spacing-sm dt.$spacing-lg;
 }
 
 .time {
     margin: 0;
-    font-size: clamp(2rem, 8vw, 4rem);
+    font-family: dt.$font-mono;
+    font-size: clamp(2.25rem, 9vw, 4.25rem);
     font-weight: 700;
     font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
     line-height: 1;
     color: var(--bs-emphasis-color);
 }
@@ -84,10 +130,11 @@
 
 .rank {
     color: var(--bs-secondary-color);
-    font-size: 1.25rem;
+    font-size: 1.125rem;
     text-decoration: none;
 
     strong {
+        font-family: dt.$font-mono;
         color: var(--bs-emphasis-color);
         font-size: 1.75rem;
         font-weight: 700;
@@ -98,49 +145,12 @@
     }
 }
 
-// "World record · held 4 months · 1.204 ahead of #2"
-.record {
-    display: inline-flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: dt.$spacing-xs dt.$spacing-sm;
-    color: var(--bs-secondary-color);
-    font-size: 1rem;
-
-    > * {
-        white-space: nowrap;
-    }
-
-    > * + *::before {
-        content: '·';
-        margin-right: dt.$spacing-sm;
-        opacity: 0.6;
-    }
-
-    // A "·" separator must never start a wrapped line. Below 576px drop the
-    // dots entirely and force "World record" onto its own line, so the
-    // remaining items wrap as a plain gapped group underneath it.
-    @media (max-width: 575.98px) {
-        > * + *::before {
-            content: none;
-            margin-right: 0;
-        }
-    }
+.rank strong.rankSilver {
+    color: dt.$accent-silver;
 }
 
-.recordLabel {
-    color: dt.$accent-gold;
-    font-size: 1.25rem;
-    font-weight: 700;
-    text-decoration: none;
-
-    &:hover {
-        text-decoration: underline;
-    }
-
-    @media (max-width: 575.98px) {
-        flex-basis: 100%;
-    }
+.rank strong.rankBronze {
+    color: dt.$accent-bronze;
 }
 
 .badges {
@@ -158,19 +168,32 @@
     flex-wrap: wrap;
     align-items: center;
     gap: dt.$spacing-sm;
-    font-size: 1.125rem;
+}
+
+.runnerName {
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+    color: var(--bs-emphasis-color);
+
+    a {
+        color: inherit;
+    }
 }
 
 .heroActions {
     margin-left: auto;
 }
 
-// Action row (Copy link, Report, owner actions). Normal text contrast: these
-// are live controls, not hints.
+// Action row (Report, owner actions). Normal text contrast: these are live
+// controls, not hints.
 .actions {
     display: flex;
     flex-wrap: wrap;
     gap: dt.$spacing-sm;
+
+    &:empty {
+        display: none;
+    }
 }
 
 .action {
@@ -185,54 +208,162 @@
     border-color: rgba(dt.$accent-red, 0.4);
 }
 
-// --- stat strip ----------------------------------------------------------
+// --- meta line (date, clocks, video) ---------------------------------------
 
-.strip {
+.meta {
     display: flex;
     flex-wrap: wrap;
-    align-items: flex-end;
-    gap: dt.$spacing-md dt.$spacing-lg;
-    padding: dt.$spacing-md 0;
-    border-top: 1px solid var(--bs-border-color);
-    border-bottom: 1px solid var(--bs-border-color);
+    align-items: center;
+    gap: dt.$spacing-xs dt.$spacing-lg;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
 
     &:empty {
         display: none;
     }
-
-    @media (max-width: 575.98px) {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        align-items: start;
-    }
 }
 
-.cell {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+.metaItem {
+    display: inline-flex;
+    align-items: baseline;
+    gap: dt.$spacing-xs;
+    white-space: nowrap;
 }
 
-.cellLabel {
-    font-size: 0.6875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+.metaLabel {
+    @include board.board-eyebrow;
     color: var(--bs-tertiary-color);
 }
 
-.cellValue {
+.metaTime {
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    color: var(--bs-body-color);
+}
+
+.metaLink {
+    color: var(--bs-primary);
+}
+
+.noVideo {
+    @include board.board-pill;
+}
+
+// --- runner stats tiles ----------------------------------------------------
+
+.statsTitle {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin: 0 0 dt.$spacing-xs;
+    font-size: dt.$font-size-md;
+    font-weight: 700;
+    color: var(--bs-emphasis-color);
+    min-width: 0;
+}
+
+.statsName {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: dt.$spacing-md;
+
+    @media (max-width: 575.98px) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: dt.$spacing-sm;
+    }
+}
+
+.tile {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    min-width: 0;
+    padding: dt.$spacing-md dt.$spacing-lg;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.45);
+    border-radius: dt.$radius-md;
+    background: color-mix(in srgb, var(--bs-emphasis-color) 4%, transparent);
+    box-shadow: inset 3px 0 0 rgba(var(--bs-primary-rgb), 0.7);
+
+    @media (max-width: 575.98px) {
+        padding: dt.$spacing-sm dt.$spacing-md;
+    }
+}
+
+.tileLabel {
+    @include board.board-eyebrow;
+}
+
+.tileValue {
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(1.25rem, 4.5vw, 1.75rem);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--bs-emphasis-color);
+    overflow-wrap: anywhere;
+}
+
+.tileAccent {
+    color: var(--bs-primary);
+}
+
+.tileSub {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.meter {
+    display: block;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(var(--bs-primary-rgb), 0.18);
+    overflow: hidden;
+}
+
+.meterFill {
+    display: block;
+    height: 100%;
+    background: var(--bs-primary);
+}
+
+// --- podium medals (same ball as the board) -----------------------------
+
+.medal {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.45rem;
+    height: 1.45rem;
+    border-radius: 50%;
+    font-size: dt.$font-size-2xs;
+    font-weight: 700;
+    color: rgba(0, 0, 0, 0.85);
     font-variant-numeric: tabular-nums;
 }
 
-.stripActions {
-    display: flex;
-    gap: dt.$spacing-sm;
-    margin-left: auto;
+.medal1 {
+    background: dt.$accent-gold;
+}
 
-    @media (max-width: 575.98px) {
-        grid-column: 1 / -1;
-        margin-left: 0;
-    }
+.medal2 {
+    background: dt.$accent-silver;
+}
+
+.medal3 {
+    background: dt.$accent-bronze;
+}
+
+.rankPlain {
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
 }
 
 // --- evidence dialog -------------------------------------------------
@@ -287,23 +418,28 @@
 }
 
 .panelTitle {
+    @include board.board-eyebrow;
     margin: 0;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-xs;
+    font-weight: 700;
+    color: var(--bs-emphasis-color);
 }
 
 .panelHead {
-    display: flex;
+    @include board.board-section-head;
     flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: dt.$spacing-xs dt.$spacing-sm;
+    margin-bottom: dt.$spacing-xs;
 }
 
 .panelHeadLink {
-    font-size: 0.875rem;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    text-decoration: none;
+
+    &:hover {
+        color: var(--bs-primary);
+        text-decoration: underline;
+    }
 }
 
 // Wide tables scroll inside the panel, never the page.
@@ -314,19 +450,23 @@
 
 .splits {
     width: 100%;
-    font-variant-numeric: tabular-nums;
-    font-size: 0.875rem;
+    border-collapse: collapse;
+    font-size: dt.$font-size-sm;
 
     th {
-        font-weight: 500;
-        color: var(--bs-tertiary-color);
+        @include board.board-eyebrow;
+        font-weight: 700;
+        padding: 0 0 dt.$spacing-sm;
         text-align: right;
+        white-space: nowrap;
+        border-bottom: 2px solid rgba(var(--bs-border-color-rgb), 0.7);
     }
 
     td {
-        padding: 4px 0;
+        padding: 7px 0;
         text-align: right;
-        border-top: 1px solid var(--bs-border-color);
+        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.25);
+        vertical-align: middle;
     }
 
     th:first-child,
@@ -336,32 +476,181 @@
 
     th + th,
     td + td {
-        padding-left: dt.$spacing-md;
+        padding-left: dt.$spacing-lg;
         white-space: nowrap;
+
+        @media (max-width: 575.98px) {
+            padding-left: dt.$spacing-sm;
+        }
+    }
+
+    tbody tr {
+        transition: background-color dt.$transition-fast;
+
+        &:hover {
+            background: color-mix(
+                in srgb,
+                var(--bs-emphasis-color) 5%,
+                transparent
+            );
+        }
+    }
+
+    // Row hover tint reaches the panel edge: pad the outer cells.
+    th:first-child,
+    td:first-child {
+        padding-left: dt.$spacing-sm;
+    }
+
+    th:last-child,
+    td:last-child {
+        padding-right: dt.$spacing-sm;
     }
 }
 
-// Segment duration with a thin bar scaled to the longest segment.
+.splitName {
+    color: var(--bs-body-color);
+    font-weight: 500;
+}
+
+.splitTime,
+.segTime,
+.goldTime,
+.deltaCell {
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+}
+
+.splitTime {
+    color: var(--bs-emphasis-color);
+}
+
+.goldTime {
+    color: var(--bs-tertiary-color);
+}
+
+// Segment duration over a bar scaled to the longest segment. The solid part
+// is the gold; the pale remainder is time off it.
 .segCell {
-    position: relative;
+    width: 1%;
+}
+
+.segInner {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: dt.$spacing-sm;
+}
+
+.segTime {
+    min-width: 3.5rem;
+    color: var(--bs-emphasis-color);
+    font-weight: 600;
+}
+
+.segTrack {
+    display: flex;
+    justify-content: flex-end;
+    width: 9rem;
+
+    @media (max-width: 575.98px) {
+        width: 2.5rem;
+    }
 }
 
 .segBar {
-    position: absolute;
-    right: 0;
-    bottom: 2px;
-    height: 2px;
-    border-radius: 1px;
-    background: rgba(var(--bs-primary-rgb), 0.55);
+    display: block;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(var(--bs-primary-rgb), 0.3);
+    overflow: hidden;
 }
 
-.goldMark {
-    color: dt.$accent-gold;
+.segBarGold {
+    display: block;
+    height: 100%;
+    background: var(--bs-primary);
+}
+
+.segGold {
+    background: color-mix(in srgb, #{dt.$accent-gold} 18%, transparent);
+
+    .segTime {
+        color: dt.$accent-gold;
+        font-weight: 700;
+    }
+
+    .segBar {
+        background: dt.$accent-gold;
+    }
+}
+
+.splitGoldRow .splitName {
+    color: var(--bs-emphasis-color);
+}
+
+.goldChip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.05rem 0.5rem;
+    border-radius: 999px;
+    background: dt.$accent-gold;
+    color: rgba(0, 0, 0, 0.85);
+    font-family: var(--bs-body-font-family);
+    font-size: dt.$font-size-2xs;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.goldNear {
+    color: var(--bs-primary);
+    font-weight: 600;
+}
+
+.goldMid {
+    color: var(--bs-body-color);
+}
+
+.goldFar {
+    color: color-mix(in srgb, #{dt.$accent-amber} 55%, var(--bs-secondary-color));
+}
+
+.ahead,
+.behind,
+.even {
     font-weight: 600;
 }
 
 .ahead {
     color: dt.$accent-green-bright;
+}
+
+.behind {
+    color: dt.$accent-red-light;
+}
+
+.even {
+    color: var(--bs-secondary-color);
+}
+
+// The finish: the run's final time, set apart from the segments above it.
+.splits tbody tr.splitFinal td {
+    border-top: 2px solid rgba(var(--bs-border-color-rgb), 0.7);
+    border-bottom: 0;
+    padding-top: dt.$spacing-sm;
+}
+
+.splitFinal {
+    .splitName {
+        font-weight: 700;
+        color: var(--bs-emphasis-color);
+    }
+
+    .splitTime {
+        font-size: dt.$font-size-base;
+        font-weight: 700;
+    }
 }
 
 @media (max-width: 575.98px) {
@@ -386,46 +675,55 @@
 .slice {
     display: flex;
     flex-direction: column;
+    gap: 2px;
 }
 
 .sliceRow {
     display: grid;
     // Six fixed tracks on every row (self row included) so columns line up
     // whether or not a row has a flag.
-    grid-template-columns: 2.5rem 18px dt.$avatar-xs minmax(0, 1fr) 5.5rem 4.5rem;
+    grid-template-columns: 2.75rem 18px dt.$avatar-xs minmax(0, 1fr) 6rem 4.5rem;
     align-items: center;
     gap: dt.$spacing-sm;
-    padding: 6px dt.$spacing-sm;
-    border-radius: 6px;
+    padding: 7px dt.$spacing-sm;
+    border-radius: dt.$radius-sm;
     color: inherit;
     text-decoration: none;
-    font-size: 0.875rem;
+    font-size: dt.$font-size-sm;
+    transition: background-color dt.$transition-fast;
 
     &:is(a):hover {
-        background: rgba(var(--bs-body-color-rgb), 0.05);
+        background: color-mix(in srgb, var(--bs-emphasis-color) 6%, transparent);
+        color: inherit;
     }
 
     // Fixed rank/avatar/time/gap columns leave the name almost no room at
     // phone width. Drop the avatar track and narrow rank so the name keeps
     // ~10 characters legible.
     @media (max-width: 575.98px) {
-        grid-template-columns: 1.5rem 18px minmax(0, 1fr) 5.5rem 4.5rem;
+        grid-template-columns: 1.5rem 18px minmax(0, 1fr) 4.75rem 3.75rem;
+        gap: dt.$spacing-xs;
     }
 }
 
 .sliceSelf {
-    background: rgba(var(--bs-primary-rgb), 0.12);
-    font-weight: 600;
-}
+    background: rgba(var(--bs-primary-rgb), 0.14);
+    box-shadow: inset 3px 0 0 var(--bs-primary);
 
-.sliceRank,
-.sliceTime,
-.sliceGap {
-    font-variant-numeric: tabular-nums;
+    .sliceName {
+        font-weight: 700;
+        color: var(--bs-emphasis-color);
+    }
+
+    .sliceTime {
+        color: var(--bs-primary);
+    }
 }
 
 .sliceRank {
-    color: var(--bs-secondary-color);
+    display: flex;
+    justify-content: flex-end;
+    font-size: dt.$font-size-xs;
 }
 
 .sliceFlag,
@@ -441,29 +739,37 @@
 }
 
 .sliceTime {
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    font-size: dt.$font-size-base;
+    font-weight: 700;
     text-align: right;
+    color: var(--bs-emphasis-color);
+
+    @media (max-width: 575.98px) {
+        font-size: dt.$font-size-sm;
+    }
 }
 
 .sliceName {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    color: var(--bs-body-color);
 }
 
 .sliceGap {
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    font-size: dt.$font-size-xs;
     text-align: right;
-    color: var(--bs-secondary-color);
+    color: var(--bs-tertiary-color);
 }
 
 .sliceGapRow {
-    padding-left: dt.$spacing-sm;
+    padding-left: dt.$spacing-lg;
     color: var(--bs-tertiary-color);
     line-height: 1;
-}
-
-.panelLink {
-    align-self: flex-start;
-    font-size: 0.875rem;
 }
 
 .superseded {
@@ -474,45 +780,102 @@
 .runnerHead {
     display: flex;
     align-items: center;
+    gap: dt.$spacing-md;
+    min-width: 0;
+}
+
+.runnerHeadText {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.runnerHeadName {
+    display: inline-flex;
+    align-items: center;
     gap: dt.$spacing-sm;
-    font-size: 1rem;
+    font-size: dt.$font-size-md;
+    font-weight: 700;
+    color: var(--bs-emphasis-color);
+
+    a {
+        color: inherit;
+    }
+}
+
+.recordCount {
+    color: dt.$accent-gold;
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
 }
 
 .entries {
     list-style: none;
-    margin: 0;
+    margin: dt.$spacing-xs 0 0;
     padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .entry {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-columns: 2.75rem minmax(0, 1fr) auto;
+    align-items: center;
     gap: dt.$spacing-sm;
-    padding: 4px 0;
+    padding: 6px dt.$spacing-sm;
+    border-radius: dt.$radius-sm;
     color: inherit;
     text-decoration: none;
-    font-size: 0.875rem;
-    border-top: 1px solid var(--bs-border-color);
+    font-size: dt.$font-size-sm;
+    transition: background-color dt.$transition-fast;
 
-    &:hover .entryName {
-        text-decoration: underline;
+    &:hover {
+        background: color-mix(in srgb, var(--bs-emphasis-color) 6%, transparent);
+        color: inherit;
     }
+
+    @media (max-width: 575.98px) {
+        grid-template-columns: 2rem minmax(0, 1fr) auto;
+    }
+}
+
+.entryRank {
+    display: flex;
+    justify-content: flex-end;
+    font-size: dt.$font-size-xs;
 }
 
 .entryName {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    color: var(--bs-emphasis-color);
+    font-weight: 500;
 }
 
-.entryTime,
-.entryRank {
-    font-variant-numeric: tabular-nums;
-    text-align: right;
-}
-
-.entryRank {
+.entrySub {
     color: var(--bs-secondary-color);
+    font-weight: 400;
+}
+
+.entryTime {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    line-height: 1.2;
+}
+
+.entryOf {
+    font-family: var(--bs-body-font-family);
+    font-size: dt.$font-size-2xs;
+    font-weight: 400;
+    color: var(--bs-tertiary-color);
 }
 
 // --- layout ----------------------------------------------------------------

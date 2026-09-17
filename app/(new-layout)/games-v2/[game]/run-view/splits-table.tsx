@@ -26,6 +26,14 @@ function formatSplitDelta(ms: number, digits: 1 | 2): string {
         : `${sign}${m}:${s}`;
 }
 
+/** How far a segment sits off its gold, relative to the gold itself. */
+function toGoldClass(toGold: number, gold: number): string {
+    const ratio = gold > 0 ? toGold / gold : 1;
+    if (toGold <= 1000 || ratio <= 0.005) return styles.goldNear;
+    if (ratio <= 0.03) return styles.goldMid;
+    return styles.goldFar;
+}
+
 export function SplitsTable({
     splits,
     comparison,
@@ -49,6 +57,7 @@ export function SplitsTable({
         comparison && comparison.splits.length === splits.length
             ? comparison
             : null;
+    const last = splits.length - 1;
 
     return (
         <section className={styles.panel}>
@@ -56,7 +65,7 @@ export function SplitsTable({
                 <h2 className={styles.panelTitle}>Splits</h2>
                 {splitsHref && (
                     <Link href={splitsHref} className={styles.panelHeadLink}>
-                        Splits & attempt stats
+                        Splits & attempt stats →
                     </Link>
                 )}
             </div>
@@ -93,6 +102,7 @@ export function SplitsTable({
                                 ? (s.bestSegmentMs ?? null)
                                 : null;
                             const toGold = gold != null ? seg - gold : null;
+                            const isGold = toGold != null && toGold <= 0;
                             const vsDiff = vs
                                 ? s.splitTimeMs - vs.splits[i].splitTimeMs
                                 : null;
@@ -100,9 +110,22 @@ export function SplitsTable({
                                 vsDiff != null
                                     ? formatSplitDelta(vsDiff, 1)
                                     : null;
+                            const barWidth = Math.max(0, (seg / longest) * 100);
+                            // The share of the bar the gold covers; the rest
+                            // is time left on the table.
+                            const goldShare =
+                                gold != null && seg > 0
+                                    ? Math.min(100, (gold / seg) * 100)
+                                    : null;
+                            const rowClass = [
+                                i === last ? styles.splitFinal : '',
+                                isGold ? styles.splitGoldRow : '',
+                            ]
+                                .filter(Boolean)
+                                .join(' ');
                             return (
-                                <tr key={s.index}>
-                                    <td>
+                                <tr key={s.index} className={rowClass}>
+                                    <td className={styles.splitName}>
                                         {seekToSplit ? (
                                             <button
                                                 type="button"
@@ -117,52 +140,91 @@ export function SplitsTable({
                                             s.name
                                         )}
                                     </td>
-                                    <td className={styles.segCell}>
-                                        <span
-                                            className={styles.segBar}
-                                            style={{
-                                                width: `${Math.max(0, (seg / longest) * 100)}%`,
-                                            }}
-                                            aria-hidden
-                                        />
-                                        {formatTimeMs(seg)}
+                                    <td
+                                        className={`${styles.segCell} ${isGold ? styles.segGold : ''}`}
+                                    >
+                                        <span className={styles.segInner}>
+                                            <span
+                                                className={styles.segTrack}
+                                                aria-hidden
+                                            >
+                                                <span
+                                                    className={styles.segBar}
+                                                    style={{
+                                                        width: `${barWidth}%`,
+                                                    }}
+                                                >
+                                                    {goldShare != null &&
+                                                        !isGold && (
+                                                            <span
+                                                                className={
+                                                                    styles.segBarGold
+                                                                }
+                                                                style={{
+                                                                    width: `${goldShare}%`,
+                                                                }}
+                                                            />
+                                                        )}
+                                                </span>
+                                            </span>
+                                            <span className={styles.segTime}>
+                                                {formatTimeMs(seg)}
+                                            </span>
+                                        </span>
                                     </td>
-                                    <td>{formatTimeMs(s.splitTimeMs)}</td>
+                                    <td className={styles.splitTime}>
+                                        {formatTimeMs(s.splitTimeMs)}
+                                    </td>
                                     {hasGold && (
                                         <>
                                             <td
-                                                className={`${styles.colGold} ${styles.muted}`}
+                                                className={`${styles.colGold} ${styles.goldTime}`}
                                             >
                                                 {gold != null
                                                     ? formatTimeMs(gold)
                                                     : ''}
                                             </td>
-                                            <td className={styles.muted}>
-                                                {toGold == null ? (
+                                            <td className={styles.deltaCell}>
+                                                {toGold == null ||
+                                                gold == null ? (
                                                     ''
-                                                ) : toGold <= 0 ? (
+                                                ) : isGold ? (
                                                     <span
                                                         className={
-                                                            styles.goldMark
+                                                            styles.goldChip
                                                         }
                                                     >
                                                         Gold
                                                     </span>
                                                 ) : (
-                                                    formatSplitDelta(toGold, 2)
+                                                    <span
+                                                        className={toGoldClass(
+                                                            toGold,
+                                                            gold,
+                                                        )}
+                                                    >
+                                                        {formatSplitDelta(
+                                                            toGold,
+                                                            2,
+                                                        )}
+                                                    </span>
                                                 )}
                                             </td>
                                         </>
                                     )}
-                                    {vsText != null && (
-                                        <td
-                                            className={
-                                                vsText.startsWith('−')
-                                                    ? styles.ahead
-                                                    : styles.muted
-                                            }
-                                        >
-                                            {vsText}
+                                    {vsText != null && vsDiff != null && (
+                                        <td className={styles.deltaCell}>
+                                            <span
+                                                className={
+                                                    vsText.startsWith('−')
+                                                        ? styles.ahead
+                                                        : vsText.startsWith('+')
+                                                          ? styles.behind
+                                                          : styles.even
+                                                }
+                                            >
+                                                {vsText}
+                                            </span>
                                         </td>
                                     )}
                                 </tr>

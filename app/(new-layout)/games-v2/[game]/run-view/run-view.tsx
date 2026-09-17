@@ -26,9 +26,9 @@ import { RunHero } from './run-hero';
 import { RunMediaProvider, RunMediaSlot } from './run-media';
 import { hasMedia } from './run-media-shared';
 import pageStyles from './run-page.module.scss';
-import { RunStatStrip } from './run-stat-strip';
 import styles from './run-view.module.scss';
 import { RunnerCard } from './runner-card';
+import { RunMetaLine, RunnerStats } from './runner-stats';
 import { SplitsTable } from './splits-table';
 import { SupersededNote } from './superseded-note';
 import { VerificationFooter } from './verification-footer';
@@ -179,12 +179,15 @@ export function RunView({
                     boardHref={boardHref}
                     isTombstone={isTombstone}
                     sessionUsername={sessionUsername}
+                    meta={
+                        <RunMetaLine
+                            model={model}
+                            sessionUsername={sessionUsername}
+                            isMod={isMod}
+                        />
+                    }
                 />
-                <RunStatStrip
-                    model={model}
-                    sessionUsername={sessionUsername}
-                    isMod={isMod}
-                />
+                <RunnerStats model={model} />
                 {showWhatNow && (
                     <p className={styles.whatNow}>
                         What now? You can{' '}

@@ -5,6 +5,7 @@ import { formatTimeMs } from '~src/lib/run-view/time-format';
 import { formatSubcategoryKey } from '../labels';
 import { CountryFlag } from '../leaderboard/country-flag';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
+import { RankMedal } from './rank-medal';
 import styles from './run-page.module.scss';
 import type { RunViewModel } from './run-view';
 
@@ -13,12 +14,14 @@ const MAX_ENTRIES = 5;
 export function RunnerCard({ model }: { model: RunViewModel }) {
     if (model.userId == null && !model.isGuest) return null; // hidden runner
     // Real boards only: ranked, with someone to be ranked against.
+    const real = model.runnerEntries.filter(
+        (e) => e.rank != null && e.totalRunners >= 2,
+    );
+    const records = real.filter((e) => e.rank === 1).length;
     // Featured categories first, then best placement, then biggest board.
-    const others = model.runnerEntries
+    const others = real
         .filter(
             (e) =>
-                e.rank != null &&
-                e.totalRunners >= 2 &&
                 !(
                     e.categoryId === model.categoryId &&
                     e.subcategoryKey === model.subcategoryKey
@@ -34,19 +37,33 @@ export function RunnerCard({ model }: { model: RunViewModel }) {
 
     return (
         <section className={styles.panel}>
-            <h2 className={styles.panelTitle}>Runner</h2>
+            <div className={styles.panelHead}>
+                <h2 className={styles.panelTitle}>Runner</h2>
+            </div>
             <div className={styles.runnerHead}>
                 <RunnerAvatar
                     name={model.runnerName}
                     picture={model.picture}
                     size="md"
                 />
-                <CountryFlag country={model.country} />
-                {model.isGuest ? (
-                    <span>{model.runnerName}</span>
-                ) : (
-                    <UserLink username={model.runnerName} to="leaderboards" />
-                )}
+                <div className={styles.runnerHeadText}>
+                    <span className={styles.runnerHeadName}>
+                        {model.isGuest ? (
+                            model.runnerName
+                        ) : (
+                            <UserLink
+                                username={model.runnerName}
+                                to="leaderboards"
+                            />
+                        )}
+                        <CountryFlag country={model.country} />
+                    </span>
+                    {records > 0 && (
+                        <span className={styles.recordCount}>
+                            #1 on {records} board{records === 1 ? '' : 's'}
+                        </span>
+                    )}
+                </div>
             </div>
             {others.length > 0 && (
                 <ul className={styles.entries}>
@@ -61,16 +78,23 @@ export function RunnerCard({ model }: { model: RunViewModel }) {
                                     })}
                                     className={styles.entry}
                                 >
+                                    <span className={styles.entryRank}>
+                                        <RankMedal rank={e.rank ?? 0} />
+                                    </span>
                                     <span className={styles.entryName}>
                                         {e.category}
-                                        {sub && ` · ${sub}`}
+                                        {sub && (
+                                            <span className={styles.entrySub}>
+                                                {' '}
+                                                · {sub}
+                                            </span>
+                                        )}
                                     </span>
                                     <span className={styles.entryTime}>
                                         {formatTimeMs(e.timeMs)}
-                                    </span>
-                                    <span className={styles.entryRank}>
-                                        #{e.rank?.toLocaleString()} /{' '}
-                                        {e.totalRunners.toLocaleString()}
+                                        <span className={styles.entryOf}>
+                                            of {e.totalRunners.toLocaleString()}
+                                        </span>
                                     </span>
                                 </Link>
                             </li>

@@ -4,6 +4,7 @@ import { formatTimeMs } from '~src/lib/run-view/time-format';
 import type { BoardContextRow } from '../../../../../types/leaderboards.types';
 import { CountryFlag } from '../leaderboard/country-flag';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
+import { RankMedal } from './rank-medal';
 import { formatGap } from './run-format';
 import styles from './run-page.module.scss';
 import type { RunViewModel } from './run-view';
@@ -27,7 +28,9 @@ function Row({
 }) {
     const body = (
         <>
-            <span className={styles.sliceRank}>#{r.rank}</span>
+            <span className={styles.sliceRank}>
+                <RankMedal rank={r.rank} />
+            </span>
             <span className={styles.sliceFlag}>
                 <CountryFlag country={r.country} />
             </span>
@@ -73,7 +76,12 @@ export function BoardSlice({ model }: { model: RunViewModel }) {
 
     return (
         <section className={styles.panel}>
-            <h2 className={styles.panelTitle}>On the board</h2>
+            <div className={styles.panelHead}>
+                <h2 className={styles.panelTitle}>On the board</h2>
+                <Link href={boardHref} className={styles.panelHeadLink}>
+                    Full board →
+                </Link>
+            </div>
             <div className={styles.slice}>
                 {showWr && ctx.wr && (
                     <>
@@ -95,8 +103,13 @@ export function BoardSlice({ model }: { model: RunViewModel }) {
                         href={rowHref(model.game.name, r)}
                     />
                 ))}
-                <div className={`${styles.sliceRow} ${styles.sliceSelf}`}>
-                    <span className={styles.sliceRank}>#{ctx.rank}</span>
+                <div
+                    className={`${styles.sliceRow} ${styles.sliceSelf}`}
+                    aria-current="true"
+                >
+                    <span className={styles.sliceRank}>
+                        <RankMedal rank={ctx.rank} />
+                    </span>
                     <span className={styles.sliceFlag}>
                         <CountryFlag country={model.country} />
                     </span>
@@ -122,9 +135,6 @@ export function BoardSlice({ model }: { model: RunViewModel }) {
                     />
                 ))}
             </div>
-            <Link href={boardHref} className={styles.panelLink}>
-                Full board →
-            </Link>
         </section>
     );
 }

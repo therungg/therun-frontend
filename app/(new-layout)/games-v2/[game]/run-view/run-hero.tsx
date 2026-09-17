@@ -1,3 +1,4 @@
+import type React from 'react';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
@@ -8,7 +9,7 @@ import { CountryFlag } from '../leaderboard/country-flag';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
 import { RunActions } from './run-actions';
 import { AutoVerifiedBadge, VerificationBadge } from './run-badges';
-import { formatDelta, heldFor } from './run-format';
+import { formatDelta } from './run-format';
 import styles from './run-page.module.scss';
 import type { RunViewModel } from './run-view';
 
@@ -18,12 +19,15 @@ export function RunHero({
     boardHref,
     isTombstone,
     sessionUsername,
+    meta,
 }: {
     model: RunViewModel;
     gameHref: string;
     boardHref: string;
     isTombstone: boolean;
     sessionUsername: string | null;
+    /** Date / clocks / video line, rendered under the runner. */
+    meta?: React.ReactNode;
 }) {
     const primaryTime = model.realTime ?? model.gameTime;
     const subcategoryLabel = formatSubcategoryKey(model.subcategoryKey);
@@ -34,7 +38,6 @@ export function RunHero({
         ctx && model.realTime != null && ctx.view.timing === 'rt'
             ? model.realTime
             : (model.gameTime ?? model.realTime);
-    const held = isRecord && model.runDate ? heldFor(model.runDate) : null;
     const second = isRecord ? ctx?.below[0] : undefined;
     const lead = second && rankedTime != null ? second.time - rankedTime : null;
     // Subcategory variables are already in the crumb label; pill the rest.
@@ -47,6 +50,12 @@ export function RunHero({
     const variablePills = Object.entries(model.variables).filter(
         ([name]) => !subcategoryNames.has(normalizeVariableName(name)),
     );
+    const podiumClass =
+        ctx?.rank === 2
+            ? styles.rankSilver
+            : ctx?.rank === 3
+              ? styles.rankBronze
+              : '';
 
     return (
         <header className={styles.hero}>
@@ -78,6 +87,20 @@ export function RunHero({
                 ))}
             </nav>
 
+            {ctx && isRecord && (
+                <div className={styles.record}>
+                    <Link href={boardHref} className={styles.recordChip}>
+                        World record
+                    </Link>
+                    {lead != null && lead > 0 && (
+                        <span className={styles.recordLead}>
+                            <strong>{formatDelta(lead)}</strong> ahead of #
+                            {second?.rank}
+                        </span>
+                    )}
+                </div>
+            )}
+
             <div className={styles.timeRow}>
                 <h1
                     className={`${styles.time} ${isRecord ? styles.timeGold : ''}`}
@@ -91,22 +114,9 @@ export function RunHero({
                         '—'
                     )}
                 </h1>
-                {ctx && isRecord && (
-                    <span className={styles.record}>
-                        <Link href={boardHref} className={styles.recordLabel}>
-                            World record
-                        </Link>
-                        {held && <span>held {held}</span>}
-                        {lead != null && lead > 0 && (
-                            <span>
-                                {formatDelta(lead)} ahead of #{second?.rank}
-                            </span>
-                        )}
-                    </span>
-                )}
                 {ctx && !isRecord && (
                     <Link href={boardHref} className={styles.rank}>
-                        <strong>#{ctx.rank}</strong> of{' '}
+                        <strong className={podiumClass}>#{ctx.rank}</strong> of{' '}
                         {ctx.totalRunners.toLocaleString()}
                     </Link>
                 )}
@@ -120,17 +130,22 @@ export function RunHero({
             </div>
 
             <div className={styles.runner}>
-                <CountryFlag country={model.country} />
                 <RunnerAvatar
                     name={model.runnerName}
                     picture={model.picture}
                     size="md"
                 />
-                {model.isGuest || model.userId == null ? (
-                    <span>{model.runnerName}</span>
-                ) : (
-                    <UserLink username={model.runnerName} to="leaderboards" />
-                )}
+                <span className={styles.runnerName}>
+                    {model.isGuest || model.userId == null ? (
+                        model.runnerName
+                    ) : (
+                        <UserLink
+                            username={model.runnerName}
+                            to="leaderboards"
+                        />
+                    )}
+                </span>
+                <CountryFlag country={model.country} />
                 <div className={styles.heroActions}>
                     <RunActions
                         model={model}
@@ -138,6 +153,7 @@ export function RunHero({
                     />
                 </div>
             </div>
+            {meta}
         </header>
     );
 }
