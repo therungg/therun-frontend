@@ -99,6 +99,14 @@
     margin: 0;
 }
 
+// Sits under the sections, not inside one: it holds for either import.
+.note {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: 0;
+    max-width: 68ch;
+}
+
 // ---- running -------------------------------------------------------------
 
 .progress {

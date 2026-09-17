@@ -200,6 +200,13 @@ export function ImportSections({
                         bypassCooldown={isAdmin}
                         onStarted={refreshAll}
                     />
+                    <p className={styles.note}>
+                        On larger boards, the import might take a while, or it
+                        will be queued because other games are importing. We are
+                        not allowed to import too much too quickly. You can
+                        safely leave the page after starting the import and it
+                        will run in the background.
+                    </p>
                 </>
             )}
             {isAdmin && (
