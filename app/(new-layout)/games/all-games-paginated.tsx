@@ -56,6 +56,8 @@ export const AllGamesPaginated: React.FunctionComponent<GamesProps> = ({
 
     const setSort = useCallback(
         (next: GameSort) => {
+            if (next === sort) return;
+
             const params = new URLSearchParams(searchParams.toString());
             if (next === 'trending') {
                 params.delete('sort');
@@ -71,7 +73,7 @@ export const AllGamesPaginated: React.FunctionComponent<GamesProps> = ({
             // on.)
             router.push(`/games${qs ? `?${qs}` : ''}`, { scroll: false });
         },
-        [router, searchParams],
+        [router, searchParams, sort],
     );
 
     const { isLoading, data, pageSize, totalPages } = pagination;
