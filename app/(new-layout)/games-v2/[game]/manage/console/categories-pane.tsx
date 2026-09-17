@@ -583,7 +583,8 @@ export function CategoriesPane({
                         id: c.id,
                         display: c.display,
                         sortOrder: 0,
-                        primaryTiming: c.primaryTiming,
+                        primaryTiming:
+                            c.primaryTiming === 'gt' ? 'gametime' : 'realtime',
                         isMain: true,
                         active: true,
                         groupId: null,

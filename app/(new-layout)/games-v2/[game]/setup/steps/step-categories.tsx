@@ -4,15 +4,24 @@ import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import Link from '~src/components/link';
 import { buildSubmitHref } from '~src/lib/board-url';
 import { splitLevelBoards } from '~src/lib/levels/display';
+import { timingLabel } from '~src/lib/setup/board-defaults';
 import { formatPlaytime } from '~src/lib/setup/board-pulse';
+import {
+    findCategoryMinPolicy,
+    minMsFromPolicy,
+} from '~src/lib/setup/game-minimum';
 import { activityShare, suggestFeaturedIds } from '~src/lib/setup/suggestions';
 import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
+import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
 import { refreshCategoriesAction } from '../actions/create-category.action';
 import { curateCategoryAction } from '../actions/curate-category.action';
 import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
 import { buildCategorySeed, computeCategoryChanges } from './category-seed';
-import { CreateCategoryDialog } from './create-category-dialog';
+import {
+    type CategorySettings,
+    CreateCategoryDialog,
+} from './create-category-dialog';
 import { StepHeader } from './step-header';
 
 /** Rows rendered before the list is cut and search takes over. */
@@ -76,6 +85,15 @@ export function StepCategories({ data, onAdvance }: StepProps) {
     const [progress, setProgress] = useState<string | null>(null);
     const [isSaving, startSaving] = useTransition();
     const [createOpen, setCreateOpen] = useState(false);
+    // Each category's settings, kept here rather than re-read: edits skip the
+    // cache invalidation (see pendingRefresh), so `data` goes stale on them.
+    const [settings, setSettings] = useState<Map<number, CategorySettings>>(
+        () =>
+            new Map(fullGame.map((c) => [c.id, settingsOf(c, data.policies)])),
+    );
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [edited, setEdited] = useState(false);
+    const editing = editingId === null ? undefined : settings.get(editingId);
     // Categories made in this visit. They were created already on the board,
     // so they join the save's baseline as Featured: leaving one ticked writes
     // nothing, unticking it takes it off.
@@ -88,8 +106,8 @@ export function StepCategories({ data, onAdvance }: StepProps) {
     // invalidate, or the step you land on reads a list without the category.
     const pendingRefresh = useRef(false);
     useEffect(() => {
-        pendingRefresh.current = created.length > 0;
-    }, [created]);
+        pendingRefresh.current = created.length > 0 || edited;
+    }, [created, edited]);
     const { name: gameSlug, id: gameId } = data.game;
     useEffect(
         () => () => {
@@ -137,6 +155,7 @@ export function StepCategories({ data, onAdvance }: StepProps) {
             existingNames={baseline.map((c) => c.display)}
             invalidate={false}
             onCreated={(c, warning) => {
+                setSettings((m) => new Map(m).set(c.id, c));
                 setCreated((cs) => [
                     ...cs,
                     {
@@ -161,6 +180,28 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                     },
                     ...rs,
                 ]);
+            }}
+        />
+    );
+
+    const editDialog = editing && (
+        <CreateCategoryDialog
+            key={editing.id}
+            open
+            onClose={() => setEditingId(null)}
+            game={data.game}
+            metadata={data.metadata}
+            existingNames={[]}
+            category={editing}
+            invalidate={false}
+            onUpdated={(c, warning) => {
+                setSettings((m) => new Map(m).set(c.id, c));
+                setEdited(true);
+                setRows((rs) =>
+                    rs.map((r) =>
+                        r.id === c.id ? { ...r, error: warning ?? null } : r,
+                    ),
+                );
             }}
         />
     );
@@ -252,7 +293,7 @@ export function StepCategories({ data, onAdvance }: StepProps) {
             if (changed.length === 0) {
                 // Nothing to write, but a category created here has not been
                 // invalidated yet — the next step would read a list without it.
-                if (created.length > 0) {
+                if (created.length > 0 || edited) {
                     await refreshCategoriesAction(gameSlug, gameId);
                 }
                 onAdvance();
@@ -302,7 +343,10 @@ export function StepCategories({ data, onAdvance }: StepProps) {
 
             setProgress(null);
             // Every write failed, so nothing invalidated after all.
-            if (failures.length === changed.length && created.length > 0) {
+            if (
+                failures.length === changed.length &&
+                (created.length > 0 || edited)
+            ) {
                 pendingRefresh.current = true;
             }
             if (failures.length === 0) onAdvance();
@@ -361,6 +405,7 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                             <th className="text-end">Runners</th>
                             <th className="text-end">Finished runs</th>
                             <th className="text-end">Playtime</th>
+                            <th>Settings</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -414,6 +459,12 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                                     {r.totalFinishedAttemptCount.toLocaleString()}
                                 </td>
                                 <PlaytimeCell ms={r.totalRunTime} />
+                                <td>
+                                    <SettingsCell
+                                        settings={settings.get(r.id)}
+                                        onEdit={() => setEditingId(r.id)}
+                                    />
+                                </td>
                             </tr>
                         ))}
                     </tbody>
@@ -479,7 +530,57 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                 </button>
             </div>
             {createDialog}
+            {editDialog}
         </section>
+    );
+}
+
+/** What the edit form reads for one category. */
+function settingsOf(
+    c: ResolvedCategory,
+    policies: BoardPolicyRow[],
+): CategorySettings {
+    return {
+        id: c.id,
+        display: c.display,
+        primaryTiming: c.primaryTiming,
+        gameTimeLabel: c.gameTimeLabel === 'lrt' ? 'lrt' : 'igt',
+        hideRealTime: c.hideRealTime ?? false,
+        hideGameTime: c.hideGameTime ?? false,
+        rtaFallback: c.rtaFallback ?? false,
+        showMilliseconds: c.showMilliseconds ?? true,
+        minMs: minMsFromPolicy(
+            findCategoryMinPolicy(policies, c.id),
+            c.primaryTiming,
+        ),
+        rules: c.rules ?? '',
+    };
+}
+
+/** The category's clock and milliseconds at a glance, and the way in. */
+function SettingsCell({
+    settings,
+    onEdit,
+}: {
+    settings: CategorySettings | undefined;
+    onEdit: () => void;
+}) {
+    if (!settings) return null;
+    const clock = timingLabel(settings.primaryTiming, settings.gameTimeLabel);
+    return (
+        <span className="d-inline-flex gap-2 align-items-center text-nowrap">
+            <span className="text-muted small">
+                {clock}
+                {settings.showMilliseconds ? ' · ms' : ''}
+            </span>
+            <button
+                type="button"
+                className="btn btn-sm btn-link px-0"
+                onClick={onEdit}
+            >
+                Edit
+            </button>
+        </span>
     );
 }
 

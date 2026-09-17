@@ -118,6 +118,87 @@ export async function createCategoryAction(
         : { result: { id } };
 }
 
+export interface UpdateCategorySettingsInput {
+    gameSlug: string;
+    gameId: number;
+    categoryId: number;
+    primaryTiming: 'rt' | 'gt';
+    gameTimeLabel: 'igt' | 'lrt';
+    hideRealTime: boolean;
+    hideGameTime: boolean;
+    rtaFallback: boolean;
+    showMilliseconds: boolean;
+    rules: string;
+    /** undefined leaves the minimum alone; null clears the category's own. */
+    minMs?: number | null;
+    /** See `invalidate` on CreateCategoryInput. */
+    invalidate?: boolean;
+}
+
+/**
+ * The same settings as the create form, on a category that already exists.
+ * The column settings go in one write; a changed minimum follows as a policy
+ * write and, like on create, comes back as a `warning` if only it fails.
+ */
+export async function updateCategorySettingsAction(
+    input: UpdateCategorySettingsInput,
+): Promise<{ ok: true; warning?: string } | { error: string }> {
+    const user = await getSession();
+    try {
+        confirmPermission(user, 'edit', 'category-settings', {
+            game: input.gameSlug,
+        });
+    } catch {
+        return { error: 'Not authorized to edit categories.' };
+    }
+
+    if (input.hideRealTime && input.hideGameTime) {
+        return { error: 'A category has to show at least one time.' };
+    }
+    if (
+        input.minMs !== undefined &&
+        input.minMs !== null &&
+        (!Number.isInteger(input.minMs) || input.minMs <= 0)
+    ) {
+        return { error: 'Minimum time must be above zero.' };
+    }
+
+    try {
+        await updateCategory(user.id, input.gameId, input.categoryId, {
+            primaryTiming:
+                input.primaryTiming === 'gt' ? 'gametime' : 'realtime',
+            gameTimeLabel: input.gameTimeLabel,
+            hideRealTime: input.hideRealTime,
+            hideGameTime: input.hideGameTime,
+            rtaFallback: input.primaryTiming === 'gt' && input.rtaFallback,
+            showMilliseconds: input.showMilliseconds,
+            rules: input.rules.trim() || null,
+        });
+    } catch (e) {
+        if (e instanceof ApiError) return { error: e.message };
+        return { error: 'Failed to save category.' };
+    }
+    if (input.invalidate !== false) updateTag(`game-cats:${input.gameId}`);
+
+    if (input.minMs !== undefined) {
+        const res = await setCategoryMinimumAction({
+            gameSlug: input.gameSlug,
+            categoryId: input.categoryId,
+            timing: input.primaryTiming,
+            minMs: input.minMs,
+        });
+        if ('error' in res) {
+            return {
+                ok: true,
+                warning:
+                    'Saved, but the minimum time did not. Set it in Category settings.',
+            };
+        }
+    }
+
+    return { ok: true };
+}
+
 /** The deferred half of `invalidate: false`: the step calls this on save. */
 export async function refreshCategoriesAction(
     gameSlug: string,

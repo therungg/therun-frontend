@@ -12,14 +12,28 @@ import {
 } from '~src/lib/setup/board-defaults';
 import { SegmentedControl, SwitchField } from '../../manage/shared/form-kit';
 import { BoardDialog } from '../../shared/board-dialog';
-import { createCategoryAction } from '../actions/create-category.action';
+import {
+    createCategoryAction,
+    updateCategorySettingsAction,
+} from '../actions/create-category.action';
 import styles from './create-category-dialog.module.scss';
 
-export interface CreatedCategory {
+/** A category's settings as this form reads and writes them. */
+export interface CategorySettings {
     id: number;
     display: string;
-    primaryTiming: 'realtime' | 'gametime';
+    primaryTiming: 'rt' | 'gt';
+    gameTimeLabel: 'igt' | 'lrt';
+    hideRealTime: boolean;
+    hideGameTime: boolean;
+    rtaFallback: boolean;
+    showMilliseconds: boolean;
+    /** The category's own minimum; null = none, the board's applies. */
+    minMs: number | null;
+    rules: string;
 }
+
+export interface CreatedCategory extends CategorySettings {}
 
 interface Props {
     open: boolean;
@@ -31,7 +45,10 @@ interface Props {
     /** Every category the game has, archived and level boards included — the
      *  backend keys categories by name, so any of them collides. */
     existingNames: string[];
-    onCreated: (category: CreatedCategory, warning?: string) => void;
+    onCreated?: (category: CreatedCategory, warning?: string) => void;
+    /** Set to edit this category instead of creating one. The name is fixed. */
+    category?: CategorySettings;
+    onUpdated?: (category: CategorySettings, warning?: string) => void;
     /** See `invalidate` on createCategoryAction. Defaults to true. */
     invalidate?: boolean;
 }
@@ -46,7 +63,29 @@ interface FormState {
     rules: string;
 }
 
-function initialState(metadata: GameMetadata | null): FormState {
+function initialState(
+    metadata: GameMetadata | null,
+    category?: CategorySettings,
+): FormState {
+    if (category) {
+        const bothHidden = category.hideRealTime && category.hideGameTime;
+        return {
+            display: category.display,
+            timing: timingChoiceOf(
+                category.primaryTiming,
+                category.gameTimeLabel,
+            ),
+            showOther:
+                bothHidden ||
+                (category.primaryTiming === 'gt'
+                    ? !category.hideRealTime
+                    : !category.hideGameTime),
+            rtaFallback: category.rtaFallback,
+            showMilliseconds: category.showMilliseconds,
+            minMs: category.minMs,
+            rules: category.rules,
+        };
+    }
     const primary = metadata?.primaryTiming ?? 'rt';
     const hideRealTime = metadata?.hideRealTime ?? false;
     const hideGameTime = metadata?.hideGameTime ?? false;
@@ -85,9 +124,14 @@ export function CreateCategoryDialog({
     metadata,
     existingNames,
     onCreated,
+    category,
+    onUpdated,
     invalidate = true,
 }: Props) {
-    const [form, setForm] = useState<FormState>(() => initialState(metadata));
+    const editing = category !== undefined;
+    const [form, setForm] = useState<FormState>(() =>
+        initialState(metadata, category),
+    );
     const [error, setError] = useState<string | null>(null);
     const [pending, setPending] = useState(false);
     const nameRef = useRef<HTMLInputElement>(null);
@@ -96,7 +140,7 @@ export function CreateCategoryDialog({
     // This instance is reused across opens, so leaving it by any route clears
     // what was typed.
     const close = () => {
-        setForm(initialState(metadata));
+        setForm(initialState(metadata, category));
         setError(null);
         onClose();
     };
@@ -105,14 +149,71 @@ export function CreateCategoryDialog({
         setForm((f) => ({ ...f, [key]: value }));
 
     const primary: 'rt' | 'gt' = form.timing === 'rt' ? 'rt' : 'gt';
-    const gameTimeLabel = form.timing === 'lrt' ? 'lrt' : 'igt';
+    // Editing to RTA keeps the stored label, the same as the board-wide
+    // control: the secondary clock goes on being called what it was.
+    const gameTimeLabel =
+        form.timing === 'rt' && category
+            ? category.gameTimeLabel
+            : form.timing === 'lrt'
+              ? 'lrt'
+              : 'igt';
     const otherLabel = timingLabel(otherTiming(primary), gameTimeLabel);
 
     const trimmed = form.display.trim();
-    const taken = takenName(trimmed, existingNames);
+    const taken = editing ? null : takenName(trimmed, existingNames);
+
+    const saved = (id: number): CategorySettings => ({
+        id,
+        display: trimmed,
+        primaryTiming: primary,
+        gameTimeLabel,
+        hideRealTime: primary === 'gt' && !form.showOther,
+        hideGameTime: primary === 'rt' && !form.showOther,
+        rtaFallback: primary === 'gt' && form.rtaFallback,
+        showMilliseconds: form.showMilliseconds,
+        minMs: form.minMs,
+        rules: form.rules,
+    });
+
+    const update = async (current: CategorySettings) => {
+        setError(null);
+        setPending(true);
+        const next = saved(current.id);
+        const res = await updateCategorySettingsAction({
+            gameSlug: game.name,
+            gameId: game.id,
+            categoryId: current.id,
+            primaryTiming: next.primaryTiming,
+            gameTimeLabel: next.gameTimeLabel,
+            hideRealTime: next.hideRealTime,
+            hideGameTime: next.hideGameTime,
+            rtaFallback: next.rtaFallback,
+            showMilliseconds: next.showMilliseconds,
+            rules: next.rules,
+            // A minimum is bound to one clock, so a clock change rewrites it
+            // even when the number stayed the same.
+            minMs:
+                next.minMs !== current.minMs ||
+                next.primaryTiming !== current.primaryTiming
+                    ? next.minMs
+                    : undefined,
+            invalidate,
+        });
+        setPending(false);
+        if ('error' in res) {
+            setError(res.error);
+            return;
+        }
+        onUpdated?.(next, res.warning);
+        onClose();
+    };
 
     const submit = async () => {
         if (pending) return;
+        if (category) {
+            await update(category);
+            return;
+        }
         if (!trimmed) {
             setError('Name the category.');
             nameRef.current?.focus();
@@ -147,14 +248,7 @@ export function CreateCategoryDialog({
             setError(res.error);
             return;
         }
-        onCreated(
-            {
-                id: res.result.id,
-                display: trimmed,
-                primaryTiming: fields.primaryTiming,
-            },
-            res.warning,
-        );
+        onCreated?.(saved(res.result.id), res.warning);
         close();
     };
 
@@ -166,7 +260,7 @@ export function CreateCategoryDialog({
             }}
             labelledBy={`${ids}-title`}
             size="lg"
-            initialFocusRef={nameRef}
+            initialFocusRef={editing ? undefined : nameRef}
             closeOnBackdropClick={!pending}
         >
             <form
@@ -177,7 +271,7 @@ export function CreateCategoryDialog({
             >
                 <div className={styles.header}>
                     <h5 className={styles.title} id={`${ids}-title`}>
-                        New category
+                        {editing ? category.display : 'New category'}
                     </h5>
                 </div>
                 <div className={styles.body}>
@@ -193,7 +287,7 @@ export function CreateCategoryDialog({
                             placeholder="e.g. Any%"
                             maxLength={200}
                             value={form.display}
-                            disabled={pending}
+                            disabled={pending || editing}
                             onChange={(e) => {
                                 set('display', e.target.value);
                                 setError(null);
@@ -283,7 +377,13 @@ export function CreateCategoryDialog({
                         className={styles.primary}
                         disabled={pending || !trimmed}
                     >
-                        {pending ? 'Creating…' : 'Create category'}
+                        {editing
+                            ? pending
+                                ? 'Saving…'
+                                : 'Save'
+                            : pending
+                              ? 'Creating…'
+                              : 'Create category'}
                     </button>
                 </div>
             </form>
