@@ -11,6 +11,10 @@
     text-decoration: none;
     color: inherit;
 
+    &:hover {
+        text-decoration: none;
+    }
+
     &:hover .game-tile-art {
         transform: translateY(-2px);
         box-shadow: dt.$shadow-md;

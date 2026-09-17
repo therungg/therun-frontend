@@ -1,7 +1,7 @@
 'use client';
 import Image from 'next/image';
-import { useTheme } from 'next-themes';
 import React from 'react';
+import { useFallbackImage } from '~app/(new-layout)/frontpage/components/use-fallback-image';
 import { Game, GameSort } from '~app/(new-layout)/games/games.types';
 import { GameImage } from '~src/components/image/gameimage';
 import { DurationToFormatted } from '~src/components/util/datetime';
@@ -29,7 +29,7 @@ export const GameTile: React.FunctionComponent<GameTileProps> = ({
     game,
     sort,
 }) => {
-    const { theme } = useTheme();
+    const fallbackImage = useFallbackImage();
     const gameUrl = getGameUrl(game);
     const hasImage = !!game.image && game.image !== 'noimage';
     const stat = statFor(game, sort);
@@ -50,7 +50,7 @@ export const GameTile: React.FunctionComponent<GameTileProps> = ({
                     <Image
                         unoptimized
                         alt={game.display}
-                        src={`/logo_${theme}_theme_no_text_transparent.png`}
+                        src={fallbackImage}
                         width={148}
                         height={197}
                     />
