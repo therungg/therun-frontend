@@ -1,4 +1,7 @@
+import { originSummary } from '~src/lib/run-view/origin-summary';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
+import { safeEncodeURI } from '~src/utils/uri';
+import type { RunViewModel } from './run-view';
 
 const DAY_MS = 86_400_000;
 
@@ -25,4 +28,14 @@ export function heldFor(iso: string, now: Date = new Date()): string | null {
     if (days < 30) return plural(days, 'day');
     if (days < 365) return plural(Math.floor(days / 30), 'month');
     return plural(Math.floor(days / 365), 'year');
+}
+
+/** The runner's splits & attempt stats page, when the run came off their timer. */
+export function runnerSplitsHref(model: RunViewModel): string | null {
+    const summary = originSummary(model.origin, model.runnerName);
+    if (!summary?.showSplitsLink || model.userId == null || model.isGuest)
+        return null;
+    return `/${safeEncodeURI(model.runnerName)}/${safeEncodeURI(
+        model.game.display,
+    )}`;
 }

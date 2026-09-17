@@ -42,7 +42,7 @@ function Row({
             <span className={styles.sliceName}>{r.runnerName}</span>
             <span className={styles.sliceTime}>{formatTimeMs(r.time)}</span>
             <span className={styles.sliceGap}>
-                {formatGap(selfTime - r.time)}
+                {formatGap(r.time - selfTime)}
             </span>
         </>
     );
@@ -101,7 +101,11 @@ export function BoardSlice({ model }: { model: RunViewModel }) {
                         <CountryFlag country={model.country} />
                     </span>
                     <span className={styles.sliceAvatar}>
-                        <RunnerAvatar name={model.runnerName} size="xs" />
+                        <RunnerAvatar
+                            name={model.runnerName}
+                            picture={model.picture}
+                            size="xs"
+                        />
                     </span>
                     <span className={styles.sliceName}>{model.runnerName}</span>
                     <span className={styles.sliceTime}>

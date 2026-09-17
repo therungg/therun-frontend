@@ -21,6 +21,7 @@ import type {
 import { isSameRunner } from '../shared/is-same-runner';
 import { BoardSlice } from './board-slice';
 import { DescriptionMarkdown } from './description-markdown';
+import { runnerSplitsHref } from './run-format';
 import { RunHero } from './run-hero';
 import { RunMediaProvider, RunMediaSlot } from './run-media';
 import { hasMedia } from './run-media-shared';
@@ -240,7 +241,8 @@ export function RunView({
                         >
                             <SplitsTable
                                 splits={model.splits}
-                                gameTimeLabel={model.gameTimeLabel}
+                                comparison={model.comparison}
+                                splitsHref={runnerSplitsHref(model)}
                             />
                         </div>
                     </div>

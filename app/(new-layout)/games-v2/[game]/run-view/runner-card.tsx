@@ -12,9 +12,13 @@ const MAX_ENTRIES = 5;
 
 export function RunnerCard({ model }: { model: RunViewModel }) {
     if (model.userId == null && !model.isGuest) return null; // hidden runner
+    // Real boards only: ranked, with someone to be ranked against.
+    // Featured categories first, then best placement, then biggest board.
     const others = model.runnerEntries
         .filter(
             (e) =>
+                e.rank != null &&
+                e.totalRunners >= 2 &&
                 !(
                     e.categoryId === model.categoryId &&
                     e.subcategoryKey === model.subcategoryKey
@@ -22,8 +26,9 @@ export function RunnerCard({ model }: { model: RunViewModel }) {
         )
         .sort(
             (a, b) =>
-                (a.rank ?? Number.MAX_SAFE_INTEGER) -
-                (b.rank ?? Number.MAX_SAFE_INTEGER),
+                Number(b.isMain === true) - Number(a.isMain === true) ||
+                (a.rank ?? 0) - (b.rank ?? 0) ||
+                b.totalRunners - a.totalRunners,
         )
         .slice(0, MAX_ENTRIES);
 
@@ -31,7 +36,11 @@ export function RunnerCard({ model }: { model: RunViewModel }) {
         <section className={styles.panel}>
             <h2 className={styles.panelTitle}>Runner</h2>
             <div className={styles.runnerHead}>
-                <RunnerAvatar name={model.runnerName} size="md" />
+                <RunnerAvatar
+                    name={model.runnerName}
+                    picture={model.picture}
+                    size="md"
+                />
                 <CountryFlag country={model.country} />
                 {model.isGuest ? (
                     <span>{model.runnerName}</span>
@@ -60,7 +69,7 @@ export function RunnerCard({ model }: { model: RunViewModel }) {
                                         {formatTimeMs(e.timeMs)}
                                     </span>
                                     <span className={styles.entryRank}>
-                                        {e.rank != null ? `#${e.rank}` : ''}
+                                        #{e.rank} / {e.totalRunners}
                                     </span>
                                 </Link>
                             </li>
