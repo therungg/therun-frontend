@@ -25,6 +25,13 @@
         color: var(--bs-emphasis-color);
     }
 
+    // Hover as a light wash over the board's own panel, not the site's
+    // neutral grey, so a themed board keeps its colors and the row-verb
+    // overlay can match it.
+    tbody tr:hover {
+        background: rgba(var(--bs-body-color-rgb), 0.05);
+    }
+
     tbody td {
         height: 44px;
         padding: dt.$spacing-sm dt.$spacing-lg;
@@ -67,6 +74,10 @@
     gap: dt.$spacing-sm;
     position: relative;
     z-index: 2;
+    // Only as wide as its content: a full-width box above the stretched link
+    // would swallow clicks on the empty part of the runner cell.
+    width: fit-content;
+    max-width: 100%;
 
     @media (max-width: 575.98px) {
         min-width: 0;
@@ -212,6 +223,17 @@ td.when {
 tr:hover .reveal,
 tr:focus-within .reveal {
     opacity: 1;
+}
+
+// The overlay covers a long runner name, so it keeps the panel underneath and
+// adds the same wash as the hovered row around it.
+.row:not(.youRow):not(.rowSelected):hover .reveal {
+    background:
+        linear-gradient(
+            rgba(var(--bs-body-color-rgb), 0.05),
+            rgba(var(--bs-body-color-rgb), 0.05)
+        ),
+        var(--board-surface-bg, var(--bs-body-bg));
 }
 
 // Coarse pointers have no hover, and an always-on overlay would sit on the
