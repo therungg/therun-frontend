@@ -378,6 +378,7 @@ export function SubmitRunDialog({
                 open={open}
                 onClose={onClose}
                 labelledBy="submit-run-dialog-title"
+                themed
                 size="md"
             >
                 <DialogHeader game={game} coverUrl={coverUrl} />
@@ -403,6 +404,7 @@ export function SubmitRunDialog({
                 open={open}
                 onClose={onClose}
                 labelledBy="submit-run-dialog-title"
+                themed
                 size="md"
             >
                 <DialogHeader game={game} coverUrl={coverUrl} />
@@ -429,6 +431,7 @@ export function SubmitRunDialog({
             open={open}
             onClose={onClose}
             labelledBy="submit-run-dialog-title"
+            themed
             size="lg"
         >
             <DialogHeader game={game} coverUrl={coverUrl} />

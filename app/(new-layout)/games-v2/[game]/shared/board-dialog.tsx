@@ -8,6 +8,7 @@ import {
     useState,
 } from 'react';
 import { createPortal } from 'react-dom';
+import { THEME_PORTAL_CLASS } from '../theme/theme-css';
 import styles from './board-dialog.module.scss';
 
 export const FOCUSABLE_SELECTOR = [
@@ -143,6 +144,8 @@ interface BoardDialogProps {
     initialFocusRef?: RefObject<HTMLElement | null>;
     /** Set false to disable backdrop-click-to-close for destructive flows. */
     closeOnBackdropClick?: boolean;
+    /** Paint the dialog in the page's game theme (it portals outside the themed container). */
+    themed?: boolean;
     children: ReactNode;
 }
 
@@ -159,6 +162,7 @@ export function BoardDialog({
     size = 'lg',
     initialFocusRef,
     closeOnBackdropClick = true,
+    themed = false,
     children,
 }: BoardDialogProps) {
     const panelRef = useRef<HTMLDivElement>(null);
@@ -181,7 +185,7 @@ export function BoardDialog({
 
     return createPortal(
         <div
-            className={`modal d-block ${styles.backdrop}`}
+            className={`modal d-block ${styles.backdrop}${themed ? ` ${THEME_PORTAL_CLASS}` : ''}`}
             tabIndex={-1}
             role="dialog"
             aria-modal="true"

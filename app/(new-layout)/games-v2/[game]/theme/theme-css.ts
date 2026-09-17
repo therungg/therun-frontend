@@ -165,8 +165,16 @@ export function deriveThemeVars(
               ` linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5))`
             : panelHex;
 
+    // A dialog floats over the page, not the background art, so it gets the
+    // same panel with a solid canvas layer underneath instead of see-through.
+    const dialogBg =
+        theme.backgroundUrl && theme.panelOpacity < 1
+            ? `${surfaceBg}, linear-gradient(0deg, ${canvasHex}, ${canvasHex})`
+            : panelHex;
+
     const vars: Record<string, string> = {
         '--board-surface-bg': surfaceBg,
+        '--board-dialog-bg': dialogBg,
         '--board-surface-border': panelText.light
             ? 'rgba(255, 255, 255, 0.09)'
             : 'rgba(0, 0, 0, 0.1)',
@@ -241,6 +249,9 @@ const GLOBAL_KEYS = new Set([
     '--site-topbar-muted',
 ]);
 
+/** Class that gives a portaled element (a dialog) the page's game theme. */
+export const THEME_PORTAL_CLASS = 'board-theme-portal';
+
 /**
  * The stylesheet injected by the game layout. Nothing user-typed is
  * interpolated (values are hex/rgba built from validated colors), and the
@@ -267,6 +278,9 @@ export function buildThemeCss(
         block(`${html}[data-bs-theme='dark']`, global),
         block(`${html}[data-bs-theme='light']`, global),
         block(`${html ? `${html} ` : ''}.main-container`, scoped),
+        // Dialogs portal to <body>, outside .main-container; a dialog that
+        // opts in with this class wears the same theme as the page under it.
+        block(`${html ? `${html} ` : ''}.${THEME_PORTAL_CLASS}`, scoped),
     ].join('\n');
 }
 
