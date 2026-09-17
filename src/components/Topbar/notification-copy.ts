@@ -1,4 +1,8 @@
-import { buildManualTimeHref, buildRunHref } from '~src/lib/board-url';
+import {
+    buildManualTimeHref,
+    buildRunHref,
+    gameSegment,
+} from '~src/lib/board-url';
 import type { NotificationRow } from '../../../types/moderation.types';
 
 function str(v: unknown): string | null {
@@ -28,10 +32,10 @@ function timeSubject(
 }
 
 /**
- * Human-readable description of a notification. Payload fields are opportunistic
- * (backend does not yet guarantee gameDisplay/categoryDisplay on every type — see
- * docs/backend-handoffs-leaderboard-ux.md W4) so every read is typeof-guarded and
- * falls back to the existing generic copy when a field is missing or mistyped.
+ * Human-readable description of a notification. Every type now carries
+ * gameDisplay/categoryDisplay (filled in on read for older rows), but either
+ * can be null for a deleted game or category, so every read is typeof-guarded
+ * and falls back to the generic copy when a field is missing or mistyped.
  */
 export function describe(n: NotificationRow): string {
     const p = (n.payload ?? {}) as Record<string, unknown>;
@@ -39,8 +43,12 @@ export function describe(n: NotificationRow): string {
     const categoryDisplay = str(p.categoryDisplay);
 
     switch (n.type) {
-        case 'manual_time_created':
-            return 'A moderator set a leaderboard time for you.';
+        case 'manual_time_created': {
+            const subject = timeSubject(gameDisplay, categoryDisplay);
+            return subject
+                ? `A moderator set your ${subject}.`
+                : 'A moderator set a leaderboard time for you.';
+        }
         case 'manual_time_verdict': {
             const subject = timeSubject(gameDisplay, categoryDisplay);
             if (p.verdict === 'verified') {
@@ -52,8 +60,12 @@ export function describe(n: NotificationRow): string {
                 ? `Your claimed ${subject} was rejected.`
                 : 'Your claimed time was rejected.';
         }
-        case 'manual_time_deleted':
-            return 'A moderator removed a leaderboard time set for you.';
+        case 'manual_time_deleted': {
+            const subject = timeSubject(gameDisplay, categoryDisplay);
+            return subject
+                ? `A moderator removed your ${subject}.`
+                : 'A moderator removed a leaderboard time set for you.';
+        }
         case 'verdict_applied': {
             const subject = runSubject(gameDisplay, categoryDisplay);
             if (p.action === 'verify') {
@@ -91,6 +103,12 @@ export function describe(n: NotificationRow): string {
                 ? `A moderator accepted your ${subject} without a video.`
                 : 'A moderator accepted one of your runs without a video.';
         }
+        case 'pb_awaiting_submission': {
+            const subject = runSubject(gameDisplay, categoryDisplay);
+            return subject
+                ? `Your ${subject} is waiting for you to submit it.`
+                : 'One of your runs is waiting for you to submit it.';
+        }
         default:
             return 'You have a new notification.';
     }
@@ -101,20 +119,45 @@ function positiveInt(v: unknown): number | null {
 }
 
 /**
- * The run or manual time a notification is about, when its payload names both
- * the game and the entry. Only run pages are linked: boards and setup stay
- * reachable by URL only. `run_needs_video` and `run_video_waived` carry
- * `gameSlug` + `runId`; the other types carry a `gameId` only and stay plain
- * until the backend adds the game's name. A deleted manual time has no page.
+ * The page a notification is about. Runs and manual times open their own
+ * page, which anyone can view. A held PB opens its submission form. Board
+ * claims open the game's console: an approved claimant moderates it now, and
+ * a declined one sees the door with the option to apply again. A deleted
+ * manual time has no page of its own and boards are not public yet, so it
+ * opens the game's public stats page. Null when the payload lacks what the
+ * target needs (rows written before runId / manualTimeId were stored).
  */
 export function linkFor(n: NotificationRow): string | null {
-    if (n.type === 'manual_time_deleted') return null;
     const p = (n.payload ?? {}) as Record<string, unknown>;
     const game = str(p.gameSlug);
-    if (!game) return null;
     const runId = positiveInt(p.runId);
-    if (runId != null) return buildRunHref(game, runId);
     const manualTimeId = positiveInt(p.manualTimeId);
-    if (manualTimeId != null) return buildManualTimeHref(game, manualTimeId);
-    return null;
+
+    switch (n.type) {
+        case 'run_needs_video':
+        case 'run_video_waived':
+        case 'verdict_applied':
+            return game && runId != null ? buildRunHref(game, runId) : null;
+        case 'pb_awaiting_submission':
+            return runId != null ? `/submissions/${runId}` : null;
+        case 'manual_time_created':
+        case 'manual_time_verdict':
+            return game && manualTimeId != null
+                ? buildManualTimeHref(game, manualTimeId)
+                : null;
+        case 'manual_time_deleted': {
+            const ref = str(p.gameDisplay) ?? game;
+            return ref ? `/games/${gameSegment(ref)}` : null;
+        }
+        case 'board_claim_approved':
+        case 'board_claim_denied':
+            return game ? `/games-v2/${gameSegment(game)}/manage` : null;
+        default:
+            if (!game) return null;
+            if (runId != null) return buildRunHref(game, runId);
+            if (manualTimeId != null) {
+                return buildManualTimeHref(game, manualTimeId);
+            }
+            return null;
+    }
 }

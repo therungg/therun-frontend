@@ -797,13 +797,51 @@ export interface AppealResult {
 }
 
 export type NotificationType =
+    | 'run_needs_video'
+    | 'run_video_waived'
+    | 'verdict_applied'
+    | 'pb_awaiting_submission'
     | 'manual_time_created'
     | 'manual_time_verdict'
     | 'manual_time_deleted'
-    | 'verdict_applied'
     | 'board_claim_approved'
     | 'board_claim_denied'
     | (string & {});
+
+/**
+ * Fields a notification payload can carry. Names are written when the
+ * notification is created; older rows get `gameSlug`, `gameDisplay`,
+ * `categorySlug` and `categoryDisplay` filled in on read from their ids, but
+ * never `runId`, `manualTimeId` or `subcategoryKey`. Slugs are null when the
+ * game or category was deleted. Rows keep `payload` loosely typed because
+ * every field is read defensively.
+ */
+export interface NotificationPayload {
+    gameId?: number;
+    /** `games.name` — what `resolveGame` accepts. */
+    gameSlug?: string | null;
+    gameDisplay?: string | null;
+    categoryId?: number;
+    /** `categories.name`. */
+    categorySlug?: string | null;
+    categoryDisplay?: string | null;
+    /** Board slice key; `""` for the base board. */
+    subcategoryKey?: string;
+    runId?: number;
+    manualTimeId?: number;
+    timeMs?: number;
+    /** verdict_applied */
+    action?: 'verify' | 'reject' | 'unreject' | 'unverify';
+    reasonKey?: string | null;
+    /** manual_time_created */
+    byMod?: boolean;
+    /** manual_time_verdict */
+    verdict?: 'verified' | 'rejected';
+    /** board_claim_approved */
+    role?: string;
+    /** board_claim_denied */
+    reason?: string | null;
+}
 
 export interface NotificationRow {
     id: number;
