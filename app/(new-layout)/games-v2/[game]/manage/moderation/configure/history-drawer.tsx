@@ -4,6 +4,7 @@ import moment from 'moment/moment';
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import Link from '~src/components/link';
+import { buildManageRunHref } from '~src/lib/board-url';
 import type { ModActionRow } from '../../../../../../../types/moderation.types';
 import { useDialogBehavior } from '../../../shared/board-dialog';
 import { undoAction } from '../log/actions/undo.action';
@@ -262,7 +263,10 @@ export function HistoryDrawer({ gameSlug, open, onClose }: Props) {
                                                             <>
                                                                 {' '}
                                                                 <Link
-                                                                    href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/run/${runId}`}
+                                                                    href={buildManageRunHref(
+                                                                        gameSlug,
+                                                                        runId,
+                                                                    )}
                                                                 >
                                                                     {row.target}
                                                                 </Link>

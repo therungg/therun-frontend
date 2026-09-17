@@ -324,7 +324,7 @@ describe('publicBoardHref', () => {
                 categorySlug: '120-star',
                 subcategoryKey: 'platform=n64|region=jp',
             }),
-        ).toBe('/games-v2/sm64?category=120-star&platform=n64&region=jp');
+        ).toBe('/games-v2/sm64?platform=n64&region=jp&board=120-star');
     });
 
     it('returns null when the category no longer resolves', () => {

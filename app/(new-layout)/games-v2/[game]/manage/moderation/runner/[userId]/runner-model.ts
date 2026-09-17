@@ -6,7 +6,7 @@
 // ordered the way the public category band orders categories, plus the
 // runner's ban state, a per-runner slice of the audit log, and header stats.
 
-import { parseSubcategoryKey } from '~src/lib/run-view/parse-subcategory-key';
+import { buildBoardHref } from '~src/lib/board-url';
 import type { ResolvedCategory } from '../../../../../../../../types/leaderboards.types';
 import type {
     GameExclusionRuleRow,
@@ -294,9 +294,8 @@ export function publicBoardHref(
     combo: Pick<RunnerCombo, 'categorySlug' | 'subcategoryKey'>,
 ): string | null {
     if (!combo.categorySlug) return null;
-    const params = new URLSearchParams({ category: combo.categorySlug });
-    for (const { name, value } of parseSubcategoryKey(combo.subcategoryKey)) {
-        params.set(name, value);
-    }
-    return `/games-v2/${encodeURIComponent(gameSlug)}?${params.toString()}`;
+    return buildBoardHref(gameSlug, {
+        categorySlug: combo.categorySlug,
+        subcategoryKey: combo.subcategoryKey,
+    });
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from '~src/components/link';
+import { buildModRunnerHref } from '~src/lib/board-url';
 import type {
     LeaderboardRosterRow,
     UserEligibleRunRow,
@@ -43,7 +44,7 @@ export function RowActions({ row, gameSlug }: RowActionsProps) {
         <div className={styles.actionCluster}>
             <Link
                 className={styles.actionBtn}
-                href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${row.userId}?from=boards`}
+                href={buildModRunnerHref(gameSlug, row.userId, 'boards')}
                 title={`Open ${row.runnerName}'s runner page`}
             >
                 View

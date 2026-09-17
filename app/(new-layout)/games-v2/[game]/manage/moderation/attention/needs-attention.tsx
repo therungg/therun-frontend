@@ -22,6 +22,7 @@ import chrome from '~src/components/console-chrome/console.module.scss';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { buildModRunnerHref } from '~src/lib/board-url';
 import type {
     LeaderboardEntry,
     ResolvedCategory,
@@ -837,7 +838,7 @@ function SingleItemCard({
                 </button>
                 {item.userId != null && (
                     <Link
-                        href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${item.userId}`}
+                        href={buildModRunnerHref(gameSlug, item.userId)}
                         className={clsx(BTN_SECONDARY, styles.pushEnd)}
                     >
                         View runner
@@ -920,7 +921,7 @@ function RunnerGroupCard({
                                 Moderate
                             </button>
                             <Link
-                                href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${userId}`}
+                                href={buildModRunnerHref(gameSlug, userId)}
                                 className={BTN_SECONDARY}
                             >
                                 View runner

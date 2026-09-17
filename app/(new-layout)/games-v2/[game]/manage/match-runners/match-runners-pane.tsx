@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
 import Link from '~src/components/link';
+import { buildModRunnerHref } from '~src/lib/board-url';
 import { SRC_MATCH_BATCH } from '~src/lib/moderation/src-matches';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import type {
@@ -455,7 +456,7 @@ function MatchRow({
             <td>
                 <Link
                     className={styles.runner}
-                    href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation/runner/${row.userId}`}
+                    href={buildModRunnerHref(gameSlug, row.userId)}
                 >
                     {row.username}
                 </Link>

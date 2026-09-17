@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { toast } from 'react-toastify';
 import { RunTimesField } from '~src/components/time-input/run-times-field';
+import { buildModRunnerHref } from '~src/lib/board-url';
 import { otherTiming, validateRunTimes } from '~src/lib/run-times';
 import { buildSubcategoryKey } from '~src/lib/variables/keys';
 import type { LeaderboardEntry } from '../../../../../../../types/leaderboards.types';
@@ -113,7 +114,7 @@ export function RunnerTab({
         gameDisplay: context.gameDisplay,
         canSiteBan: context.canSiteBan,
     };
-    const runnerPage = `/games-v2/${gameSlug}/manage/moderation/runner/${userId}`;
+    const runnerPage = buildModRunnerHref(gameSlug, userId);
 
     // ---- Read ------------------------------------------------------------------
     // Ban state, identity and runs come from the server, read again after
