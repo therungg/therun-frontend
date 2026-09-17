@@ -107,10 +107,24 @@
     color: var(--bs-secondary-color);
     font-size: 1rem;
 
+    > * {
+        white-space: nowrap;
+    }
+
     > * + *::before {
         content: '·';
         margin-right: dt.$spacing-sm;
         opacity: 0.6;
+    }
+
+    // A "·" separator must never start a wrapped line. Below 576px drop the
+    // dots entirely and force "World record" onto its own line, so the
+    // remaining items wrap as a plain gapped group underneath it.
+    @media (max-width: 575.98px) {
+        > * + *::before {
+            content: none;
+            margin-right: 0;
+        }
     }
 }
 
@@ -122,6 +136,10 @@
 
     &:hover {
         text-decoration: underline;
+    }
+
+    @media (max-width: 575.98px) {
+        flex-basis: 100%;
     }
 }
 
@@ -386,6 +404,13 @@
     &:is(a):hover {
         background: rgba(var(--bs-body-color-rgb), 0.05);
     }
+
+    // Fixed rank/avatar/time/gap columns leave the name almost no room at
+    // phone width. Drop the avatar track and narrow rank so the name keeps
+    // ~10 characters legible.
+    @media (max-width: 575.98px) {
+        grid-template-columns: 1.5rem 18px minmax(0, 1fr) 5.5rem 4.5rem;
+    }
 }
 
 .sliceSelf {
@@ -407,6 +432,12 @@
 .sliceAvatar {
     display: flex;
     align-items: center;
+}
+
+@media (max-width: 575.98px) {
+    .sliceAvatar {
+        display: none;
+    }
 }
 
 .sliceTime {
