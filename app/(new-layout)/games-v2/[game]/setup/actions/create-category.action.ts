@@ -4,6 +4,7 @@ import { updateTag } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
 import { ApiError } from '~src/lib/api-client';
 import { createCategory, updateCategory } from '~src/lib/category-mgmt';
+import { ensureLevelGroup } from '~src/lib/levels';
 import { confirmPermission } from '~src/rbac/confirm-permission';
 import { setCategoryMinimumAction } from './set-category-minimum.action';
 
@@ -20,6 +21,11 @@ export interface CreateCategoryInput {
     showMilliseconds: boolean;
     /** null = no minimum of its own; the board's applies. */
     minMs: number | null;
+    /**
+     * Create a level: the category goes into the game's level group, which is
+     * created on first use. The backend gives a new level its variables.
+     */
+    levelGroup?: boolean;
     /**
      * False leaves the category cache alone. Invalidating from a server action
      * refreshes the whole page, and the setup wizard's Categories step remounts
@@ -68,6 +74,9 @@ export async function createCategoryAction(
 
     let id: number;
     try {
+        const groupId = input.levelGroup
+            ? (await ensureLevelGroup(user.id, input.gameId)).id
+            : undefined;
         ({ id } = await createCategory(user.id, input.gameId, {
             display,
             primaryTiming: input.primaryTiming,
@@ -77,10 +86,15 @@ export async function createCategoryAction(
             ...(input.rules.trim() ? { rules: input.rules.trim() } : {}),
             showMilliseconds: input.showMilliseconds,
             isMain: true,
+            ...(groupId !== undefined ? { groupId } : {}),
         }));
     } catch (e) {
         if (e instanceof ApiError) return { error: e.message };
-        return { error: 'Failed to create category.' };
+        return {
+            error: input.levelGroup
+                ? 'Failed to create level.'
+                : 'Failed to create category.',
+        };
     }
     const invalidate = () => {
         if (input.invalidate !== false) updateTag(`game-cats:${input.gameId}`);

@@ -218,6 +218,8 @@ export interface CreateCategoryBody {
     rules?: string;
     showMilliseconds?: boolean;
     isMain?: boolean;
+    /** Create inside this group — the level group, for a level. */
+    groupId?: number;
 }
 
 /**
@@ -234,6 +236,22 @@ export async function createCategory(
         sessionId,
         body,
     });
+}
+
+/**
+ * Archive a category: it leaves the board and every public surface, its runs
+ * are kept. The Levels list's Archive action — a level has no "not featured"
+ * state to fall back to.
+ */
+export async function archiveCategory(
+    sessionId: string,
+    gameId: number,
+    categoryId: number,
+): Promise<{ archived: boolean }> {
+    return apiFetch<{ archived: boolean }>(
+        `/v1/games/${gameId}/categories/${categoryId}/archive`,
+        { method: 'POST', sessionId },
+    );
 }
 
 /**

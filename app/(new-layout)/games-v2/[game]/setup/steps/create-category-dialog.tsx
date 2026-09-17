@@ -10,6 +10,7 @@ import {
     timingChoiceOf,
     timingLabel,
 } from '~src/lib/setup/board-defaults';
+import type { WorkspaceKind } from '~src/lib/setup/workspace';
 import { SegmentedControl, SwitchField } from '../../manage/shared/form-kit';
 import { BoardDialog } from '../../shared/board-dialog';
 import { createCategoryAction } from '../actions/create-category.action';
@@ -34,6 +35,8 @@ interface Props {
     onCreated: (category: CreatedCategory, warning?: string) => void;
     /** See `invalidate` on createCategoryAction. Defaults to true. */
     invalidate?: boolean;
+    /** 'levels' creates a level in the game's level group. */
+    kind?: WorkspaceKind;
 }
 
 interface FormState {
@@ -86,12 +89,14 @@ export function CreateCategoryDialog({
     existingNames,
     onCreated,
     invalidate = true,
+    kind = 'categories',
 }: Props) {
     const [form, setForm] = useState<FormState>(() => initialState(metadata));
     const [error, setError] = useState<string | null>(null);
     const [pending, setPending] = useState(false);
     const nameRef = useRef<HTMLInputElement>(null);
     const ids = useId();
+    const noun = kind === 'levels' ? 'level' : 'category';
 
     // This instance is reused across opens, so leaving it by any route clears
     // what was typed.
@@ -114,12 +119,12 @@ export function CreateCategoryDialog({
     const submit = async () => {
         if (pending) return;
         if (!trimmed) {
-            setError('Name the category.');
+            setError(`Name the ${noun}.`);
             nameRef.current?.focus();
             return;
         }
         if (taken) {
-            setError(`This game already has a category called “${taken}”.`);
+            setError(`This game already has a ${noun} called “${taken}”.`);
             nameRef.current?.focus();
             return;
         }
@@ -139,6 +144,7 @@ export function CreateCategoryDialog({
             rules: form.rules,
             showMilliseconds: form.showMilliseconds,
             minMs: form.minMs,
+            levelGroup: kind === 'levels',
             invalidate,
         });
         setPending(false);
@@ -177,7 +183,7 @@ export function CreateCategoryDialog({
             >
                 <div className={styles.header}>
                     <h5 className={styles.title} id={`${ids}-title`}>
-                        New category
+                        New {noun}
                     </h5>
                 </div>
                 <div className={styles.body}>
@@ -190,7 +196,11 @@ export function CreateCategoryDialog({
                             id={`${ids}-name`}
                             type="text"
                             className={`form-control form-control-sm ${styles.input}`}
-                            placeholder="e.g. Any%"
+                            placeholder={
+                                kind === 'levels'
+                                    ? 'e.g. Gusty Garden Galaxy'
+                                    : 'e.g. Any%'
+                            }
                             maxLength={200}
                             value={form.display}
                             disabled={pending}
@@ -260,7 +270,7 @@ export function CreateCategoryDialog({
                             id={`${ids}-rules`}
                             className={styles.textarea}
                             rows={5}
-                            placeholder="No rules set for this category."
+                            placeholder={`No rules set for this ${noun}.`}
                             value={form.rules}
                             disabled={pending}
                             onChange={(e) => set('rules', e.target.value)}
@@ -283,7 +293,7 @@ export function CreateCategoryDialog({
                         className={styles.primary}
                         disabled={pending || !trimmed}
                     >
-                        {pending ? 'Creating…' : 'Create category'}
+                        {pending ? 'Creating…' : `Create ${noun}`}
                     </button>
                 </div>
             </form>
