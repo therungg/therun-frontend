@@ -9,6 +9,19 @@
     min-width: 0;
 }
 
+// Who the runner is and the section tabs, on one themed panel. The tabs sit
+// on the panel's bottom edge, so it has no bottom padding of its own.
+.headPanel {
+    @include board.board-surface(dt.$spacing-xl dt.$spacing-xl 0);
+    display: grid;
+    gap: dt.$spacing-lg;
+    min-width: 0;
+
+    @media (max-width: 575.98px) {
+        padding: dt.$spacing-lg dt.$spacing-lg 0;
+    }
+}
+
 .header {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
@@ -29,9 +42,9 @@
 
     > img,
     > span {
-        width: 72px !important;
-        height: 72px !important;
-        font-size: 28px !important;
+        width: 80px !important;
+        height: 80px !important;
+        font-size: 30px !important;
     }
 
     @media (max-width: 575.98px) {
@@ -223,15 +236,20 @@
 .nav {
     display: flex;
     gap: dt.$spacing-xl;
+    min-width: 0;
     overflow-x: auto;
-    border-bottom: 1px solid
+    border-top: 1px solid
         var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
     scrollbar-width: none;
+
+    @media (max-width: 575.98px) {
+        gap: dt.$spacing-lg;
+    }
 }
 
 .navLink {
     position: relative;
-    padding-block: dt.$spacing-sm;
+    padding-block: dt.$spacing-md;
     color: var(--bs-secondary-color);
     font-size: dt.$font-size-sm;
     white-space: nowrap;
@@ -251,7 +269,7 @@
         position: absolute;
         left: 0;
         right: 0;
-        bottom: -1px;
+        bottom: 0;
         height: 2px;
         border-radius: 2px;
         background: var(--bs-primary);

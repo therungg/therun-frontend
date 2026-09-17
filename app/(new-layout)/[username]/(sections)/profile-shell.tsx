@@ -21,8 +21,13 @@ export function ProfileShell({
                 label={head.runner.name}
                 theme={profileThemeOf(head)}
             />
-            <SectionHeader head={head} />
-            <ProfileSubnav name={head.runner.name} guest={head.runner.guest} />
+            <div className={styles.headPanel}>
+                <SectionHeader head={head} />
+                <ProfileSubnav
+                    name={head.runner.name}
+                    guest={head.runner.guest}
+                />
+            </div>
             {children}
         </div>
     );
