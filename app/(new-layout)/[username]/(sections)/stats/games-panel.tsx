@@ -1,5 +1,8 @@
 import { safeEncodeURI } from '~src/utils/uri';
-import type { RunnerStatsGame } from '../../../../../types/runner-profile.types';
+import type {
+    RunnerStatsCategory,
+    RunnerStatsGame,
+} from '../../../../../types/runner-profile.types';
 import { formatCount, formatDuration, formatHours } from '../format';
 import { ProfileGroup } from '../profile-group';
 import ui from '../profile-ui.module.scss';
@@ -8,6 +11,29 @@ import styles from './stats.module.scss';
 
 /** Games open by default: all of a short list, the most played of a long one. */
 const OPEN = 4;
+
+/**
+ * The run page path. A run key's segments past game#category are the
+ * qualifiers that tell subcategories apart, and the run page wants them back
+ * as `$`-joined suffixes on the category.
+ */
+function runHref(
+    username: string,
+    game: string,
+    c: RunnerStatsCategory,
+): string {
+    const qualifiers = (c.runKey ?? '')
+        .split('#')
+        .slice(2)
+        .map((part) => `$${safeEncodeURI(part)}`)
+        .join('');
+    return `/${safeEncodeURI(username)}/${safeEncodeURI(game)}/${safeEncodeURI(c.category)}${qualifiers}`;
+}
+
+/** A run keeping game time shows that clock, the way the profile always has. */
+function igt(c: RunnerStatsCategory): boolean {
+    return c.hasGameTime && !!c.gameTimePbMs;
+}
 
 function Rank({ rank }: { rank: number | null }) {
     if (rank === null) return <span className={ui.faint}>—</span>;
@@ -67,32 +93,41 @@ export function GamesPanel({
                                 <a
                                     key={c.runId}
                                     className={ui.row}
-                                    href={`/${safeEncodeURI(username)}/${safeEncodeURI(game.game)}/${safeEncodeURI(c.category)}`}
+                                    href={runHref(username, game.game, c)}
                                 >
                                     <span className={ui.name}>
                                         <span className={ui.nameMain}>
                                             {c.category}
                                         </span>
+                                        {c.subcategory ? (
+                                            <span className={ui.nameSub}>
+                                                {c.subcategory}
+                                            </span>
+                                        ) : null}
                                     </span>
-                                    <span className={`${ui.stacked} ${ui.end}`}>
-                                        <span
-                                            className={`${ui.num} ${ui.strong}`}
-                                        >
-                                            {formatDuration(c.personalBestMs)}
-                                        </span>
-                                        {c.hasGameTime && c.gameTimePbMs ? (
-                                            <span
-                                                className={`${ui.num} ${ui.small} ${ui.muted}`}
-                                            >
-                                                IGT{' '}
-                                                {formatDuration(c.gameTimePbMs)}
+                                    <span
+                                        className={`${ui.num} ${ui.strong} ${ui.end}`}
+                                    >
+                                        {formatDuration(
+                                            igt(c)
+                                                ? c.gameTimePbMs
+                                                : c.personalBestMs,
+                                        )}
+                                        {igt(c) ? (
+                                            <span className={ui.timing}>
+                                                {' '}
+                                                (IGT)
                                             </span>
                                         ) : null}
                                     </span>
                                     <span
                                         className={`${ui.num} ${ui.muted} ${ui.end} ${ui.optional}`}
                                     >
-                                        {formatDuration(c.sumOfBestsMs)}
+                                        {formatDuration(
+                                            igt(c)
+                                                ? c.gameTimeSobMs
+                                                : c.sumOfBestsMs,
+                                        )}
                                     </span>
                                     <span
                                         className={`${ui.num} ${ui.end} ${ui.optional}`}

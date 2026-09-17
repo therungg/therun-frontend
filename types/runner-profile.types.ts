@@ -57,6 +57,10 @@ export interface TimerPb {
     category: string;
     /** `categories.name`, the board selector. Absent on older payloads. */
     categorySlug?: string;
+    /** The run's Dynamo key; its segments past game#category qualify the run page URL. Absent on older payloads. */
+    runKey?: string;
+    /** What tells two runs on one category apart, e.g. "Luigi · Switch 2". Absent on older payloads. */
+    subcategory?: string | null;
     personalBestMs: number | null;
     sumOfBestsMs: number | null;
     hasGameTime: boolean;
