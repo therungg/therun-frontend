@@ -31,6 +31,7 @@ export function StepVariables({ data, onAdvance }: StepProps) {
 
             <VariablesGrid
                 game={data.game}
+                kind="categories"
                 categories={data.categories}
                 variables={data.variables}
                 groups={data.groups}

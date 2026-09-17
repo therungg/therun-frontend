@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { Collection, Diagram3, Funnel, Plus } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
-import { compareByBoardOrder } from '~src/lib/console/category-order';
 import type {
     CategoryVariableSuggestion,
     VariableChangeInput,
@@ -21,6 +20,7 @@ import {
     subBoardCount,
     type VariableGroup,
 } from '~src/lib/setup/variable-view';
+import { boardsOfKind, type WorkspaceKind } from '~src/lib/setup/workspace';
 import type { VariablePreview } from '~src/lib/variables/consequences';
 import { describeConsequences } from '~src/lib/variables/consequences';
 import {
@@ -88,11 +88,12 @@ import styles from './variables-grid.module.scss';
  */
 export interface VariablesGridProps {
     game: ResolvedGame;
-    /** Every category on the game; the grid narrows to the featured ones. */
+    /** Which rows the grid edits: full-game categories, or levels. */
+    kind: WorkspaceKind;
+    /** Every category on the game; the grid narrows to `kind`'s boards. */
     categories: ResolvedCategory[];
     variables: VariableRow[];
-    /** The game's groups, used to exclude level subcategories/filters — those
-     * are managed in the Levels menu instead. */
+    /** The game's groups — how a level is told from a category. */
     groups: ResolvedGroup[];
     /**
      * Render ONE section, table-first: the console's Subcategories and
@@ -105,6 +106,7 @@ export interface VariablesGridProps {
 
 export function VariablesGrid({
     game,
+    kind,
     categories,
     variables,
     groups,
@@ -124,41 +126,20 @@ export function VariablesGrid({
     const [busyGroup, setBusyGroup] = useState<string | null>(null);
     const [isBusy, startBusy] = useTransition();
 
-    // A level is a category, and its subcategories are managed in the Levels
-    // menu — so this grid excludes level categories entirely, both as the
-    // columns you assign options to and as the subcategory rows themselves.
-    const levelCategoryIds = useMemo(() => {
-        const levelGroupIds = new Set(
-            groups.filter((g) => g.kind === 'level').map((g) => g.id),
-        );
-        return new Set(
-            categories
-                .filter(
-                    (c) => c.groupId != null && levelGroupIds.has(c.groupId),
-                )
-                .map((c) => c.id),
-        );
-    }, [groups, categories]);
+    // The rows are this kind's boards, and only their variables are grouped:
+    // a category's Platform and a level's Platform are separate variables.
     const mains = useMemo(
-        () =>
-            categories
-                .filter(
-                    (c) =>
-                        !c.archived &&
-                        (c.isMain ?? false) &&
-                        !levelCategoryIds.has(c.id),
-                )
-                .sort(compareByBoardOrder),
-        [categories, levelCategoryIds],
+        () => boardsOfKind(categories, groups, kind),
+        [categories, groups, kind],
     );
-    const fullGameVariables = useMemo(
-        () => variables.filter((v) => !levelCategoryIds.has(v.categoryId)),
-        [variables, levelCategoryIds],
-    );
+    const kindVariables = useMemo(() => {
+        const ids = new Set(mains.map((c) => c.id));
+        return variables.filter((v) => ids.has(v.categoryId));
+    }, [variables, mains]);
 
     const variableGroups = useMemo(
-        () => groupVariables(fullGameVariables),
-        [fullGameVariables],
+        () => groupVariables(kindVariables),
+        [kindVariables],
     );
     const { splits, details } = useMemo(
         () => partitionGroups(variableGroups),
@@ -931,9 +912,9 @@ export function VariablesGrid({
         });
     };
 
-    // Subcategories and filters are configured per featured category, so with
-    // nothing featured there is nothing to structure. The note lives here
-    // rather than in the wizard step so the console pane gets it too.
+    // Subcategories and filters are configured per board, so with nothing on
+    // the board there is nothing to structure. The note lives here rather
+    // than in the wizard step so the console pane gets it too.
     if (mains.length === 0) {
         return (
             <div className={styles.empty}>
@@ -942,10 +923,15 @@ export function VariablesGrid({
                     className={styles.emptyIcon}
                     aria-hidden
                 />
-                <p className={styles.emptyTitle}>No featured categories yet</p>
+                <p className={styles.emptyTitle}>
+                    {kind === 'levels'
+                        ? 'No levels yet'
+                        : 'No categories on the board yet'}
+                </p>
                 <p className={styles.emptyNote}>
-                    Feature at least one category first. Subcategories and
-                    filters are configured per featured category.
+                    {kind === 'levels'
+                        ? 'Add a level first. Subcategories and filters are set per level.'
+                        : 'Add a category first. Subcategories and filters are set per category.'}
                 </p>
             </div>
         );

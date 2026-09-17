@@ -270,6 +270,7 @@ export function ContentRouter(props: ContentRouterProps) {
                     </div>
                     <VariablesGrid
                         game={game}
+                        kind="categories"
                         categories={props.boardCategories}
                         variables={props.variables}
                         groups={props.boardGroups}
