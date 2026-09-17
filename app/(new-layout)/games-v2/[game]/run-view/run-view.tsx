@@ -1,14 +1,7 @@
 import moment from 'moment';
 import type React from 'react';
 import Link from '~src/components/link';
-import { UserLink } from '~src/components/links/links';
-import { DurationToFormatted } from '~src/components/util/datetime';
-import {
-    buildBoardHref,
-    buildSubmitHref,
-    rankToPage,
-} from '~src/lib/board-url';
-import { formatRunDate } from '~src/lib/format-run-date';
+import { buildBoardHref, buildSubmitHref } from '~src/lib/board-url';
 import type {
     BoardContext,
     ResolvedGame,
@@ -24,21 +17,18 @@ import type {
     HistoryEvent,
     VerifiedVia,
 } from '../../../../../types/moderation.types';
-import { formatSubcategoryKey } from '../labels';
-import { CountryFlag } from '../leaderboard/country-flag';
-import { RunnerAvatar } from '../leaderboard/runner-avatar';
 import { isSameRunner } from '../shared/is-same-runner';
-import { OriginPanel } from './origin-panel';
-import { RunActions } from './run-actions';
-import {
-    AutoVerifiedBadge,
-    AutoVerifyBreakdown,
-    VariablesLine,
-    VerificationBadge,
-} from './run-badges';
-import { RunEvidencePanel } from './run-evidence-panel';
-import { RunHistoryList } from './run-history-list';
+import { BoardSlice } from './board-slice';
+import { DescriptionMarkdown } from './description-markdown';
+import { RunHero } from './run-hero';
+import { hasMedia, RunMediaProvider, RunMediaSlot } from './run-media';
+import pageStyles from './run-page.module.scss';
+import { RunStatStrip } from './run-stat-strip';
 import styles from './run-view.module.scss';
+import { RunnerCard } from './runner-card';
+import { SplitsTable } from './splits-table';
+import { SupersededNote } from './superseded-note';
+import { VerificationFooter } from './verification-footer';
 
 export interface RunViewModel {
     kind: 'run' | 'manual';
@@ -113,7 +103,6 @@ export function RunView({
     isMod?: boolean;
     modPanel?: React.ReactNode; // mod layer slot, page decides
 }): React.JSX.Element {
-    const primaryTime = model.realTime ?? model.gameTime;
     const isRejected = model.verificationStatus === 'rejected';
     // Tombstone (design doc §F / mocks fig. 5): a rejected run keeps this
     // same page rather than 404ing or vanishing. RunDetail has no separate
@@ -136,28 +125,14 @@ export function RunView({
               (e) => e.type === 'verdict' && e.action.includes('reject'),
           ) ?? null)
         : null;
-    const subcategoryLabel = formatSubcategoryKey(model.subcategoryKey);
-    const boardContext = model.boardContext;
-    const isTopOfBoard = boardContext?.rank === 1;
-
-    // Breadcrumb + rank deep link: a resolved category slug points the
-    // board pills/rank line at that exact slice; no resolution falls back
-    // to the plain game URL.
     const gameHref = buildBoardHref(model.game.name);
-    const boardHref = model.categorySlug
-        ? buildBoardHref(model.game.name, {
-              categorySlug: model.categorySlug,
-              subcategoryKey: model.subcategoryKey,
-          })
-        : gameHref;
-    const rankHref =
-        model.categorySlug && boardContext
-            ? buildBoardHref(model.game.name, {
-                  categorySlug: model.categorySlug,
-                  subcategoryKey: model.subcategoryKey,
-                  page: rankToPage(boardContext.rank),
-              })
-            : null;
+    const boardHref = buildBoardHref(model.game.name, {
+        categorySlug: model.categorySlug,
+        subcategoryKey: model.categorySlug ? model.subcategoryKey : null,
+    });
+    const media = hasMedia(model);
+    const showDescription = !!model.description && !model.descriptionRevoked;
+
     // "Correct this time" target — opens the submit dialog carrying the
     // resolved category context when there is one (only the `run` kind ever
     // resolves one; manual claims never do — see requirement 5's backend
@@ -167,10 +142,6 @@ export function RunView({
         categorySlug: model.categorySlug ?? undefined,
         subcategoryKey: model.categorySlug ? model.subcategoryKey : undefined,
     });
-
-    const eyebrowText = `${model.game.display} · ${model.categoryDisplay}${
-        subcategoryLabel ? ` · ${subcategoryLabel}` : ''
-    }`;
 
     // "What now?" — a rejected self-claim (manual variant, owner only)
     // isn't a dead end. `mode=claim` carries the same category context the
@@ -191,173 +162,71 @@ export function RunView({
                     fallbackReason={model.rejectionReason}
                 />
             )}
-            <div className={isTombstone ? styles.desaturated : undefined}>
-                <header className={styles.header}>
-                    <Link href={gameHref} className={styles.gameLink}>
-                        {model.game.image && (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                                src={model.game.image}
-                                width={48}
-                                height={64}
-                                className={styles.gameCover}
-                                alt=""
-                            />
-                        )}
-                        <span>{model.game.display}</span>
-                    </Link>
-                    <div className={styles.crumbBody}>
-                        <div className={styles.eyebrow}>{eyebrowText}</div>
-                        <div className={styles.timeRow}>
-                            <h1
-                                className={`${styles.time} ${isTopOfBoard ? styles.timeGold : ''}`}
-                            >
-                                {primaryTime != null ? (
-                                    // The category's showMilliseconds flag isn't
-                                    // fetchable from this page's data (RunDetail
-                                    // has no category settings join) without an
-                                    // extra call — default to ms here since a run
-                                    // page showing more precision than configured
-                                    // is never wrong, just occasionally more
-                                    // precise than the board.
-                                    <DurationToFormatted
-                                        duration={primaryTime}
-                                        withMillis
-                                    />
-                                ) : (
-                                    '—'
-                                )}
-                            </h1>
-                            <VerificationBadge
-                                status={model.verificationStatus}
-                            />
-                            <AutoVerifiedBadge
-                                verifiedVia={model.verifiedVia}
-                            />
-                            {isTombstone && (
-                                <span className={styles.notRankedPill}>
-                                    Not ranked
-                                </span>
-                            )}
-                        </div>
-                        <div className={styles.runnerLine}>
-                            <RunnerAvatar name={model.runnerName} />
-                            {model.isGuest ? (
-                                model.runnerName
-                            ) : (
-                                <UserLink
-                                    username={model.runnerName}
-                                    to="leaderboards"
-                                />
-                            )}
-                            <CountryFlag country={model.country} />
-                            {model.verifiedBy && (
-                                <span className={styles.verifiedByNote}>
-                                    verified by {model.verifiedBy.name}
-                                </span>
-                            )}
-                        </div>
-                        <div className={styles.pillRow}>
-                            <Link href={boardHref} className={styles.pill}>
-                                {model.categoryDisplay}
-                            </Link>
-                            {subcategoryLabel && (
-                                <Link href={boardHref} className={styles.pill}>
-                                    {subcategoryLabel}
-                                </Link>
-                            )}
-                        </div>
-                        {boardContext && rankHref && (
-                            <Link href={rankHref} className={styles.rankLine}>
-                                <strong>
-                                    #{boardContext.rank} of{' '}
-                                    {boardContext.totalRunners}
-                                </strong>{' '}
-                                on this board
-                            </Link>
-                        )}
-                        <div className={styles.headerActions}>
-                            <RunActions
-                                model={model}
-                                sessionUsername={sessionUsername}
-                            />
-                        </div>
-                    </div>
-                </header>
-
+            <div
+                className={`${pageStyles.page} ${isTombstone ? styles.desaturated : ''}`}
+            >
+                <RunHero
+                    model={model}
+                    gameHref={gameHref}
+                    boardHref={boardHref}
+                    isTombstone={isTombstone}
+                />
+                <RunStatStrip
+                    model={model}
+                    sessionUsername={sessionUsername}
+                    isMod={isMod}
+                />
                 {showWhatNow && (
                     <p className={styles.whatNow}>
                         What now? You can{' '}
                         <Link href={claimHref}>submit a corrected claim</Link>.
                     </p>
                 )}
-
-                <div className="row g-3">
-                    <div className="col-lg-8">
-                        <RunEvidencePanel
-                            model={model}
-                            sessionUsername={sessionUsername}
-                            isMod={isMod}
-                        />
-                    </div>
-                    <div className="col-lg-4 d-flex flex-column gap-3">
-                        <div className={styles.surface}>
-                            <div className="d-flex flex-wrap gap-3 mb-2">
-                                <div>
-                                    <small className={styles.statLabel}>
-                                        Real Time
-                                    </small>
-                                    <strong className={styles.statValue}>
-                                        {model.realTime != null ? (
-                                            <DurationToFormatted
-                                                duration={model.realTime}
-                                                withMillis
-                                            />
-                                        ) : (
-                                            '—'
-                                        )}
-                                    </strong>
+                <RunMediaProvider model={model}>
+                    <div
+                        className={`${pageStyles.grid} ${media ? '' : pageStyles.gridBare}`}
+                    >
+                        {media && (
+                            <div className={pageStyles.main}>
+                                <div data-slot="media">
+                                    <RunMediaSlot model={model} />
                                 </div>
-                                <div>
-                                    <small className={styles.statLabel}>
-                                        {model.gameTimeLabel === 'lrt'
-                                            ? 'Load-Removed Time'
-                                            : 'Game Time'}
-                                    </small>
-                                    <strong className={styles.statValue}>
-                                        {model.gameTime != null ? (
-                                            <DurationToFormatted
-                                                duration={model.gameTime}
-                                                withMillis
-                                            />
-                                        ) : (
-                                            '—'
-                                        )}
-                                    </strong>
-                                </div>
-                                {model.runDate && (
-                                    <div>
-                                        <small className={styles.statLabel}>
-                                            Run date
-                                        </small>
-                                        <span>
-                                            {formatRunDate(model.runDate)}
-                                        </span>
+                                {showDescription && model.description && (
+                                    <div data-slot="description">
+                                        <DescriptionBlock
+                                            text={model.description}
+                                        />
                                     </div>
                                 )}
+                                <div data-slot="splits">
+                                    <SplitsTable
+                                        splits={model.splits}
+                                        gameTimeLabel={model.gameTimeLabel}
+                                    />
+                                </div>
                             </div>
-                            <VariablesLine variables={model.variables} />
-                        </div>
-                        <OriginPanel model={model} />
+                        )}
+                        <aside className={pageStyles.side}>
+                            <div data-slot="board">
+                                {!isTombstone && <BoardSlice model={model} />}
+                                <SupersededNote model={model} />
+                            </div>
+                            <div data-slot="runner">
+                                <RunnerCard model={model} />
+                            </div>
+                        </aside>
+                        {!media && showDescription && model.description && (
+                            <div className={pageStyles.bareDescription}>
+                                <DescriptionBlock text={model.description} />
+                            </div>
+                        )}
                     </div>
-                </div>
-
-                <RunHistoryList events={history} />
-                {isMod && model.autoVerifyResult && (
-                    <div className={styles.surface}>
-                        <AutoVerifyBreakdown result={model.autoVerifyResult} />
-                    </div>
-                )}
+                </RunMediaProvider>
+                <VerificationFooter
+                    model={model}
+                    history={history}
+                    isMod={isMod}
+                />
                 {modPanel}
             </div>
         </div>
@@ -403,6 +272,14 @@ function RemovalPanel({
             <Link href={boardHref} className={styles.removalBack}>
                 ← Back to the board
             </Link>
+        </div>
+    );
+}
+
+function DescriptionBlock({ text }: { text: string }) {
+    return (
+        <div className={pageStyles.description}>
+            <DescriptionMarkdown text={text} />
         </div>
     );
 }

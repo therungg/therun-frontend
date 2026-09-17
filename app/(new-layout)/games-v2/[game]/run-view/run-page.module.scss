@@ -368,3 +368,143 @@
 .entryRank {
     color: var(--bs-secondary-color);
 }
+
+// --- layout ----------------------------------------------------------------
+
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-lg;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(18rem, 1fr);
+    gap: dt.$spacing-lg;
+    align-items: start;
+
+    @media (max-width: 991.98px) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+// No video and no splits: the context blocks take the row side by side.
+.gridBare {
+    grid-template-columns: minmax(0, 1fr);
+
+    .side {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    }
+}
+
+.main,
+.side {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-lg;
+    min-width: 0;
+}
+
+// Slot wrappers whose block rendered nothing must not take a gap.
+[data-slot]:empty {
+    display: none;
+}
+
+// Mobile: one column in reading order — media, description, board slice,
+// splits, runner card. The column wrappers dissolve so the slots can be
+// ordered across them.
+@media (max-width: 991.98px) {
+    .grid:not(.gridBare) {
+        .main,
+        .side {
+            display: contents;
+        }
+
+        [data-slot='media'] {
+            order: 1;
+        }
+
+        [data-slot='description'] {
+            order: 2;
+        }
+
+        [data-slot='board'] {
+            order: 3;
+        }
+
+        [data-slot='splits'] {
+            order: 4;
+        }
+
+        [data-slot='runner'] {
+            order: 5;
+        }
+    }
+}
+
+// Board slice and superseded note share one slot.
+[data-slot='board'] {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-lg;
+}
+
+.description {
+    line-height: 1.6;
+
+    p:last-child {
+        margin-bottom: 0;
+    }
+}
+
+.bareDescription {
+    max-width: 48rem;
+}
+
+.footer {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    padding-top: dt.$spacing-md;
+    border-top: 1px solid var(--bs-border-color);
+    font-size: 0.875rem;
+    color: var(--bs-secondary-color);
+}
+
+.footerLine {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm dt.$spacing-lg;
+}
+
+.origin {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-xs dt.$spacing-md;
+}
+
+.warnPill {
+    @include board.board-pill(dt.$accent-amber);
+}
+
+.history summary {
+    cursor: pointer;
+    width: fit-content;
+}
+
+.historyList {
+    list-style: none;
+    margin: dt.$spacing-sm 0 0;
+    padding: 0;
+
+    li {
+        padding: 4px 0;
+    }
+}
+
+.historyReason {
+    font-style: italic;
+}

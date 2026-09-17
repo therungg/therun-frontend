@@ -2,7 +2,7 @@ import Link from '~src/components/link';
 import { originSummary } from '~src/lib/run-view/origin-summary';
 import { srcRunUrl } from '~src/lib/src-links';
 import { safeEncodeURI } from '~src/utils/uri';
-import styles from './origin-panel.module.scss';
+import styles from './run-page.module.scss';
 import type { RunViewModel } from './run-view';
 
 export function OriginPanel({ model }: { model: RunViewModel }) {
@@ -18,40 +18,32 @@ export function OriginPanel({ model }: { model: RunViewModel }) {
         model.verificationStatus === 'pending';
 
     return (
-        <div className={styles.surface}>
-            <div className="d-flex flex-wrap align-items-center gap-2">
-                <span>{summary.line}</span>
-                {srcRunId && (
-                    <a
-                        href={srcRunUrl(srcRunId)}
-                        target="_blank"
-                        rel="noreferrer"
-                    >
-                        View on speedrun.com
-                    </a>
-                )}
-                {pendingSelfClaim && (
-                    <span className={styles.warnPill}>
-                        Self-reported · unverified
-                    </span>
-                )}
-            </div>
-            <div className="text-muted small mt-1">
+        <span className={styles.origin}>
+            <span>{summary.line}</span>
+            {pendingSelfClaim && (
+                <span className={styles.warnPill}>
+                    Self-reported · unverified
+                </span>
+            )}
+            <span>
                 {ingestedAt
                     ? `Added ${new Date(ingestedAt).toLocaleDateString()}`
                     : 'Added date unknown'}
-            </div>
-            {showSplitsLink && (
-                <div className="mt-2">
-                    <Link
-                        href={`/${safeEncodeURI(
-                            model.runnerName,
-                        )}/${safeEncodeURI(model.game.display)}`}
-                    >
-                        View splits & attempt stats
-                    </Link>
-                </div>
+            </span>
+            {srcRunId && (
+                <a href={srcRunUrl(srcRunId)} target="_blank" rel="noreferrer">
+                    View on speedrun.com
+                </a>
             )}
-        </div>
+            {showSplitsLink && (
+                <Link
+                    href={`/${safeEncodeURI(
+                        model.runnerName,
+                    )}/${safeEncodeURI(model.game.display)}`}
+                >
+                    View splits & attempt stats
+                </Link>
+            )}
+        </span>
     );
 }

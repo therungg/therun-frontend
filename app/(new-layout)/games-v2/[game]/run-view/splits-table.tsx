@@ -34,12 +34,7 @@ export function SplitsTable({
                             s.splitTimeMs -
                             (i > 0 ? splits[i - 1].splitTimeMs : 0);
                         return (
-                            <tr
-                                key={s.index}
-                                className={
-                                    seekToSplit ? styles.seekable : undefined
-                                }
-                            >
+                            <tr key={s.index}>
                                 <td>
                                     {seekToSplit ? (
                                         <button

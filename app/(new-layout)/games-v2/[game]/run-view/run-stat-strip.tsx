@@ -70,20 +70,20 @@ export function RunStatStrip({
                     </span>
                 </Cell>
             )}
-            <Cell label="Video">
-                {model.vodUrl ? (
-                    'Yes'
-                ) : canEditEvidence ? (
-                    <EvidenceDialog
-                        model={model}
-                        sessionUsername={sessionUsername}
-                        isMod={isMod}
-                        label="Add video"
-                    />
-                ) : (
-                    <span className={styles.muted}>No video</span>
-                )}
-            </Cell>
+            {!model.vodUrl && (
+                <Cell label="Video">
+                    {canEditEvidence ? (
+                        <EvidenceDialog
+                            model={model}
+                            sessionUsername={sessionUsername}
+                            isMod={isMod}
+                            label="Add video"
+                        />
+                    ) : (
+                        <span className={styles.muted}>No video</span>
+                    )}
+                </Cell>
+            )}
             <div className={styles.stripActions}>
                 {canEditEvidence && model.vodUrl && (
                     <EvidenceDialog

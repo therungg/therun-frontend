@@ -35,9 +35,13 @@ function VodPlayer({
 }) {
     const fps = model.vodReview?.fps ?? DEFAULT_FPS;
     const player = useVodPlayer({ url, fps });
-    // Mod markers win over the runner's: they are the reviewed ones.
+    // Mod markers win over the runner's when they carry a start marker:
+    // they are the reviewed ones, but seeking needs a start.
+    const modMarkers = model.vodReview?.mod?.markers ?? null;
     const markers =
-        model.vodReview?.mod?.markers ?? model.vodReview?.runner?.markers ?? [];
+        modMarkers && startFrameOf(modMarkers) != null
+            ? modMarkers
+            : (model.vodReview?.runner?.markers ?? []);
     const start = startFrameOf(markers);
     const canSeek =
         player.status === 'ready' && start != null && model.splits.length > 0;
