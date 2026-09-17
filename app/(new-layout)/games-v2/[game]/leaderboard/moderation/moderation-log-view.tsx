@@ -3,6 +3,7 @@
 import moment from 'moment';
 import { useMemo, useState, useTransition } from 'react';
 import Link from '~src/components/link';
+import { buildRunHref } from '~src/lib/board-url';
 import {
     describeLogAction,
     describeLogSubject,
@@ -294,9 +295,7 @@ export function LogRow({
                     </span>
                     <span className={styles.what}>
                         {entry.runId != null ? (
-                            <Link
-                                href={`/games-v2/${encodeURIComponent(gameSlug)}/run/${entry.runId}`}
-                            >
+                            <Link href={buildRunHref(gameSlug, entry.runId)}>
                                 {subject}
                             </Link>
                         ) : (

@@ -10,6 +10,7 @@ import {
 import { toast } from 'react-toastify';
 import { loadRunHistoryAction } from '~src/actions/run-user-actions.action';
 import { DurationField } from '~src/components/time-input/duration-field';
+import { buildRunHref } from '~src/lib/board-url';
 import { timingLabel } from '~src/lib/setup/board-defaults';
 import type { VodReviewPatch } from '../../../../../../../types/leaderboards.types';
 import type {
@@ -475,7 +476,7 @@ export function RunTab({
     });
 
     // ---- Layout ----------------------------------------------------------------------------
-    const runPage = runId != null ? `/games-v2/${gameSlug}/run/${runId}` : null;
+    const runPage = runId != null ? buildRunHref(gameSlug, runId) : null;
     const identity = (
         <RunIdentity
             entry={entry}

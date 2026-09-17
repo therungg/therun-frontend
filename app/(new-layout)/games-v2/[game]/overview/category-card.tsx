@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
-import { buildBoardHref } from '~src/lib/board-url';
+import { buildBoardEntryHref, buildBoardHref } from '~src/lib/board-url';
 import { formatRunDate } from '~src/lib/format-run-date';
 import { formatCount } from '~src/utils/format-stats';
 import { CountryFlag } from '../leaderboard/country-flag';
@@ -56,6 +56,16 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
     // describe timer uploads, which is not what this page is about.
     const { category, entries, boardRunners, sliceLabel } = card;
     const { wr, podium } = splitCardEntries(entries);
+    const wrHref = wr ? buildBoardEntryHref(gameSlug, wr) : null;
+    // Same rule as the board: a whole-second record (common on speedrun.com
+    // imports) drops ".000".
+    const wrTime = wr
+        ? formatRecord(
+              wr.time as number,
+              (category.showMilliseconds ?? true) &&
+                  Math.round(Number(wr.time)) % 1000 !== 0,
+          )
+        : '';
     const boardHref = buildBoardHref(gameSlug, {
         categorySlug: category.name,
         subcategoryKey: card.subcategoryKey,
@@ -98,12 +108,12 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
                 {wr ? (
                     <div className={styles.record}>
                         <span className={styles.recordTime}>
-                            {/* Same rule as the board: a whole-second record
-                                (common on speedrun.com imports) drops ".000". */}
-                            {formatRecord(
-                                wr.time as number,
-                                (category.showMilliseconds ?? true) &&
-                                    Math.round(Number(wr.time)) % 1000 !== 0,
+                            {wrHref ? (
+                                <Link href={wrHref} className={styles.runLink}>
+                                    {wrTime}
+                                </Link>
+                            ) : (
+                                wrTime
                             )}
                         </span>
                         <span className={styles.recordHolder}>
@@ -166,38 +176,53 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
             </div>
             {podium.length > 0 && (
                 <div className={styles.podium}>
-                    {podium.map((p) => (
-                        <div
-                            key={`${p.rank}-${p.runnerName}`}
-                            className={styles.podiumRow}
-                        >
-                            <span
-                                className={`${styles.podiumRank} ${
-                                    PODIUM_RANK_CLASS[p.rank] ?? ''
-                                }`}
+                    {podium.map((p) => {
+                        const href = buildBoardEntryHref(gameSlug, p);
+                        return (
+                            <div
+                                key={`${p.rank}-${p.runnerName}`}
+                                className={styles.podiumRow}
                             >
-                                {p.rank}
-                            </span>
-                            <span className={styles.podiumAvatar}>
-                                <RunnerAvatar
-                                    name={p.runnerName}
-                                    picture={p.picture}
-                                    size="xs"
-                                    anonymous={p.anonymized}
-                                />
-                            </span>
-                            <span className={styles.podiumName}>
-                                {p.anonymized ? (
-                                    p.runnerName
-                                ) : (
-                                    <UserLink username={p.runnerName} />
-                                )}
-                            </span>
-                            <span className={styles.podiumTime}>
-                                {formatRecord(p.time as number, false)}
-                            </span>
-                        </div>
-                    ))}
+                                <span
+                                    className={`${styles.podiumRank} ${
+                                        PODIUM_RANK_CLASS[p.rank] ?? ''
+                                    }`}
+                                >
+                                    {p.rank}
+                                </span>
+                                <span className={styles.podiumAvatar}>
+                                    <RunnerAvatar
+                                        name={p.runnerName}
+                                        picture={p.picture}
+                                        size="xs"
+                                        anonymous={p.anonymized}
+                                    />
+                                </span>
+                                <span className={styles.podiumName}>
+                                    {p.anonymized ? (
+                                        p.runnerName
+                                    ) : (
+                                        <UserLink username={p.runnerName} />
+                                    )}
+                                </span>
+                                <span className={styles.podiumTime}>
+                                    {href ? (
+                                        <Link
+                                            href={href}
+                                            className={styles.runLink}
+                                        >
+                                            {formatRecord(
+                                                p.time as number,
+                                                false,
+                                            )}
+                                        </Link>
+                                    ) : (
+                                        formatRecord(p.time as number, false)
+                                    )}
+                                </span>
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         </article>

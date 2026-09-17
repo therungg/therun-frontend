@@ -12,9 +12,11 @@ import type { PinRef } from '../../../../types/leaderboards-profile.types';
 import { BoardDialog } from '../../games-v2/[game]/shared/board-dialog';
 import { EntryStatus } from './entry-row';
 import {
+    entryHref,
     entrySubcategoryLabel,
     formatEntryTime,
     formatProfileDate,
+    gameRefOf,
     timingLabel,
 } from './format';
 import styles from './leaderboards-profile.module.scss';
@@ -110,6 +112,7 @@ export function PinCard({
     const medal = entry.rank !== null ? MEDALS[entry.rank] : undefined;
     const vars = entrySubcategoryLabel(entry);
     const timing = timingLabel(entry);
+    const href = entryHref(gameRefOf(game), entry);
     return (
         <article className={styles.pin} data-medal={medal} {...dragProps}>
             {entry.vodUrl && isEmbeddableVod(entry.vodUrl) ? (
@@ -160,7 +163,13 @@ export function PinCard({
             </div>
             <div className={styles.pinFoot}>
                 <span className={styles.pinTime}>
-                    {formatEntryTime(entry)}
+                    {href ? (
+                        <Link href={href} className={styles.runLink}>
+                            {formatEntryTime(entry)}
+                        </Link>
+                    ) : (
+                        formatEntryTime(entry)
+                    )}
                     {timing ? (
                         <span className={styles.entryTiming}>{timing}</span>
                     ) : null}

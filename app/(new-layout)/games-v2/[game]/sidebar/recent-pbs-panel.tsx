@@ -1,6 +1,7 @@
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { buildRunHref } from '~src/lib/board-url';
 import { formatRunDate } from '~src/lib/format-run-date';
 import type {
     RecentPb,
@@ -107,7 +108,10 @@ export function RecentPbsPanel({ pbs, gameSlug, categories }: Props) {
                                     <Link
                                         href={
                                             typeof p.runId === 'number'
-                                                ? `/games-v2/${encodeURIComponent(gameSlug)}/run/${p.runId}`
+                                                ? buildRunHref(
+                                                      gameSlug,
+                                                      p.runId,
+                                                  )
                                                 : `/${p.username}`
                                         }
                                     >

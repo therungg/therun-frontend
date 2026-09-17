@@ -102,6 +102,43 @@ export function buildCurationHref(
     return withQuery(`/games-v2/${gameSegment(gameSlug)}/manage`, sp);
 }
 
+/**
+ * Public page for one finished run. `gameRef` is anything the run route's
+ * `resolveGame` accepts: the game's name (`ResolvedGame.name`), its slug, or
+ * its display name (the lookup lowercases and drops whitespace, which turns a
+ * display name into the name). The route 404s when the run belongs to another
+ * game, so the ref must be the run's own game.
+ */
+export function buildRunHref(gameRef: string, runId: number): string {
+    return `/games-v2/${gameSegment(gameRef)}/run/${runId}`;
+}
+
+/** Public page for one manual time. Same `gameRef` rules as `buildRunHref`. */
+export function buildManualTimeHref(
+    gameRef: string,
+    manualTimeId: number,
+): string {
+    return `/games-v2/${gameSegment(gameRef)}/manual/${manualTimeId}`;
+}
+
+/**
+ * The page a board entry opens: its manual time when it is one, else its run.
+ * Null when the entry carries neither id.
+ */
+export function buildBoardEntryHref(
+    gameRef: string,
+    entry: {
+        source?: 'run' | 'manual';
+        runId?: number | null;
+        manualTimeId?: number | null;
+    },
+): string | null {
+    if (entry.source === 'manual' && entry.manualTimeId != null) {
+        return buildManualTimeHref(gameRef, entry.manualTimeId);
+    }
+    return entry.runId != null ? buildRunHref(gameRef, entry.runId) : null;
+}
+
 /** Query param that opens the submit dialog on a board page. */
 export const SUBMIT_PARAM = 'submit';
 

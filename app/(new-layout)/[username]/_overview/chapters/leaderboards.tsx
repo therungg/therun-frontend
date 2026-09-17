@@ -4,11 +4,14 @@ import { getRunnerBoardsTop } from '~src/lib/runner-profile';
 import { safeEncodeURI } from '~src/utils/uri';
 import type { RunnerProfileHead } from '../../../../../types/runner-profile.types';
 import {
+    entryHref,
     entrySubcategoryLabel,
     formatEntryTime,
     formatProfileDate,
+    gameRefOf,
     timingLabel,
 } from '../../../leaderboards/[name]/format';
+import profileStyles from '../../../leaderboards/[name]/leaderboards-profile.module.scss';
 import { byPoints } from '../../../leaderboards/[name]/showcase-rules';
 import ui from '../../(sections)/profile-ui.module.scss';
 import { medalOf } from '../../(sections)/ranks';
@@ -56,6 +59,7 @@ export async function LeaderboardsChapter({
                     {rows.map(({ game, entry }) => {
                         const vars = entrySubcategoryLabel(entry);
                         const timing = timingLabel(entry);
+                        const href = entryHref(gameRefOf(game), entry);
                         return (
                             <div
                                 key={`${entry.kind}-${entry.runId ?? entry.manualTimeId}`}
@@ -103,7 +107,16 @@ export async function LeaderboardsChapter({
                                 <span
                                     className={`${ui.num} ${ui.strong} ${ui.end}`}
                                 >
-                                    {formatEntryTime(entry)}
+                                    {href ? (
+                                        <Link
+                                            href={href}
+                                            className={profileStyles.runLink}
+                                        >
+                                            {formatEntryTime(entry)}
+                                        </Link>
+                                    ) : (
+                                        formatEntryTime(entry)
+                                    )}
                                     {timing ? (
                                         <span
                                             className={`${ui.small} ${ui.muted}`}

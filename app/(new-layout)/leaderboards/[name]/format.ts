@@ -1,8 +1,32 @@
 import { formatSubcategoryKey } from '~app/(new-layout)/games-v2/[game]/labels';
+import { buildManualTimeHref, buildRunHref } from '~src/lib/board-url';
 import type {
     LeaderboardsProfileEntry,
+    LeaderboardsProfileGame,
     ProfileProvenance,
 } from '../../../../types/leaderboards-profile.types';
+
+/**
+ * The game ref run links carry. `gameSlug` is empty for games whose slug was
+ * never filled; the run route resolves the display name just as well.
+ */
+export const gameRefOf = (
+    game: Pick<LeaderboardsProfileGame, 'gameSlug' | 'game'>,
+) => game.gameSlug || game.game;
+
+/** The entry's own page: the run, or the manual time. Null without an id. */
+export function entryHref(
+    gameRef: string,
+    entry: Pick<LeaderboardsProfileEntry, 'kind' | 'runId' | 'manualTimeId'>,
+): string | null {
+    if (entry.kind === 'run' && entry.runId !== null) {
+        return buildRunHref(gameRef, entry.runId);
+    }
+    if (entry.kind === 'manual' && entry.manualTimeId !== null) {
+        return buildManualTimeHref(gameRef, entry.manualTimeId);
+    }
+    return null;
+}
 
 export const plural = (count: number, one: string, many: string) =>
     count === 1 ? one : many;

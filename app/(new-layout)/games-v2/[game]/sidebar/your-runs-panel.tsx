@@ -1,5 +1,6 @@
 import Link from '~src/components/link';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { buildRunHref } from '~src/lib/board-url';
 import { parseSubcategoryKey } from '~src/lib/run-view/parse-subcategory-key';
 import type { UserRanking } from '../../../../../types/leaderboards.types';
 import { VerificationBadge } from '../run-view/run-badges';
@@ -57,9 +58,7 @@ export function YourRunsPanel({ rankings, gameSlug }: Props) {
                                 />
                             </div>
                             <span className={styles.statValue}>
-                                <Link
-                                    href={`/games-v2/${encodeURIComponent(gameSlug)}/run/${r.runId}`}
-                                >
+                                <Link href={buildRunHref(gameSlug, r.runId)}>
                                     <DurationToFormatted duration={primary} />
                                 </Link>
                                 {r.rank != null && (

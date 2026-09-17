@@ -247,6 +247,16 @@ $hairline: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
     letter-spacing: -0.02em;
 }
 
+.timeLink {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+}
+
 .meta {
     font-family: var(--bs-body-font-family);
     font-size: dt.$font-size-xs;

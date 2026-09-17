@@ -4,7 +4,11 @@ import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { selfClaimTimeAction } from '~src/actions/self-claim.action';
 import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
-import { buildBoardHref, gameSegment } from '~src/lib/board-url';
+import {
+    buildBoardHref,
+    buildManualTimeHref,
+    gameSegment,
+} from '~src/lib/board-url';
 import { otherTiming, validateRunTimes } from '~src/lib/run-times';
 import type {
     ResolvedCategory,
@@ -455,7 +459,10 @@ export function SubmitRunDialog({
                                 See it on the board
                             </Link>
                             <Link
-                                href={`/games-v2/${gameSegment(game.name)}/manual/${result.manualTimeId}`}
+                                href={buildManualTimeHref(
+                                    game.name,
+                                    result.manualTimeId,
+                                )}
                                 className={styles.btnSecondary}
                             >
                                 View the run

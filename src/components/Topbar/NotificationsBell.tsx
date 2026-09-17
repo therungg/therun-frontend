@@ -7,8 +7,9 @@ import {
     readAllNotificationsAction,
     readNotificationAction,
 } from '~src/actions/notifications.action';
+import Link from '~src/components/link';
 import type { NotificationRow } from '../../../types/moderation.types';
-import { describe } from './notification-copy';
+import { describe, linkFor } from './notification-copy';
 
 export function NotificationsBell() {
     const [open, setOpen] = useState(false);
@@ -127,6 +128,7 @@ export function NotificationsBell() {
                             </li>
                         )}
                         {items.map((n) => {
+                            const href = linkFor(n);
                             const content = (
                                 <div className="d-flex gap-2">
                                     {!n.readAt && (
@@ -150,14 +152,28 @@ export function NotificationsBell() {
                                     key={n.id}
                                     className={`list-group-item small ${n.readAt ? '' : 'bg-light-subtle'}`}
                                     style={{
-                                        cursor: n.readAt
-                                            ? 'default'
-                                            : 'pointer',
+                                        cursor:
+                                            href || !n.readAt
+                                                ? 'pointer'
+                                                : 'default',
                                     }}
                                 >
-                                    <div onClick={() => handleRead(n)}>
-                                        {content}
-                                    </div>
+                                    {href ? (
+                                        <Link
+                                            href={href}
+                                            className="d-block text-reset text-decoration-none"
+                                            onClick={() => {
+                                                handleRead(n);
+                                                setOpen(false);
+                                            }}
+                                        >
+                                            {content}
+                                        </Link>
+                                    ) : (
+                                        <div onClick={() => handleRead(n)}>
+                                            {content}
+                                        </div>
+                                    )}
                                 </li>
                             );
                         })}

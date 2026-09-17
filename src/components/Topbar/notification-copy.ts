@@ -1,3 +1,4 @@
+import { buildManualTimeHref, buildRunHref } from '~src/lib/board-url';
 import type { NotificationRow } from '../../../types/moderation.types';
 
 function str(v: unknown): string | null {
@@ -93,4 +94,27 @@ export function describe(n: NotificationRow): string {
         default:
             return 'You have a new notification.';
     }
+}
+
+function positiveInt(v: unknown): number | null {
+    return typeof v === 'number' && Number.isInteger(v) && v > 0 ? v : null;
+}
+
+/**
+ * The run or manual time a notification is about, when its payload names both
+ * the game and the entry. Only run pages are linked: boards and setup stay
+ * reachable by URL only. `run_needs_video` and `run_video_waived` carry
+ * `gameSlug` + `runId`; the other types carry a `gameId` only and stay plain
+ * until the backend adds the game's name. A deleted manual time has no page.
+ */
+export function linkFor(n: NotificationRow): string | null {
+    if (n.type === 'manual_time_deleted') return null;
+    const p = (n.payload ?? {}) as Record<string, unknown>;
+    const game = str(p.gameSlug);
+    if (!game) return null;
+    const runId = positiveInt(p.runId);
+    if (runId != null) return buildRunHref(game, runId);
+    const manualTimeId = positiveInt(p.manualTimeId);
+    if (manualTimeId != null) return buildManualTimeHref(game, manualTimeId);
+    return null;
 }

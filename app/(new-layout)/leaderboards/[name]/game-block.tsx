@@ -7,7 +7,7 @@ import type {
     LeaderboardsProfileGame,
 } from '../../../../types/leaderboards-profile.types';
 import { EntryRow, RankBall } from './entry-row';
-import { formatEntryTime } from './format';
+import { entryHref, formatEntryTime, gameRefOf } from './format';
 import styles from './leaderboards-profile.module.scss';
 import { entryPoints, onBiggerBoard } from './showcase-rules';
 
@@ -76,6 +76,8 @@ export function GameBlock({
             ? Math.round(game.playtimeMs / 3_600_000)
             : 0;
     const best = bestOf(runs);
+    const gameRef = gameRefOf(game);
+    const bestHref = best ? entryHref(gameRef, best) : null;
     const bestTotal = best?.totalRunners ?? 0;
     const showRows = open && !dim && entries.length > 0;
 
@@ -134,7 +136,16 @@ export function GameBlock({
                         <span className={styles.runsBestLine}>
                             <RankBall rank={best.rank} />
                             <span className={styles.runsBestTime}>
-                                {formatEntryTime(best)}
+                                {bestHref ? (
+                                    <Link
+                                        href={bestHref}
+                                        className={styles.runLink}
+                                    >
+                                        {formatEntryTime(best)}
+                                    </Link>
+                                ) : (
+                                    formatEntryTime(best)
+                                )}
                             </span>
                         </span>
                         <span className={styles.runsBestWhat}>
@@ -173,7 +184,12 @@ export function GameBlock({
             {showRows ? (
                 <div className={styles.runsRows}>
                     {plain.map((e) => (
-                        <EntryRow key={keyOf(e)} entry={e} country={country} />
+                        <EntryRow
+                            key={keyOf(e)}
+                            entry={e}
+                            gameRef={gameRef}
+                            country={country}
+                        />
                     ))}
                     {[...levels.entries()].map(([level, list]) => (
                         <div key={level} className={styles.runsLevel}>
@@ -182,6 +198,7 @@ export function GameBlock({
                                 <EntryRow
                                     key={keyOf(e)}
                                     entry={e}
+                                    gameRef={gameRef}
                                     country={country}
                                 />
                             ))}

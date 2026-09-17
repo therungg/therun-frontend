@@ -339,6 +339,19 @@
     z-index: 2;
 }
 
+// A record or podium time opens its run, above the card's stretched link.
+.runLink {
+    position: relative;
+    z-index: 2;
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+}
+
 // ---- Top-runners table (consumed by the Stats tab's table) ---
 // Rank gutter, runner, then three numeric columns in one tabular grid —
 // a miniature board, not a data table with chrome.

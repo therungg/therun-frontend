@@ -3,7 +3,9 @@
 import { useState, useTransition } from 'react';
 import { ChevronRight } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
+import Link from '~src/components/link';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { buildRunHref } from '~src/lib/board-url';
 import type { VariableRow } from '../../../../../../../types/leaderboards.types';
 import type { WaitingOnRunners } from '../../../../../../../types/worklist.types';
 import { nudgeRunsAction, waiveVideoAction } from './actions/worklist.action';
@@ -125,7 +127,14 @@ export function WaitingOnRunnersSection({
                                     {boardLabel(w, variables)}
                                 </span>
                                 <span className={styles.time}>
-                                    <DurationToFormatted duration={w.timeMs} />
+                                    <Link
+                                        href={buildRunHref(gameSlug, w.runId)}
+                                        className={styles.timeLink}
+                                    >
+                                        <DurationToFormatted
+                                            duration={w.timeMs}
+                                        />
+                                    </Link>
                                 </span>
                             </div>
                             <div className={styles.verbs}>

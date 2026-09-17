@@ -6,7 +6,7 @@ import { useDebounceValue } from 'usehooks-ts';
 import { lookupRunnerEntriesAction } from '~src/actions/runner-entries.action';
 import Link from '~src/components/link';
 import type { SearchResults } from '~src/components/search/find-user-or-run';
-import { gameSegment } from '~src/lib/board-url';
+import { buildBoardEntryHref, buildBoardHref } from '~src/lib/board-url';
 import { formatDuration } from '~src/lib/duration';
 import { fetcher } from '~src/utils/fetcher';
 import type { RunnerGameEntry } from '../../../../../types/leaderboards.types';
@@ -25,12 +25,15 @@ interface Props {
     onChoice: (choice: RunnerChoice | null) => void;
 }
 
-/** Where a runner's existing entry lives — a run page or a manual-time page. */
+/**
+ * Where a runner's existing entry lives — a run page or a manual-time page;
+ * the board when the entry arrived without its id.
+ */
 function entryHref(gameSlug: string, entry: RunnerGameEntry): string {
-    const game = gameSegment(gameSlug);
-    return entry.source === 'run'
-        ? `/games-v2/${game}/run/${entry.runId}`
-        : `/games-v2/${game}/manual/${entry.manualTimeId}`;
+    return (
+        buildBoardEntryHref(gameSlug, entry) ??
+        buildBoardHref(gameSlug, { categorySlug: entry.categorySlug })
+    );
 }
 
 function describeEntry(entry: RunnerGameEntry): string {

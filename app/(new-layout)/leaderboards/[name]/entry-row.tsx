@@ -7,6 +7,7 @@ import {
 import Link from '~src/components/link';
 import type { LeaderboardsProfileEntry } from '../../../../types/leaderboards-profile.types';
 import {
+    entryHref,
     entrySubcategoryLabel,
     formatEntryTime,
     formatProfileDate,
@@ -116,11 +117,15 @@ export function RankBall({
 
 export function EntryRow({
     entry,
+    gameRef,
     country,
 }: {
     entry: LeaderboardsProfileEntry;
+    /** The entry's game, for the time's link to its page. Null leaves it plain. */
+    gameRef: string | null;
     country: string | null;
 }) {
+    const href = gameRef ? entryHref(gameRef, entry) : null;
     const vars = entrySubcategoryLabel(entry, ', ');
     const timing = timingLabel(entry);
     const source = sourceLabel(entry.provenance);
@@ -171,7 +176,13 @@ export function EntryRow({
                 {timing ? (
                     <span className={styles.entryTiming}>{timing}</span>
                 ) : null}
-                <span>{formatEntryTime(entry)}</span>
+                {href ? (
+                    <Link href={href} className={styles.runLink}>
+                        {formatEntryTime(entry)}
+                    </Link>
+                ) : (
+                    <span>{formatEntryTime(entry)}</span>
+                )}
             </span>
             <span className={styles.runSource}>{source}</span>
             <span

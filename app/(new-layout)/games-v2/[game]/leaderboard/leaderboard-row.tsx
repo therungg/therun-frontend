@@ -6,6 +6,7 @@ import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { RunHoverCardAnchor } from '~src/components/run/run-hover-card/run-hover-card-anchor';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { buildBoardEntryHref } from '~src/lib/board-url';
 import { formatBoardDate } from '~src/lib/format-run-date';
 import { srcRunUrl } from '~src/lib/src-links';
 import type {
@@ -140,12 +141,7 @@ export function LeaderboardRow({
               }
             : undefined;
 
-    const detailHref =
-        entry.source === 'manual' && entry.manualTimeId != null
-            ? `/games-v2/${encodeURIComponent(gameSlug)}/manual/${entry.manualTimeId}`
-            : entry.runId != null
-              ? `/games-v2/${encodeURIComponent(gameSlug)}/run/${entry.runId}`
-              : null;
+    const detailHref = buildBoardEntryHref(gameSlug, entry);
 
     // Podium color follows the tie-resolved rank (display-rank.ts), not the
     // entry's own backend rank — a runner tied for 1st is gold even where the
