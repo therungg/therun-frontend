@@ -1,33 +1,45 @@
 @use '../../../../styles/design-tokens' as dt;
 @use '../../../../styles/board' as board;
 
+// Rows and cells on this screen sit a little looser than the dense board
+// table: 10px of vertical padding per cell.
+$cell-pad-y: calc(#{dt.$spacing-sm} + 2px);
+$divider: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+
 .wrap {
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-lg;
 }
 
-// ---- From runs ----------------------------------------------
-.fromRuns {
-    @include board.board-surface(dt.$spacing-lg);
-}
-
-.fromRunsHead {
+// ---- Panel heading (shared by both panels) ------------------
+.panelHead {
     display: flex;
     align-items: baseline;
     flex-wrap: wrap;
-    gap: dt.$spacing-sm dt.$spacing-md;
-    margin-bottom: dt.$spacing-md;
+    gap: dt.$spacing-xs dt.$spacing-md;
+    min-width: 0;
 }
 
-.fromRunsTitle {
-    @include board.board-eyebrow;
+.panelTitle {
     margin: 0;
+    font-size: dt.$font-size-base;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
 }
 
-.fromRunsNote {
+.panelHint {
     font-size: dt.$font-size-xs;
     color: var(--bs-secondary-color);
+}
+
+// ---- From runs ----------------------------------------------
+.fromRuns {
+    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
+
+    .panelHead {
+        margin-bottom: dt.$spacing-md;
+    }
 }
 
 .chips {
@@ -40,62 +52,121 @@
 }
 
 .chip {
-    @include board.control-pill;
     display: inline-flex;
     align-items: center;
-    gap: dt.$spacing-xs;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-    padding: dt.$spacing-xs dt.$spacing-md;
+    gap: dt.$spacing-sm;
+    min-height: 2.125rem;
+    padding: dt.$spacing-xs dt.$spacing-sm dt.$spacing-xs dt.$spacing-md;
+    border: 1px dashed rgba(var(--bs-border-color-rgb), 0.9);
+    border-radius: 999px;
+    background: rgba(var(--bs-body-color-rgb), 0.04);
+    color: var(--bs-body-color);
+    font-size: dt.$font-size-sm;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color dt.$transition-fast,
+        border-color dt.$transition-fast;
 
     &:hover:not(:disabled) {
         border-color: rgba(var(--bs-primary-rgb), 0.7);
+        background: rgba(var(--bs-body-color-rgb), 0.08);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
     }
 
     &:disabled {
         opacity: 0.5;
+        cursor: default;
+    }
+
+    @media (pointer: coarse) {
+        min-height: 44px;
     }
 }
 
+// "Show N more": same pill, no count or add button.
+.chipMore {
+    padding-right: dt.$spacing-md;
+    color: var(--bs-secondary-color);
+
+    &:hover:not(:disabled) {
+        color: var(--bs-emphasis-color);
+    }
+}
+
+.chipName {
+    color: var(--bs-emphasis-color);
+}
+
 .chipCount {
-    @include board.mono-time;
     font-size: dt.$font-size-2xs;
-    color: var(--bs-tertiary-color);
+    font-variant-numeric: tabular-nums;
+    color: var(--bs-secondary-color);
 }
 
-.showMore {
-    @include board.board-quiet-link;
-    margin-top: dt.$spacing-sm;
-    font-size: dt.$font-size-sm;
+.chipAdd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 50%;
+    background: rgba(var(--bs-primary-rgb), 0.2);
+    color: var(--bs-primary);
+    transition: background-color dt.$transition-fast;
+
+    .chip:hover:not(:disabled) & {
+        background: rgba(var(--bs-primary-rgb), 0.32);
+    }
 }
 
-// ---- Table --------------------------------------------------
+// ---- On the board -------------------------------------------
 .panel {
-    @include board.board-surface(dt.$spacing-lg);
+    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
 }
 
 .head {
     display: flex;
     align-items: center;
-    gap: dt.$spacing-sm;
+    gap: dt.$spacing-md;
     margin-bottom: dt.$spacing-md;
 }
 
-.headTitle {
-    @include board.board-eyebrow;
-}
-
-.headCount {
-    @include board.mono-time;
-    font-size: dt.$font-size-2xs;
-    color: var(--bs-tertiary-color);
-}
-
+// Secondary tier: outlined, not the filled primary.
 .newAction {
-    @include board.board-btn-primary;
     display: inline-flex;
     align-items: center;
     gap: dt.$spacing-xs;
+    flex-shrink: 0;
     margin-left: auto;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.9);
+    border-radius: dt.$radius-md;
+    background: rgba(var(--bs-body-color-rgb), 0.05);
+    color: var(--bs-emphasis-color);
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color dt.$transition-fast,
+        border-color dt.$transition-fast;
+
+    &:hover:not(:disabled) {
+        background: rgba(var(--bs-body-color-rgb), 0.1);
+        border-color: rgba(var(--bs-primary-rgb), 0.6);
+    }
+
+    &:focus-visible {
+        outline: 0;
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.3);
+    }
+
+    @media (pointer: coarse) {
+        min-height: 44px;
+    }
 }
 
 .empty {
@@ -112,17 +183,45 @@
     @include board.board-table;
     width: 100%;
 
+    // Sentence-case, quiet column labels instead of the board eyebrow.
+    thead th {
+        font-size: dt.$font-size-xs;
+        font-weight: 600;
+        text-transform: none;
+        letter-spacing: normal;
+        color: var(--bs-secondary-color);
+        padding: dt.$spacing-sm dt.$spacing-md;
+        border-bottom: $divider;
+    }
+
     // The mixin left-aligns every header; numeric and action columns follow
     // their cells instead.
     thead th.num,
     thead th.colActions {
         text-align: right;
     }
+
+    tbody td {
+        padding: $cell-pad-y dt.$spacing-md;
+        border-bottom: $divider;
+        white-space: nowrap;
+    }
 }
 
-.groupRow th {
-    @include board.board-eyebrow;
-    padding-top: dt.$spacing-lg;
+// Group band (Main / Miscellaneous): a quiet section label on a divider.
+.groupRow {
+    th {
+        @include board.board-eyebrow;
+        padding: dt.$spacing-lg dt.$spacing-md dt.$spacing-xs;
+        color: var(--bs-tertiary-color);
+        text-align: left;
+        border-bottom: $divider;
+    }
+
+}
+
+.table .groupRow:hover {
+    background: transparent;
 }
 
 .rowDragging {
@@ -145,6 +244,8 @@
     cursor: grab;
 }
 
+// Only the grip shows at rest; the step buttons come up on row hover or when
+// focus is inside the row, so keyboard users still reach them.
 .orderBtn {
     display: inline-flex;
     align-items: center;
@@ -156,38 +257,88 @@
     border-radius: dt.$radius-md;
     background: transparent;
     color: var(--bs-secondary-color);
+    opacity: 0;
+    transition: opacity dt.$transition-fast;
+
+    tr:hover &,
+    tr:focus-within & {
+        opacity: 1;
+    }
+
+    tr:hover &:disabled,
+    tr:focus-within &:disabled {
+        opacity: 0.3;
+    }
+
+    // No hover on touch: keep them visible.
+    @media (hover: none) {
+        opacity: 1;
+
+        &:disabled {
+            opacity: 0.3;
+        }
+    }
 
     &:hover:not(:disabled) {
         background: rgba(var(--bs-primary-rgb), 0.08);
         color: var(--bs-emphasis-color);
     }
 
-    &:disabled {
-        opacity: 0.3;
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
     }
 }
 
+// Name takes the flexible width; every other column is sized to content.
 .name {
+    width: 100%;
     font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.newBadge {
+    display: inline-block;
+    margin-left: dt.$spacing-sm;
+    padding: 1px dt.$spacing-xs * 1.5;
+    border-radius: dt.$radius-sm;
+    background: rgba(var(--bs-primary-rgb), 0.16);
+    color: var(--bs-primary);
+    font-size: dt.$font-size-2xs;
+    font-weight: 600;
+    line-height: 1.4;
+    vertical-align: middle;
 }
 
 .num {
     text-align: right;
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+// Header and cells share the class; both ends of the column get it.
+.table th.num,
+.table td.num {
+    padding-left: dt.$spacing-2xl;
+}
+
+.colActivity {
+    width: 7.5rem;
+    min-width: 7.5rem;
 }
 
 .activityBar {
-    width: 4.5rem;
-    height: 3px;
-    border-radius: 2px;
-    background: rgba(var(--bs-border-color-rgb), 0.4);
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(var(--bs-body-color-rgb), 0.1);
     overflow: hidden;
 }
 
 .activityFill {
     height: 100%;
-    border-radius: 2px;
-    background: rgba(var(--bs-primary-rgb), 0.7);
+    border-radius: 3px;
+    background: var(--bs-primary);
     transition: width dt.$transition-base;
 }
 
@@ -195,6 +346,11 @@
     width: 1%;
     white-space: nowrap;
     text-align: right;
+}
+
+.table th.colActions,
+.table td.colActions {
+    padding-left: dt.$spacing-2xl;
 }
 
 .removeAction {

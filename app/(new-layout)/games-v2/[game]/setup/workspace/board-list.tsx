@@ -65,6 +65,15 @@ export function BoardList({
     const [archiving, setArchiving] = useState<ResolvedCategory | null>(null);
     const [archiveError, setArchiveError] = useState<string | null>(null);
     const [archivePending, startArchive] = useTransition();
+    // Rows put on the board during this visit, badged "new".
+    const [addedIds, setAddedIds] = useState<ReadonlySet<number>>(new Set());
+    const markAdded = (id: number, added: boolean) =>
+        setAddedIds((prev) => {
+            const next = new Set(prev);
+            if (added) next.add(id);
+            else next.delete(id);
+            return next;
+        });
 
     const patched = apply(categories);
     const boards = boardsOfKind(patched, groups, kind);
@@ -90,6 +99,7 @@ export function BoardList({
 
     const feature = (category: ResolvedCategory) => {
         patch(category.id, { isMain: true });
+        markAdded(category.id, true);
         setBusy(category.id, true);
         startWrite(async () => {
             const res = await curateCategoryAction({
@@ -103,6 +113,7 @@ export function BoardList({
             if ('error' in res) {
                 toast.error(res.error);
                 patch(category.id, { isMain: false });
+                markAdded(category.id, false);
                 return;
             }
             router.refresh();
@@ -188,6 +199,13 @@ export function BoardList({
     };
 
     const noun = kind === 'categories' ? 'category' : 'level';
+    const countLabel = `${boards.length.toLocaleString()} ${
+        boards.length === 1
+            ? noun
+            : kind === 'categories'
+              ? 'categories'
+              : 'levels'
+    }`;
 
     return (
         <div className={styles.wrap}>
@@ -201,10 +219,12 @@ export function BoardList({
 
             <div className={styles.panel}>
                 <div className={styles.head}>
-                    <span className={styles.headTitle}>
-                        {kind === 'categories' ? 'On the board' : 'Levels'}
-                    </span>
-                    <span className={styles.headCount}>{boards.length}</span>
+                    <div className={styles.panelHead}>
+                        <h3 className={styles.panelTitle}>On the board</h3>
+                        <span className={styles.panelHint}>
+                            {countLabel} · drag to reorder
+                        </span>
+                    </div>
                     <button
                         type="button"
                         className={styles.newAction}
@@ -235,7 +255,9 @@ export function BoardList({
                                             ? 'Category'
                                             : 'Level'}
                                     </th>
-                                    <th>Activity</th>
+                                    <th className={styles.colActivity}>
+                                        Activity
+                                    </th>
                                     <th className={styles.num}>Runners</th>
                                     <th className={styles.num}>
                                         Finished runs
@@ -257,7 +279,10 @@ export function BoardList({
                                     >
                                         {grouped && (
                                             <tr className={styles.groupRow}>
-                                                <th colSpan={7}>
+                                                <th
+                                                    colSpan={7}
+                                                    scope="colgroup"
+                                                >
                                                     {section.name ??
                                                         'Ungrouped'}
                                                 </th>
@@ -354,8 +379,21 @@ export function BoardList({
                                                 </td>
                                                 <td className={styles.name}>
                                                     {c.display}
+                                                    {addedIds.has(c.id) && (
+                                                        <span
+                                                            className={
+                                                                styles.newBadge
+                                                            }
+                                                        >
+                                                            new
+                                                        </span>
+                                                    )}
                                                 </td>
-                                                <td>
+                                                <td
+                                                    className={
+                                                        styles.colActivity
+                                                    }
+                                                >
                                                     <div
                                                         className={
                                                             styles.activityBar
@@ -366,14 +404,10 @@ export function BoardList({
                                                                 styles.activityFill
                                                             }
                                                             style={{
-                                                                width: `${Math.max(
-                                                                    2,
-                                                                    Math.round(
-                                                                        ((c.uniqueRunners ??
-                                                                            0) /
-                                                                            maxRunners) *
-                                                                            100,
-                                                                    ),
+                                                                width: `${activityPercent(
+                                                                    c.uniqueRunners ??
+                                                                        0,
+                                                                    maxRunners,
                                                                 )}%`,
                                                             }}
                                                         />
@@ -440,7 +474,8 @@ export function BoardList({
                 game={game}
                 metadata={metadata}
                 existingNames={categories.map((c) => c.display)}
-                onCreated={(_created, warning) => {
+                onCreated={(created, warning) => {
+                    markAdded(created.id, true);
                     if (warning) toast.warning(warning);
                     router.refresh();
                 }}
@@ -463,6 +498,12 @@ export function BoardList({
             />
         </div>
     );
+}
+
+/** Share of the busiest row; a row with no runners shows only the track. */
+function activityPercent(runners: number, maxRunners: number): number {
+    if (runners <= 0) return 0;
+    return Math.max(2, Math.round((runners / maxRunners) * 100));
 }
 
 /** Compact hours, same vocabulary as the wizard header's playtime stat. */

@@ -32,17 +32,19 @@ export function FromRunsPanel({
 
     return (
         <section className={styles.fromRuns} aria-labelledby="from-runs-title">
-            <div className={styles.fromRunsHead}>
-                <h3 id="from-runs-title" className={styles.fromRunsTitle}>
+            <div className={styles.panelHead}>
+                <h3 id="from-runs-title" className={styles.panelTitle}>
                     From runs
                 </h3>
-                <span className={styles.fromRunsNote}>
-                    Runners submit to these, but they are not on the board
+                <span className={styles.panelHint}>
+                    Names runners have submitted that aren&apos;t on the board
+                    yet
                 </span>
             </div>
             <ul className={styles.chips}>
                 {shown.map((c) => {
                     const runners = c.uniqueRunners ?? 0;
+                    const runnersLabel = `${runners.toLocaleString()} ${runners === 1 ? 'runner' : 'runners'}`;
                     return (
                         <li key={c.id}>
                             <button
@@ -50,27 +52,33 @@ export function FromRunsPanel({
                                 className={styles.chip}
                                 disabled={busyIds.has(c.id)}
                                 onClick={() => onFeature(c)}
-                                aria-label={`Add ${c.display} to the board (${runners} ${runners === 1 ? 'runner' : 'runners'})`}
+                                aria-label={`Add ${c.display} to the board (${runnersLabel})`}
                             >
-                                <span>{c.display}</span>
-                                <span className={styles.chipCount} aria-hidden>
-                                    {runners.toLocaleString()}
+                                <span className={styles.chipName}>
+                                    {c.display}
                                 </span>
-                                <Plus size={14} aria-hidden />
+                                <span className={styles.chipCount} aria-hidden>
+                                    {runnersLabel}
+                                </span>
+                                <span className={styles.chipAdd} aria-hidden>
+                                    <Plus size={14} />
+                                </span>
                             </button>
                         </li>
                     );
                 })}
+                {hidden > 0 && (
+                    <li>
+                        <button
+                            type="button"
+                            className={`${styles.chip} ${styles.chipMore}`}
+                            onClick={() => setExpanded(true)}
+                        >
+                            Show {hidden.toLocaleString()} more
+                        </button>
+                    </li>
+                )}
             </ul>
-            {hidden > 0 && (
-                <button
-                    type="button"
-                    className={styles.showMore}
-                    onClick={() => setExpanded(true)}
-                >
-                    Show {hidden.toLocaleString()} more
-                </button>
-            )}
         </section>
     );
 }
