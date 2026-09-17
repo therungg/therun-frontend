@@ -22,27 +22,6 @@ export async function ensureLevelGroup(
     });
 }
 
-export interface CreateLevelBody {
-    display: string;
-    groupId: number;
-    rules?: string | null;
-    sortOrder?: number;
-    isMain?: boolean;
-}
-
-/** A level is created like any other category — in the levels section. */
-export async function createLevel(
-    sessionId: string,
-    gameId: number,
-    body: CreateLevelBody,
-): Promise<{ id: number }> {
-    return apiFetch<{ id: number }>(`/v1/games/${gameId}/categories`, {
-        method: 'POST',
-        sessionId,
-        body: { isMain: true, ...body },
-    });
-}
-
 export interface CreateLevelTemplateBody {
     display: string;
     isMain?: boolean;
