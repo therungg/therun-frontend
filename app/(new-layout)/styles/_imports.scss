@@ -7,6 +7,7 @@
 @import "mixins";
 @import "globals";
 @import "overrides";
+@import "../games/games";
 
 // Legacy styles still used by migrated pages
 @import "~src/styles/deprecated";

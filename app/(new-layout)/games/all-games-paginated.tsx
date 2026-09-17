@@ -1,7 +1,6 @@
 'use client';
 import React from 'react';
-import { Row } from 'react-bootstrap';
-import { AllGamesCard } from '~app/(new-layout)/games/all-games-card.component';
+import { GameTile } from '~app/(new-layout)/games/game-tile.component';
 import { Game, PaginatedGameResult } from '~app/(new-layout)/games/games.types';
 import { gamesFetcher } from '~src/components/pagination/fetchers/games-fetcher';
 import PaginationControl from '~src/components/pagination/pagination-control';
@@ -24,18 +23,18 @@ export const AllGamesPaginated: React.FunctionComponent<GamesProps> = ({
         <div>
             <Title>Games</Title>
 
-            <Row className="gy-3 mb-3">
-                <div>
-                    <PaginationSearch text="Filter by game/category/user" />
-                </div>
-                {isLoading && <SkeletonGamesList />}
-                {!isLoading &&
-                    data &&
-                    data.map((game) => (
-                        <AllGamesCard key={game.game} game={game} />
+            <div>
+                <PaginationSearch text="Filter by game/category/user" />
+            </div>
+            {isLoading && <SkeletonGamesList />}
+            {!isLoading && data && (
+                <div className="games-grid">
+                    {data.map((game) => (
+                        <GameTile key={game.game} game={game} sort="trending" />
                     ))}
-                <PaginationControl {...pagination} />
-            </Row>
+                </div>
+            )}
+            <PaginationControl {...pagination} />
         </div>
     );
 };

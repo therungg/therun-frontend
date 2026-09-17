@@ -1,0 +1,111 @@
+@use '../styles/design-tokens' as dt;
+
+.games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+    gap: dt.$spacing-lg dt.$spacing-md;
+}
+
+.game-tile {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+
+    &:hover .game-tile-art {
+        transform: translateY(-2px);
+        box-shadow: dt.$shadow-md;
+        border-color: rgba(var(--bs-primary-rgb), 0.4);
+    }
+
+    &:hover .game-tile-peek { opacity: 1; }
+    &:hover .game-tile-name { color: var(--bs-primary); }
+}
+
+.game-tile-art {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    border-radius: 0.6rem;
+    overflow: hidden;
+    background: var(--bs-secondary-bg);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.12);
+    box-shadow: dt.$shadow-sm;
+    transition: transform dt.$transition-base, box-shadow dt.$transition-base,
+        border-color dt.$transition-base;
+    display: grid;
+    place-items: center;
+
+    img { width: 100%; height: 100%; object-fit: cover; }
+}
+
+.game-tile-rank {
+    position: absolute;
+    top: 0.35rem;
+    left: 0.35rem;
+    z-index: 2;
+    font-family: dt.$font-mono;
+    font-size: dt.$font-size-2xs;
+    font-weight: 600;
+    padding: 0.1rem 0.35rem;
+    border-radius: 0.3rem;
+    background: rgba(0, 0, 0, 0.6);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.game-tile-peek {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: rgba(0, 0, 0, 0.88);
+    opacity: 0;
+    transition: opacity dt.$transition-fast;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0.5rem;
+}
+
+.game-tile-peek-row { margin-bottom: 0.18rem; }
+
+.game-tile-peek-cat {
+    display: flex;
+    align-items: baseline;
+    gap: 0.3rem;
+    font-size: dt.$font-size-2xs;
+    line-height: 1.35;
+    color: rgba(255, 255, 255, 0.72);
+
+    .nm { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tm { font-family: dt.$font-mono; color: #fff; font-weight: 600; }
+}
+
+.game-tile-peek-who {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-primary);
+}
+
+.game-tile-meta { padding: 0.45rem 0.1rem 0; }
+
+.game-tile-name {
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    line-height: 1.25;
+    margin-bottom: 0.1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.game-tile-stat {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+
+    .n { font-family: dt.$font-mono; color: var(--bs-body-color); font-weight: 600; }
+}
+
+// Touch devices have no hover, so the peek would be unreachable. Show the
+// categories only on pointer devices and let the tile stand on art + name.
+@media (hover: none) {
+    .game-tile-peek { display: none; }
+}
