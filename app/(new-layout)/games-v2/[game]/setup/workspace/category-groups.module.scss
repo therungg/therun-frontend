@@ -1,0 +1,171 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/board' as board;
+
+.wrap {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-lg;
+}
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+}
+
+.newAction {
+    @include board.board-btn-primary;
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    margin-left: auto;
+}
+
+.note {
+    margin: 0;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.warn {
+    margin: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-warning-text-emphasis);
+}
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+    gap: dt.$spacing-lg;
+    align-items: start;
+}
+
+.column {
+    @include board.board-surface(dt.$spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+    min-height: 8rem;
+}
+
+.columnUngrouped {
+    border-style: dashed;
+}
+
+.columnHead {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+}
+
+.columnName {
+    @include board.board-eyebrow;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.columnCount {
+    @include board.mono-time;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+}
+
+.headActions {
+    display: inline-flex;
+    gap: 2px;
+    margin-left: auto;
+}
+
+.columnSettings {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    padding-bottom: dt.$spacing-md;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+}
+
+.columnEmpty {
+    margin: 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+}
+
+.cards {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.card {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-md;
+    background: var(--bs-body-bg);
+    cursor: grab;
+}
+
+.cardDragging {
+    opacity: 0.5;
+}
+
+.grip {
+    color: var(--bs-tertiary-color);
+    flex-shrink: 0;
+}
+
+.cardName {
+    flex: 1;
+    min-width: 0;
+    font-size: dt.$font-size-sm;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.nudge {
+    display: inline-flex;
+    gap: 2px;
+}
+
+.iconBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    border: 0;
+    border-radius: dt.$radius-md;
+    background: transparent;
+    color: var(--bs-secondary-color);
+
+    &:hover:not(:disabled) {
+        background: rgba(var(--bs-primary-rgb), 0.08);
+        color: var(--bs-emphasis-color);
+    }
+
+    &:disabled {
+        opacity: 0.3;
+    }
+}
+
+.deleteBtn:hover:not(:disabled) {
+    color: dt.$accent-red;
+}
+
+.cardSelect {
+    max-width: 7rem;
+    font-size: dt.$font-size-xs;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-md;
+    background: transparent;
+    color: var(--bs-secondary-color);
+}
