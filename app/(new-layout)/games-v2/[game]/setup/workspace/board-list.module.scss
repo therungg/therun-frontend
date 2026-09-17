@@ -1,0 +1,200 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/board' as board;
+
+.wrap {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-lg;
+}
+
+// ---- From runs ----------------------------------------------
+.fromRuns {
+    @include board.board-surface(dt.$spacing-lg);
+}
+
+.fromRunsHead {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm dt.$spacing-md;
+    margin-bottom: dt.$spacing-md;
+}
+
+.fromRunsTitle {
+    @include board.board-eyebrow;
+    margin: 0;
+}
+
+.fromRunsNote {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.chip {
+    @include board.control-pill;
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    padding: dt.$spacing-xs dt.$spacing-md;
+
+    &:hover:not(:disabled) {
+        border-color: rgba(var(--bs-primary-rgb), 0.7);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+    }
+}
+
+.chipCount {
+    @include board.mono-time;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+}
+
+.showMore {
+    @include board.board-quiet-link;
+    margin-top: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+}
+
+// ---- Table --------------------------------------------------
+.panel {
+    @include board.board-surface(dt.$spacing-lg);
+}
+
+.head {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin-bottom: dt.$spacing-md;
+}
+
+.headTitle {
+    @include board.board-eyebrow;
+}
+
+.headCount {
+    @include board.mono-time;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+}
+
+.newAction {
+    @include board.board-btn-primary;
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    margin-left: auto;
+}
+
+.empty {
+    margin: 0;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.scroller {
+    overflow-x: auto;
+}
+
+.table {
+    @include board.board-table;
+    width: 100%;
+}
+
+.groupRow th {
+    @include board.board-eyebrow;
+    padding-top: dt.$spacing-lg;
+}
+
+.rowDragging {
+    opacity: 0.5;
+}
+
+.colOrder {
+    width: 4.5rem;
+}
+
+.order {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.grip {
+    display: inline-flex;
+    color: var(--bs-tertiary-color);
+    cursor: grab;
+}
+
+.orderBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: 0;
+    border: 0;
+    border-radius: dt.$radius-md;
+    background: transparent;
+    color: var(--bs-secondary-color);
+
+    &:hover:not(:disabled) {
+        background: rgba(var(--bs-primary-rgb), 0.08);
+        color: var(--bs-emphasis-color);
+    }
+
+    &:disabled {
+        opacity: 0.3;
+    }
+}
+
+.name {
+    font-weight: 600;
+}
+
+.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.activityBar {
+    width: 4.5rem;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(var(--bs-border-color-rgb), 0.4);
+    overflow: hidden;
+}
+
+.activityFill {
+    height: 100%;
+    border-radius: 2px;
+    background: rgba(var(--bs-primary-rgb), 0.7);
+    transition: width dt.$transition-base;
+}
+
+.colActions {
+    width: 1%;
+    white-space: nowrap;
+    text-align: right;
+}
+
+.removeAction {
+    @include board.board-quiet-link;
+    font-size: dt.$font-size-sm;
+
+    &:hover:not(:disabled) {
+        color: dt.$accent-red;
+    }
+}
