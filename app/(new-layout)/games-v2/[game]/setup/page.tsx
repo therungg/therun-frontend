@@ -6,15 +6,11 @@ import { getGameIdentifiers, getGameMetadata } from '~src/lib/game-mgmt';
 import { listGameModerators } from '~src/lib/game-moderators';
 import { getQuickStats, resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { listCategoryVariables } from '~src/lib/leaderboard-variables';
-import { splitLevelBoards } from '~src/lib/levels/display';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { listPolicies } from '~src/lib/moderation/policies';
 import { getVerificationSettings } from '~src/lib/moderation/verification-settings';
-import {
-    categoryFactsFromResolved,
-    computeCompleteness,
-    variableFactsFromRows,
-} from '~src/lib/setup/completeness';
+import { computeCompleteness } from '~src/lib/setup/completeness';
+import { buildCompletenessInput } from '~src/lib/setup/completeness-input';
 import {
     firstLocationOf,
     resolveSetupLocation,
@@ -105,48 +101,20 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         catData.categories.map((c) => c.id),
     );
 
-    // Full-game categories only: level boards are counted by the Levels step,
-    // and the category screens never show them.
-    const fullGame = splitLevelBoards(
-        catData.categories,
-        catData.groups,
-    ).fullGame;
-    const fullGameIds = new Set(fullGame.map((c) => c.id));
-
-    const completeness = computeCompleteness({
-        categories: categoryFactsFromResolved(fullGame),
-        policyCount: policies.length,
-        requireVideoAnywhere: catData.categories.some(
-            (c) => !c.archived && c.requireVideo,
-        ),
-        slug: identifiers.slug,
-        moderatorCount: moderators.length,
-        configured: metadata.configured,
-        hasTheme: metadata.theme != null,
-        // Category groups only — the level group (one kind:'level' group
-        // holding every level board) belongs to the Levels step, not the
-        // category-grouping structure.
-        groupCount: catData.groups.filter((g) => g.kind !== 'level').length,
-        // A level is a category in that group, so count the boards, not the
-        // group.
-        levelCount: splitLevelBoards(
-            catData.categories.filter((c) => !c.archived),
-            catData.groups,
-        ).levelBoards.length,
-        ungroupedMainCount: catData.categories.filter(
-            (c) => !c.archived && (c.isMain ?? false) && c.groupId == null,
-        ).length,
-        verificationConfigured,
-        // Full-game variables only; a level's variables belong to Levels.
-        ...variableFactsFromRows(
-            variables.filter((v) => fullGameIds.has(v.categoryId)),
-        ),
-        srcImport: {
-            linked: settingsJob !== null,
-            configAppliedAt: settingsJob?.configAppliedAt ?? null,
-            srcGameName: settingsJob?.srcGameName ?? null,
-        },
-    });
+    const completeness = computeCompleteness(
+        buildCompletenessInput({
+            categories: catData.categories,
+            groups: catData.groups,
+            variables,
+            policyCount: policies.length,
+            slug: identifiers.slug,
+            moderatorCount: moderators.length,
+            configured: metadata.configured,
+            hasTheme: metadata.theme != null,
+            verificationConfigured,
+            settingsJob,
+        }),
+    );
 
     const data: WizardData = {
         // The board-wide Pills / Dropdown default rides pageData, not the

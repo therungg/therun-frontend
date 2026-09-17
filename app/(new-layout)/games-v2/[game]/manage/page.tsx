@@ -27,10 +27,9 @@ import { getVerificationSettings } from '~src/lib/moderation/verification-settin
 import { getWorklist, getWorklistDigest } from '~src/lib/moderation/worklist';
 import {
     type BoardCompleteness,
-    categoryFactsFromResolved,
     computeCompleteness,
-    variableFactsFromRows,
 } from '~src/lib/setup/completeness';
+import { buildCompletenessInput } from '~src/lib/setup/completeness-input';
 import { type BoardHealth, computeBoardHealth } from '~src/lib/setup/health';
 import { getSrcImportJob } from '~src/lib/src-import';
 import { defineAbilityFor } from '~src/rbac/ability';
@@ -236,28 +235,20 @@ export default async function GameAdminConsolePage({ params }: Props) {
         moderators = gameMods;
         categoryConfig = buildCategoryRows({ categories, policies, variables });
         if (metadata) {
-            setupCompleteness = computeCompleteness({
-                categories: categoryFactsFromResolved(categories),
-                policyCount: policies.length,
-                requireVideoAnywhere: categories.some(
-                    (c) => !c.archived && c.requireVideo,
-                ),
-                slug: identifiers.slug,
-                moderatorCount: moderators.length,
-                configured: metadata.configured,
-                hasTheme: metadata.theme != null,
-                // Category groups only — each individual level is its own
-                // kind:'level' group, but those are the "Levels" step, not
-                // the category-grouping structure, so they must not inflate
-                // the group count or trip the ungrouped-orphan blocker.
-                groupCount: groups.filter((g) => g.kind !== 'level').length,
-                ungroupedMainCount: categories.filter(
-                    (c) =>
-                        !c.archived && (c.isMain ?? false) && c.groupId == null,
-                ).length,
-                verificationConfigured,
-                ...variableFactsFromRows(variables),
-            });
+            setupCompleteness = computeCompleteness(
+                buildCompletenessInput({
+                    categories,
+                    groups: boardGroups,
+                    variables,
+                    policyCount: policies.length,
+                    slug: identifiers.slug,
+                    moderatorCount: moderators.length,
+                    configured: metadata.configured,
+                    hasTheme: metadata.theme != null,
+                    verificationConfigured,
+                    settingsJob,
+                }),
+            );
             boardHealth = computeBoardHealth({
                 completeness: setupCompleteness,
             });
