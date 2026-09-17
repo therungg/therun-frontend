@@ -26,7 +26,7 @@ export function RunHero({
     boardHref: string;
     isTombstone: boolean;
     sessionUsername: string | null;
-    /** Date / clocks / video line, rendered under the runner. */
+    /** Date / clocks / video, the panel's bottom row. */
     meta?: React.ReactNode;
 }) {
     const primaryTime = model.realTime ?? model.gameTime;
@@ -59,101 +59,128 @@ export function RunHero({
 
     return (
         <header className={styles.hero}>
-            <nav aria-label="Breadcrumb" className={styles.crumb}>
-                <Link href={gameHref} className={styles.crumbGame}>
-                    {model.game.image && (
-                        // eslint-disable-next-line @next/next/no-img-element
+            <div className={styles.heroTop}>
+                {model.game.image && (
+                    <Link
+                        href={gameHref}
+                        className={styles.heroCover}
+                        aria-hidden
+                        tabIndex={-1}
+                    >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                             src={model.game.image}
-                            width={36}
-                            height={48}
+                            width={72}
+                            height={96}
                             alt=""
                         />
-                    )}
-                    <span>{model.game.display}</span>
-                </Link>
-                <span className={styles.crumbSep}>·</span>
-                <Link href={boardHref}>{model.categoryDisplay}</Link>
-                {subcategoryLabel && (
-                    <>
+                    </Link>
+                )}
+                <div className={styles.heroBody}>
+                    <nav aria-label="Breadcrumb" className={styles.crumb}>
+                        <Link href={gameHref} className={styles.crumbGame}>
+                            {model.game.display}
+                        </Link>
                         <span className={styles.crumbSep}>·</span>
-                        <Link href={boardHref}>{subcategoryLabel}</Link>
-                    </>
-                )}
-                {variablePills.map(([name, value]) => (
-                    <span key={name} className={styles.varPill}>
-                        {value}
-                    </span>
-                ))}
-            </nav>
+                        <Link href={boardHref}>{model.categoryDisplay}</Link>
+                        {subcategoryLabel && (
+                            <>
+                                <span className={styles.crumbSep}>·</span>
+                                <Link href={boardHref}>{subcategoryLabel}</Link>
+                            </>
+                        )}
+                        {variablePills.map(([name, value]) => (
+                            <span key={name} className={styles.varPill}>
+                                {value}
+                            </span>
+                        ))}
+                    </nav>
 
-            {ctx && isRecord && (
-                <div className={styles.record}>
-                    <Link href={boardHref} className={styles.recordChip}>
-                        World record
-                    </Link>
-                    {lead != null && lead > 0 && (
-                        <span className={styles.recordLead}>
-                            <strong>{formatDelta(lead)}</strong> ahead of #
-                            {second?.rank}
+                    {ctx && isRecord && (
+                        <div className={styles.record}>
+                            <Link
+                                href={boardHref}
+                                className={styles.recordChip}
+                            >
+                                World record
+                            </Link>
+                            {lead != null && lead > 0 && (
+                                <span className={styles.recordLead}>
+                                    <strong>{formatDelta(lead)}</strong> ahead
+                                    of #{second?.rank}
+                                </span>
+                            )}
+                        </div>
+                    )}
+
+                    <div className={styles.timeRow}>
+                        <h1
+                            className={`${styles.time} ${isRecord ? styles.timeGold : ''}`}
+                        >
+                            {primaryTime != null ? (
+                                <DurationToFormatted
+                                    duration={primaryTime}
+                                    withMillis
+                                />
+                            ) : (
+                                '—'
+                            )}
+                        </h1>
+                        {ctx && !isRecord && (
+                            <Link href={boardHref} className={styles.rank}>
+                                <strong className={podiumClass}>
+                                    #{ctx.rank}
+                                </strong>{' '}
+                                of {ctx.totalRunners.toLocaleString()}
+                            </Link>
+                        )}
+                        {isTombstone && (
+                            <span className={styles.notRanked}>Not ranked</span>
+                        )}
+                        <span className={styles.badges}>
+                            <VerificationBadge
+                                status={model.verificationStatus}
+                            />
+                            <AutoVerifiedBadge
+                                verifiedVia={model.verifiedVia}
+                            />
                         </span>
-                    )}
-                </div>
-            )}
+                    </div>
 
-            <div className={styles.timeRow}>
-                <h1
-                    className={`${styles.time} ${isRecord ? styles.timeGold : ''}`}
-                >
-                    {primaryTime != null ? (
-                        <DurationToFormatted
-                            duration={primaryTime}
-                            withMillis
+                    <div className={styles.runner}>
+                        <RunnerAvatar
+                            name={model.runnerName}
+                            picture={model.picture}
+                            size="md"
                         />
-                    ) : (
-                        '—'
-                    )}
-                </h1>
-                {ctx && !isRecord && (
-                    <Link href={boardHref} className={styles.rank}>
-                        <strong className={podiumClass}>#{ctx.rank}</strong> of{' '}
-                        {ctx.totalRunners.toLocaleString()}
+                        <span className={styles.runnerName}>
+                            {model.isGuest || model.userId == null ? (
+                                model.runnerName
+                            ) : (
+                                <UserLink
+                                    username={model.runnerName}
+                                    to="leaderboards"
+                                />
+                            )}
+                        </span>
+                        <CountryFlag country={model.country} />
+                        <div className={styles.heroActions}>
+                            <RunActions
+                                model={model}
+                                sessionUsername={sessionUsername}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div className={styles.heroFacts}>
+                {ctx && isRecord && (
+                    <Link href={boardHref} className={styles.heroFact}>
+                        <b>#1</b> of {ctx.totalRunners.toLocaleString()}
                     </Link>
                 )}
-                {isTombstone && (
-                    <span className={styles.notRanked}>Not ranked</span>
-                )}
-                <span className={styles.badges}>
-                    <VerificationBadge status={model.verificationStatus} />
-                    <AutoVerifiedBadge verifiedVia={model.verifiedVia} />
-                </span>
+                {meta}
             </div>
-
-            <div className={styles.runner}>
-                <RunnerAvatar
-                    name={model.runnerName}
-                    picture={model.picture}
-                    size="md"
-                />
-                <span className={styles.runnerName}>
-                    {model.isGuest || model.userId == null ? (
-                        model.runnerName
-                    ) : (
-                        <UserLink
-                            username={model.runnerName}
-                            to="leaderboards"
-                        />
-                    )}
-                </span>
-                <CountryFlag country={model.country} />
-                <div className={styles.heroActions}>
-                    <RunActions
-                        model={model}
-                        sessionUsername={sessionUsername}
-                    />
-                </div>
-            </div>
-            {meta}
         </header>
     );
 }

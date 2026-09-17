@@ -16,10 +16,93 @@
 
 // --- hero --------------------------------------------------------------
 
+// Same panel shape as the runner profile's header: cover and identity on
+// top, a divider, then the run's headline facts along the bottom.
 .hero {
+    @include board.board-surface(dt.$spacing-xl);
     display: flex;
     flex-direction: column;
-    gap: dt.$spacing-md;
+    gap: dt.$spacing-lg;
+    min-width: 0;
+
+    @media (max-width: 575.98px) {
+        padding: dt.$spacing-lg;
+    }
+}
+
+.heroTop {
+    display: flex;
+    align-items: flex-start;
+    gap: dt.$spacing-xl;
+    min-width: 0;
+
+    @media (max-width: 575.98px) {
+        gap: dt.$spacing-md;
+    }
+}
+
+.heroCover {
+    flex: none;
+    display: inline-flex;
+
+    img {
+        width: 72px;
+        height: 96px;
+        border-radius: dt.$radius-md;
+        object-fit: cover;
+
+        @media (max-width: 575.98px) {
+            width: 48px;
+            height: 64px;
+        }
+    }
+}
+
+.heroBody {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    min-width: 0;
+}
+
+.heroFacts {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm dt.$spacing-2xl;
+    padding-top: dt.$spacing-lg;
+    border-top: 1px solid
+        var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-md;
+
+    &:empty {
+        display: none;
+    }
+
+    @media (max-width: 575.98px) {
+        column-gap: dt.$spacing-lg;
+        font-size: dt.$font-size-sm;
+    }
+}
+
+.heroFact {
+    color: var(--bs-secondary-color);
+    text-decoration: none;
+    white-space: nowrap;
+
+    b {
+        font-family: dt.$font-mono;
+        font-variant-numeric: tabular-nums;
+        font-size: dt.$font-size-xl;
+        font-weight: 700;
+        color: dt.$accent-gold;
+    }
+
+    &:hover b {
+        text-decoration: underline;
+    }
 }
 
 .crumb {
@@ -41,15 +124,7 @@
 }
 
 .crumbGame {
-    display: inline-flex;
-    align-items: center;
-    gap: dt.$spacing-sm;
     font-weight: 600;
-
-    img {
-        border-radius: 4px;
-        object-fit: cover;
-    }
 }
 
 .crumbSep {
@@ -69,7 +144,6 @@
     flex-wrap: wrap;
     align-items: center;
     gap: dt.$spacing-xs dt.$spacing-md;
-    margin-top: dt.$spacing-xs;
 }
 
 .recordChip {
@@ -116,12 +190,13 @@
 .time {
     margin: 0;
     font-family: dt.$font-mono;
-    font-size: clamp(2.25rem, 9vw, 4.25rem);
+    font-size: clamp(1.875rem, 8vw, 4rem);
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.02em;
     line-height: 1;
     color: var(--bs-emphasis-color);
+    overflow-wrap: anywhere;
 }
 
 .timeGold {
@@ -208,25 +283,13 @@
     border-color: rgba(dt.$accent-red, 0.4);
 }
 
-// --- meta line (date, clocks, video) ---------------------------------------
-
-.meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: dt.$spacing-xs dt.$spacing-lg;
-    color: var(--bs-secondary-color);
-    font-size: dt.$font-size-sm;
-
-    &:empty {
-        display: none;
-    }
-}
+// --- hero facts (date, clocks, video) --------------------------------------
 
 .metaItem {
     display: inline-flex;
     align-items: baseline;
-    gap: dt.$spacing-xs;
+    gap: dt.$spacing-sm;
+    color: var(--bs-body-color);
     white-space: nowrap;
 }
 
@@ -238,7 +301,9 @@
 .metaTime {
     font-family: dt.$font-mono;
     font-variant-numeric: tabular-nums;
-    color: var(--bs-body-color);
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+    color: var(--bs-emphasis-color);
 }
 
 .metaLink {

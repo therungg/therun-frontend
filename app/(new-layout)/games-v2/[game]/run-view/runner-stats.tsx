@@ -9,7 +9,7 @@ import { formatDelta } from './run-format';
 import styles from './run-page.module.scss';
 import type { RunViewModel } from './run-view';
 
-/** Date, both clocks when there are two, and the video state — under the hero. */
+/** Date, both clocks when there are two, and the video state: the hero's bottom row. */
 export function RunMetaLine({
     model,
     sessionUsername,
@@ -26,7 +26,7 @@ export function RunMetaLine({
     const bothClocks = model.realTime != null && model.gameTime != null;
 
     return (
-        <div className={styles.meta}>
+        <>
             {model.runDate && (
                 <span className={styles.metaItem}>
                     {formatBoardDate(model.runDate)}
@@ -85,7 +85,7 @@ export function RunMetaLine({
                     label="Edit video"
                 />
             )}
-        </div>
+        </>
     );
 }
 
