@@ -42,6 +42,7 @@ const baseModel = (over: Partial<RunViewModel> = {}): RunViewModel => ({
     runnerName: 'Joey',
     userId: 7,
     isGuest: false,
+    country: null,
     realTime: 90_000,
     gameTime: null,
     gameTimeLabel: 'igt',
@@ -54,9 +55,15 @@ const baseModel = (over: Partial<RunViewModel> = {}): RunViewModel => ({
     origin: null,
     verifiedBy: null,
     rejectionReason: null,
-    boardStanding: null,
     verifiedVia: null,
     autoVerifyResult: null,
+    verifiedAt: null,
+    categorySlug: null,
+    boardContext: null,
+    timerStats: null,
+    splits: [],
+    vodReview: null,
+    runnerEntries: [],
     ...over,
 });
 
@@ -131,15 +138,18 @@ describe('RunEvidencePanel', () => {
         expect(screen.queryByText(/add a link/i)).not.toBeInTheDocument();
     });
 
-    it('a mod (not owner) can edit the vod when a board standing is known, never the description', () => {
+    it('a mod (not owner) can edit the vod when board context is known, never the description', () => {
         render(
             <RunEvidencePanel
                 model={baseModel({
-                    boardStanding: {
-                        categorySlug: 'any',
-                        subcategoryKey: '',
+                    categorySlug: 'any',
+                    boardContext: {
+                        view: { timing: 'rt', verifiedOnly: false },
                         rank: 3,
                         totalRunners: 10,
+                        wr: null,
+                        above: [],
+                        below: [],
                     },
                 })}
                 sessionUsername="SomeMod"
@@ -153,10 +163,10 @@ describe('RunEvidencePanel', () => {
         ).not.toBeInTheDocument();
     });
 
-    it('a mod (not owner) with no board standing on a run cannot edit the vod either', () => {
+    it('a mod (not owner) with no board context on a run cannot edit the vod either', () => {
         render(
             <RunEvidencePanel
-                model={baseModel({ boardStanding: null })}
+                model={baseModel({ categorySlug: null, boardContext: null })}
                 sessionUsername="SomeMod"
                 isMod
             />,

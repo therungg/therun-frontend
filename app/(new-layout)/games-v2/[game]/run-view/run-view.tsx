@@ -10,9 +10,14 @@ import {
 } from '~src/lib/board-url';
 import { formatRunDate } from '~src/lib/format-run-date';
 import type {
+    BoardContext,
     ResolvedGame,
+    RunnerGameEntry,
     RunOrigin,
     RunOriginRef,
+    RunSplit,
+    RunTimerStats,
+    VodReview,
 } from '../../../../../types/leaderboards.types';
 import type {
     AutoVerifyResult,
@@ -35,19 +40,6 @@ import { RunEvidencePanel } from './run-evidence-panel';
 import { RunHistoryList } from './run-history-list';
 import styles from './run-view.module.scss';
 
-// This run's position on its live board — only ever populated for the
-// `run` kind (run/[runId]/page.tsx matches getUserRankingsByName against
-// this runId). A miss (the run isn't the runner's current board entry —
-// superseded by a later PB, filtered out, etc.) means `null`: the rank
-// line is omitted, but the breadcrumb still links to the plain game/board
-// URL (see RunView below).
-export interface RunBoardStanding {
-    categorySlug: string;
-    subcategoryKey: string;
-    rank: number;
-    totalRunners: number;
-}
-
 export interface RunViewModel {
     kind: 'run' | 'manual';
     id: number; // runId or manualTimeId
@@ -65,6 +57,8 @@ export interface RunViewModel {
     runnerName: string;
     userId: number | null;
     isGuest: boolean;
+    /** Runner's country; null for guests and hidden runners. */
+    country: string | null;
     realTime: number | null;
     gameTime: number | null;
     /** What this run's board calls its game-time clock. Display only. */
@@ -80,7 +74,6 @@ export interface RunViewModel {
     origin: RunOrigin | null;
     verifiedBy: RunOriginRef | null;
     rejectionReason: string | null;
-    boardStanding: RunBoardStanding | null;
     /** Who produced the run's current verdict; null covers everything that
      * isn't the auto-verify checks (see docs/frontend-guide-auto-verify.md
      * §3) — not evidence a human reviewed it. */
@@ -88,6 +81,23 @@ export interface RunViewModel {
     /** Per-check auto-verify result; set whenever the checks actually ran
      * (pass or fail), null otherwise. Mod-only display. */
     autoVerifyResult: AutoVerifyResult | null;
+    /** Verification timestamp; null when unverified or on the manual-time
+     * page (ManualTimeDetail carries no verifiedAt of its own). */
+    verifiedAt: string | null;
+    /** Category slug for scoped board links; null when the category can't
+     * be resolved. */
+    categorySlug: string | null;
+    /** Null when rejected, superseded or unranked. */
+    boardContext: BoardContext | null;
+    /** The runner's timer stats for this category; null for imported runs,
+     * set times, guest runs and redacted runs. */
+    timerStats: RunTimerStats | null;
+    /** PB splits; `[]` unless this run is the timer PB. */
+    splits: RunSplit[];
+    vodReview: VodReview | null;
+    /** The runner's current entries in this game (runner card, superseded
+     * note). */
+    runnerEntries: RunnerGameEntry[];
 }
 
 export function RunView({
@@ -127,36 +137,35 @@ export function RunView({
           ) ?? null)
         : null;
     const subcategoryLabel = formatSubcategoryKey(model.subcategoryKey);
-    const standing = model.boardStanding;
-    const isTopOfBoard = standing?.rank === 1;
+    const boardContext = model.boardContext;
+    const isTopOfBoard = boardContext?.rank === 1;
 
-    // Breadcrumb + rank deep link: a matched standing carries a real
-    // category slug, so the board pills/rank line point at that exact
-    // slice; no match falls back to the plain game URL (RunDetail has no
-    // categorySlug of its own to build a scoped link from — see round-1
-    // handoff).
+    // Breadcrumb + rank deep link: a resolved category slug points the
+    // board pills/rank line at that exact slice; no resolution falls back
+    // to the plain game URL.
     const gameHref = buildBoardHref(model.game.name);
-    const boardHref = standing
+    const boardHref = model.categorySlug
         ? buildBoardHref(model.game.name, {
-              categorySlug: standing.categorySlug,
-              subcategoryKey: standing.subcategoryKey,
+              categorySlug: model.categorySlug,
+              subcategoryKey: model.subcategoryKey,
           })
         : gameHref;
-    const rankHref = standing
-        ? buildBoardHref(model.game.name, {
-              categorySlug: standing.categorySlug,
-              subcategoryKey: standing.subcategoryKey,
-              page: rankToPage(standing.rank),
-          })
-        : null;
+    const rankHref =
+        model.categorySlug && boardContext
+            ? buildBoardHref(model.game.name, {
+                  categorySlug: model.categorySlug,
+                  subcategoryKey: model.subcategoryKey,
+                  page: rankToPage(boardContext.rank),
+              })
+            : null;
     // "Correct this time" target — opens the submit dialog carrying the
-    // matched standing's category context when there is one (only the `run`
-    // kind ever has a standing; manual claims never do — see requirement 5's
-    // backend handoff, W6). Submitting and claiming are one flow now, so
-    // there is no longer a mode to ask for.
+    // resolved category context when there is one (only the `run` kind ever
+    // resolves one; manual claims never do — see requirement 5's backend
+    // handoff, W6). Submitting and claiming are one flow now, so there is no
+    // longer a mode to ask for.
     const claimHref = buildSubmitHref(model.game.name, {
-        categorySlug: standing?.categorySlug,
-        subcategoryKey: standing?.subcategoryKey,
+        categorySlug: model.categorySlug ?? undefined,
+        subcategoryKey: model.categorySlug ? model.subcategoryKey : undefined,
     });
 
     const eyebrowText = `${model.game.display} · ${model.categoryDisplay}${
@@ -241,9 +250,7 @@ export function RunView({
                                     to="leaderboards"
                                 />
                             )}
-                            {/* RunDetail/ManualTimeDetail carry no country — unlike
-                            LeaderboardEntry, this join isn't available here yet. */}
-                            <CountryFlag country={null} />
+                            <CountryFlag country={model.country} />
                             {model.verifiedBy && (
                                 <span className={styles.verifiedByNote}>
                                     verified by {model.verifiedBy.name}
@@ -260,10 +267,11 @@ export function RunView({
                                 </Link>
                             )}
                         </div>
-                        {standing && rankHref && (
+                        {boardContext && rankHref && (
                             <Link href={rankHref} className={styles.rankLine}>
                                 <strong>
-                                    #{standing.rank} of {standing.totalRunners}
+                                    #{boardContext.rank} of{' '}
+                                    {boardContext.totalRunners}
                                 </strong>{' '}
                                 on this board
                             </Link>

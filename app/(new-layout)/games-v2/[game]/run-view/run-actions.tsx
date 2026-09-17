@@ -152,14 +152,13 @@ export function RunActions({
         isLeaderboardEntry: true,
         isLeaderboardEntryGt: true,
     };
-    // RunViewModel carries no category slug of its own (only
-    // categoryDisplay), but a matched board standing (requirement 1's
-    // getUserRankingsByName lookup, `run` kind only) does — use it when
-    // present rather than guessing at the category from display text;
-    // falls back to the game's default board otherwise.
+    // RunViewModel's resolved categorySlug (`run` kind only) links straight
+    // to the run's own category/subcategory rather than guessing at the
+    // category from display text; falls back to the game's default board
+    // otherwise.
     const correctHref = buildSubmitHref(model.game.name, {
-        categorySlug: model.boardStanding?.categorySlug,
-        subcategoryKey: model.boardStanding?.subcategoryKey,
+        categorySlug: model.categorySlug ?? undefined,
+        subcategoryKey: model.subcategoryKey,
     });
 
     const close = () => {

@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
+import { getGameMetadata } from '~src/lib/game-mgmt';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { listCategoryVariables } from '~src/lib/leaderboard-variables';
-import { getRunById, getUserRankingsByName } from '~src/lib/leaderboards-v1';
+import { getRunById, getRunnerGameEntries } from '~src/lib/leaderboards-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { getRunProvenance } from '~src/lib/moderation/provenance';
 import { getRunHistory } from '~src/lib/moderation/runs';
@@ -13,8 +14,9 @@ import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata from '~src/utils/metadata';
 import { formatSubcategoryKey } from '../../labels';
 import { RunPageMount } from '../../manage/moderation/moderate/run-page-mount';
-import { type RunBoardStanding, RunView } from '../../run-view/run-view';
+import { RunView } from '../../run-view/run-view';
 import { isSameRunner } from '../../shared/is-same-runner';
+import { PageTheme } from '../../theme/page-theme';
 
 interface PageProps {
     params: Promise<{ game: string; runId: string }>;
@@ -92,28 +94,34 @@ export default async function RunDetailPage({ params }: PageProps) {
         if (asViewer && asViewer.userId != null) run = asViewer;
     }
 
-    const [history, provenance, rankings, modCategories] = await Promise.all([
-        getRunHistory(runId).catch(() => []),
-        isMod && session.id
-            ? getRunProvenance(session.id, game.id, runId).catch(() => null)
-            : Promise.resolve(null),
-        getUserRankingsByName(run.runnerName).catch(() => []),
-        isMod
-            ? resolveCategory(game.id)
-                  .then((r) => r.categories)
-                  .catch(() => [])
-            : Promise.resolve(null),
-    ]);
+    const runnerRef = run.isGuest
+        ? { guestName: run.runnerName }
+        : { username: run.runnerName };
+    const [history, provenance, categories, gameMeta, runnerEntries] =
+        await Promise.all([
+            getRunHistory(runId).catch(() => []),
+            isMod && session.id
+                ? getRunProvenance(session.id, game.id, runId).catch(() => null)
+                : Promise.resolve(null),
+            resolveCategory(game.id)
+                .then((r) => r.categories)
+                .catch(() => []),
+            getGameMetadata(game.id).catch(() => null),
+            // A hidden runner's placeholder name must not be looked up.
+            run.userId == null && !run.isGuest
+                ? Promise.resolve(null)
+                : getRunnerGameEntries(game.id, runnerRef).catch(() => null),
+        ]);
     const modVariables =
-        isMod && session.id && modCategories?.length
+        isMod && session.id && categories.length
             ? await listCategoryVariables(
                   session.id,
                   game.id,
-                  modCategories.map((c) => c.id),
+                  categories.map((c) => c.id),
               ).catch(() => [])
             : [];
-    const runCategory =
-        modCategories?.find((c) => c.id === run.categoryId) ?? null;
+    const runCategory = categories.find((c) => c.id === run.categoryId) ?? null;
+    const boardContext = run.boardContext ?? null;
     // The panel builds its own reads; keep the heavy fields off the client.
     const {
         splits: _splits,
@@ -122,84 +130,85 @@ export default async function RunDetailPage({ params }: PageProps) {
         ...modRun
     } = run;
 
-    // A hit means this run is the runner's *current* board entry for that
-    // category/subcategory (getUserRankingsByName returns each category's
-    // standing run, not every run ever submitted) — a miss just means this
-    // particular run has been superseded or isn't on the live board, not an
-    // error. See RunView's boardStanding handling.
-    const match = rankings.find((r) => r.runId === runId) ?? null;
-    const boardStanding: RunBoardStanding | null =
-        match && match.rank != null
-            ? {
-                  categorySlug: match.categorySlug,
-                  subcategoryKey: match.subcategoryKey,
-                  rank: match.rank,
-                  totalRunners: match.totalRunners,
-              }
-            : null;
-
     return (
-        <RunView
-            model={{
-                kind: 'run',
-                id: runId,
-                game,
-                gameId: run.gameId,
-                categoryId: run.categoryId,
-                categoryDisplay: run.categoryDisplay,
-                subcategoryKey: run.subcategoryKey,
-                runnerName: run.runnerName,
-                userId: run.userId,
-                isGuest: run.isGuest,
-                realTime: run.realTime,
-                gameTime: run.gameTime,
-                gameTimeLabel: run.gameTimeLabel ?? 'igt',
-                runDate: run.runDate,
-                vodUrl: run.vodUrl,
-                description: run.description ?? null,
-                descriptionRevoked: run.descriptionRestriction != null,
-                verificationStatus: run.verificationStatus,
-                variables: run.variables,
-                origin: run.origin ?? null,
-                verifiedBy: run.verifiedBy ?? null,
-                rejectionReason: run.rejectionReason ?? null,
-                boardStanding,
-                verifiedVia: run.verifiedVia ?? null,
-                autoVerifyResult: run.autoVerifyResult ?? null,
-            }}
-            history={history}
-            sessionUsername={session.username || null}
-            isMod={isMod}
-            modPanel={
-                isMod ? (
-                    <RunPageMount
-                        run={modRun}
-                        rank={boardStanding?.rank ?? 0}
-                        provenance={provenance}
-                        context={{
-                            gameSlug: game.name,
-                            gameId: game.id,
-                            gameDisplay: game.display,
-                            categories: modCategories ?? [],
-                            variables: modVariables,
-                            canSiteBan: defineAbilityFor(session).can(
-                                'moderate',
-                                'admins',
-                            ),
-                        }}
-                        board={{
-                            categoryId: run.categoryId,
-                            categorySlug: runCategory?.name ?? '',
-                            categoryDisplay: run.categoryDisplay,
-                            subcategoryKey: run.subcategoryKey ?? '',
-                            primaryTiming:
-                                runCategory?.primaryTiming === 'gt'
-                                    ? 'gt'
-                                    : 'rt',
-                        }}
-                    />
-                ) : undefined
-            }
-        />
+        <>
+            <PageTheme
+                kind="game"
+                label={game.display}
+                theme={gameMeta?.theme ?? null}
+            />
+            <RunView
+                model={{
+                    kind: 'run',
+                    id: runId,
+                    game,
+                    gameId: run.gameId,
+                    categoryId: run.categoryId,
+                    categoryDisplay: run.categoryDisplay,
+                    subcategoryKey: run.subcategoryKey,
+                    runnerName: run.runnerName,
+                    userId: run.userId,
+                    isGuest: run.isGuest,
+                    country: run.country ?? null,
+                    realTime: run.realTime,
+                    gameTime: run.gameTime,
+                    gameTimeLabel: run.gameTimeLabel ?? 'igt',
+                    runDate: run.runDate,
+                    vodUrl: run.vodUrl,
+                    description: run.description ?? null,
+                    descriptionRevoked: run.descriptionRestriction != null,
+                    verificationStatus: run.verificationStatus,
+                    variables: run.variables,
+                    origin: run.origin ?? null,
+                    verifiedBy: run.verifiedBy ?? null,
+                    rejectionReason: run.rejectionReason ?? null,
+                    verifiedVia: run.verifiedVia ?? null,
+                    autoVerifyResult: run.autoVerifyResult ?? null,
+                    verifiedAt: run.verifiedAt ?? null,
+                    categorySlug: runCategory?.name ?? null,
+                    boardContext,
+                    timerStats: run.timerStats ?? null,
+                    splits: run.splits ?? [],
+                    vodReview: run.vodReview ?? null,
+                    runnerEntries:
+                        runnerEntries?.status === 'found'
+                            ? runnerEntries.entries
+                            : [],
+                }}
+                history={history}
+                sessionUsername={session.username || null}
+                isMod={isMod}
+                modPanel={
+                    isMod ? (
+                        <RunPageMount
+                            run={modRun}
+                            rank={boardContext?.rank ?? 0}
+                            provenance={provenance}
+                            context={{
+                                gameSlug: game.name,
+                                gameId: game.id,
+                                gameDisplay: game.display,
+                                categories,
+                                variables: modVariables,
+                                canSiteBan: defineAbilityFor(session).can(
+                                    'moderate',
+                                    'admins',
+                                ),
+                            }}
+                            board={{
+                                categoryId: run.categoryId,
+                                categorySlug: runCategory?.name ?? '',
+                                categoryDisplay: run.categoryDisplay,
+                                subcategoryKey: run.subcategoryKey ?? '',
+                                primaryTiming:
+                                    runCategory?.primaryTiming === 'gt'
+                                        ? 'gt'
+                                        : 'rt',
+                            }}
+                        />
+                    ) : undefined
+                }
+            />
+        </>
     );
 }

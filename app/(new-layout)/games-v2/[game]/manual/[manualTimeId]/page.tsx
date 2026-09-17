@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
+import { getGameMetadata } from '~src/lib/game-mgmt';
 import { resolveGame } from '~src/lib/games-v1';
 import { getManualTimeById } from '~src/lib/leaderboards-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
@@ -12,6 +13,7 @@ import { formatSubcategoryKey } from '../../labels';
 import { ModProvenancePanel } from '../../run-view/mod-provenance-panel';
 import { RunView } from '../../run-view/run-view';
 import { isSameRunner } from '../../shared/is-same-runner';
+import { PageTheme } from '../../theme/page-theme';
 
 interface PageProps {
     params: Promise<{ game: string; manualTimeId: string }>;
@@ -71,57 +73,71 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
         if (asViewer) detail = asViewer;
     }
 
-    const provenance =
+    const [provenance, gameMeta] = await Promise.all([
         isMod && session.id
-            ? await getManualTimeProvenance(
-                  session.id,
-                  game.id,
-                  manualTimeId,
-              ).catch(() => null)
-            : null;
+            ? getManualTimeProvenance(session.id, game.id, manualTimeId).catch(
+                  () => null,
+              )
+            : Promise.resolve(null),
+        getGameMetadata(game.id).catch(() => null),
+    ]);
 
     return (
-        <RunView
-            model={{
-                kind: 'manual',
-                id: manualTimeId,
-                game,
-                gameId: mt.gameId,
-                categoryId: mt.categoryId,
-                categoryDisplay: mt.categoryDisplay,
-                subcategoryKey: mt.subcategoryKey,
-                runnerName: mt.runnerName,
-                userId: mt.userId,
-                isGuest: mt.isGuest,
-                realTime: mt.timing === 'realtime' ? mt.timeMs : null,
-                gameTime: mt.timing === 'gametime' ? mt.timeMs : null,
-                gameTimeLabel: 'igt',
-                runDate: mt.runDate ?? null,
-                vodUrl: mt.evidenceUrl,
-                description: detail.description ?? null,
-                descriptionRevoked: detail.descriptionRestriction != null,
-                verificationStatus: mt.verificationStatus,
-                variables: {},
-                origin: mt.origin,
-                verifiedBy: null,
-                rejectionReason: null,
-                boardStanding: null,
-                verifiedVia: null,
-                autoVerifyResult: null,
-            }}
-            history={[]}
-            sessionUsername={session.username || null}
-            isMod={isMod}
-            modPanel={
-                isMod ? (
-                    <ModProvenancePanel
-                        provenance={provenance}
-                        history={[]}
-                        gameSlug={game.name}
-                        runId={null}
-                    />
-                ) : undefined
-            }
-        />
+        <>
+            <PageTheme
+                kind="game"
+                label={game.display}
+                theme={gameMeta?.theme ?? null}
+            />
+            <RunView
+                model={{
+                    kind: 'manual',
+                    id: manualTimeId,
+                    game,
+                    gameId: mt.gameId,
+                    categoryId: mt.categoryId,
+                    categoryDisplay: mt.categoryDisplay,
+                    subcategoryKey: mt.subcategoryKey,
+                    runnerName: mt.runnerName,
+                    userId: mt.userId,
+                    isGuest: mt.isGuest,
+                    country: null,
+                    realTime: mt.timing === 'realtime' ? mt.timeMs : null,
+                    gameTime: mt.timing === 'gametime' ? mt.timeMs : null,
+                    gameTimeLabel: 'igt',
+                    runDate: mt.runDate ?? null,
+                    vodUrl: mt.evidenceUrl,
+                    description: detail.description ?? null,
+                    descriptionRevoked: detail.descriptionRestriction != null,
+                    verificationStatus: mt.verificationStatus,
+                    variables: {},
+                    origin: mt.origin,
+                    verifiedBy: null,
+                    rejectionReason: null,
+                    verifiedVia: null,
+                    autoVerifyResult: null,
+                    verifiedAt: null,
+                    categorySlug: null,
+                    boardContext: null,
+                    timerStats: null,
+                    splits: [],
+                    vodReview: null,
+                    runnerEntries: [],
+                }}
+                history={[]}
+                sessionUsername={session.username || null}
+                isMod={isMod}
+                modPanel={
+                    isMod ? (
+                        <ModProvenancePanel
+                            provenance={provenance}
+                            history={[]}
+                            gameSlug={game.name}
+                            runId={null}
+                        />
+                    ) : undefined
+                }
+            />
+        </>
     );
 }

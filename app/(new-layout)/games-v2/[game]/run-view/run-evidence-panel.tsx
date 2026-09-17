@@ -51,15 +51,17 @@ export function RunEvidencePanel({
 
     // A mod who isn't the owner can only be wired to a save path that (a)
     // exists and (b) has everything it needs from this page's model. Runs
-    // need a board slug+key (only ever known when this run matched the
-    // runner's current standing — see RunViewModel.boardStanding); manual
-    // times need nothing extra. Neither mod action supports description, so
-    // that half stays locked regardless.
+    // need a board slug+key (only ever known when this run's category
+    // resolved and it has board context); manual times need nothing extra.
+    // Neither mod action supports description, so that half stays locked
+    // regardless.
     const modVodWireable =
         isMod &&
         !isOwner &&
         (model.kind === 'manual' ||
-            (model.kind === 'run' && model.boardStanding != null));
+            (model.kind === 'run' &&
+                model.boardContext != null &&
+                model.categorySlug != null));
     const effectivePerms =
         isMod && !isOwner
             ? {
@@ -77,10 +79,15 @@ export function RunEvidencePanel({
                       evidenceUrl: url,
                   });
         }
-        if (isMod && model.kind === 'run' && model.boardStanding != null) {
+        if (
+            isMod &&
+            model.kind === 'run' &&
+            model.boardContext != null &&
+            model.categorySlug != null
+        ) {
             const res = await attachVodAction(model.game.name, model.id, url, {
-                categorySlug: model.boardStanding.categorySlug,
-                subcategoryKey: model.boardStanding.subcategoryKey,
+                categorySlug: model.categorySlug,
+                subcategoryKey: model.subcategoryKey,
             });
             return 'error' in res ? res : { ok: true };
         }

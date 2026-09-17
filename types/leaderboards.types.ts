@@ -344,6 +344,10 @@ export interface RunDetail {
     timerStats?: RunTimerStats | null;
     verifiedVia?: VerifiedVia;
     autoVerifyResult?: AutoVerifyResult | null;
+    /** Runner's country; null for guests and hidden runners. Absent on older deploys. */
+    country?: string | null;
+    /** Null when rejected, superseded or unranked. Absent on older deploys. */
+    boardContext?: BoardContext | null;
 }
 
 export interface RunTimerStats {
@@ -353,6 +357,34 @@ export interface RunTimerStats {
     sumOfBests: number | null;
     /** Only while this run is still the timer's game-time PB. */
     gameTimeSob: number | null;
+}
+
+export interface BoardContextRow {
+    /** Null when the row is a manual time. */
+    runId: number | null;
+    manualTimeId: number | null;
+    rank: number;
+    runnerName: string;
+    country: string | null;
+    picture: string | null;
+    /** ms on `BoardContext.view.timing`. */
+    time: number;
+    isGuest: boolean;
+    anonymized?: true;
+}
+
+/** Where a run sits on its category's default board. See backend
+ * docs/frontend-guide-run-board-context.md. */
+export interface BoardContext {
+    view: { timing: 'rt' | 'gt'; verifiedOnly: false };
+    rank: number;
+    totalRunners: number;
+    /** Null when this run is #1. */
+    wr: BoardContextRow | null;
+    /** Up to 2, nearest first. */
+    above: BoardContextRow[];
+    /** Up to 2, nearest first. */
+    below: BoardContextRow[];
 }
 
 export interface RunOriginRef {
