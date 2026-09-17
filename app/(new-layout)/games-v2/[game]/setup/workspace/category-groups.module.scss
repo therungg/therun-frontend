@@ -1,5 +1,6 @@
 @use '../../../../styles/design-tokens' as dt;
 @use '../../../../styles/board' as board;
+@use 'workspace' as ws;
 
 .wrap {
     display: flex;
@@ -7,17 +8,28 @@
     gap: dt.$spacing-lg;
 }
 
-.toolbar {
+// ---- Board layout -------------------------------------------
+// Title, Flat/Grouped switch and its hint on one heading row.
+.layoutPanel {
+    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
     display: flex;
     align-items: center;
-    gap: dt.$spacing-md;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm dt.$spacing-md;
+}
+
+.panelTitle {
+    @include ws.panel-title;
+}
+
+.panelHint {
+    @include ws.panel-hint;
+    flex: 1 1 14rem;
+    min-width: 0;
 }
 
 .newAction {
-    @include board.board-btn-primary;
-    display: inline-flex;
-    align-items: center;
-    gap: dt.$spacing-xs;
+    @include ws.secondary-btn;
     margin-left: auto;
 }
 
@@ -33,6 +45,7 @@
     color: var(--bs-warning-text-emphasis);
 }
 
+// ---- Group columns ------------------------------------------
 .board {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
@@ -41,25 +54,29 @@
 }
 
 .column {
-    @include board.board-surface(dt.$spacing-lg);
+    @include board.board-surface(dt.$spacing-md);
     display: flex;
     flex-direction: column;
-    gap: dt.$spacing-md;
+    gap: dt.$spacing-sm;
     min-height: 8rem;
 }
 
+// A drop target, not a group: dashed and without the panel fill.
 .columnUngrouped {
     border-style: dashed;
+    background: transparent;
+    box-shadow: none;
 }
 
 .columnHead {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     gap: dt.$spacing-sm;
+    min-width: 0;
 }
 
 .columnName {
-    @include board.board-eyebrow;
+    @include ws.panel-title;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -67,29 +84,59 @@
 }
 
 .columnCount {
-    @include board.mono-time;
-    font-size: dt.$font-size-2xs;
-    color: var(--bs-tertiary-color);
+    @include ws.panel-hint;
+    font-variant-numeric: tabular-nums;
 }
 
 .headActions {
     display: inline-flex;
+    align-items: center;
     gap: 2px;
     margin-left: auto;
 }
 
+// Left/right group order: shown on column hover or focus.
+.groupStep {
+    @include ws.step-btn('.column', 1.5rem);
+}
+
+// Rename / Delete: quiet text links.
+.headLink {
+    @include board.board-quiet-link;
+    padding: 0 dt.$spacing-xs;
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: default;
+    }
+}
+
+.groupStep + .headLink {
+    margin-left: dt.$spacing-xs;
+}
+
+.deleteBtn:hover:not(:disabled) {
+    color: dt.$accent-red;
+}
+
+// Display mode and hidden-by-default on one compact row.
 .columnSettings {
     display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-sm;
-    padding-bottom: dt.$spacing-md;
-    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    align-items: center;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs dt.$spacing-md;
+    padding-bottom: dt.$spacing-sm;
+    border-bottom: ws.$divider;
+
+    > :last-child {
+        margin-left: auto;
+    }
 }
 
 .columnEmpty {
     margin: 0;
     font-size: dt.$font-size-xs;
-    color: var(--bs-tertiary-color);
+    color: var(--bs-secondary-color);
 }
 
 .cards {
@@ -104,12 +151,17 @@
 .card {
     display: flex;
     align-items: center;
-    gap: dt.$spacing-xs;
-    padding: dt.$spacing-xs dt.$spacing-sm;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    gap: dt.$spacing-sm;
+    padding: ws.$cell-pad-y dt.$spacing-sm;
+    border: ws.$divider;
     border-radius: dt.$radius-md;
-    background: var(--bs-body-bg);
+    background: rgba(var(--bs-body-color-rgb), 0.03);
     cursor: grab;
+    transition: border-color dt.$transition-fast;
+
+    &:hover {
+        border-color: rgba(var(--bs-border-color-rgb), 0.7);
+    }
 }
 
 .cardDragging {
@@ -125,6 +177,8 @@
     flex: 1;
     min-width: 0;
     font-size: dt.$font-size-sm;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -135,37 +189,23 @@
     gap: 2px;
 }
 
-.iconBtn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.5rem;
-    height: 1.5rem;
-    padding: 0;
-    border: 0;
-    border-radius: dt.$radius-md;
-    background: transparent;
-    color: var(--bs-secondary-color);
-
-    &:hover:not(:disabled) {
-        background: rgba(var(--bs-primary-rgb), 0.08);
-        color: var(--bs-emphasis-color);
-    }
-
-    &:disabled {
-        opacity: 0.3;
-    }
-}
-
-.deleteBtn:hover:not(:disabled) {
-    color: dt.$accent-red;
+// Up/down within a group: shown on card hover or focus.
+.cardStep {
+    @include ws.step-btn('.card');
 }
 
 .cardSelect {
     max-width: 7rem;
     font-size: dt.$font-size-xs;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-    border-radius: dt.$radius-md;
+    border: 1px solid transparent;
+    border-radius: dt.$radius-sm;
     background: transparent;
     color: var(--bs-secondary-color);
+    transition: border-color dt.$transition-fast;
+
+    &:hover:not(:disabled),
+    &:focus {
+        border-color: rgba(var(--bs-border-color-rgb), 0.6);
+        color: var(--bs-body-color);
+    }
 }

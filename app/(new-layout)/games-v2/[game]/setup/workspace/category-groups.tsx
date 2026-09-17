@@ -7,9 +7,7 @@ import {
     CaretRightFill,
     CaretUpFill,
     GripVertical,
-    Pencil,
     Plus,
-    Trash,
 } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import { assignCategoryGroupAction } from '~src/actions/category-group/assign-category-group.action';
@@ -300,7 +298,13 @@ export function CategoryGroups({
 
     return (
         <div className={styles.wrap}>
-            <div className={styles.toolbar}>
+            <section
+                className={styles.layoutPanel}
+                aria-labelledby="board-layout-title"
+            >
+                <h3 id="board-layout-title" className={styles.panelTitle}>
+                    Board layout
+                </h3>
                 <SegmentedControl
                     label="Layout"
                     labelHidden
@@ -312,6 +316,11 @@ export function CategoryGroups({
                     disabled={busy}
                     onChange={(v) => chooseLayout(v as Layout)}
                 />
+                <span className={styles.panelHint}>
+                    {layout === 'flat'
+                        ? 'One flat list: the board shows every category in one row, in the order set in List.'
+                        : 'Groups show as sections on the board, in this order.'}
+                </span>
                 {layout === 'grouped' && (
                     <button
                         type="button"
@@ -326,14 +335,9 @@ export function CategoryGroups({
                         New group
                     </button>
                 )}
-            </div>
+            </section>
 
-            {layout === 'flat' ? (
-                <p className={styles.note}>
-                    One flat list: the board shows every category in one row, in
-                    the order set in List.
-                </p>
-            ) : (
+            {layout === 'grouped' && (
                 <>
                     {groups.length > 1 && ungroupedCount > 0 && (
                         <p className={styles.warn}>
@@ -361,7 +365,7 @@ export function CategoryGroups({
                                         {column.group?.name ?? 'Ungrouped'}
                                     </span>
                                     <span className={styles.columnCount}>
-                                        {column.items.length}
+                                        {column.items.length.toLocaleString()}
                                     </span>
                                     {column.group && (
                                         <GroupHeadActions
@@ -386,6 +390,7 @@ export function CategoryGroups({
                                     <div className={styles.columnSettings}>
                                         <SegmentedControl
                                             label="Display"
+                                            labelHidden
                                             value={
                                                 column.group.displayMode ??
                                                 'pills'
@@ -474,7 +479,7 @@ export function CategoryGroups({
                                                     <button
                                                         type="button"
                                                         className={
-                                                            styles.iconBtn
+                                                            styles.cardStep
                                                         }
                                                         disabled={
                                                             busy || i === 0
@@ -493,7 +498,7 @@ export function CategoryGroups({
                                                     <button
                                                         type="button"
                                                         className={
-                                                            styles.iconBtn
+                                                            styles.cardStep
                                                         }
                                                         disabled={
                                                             busy ||
@@ -642,7 +647,7 @@ function GroupHeadActions({
         <span className={styles.headActions}>
             <button
                 type="button"
-                className={styles.iconBtn}
+                className={styles.groupStep}
                 disabled={busy || index === 0}
                 onClick={() => onMove(index, -1)}
                 aria-label={`Move ${group.name} left`}
@@ -651,7 +656,7 @@ function GroupHeadActions({
             </button>
             <button
                 type="button"
-                className={styles.iconBtn}
+                className={styles.groupStep}
                 disabled={busy || index === last}
                 onClick={() => onMove(index, 1)}
                 aria-label={`Move ${group.name} right`}
@@ -660,21 +665,21 @@ function GroupHeadActions({
             </button>
             <button
                 type="button"
-                className={styles.iconBtn}
+                className={styles.headLink}
                 disabled={busy}
                 onClick={() => onRename(group)}
                 aria-label={`Rename ${group.name}`}
             >
-                <Pencil size={12} />
+                Rename
             </button>
             <button
                 type="button"
-                className={`${styles.iconBtn} ${styles.deleteBtn}`}
+                className={`${styles.headLink} ${styles.deleteBtn}`}
                 disabled={busy}
                 onClick={() => onDelete(group)}
                 aria-label={`Delete ${group.name}`}
             >
-                <Trash size={12} />
+                Delete
             </button>
         </span>
     );
