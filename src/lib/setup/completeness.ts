@@ -6,6 +6,7 @@ import type {
 export type SetupStepId =
     | 'import'
     | 'details'
+    | 'theme'
     | 'categories'
     | 'levels'
     | 'groups'
@@ -45,6 +46,8 @@ export interface CompletenessInput {
     /** Whether the game has any saved verification settings row (game or
      *  category), for the verification step. */
     verificationConfigured: boolean;
+    /** Whether the board has a custom theme, for the theme step's summary. */
+    hasTheme?: boolean;
     /**
      * Distinct subcategory / filter variable names on the board, for the
      * variables step's summary. Optional — an empty board has none, and the
@@ -79,6 +82,7 @@ export interface BoardCompleteness {
 export const SETUP_STEP_ORDER: SetupStepId[] = [
     'import',
     'details',
+    'theme',
     'categories',
     'levels',
     'groups',
@@ -176,6 +180,13 @@ export function computeCompleteness(
                   summary: 'Slug missing',
               },
     );
+
+    // The default look is a finished board, so this never holds setup open.
+    steps.push({
+        step: 'theme',
+        status: 'done',
+        summary: input.hasTheme ? 'Custom theme' : 'Optional — default look',
+    });
 
     if (emptyBoard) {
         // Ingestion-empty board: categories appear when runs arrive; the

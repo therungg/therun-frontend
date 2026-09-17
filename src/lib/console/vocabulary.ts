@@ -206,6 +206,7 @@ export const STEP_CONCEPTS: Record<SetupStepId, ConceptId[]> = {
     import: ['import'],
     // The URL slug lives inside the Game details pane, not beside it.
     details: ['game-details', 'timing', 'rules'],
+    theme: ['theme'],
     categories: ['categories'],
     levels: ['levels'],
     groups: ['groups'],
@@ -225,6 +226,7 @@ export interface ConsoleLocation {
 
 const BOARD_PANES: ReadonlySet<ConceptId> = new Set<ConceptId>([
     'game-details',
+    'theme',
     'categories',
     'groups',
     'levels',

@@ -120,6 +120,7 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         slug: identifiers.slug,
         moderatorCount: moderators.length,
         configured: metadata.configured,
+        hasTheme: metadata.theme != null,
         // Category groups only — the level group (one kind:'level' group
         // holding every level board) belongs to the Levels step, not the
         // category-grouping structure.

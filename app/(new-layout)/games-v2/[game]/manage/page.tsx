@@ -245,6 +245,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 slug: identifiers.slug,
                 moderatorCount: moderators.length,
                 configured: metadata.configured,
+                hasTheme: metadata.theme != null,
                 // Category groups only — each individual level is its own
                 // kind:'level' group, but those are the "Levels" step, not
                 // the category-grouping structure, so they must not inflate

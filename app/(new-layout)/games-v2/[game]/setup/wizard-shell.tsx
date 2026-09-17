@@ -22,6 +22,7 @@ import { StepGroups } from './steps/step-groups';
 import { StepImport } from './steps/step-import';
 import { StepLevels } from './steps/step-levels';
 import { StepMatchRunners } from './steps/step-match-runners';
+import { StepTheme } from './steps/step-theme';
 import { StepVariables } from './steps/step-variables';
 import { StepVerification } from './steps/step-verification';
 import type { WizardData } from './types';
@@ -222,6 +223,10 @@ function CurrentStep({
                     onAdvance={onAdvance}
                     onBack={onBack}
                 />
+            );
+        case 'theme':
+            return (
+                <StepTheme data={data} onAdvance={onAdvance} onBack={onBack} />
             );
         case 'categories':
             return (
