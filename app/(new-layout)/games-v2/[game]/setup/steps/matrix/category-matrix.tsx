@@ -277,10 +277,20 @@ export function CategoryMatrix({
     return (
         <div className={styles.panel}>
             <div className={styles.head}>
-                <span className={styles.headTitle}>
-                    {isLevels ? 'Levels' : 'Categories on the board'}
+                <h3 className={styles.panelTitle}>
+                    {isLevels ? 'Level settings' : 'Category settings'}
+                </h3>
+                <span className={styles.panelHint}>
+                    {mains.length.toLocaleString()}{' '}
+                    {isLevels
+                        ? mains.length === 1
+                            ? 'level'
+                            : 'levels'
+                        : mains.length === 1
+                          ? 'category'
+                          : 'categories'}{' '}
+                    · changes save as you go
                 </span>
-                <span className={styles.headCount}>{mains.length}</span>
             </div>
             <div className={styles.scroller}>
                 <table className={styles.grid}>
@@ -317,7 +327,10 @@ export function CategoryMatrix({
                                 it — it is simply not something a moderator is
                                 asked here. */}
                             <th>Milliseconds</th>
-                            <th aria-label="Edit" />
+                            <th
+                                className={styles.colActions}
+                                aria-label="Edit"
+                            />
                         </tr>
                     </thead>
                     <tbody>
@@ -649,7 +662,7 @@ export function CategoryMatrix({
                                                 </Cell>
                                             </td>
 
-                                            <td>
+                                            <td className={styles.colActions}>
                                                 <div
                                                     className={
                                                         boardStyles.actions
@@ -661,7 +674,7 @@ export function CategoryMatrix({
                                                     <Link
                                                         href={`/games-v2/${encodeURIComponent(game.name)}/manage/category/${c.id}`}
                                                         className={
-                                                            boardStyles.editLink
+                                                            styles.editLink
                                                         }
                                                     >
                                                         Edit
@@ -771,7 +784,9 @@ function MatrixSection({
         <>
             {name && (
                 <tr className={styles.groupRow}>
-                    <th colSpan={columnCount}>{name}</th>
+                    <th colSpan={columnCount} scope="colgroup">
+                        {name}
+                    </th>
                 </tr>
             )}
             {children}

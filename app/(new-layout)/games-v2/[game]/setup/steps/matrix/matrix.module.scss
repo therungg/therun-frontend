@@ -1,5 +1,6 @@
 @use '../../../../../styles/design-tokens' as dt;
 @use '../../../../../styles/board' as board;
+@use '../../workspace/workspace' as ws;
 
 // The step-4 matrix renders DEVIATIONS, not values: a cell holding the board
 // default is drawn quiet and a cell that differs is drawn solid. On a healthy
@@ -12,12 +13,22 @@
 // public leaderboard and the rest of the wizard and has to read as one product.
 
 .panel {
-    @include board.board-surface(dt.$spacing-xl);
+    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
     margin-bottom: dt.$spacing-lg;
 }
 
+// Sentence-case title and a muted hint, as on List.
 .head {
-    @include board.board-section-head;
+    @include ws.panel-head;
+    margin-bottom: dt.$spacing-md;
+}
+
+.panelTitle {
+    @include ws.panel-title;
+}
+
+.panelHint {
+    @include ws.panel-hint;
 }
 
 // Same empty state the subcategories grid draws for a board with no rows.
@@ -39,14 +50,6 @@
     color: var(--bs-secondary-color);
     max-width: 34rem;
     margin: 0;
-}
-
-.headTitle {
-    @include board.board-eyebrow;
-}
-
-.headCount {
-    @include board.board-section-count;
 }
 
 // ---- Board defaults -----------------------------------------
@@ -107,26 +110,21 @@
 
 .grid {
     @include board.board-table;
+    // Quiet sentence-case column labels and a divider under every row.
+    @include ws.quiet-table;
 
     td {
         white-space: nowrap;
     }
 }
 
-// A group heading is a label, not a row of data — hovering it highlights
-// nothing you can act on.
-.groupRow:hover,
 .offerRow:hover {
     background: transparent;
 }
 
-// Group heading inside the table body — same eyebrow register as the public
-// band's endcaps, so the grid reads in the board's own sections.
-.groupRow th {
-    @include board.board-eyebrow;
-    text-align: left;
-    padding: dt.$spacing-lg dt.$spacing-md dt.$spacing-xs;
-    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+// Group heading inside the table body: a quiet section label, as on List.
+.groupRow {
+    @include ws.group-band;
 }
 
 // The icon lives here rather than in a column of its own: a column of eight
@@ -134,6 +132,8 @@
 // carried no information. Beside the name it reads as the category's own mark,
 // which is what it is on the board.
 .nameCell {
+    // The name takes the spare width; every other column sizes to content.
+    width: 100%;
     font-weight: 600;
     color: var(--bs-emphasis-color);
     white-space: normal;
@@ -153,6 +153,26 @@
     color: var(--bs-secondary-color);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
+}
+
+// Edit ›, a quiet link at the far right.
+.colActions {
+    width: 1%;
+    text-align: right;
+}
+
+.grid th.colActions,
+.grid td.colActions {
+    padding-left: dt.$spacing-xl;
+}
+
+.editLink {
+    @include board.board-quiet-link;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-size: dt.$font-size-sm;
+    text-decoration: none;
 }
 
 // ---- Cells --------------------------------------------------
