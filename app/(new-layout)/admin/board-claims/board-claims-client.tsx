@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import Link from '~src/components/link';
+import { gameSegment } from '~src/lib/board-url';
 import type { BoardClaimGroup } from '~src/lib/setup/group-claims';
 import type {
     BoardClaimRequest,
@@ -60,7 +61,15 @@ export function BoardClaimsClient({ groups }: Props) {
             {groups.map((g) => (
                 <div key={g.gameId} className={styles.gameCard}>
                     <div className={styles.gameHead}>
-                        <strong>{g.gameDisplay}</strong>
+                        <strong>
+                            <Link
+                                href={`/games-v2/${gameSegment(
+                                    g.gameSlug || g.gameDisplay,
+                                )}/manage`}
+                            >
+                                {g.gameDisplay}
+                            </Link>
+                        </strong>
                         {g.board && (
                             <span className={styles.gameMeta}>
                                 {g.board.uniqueRunners} runners ·{' '}
@@ -107,7 +116,7 @@ function ClaimRow({
     return (
         <div className={styles.item}>
             <div className={styles.itemTop}>
-                <Link href={`/${request.username}`}>
+                <Link href={`/${encodeURIComponent(request.username)}`}>
                     <strong>{request.username}</strong>
                 </Link>
                 <span className={styles.meta}>

@@ -45,6 +45,11 @@ interface Props {
      */
     standingsHref?: string;
     /**
+     * The public moderation log (`?view=moderation`) — or, while it is the
+     * view, the way back to the board. Shown beside the standings link.
+     */
+    modLogLink?: { href: string; label: string };
+    /**
      * `full` (default) is the spec-sheet hero the category wall and the
      * standings page use, where the game is the subject. `condensed` is for
      * a board page, where the game is context and the category below it is
@@ -109,6 +114,7 @@ export function GameHero({
     claim,
     back,
     standingsHref,
+    modLogLink,
     variant = 'full',
     activity,
 }: Props) {
@@ -181,12 +187,20 @@ export function GameHero({
                 variant === 'condensed' ? styles.heroCondensed : styles.hero
             }
         >
-            {(back || standingsHref) && (
+            {(back || standingsHref || modLogLink) && (
                 <div className={styles.heroBack}>
                     {back && <BackLink href={back.href} label={back.label} />}
                     {standingsHref && (
                         <Link href={standingsHref} className={styles.quietLink}>
                             Cross-category standings
+                        </Link>
+                    )}
+                    {modLogLink && (
+                        <Link
+                            href={modLogLink.href}
+                            className={styles.quietLink}
+                        >
+                            {modLogLink.label}
                         </Link>
                     )}
                 </div>

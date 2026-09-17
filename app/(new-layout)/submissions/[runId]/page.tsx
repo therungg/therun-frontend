@@ -1,6 +1,9 @@
 import { notFound } from 'next/navigation';
 import { loadPbSubmissionAction } from '~src/actions/pb-submission.action';
 import { getSession } from '~src/actions/session.action';
+import Link from '~src/components/link';
+import { buildRunHref } from '~src/lib/board-url';
+import { getRunById } from '~src/lib/leaderboards-v1';
 import buildMetadata from '~src/utils/metadata';
 import settings from '../../settings/settings.module.scss';
 import { SubmissionForm } from './submission-form';
@@ -31,6 +34,7 @@ export default async function SubmissionPage(props: {
     const res = await loadPbSubmissionAction(id);
     // Not yours, already submitted, or never held: all the same from here.
     if (!res.ok) notFound();
+    const run = await getRunById(id).catch(() => null);
 
     return (
         <div className={settings.pane}>
@@ -41,6 +45,13 @@ export default async function SubmissionPage(props: {
                     bests. What you send goes to a moderator — you are not
                     verifying the run yourself.
                 </p>
+                {run ? (
+                    <p className={settings.paneLede}>
+                        <Link href={buildRunHref(run.gameDisplay, id)}>
+                            {run.gameDisplay} · {run.categoryDisplay}
+                        </Link>
+                    </p>
+                ) : null}
             </header>
             <SubmissionForm form={res.form} />
         </div>

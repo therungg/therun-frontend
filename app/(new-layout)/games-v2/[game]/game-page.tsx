@@ -17,6 +17,7 @@ import { BoardMasthead } from './header/board-masthead';
 import { CategoryBandHeader } from './header/category-band-header';
 import { GameHero } from './header/game-hero';
 import mastheadStyles from './header/masthead.module.scss';
+import { ViewTabs } from './header/view-tabs';
 import { formatSubcategoryKey, type LabelVariableDef } from './labels';
 import { LeaderboardPager } from './leaderboard/leaderboard-pager';
 import { ModerationLogView } from './leaderboard/moderation/moderation-log-view';
@@ -34,6 +35,8 @@ interface Props {
     claim?: ClaimCtaState | null;
     moderators?: GameModerator[];
     activeRaces?: Race[];
+    /** Game has finished races — the Races tab on a single-board game. */
+    showRaces?: boolean;
     /** 'moderation' -> render the public Moderation tab instead of the board. */
     view?: 'board' | 'moderation';
     /** First page of the public mod-log, fetched only when `view === 'moderation'`. */
@@ -59,6 +62,7 @@ export function GamePage({
     claim,
     moderators,
     activeRaces,
+    showRaces = false,
     view = 'board',
     initialModLog,
     selfHidden = null,
@@ -120,7 +124,7 @@ export function GamePage({
     const backToWall =
         data.categories.length > 1
             ? {
-                  href: `/games-v2/${encodeURIComponent(data.game.name)}`,
+                  href: buildBoardHref(data.game.name),
                   label: 'All categories',
               }
             : undefined;
@@ -175,6 +179,7 @@ export function GamePage({
                         claim={claim}
                         back={backToWall}
                         subcategoryKey={subcategoryKey}
+                        view={view}
                     />
                     <div className={styles.grid}>
                         <div
@@ -188,6 +193,16 @@ export function GamePage({
                             // regardless, so going inert is harmless.
                             inert={boardNav.isPending}
                         >
+                            {/* A single-board game has no category wall, so
+                                its view tabs live here: the board, Stats and
+                                Races (no Standings across one board). */}
+                            {!backToWall && (
+                                <ViewTabs
+                                    gameSlug={data.game.name}
+                                    showRaces={showRaces}
+                                    showStandings={false}
+                                />
+                            )}
                             {view === 'moderation' ? (
                                 <ModerationLogView
                                     gameId={data.game.id}

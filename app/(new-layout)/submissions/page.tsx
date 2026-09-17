@@ -2,6 +2,8 @@ import { loadHeldPbsAction } from '~src/actions/pb-submission.action';
 import { getSession } from '~src/actions/session.action';
 import Link from '~src/components/link';
 import { getFormattedString } from '~src/components/util/datetime';
+import { buildRunHref } from '~src/lib/board-url';
+import { getRunById } from '~src/lib/leaderboards-v1';
 import buildMetadata from '~src/utils/metadata';
 import settings from '../settings/settings.module.scss';
 import styles from './submissions.module.scss';
@@ -44,6 +46,22 @@ export default async function SubmissionsPage() {
         );
     }
 
+    // A held run is a board run (finished_runs.id), so its run page exists.
+    // The held list carries only a game id; the run's own read has the game's
+    // display name the run route resolves.
+    const games = new Map(
+        await Promise.all(
+            res.held.map(
+                async (h) =>
+                    [
+                        h.runId,
+                        (await getRunById(h.runId).catch(() => null))
+                            ?.gameDisplay ?? null,
+                    ] as const,
+            ),
+        ),
+    );
+
     return (
         <div className={settings.pane}>
             <header className={settings.paneHeader}>
@@ -61,29 +79,46 @@ export default async function SubmissionsPage() {
                 </p>
             ) : (
                 <ul className={styles.list}>
-                    {res.held.map((h) => (
-                        <li key={h.runId} className={styles.row}>
-                            <div className={styles.rowMain}>
-                                <span className={styles.board}>
-                                    {h.categoryDisplay ?? 'Unknown board'}
-                                </span>
-                                <span className={styles.time}>
-                                    {getFormattedString(String(h.timeMs))}
-                                </span>
-                            </div>
-                            <div className={styles.rowMeta}>
-                                <span className={styles.waiting}>
-                                    Waiting {waitingFor(h.heldAt)}
-                                </span>
-                                <Link
-                                    href={`/submissions/${h.runId}`}
-                                    className="btn btn-primary btn-sm"
-                                >
-                                    Submit this run
-                                </Link>
-                            </div>
-                        </li>
-                    ))}
+                    {res.held.map((h) => {
+                        const gameDisplay = games.get(h.runId) ?? null;
+                        const board = gameDisplay
+                            ? `${gameDisplay} · ${h.categoryDisplay ?? 'Unknown board'}`
+                            : (h.categoryDisplay ?? 'Unknown board');
+                        return (
+                            <li key={h.runId} className={styles.row}>
+                                <div className={styles.rowMain}>
+                                    <span className={styles.board}>
+                                        {gameDisplay ? (
+                                            <Link
+                                                href={buildRunHref(
+                                                    gameDisplay,
+                                                    h.runId,
+                                                )}
+                                            >
+                                                {board}
+                                            </Link>
+                                        ) : (
+                                            board
+                                        )}
+                                    </span>
+                                    <span className={styles.time}>
+                                        {getFormattedString(String(h.timeMs))}
+                                    </span>
+                                </div>
+                                <div className={styles.rowMeta}>
+                                    <span className={styles.waiting}>
+                                        Waiting {waitingFor(h.heldAt)}
+                                    </span>
+                                    <Link
+                                        href={`/submissions/${h.runId}`}
+                                        className="btn btn-primary btn-sm"
+                                    >
+                                        Submit this run
+                                    </Link>
+                                </div>
+                            </li>
+                        );
+                    })}
                 </ul>
             )}
         </div>

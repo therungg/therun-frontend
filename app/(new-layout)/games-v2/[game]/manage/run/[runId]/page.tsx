@@ -90,6 +90,8 @@ export default async function GameRunManagePage({ params }: Props) {
                 rank={rank}
                 provenance={provenance}
                 history={history}
+                categorySlug={runCategory?.name ?? null}
+                boardsVisible={chrome.flags.boardsVisible === true}
                 // A run whose board doesn't resolve gets no panel: its verbs
                 // need the board.
                 panel={

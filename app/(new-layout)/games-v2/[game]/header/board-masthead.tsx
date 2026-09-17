@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { buildBoardHref } from '~src/lib/board-url';
 import type { ClaimCtaState } from '../claim/claim-cta';
 import { hasBuiltinFilters } from '../filters/builtin-params';
 import { FilterBar } from '../filters/filter-bar';
@@ -21,6 +22,9 @@ interface Props {
     back?: { href: string; label: string };
     /** The board's active subcategory key, used for submit-link context only — never displayed. */
     subcategoryKey: string;
+    /** Which of the board's two views is showing — picks the mod log link's
+     * direction. */
+    view?: 'board' | 'moderation';
 }
 
 export function BoardMasthead({
@@ -30,6 +34,7 @@ export function BoardMasthead({
     claim,
     back,
     subcategoryKey,
+    view = 'board',
 }: Props) {
     const category = data.selectedCategory;
     const suffix = effectiveSubcategoryLabel(
@@ -131,8 +136,26 @@ export function BoardMasthead({
                         back={back}
                         standingsHref={
                             data.categories.length > 1
-                                ? `/games-v2/${encodeURIComponent(data.game.name)}/standings`
+                                ? `${buildBoardHref(data.game.name)}/standings`
                                 : undefined
+                        }
+                        modLogLink={
+                            view === 'moderation'
+                                ? {
+                                      href: buildBoardHref(data.game.name, {
+                                          categorySlug: category.name,
+                                          subcategoryKey,
+                                      }),
+                                      label: 'Back to the board',
+                                  }
+                                : {
+                                      href: buildBoardHref(data.game.name, {
+                                          categorySlug: category.name,
+                                          subcategoryKey,
+                                          view: 'moderation',
+                                      }),
+                                      label: 'Moderation log',
+                                  }
                         }
                     />
                 </div>
@@ -143,12 +166,11 @@ export function BoardMasthead({
                     directly above the board (see game-page.tsx). */}
                 {showSelectorBand && (
                     <div className={styles.catPlate}>
-                        {/* The public moderation log still lives at ?view=moderation
-                    and is still linked from the board's own mod affordances —
-                    it just no longer spends a header row on a tab pair. The
-                    header is for choosing a board, and a second tab strip
-                    directly above the category rail read as one more row of
-                    the same undifferentiated stack. */}
+                        {/* The public moderation log lives at ?view=moderation
+                    and is linked from the game plate's link row above, not a
+                    tab pair here. The header is for choosing a board, and a
+                    second tab strip directly above the category rail read as
+                    one more row of the same undifferentiated stack. */}
                         {/* Category rail / filter tier / rules toggle — each its own
                     hairline-divided section of the same plate, not a second
                     stacked card.

@@ -1,6 +1,12 @@
 'use client';
 
+import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
+import {
+    buildBoardHref,
+    buildGameHref,
+    buildRunHref,
+} from '~src/lib/board-url';
 import type {
     ResolvedGame,
     RunDetail,
@@ -26,6 +32,10 @@ interface Props {
     history: HistoryEvent[];
     /** Null when the run's board doesn't resolve. */
     panel: { context: SheetContext; board: SheetBoard } | null;
+    /** The run's category slug, for a back link scoped to its board. */
+    categorySlug: string | null;
+    /** canSeeBoards: the back link goes to the game page when false. */
+    boardsVisible: boolean;
 }
 
 export function ManageRunPage({
@@ -35,7 +45,15 @@ export function ManageRunPage({
     provenance,
     history,
     panel,
+    categorySlug,
+    boardsVisible,
 }: Props) {
+    const backHref = boardsVisible
+        ? buildBoardHref(game.name, {
+              categorySlug,
+              subcategoryKey: categorySlug ? run.subcategoryKey : null,
+          })
+        : buildGameHref(game, false);
     return (
         <div>
             <header className="d-flex align-items-center gap-3 mb-3">
@@ -54,10 +72,17 @@ export function ManageRunPage({
                     <small className="text-muted d-block">Manage run</small>
                     <h1 className="mb-0">{game.display}</h1>
                 </div>
-                <div className="ms-auto">
+                <div className="ms-auto d-flex align-items-center gap-3">
+                    <Link href={buildRunHref(game.name, run.runId)}>
+                        Public run page
+                    </Link>
                     <BackLink
-                        href={`/games-v2/${encodeURIComponent(game.name)}`}
-                        label="Back to leaderboard"
+                        href={backHref}
+                        label={
+                            boardsVisible
+                                ? 'Back to leaderboard'
+                                : 'Back to game'
+                        }
                     />
                 </div>
             </header>
