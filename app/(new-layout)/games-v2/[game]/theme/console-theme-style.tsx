@@ -4,7 +4,8 @@ import { buildConsoleThemeCss } from './theme-css';
 
 /**
  * Injects the console derivation of a game's mod-set theme: accent, a tint of
- * the panel color on the console's panels and canvas, and the background art as
+ * the panel color on the console's panels, a tint of the background color on
+ * its canvas, and the background art as
  * a band behind the masthead (see `deriveConsoleThemeVars` and
  * console-theme.module.scss). Text colors are the one thing it never takes.
  * Rendered from the manage layout, so every console route carries it.

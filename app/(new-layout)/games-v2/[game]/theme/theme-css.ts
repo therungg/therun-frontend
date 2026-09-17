@@ -314,8 +314,9 @@ const CONSOLE_CHROME = {
  *
  *   - the accent, re-contrasted against the console's own surface, so nav
  *     rails, buttons, meters and focus rings are the board's color;
- *   - the panel color tinted into the console's panels, recesses AND canvas, so
- *     the whole console reads as this board's console;
+ *   - the panel color tinted into the console's panels and recesses, and the
+ *     background color into its canvas, so the whole console reads as this
+ *     board's console;
  *   - the background art, but only as a band behind the masthead — see
  *     console-theme.module.scss for why the console can't take it whole.
  *
@@ -337,12 +338,20 @@ export function deriveConsoleThemeVars(
     const tint = (baseHex: string) =>
         toHex(mix(hexToRgb(baseHex), pick, amount));
 
+    // The canvas takes its hue from the background pick, not the panel, so the
+    // console's page reads as the same color the board's page does.
+    const canvasPick = hexToRgb(
+        withLightness(theme.backgroundColor, chrome.pickL),
+    );
+    const canvasAchromatic =
+        canvasPick.r === canvasPick.g && canvasPick.g === canvasPick.b;
+
     const surfaceHex = tint(chrome.surface);
     const canvasHex = toHex(
         mix(
             hexToRgb(chrome.canvas),
-            pick,
-            amount === 0 ? 0 : chrome.canvasTint,
+            canvasPick,
+            canvasAchromatic ? 0 : chrome.canvasTint,
         ),
     );
     const accentHex = ensureAccentContrast(theme.accentColor, surfaceHex);
