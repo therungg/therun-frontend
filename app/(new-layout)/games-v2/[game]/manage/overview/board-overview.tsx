@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { BoxArrowUpRight } from 'react-bootstrap-icons';
 import chrome from '~src/components/console-chrome/console.module.scss';
 import { NAV_ICON } from '~src/components/console-chrome/nav-icons';
@@ -31,7 +32,7 @@ import type { AttentionItem } from '../moderation/attention/attention-model';
 import { isSettled } from '../src-import/use-src-import-job';
 import styles from './board-overview.module.scss';
 import { buildOverviewStats, timeAgo, topFeaturedRows } from './overview-model';
-import { QueueSummary } from './queue-summary';
+import { QueueSummarySkeleton, StreamedQueueSummary } from './queue-summary';
 
 /** "Never" or a short date of the last finished job of one kind. */
 function lastLine(job: SrcImportJob | null): string {
@@ -71,9 +72,11 @@ interface Props {
     /** Latest runs import — the import card's "Runs" line. */
     runsJob?: SrcImportJob | null;
     /** Seven-day summary of what the worklist decided and flagged. */
-    digest?: WorklistDigest | null;
-    /** First page of the mod queue — drives the queue summary. */
-    worklist?: WorklistPage | null;
+    digest?: Promise<WorklistDigest | null>;
+    /** First page of the mod queue — drives the queue summary. Unresolved:
+     * the summary sits behind its own Suspense boundary so the rest of the
+     * overview isn't held up by the slowest call on the page. */
+    worklist?: Promise<WorklistPage | null>;
     /** The game's variables, to name each run's subcategory. */
     variables?: VariableRow[];
     /** Permission-filtered console nav — decides which cards and tiles show. */
@@ -178,13 +181,15 @@ export function BoardOverview({
 
             {/* The mod queue before anything else: does anything need me? */}
             {canModerate && (
-                <QueueSummary
-                    worklist={worklist ?? null}
-                    digest={digest ?? null}
-                    variables={variables ?? []}
-                    onOpenQueue={() => onNavigate('mod-queue')}
-                    onOpenDecided={() => onNavigate('queue-history')}
-                />
+                <Suspense fallback={<QueueSummarySkeleton />}>
+                    <StreamedQueueSummary
+                        worklist={worklist}
+                        digest={digest}
+                        variables={variables ?? []}
+                        onOpenQueue={() => onNavigate('mod-queue')}
+                        onOpenDecided={() => onNavigate('queue-history')}
+                    />
+                </Suspense>
             )}
 
             {/* Vitals band */}

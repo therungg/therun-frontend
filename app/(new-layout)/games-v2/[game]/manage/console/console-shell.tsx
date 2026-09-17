@@ -1,7 +1,14 @@
 'use client';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    Suspense,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 import styles from '~src/components/console-chrome/console.module.scss';
 import { ConsoleChrome } from '~src/components/console-chrome/console-chrome';
 import { NAV_ICON } from '~src/components/console-chrome/nav-icons';
@@ -31,6 +38,7 @@ import type {
 } from '../../../../../../types/worklist.types';
 import { BackLink } from '../../shared/back-link';
 import type { AttentionItem } from '../moderation/attention/attention-model';
+import type { AttentionData } from '../moderation/attention/load-attention';
 import { HistoryDrawer } from '../moderation/configure/history-drawer';
 import { ContentRouter } from './content-router';
 import type { GameDetailsData } from './game-details-pane';
@@ -44,13 +52,21 @@ import {
     navItemLongLabel,
     resolveInitialPane,
 } from './nav-model';
+import { StreamedValue } from './streamed-value';
+
+// Stable empty values, so a console still waiting on its inbox doesn't hand
+// every consumer a fresh array on each render.
+const EMPTY_ITEMS: AttentionItem[] = [];
+const EMPTY_SOURCES: string[] = [];
 
 export interface ConsoleShellProps {
     game: ResolvedGame;
     categories: ResolvedCategory[];
     flags: NavFlags;
-    attentionItems: AttentionItem[];
-    degradedSources: string[];
+    /** Flags, reports and self-claims. Handed over unresolved: the flags call
+     * is one of the slowest on the page, so the inbox streams in rather than
+     * holding the console back. */
+    attention: Promise<AttentionData>;
     /** How many games this viewer moderates — the "All your games" link to
      * the cross-game hub only shows when there's more than one. */
     moderatedGamesCount?: number;
@@ -79,21 +95,19 @@ export interface ConsoleShellProps {
     /** Latest runs import, for the overview card's per-kind lines. */
     runsJob?: SrcImportJob | null;
     /** Seven-day history of what was decided and flagged, for the overview's
-     * queue summary. */
-    digest?: WorklistDigest | null;
-    /** First page of the mod queue, for the overview's queue summary. */
-    worklist?: WorklistPage | null;
-    /** Runs awaiting a verdict — the count beside Mod queue in the sidebar.
-     * Null when the viewer can't moderate or the count failed to load. */
-    queuePendingCount?: number | null;
+     * queue summary. Unresolved, like `worklist`. */
+    digest?: Promise<WorklistDigest | null>;
+    /** First page of the mod queue, for the overview's queue summary and the
+     * sidebar's pending count. Handed over unresolved — on a big board this
+     * one call can take tens of seconds, and nothing else waits for it. */
+    worklist?: Promise<WorklistPage | null>;
 }
 
 export function ConsoleShell({
     game,
     categories,
     flags,
-    attentionItems,
-    degradedSources,
+    attention,
     moderatedGamesCount = 0,
     modApplications,
     initialRows,
@@ -111,7 +125,6 @@ export function ConsoleShell({
     runsJob,
     digest,
     worklist,
-    queuePendingCount = null,
 }: ConsoleShellProps) {
     const groups = useMemo(() => buildNav(flags), [flags]);
     const footerItems = useMemo(() => buildFooterNav(flags), [flags]);
@@ -144,20 +157,33 @@ export function ConsoleShell({
         setupCompleteness.steps.find((s) => s.step === 'boards')?.status !==
             'done';
 
-    // Seeded from the server's count, then kept current by the worklist pane
-    // so the badge drops as the moderator approves.
-    const [liveQueueCount, setLiveQueueCount] = useState<number | null>(
-        queuePendingCount ?? null,
-    );
+    // Filled in when the mod queue lands (see the StreamedValue below), then
+    // kept current by the worklist pane so the badge drops as the moderator
+    // approves. Null means "not known yet" — the badge simply isn't drawn.
+    const [liveQueueCount, setLiveQueueCount] = useState<number | null>(null);
+    const takeWorklistCount = useCallback((page: WorklistPage | null) => {
+        setLiveQueueCount(page?.counts.needsYou ?? null);
+    }, []);
+
+    // The inbox arrives on its own schedule too. Until it does there is no
+    // Needs attention badge and the pane says it is still loading, rather
+    // than claiming an empty queue.
+    const [inbox, setInbox] = useState<AttentionData | null>(null);
+    const attentionItems = inbox?.items ?? EMPTY_ITEMS;
+    const degradedSources = inbox?.degradedSources ?? EMPTY_SOURCES;
 
     // Ambient sidebar status from data the shell already holds. The count
     // pill wins over a dot when both could apply.
     const badges = useMemo(() => {
         const map: Record<string, NavBadge | undefined> = {
-            attention: {
-                count: attentionItems.length,
-                degraded: degradedSources.length > 0,
-            },
+            // No badge at all until the inbox lands — a 0 here would read as
+            // "all clear" while the flags call is still running.
+            attention: inbox
+                ? {
+                      count: attentionItems.length,
+                      degraded: degradedSources.length > 0,
+                  }
+                : undefined,
         };
         // The one number a moderator checks daily: runs waiting on them.
         if (liveQueueCount != null && liveQueueCount > 0) {
@@ -180,6 +206,7 @@ export function ConsoleShell({
         }
         return map;
     }, [
+        inbox,
         attentionItems.length,
         degradedSources.length,
         liveQueueCount,
@@ -360,6 +387,19 @@ export function ConsoleShell({
 
     return (
         <>
+            {/* The slow calls, parked off the render path. Each sits in its
+                own boundary so waiting on one holds up nothing but itself. */}
+            <Suspense fallback={null}>
+                <StreamedValue promise={attention} onValue={setInbox} />
+            </Suspense>
+            {worklist && (
+                <Suspense fallback={null}>
+                    <StreamedValue
+                        promise={worklist}
+                        onValue={takeWorklistCount}
+                    />
+                </Suspense>
+            )}
             <ConsoleChrome
                 header={{
                     title: game.display,
@@ -422,6 +462,7 @@ export function ConsoleShell({
                     gameDetails={gameDetails}
                     attentionItems={attentionItems}
                     degradedSources={degradedSources}
+                    attentionPending={inbox === null}
                     modApplications={modApplications}
                     moderators={moderators}
                     rows={rows}

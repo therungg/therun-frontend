@@ -20,10 +20,7 @@ import {
     canConfigureGame,
     canModerateGame,
 } from '~src/lib/moderation/can-moderate';
-import { listManualTimes } from '~src/lib/moderation/manual-times';
 import { listPolicies } from '~src/lib/moderation/policies';
-import { listGameReports } from '~src/lib/moderation/reports';
-import { listQueue } from '~src/lib/moderation/triage';
 import { getVerificationSettings } from '~src/lib/moderation/verification-settings';
 import { getWorklist, getWorklistDigest } from '~src/lib/moderation/worklist';
 import {
@@ -44,11 +41,7 @@ import type { BoardPolicyRow } from '../../../../../types/moderation.types';
 import { ConsoleShell } from './console/console-shell';
 import type { GameDetailsData } from './console/game-details-pane';
 import { loadModDoorClaim, ModDoor } from './mod-door';
-import {
-    degradedSourcesOf,
-    mergeAttention,
-    resolveSource,
-} from './moderation/attention/attention-model';
+import { loadAttention } from './moderation/attention/load-attention';
 
 interface Props {
     params: Promise<{ game: string }>;
@@ -109,55 +102,43 @@ export default async function GameAdminConsolePage({ params }: Props) {
     const categoryName = (id: number) =>
         categoryById.get(id) ?? `Category ${id}`;
 
-    const [
-        identifiers,
-        catalog,
-        queueRes,
-        reportsRes,
-        manualTimesRes,
-        syncJob,
-        settingsJob,
-        runsJob,
-        worklist,
-        digest,
-    ] = await Promise.all([
-        getGameIdentifiers(game.id).catch(() => ({
-            slug: null,
-        })),
-        // Rows and groups both come off pageData — one load, not two.
-        loadConsoleCatalog(game.id).catch(() => ({
-            rows: [],
-            groups: [],
-        })),
-        resolveSource(listQueue(sessionId, game.id, { limit: 200 }), 'flags'),
-        resolveSource(listGameReports(sessionId, game.id), 'reports'),
-        resolveSource(listManualTimes(sessionId, game.id), 'manual times'),
-        // The board's latest import job — feeds the overview's Import & sync
-        // card. Best-effort: a failure just renders the "no import" state.
-        getSrcImportJob(sessionId, game.id).catch(() => null),
-        // Per-kind latest jobs — the overview's import card shows one "last
-        // import" line for settings and one for runs.
-        getSrcImportJob(sessionId, game.id, 'settings').catch(() => null),
-        getSrcImportJob(sessionId, game.id, 'resync').catch(() => null),
-        // First page of the mod queue: the overview's summary reads its counts,
-        // batches and most urgent rows, and the sidebar badge its total.
-        canModerate
-            ? getWorklist(sessionId, game.id, { pageSize: 5 }).catch(() => null)
-            : Promise.resolve(null),
-        // Seven-day history for the overview's queue summary.
-        canModerate
-            ? getWorklistDigest(sessionId, game.id, 7).catch(() => null)
-            : Promise.resolve(null),
-    ]);
+    // The mod queue is the slowest thing this page can ask for — on a big
+    // board the worklist and the flags inbox each re-rank every pending run,
+    // which runs into tens of seconds. None of it is awaited here: the
+    // promises go straight to the console, which streams them in behind
+    // Suspense so the rest of the page renders at the speed of the cheap
+    // calls below.
+    const worklistPromise = canModerate
+        ? getWorklist(sessionId, game.id, { pageSize: 5 }).catch(() => null)
+        : Promise.resolve(null);
+    const digestPromise = canModerate
+        ? getWorklistDigest(sessionId, game.id, 7).catch(() => null)
+        : Promise.resolve(null);
+    // Flags, reports and self-claims: the Needs attention inbox and its
+    // sidebar badge. `loadAttention` keeps each source's failure visible
+    // instead of erroring the page.
+    const attentionPromise = loadAttention(sessionId, game.id, categoryName);
+
+    const [identifiers, catalog, syncJob, settingsJob, runsJob] =
+        await Promise.all([
+            getGameIdentifiers(game.id).catch(() => ({
+                slug: null,
+            })),
+            // Rows and groups both come off pageData — one load, not two.
+            loadConsoleCatalog(game.id).catch(() => ({
+                rows: [],
+                groups: [],
+            })),
+            // The board's latest import job — feeds the overview's Import &
+            // sync card. Best-effort: a failure just renders the "no import"
+            // state.
+            getSrcImportJob(sessionId, game.id).catch(() => null),
+            // Per-kind latest jobs — the overview's import card shows one
+            // "last import" line for settings and one for runs.
+            getSrcImportJob(sessionId, game.id, 'settings').catch(() => null),
+            getSrcImportJob(sessionId, game.id, 'resync').catch(() => null),
+        ]);
     const { rows: rawRows, groups } = catalog;
-    const degradedSources = degradedSourcesOf([
-        queueRes,
-        reportsRes,
-        manualTimesRes,
-    ]);
-    const queueItems = queueRes.ok ? queueRes.data : [];
-    const reports = reportsRes.ok ? reportsRes.data : [];
-    const manualTimes = manualTimesRes.ok ? manualTimesRes.data : [];
 
     const statsById = new Map(categories.map((c) => [c.id, c]));
     const resolvedIds = new Set(categories.map((c) => c.id));
@@ -178,16 +159,6 @@ export default async function GameAdminConsolePage({ params }: Props) {
         // drop freshly materialised level boards (all-zero stats) while
         // keeping the below-floor junk it is meant to remove.
         .filter((r) => keepConsoleRow(r.id, resolvedIds));
-
-    const pendingClaims = manualTimes.filter(
-        (m) => m.verificationStatus === 'pending',
-    );
-    const attentionItems = mergeAttention(
-        queueItems,
-        reports,
-        pendingClaims,
-        categoryName,
-    );
 
     let modApplications: BoardClaimRequest[] = [];
     if (canEditMods) {
@@ -291,8 +262,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
                     canSiteBan: ability.can('moderate', 'admins'),
                     boardsVisible: canSeeBoards(session),
                 }}
-                attentionItems={attentionItems}
-                degradedSources={degradedSources}
+                attention={attentionPromise}
                 moderatedGamesCount={session.moderatedGames?.length ?? 0}
                 modApplications={modApplications}
                 initialRows={rows}
@@ -308,9 +278,8 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 syncJob={syncJob}
                 settingsJob={settingsJob}
                 runsJob={runsJob}
-                queuePendingCount={worklist?.counts.needsYou ?? null}
-                worklist={worklist}
-                digest={digest}
+                worklist={worklistPromise}
+                digest={digestPromise}
             />
         </Suspense>
     );

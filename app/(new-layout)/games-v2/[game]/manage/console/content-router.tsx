@@ -50,6 +50,9 @@ export interface ContentRouterProps {
     categoryConfig: CategoryConfigRow[];
     attentionItems: AttentionItem[];
     degradedSources: string[];
+    /** The inbox hasn't landed yet — the pane waits rather than announcing an
+     * empty queue it can't vouch for. */
+    attentionPending?: boolean;
     modApplications?: BoardClaimRequest[];
     moderators?: GameModerator[];
     /** Full category/group rows for the Boards pane — `categories` above is
@@ -88,10 +91,11 @@ export interface ContentRouterProps {
     /** Latest runs import, for the overview card's per-kind lines. */
     runsJob?: SrcImportJob | null;
     /** Seven-day history of what was decided and flagged, for the overview's
-     * queue summary. */
-    digest?: WorklistDigest | null;
-    /** First page of the mod queue, for the overview's queue summary. */
-    worklist?: WorklistPage | null;
+     * queue summary. Unresolved — the summary streams. */
+    digest?: Promise<WorklistDigest | null>;
+    /** First page of the mod queue, for the overview's queue summary.
+     * Unresolved — the summary streams. */
+    worklist?: Promise<WorklistPage | null>;
     /** Whether this viewer can reach the moderation queue — gates the
      * overview's Needs-attention KPI. */
     canModerate: boolean;
@@ -193,19 +197,25 @@ export function ContentRouter(props: ContentRouterProps) {
                             applications={modApplications}
                         />
                     )}
-                    <NeedsAttention
-                        gameSlug={game.name}
-                        gameId={game.id}
-                        gameDisplay={game.display}
-                        items={attentionItems}
-                        degradedSources={degradedSources}
-                        categories={categories}
-                        boardCategories={props.boardCategories}
-                        variables={props.variables}
-                        canSiteBan={props.canSiteBan}
-                        boardsVisible={props.boardsVisible}
-                        onCountChange={props.onAttentionCountChange}
-                    />
+                    {props.attentionPending ? (
+                        <div className={styles.surface}>
+                            <div className={styles.skeleton} aria-busy />
+                        </div>
+                    ) : (
+                        <NeedsAttention
+                            gameSlug={game.name}
+                            gameId={game.id}
+                            gameDisplay={game.display}
+                            items={attentionItems}
+                            degradedSources={degradedSources}
+                            categories={categories}
+                            boardCategories={props.boardCategories}
+                            variables={props.variables}
+                            canSiteBan={props.canSiteBan}
+                            boardsVisible={props.boardsVisible}
+                            onCountChange={props.onAttentionCountChange}
+                        />
+                    )}
                 </>
             );
         case 'bans':

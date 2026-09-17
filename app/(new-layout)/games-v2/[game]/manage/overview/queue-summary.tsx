@@ -1,5 +1,6 @@
 'use client';
 
+import { use } from 'react';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { VariableRow } from '../../../../../../types/leaderboards.types';
 import type {
@@ -117,6 +118,44 @@ function digestSentence(d: WorklistDigest): string | null {
             ? parts[0]
             : `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
     return `In the last ${d.days} days, ${list}.`;
+}
+
+/**
+ * The summary's placeholder while the queue is still being computed. The mod
+ * queue is the slowest call the console makes, so the overview renders this
+ * and fills it in when the numbers arrive.
+ */
+export function QueueSummarySkeleton() {
+    return (
+        <div
+            className={styles.skeleton}
+            aria-busy
+            aria-label="Loading the mod queue"
+        />
+    );
+}
+
+/**
+ * The summary, fed by the promises the server handed over unresolved. Held
+ * inside a Suspense boundary by the overview, so the rest of the console
+ * paints while the queue is still being worked out.
+ */
+export function StreamedQueueSummary({
+    worklist,
+    digest,
+    ...rest
+}: {
+    worklist?: Promise<WorklistPage | null>;
+    digest?: Promise<WorklistDigest | null>;
+    variables: VariableRow[];
+    onOpenQueue: () => void;
+    onOpenDecided: () => void;
+}) {
+    // `use` may be called conditionally — a console rendered without these
+    // promises (no moderator permission) simply has nothing to wait for.
+    const page = worklist ? use(worklist) : null;
+    const history = digest ? use(digest) : null;
+    return <QueueSummary worklist={page} digest={history} {...rest} />;
 }
 
 export function QueueSummary({

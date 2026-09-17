@@ -215,3 +215,11 @@ $tier-3: color-mix(in srgb, var(--bs-body-color) 28%, transparent);
         grid-area: time;
     }
 }
+
+// Waiting on the queue. Same footprint as the loaded summary so the overview
+// doesn't jump when the numbers land.
+.skeleton {
+    @include board.board-skeleton;
+    min-height: 14rem;
+    border-radius: dt.$radius-lg;
+}

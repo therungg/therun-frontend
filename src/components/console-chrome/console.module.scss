@@ -657,6 +657,14 @@ $rail: 3px; // severity spine / active accent width
     border-radius: dt.$radius-lg;
 }
 
+// A pane still waiting on a slow call. Same vocabulary as .fallback, sized
+// like one list rather than the whole console.
+.skeleton {
+    @include board.board-skeleton;
+    min-height: 18rem;
+    border-radius: dt.$radius-lg;
+}
+
 // The one pane anatomy: optional group eyebrow, a headline-weight title,
 // actions on the baseline, lede below. Structure comes from type scale and
 // space — no hairline underneath.
