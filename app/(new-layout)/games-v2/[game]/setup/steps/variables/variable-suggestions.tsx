@@ -89,7 +89,7 @@ export function VariableSuggestions({
     if (error) {
         return (
             <section className={styles.panel}>
-                <h3 className={styles.title}>Suggested variables</h3>
+                <h3 className={styles.title}>From runs</h3>
                 <p className={styles.muted}>
                     Couldn&rsquo;t load suggestions: {error}
                 </p>
@@ -99,7 +99,7 @@ export function VariableSuggestions({
     if (loading && suggestions.length === 0) {
         return (
             <section className={styles.panel}>
-                <h3 className={styles.title}>Suggested variables</h3>
+                <h3 className={styles.title}>From runs</h3>
                 <p className={styles.muted}>Finding what runners submit…</p>
             </section>
         );
@@ -107,7 +107,7 @@ export function VariableSuggestions({
     if (suggestions.length === 0) {
         return (
             <section className={styles.panel}>
-                <h3 className={styles.title}>Suggested variables</h3>
+                <h3 className={styles.title}>From runs</h3>
                 <p className={styles.muted}>
                     No variable is set by enough runners in any featured
                     category yet. Add subcategories and filters below by hand.
@@ -122,12 +122,12 @@ export function VariableSuggestions({
     return (
         <section className={styles.panel}>
             <div className={styles.head}>
-                <h3 className={styles.title}>Suggested variables</h3>
-                {anyMergeable && (
-                    <span className={styles.headHint}>
-                        Drag a value onto another to merge their spellings.
-                    </span>
-                )}
+                <h3 className={styles.title}>From runs</h3>
+                <span className={styles.headHint}>
+                    Values runners fill in, per category
+                    {anyMergeable &&
+                        ' · drag a value onto another to merge their spellings'}
+                </span>
             </div>
             <ul className={styles.list}>
                 {suggestions.map((s) => (

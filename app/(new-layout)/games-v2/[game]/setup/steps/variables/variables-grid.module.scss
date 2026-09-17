@@ -1,5 +1,6 @@
 @use '../../../../../styles/design-tokens' as dt;
 @use '../../../../../styles/board' as board;
+@use '../../workspace/workspace' as ws;
 
 // Zone 2 of step 4, on the same row axis as the scalar matrix above it:
 // CATEGORIES ARE ROWS. They used to run across the top here and down the left
@@ -18,16 +19,18 @@
 }
 
 .zoneHead {
-    @include board.board-section-head;
+    @include ws.panel-head;
+    padding-bottom: dt.$spacing-xs;
+    border-bottom: ws.$divider;
     margin-bottom: dt.$spacing-sm;
 }
 
 .zoneTitle {
-    @include board.board-eyebrow;
+    @include ws.panel-title;
 }
 
 .zoneCount {
-    @include board.board-section-count;
+    @include ws.panel-hint;
 }
 
 // What this section costs you, said once under its heading.
@@ -103,13 +106,13 @@
 .paletteHead {
     width: 100%;
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: dt.$spacing-sm;
     flex-wrap: wrap;
-    padding: dt.$spacing-lg;
-    background: rgba(var(--bs-secondary-bg-rgb), 0.5);
+    padding: dt.$spacing-md dt.$spacing-lg;
+    background: transparent;
     border: 0;
-    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.45);
+    border-bottom: ws.$divider;
     color: inherit;
     text-align: left;
     // The whole bar collapses the panel, the way an accordion head should.
@@ -119,7 +122,7 @@
     transition: background-color dt.$transition-fast;
 
     &:hover {
-        background: rgba(var(--bs-secondary-bg-rgb), 0.8);
+        background: rgba(var(--bs-body-color-rgb), 0.03);
     }
 
     &:focus-within {
@@ -145,10 +148,7 @@
 // navigation, and this goes nowhere.
 .paletteName {
     font: inherit;
-    font-size: dt.$font-size-xl;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    color: var(--bs-emphasis-color);
+    @include ws.panel-title;
     background: transparent;
     border: 0;
     padding: 0;
@@ -229,9 +229,8 @@
 .renameInput {
     width: 100%;
     font: inherit;
-    font-size: dt.$font-size-xl;
-    font-weight: 700;
-    letter-spacing: -0.01em;
+    font-size: dt.$font-size-base;
+    font-weight: 600;
     color: var(--bs-emphasis-color);
     background: var(--bs-body-bg);
     border: 1px solid;
@@ -245,25 +244,33 @@
 }
 
 .paletteMeta {
-    @include board.board-section-count;
+    @include ws.panel-hint;
 }
 
-// Delete, moved into the head beside the collapse control. Quiet at rest —
-// it's destructive and behind a confirm — and reddens on hover. Pushed to the
+// SUBCATEGORY / FILTER beside the name: which section this belongs to.
+.roleTag {
+    @include board.board-eyebrow;
+    padding: 1px dt.$spacing-xs * 1.5;
+    border: ws.$divider;
+    border-radius: dt.$radius-sm;
+    line-height: 1.4;
+}
+
+// Delete, in the head beside the collapse control. A quiet link — it's
+// destructive and behind a confirm — that reddens on hover. Pushed to the
 // right so it sits just left of the chevron.
 .headDelete {
+    @include board.board-quiet-link;
     margin-left: auto;
-    padding: 0.1rem dt.$spacing-sm;
-    border: 1px solid transparent;
-    border-radius: dt.$radius-sm;
-    background: transparent;
-    color: var(--bs-tertiary-color);
-    font-size: dt.$font-size-2xs;
-    cursor: pointer;
+    font-size: dt.$font-size-sm;
 
     &:hover:not(:disabled) {
-        border-color: rgba(dt.$accent-red, 0.6);
         color: dt.$accent-red;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: default;
     }
 }
 
@@ -313,6 +320,8 @@
 
 .grid {
     @include board.board-table;
+    // Quiet sentence-case option headers and a divider under every row.
+    @include ws.quiet-table;
     width: auto;
 
     // Options are the columns, so the option headers centre over their own
@@ -329,10 +338,10 @@
 
     tbody th {
         text-align: left;
-        padding: dt.$spacing-xs dt.$spacing-lg dt.$spacing-xs dt.$spacing-md;
+        padding: ws.$cell-pad-y dt.$spacing-lg ws.$cell-pad-y dt.$spacing-md;
         font-weight: 500;
         color: var(--bs-body-color);
-        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+        border-bottom: ws.$divider;
         white-space: nowrap;
     }
 }
@@ -449,41 +458,13 @@
     width: 1%;
 }
 
-// The one control that adds a value — it was a faint dashed ghost in the
-// corner, the easiest thing on the grid to miss. Given the primary accent and
-// a tick more weight so it reads as an action, not a decoration.
+// The one control that adds a value, where the new column will appear. An
+// outlined secondary button, like every other create action in the workspace.
 .addOption {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    font: inherit;
-    font-size: dt.$font-size-2xs;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    color: var(--bs-primary);
-    background: rgba(var(--bs-primary-rgb), 0.08);
-    border: 1px dashed rgba(var(--bs-primary-rgb), 0.55);
-    border-radius: dt.$radius-sm;
+    @include ws.secondary-btn;
     padding: 0.2rem dt.$spacing-sm;
-    cursor: pointer;
-    white-space: nowrap;
-
-    &:hover:not(:disabled) {
-        border-style: solid;
-        border-color: rgba(var(--bs-primary-rgb), 0.9);
-        background: rgba(var(--bs-primary-rgb), 0.15);
-        color: var(--bs-emphasis-color);
-    }
-
-    &:focus-visible {
-        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
-        outline-offset: 2px;
-    }
-
-    &:disabled {
-        opacity: 0.5;
-        cursor: default;
-    }
+    font-size: dt.$font-size-xs;
+    gap: 0.25rem;
 }
 
 // ---- Board order --------------------------------------------
@@ -600,7 +581,8 @@
 .cell {
     width: 16px;
     height: 16px;
-    margin: dt.$spacing-xs 0;
+    margin: 0;
+    vertical-align: middle;
     accent-color: var(--bs-secondary-color);
     cursor: pointer;
 
@@ -865,40 +847,10 @@
 // No role picker: the section already answered that question, so the form only
 // collects a name and the options.
 
-// Shaped like the panel it will become, not like a chip. Adding a group
-// creates a whole object with leaderboards behind it, and the control that
-// does it should stand where the object will stand.
+// Adding a subcategory group or filter: the workspace's outlined secondary
+// create button, under the last group in its section.
 .addAction {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.35rem;
-    width: 100%;
-    padding: dt.$spacing-lg;
-    font: inherit;
-    font-size: dt.$font-size-sm;
-    font-weight: 600;
-    color: var(--bs-secondary-color);
-    background: transparent;
-    border: 1px dashed rgba(var(--bs-border-color-rgb), 0.7);
-    border-radius: dt.$radius-lg;
-    cursor: pointer;
-    transition: border-color dt.$transition-fast, color dt.$transition-fast;
-
-    &:hover:not(:disabled) {
-        border-color: rgba(var(--bs-primary-rgb), 0.7);
-        color: var(--bs-emphasis-color);
-    }
-
-    &:focus-visible {
-        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
-        outline-offset: 2px;
-    }
-
-    &:disabled {
-        opacity: 0.6;
-        cursor: default;
-    }
+    @include ws.secondary-btn;
 }
 
 // Where the new group will appear, so it is already shaped like one.

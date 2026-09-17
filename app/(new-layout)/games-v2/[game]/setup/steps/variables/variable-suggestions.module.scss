@@ -1,5 +1,6 @@
 @use '../../../../../styles/design-tokens' as dt;
 @use '../../../../../styles/board' as board;
+@use '../../workspace/workspace' as ws;
 
 // ============================================================
 // VariableSuggestions — the step's lead surface. One card per suggested
@@ -9,37 +10,30 @@
 // ============================================================
 
 .panel {
-    @include board.board-surface;
+    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
     margin-bottom: dt.$spacing-lg;
 }
 
+// Sentence-case title and a muted hint, as on List.
 .head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: dt.$spacing-md;
-    flex-wrap: wrap;
+    @include ws.panel-head;
     margin-bottom: dt.$spacing-md;
 }
 
 .title {
-    font-size: dt.$font-size-lg;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    margin: 0;
+    @include ws.panel-title;
 }
 
-// The merge instruction, once for the whole section rather than repeated under
-// every card that happens to have more than one value.
+// What the panel holds, plus the merge instruction once for the whole section
+// rather than under every card that happens to have more than one value.
 .headHint {
-    font-size: dt.$font-size-xs;
-    color: var(--bs-secondary-color);
+    @include ws.panel-hint;
 }
 
 .muted {
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
-    margin: 0;
+    margin: dt.$spacing-sm 0 0;
 }
 
 .list {
@@ -57,7 +51,7 @@
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-sm;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border: ws.$divider;
     border-radius: dt.$radius-lg;
     padding: dt.$spacing-md;
     background: rgba(var(--bs-body-color-rgb), 0.015);
@@ -71,9 +65,7 @@
 }
 
 .name {
-    font-size: dt.$font-size-md;
-    font-weight: 700;
-    letter-spacing: -0.01em;
+    @include ws.panel-title;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -210,7 +202,7 @@
     gap: dt.$spacing-xs;
     margin-top: auto;
     padding-top: dt.$spacing-sm;
-    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    border-top: ws.$divider;
 }
 
 .relevance {
@@ -238,19 +230,10 @@
     margin-top: dt.$spacing-xs;
 }
 
-// The action hierarchy, at card scale: primary = board-btn-primary,
-// secondary = control-pill. Padding slimmed so a footer of two actions
-// stays quieter than the pane's own primary action.
-.addPrimary {
-    @include board.board-btn-primary;
-    padding: 0.3rem 0.85rem;
-
-    @media (pointer: coarse) {
-        min-height: 44px;
-    }
-}
-
+// Creating a subcategory or filter from a suggestion is a create action, not
+// the step's commit: outlined secondary buttons, slimmed to card scale.
+.addPrimary,
 .addSecondary {
-    @include board.control-pill;
-    padding: 0.3rem 0.85rem;
+    @include ws.secondary-btn;
+    padding: dt.$spacing-xs dt.$spacing-md;
 }

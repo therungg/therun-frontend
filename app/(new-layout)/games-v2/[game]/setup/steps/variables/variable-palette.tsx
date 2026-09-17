@@ -197,6 +197,9 @@ export function VariablePalette({
                         >
                             {group.name}
                         </button>
+                        <span className={styles.roleTag}>
+                            {role === 'subcategory' ? 'Subcategory' : 'Filter'}
+                        </span>
                         <span className={styles.paletteMeta}>
                             on {onCount} of {categories.length} ·{' '}
                             {group.buckets.length}{' '}
