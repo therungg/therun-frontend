@@ -48,6 +48,10 @@ export type HideScope = 'run' | 'category' | 'game';
 
 export const MIN_REASON = 10;
 
+/** Deleting a manual time notifies its runner. */
+const MANUAL_DELETE_TOLD =
+    'is told the manual time was deleted, with this reason.';
+
 /** A declined manual time can be approved again, never made pending again. */
 const MANUAL_DECLINE_UNDO =
     'a declined manual time can be approved later, not made pending again';
@@ -538,7 +542,7 @@ export function runHeavySpec(
                         </>
                     )),
                 // Remove is the quiet exclusion: nothing reaches the runner.
-                told: a.isManual ? undefined : null,
+                told: a.isManual ? MANUAL_DELETE_TOLD : null,
                 undoHint: a.isManual ? undefined : 'Restore from history',
                 notUndoable: a.isManual ? 'manual times have no restore' : null,
                 reasonKeys: false,
@@ -709,7 +713,7 @@ export function bulkHeavySpec(
                     a.manualCount === 0
                         ? null
                         : a.manualCount === n
-                          ? undefined
+                          ? MANUAL_DELETE_TOLD
                           : 'is told only when their manual time is deleted, with this reason.',
                 undoHint: a.manualCount ? undefined : 'Restore from history',
                 notUndoable: a.manualCount
