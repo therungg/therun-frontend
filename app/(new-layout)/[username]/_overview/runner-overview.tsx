@@ -25,12 +25,27 @@ const SKELETON_HEIGHT: Record<ChapterId, number> = {
     splits: 220,
 };
 
-function ChapterBody({ id, head }: { id: ChapterId; head: RunnerProfileHead }) {
+function ChapterBody({
+    id,
+    head,
+    boardsVisible,
+}: {
+    id: ChapterId;
+    head: RunnerProfileHead;
+    boardsVisible: boolean;
+}) {
     switch (id) {
         case 'highlights':
-            return <HighlightsChapter head={head} />;
+            return (
+                <HighlightsChapter head={head} boardsVisible={boardsVisible} />
+            );
         case 'leaderboards':
-            return <LeaderboardsChapter head={head} />;
+            return (
+                <LeaderboardsChapter
+                    head={head}
+                    boardsVisible={boardsVisible}
+                />
+            );
         case 'activity':
             return <ActivityChapter head={head} />;
         case 'games':
@@ -42,7 +57,14 @@ function ChapterBody({ id, head }: { id: ChapterId; head: RunnerProfileHead }) {
     }
 }
 
-export async function RunnerOverview({ name }: { name: string }) {
+export async function RunnerOverview({
+    name,
+    boardsVisible,
+}: {
+    name: string;
+    /** Whether game and category names may link to their boards. */
+    boardsVisible: boolean;
+}) {
     const head = await getRunnerProfileHead(name);
     if (!head) notFound();
     const runner = head.runner.name;
@@ -60,7 +82,11 @@ export async function RunnerOverview({ name }: { name: string }) {
                             />
                         }
                     >
-                        <ChapterBody id={id} head={head} />
+                        <ChapterBody
+                            id={id}
+                            head={head}
+                            boardsVisible={boardsVisible}
+                        />
                     </Suspense>
                 ))}
             </div>

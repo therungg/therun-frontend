@@ -524,6 +524,17 @@ $row-line: color-mix(
     }
 }
 
+/* A name that opens its board: reads like the text around it until hovered. */
+.boardLink {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+}
+
 .runsTotals {
     display: flex;
     flex-wrap: wrap;

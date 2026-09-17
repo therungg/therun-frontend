@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
+import { getSession } from '~src/actions/session.action';
+import { boardsVisibleFor } from '~src/lib/boards-visible';
 import { getLeaderboardsProfile } from '~src/lib/leaderboards-profile';
 import { getRunnerProfileHead } from '~src/lib/runner-profile';
 import buildMetadata from '~src/utils/metadata';
@@ -40,9 +42,10 @@ export async function generateMetadata({
 export default async function RunnerLeaderboardsPage({ params }: PageProps) {
     const { username } = await params;
     const name = safeDecodeURI(username);
-    const [profile, head] = await Promise.all([
+    const [profile, head, session] = await Promise.all([
         getLeaderboardsProfile(name),
         getRunnerProfileHead(name),
+        getSession(),
     ]);
     if (!profile) notFound();
     const games = profile.games.map((g) => ({ ...g, theme: null }));
@@ -51,11 +54,13 @@ export default async function RunnerLeaderboardsPage({ params }: PageProps) {
     const canCustomize =
         profile.layout !== undefined && profile.runner.userId !== null;
     const empty = profile.games.length === 0;
+    const boardsVisible = boardsVisibleFor(session);
 
     return (
         <ShowcaseProvider
             games={games}
             layout={profile.layout ?? DEFAULT_LAYOUT}
+            boardsVisible={boardsVisible}
         >
             <div className={styles.page}>
                 <div className={columnStyles.columns}>
@@ -64,6 +69,7 @@ export default async function RunnerLeaderboardsPage({ params }: PageProps) {
                             <StandingStrip
                                 profile={profile}
                                 saved={head?.strips?.leaderboards}
+                                boardsVisible={boardsVisible}
                             />
                         )}
                         {empty ? null : (
@@ -93,13 +99,17 @@ export default async function RunnerLeaderboardsPage({ params }: PageProps) {
                                         name={profile.runner.name}
                                         games={profile.games}
                                         country={profile.runner.country}
+                                        boardsVisible={boardsVisible}
                                     />
                                 </Suspense>
                             </div>
                         </section>
                         {canCustomize ? <SectionEditBar /> : null}
                     </div>
-                    <ProfileSidebar profile={profile} />
+                    <ProfileSidebar
+                        profile={profile}
+                        boardsVisible={boardsVisible}
+                    />
                 </div>
             </div>
         </ShowcaseProvider>

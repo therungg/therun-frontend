@@ -2,7 +2,7 @@ import { formatSubcategoryKey } from '~app/(new-layout)/games-v2/[game]/labels';
 import Link from '~src/components/link';
 import { buildRunHref } from '~src/lib/board-url';
 import type { LeaderboardsProfileRecentPb } from '../../../../types/leaderboards-profile.types';
-import { formatEntryTime, formatProfileDate } from './format';
+import { formatEntryTime, formatProfileDate, gameRefOf } from './format';
 import styles from './leaderboards-profile.module.scss';
 
 const LIMIT = 10;
@@ -18,7 +18,7 @@ export function RecentPbs({ pbs }: { pbs: LeaderboardsProfileRecentPb[] }) {
                 {pbs.slice(0, LIMIT).map((pb) => (
                     <Link
                         key={pb.runId}
-                        href={buildRunHref(pb.gameSlug || pb.game, pb.runId)}
+                        href={buildRunHref(gameRefOf(pb), pb.runId)}
                         className={styles.recentRow}
                     >
                         <span className={styles.recentName}>

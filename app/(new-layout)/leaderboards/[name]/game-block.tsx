@@ -1,13 +1,18 @@
 import { ArrowDown, ArrowUp, ChevronDown } from 'react-bootstrap-icons';
 import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
-import { safeEncodeURI } from '~src/utils/uri';
 import type {
     LeaderboardsProfileEntry,
     LeaderboardsProfileGame,
 } from '../../../../types/leaderboards-profile.types';
 import { EntryRow, RankBall } from './entry-row';
-import { entryHref, formatEntryTime, gameRefOf } from './format';
+import {
+    entryHref,
+    formatEntryTime,
+    gameRefOf,
+    profileBoardHref,
+    profileGameHref,
+} from './format';
 import styles from './leaderboards-profile.module.scss';
 import { entryPoints, onBiggerBoard } from './showcase-rules';
 
@@ -52,6 +57,7 @@ export function GameBlock({
     unmatched = false,
     onToggle,
     onMove,
+    boardsVisible,
 }: {
     game: LeaderboardsProfileGame;
     /** Every run this game offers before filtering: what the header counts. */
@@ -67,6 +73,8 @@ export function GameBlock({
     onToggle: () => void;
     /** Edit mode with the runner's own order: move this game up or down. */
     onMove?: { up: (() => void) | null; down: (() => void) | null };
+    /** Whether game and category names may link to their boards. */
+    boardsVisible: boolean;
 }) {
     const { plain, levels } = groupByLevel(entries);
     const boards = runs.length;
@@ -78,6 +86,9 @@ export function GameBlock({
     const best = bestOf(runs);
     const gameRef = gameRefOf(game);
     const bestHref = best ? entryHref(gameRef, best) : null;
+    const bestBoardHref = best
+        ? profileBoardHref(gameRef, best, boardsVisible)
+        : null;
     const bestTotal = best?.totalRunners ?? 0;
     const showRows = open && !dim && entries.length > 0;
 
@@ -100,7 +111,7 @@ export function GameBlock({
                 <div className={styles.runsTitleBlock}>
                     <h3 className={styles.runsTitle}>
                         <Link
-                            href={`/games/${safeEncodeURI(game.game)}`}
+                            href={profileGameHref(game, boardsVisible)}
                             className={styles.runsTitleLink}
                         >
                             {game.game}
@@ -149,9 +160,20 @@ export function GameBlock({
                             </span>
                         </span>
                         <span className={styles.runsBestWhat}>
-                            {best.level
-                                ? `${best.level}: ${best.category}`
-                                : best.category}
+                            {bestBoardHref ? (
+                                <Link
+                                    href={bestBoardHref}
+                                    className={styles.boardLink}
+                                >
+                                    {best.level
+                                        ? `${best.level}: ${best.category}`
+                                        : best.category}
+                                </Link>
+                            ) : best.level ? (
+                                `${best.level}: ${best.category}`
+                            ) : (
+                                best.category
+                            )}
                             {bestTotal > 1
                                 ? `, of ${n(bestTotal)} runners`
                                 : null}
@@ -189,6 +211,7 @@ export function GameBlock({
                             entry={e}
                             gameRef={gameRef}
                             country={country}
+                            boardsVisible={boardsVisible}
                         />
                     ))}
                     {[...levels.entries()].map(([level, list]) => (
@@ -200,6 +223,7 @@ export function GameBlock({
                                     entry={e}
                                     gameRef={gameRef}
                                     country={country}
+                                    boardsVisible={boardsVisible}
                                 />
                             ))}
                         </div>

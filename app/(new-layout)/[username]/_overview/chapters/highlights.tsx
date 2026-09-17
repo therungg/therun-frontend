@@ -28,7 +28,13 @@ const asPinned = (pin: BoardPin): Pinned => ({
 });
 
 /** The runner's pins as the backend resolved them; every pin with a video plays it. */
-export function HighlightsChapter({ head }: { head: RunnerProfileHead }) {
+export function HighlightsChapter({
+    head,
+    boardsVisible,
+}: {
+    head: RunnerProfileHead;
+    boardsVisible: boolean;
+}) {
     const name = head.runner.name;
     // Level runs stay on the Leaderboards tab; the overview is full game only.
     const pins = head.pins.filter(
@@ -45,6 +51,7 @@ export function HighlightsChapter({ head }: { head: RunnerProfileHead }) {
                             <PinCard
                                 key={`${pin.ref.kind}-${pin.ref.id}`}
                                 pin={asPinned(pin)}
+                                boardsVisible={boardsVisible}
                             />
                         ) : (
                             <TimerPbCard

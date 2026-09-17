@@ -1,6 +1,10 @@
 import { Suspense } from 'react';
-import { safeEncodeURI } from '~src/utils/uri';
 import type { LeaderboardsProfile } from '../../../../../types/leaderboards-profile.types';
+import {
+    gameRefOf,
+    profileBoardHref,
+    profileGameHref,
+} from '../../../leaderboards/[name]/format';
 import { autoPins } from '../../../leaderboards/[name]/showcase-rules';
 import { StatStrip } from '../stat-strip';
 import { leaderboardsStrip } from '../strips/leaderboards';
@@ -14,9 +18,12 @@ const count = (n: number) => n.toLocaleString('en-US');
 export function StandingStrip({
     profile,
     saved,
+    boardsVisible,
 }: {
     profile: LeaderboardsProfile;
     saved: string[] | null | undefined;
+    /** Whether the best result may link to its board. */
+    boardsVisible: boolean;
 }) {
     // The lead is the showcase's own first pick: the run worth the most
     // placement points, not simply the lowest rank number.
@@ -29,6 +36,12 @@ export function StandingStrip({
                   category: top.entry.category,
                   total: top.entry.totalRunners ?? 0,
                   image: top.game.imageUrl,
+                  href:
+                      profileBoardHref(
+                          gameRefOf(top.game),
+                          top.entry,
+                          boardsVisible,
+                      ) ?? profileGameHref(top.game, boardsVisible),
               }
             : null;
     const strip = resolveStrip(leaderboardsStrip, profile, saved);
@@ -45,7 +58,7 @@ export function StandingStrip({
                                   ? `Best result · of ${count(best.total)} runners`
                                   : 'Best result',
                           what: `${best.game} · ${best.category}`,
-                          href: `/games/${safeEncodeURI(best.game)}`,
+                          href: best.href,
                           medal: MEDALS[best.rank],
                           image: best.image,
                       }

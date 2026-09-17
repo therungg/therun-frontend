@@ -28,6 +28,8 @@ const strip = (l: ResolvedLeaderboardsLayout): LeaderboardsLayout => ({
 
 interface Showcase {
     games: LeaderboardsProfileGame[];
+    /** Whether this viewer can open board pages; names link to boards only then. */
+    boardsVisible: boolean;
     /** What is saved (resolved by the backend). */
     layout: ResolvedLeaderboardsLayout;
     /** What the page shows: the saved layout, or the edit-mode draft. */
@@ -49,10 +51,12 @@ const ShowcaseContext = createContext<Showcase | null>(null);
 export function ShowcaseProvider({
     games,
     layout,
+    boardsVisible,
     children,
 }: {
     games: LeaderboardsProfileGame[];
     layout: ResolvedLeaderboardsLayout;
+    boardsVisible: boolean;
     children: ReactNode;
 }) {
     const router = useRouter();
@@ -111,6 +115,7 @@ export function ShowcaseProvider({
     const value = useMemo<Showcase>(
         () => ({
             games,
+            boardsVisible,
             layout,
             draft: editing ? draft : strip(layout),
             editing,
@@ -125,6 +130,7 @@ export function ShowcaseProvider({
         }),
         [
             games,
+            boardsVisible,
             layout,
             draft,
             editing,

@@ -1,9 +1,8 @@
 import Link from '~src/components/link';
-import { safeEncodeURI } from '~src/utils/uri';
 import type { LeaderboardsProfile } from '../../../../types/leaderboards-profile.types';
 import { ActivityGate } from './activity-gate';
 import { ActivityHeatmap } from './activity-heatmap';
-import { formatProfileDate, plural } from './format';
+import { formatProfileDate, plural, profileGameHref } from './format';
 import { GamesShelf } from './games-shelf';
 import styles from './leaderboards-profile.module.scss';
 import { LiveStrip } from './live-strip';
@@ -11,7 +10,13 @@ import { RecentPbs } from './recent-pbs';
 
 const n = (v: number) => v.toLocaleString('en-US');
 
-function AboutCard({ runner }: { runner: LeaderboardsProfile['runner'] }) {
+function AboutCard({
+    runner,
+    boardsVisible,
+}: {
+    runner: LeaderboardsProfile['runner'];
+    boardsVisible: boolean;
+}) {
     const hasAccount = runner.userId !== null;
     const hasFacts =
         runner.joinedAt ||
@@ -46,7 +51,7 @@ function AboutCard({ runner }: { runner: LeaderboardsProfile['runner'] }) {
                                 <span key={m.gameId}>
                                     {i > 0 ? ', ' : ''}
                                     <Link
-                                        href={`/games/${safeEncodeURI(m.game)}`}
+                                        href={profileGameHref(m, boardsVisible)}
                                     >
                                         {m.game}
                                     </Link>
@@ -100,10 +105,17 @@ function StandingCard({
 }
 
 /** The right-hand column: About, Standing, Games, Activity and Recent PBs. */
-export function ProfileSidebar({ profile }: { profile: LeaderboardsProfile }) {
+export function ProfileSidebar({
+    profile,
+    boardsVisible,
+}: {
+    profile: LeaderboardsProfile;
+    /** Whether game names may link to their boards. */
+    boardsVisible: boolean;
+}) {
     return (
         <aside className={styles.sidebar} aria-label="Runner">
-            <AboutCard runner={profile.runner} />
+            <AboutCard runner={profile.runner} boardsVisible={boardsVisible} />
             <StandingCard standing={profile.standing} />
             <GamesShelf />
             {profile.activity.length > 0 ? (

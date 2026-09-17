@@ -11,6 +11,7 @@ import {
     entrySubcategoryLabel,
     formatEntryTime,
     formatProfileDate,
+    profileBoardHref,
     sourceLabel,
     timingLabel,
 } from './format';
@@ -119,13 +120,17 @@ export function EntryRow({
     entry,
     gameRef,
     country,
+    boardsVisible,
 }: {
     entry: LeaderboardsProfileEntry;
     /** The entry's game, for the time's link to its page. Null leaves it plain. */
     gameRef: string | null;
     country: string | null;
+    /** Whether the category name may link to its board. */
+    boardsVisible: boolean;
 }) {
     const href = gameRef ? entryHref(gameRef, entry) : null;
+    const boardHref = profileBoardHref(gameRef, entry, boardsVisible);
     const vars = entrySubcategoryLabel(entry, ', ');
     const timing = timingLabel(entry);
     const source = sourceLabel(entry.provenance);
@@ -154,7 +159,15 @@ export function EntryRow({
                 title={placing.length > 0 ? placing.join(', ') : undefined}
             />
             <span className={styles.runName}>
-                <span className={styles.runCategory}>{entry.category}</span>
+                <span className={styles.runCategory}>
+                    {boardHref ? (
+                        <Link href={boardHref} className={styles.boardLink}>
+                            {entry.category}
+                        </Link>
+                    ) : (
+                        entry.category
+                    )}
+                </span>
                 {vars ? <span className={styles.runVars}>{vars}</span> : null}
                 {total > 1 ? (
                     <span className={styles.runOf}>

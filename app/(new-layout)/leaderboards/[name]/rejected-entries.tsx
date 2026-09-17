@@ -9,11 +9,16 @@ export async function RejectedEntries({
     name,
     games,
     country,
+    boardsVisible,
 }: {
     name: string;
     /** The profile's games, to name each entry's game for its link. A game with only rejected runs is missing here and its rows stay plain. */
-    games: Pick<LeaderboardsProfileGame, 'gameId' | 'gameSlug' | 'game'>[];
+    games: Pick<
+        LeaderboardsProfileGame,
+        'gameId' | 'gameSlug' | 'gameName' | 'game'
+    >[];
     country: string | null;
+    boardsVisible: boolean;
 }) {
     const session = await getSession();
     if (!session.username) return null;
@@ -36,6 +41,7 @@ export async function RejectedEntries({
                         entry={e}
                         gameRef={refs.get(e.gameId) ?? null}
                         country={country}
+                        boardsVisible={boardsVisible}
                     />
                 ))}
             </div>

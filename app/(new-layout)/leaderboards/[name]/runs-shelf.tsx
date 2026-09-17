@@ -29,7 +29,13 @@ const OPEN_AT_START = 4;
 
 /** Every run, one panel per game, under the filter bar. */
 export function RunsShelf({ country }: { country: string | null }) {
-    const { games: unordered, draft, editing, setDraft } = useShowcase();
+    const {
+        games: unordered,
+        draft,
+        editing,
+        setDraft,
+        boardsVisible,
+    } = useShowcase();
     const url = useProfileUrl();
     const { hash, sort } = url;
     const fromUrl = filterFromUrl(url);
@@ -162,6 +168,7 @@ export function RunsShelf({ country }: { country: string | null }) {
                             runs={b.runs}
                             entries={b.entries}
                             country={country}
+                            boardsVisible={boardsVisible}
                             open={open}
                             dim={empty && searching}
                             unmatched={empty && !searching}

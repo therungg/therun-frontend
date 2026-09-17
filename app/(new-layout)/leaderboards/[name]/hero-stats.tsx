@@ -1,9 +1,8 @@
 'use client';
 
 import Link from '~src/components/link';
-import { safeEncodeURI } from '~src/utils/uri';
 import type { LeaderboardsProfileStanding } from '../../../../types/leaderboards-profile.types';
-import { plural } from './format';
+import { gameRefOf, plural, profileBoardHref, profileGameHref } from './format';
 import styles from './leaderboards-profile.module.scss';
 import { useShowcaseOptional } from './showcase-provider';
 
@@ -17,7 +16,14 @@ export function HeroStats({
     standing: LeaderboardsProfileStanding;
     games: number;
 }) {
-    if (useShowcaseOptional()?.editing) return null;
+    const showcase = useShowcaseOptional();
+    if (showcase?.editing) return null;
+    const boardsVisible = showcase?.boardsVisible ?? false;
+    const best = standing.best;
+    const bestHref = best
+        ? (profileBoardHref(gameRefOf(best), best, boardsVisible) ??
+          profileGameHref(best, boardsVisible))
+        : null;
     return (
         <div className={styles.hero}>
             <span className={styles.heroStat}>
@@ -34,11 +40,11 @@ export function HeroStats({
                     games
                 </span>
             ) : null}
-            {standing.best ? (
+            {best && bestHref ? (
                 <span className={styles.heroStat}>
-                    <b>#{n(standing.best.rank)}</b>
-                    <Link href={`/games/${safeEncodeURI(standing.best.game)}`}>
-                        {standing.best.game} · {standing.best.category}
+                    <b>#{n(best.rank)}</b>
+                    <Link href={bestHref}>
+                        {best.game} · {best.category}
                     </Link>
                 </span>
             ) : null}

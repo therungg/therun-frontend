@@ -1,7 +1,6 @@
 import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
 import { getRunnerBoardsTop } from '~src/lib/runner-profile';
-import { safeEncodeURI } from '~src/utils/uri';
 import type { RunnerProfileHead } from '../../../../../types/runner-profile.types';
 import {
     entryHref,
@@ -9,6 +8,8 @@ import {
     formatEntryTime,
     formatProfileDate,
     gameRefOf,
+    profileBoardHref,
+    profileGameHref,
     timingLabel,
 } from '../../../leaderboards/[name]/format';
 import profileStyles from '../../../leaderboards/[name]/leaderboards-profile.module.scss';
@@ -23,8 +24,10 @@ const SHOWN = 4;
 /** The runner's next four best board entries after the highlights, by points. */
 export async function LeaderboardsChapter({
     head,
+    boardsVisible,
 }: {
     head: RunnerProfileHead;
+    boardsVisible: boolean;
 }) {
     const name = head.runner.name;
     // Highlights already show these; the chapter continues below them.
@@ -59,7 +62,13 @@ export async function LeaderboardsChapter({
                     {rows.map(({ game, entry }) => {
                         const vars = entrySubcategoryLabel(entry);
                         const timing = timingLabel(entry);
-                        const href = entryHref(gameRefOf(game), entry);
+                        const gameRef = gameRefOf(game);
+                        const href = entryHref(gameRef, entry);
+                        const boardHref = profileBoardHref(
+                            gameRef,
+                            entry,
+                            boardsVisible,
+                        );
                         return (
                             <div
                                 key={`${entry.kind}-${entry.runId ?? entry.manualTimeId}`}
@@ -83,13 +92,27 @@ export async function LeaderboardsChapter({
                                     />
                                     <span className={ui.stacked}>
                                         <Link
-                                            href={`/games/${safeEncodeURI(game.game)}`}
+                                            href={profileGameHref(
+                                                game,
+                                                boardsVisible,
+                                            )}
                                             className={ui.nameMain}
                                         >
                                             {game.game}
                                         </Link>
                                         <span className={ui.nameSub}>
-                                            {entry.category}
+                                            {boardHref ? (
+                                                <Link
+                                                    href={boardHref}
+                                                    className={
+                                                        profileStyles.boardLink
+                                                    }
+                                                >
+                                                    {entry.category}
+                                                </Link>
+                                            ) : (
+                                                entry.category
+                                            )}
                                             {entry.level
                                                 ? ` · ${entry.level}`
                                                 : ''}

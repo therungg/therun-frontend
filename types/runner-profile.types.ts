@@ -49,10 +49,14 @@ export interface TimerPb {
     gameId: number;
     game: string;
     gameSlug: string;
+    /** `games.name`, what board and run links resolve. Absent on older payloads. */
+    gameName?: string;
     imageUrl: string | null;
     theme: GameTheme | null;
     categoryId: number;
     category: string;
+    /** `categories.name`, the board selector. Absent on older payloads. */
+    categorySlug?: string;
     personalBestMs: number | null;
     sumOfBestsMs: number | null;
     hasGameTime: boolean;
@@ -75,6 +79,8 @@ export type ResolvedPin =
               gameId: number;
               game: string;
               gameSlug: string;
+              /** Absent on older payloads. */
+              gameName?: string;
               imageUrl: string | null;
           };
       }
@@ -104,6 +110,8 @@ export interface RunnerProfileHead {
         gameId: number;
         game: string;
         gameSlug: string;
+        /** Absent on older payloads. */
+        gameName?: string;
         imageUrl: string | null;
         theme: GameTheme | null;
     } | null;
@@ -131,6 +139,8 @@ export interface RunnerStatsGame {
     gameId: number;
     game: string;
     gameSlug: string;
+    /** `games.name`, what board and run links resolve. Absent on older payloads. */
+    gameName?: string;
     imageUrl: string | null;
     playtimeMs: number;
     attempts: number;

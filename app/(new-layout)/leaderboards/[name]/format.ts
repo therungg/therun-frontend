@@ -1,18 +1,54 @@
 import { formatSubcategoryKey } from '~app/(new-layout)/games-v2/[game]/labels';
-import { buildManualTimeHref, buildRunHref } from '~src/lib/board-url';
+import {
+    buildBoardHref,
+    buildManualTimeHref,
+    buildRunHref,
+} from '~src/lib/board-url';
+import { safeEncodeURI } from '~src/utils/uri';
 import type {
     LeaderboardsProfileEntry,
-    LeaderboardsProfileGame,
     ProfileProvenance,
 } from '../../../../types/leaderboards-profile.types';
 
 /**
- * The game ref run links carry. `gameSlug` is empty for games whose slug was
- * never filled; the run route resolves the display name just as well.
+ * The game ref run and board links carry: `gameName` (`games.name`). Older
+ * payloads lack it and `gameSlug` is empty for most games; the routes resolve
+ * the display name just as well.
  */
-export const gameRefOf = (
-    game: Pick<LeaderboardsProfileGame, 'gameSlug' | 'game'>,
-) => game.gameSlug || game.game;
+export const gameRefOf = (game: {
+    gameName?: string;
+    gameSlug?: string;
+    game: string;
+}) => game.gameName || game.gameSlug || game.game;
+
+/**
+ * Where a game on the profile links: its board when this viewer can open
+ * boards, else its stats page.
+ */
+export function profileGameHref(
+    game: { gameName?: string; gameSlug?: string; game: string },
+    boardsVisible: boolean,
+): string {
+    return boardsVisible
+        ? buildBoardHref(gameRefOf(game))
+        : `/games/${safeEncodeURI(game.game)}`;
+}
+
+/**
+ * The board an entry sits on, for its category name. Null when this viewer
+ * can't open boards or the payload doesn't name the category.
+ */
+export function profileBoardHref(
+    gameRef: string | null,
+    entry: { categorySlug?: string | null; subcategoryKey?: string | null },
+    boardsVisible: boolean,
+): string | null {
+    if (!boardsVisible || !gameRef || !entry.categorySlug) return null;
+    return buildBoardHref(gameRef, {
+        categorySlug: entry.categorySlug,
+        subcategoryKey: entry.subcategoryKey,
+    });
+}
 
 /** The entry's own page: the run, or the manual time. Null without an id. */
 export function entryHref(

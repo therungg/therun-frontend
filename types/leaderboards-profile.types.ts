@@ -16,6 +16,8 @@ export interface LeaderboardsProfileEntry {
     runId: number | null;
     manualTimeId: number | null;
     gameId: number;
+    /** `games.name`, what board and run links resolve. Absent on older payloads. */
+    gameName?: string;
     categoryId: number;
     category: string;
     categorySlug: string;
@@ -49,7 +51,10 @@ export interface LeaderboardsProfileEntry {
 
 export interface LeaderboardsProfileGame {
     gameId: number;
+    /** `games.slug`: empty for most games. Link with `gameName`. */
     gameSlug: string;
+    /** `games.name`, what board and run links resolve. Absent on older payloads. */
+    gameName?: string;
     game: string;
     imageUrl: string | null;
     theme: GameTheme | null;
@@ -64,8 +69,12 @@ export interface LeaderboardsProfileGame {
 export interface LeaderboardsProfileRecentPb {
     runId: number;
     gameSlug: string;
+    /** `games.name`, what board and run links resolve. Absent on older payloads. */
+    gameName?: string;
     game: string;
     category: string;
+    /** `categories.name`, the board selector. Absent on older payloads. */
+    categorySlug?: string;
     subcategoryKey: string;
     timeMs: number;
     timing: ProfileTiming;
@@ -83,7 +92,13 @@ export interface LeaderboardsProfileRunner {
     bio: string | null;
     socials: Record<string, string>;
     patron: boolean;
-    moderates: { gameId: number; gameSlug: string; game: string }[];
+    moderates: {
+        gameId: number;
+        gameSlug: string;
+        /** Absent on older payloads. */
+        gameName?: string;
+        game: string;
+    }[];
     joinedAt: string | null;
     firstBoardRunAt: string | null;
     importLinked: boolean;
@@ -97,8 +112,12 @@ export interface LeaderboardsProfileStanding {
     best: {
         rank: number;
         gameSlug: string;
+        /** Absent on older payloads. */
+        gameName?: string;
         game: string;
         category: string;
+        /** Absent on older payloads. */
+        categorySlug?: string;
         subcategoryKey: string;
     } | null;
     verified: number;

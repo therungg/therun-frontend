@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { getSession } from '~src/actions/session.action';
+import { boardsVisibleFor } from '~src/lib/boards-visible';
 import { safeDecodeURI } from '~src/utils/uri';
 import { RunnerOverview } from './runner-overview';
 
@@ -19,5 +20,10 @@ export async function ProfileSwitch({
         process.env.NODE_ENV !== 'production' ||
         !!session?.roles?.includes('admin');
     if (!overview) return legacy;
-    return <RunnerOverview name={safeDecodeURI(username)} />;
+    return (
+        <RunnerOverview
+            name={safeDecodeURI(username)}
+            boardsVisible={boardsVisibleFor(session)}
+        />
+    );
 }

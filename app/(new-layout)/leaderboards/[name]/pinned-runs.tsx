@@ -7,7 +7,6 @@ import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
 import { Vod, youtubeParser } from '~src/components/run/dashboard/vod';
 import { isEmbeddableVod } from '~src/lib/vod-url';
-import { safeEncodeURI } from '~src/utils/uri';
 import type { PinRef } from '../../../../types/leaderboards-profile.types';
 import { BoardDialog } from '../../games-v2/[game]/shared/board-dialog';
 import { EntryStatus } from './entry-row';
@@ -17,6 +16,8 @@ import {
     formatEntryTime,
     formatProfileDate,
     gameRefOf,
+    profileBoardHref,
+    profileGameHref,
     timingLabel,
 } from './format';
 import styles from './leaderboards-profile.module.scss';
@@ -103,16 +104,21 @@ export function PinCard({
     pin,
     children,
     dragProps,
+    boardsVisible,
 }: {
     pin: Pinned;
     children?: React.ReactNode;
     dragProps?: React.HTMLAttributes<HTMLElement>;
+    /** Whether game and category names may link to their boards. */
+    boardsVisible: boolean;
 }) {
     const { entry, game } = pin;
     const medal = entry.rank !== null ? MEDALS[entry.rank] : undefined;
     const vars = entrySubcategoryLabel(entry);
     const timing = timingLabel(entry);
-    const href = entryHref(gameRefOf(game), entry);
+    const gameRef = gameRefOf(game);
+    const href = entryHref(gameRef, entry);
+    const boardHref = profileBoardHref(gameRef, entry, boardsVisible);
     return (
         <article className={styles.pin} data-medal={medal} {...dragProps}>
             {entry.vodUrl && isEmbeddableVod(entry.vodUrl) ? (
@@ -123,7 +129,7 @@ export function PinCard({
             ) : null}
             <div className={styles.pinBody}>
                 <Link
-                    href={`/games/${safeEncodeURI(game.game)}`}
+                    href={profileGameHref(game, boardsVisible)}
                     className={styles.pinArt}
                     tabIndex={-1}
                     aria-hidden
@@ -151,9 +157,24 @@ export function PinCard({
                             </span>
                         ) : null}
                     </span>
-                    <span className={styles.pinGame}>{game.game}</span>
+                    {boardsVisible ? (
+                        <Link
+                            href={profileGameHref(game, boardsVisible)}
+                            className={`${styles.pinGame} ${styles.boardLink}`}
+                        >
+                            {game.game}
+                        </Link>
+                    ) : (
+                        <span className={styles.pinGame}>{game.game}</span>
+                    )}
                     <span className={styles.pinTitle}>
-                        {entry.category}
+                        {boardHref ? (
+                            <Link href={boardHref} className={styles.boardLink}>
+                                {entry.category}
+                            </Link>
+                        ) : (
+                            entry.category
+                        )}
                         {entry.level ? ` · ${entry.level}` : ''}
                         {vars ? (
                             <span className={styles.pinVars}> · {vars}</span>
@@ -188,7 +209,7 @@ export function PinCard({
 
 /** The showcase: the runner's pins, or the best run per game when none. */
 export function PinnedRuns() {
-    const { games, draft, editing, setDraft } = useShowcase();
+    const { games, draft, editing, setDraft, boardsVisible } = useShowcase();
     const showAuto = editing && draft.pins.length === 0;
     const pins = editing
         ? showAuto
@@ -219,6 +240,7 @@ export function PinnedRuns() {
                         <PinCard
                             key={pinKey(ref)}
                             pin={pin}
+                            boardsVisible={boardsVisible}
                             dragProps={
                                 editing && !showAuto
                                     ? {

@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
+import { getSession } from '~src/actions/session.action';
+import { boardsVisibleFor } from '~src/lib/boards-visible';
 import { getLeaderboardsProfile } from '~src/lib/leaderboards-profile';
 import { getRunnerProfileHead } from '~src/lib/runner-profile';
 import buildMetadata, { getUserProfilePhoto } from '~src/utils/metadata';
@@ -39,18 +41,24 @@ export async function generateMetadata({
 export default async function LeaderboardsProfilePage({ params }: PageProps) {
     const { name } = await params;
     const decoded = safeDecodeURI(name);
-    const [profile, head] = await Promise.all([
+    const [profile, head, session] = await Promise.all([
         getLeaderboardsProfile(decoded),
         getRunnerProfileHead(decoded).catch(() => null),
+        getSession(),
     ]);
     if (!profile) notFound();
 
     const layout = profile.layout ?? DEFAULT_LAYOUT;
     const games = profile.games.map((g) => ({ ...g, theme: null }));
     const canCustomize = profile.layout !== undefined;
+    const boardsVisible = boardsVisibleFor(session);
 
     return (
-        <ShowcaseProvider games={games} layout={layout}>
+        <ShowcaseProvider
+            games={games}
+            layout={layout}
+            boardsVisible={boardsVisible}
+        >
             <div className={styles.page}>
                 <PageTheme
                     kind="profile"
@@ -72,10 +80,14 @@ export default async function LeaderboardsProfilePage({ params }: PageProps) {
                                 name={profile.runner.name}
                                 games={profile.games}
                                 country={profile.runner.country}
+                                boardsVisible={boardsVisible}
                             />
                         </Suspense>
                     </div>
-                    <ProfileSidebar profile={profile} />
+                    <ProfileSidebar
+                        profile={profile}
+                        boardsVisible={boardsVisible}
+                    />
                 </div>
             </div>
         </ShowcaseProvider>
