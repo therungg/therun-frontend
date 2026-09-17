@@ -116,12 +116,10 @@ export default async function GameAdminConsolePage({ params }: Props) {
         getGameIdentifiers(game.id).catch(() => ({
             slug: null,
         })),
-        // Rows, groups and level categories all come off pageData — one load,
-        // not three.
+        // Rows and groups both come off pageData — one load, not two.
         loadConsoleCatalog(game.id).catch(() => ({
             rows: [],
             groups: [],
-            levelTemplates: [],
         })),
         resolveSource(listQueue(sessionId, game.id, { limit: 200 }), 'flags'),
         resolveSource(listGameReports(sessionId, game.id), 'reports'),

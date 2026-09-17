@@ -11,7 +11,6 @@ import type {
     ResolvedCategory,
     ResolvedGame,
 } from '../../../../../../../types/leaderboards.types';
-import type { LevelTemplate } from '../../../../../../../types/levels.types';
 import { CategoryEditor, type CopySources } from '../category-editor';
 import styles from './category-detail.module.scss';
 
@@ -23,11 +22,6 @@ interface Props {
     canModerate: boolean;
     canEditStandards: boolean;
     copySources?: CopySources;
-    /** The game's level categories — this category is one of them, or an
-     *  instance of one, or neither. */
-    levelTemplates?: LevelTemplate[];
-    /** How many level boards this category templates. Only meaningful when
-     *  this category IS a level category. */
     prev: ResolvedCategory | null;
     next: ResolvedCategory | null;
 }
@@ -40,7 +34,6 @@ export function CategoryDetail({
     canModerate,
     canEditStandards,
     copySources,
-    levelTemplates = [],
     prev,
     next,
 }: Props) {
@@ -74,8 +67,6 @@ export function CategoryDetail({
                 </nav>
             </header>
 
-            <LevelBanner category={category} levelTemplates={levelTemplates} />
-
             <CategoryEditor
                 game={game}
                 category={category}
@@ -92,8 +83,7 @@ export function CategoryDetail({
 
 /**
  * Runners/runs/playtime — dropped from the console table (it's eight rows of
- * board configuration, not a leaderboard), surfaced here instead. Level
- * templates carry no stats of their own, so they render nothing.
+ * board configuration, not a leaderboard), surfaced here instead.
  */
 function CategoryStats({ category }: { category: ResolvedCategory }) {
     if (category.uniqueRunners == null) return null;
@@ -105,39 +95,4 @@ function CategoryStats({ category }: { category: ResolvedCategory }) {
             {formatHours(category.totalRunTime ?? 0)}h playtime
         </p>
     );
-}
-
-/**
- * What this category is, in the levels model — and nothing at all for the
- * categories that have no part in it.
- *
- * The two cases it does speak for are the two ways an edit here is not just
- * an edit here: a level category is copied onto every level's board, and a
- * level category is not a board: it is the definition of a subcategory every
- * level carries, so saving it rewrites that value on each level rather than
- * pushing settings to boards of its own.
- */
-function LevelBanner({
-    category,
-    levelTemplates,
-}: {
-    category: ResolvedCategory;
-    levelTemplates: LevelTemplate[];
-}) {
-    const isTemplate = levelTemplates.some((t) => t.id === category.id);
-
-    // A level category is the definition of a subcategory every level has —
-    // it is not a board, and saving it rewrites that value on each level.
-    if (isTemplate) {
-        return (
-            <div className={styles.levelBanner}>
-                <p className={styles.levelBannerText}>
-                    Level subcategory — saved changes apply to every level that
-                    carries it
-                </p>
-            </div>
-        );
-    }
-
-    return null;
 }

@@ -7,7 +7,6 @@ import type {
     ResolvedCategory,
     VariableRow,
 } from '../../../../../../types/leaderboards.types';
-import type { LevelTemplate } from '../../../../../../types/levels.types';
 import { groupShowsEmblems } from '../../header/board-identity';
 import type { CategoryVisibility } from '../../header/category-visibility';
 import { LevelPicker } from '../../header/level-picker';
@@ -17,7 +16,6 @@ import { defaultCanonicalOf } from './subcategory-bands';
 interface Props {
     visibility: CategoryVisibility;
     selected: ResolvedCategory | null;
-    levelTemplates: LevelTemplate[];
     onSelect: (category: ResolvedCategory) => void;
 }
 
@@ -31,12 +29,7 @@ interface Props {
  * picker, and no rail at all for a board with one category — so the setup
  * preview shows what goes live rather than a moderator's flat list.
  */
-export function LiveCategoryRail({
-    visibility,
-    selected,
-    levelTemplates,
-    onSelect,
-}: Props) {
+export function LiveCategoryRail({ visibility, selected, onSelect }: Props) {
     const [opened, setOpened] = useState<Set<number>>(new Set());
     const { sections, levels } = visibility;
     const selectedName = selected?.name ?? '';
@@ -199,7 +192,6 @@ export function LiveCategoryRail({
                             levels={levels.groups}
                             activeLevelId={levels.activeLevelId}
                             activeCategoryName={selectedName}
-                            templates={levelTemplates}
                             onSelect={byName}
                         />
                     </div>

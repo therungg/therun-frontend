@@ -3,12 +3,10 @@
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CaretDownFill } from 'react-bootstrap-icons';
-import { levelBoardLabel } from '~src/lib/levels/display';
 import type {
     ResolvedCategory,
     ResolvedGroup,
 } from '../../../../../types/leaderboards.types';
-import type { LevelTemplate } from '../../../../../types/levels.types';
 import { useBoardNav } from '../filters/use-board-nav';
 import { usePopoverFocus } from '../shared/use-popover-focus';
 import { computeCategoryVisibility } from './category-visibility';
@@ -21,7 +19,6 @@ interface Props {
     groups: ResolvedGroup[];
     selectedCategoryName: string;
     variableKeys: string[];
-    levelTemplates?: LevelTemplate[];
 }
 
 /**
@@ -41,7 +38,6 @@ export function SwitchBoardPopover({
     groups,
     selectedCategoryName,
     variableKeys,
-    levelTemplates,
 }: Props) {
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -186,10 +182,7 @@ export function SwitchBoardPopover({
                                             aria-pressed={active}
                                             className={`${styles.chip} ${active ? styles.chipActive : ''}`}
                                         >
-                                            {levelBoardLabel(
-                                                c,
-                                                levelTemplates ?? [],
-                                            )}
+                                            {c.display}
                                         </button>
                                     );
                                 })}

@@ -12,7 +12,6 @@ import type {
     ValidCombinations,
     VariableRow,
 } from '../../../../types/leaderboards.types';
-import type { LevelTemplate } from '../../../../types/levels.types';
 import type {
     BoardSort,
     BoardSortDir,
@@ -59,9 +58,6 @@ export interface GamePageData {
     activeLevel: ResolvedGroup | null;
     categories: ResolvedCategory[];
     groups: ResolvedGroup[];
-    /** Level templates (pageData.levelTemplates) — never in `categories`
-     *  or `groups[].categories`; see docs/frontend-guide-levels.md. */
-    levelTemplates: LevelTemplate[];
     variables: VariableRow[];
     reservedParams: string[];
     validCombinations: ValidCombinations;

@@ -123,7 +123,6 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         stats,
         categories: catData.categories,
         groups: catData.groups,
-        levelTemplates: catData.levelTemplates,
         variables,
         policies,
         moderators,

@@ -478,7 +478,6 @@ export interface SrcPurgePreview {
     orphanRunFlags: number;
     createdCategories: number;
     createdLevels: number;
-    createdTemplates: number;
     createdVariables: number;
     boardRecords: number;
     minTimeFloors: number;

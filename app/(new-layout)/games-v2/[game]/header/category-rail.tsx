@@ -7,7 +7,6 @@ import type {
     ResolvedCategory,
     ResolvedGroup,
 } from '../../../../../types/leaderboards.types';
-import type { LevelTemplate } from '../../../../../types/levels.types';
 import { useBoardNav } from '../filters/use-board-nav';
 import { groupShowsEmblems } from './board-identity';
 import { computeCategoryVisibility } from './category-visibility';
@@ -25,9 +24,6 @@ interface Props {
     boardCounts?: Record<string, number>;
     /** Board-wide selector default; groups override it one by one. */
     gameDisplayMode?: string | null;
-    /** Level templates (pageData.levelTemplates) — labels level boards by
-     *  their template's own display rather than the board's full display. */
-    levelTemplates?: LevelTemplate[];
 }
 
 export function CategoryRail({
@@ -37,7 +33,6 @@ export function CategoryRail({
     variableKeys,
     boardCounts,
     gameDisplayMode,
-    levelTemplates,
 }: Props) {
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -312,7 +307,6 @@ export function CategoryRail({
                             levels={levels.groups}
                             activeLevelId={levels.activeLevelId}
                             activeCategoryName={optimisticSelectedName}
-                            templates={levelTemplates ?? []}
                             boardCounts={boardCounts}
                             onSelect={onSelect}
                         />

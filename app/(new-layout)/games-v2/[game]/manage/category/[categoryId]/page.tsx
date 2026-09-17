@@ -6,11 +6,8 @@ import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { listCategoryVariables } from '~src/lib/leaderboard-variables';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { listPolicies } from '~src/lib/moderation/policies';
-import { normalizeSlug } from '~src/lib/normalize-slug';
 import { kindOfCategory } from '~src/lib/setup/workspace';
 import buildMetadata from '~src/utils/metadata';
-import type { ResolvedCategory } from '../../../../../../../types/leaderboards.types';
-import type { LevelTemplate } from '../../../../../../../types/levels.types';
 import { loadConsoleChrome } from '../../console/load-chrome';
 import { SubrouteChrome } from '../../console/subroute-chrome';
 import type { CopySources } from '../category-editor';
@@ -48,27 +45,14 @@ export default async function CategoryDetailPage({ params }: Props) {
     if (!game) notFound();
     if (!canModerateGame(session, game.name)) notFound();
 
-    const { categories, groups, levelTemplates } = await resolveCategory(
-        game.id,
-    );
+    const { categories, groups } = await resolveCategory(game.id);
 
     const categoryId = Number.parseInt(rawId, 10);
     if (!Number.isFinite(categoryId)) notFound();
-    // Level categories (templates) are served only under pageData's
-    // levelTemplates — never in groups/ungrouped — so they are absent from
-    // `categories` and have to be resolved separately. The Level categories
-    // pane links straight here, so this is a real entry point, not a fallback.
-    const template = levelTemplates.find((t) => t.id === categoryId) ?? null;
-    const category =
-        categories.find((c) => c.id === categoryId) ??
-        (template ? templateAsCategory(template) : undefined);
+    const category = categories.find((c) => c.id === categoryId);
     if (!category) notFound();
 
-    // A template row is not in `categories`; it belongs to Levels until the
-    // templates are gone.
-    const kind = template
-        ? 'levels'
-        : (kindOfCategory(categoryId, categories, groups) ?? 'categories');
+    const kind = kindOfCategory(categoryId, categories, groups) ?? 'categories';
 
     const chrome = await loadConsoleChrome(session, game);
 
@@ -112,7 +96,6 @@ export default async function CategoryDetailPage({ params }: Props) {
                 canModerate={chrome.flags.canModerate}
                 canEditStandards={chrome.flags.canEditStandards}
                 copySources={copySources}
-                levelTemplates={levelTemplates}
                 prev={index > 0 ? ordered[index - 1] : null}
                 next={
                     index >= 0 && index < ordered.length - 1
@@ -122,41 +105,4 @@ export default async function CategoryDetailPage({ params }: Props) {
             />
         </SubrouteChrome>
     );
-}
-
-/**
- * A level category has no stats row and no group — it is a template, not a
- * board — so the editor gets the shape it needs built from the template's own
- * pageData entry, which carries the same board settings any category entry
- * does. `archived` is fixed false because pageData only contains active
- * categories: an archived template is not in `levelTemplates` at all, so it
- * never reaches this page.
- *
- * Games whose pageData was baked before 2026-08-19 lack the settings keys;
- * those fields then read as the column defaults until the game is rebuilt,
- * and since every section here sends only what the moderator actually
- * changed, a defaulted value is never written back.
- */
-function templateAsCategory(template: LevelTemplate): ResolvedCategory {
-    return {
-        id: template.id,
-        name: normalizeSlug(template.display),
-        display: template.display,
-        primaryTiming: template.primaryTiming ?? 'rt',
-        gameTimeLabel: template.gameTimeLabel ?? 'igt',
-        isMain: template.isMain,
-        archived: false,
-        sortOrder: template.sortOrder,
-        groupId: null,
-        groupName: null,
-        imageUrl: template.imageUrl,
-        rules: template.rules,
-        sortAscending: template.sortAscending ?? true,
-        showMilliseconds: template.showMilliseconds ?? true,
-        requireVideo: template.requireVideo ?? false,
-        hideRealTime: template.hideRealTime ?? false,
-        hideGameTime: template.hideGameTime ?? false,
-        rtaFallback: template.rtaFallback ?? false,
-        requireVideoTopN: template.requireVideoTopN ?? null,
-    };
 }

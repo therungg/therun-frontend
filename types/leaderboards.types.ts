@@ -80,10 +80,6 @@ export interface ResolvedCategory {
     /** "Put RTA in leaderboard if IGT is not available" — RTA-only runs rank
      * on the game-time board by their real time. */
     rtaFallback?: boolean;
-    /** Set on level boards: the level category (template) this board instantiates. */
-    levelTemplateId?: number | null;
-    /** Level board detached from its template (or excluded). */
-    levelOverride?: boolean;
 }
 
 export interface QuickStats {

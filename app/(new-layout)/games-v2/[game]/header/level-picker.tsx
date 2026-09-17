@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { levelBoardLabel } from '~src/lib/levels/display';
-import type { LevelTemplate } from '../../../../../types/levels.types';
 import type { LevelGroupVisibility } from './category-visibility';
 import styles from './level-picker.module.scss';
 import railStyles from './masthead.module.scss';
@@ -13,7 +11,6 @@ interface Props {
      *  when the active board isn't a level board. */
     activeLevelId: number | null;
     activeCategoryName: string;
-    templates: LevelTemplate[];
     /** Entries per category slug; see GamePageData.categoryBoardCounts. */
     boardCounts?: Record<string, number>;
     /** Same contract as CategoryRail's onSelect: writes `?category=`. */
@@ -22,16 +19,13 @@ interface Props {
 
 /**
  * The leaderboard's Levels dropdown: a native `<select>` of levels. A level
- * with more than one board also gets pills to pick between them, each
- * labelled by its template's own display ("Any%") rather than the board's
- * full "<Level> — <Template>" display (see docs/frontend-guide-levels.md); a
+ * with more than one board also gets pills to pick between them; a
  * single-board level shows no pill — the dropdown selection is the choice.
  */
 export function LevelPicker({
     levels,
     activeLevelId,
     activeCategoryName,
-    templates,
     boardCounts,
     onSelect,
 }: Props) {
@@ -99,7 +93,7 @@ export function LevelPicker({
                     {chosen.boards.map((c) => {
                         const active = c.name === activeCategoryName;
                         const entries = boardCounts?.[c.name] ?? null;
-                        const label = levelBoardLabel(c, templates);
+                        const label = c.display;
                         return (
                             <button
                                 key={c.id}

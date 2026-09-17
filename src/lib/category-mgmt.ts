@@ -1,7 +1,6 @@
 'use server';
 
 import type { CategoryDisplayMode } from '../../types/leaderboards.types';
-import type { LevelTemplate } from '../../types/levels.types';
 import { apiFetch } from './api-client';
 
 export type PrimaryTiming = 'realtime' | 'gametime';
@@ -25,8 +24,6 @@ export interface ManageCategoryRow {
     totalRunTime: number;
     totalFinishedAttemptCount: number;
     uniqueRunners: number;
-    levelTemplateId: number | null;
-    levelOverride: boolean;
 }
 
 interface GameCategoryRow {
@@ -38,8 +35,6 @@ interface GameCategoryRow {
     sortOrder?: number;
     isMain?: boolean;
     active?: boolean;
-    levelTemplateId?: number | null;
-    levelOverride?: boolean;
     name?: string;
     rules?: string | null;
     imageUrl?: string | null;
@@ -68,7 +63,6 @@ interface GamePageData {
         rules?: string | null;
         categories?: GameCategoryRow[];
     }[];
-    levelTemplates?: GameCategoryRow[];
 }
 
 /** Anything the UI cannot draw reads as "no override stated". */
@@ -121,8 +115,6 @@ function categoryRowsOf(data: GamePageData): ManageCategoryRow[] {
             totalRunTime: 0,
             totalFinishedAttemptCount: 0,
             uniqueRunners: 0,
-            levelTemplateId: c.levelTemplateId ?? null,
-            levelOverride: c.levelOverride ?? false,
         });
     }
     for (const g of data.groups ?? []) {
@@ -139,34 +131,10 @@ function categoryRowsOf(data: GamePageData): ManageCategoryRow[] {
                 totalRunTime: 0,
                 totalFinishedAttemptCount: 0,
                 uniqueRunners: 0,
-                levelTemplateId: c.levelTemplateId ?? null,
-                levelOverride: c.levelOverride ?? false,
             });
         }
     }
     return rows;
-}
-
-function levelTemplatesOf(data: GamePageData): LevelTemplate[] {
-    return (data.levelTemplates ?? []).map((t) => ({
-        id: t.id,
-        display: t.display,
-        rules: t.rules ?? null,
-        isMain: t.isMain ?? false,
-        sortOrder: t.sortOrder ?? 0,
-        imageUrl: t.imageUrl ?? null,
-        primaryTiming: t.primaryTiming === 'gametime' ? 'gt' : 'rt',
-        gameTimeLabel: t.gameTimeLabel === 'lrt' ? 'lrt' : 'igt',
-        // Older baked pageData lacks these keys; the column defaults apply
-        // until the game is rebuilt.
-        sortAscending: t.sortAscending ?? true,
-        showMilliseconds: t.showMilliseconds ?? true,
-        requireVideo: t.requireVideo ?? false,
-        hideRealTime: t.hideRealTime ?? false,
-        hideGameTime: t.hideGameTime ?? false,
-        rtaFallback: t.rtaFallback ?? false,
-        requireVideoTopN: t.requireVideoTopN ?? null,
-    }));
 }
 
 export interface UpdateCategoryBody {
@@ -326,21 +294,17 @@ function manageGroupsOf(data: GamePageData): ManageGroup[] {
 
 /**
  * Everything the console's index needs off pageData, from ONE request.
- *
- * Rows, groups and level templates are all projections of the same pageData
- * blob; loading them separately cost three uncached `GET /v1/games/{id}`
- * calls for one screen.
+ * Rows and groups are projections of the same blob; loading them separately
+ * cost two uncached `GET /v1/games/{id}` calls for one screen.
  */
 export async function loadConsoleCatalog(gameId: number): Promise<{
     rows: ManageCategoryRow[];
     groups: ManageGroup[];
-    levelTemplates: LevelTemplate[];
 }> {
     const data = await loadPageData(gameId);
     return {
         rows: categoryRowsOf(data),
         groups: manageGroupsOf(data),
-        levelTemplates: levelTemplatesOf(data),
     };
 }
 

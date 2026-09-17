@@ -174,7 +174,6 @@ export function BoardMasthead({
                                     gameDisplayMode={
                                         data.game.categoryDisplayMode
                                     }
-                                    levelTemplates={data.levelTemplates}
                                 />
                             </div>
                         )}
@@ -210,7 +209,6 @@ export function BoardMasthead({
                     groups={data.groups}
                     selectedCategoryName={category.name}
                     variableKeys={variableKeys}
-                    levelTemplates={data.levelTemplates}
                 />
             )}
         </>

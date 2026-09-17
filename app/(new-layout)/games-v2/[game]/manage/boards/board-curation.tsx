@@ -33,7 +33,6 @@ import type {
     ResolvedGroup,
     VariableRow,
 } from '../../../../../../types/leaderboards.types';
-import type { LevelTemplate } from '../../../../../../types/levels.types';
 import type {
     BoardPolicyRow,
     LeaderboardRosterRow,
@@ -78,8 +77,6 @@ export interface BoardCurationProps {
      * setup-wizard mounts (which never pass it) stay admin-feature-free. */
     canSiteBan?: boolean;
     context: 'wizard' | 'console';
-    /** Labels level boards in the wizard's live rail (see LiveCategoryRail). */
-    levelTemplates?: LevelTemplate[];
 }
 
 function primaryTimeOf(
@@ -118,7 +115,6 @@ export function BoardCuration({
     canConfigure,
     canSiteBan = false,
     context,
-    levelTemplates = [],
 }: BoardCurationProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -781,7 +777,6 @@ export function BoardCuration({
                 <LiveCategoryRail
                     visibility={liveVisibility}
                     selected={category}
-                    levelTemplates={levelTemplates}
                     onSelect={(c) => setSelectedCategoryId(c.id)}
                 />
             ) : (

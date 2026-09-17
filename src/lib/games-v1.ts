@@ -9,7 +9,6 @@ import type {
     ResolvedGame,
     ResolvedGroup,
 } from '../../types/leaderboards.types';
-import type { LevelTemplate } from '../../types/levels.types';
 import { isLowActivityCategory } from '../utils/format-stats';
 import { normalizeArchived } from './archived-flag';
 import { normalizeSlug } from './normalize-slug';
@@ -131,8 +130,6 @@ interface PageDataCategoryFlags {
     imageUrl?: string | null;
     display?: string;
     name?: string;
-    levelTemplateId?: number | null;
-    levelOverride?: boolean;
     primaryTiming?: string;
     gameTimeLabel?: string;
     rules?: string | null;
@@ -140,10 +137,10 @@ interface PageDataCategoryFlags {
     requireVideo?: boolean;
     sortAscending?: boolean;
     // The rest of the board settings — added to every pageData category entry
-    // (levelTemplates included) on 2026-08-19 so a zero-run board or a level
-    // category can be edited without a stats row. Optional because pageData
-    // baked before then lacks the keys; the column defaults apply until the
-    // game is rebuilt. See docs/frontend-guide-levels.md.
+    // on 2026-08-19 so a zero-run board or a level category can be edited
+    // without a stats row. Optional because pageData baked before then lacks
+    // the keys; the column defaults apply until the game is rebuilt. See
+    // docs/frontend-guide-levels.md.
     hideRealTime?: boolean;
     hideGameTime?: boolean;
     rtaFallback?: boolean;
@@ -165,7 +162,6 @@ interface PageDataForCats {
     ungroupedCategories?: PageDataCategoryFlags[];
     groups?: PageDataGroup[];
     game?: { categoryDisplayMode?: string | null };
-    levelTemplates?: PageDataCategoryFlags[];
     /**
      * Entries per board, keyed by category id — computed live by the backend
      * alongside the baked blob, so it is current rather than as-of the last
@@ -283,7 +279,6 @@ export async function resolveCategory(
     groups: ResolvedGroup[];
     /** Board-wide selector default; the flat case has nowhere else to get one. */
     categoryDisplayMode: CategoryDisplayMode | null;
-    levelTemplates: LevelTemplate[];
     /** Entries per board, keyed by category id. Empty on an older backend. */
     categoryEntryCounts: Record<number, number>;
 }> {
@@ -303,7 +298,7 @@ export async function resolveCategory(
 
     // Keep the full pageData entry per category id — not just display
     // flags — so a pageData-only row (no stats yet) has everything it needs
-    // to render, and every row can pick up levelTemplateId/levelOverride.
+    // to render.
     const entryById = new Map<number, PageDataCategoryFlags>();
     const groupByCatId = new Map<number, { id: number; name: string }>();
     for (const c of pageDataResp.result?.ungroupedCategories ?? []) {
@@ -373,8 +368,6 @@ export async function resolveCategory(
             hideRealTime: r.hide_real_time ?? false,
             hideGameTime: r.hide_game_time ?? false,
             rtaFallback: r.rta_fallback ?? false,
-            levelTemplateId: entry?.levelTemplateId ?? null,
-            levelOverride: entry?.levelOverride ?? false,
         };
     });
 
@@ -424,8 +417,6 @@ export async function resolveCategory(
             hideRealTime: entry.hideRealTime ?? false,
             hideGameTime: entry.hideGameTime ?? false,
             rtaFallback: entry.rtaFallback ?? false,
-            levelTemplateId: entry.levelTemplateId ?? null,
-            levelOverride: entry.levelOverride ?? false,
         });
     }
 
@@ -440,37 +431,6 @@ export async function resolveCategory(
             null;
     }
     if (!selected) selected = categories[0] ?? null;
-
-    const levelTemplates: LevelTemplate[] = (
-        pageDataResp.result?.levelTemplates ?? []
-    ).map((t) => {
-        const basics = deriveCategoryBasics(
-            t.display ?? '',
-            t.name,
-            t.primaryTiming,
-            t.gameTimeLabel,
-        );
-        return {
-            id: t.id,
-            display: t.display ?? '',
-            rules: t.rules ?? null,
-            isMain: t.isMain ?? false,
-            sortOrder: t.sortOrder ?? 0,
-            imageUrl: t.imageUrl ?? null,
-            // A template's board settings, so it can be edited as a category
-            // without a stats row. Older baked pageData may lack these keys;
-            // the column defaults apply until the game is rebuilt.
-            primaryTiming: basics.primaryTiming,
-            gameTimeLabel: basics.gameTimeLabel,
-            sortAscending: t.sortAscending ?? true,
-            showMilliseconds: t.showMilliseconds ?? true,
-            requireVideo: t.requireVideo ?? false,
-            hideRealTime: t.hideRealTime ?? false,
-            hideGameTime: t.hideGameTime ?? false,
-            rtaFallback: t.rtaFallback ?? false,
-            requireVideoTopN: t.requireVideoTopN ?? null,
-        };
-    });
 
     const categoryEntryCounts: Record<number, number> = {};
     for (const [id, n] of Object.entries(
@@ -487,7 +447,6 @@ export async function resolveCategory(
         categoryDisplayMode: asCategoryDisplayMode(
             pageDataResp.result?.game?.categoryDisplayMode,
         ),
-        levelTemplates,
     };
 }
 
