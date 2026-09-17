@@ -69,7 +69,8 @@ export function RunnerCard({ model }: { model: RunViewModel }) {
                                         {formatTimeMs(e.timeMs)}
                                     </span>
                                     <span className={styles.entryRank}>
-                                        #{e.rank} / {e.totalRunners}
+                                        #{e.rank?.toLocaleString()} /{' '}
+                                        {e.totalRunners.toLocaleString()}
                                     </span>
                                 </Link>
                             </li>

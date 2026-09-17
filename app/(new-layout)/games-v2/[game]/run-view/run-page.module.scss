@@ -321,10 +321,6 @@
         padding-left: dt.$spacing-md;
         white-space: nowrap;
     }
-
-    tfoot td {
-        padding-top: dt.$spacing-sm;
-    }
 }
 
 // Segment duration with a thin bar scaled to the longest segment.
@@ -348,18 +344,6 @@
 
 .ahead {
     color: dt.$accent-green-bright;
-}
-
-.splitsFoot {
-    display: flex;
-    flex-wrap: wrap;
-    gap: dt.$spacing-xs dt.$spacing-lg;
-    color: var(--bs-secondary-color);
-
-    strong {
-        color: var(--bs-body-color);
-        font-weight: 600;
-    }
 }
 
 @media (max-width: 575.98px) {

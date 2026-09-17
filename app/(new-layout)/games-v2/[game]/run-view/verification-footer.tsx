@@ -46,7 +46,7 @@ export function VerificationFooter({
             {latest.length > 0 && <RunHistoryList events={latest} />}
             {rest.length > 0 && (
                 <details className={styles.history}>
-                    <summary>Show all ({events.length})</summary>
+                    <summary>{rest.length} more</summary>
                     <RunHistoryList events={rest} />
                 </details>
             )}

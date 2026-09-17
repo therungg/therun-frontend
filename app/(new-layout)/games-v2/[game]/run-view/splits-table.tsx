@@ -6,7 +6,6 @@ import type {
     RunComparison,
     RunSplit,
 } from '../../../../../types/leaderboards.types';
-import { formatDelta } from './run-format';
 import { useRunMedia } from './run-media';
 import styles from './run-page.module.scss';
 
@@ -46,16 +45,10 @@ export function SplitsTable({
     );
     const longest = Math.max(...segments, 1);
     const hasGold = splits.some((s) => s.bestSegmentMs != null);
-    const allGolds = splits.every((s) => s.bestSegmentMs != null);
-    const sumOfBest = allGolds
-        ? splits.reduce((sum, s) => sum + (s.bestSegmentMs ?? 0), 0)
-        : null;
-    const runTime = splits[splits.length - 1].splitTimeMs;
     const vs =
         comparison && comparison.splits.length === splits.length
             ? comparison
             : null;
-    const columns = 3 + (hasGold ? 2 : 0) + (vs ? 1 : 0);
 
     return (
         <section className={styles.panel}>
@@ -90,11 +83,23 @@ export function SplitsTable({
                     <tbody>
                         {splits.map((s, i) => {
                             const seg = segments[i];
-                            const gold = s.bestSegmentMs ?? null;
+                            // Segments without a PB split are dropped upstream,
+                            // so a jump in index means this row spans several
+                            // segments and no single gold applies.
+                            const single =
+                                s.index ===
+                                (i > 0 ? splits[i - 1].index : -1) + 1;
+                            const gold = single
+                                ? (s.bestSegmentMs ?? null)
+                                : null;
                             const toGold = gold != null ? seg - gold : null;
                             const vsDiff = vs
                                 ? s.splitTimeMs - vs.splits[i].splitTimeMs
                                 : null;
+                            const vsText =
+                                vsDiff != null
+                                    ? formatSplitDelta(vsDiff, 1)
+                                    : null;
                             return (
                                 <tr key={s.index}>
                                     <td>
@@ -149,47 +154,21 @@ export function SplitsTable({
                                             </td>
                                         </>
                                     )}
-                                    {vsDiff != null && (
+                                    {vsText != null && (
                                         <td
                                             className={
-                                                vsDiff < 0
+                                                vsText.startsWith('−')
                                                     ? styles.ahead
                                                     : styles.muted
                                             }
                                         >
-                                            {formatSplitDelta(vsDiff, 1)}
+                                            {vsText}
                                         </td>
                                     )}
                                 </tr>
                             );
                         })}
                     </tbody>
-                    {sumOfBest != null && (
-                        <tfoot>
-                            <tr>
-                                <td colSpan={columns}>
-                                    <span className={styles.splitsFoot}>
-                                        <span>
-                                            Sum of best{' '}
-                                            <strong>
-                                                {formatTimeMs(sumOfBest)}
-                                            </strong>
-                                        </span>
-                                        {runTime > sumOfBest && (
-                                            <span>
-                                                Possible timesave{' '}
-                                                <strong>
-                                                    {formatDelta(
-                                                        runTime - sumOfBest,
-                                                    )}
-                                                </strong>
-                                            </span>
-                                        )}
-                                    </span>
-                                </td>
-                            </tr>
-                        </tfoot>
-                    )}
                 </table>
             </div>
         </section>
